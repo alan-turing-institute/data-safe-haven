@@ -38,14 +38,14 @@ A helper script for doing this is already uploaded to the domain controller - yo
   - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
 
 ## :scroll: Generating CSV file manually
-- Make a new copy of the user details template file from `deployment/safe_haven_management_environment/user_details.csv`
+- Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
   - :pencil: we suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
 - Add the required details for each user
   - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
   - `Mobile`: Phone number to use for initial password reset.
-    This must include country code in the format `+<country-code> <local number>`.
+    This must include country code in the format `+<country-code> <local number>` (e.g. `+44 7700900000`).
     Include a space between the country code and local number parts but no other spaces.
     Remove the leading `0` from local number if present.
     This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
@@ -59,8 +59,6 @@ If you know which groups each user will be added to, you can also include the fo
     If the user needs to be added to multiple groups, separate them with a pipe-character (`|`).
 
 ## :arrows_counterclockwise: Create and synchronise users
-Upload the user details CSV file to a sensible location on the SHM domain controller (eg. `C:\Installation`).
-On the **SHM domain controller (DC1)**.
 - Open a PowerShell command window with elevated privileges.
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 - This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.

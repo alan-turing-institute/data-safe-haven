@@ -4,6 +4,7 @@ param(
 )
 
 Import-Module Az
+Import-Module AzureAD.Standard.Preview
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
@@ -32,11 +33,11 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecu
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 # :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "AAD Global Administrator password exists"
+    Add-LogMessage -Level Success "AAD emergency administrator account password exists"
 } else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Global Administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
 }
 
 # :: DC/NPS administrator username
@@ -70,6 +71,99 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Failed to create AD sync password!"
 }
+
+
+# Ensure that Emergency Admin user exists
+# ---------------------------------------
+# Set user properties
+$mailNickname = "admin.emergency.access"
+$upn = "$mailNickname@$($config.domain.fqdn)"
+$displayName = "Admin - EMERGENCY ACCESS"
+$passwordProfile = New-Object -TypeName Microsoft.Open.AzureAD.Model.PasswordProfile
+$passwordProfile.Password = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
+$passwordProfile.EnforceChangePasswordPolicy = $false
+$passwordProfile.ForceChangePasswordNextLogin = $false
+$userType = "Member"
+$accountEnabled = $true
+$passwordPolicies = "DisablePasswordExpiration"
+$usageLocation = $config.organisation.countryCode
+
+# Ensure user exists
+Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists..."
+$user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
+if($user) {
+    # Update existing user
+    $user = Set-AzureADUser -ObjectId $upn `
+            -MailNickName $mailNickname `
+            -DisplayName  $displayName`
+            -PasswordProfile $passwordProfile `
+            -UserType $userType `
+            -AccountEnabled $accountEnabled `
+            -PasswordPolicies $passwordPolicies `
+            -UsageLocation $usageLocation
+    if ($?) {
+        Add-LogMessage -Level Success "Existing AAD emergency administrator account updated."
+    } else {
+        Add-LogMessage -Level Fatal "Failed to update existing AAD emergency administrator account!"
+    }
+} else {
+    $user = New-AzureADUser -UserPrincipalName $upn `
+            -MailNickName $mailNickname `
+            -DisplayName $displayName `
+            -PasswordProfile $passwordProfile `
+            -UserType $userType `
+            -AccountEnabled $accountEnabled `
+            -PasswordPolicies $passwordPolicies `
+            -UsageLocation $usageLocation
+    if ($?) {
+        Add-LogMessage -Level Success "AAD emergency administrator account created."
+    } else {
+        Add-LogMessage -Level Fatal "Failed to create AAD emergency administrator account!"
+    }
+}
+
+<# Commented out while awaiting advice from AzureAD powershell module developers on the following error
+Line |
+ 149 |      $null = Add-AzureADDirectoryRoleMember -ObjectId $role.ObjectId - …
+     |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Error occurred while executing AddDirectoryRoleMember  Code: Request_BadRequest Message: The URI
+     | 'https://graph.windows.net//e45911ba-db21-4782-8a2e-4dcdfda486a5/directoryObjects/c15e5037-8d93-4ed4-bd2b-17deb1e1e958' 
+     |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'. 
+     |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT 
+     | HttpStatusCode: BadRequest HttpStatusDescription: Bad Request HttpResponseStatus: Completed
+
+# Ensure emergency admin account has full administrator rights
+$roleName = "Company Administrator" # 'Company Administrator' is the role name for the AAD 'Global administrator' role
+Add-LogMessage -Level Info "Ensuring AAD emergency administrator has '$roleName' role..."
+$role = Get-AzureADDirectoryRole | Where-Object {$_.displayName -eq $roleName }
+# If role instance does not exist, instantiate it based on the role template
+if ($null -eq $role) {
+    Add-LogMessage -Level Info "'$roleName' does not exist. Creating role from template."
+    # Instantiate an instance of the role template
+    $roleTemplate = Get-AzureADDirectoryRoleTemplate | Where-Object {$_.displayName -eq $roleName }
+    Enable-AzureADDirectoryRole -RoleTemplateId $roleTemplate.ObjectId
+    if ($?) {
+        Add-LogMessage -Level Success "'$roleName' created from template."
+    } else {
+        Add-LogMessage -Level Fatal "Failed to create '$roleName' from template!"
+    }
+    # Fetch role instance again
+    $role = Get-AzureADDirectoryRole | Where-Object {$_.displayName -eq $roleName }
+}
+# Ensure user is assigned to the role
+$user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
+$userHasRole = Get-AzureADDirectoryRoleMember -ObjectId $role.ObjectId | Where-Object { $_.ObjectId -eq $user.ObjectId }
+if ($userHasRole) {
+    Add-LogMessage -Level Success "AAD emergency administrator already has '$roleName' role."
+} else {
+    $null = Add-AzureADDirectoryRoleMember -ObjectId $role.ObjectId -RefObjectId $user.ObjectId
+    $userHasRole = Get-AzureADDirectoryRoleMember -ObjectId $role.ObjectId | Where-Object { $_.ObjectId -eq $user.ObjectId }
+    if($userHasRole) {
+        Add-LogMessage -Level Success "Granted AAD emergency administrator '$roleName' role."
+    } else {
+        Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$roleName' role!"
+    }
+} #>
 
 
 # Ensure that certificates exist

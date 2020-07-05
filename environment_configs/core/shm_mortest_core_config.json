@@ -1,5 +1,5 @@
 {
-    "subscriptionName": "Research Engineering",
+    "subscriptionName": "Martin OReilly",
     "domainSubscriptionName": "[Prod] Safe Haven Domains",
     "adminSecurityGroupName" : "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",

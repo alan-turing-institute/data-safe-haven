@@ -6,13 +6,15 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 2. [Safe Haven Management configuration](#2-safe-haven-management-configuration)
 3. [Configure DNS for the custom domain](#3-configure-dns-for-the-custom-domain)
 4. [Setup Azure Active Directory (AAD)](#4-setup-azure-active-directory-aad)
-5. [Deploy key vault for SHM secrets](#5-deploy-key-vault-for-shm-secrets)
-6. [Setup Safe Haven administrators](#6-setup-safe-haven-administrators)
-7. [Deploy and configure VNET and Domain Controllers](#7-deploy-and-configure-vnet-and-domain-controllers)
-8. [Deploy and configure Network Policy Server (NPS)](#8-deploy-and-configure-network-policy-server-nps)
-9. [Deploy firewall](#9-deploy-firewall)
-10. [Deploy package mirrors](#10-deploy-package-mirrors)
-11. [Tear down SHM](#11-tearing-down-the-shm)
+5. [Deploy key vault for SHM secrets and create emergency admin account](#5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
+6. [Enable MFA and self-service password reset](#6-enable-mfa-and-self-service-password-reset)
+7. [Configure administrator accounts](#7-configure-administrator-accounts)
+8. [Deploy and configure VNET and Domain Controllers](#8-deploy-and-configure-vnet-and-domain-controllers)
+9. [Deploy and configure Network Policy Server (NPS)](#9-deploy-and-configure-network-policy-server-nps)
+10. [Require MFA for all users](#10-r#equire-mfa-for-all-users)
+11. [Deploy firewall](#11-deploy-firewall)
+12. [Deploy package mirrors](#12-deploy-package-mirrors)
+13. [Tear down SHM](#13-tearing-down-the-shm)
 
 ## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Safe Haven Management <SHM ID>`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
@@ -103,116 +105,118 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 
 ### Add the SHM domain to the new AAD
-1. Navigate to the AAD you have created within the Azure portal. You ca n do this by:
+1. Navigate to the AAD you have created within the Azure portal. You can do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
-2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of the "Directory + Subscription" panel that then displays.
+2. If required, click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
       <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
    </p>
-3. Add the SHM domain:
+4. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-    - **IMPORTANT** Ensure you are authenticated to the correct AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
+    - **IMPORTANT** Ensure you are authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
     - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
     - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 
 
-## 5. Deploy key vault for SHM secrets
+## 5. Deploy key vault for SHM secrets and create emergency admin account
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the RDS VMs by running `./Setup_SHM_KeyVault.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- **IMPORTANT** Ensure you are also authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
+- Deploy and configure the SHM key vault by running `./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
-## 6. Setup Safe Haven administrators
+The User who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role. Users with this role have access to all administrative features in Azure Active Directory). You will use this account for almost all administration of the Safe Haven Azure AD.
 
-### Add global administrator
-The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory).
+However, there are rare operations that require you to be logged in as an **internal** Global Administrator. For example, purchasing non-trial MFA licences.
 
-For some steps, a dedicated **internal** Global Administrator is required (e.g. to add P1 licences), so at least this additional administrator will need to be created.
+To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script. However, this account must be manually assigned to the Global Administrator role.
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. On the left hand panel click `Azure Active Directory`.
-3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
-    - Click on `+ New user` and enter the following details:
-      - Name: `AAD Global Admin`
-      - Username: `admin@<SHM domain>`
-      - Under `Groups and roles > Roles` change the role to `Global Administrator`
-      - Under `Settings > Usage location` change the location to the same one you used when setting up this Active Directory (e.g. `United Kingdom`)
-      - Click `Create`
-    - Click on the username in the users list in the Azure Active Directory
-    - Click the `Reset password` icon to generate a temporary password
-    - Use this password to log into https://portal.azure.com as the user `admin@<SHM domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
-    - When prompted to change your password on first login:
-      - Look in the key vault under the `RG_SHM_SECRETS` resource group in the management subscription.
-      - There should be a secret there called `shm-<SHM ID>-aad-admin-password`
-      - Use this as the new password
-      - If you are prompted to associate a phone number and email address with the account - do so.
-    - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Users` in the left hand sidebar and click on the `Admin - EMERGENCY ACCESS` user.
+4. Add the `Global Administrator` role to the user.
+    - Click `Assigned roles` in the left hand menu
+    - Click `Add assignments` in the top menu above the (empty) list of roles
+    - Search for `Global Administrator`
+    - Check `Global Administrator`
+    - Click the `Add` button
 
-### Add additional administrators (optional)
-Giving additional users the GA role, prevents the user you set up earlier from being a single point of failure.
 
-1. Navigate to `Users` and add new admin users as above:
-    - Click on `+New user` and enter the following details:
-      - Name: `Admin - Firstname Lastname`
-      - Username: `admin.firstname.lastname@<SHM domain>`
-      - Under `Groups and roles > Roles` change the role to `Global Administrator`
-      - Under `Settings > Usage location` change the location to `United Kingdom`
-      - Click `Create`
-2. Let Azure set their passwords. They can reset these later.
+## 6. Enable MFA and self-service password reset
 
-NB. You can also invite guest users from other Azure Active Directories at this stage
-- If their account (`user@domain`) does not have an associated mailbox, invite them as normal and then give them a direct link to the portal for a specific tenant (i.e. `https://portal.azure.com/<tenant id>`). When they click this they will get taken through the same process that would have happened from the email link. [Via Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/b2b/redemption-experience)
+To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
-### Enable MFA
-To enable MFA, purchase sufficient licences and add them to all the new users.
-- You will also need licences for standard users accessing the Safe Haven.
+### Add licences that support MFA
 
-1. Ensure that you are logged in as a global admin user (e.g. the `admin@<SHM domain>` account you set up earlier)
-  - Navigate to `Azure Active Directory` in the portal
-  - Click on `Manage > Licences` in the left hand sidebar
-  - Click on `All products` in the left hand sidebar
-  - Click on the `+Try/Buy` text above the empty product list
-  - **For production** buy P1 licences:
-    - Click the `Purchase services` link in the information panel above the trial options.
-    - In the "Microsoft 365 Admin Centre" portal that opens:
-      - Expand the `Billing` section of the left hand side bar
-      - Click on `Purchase services`
-      - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
-      - Select `Pay monthly`
-      - Enter the number of licences required.
-      - Leave `automatically assign all of your users with no licences` checked
-      - Click `Check out now`
-      - Enter the address of the organisation running the Safe Haven on the next screen
-      - Click next and enter payment details when requested
-  - **For testing** you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+#### Test deployments
+**For testing** you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD). You can activate the trial while logged in as your deafult guest administrator account.
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click on `Licences` in the left hand sidebar
+4. Click on `All products` in the left hand sidebar
+5. Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
     - Expand the `Free trial` arrow under `Azure AD Premium P2`
     - Click the `Activate` button
     - Wait for around 20 minutes until the `Azure AD Premium P2` licences appear on the list of `All Products`
 
-2. Add licenses to one or more users
-  - Click on `Users` in the left hand sidebar
-  - For each user you want to add a licence to, click on their username
-    - Ensure that the user has `usage location` set under "Settings" (see image below):
-      <p align="center">
-          <img src="images/deploy_shm/set_user_location.png" width="80%" title="Set user location">
-      </p>
-    - Click on `Licences` in the left hand sidebar
-    - Click on `+ Assignments` in the top bar
-    - Assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication` then click `Save`
+#### Production deployments
+**For production** you should buy P1 licences. This requires you to be logged in with an **internal** Gloabl Administrator account. As activating self-service password reset requires active MFA licences, this is one of the rare occasions you will need to use the emergency access admin account.
 
-3. Configure MFA on Azure Active Directory
-  - Sign in to the Azure portal as a user administrator or global administrator.
-  - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
-  - Click `Manage > MFA` in the left hand side bar
-  - Click on the `Additional cloud-based MFA settings` link in the `Configure` section of the main panel (if this is not available, trying signing out of the portal and back in again)
-  - Configure MFA as follows:
+1. Switch to the the **emergency administrator** account:
+    - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
+    - Enter `admin.emergency.access@<SHM domain>` as the username
+    - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
+    - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD). Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
+    - Click the "three lines" menu in the top left corner and select "Subscriptions"
+    - Click on the Safe Haven SHM subscription
+    - Click on `Resource Groups` in the left hand sidebar then `RG_SHM_SECRETS`
+    - Click on the `kv-shm-<shm id>` key vault
+    - Click on `Secrets` in the left hand sidebar
+    - Click on the `shm-<shm id>-aad-emergency-admin-password` secret
+    - Click on the entry in the `Current version` section
+    - Click on the clipboard icon next to the `Secret value` field
+    - The emergency admin account password in now in your clipboard
+    - Switch back to the browser tab with the Azure login page
+    - Paste the password you copied from the key vault
+    - Click the `Sign in` button
+5. Click the `Purchase services` link in the information panel above the trial options.
+6. In the "Microsoft 365 Admin Centre" portal that opens:
+    - Expand the `Billing` section of the left hand side bar
+    - Click on `Purchase services`
+    - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
+    - Select `Pay monthly`
+    - Enter the number of licences required.
+    - Leave `automatically assign all of your users with no licences` checked
+    - Click `Check out now`
+    - Enter the address of the organisation running the Safe Haven on the next screen
+    - Click next and enter payment details when requested
+7. Switch back to your original administrator account
+    - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
+    - Log in as the user you used to create the Safe Haven Azure AD
+
+### Enable self-service password reset
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Password reset` in the left hand sidebar
+4. Set the `Self service password reset enabled` toggle to `All`
+5. Click the `Save` icon
+
+### Configure MFA on Azure Active Directory
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Users` in the left hand sidebar
+4. Click `Multi-Factor authentication` icon in the top bar of the users list.
+5. Click on `Service settings` at the top of the panel
+6. Configure MFA as follows:
     - In the `App passwords` section select `Do not allow users to create app passwords to sign in to non-browser apps`
-    - In the `Verification options` section.
-      - **check** `Call to phone` and `Notification through mobile app`
+    - Ensure the `Verification options` are set as follows:
+      - **check** `Call to phone` and `Notification through mobile app` (`Call to phone` is not available with a trial P2 licence)
       - **uncheck** `Text message to phone` and `Verification code from mobile app or hardware token`
     - In `Remember multi-factor authentication` section
       - ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
@@ -221,35 +225,99 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
           <img src="images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings">
       </p>
 
-4. Require MFA for all admins
-  - Sign in to the Azure portal as a user administrator or global administrator.
-  - Go to `Azure Active Directory` then click `Manage > Properties` in the left hand side bar
-  - Click `Manage Security Defaults` at the bottom of the blade.
-  - Switch `Enable Security Defaults` to `No`
-  - Check `My organization is using Conditional Access`
-  - Click `Save`
-  - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
-  - Click on `Protect > Conditional access` in the left hand sidebar
-  - Click `+ New Policy`
-  - Call the policy `Require MFA for admins`
-  - Under `Assignments` select `Users and groups`
-    - Under `Include > Select users and groups` tick `Directory roles` and select the following roles:
-      - `Global Administrator`
-      - `SharePoint Administrator`
-      - `Exchange Administrator`
-      - `Conditional Access Administrator`
-      - `Security Administrator`
-      - `Helpdesk Administrator`
-      - `Password Administrator`
-      - `Billing Administrator`
-      - `User Administrator`
-  - Under `Access controls` select `Grant`
-    - Under `Grant access` tick `Require multi-factor authentication`
-  - Under `Enable policy` select `On`
-  - Click `Create`
 
+## 7. Configure administrator accounts
 
-## 7. Deploy and configure VNET and Domain Controllers
+The emergency access admin account should not be used except in a genuine emergency. In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
+
+In order to avoid being a single point of failure, we strongly recommend that you add additional administrators. This can be done as follows.
+
+:warning: You **must** create and activate an **internal** administrator account for yourself. Later steps will require use of an **internal** admin account with mobile phone and alternate email address set. :warning:
+
+#### Add new guest administrators
+You can add users that exist on other Active Directories (e.g. your existing corporate directory). These guest acocunts can be made administrators, just as the account you used to create the Safe Haven Azure Active Directory was.
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Users` in the left hand sidebar and click on the `+New guest user` icon in the top menu above the list of users.
+4. Invite the guest admin user:
+    - Enter their full name
+    - Enter their email address
+    - Click the `User` link in the `Roles` field and make the user an administrator:
+      - Search for `Global Administrator`
+      - Check `Global Administrator`
+      - Click the `Select` button
+    - Set their usage location to the country you used when creating the Safe Haven Azure AD
+    - Leave all other fields empty, including First name and Last name
+    - Click the `Invite` button
+5. There is no need to add a mobile number for self-service password reset, as this is managed by their "home" Azure AD rather than the Safe Haven Azure AD.
+
+### Add new internal administrators
+
+You can also create internal administrator accounts that exist entirely within the Safe Haven Azure AD.
+
+:warning: You **must** create and activate an **internal** administrator account for yourself. Later steps will require use of an **internal** admin account with mobile phone and alternate email address verified. :warning:
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
+4. Create an internal admin user:
+    - User name: `admin.firstname.lastname@<SHM domain>`
+    - Name: `Admin - Firstname Lastname`
+    - Leave `Auto-generate password` set. Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
+    - Click the `User` link in the `Roles` field and make the user an administrator:
+      - Search for `Global Administrator`
+      - Check `Global Administrator`
+      - Click the `Select` button
+    - Set their usage location to the country you used when creating the Safe Haven Azure AD
+    - Leave all other fields empty, including First name and Last name
+    - Click `Create`
+5. Add a mobile phone number for self-service password reset:
+    - Navigate to `Users` and click on the account you have just created.
+    - Edit the `Contact info` section and:
+        - Add the the user's mobile phone number to the `Mobile phone` field. Make sure to prefix it with the country code and **don't include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`). They will need to enter their number in **exactly this format** when performing a self-service password reset.
+    - Click the `Save` icon at the top of the user details panel
+6. Add an authentication email
+    - Click `Authentication` in the left hand sidebar
+    - Enter the user's institutional email address in the `Authentication Email` field
+    - Click the `Save` icon at the top of the panel
+
+### Adding MFA licences to users
+
+It appears that administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if a user is unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so.
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Licences` in the left hand sidebar 
+4. Click `All products` in the left hand sidebar
+5. Click the relevant licence product
+6. Click the `+Assign` icon in the top bar above the list of user licence assignments
+7. Click `Users and groups`
+8. Click on the user or group you want to assign a licence to
+9. Click `Select`
+10. Click `Assign`
+
+### User password reset and MFA setup instructions
+
+**Internal** users can reset their own passwords and setup MFA as follows:
+
+1. Got to https://aka.ms/mfasetup
+2. Enter their username:
+    - For administrators this will be `admin.firstname.lastname@<SHM domain>`
+    - For "normal" users this will be `firstname.lastname@<SHM domain>`
+4. Click the `Forgotten my password` link
+3. Enter the captcha text and press next
+4. Enter their mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
+5. Enter a new password
+6. Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
+7. Enter their username and new password
+8. Click `Next` at the `More information required` prompt
+9. Verify their phone number (or phone number and email if they are an admin)
+10. On the MFA setup page, select the `Mobile app` or `Call my phone` option (for trial licences only the `Mobile app` option is available)
+10. Follow the instructions to configure their chosen MFA option
+  
+
+## 8. Deploy and configure VNET and Domain Controllers
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -274,7 +342,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 
 ### Configure a VPN connection to the Safe Haven Management VNet
 1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` will be the one defined in the config file.
-2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+2. Once there open the "User VPN configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
    <p align="center">
        <img src="images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
@@ -294,84 +362,83 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 1. Open Microsoft Remote Desktop
-2. Click `Add Desktop`
+2. Click `Add Desktop` / `Add PC`
 3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM).
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
 6. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal as follows:
 rather than simply `<admin username>`)
-  - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<SHM ID>-vm-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
-  - The password in the `shm-<SHM ID>-domain-admin-password` secret.
+    - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+    - The username is the `shm-<SHM ID>-vm-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
+    - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 7. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ### Install Azure Active Directory Connect
 1. Navigate to `C:\Installation`
 2. Run the `AzureADConnect.msi` installer
-  - On the `Welcome to Azure AD Connect` screen:
-    - Tick the `I agree to the license terms` box
-    - Click `Continue`
-  - On the `Express Settings` screen:
-    - Click `Customize`
-  - On the `Install required components` screen:
-    - Click `Install`
-  - On the `User sign-in` screen:
-    - Ensure that `Password Hash Synchronization` is selected
-    - Click `Next`
-  - On the `Connect to Azure AD` screen:
-    - Provide a global administrator details for the Azure Active Directory you are connected to
-    - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
-      - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
-        - Click `Add`
-        - Click `Add`
-        - Click `Close`
-        - Repeat for the same dialog with `https://aadcdn.msftauth.net`
-      - If you receive an error box `We can't sign you in,. Javascript is required to sign you in. Do you want to continue running scripts on this page`
-        - Click `Yes`
-        - Close the dialog by clicking `X`
-    - Enter the global administrator password if prompted
-    - Back on the `Connect to Azure AD` screen, click `Next`
-    - Approve the login with MFA if required
-      - If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
-  - On the `Connect your directories` screen:
-    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
-    - On the `AD forest account` pop-up:
-      - Select `Use existing AD account`
-      - Enter the details for the `localadsync` user.
-        - Username: `localadsync@<SHM domain>` (e.g. localadsync)
-        - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
-      - Click `OK`
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
-          - In Server Manager click `Tools > Active Directory Users and Computers`
-          - Expand the domain in the left hand panel
-          - Expand the `Safe Haven Service Accounts` OU
-          - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
-          - Leave the other settings as is and click `OK`
-    - Click `Next`
-  - On the `Azure AD sign-in configuration` screen:
-    - Verify that the `User Principal Name` is set to `userPrincipalName`
-    - Click `Next`
-  - On the `Domain and OU filtering` screen:
-    - Select `Sync Selected domains and OUs`
-    - Expand the domain and deselect all objects
-    - Select `Safe Haven Research Users`
-    - Click `Next`
-  - On the `Uniquely identifying your users` screen:
-    - Click `Next`
-  - On the `Filter users and devices` screen:
-    - Select `Synchronize all users and devices`
-    - Click `Next`
-  - On the `Optional features` screen:
-    - Select `Password Writeback`
-    - Click `Next`
-  - On the `Ready to configure` screen:
-    - Click `Install`
-    - This may take a few minutes to complete
-  - On the `Configuration complete` screen:
-    - Click `Exit`
+    - On the `Welcome to Azure AD Connect` screen:
+        - Tick the `I agree to the license terms` box
+        - Click `Continue`
+    - On the `Express Settings` screen:
+        - Click `Customize` 
+    - On the `Install required components` screen:
+        - Click `Install`
+    - On the `User sign-in` screen:
+        - Ensure that `Password Hash Synchronization` is selected
+        - Click `Next`
+    - On the `Connect to Azure AD` screen:
+        - On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
+        - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
+            - Click `Add`
+            - Click `Add`
+            - Click `Close`
+            - Repeat for the same dialog with `https://aadcdn.msftauth.net`
+        - If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
+            - Click `Yes`
+            - Close the dialog by clicking `X`
+        - Enter the global administrator password if prompted
+        - Back on the `Connect to Azure AD` screen, click `Next`
+        - Approve the login with MFA if required
+            - If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
+    - On the `Connect your directories` screen:
+        - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
+        - On the `AD forest account` pop-up:
+            - Select `Use existing AD account`
+            - Enter the details for the `localadsync` user.
+                - Username: `localadsync@<SHM domain>` (e.g. localadsync)
+                - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+            - Click `OK`
+            - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+                  - In Server Manager click `Tools > Active Directory Users and Computers`
+                  - Expand the domain in the left hand panel
+                  - Expand the `Safe Haven Service Accounts` OU
+                  - Right click on the "Local AD Sync Administrator" user and select "reset password"
+                  - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+                  - Leave the other settings as is and click `OK`
+        - Click `Next`
+    - On the `Azure AD sign-in configuration` screen:
+        - Verify that the `User Principal Name` is set to `userPrincipalName`
+        - Click `Next`
+    - On the `Domain and OU filtering` screen:
+        - Select `Sync Selected domains and OUs`
+        - Expand the domain and deselect all objects
+        - Select `Safe Haven Research Users` and `Safe Haven Security Groups`
+        - Click `Next`
+    - On the `Uniquely identifying your users` screen:
+        - Click `Next`
+    - On the `Filter users and devices` screen:
+      - Select `Synchronize all users and devices`
+        - Click `Next`
+    - On the `Optional features` screen:
+      - Select `Password Writeback`
+        - Click `Next`
+    - On the `Ready to configure` screen:
+        - Click `Install`
+        - This may take a few minutes to complete
+    - On the `Configuration complete` screen:
+        - Click `Exit`
 
-  - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the RDS and VPN and reconnect later before clicking `Retry`.
+  - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
 ### Additional AAD Connect Configuration
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
@@ -382,116 +449,154 @@ This step allows the locale (country code) to be pushed from the local AD to the
 
 
 ### Validation of AD sync
-1. Add yourself as a new Active Directory user:
-  - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
-  - Expand the domain
-  - Right click on the `Safe Haven Research Users` OU and select `New -> User`
-  - Create a new user:
-    - First name: `<your first name>`
-    - Last name: `<your last name>`
-    - User login name: `<your first name>.<your last name>`
-    - Click `Next`
-  - Password:
-    - Choose something that is
-      - At least 6 characters
-      - Contains uppercase, lowercase and digits
-    - Ensure that `User must change password at next logon` is ticked
-    - Ensure that `Password never expires` is not ticked
-    - Click `Next`
-  - Click `Finish`
-2. Set the correct region
-  - The user you have just created should now appear in the list of `Safe Haven Research Users` (if not, then right click and select `Refresh`)
-  - Right click on this user and select `Properties`
-  - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
-3. Force a sync to the Azure Active Directory
-  - Open Powershell as an administrator
-  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
-4. Go to the Azure Active Directory in `portal.azure.com`
-  - Click `Users > All users` and confirm that the new user is shown in the user list.
-  - It may take a few minutes for the synchronisation to fully propagate in Azure.
+
+1. Generating user CSV file
+- Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
+We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
+    - Add the required details for each user
+        - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+        - `GivenName`: User's first / given name
+        - `Surname`: User's last name / surname
+        - `Mobile`: Phone number to use for initial password reset.
+          This must include country code in the format `+<country-code> <local number>` (e.g. `+44 7700900000`).
+          Include a space between the country code and local number parts but no other spaces.
+          Remove the leading `0` from local number if present.
+          This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
+          They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+        - `SecondaryEmail`: An existing organisational email address for the user.
+          Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
+2. Create and synchronise user
+    - On the **SHM domain controller (DC1)**.
+        - Open a PowerShell command window with elevated privileges.
+        - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
+        - This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
+3. Go to the Azure Active Directory in `portal.azure.com`
+    - Click `Users > All users` and confirm that the new user is shown in the user list.
+    - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`
-  - Select `Manage > Password reset` from the left hand menu
+    - Select `Manage > Password reset` from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
-  - Ensure `Write back passwords to your on-premises directory` is set to yes.
-    <p align="center">
-        <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
-    </p>
-  - If you changed this setting, click the `Save` icon
-- Select `Properties` from the left hand side bar
-  - Make sure that `Self service password reset enabled` is set to `All`
-    <p align="center">
-        <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
-    </p>
-  - If you changed this setting, click the `Save` icon
+    - Ensure `Write back passwords to your on-premises directory` is set to yes.
+      <p align="center">
+          <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
+      </p>
+    - If you changed this setting, click the `Save` icon
+3. Select `Properties` from the left hand side bar
+    - Make sure that `Self service password reset enabled` is set to `All`
+      <p align="center">
+          <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
+      </p>
+    - If you changed this setting, click the `Save` icon
 
 
-## 8. Deploy and configure Network Policy Server (NPS)
+## 9. Deploy and configure Network Policy Server (NPS)
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+    - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around 20 minutes** to run.
-  - **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
+    - **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure NPS server
 1. Log in to the NPS Server VM using Microsoft Remote Desktop
-  - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
-  - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
-  - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
-  - The password in the `shm-<SHM ID>-domain-admin-password` secret.
+    - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
+    - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
+    - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+    - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
+    - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to a local text file:
-  - Select `NPS (Local) > Accounting` on the left-hand sidebar
-    <p align="center">
-        <img src="images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
-    </p>
-  - Click on `Accounting > Configure Accounting`
-    - On the `Introduction` screen, click `Next`.
-    - On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
-    - On the `Configure Local File Logging` screen, click `Next`.
-    - On the `Summary` screen, click `Next`.
-    - On the `Conclusions` screen, click `Close`.
-  - Click on `Log file properties > Change log file properties`
-    - On the `Log file` tab, select `Daily` under `Create a new log file`
-    - Click `Ok`
+    - Select `NPS (Local) > Accounting` on the left-hand sidebar
+      <p align="center">
+          <img src="images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
+      </p>
+    - Click on `Accounting > Configure Accounting`
+        - On the `Introduction` screen, click `Next`.
+        - On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
+        - On the `Configure Local File Logging` screen, click `Next`.
+        - On the `Summary` screen, click `Next`.
+        - On the `Conclusion` screen, click `Close`.
+    - Click on `Log file properties > Change log file properties`
+        - On the `Log file` tab, select `Daily` under `Create a new log file`
+        - Click `Ok`
 
 
 ### MFA Configuation
 1. Configure MFA settings:
-  - Open Powershell as an administrator
-  - Run `& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"`
-  - Enter `A` when prompted
-  - If you are prompted to add webpages to exceptions then accept them.
-  - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
-2. On the webpage pop-up, sign in as the `Global Administrator` (eg. `admin@<SHM domain>`) user. Other administrators added as guests will not work for this step.
-  - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<SHM domain>` account at this point.
+    - Open Powershell as an administrator
+    - Run `& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"`
+    - Enter `A` when prompted
+    - If you are prompted to add webpages to exceptions then accept them.
+    - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
+2. On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
+    - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
+        - Click `Add`
+        - Click `Add`
+        - Click `Close`
+        - Repeat for the same dialog with `https://aadcdn.msftauth.net`
+    - If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
+        - Click `Yes`
+        - Close the dialog by clicking `X`
+    - Enter the global administrator password if prompted
+    - Back on the `Connect to Azure AD` screen, click `Next`
+    - Approve the login with MFA if required
+        - If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
 3. When prompted to `Provide your Tenant ID`, enter your Azure Active Directory ID. To get this:
-  - In the Azure portal select `Azure Active Directory` in the left hand side bar
-  - Select `Properties` in the left hand side bar
-  - Copy the `Directory ID` field
-  - **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
-    - Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
-    - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
-      - Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
-      - Click `Licenses`in the left hand side bar then `Manage > All products`
-      - You should see `Azure Active Directory Premium P1` in the list of products, with a non-zero number of available licenses.
-        - If you do not have P1 licences, purchase some following the instructions at the end of the [Add additional administrators](#Add-additional-administrators) section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
-      - If you are using the trial `Azure Active Directory Premium P2` licences, you may find that enabling a trial of `Enterprise Mobility + Security E5` licences will resolve this.
-    - Make sure that you have added a P1 licence to at least one user in the `Azure Active Directory` and have gone through the MFA setup procedure for that user. You may have to wait a few minutes after doing this
-    - If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`. Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
-  - **Troubleshooting:** If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
-    - Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
-      - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\admin` rather than `NPS-SHM-<SHM ID>\admin`.
-      - If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-    - Make sure you authenticate to `Azure Active Directory` as the native `Global Administrator` (`admin@<SHM domain>`) user when prompted by the script. Other administrators added as guests will not work for this step.
+    - In the Azure portal select `Azure Active Directory` in the left hand side bar
+    - Select `Properties` in the left hand side bar
+    - Copy the `Directory ID` field and enter it at the prompt on the NPS server
+    - **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
+        - Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
+        - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
+            - Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
+            - Click `Licenses`in the left hand side bar then `Manage > All products`
+            - You should see `Azure Active Directory Premium P1` in the list of products, with a non-zero number of available licenses.
+            - If you do not have P1 licences, purchase some following the instructions at the end of the [Add additional administrators](#Add-additional-administrators) section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
+          - If you are using the trial `Azure Active Directory Premium P2` licences, you may find that enabling a trial of `Enterprise Mobility + Security E5` licences will resolve this.
+      - Make sure that you have added a P1 licence to at least one user in the `Azure Active Directory` and have gone through the MFA setup procedure for that user. You may have to wait a few minutes after doing this
+      - If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`. Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
+    - **Troubleshooting:** If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
+      - Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
+        - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\admin` rather than `NPS-SHM-<SHM ID>\admin`.
+        - If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
+      - Make sure you authenticate to `Azure Active Directory` your own **internal** Global Administrator (i.e. `admin.forstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your ohone number + email address and c onfigured MFA on your account.
 4. At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
+## 10. Require MFA for all users
+:warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement :warning:
 
-## 9. Deploy firewall
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Click `Security` in the left hand sidebar
+4. Click `Conditional access` in the left hand sidebar
+5. Click the `+New Policy` icon in the tob bar above the (empty) policy list
+3. Create a new policy as follows:
+    - Set the name to `Require MFA`
+    - Set the `Users and groups` condition to:
+        - Include: Check `All users`
+        - Exclude:
+            - Check `Users and groups`
+            - Select the `Admin - EMERGENCY ACCESS` user
+            - Select all `On-Premises Directory Synchronization Service Account` users
+            - Cick `Select`
+    - Set the `Cloud apps and policies` condition to:
+        - Include: Check `All cloud apps`
+        - Exclude: Leave unchanged as `None`
+    - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
+    - Set the `Grant` condition to:
+        - Check `Grant access`
+        - Check `Require multi-factor authentication`
+        - Click `Select`
+    - Leave the `Session` condition unchanged
+    - Under `Enable policy` select `On`
+    - Check `	I understand that my account will be impacted by this policy. Proceed anyway.`
+    - Click the `Create` button
+
+
+## 11. Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
@@ -501,7 +606,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 - This will take **a few minutes** to run.
 
 
-## 10. Deploy package mirrors
+## 12. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
@@ -522,7 +627,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 - Deploy and configure the RDS VMs by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
-## 11. Tearing down the SHM
+## 13. Tearing down the SHM
 In order to tear down the SHM, use the following procedure:
 
 ### Disconnect from the Azure Active Directory
