@@ -353,9 +353,15 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
-Add-LogMessage -Level Success "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Success "PyPI server: '$($addresses.pypi.url)'"
-Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
+$success = $?
+Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
+Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
+if ($success) {
+    Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
+} else {
+    Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
+}
 
 
 # Retrieve passwords from the keyvault
