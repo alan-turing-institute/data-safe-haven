@@ -544,7 +544,7 @@ function Get-ShmFullConfig {
     # Logging config
     # --------------
     $shm.logging = [ordered]@{
-        rg = "RG_SHM_LOGGING"
+        rg = "RG_SHM_$($shm.id)_LOGGING"
         workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower() #| TrimToLength 24
     }
 
