@@ -638,6 +638,7 @@ function Get-ShmFullConfig {
             buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
             domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
             domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
+            vmAdminUsername = "shm-$($shm.id)-vm-admin-username".ToLower()
             vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
             vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
             vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
