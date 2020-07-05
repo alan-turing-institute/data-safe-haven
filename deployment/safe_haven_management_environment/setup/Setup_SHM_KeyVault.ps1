@@ -34,8 +34,8 @@ Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.
 
 # :: Admin usernames
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)vmadmin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
