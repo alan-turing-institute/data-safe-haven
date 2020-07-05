@@ -23,9 +23,10 @@ try {
 }
 
 
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
 
 # Get config and original context before changing subscription
