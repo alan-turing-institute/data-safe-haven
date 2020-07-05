@@ -13,14 +13,14 @@ param(
     [string]$DbAdminUsername,
     [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
     [string]$EnableSSIS,  # it is not possible to pass a bool through the Invoke-RemoteScript interface
-    [Parameter(Mandatory = $true, HelpMessage = "Name of local admin user on this machine")]
-    [string]$LocalAdminUser,
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level research users group")]
     [string]$ResearchUsersGroup,
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
     [string]$ServerLockdownCommandB64,
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level system administrators group")]
-    [string]$SysAdminGroup
+    [string]$SysAdminGroup,
+    [Parameter(Mandatory = $true, HelpMessage = "Name of local admin user on this machine")]
+    [string]$VmAdminUsername
 )
 
 Import-Module SqlServer
@@ -177,7 +177,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Removing database access from the local Windows admin
     # -----------------------------------------------------
-    $windowsAdmin = "${serverName}\${LocalAdminUser}"
+    $windowsAdmin = "${serverName}\${VmAdminUsername}"
     Write-Output "Removing database access from $windowsAdmin on: '$serverName'..."
     $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true

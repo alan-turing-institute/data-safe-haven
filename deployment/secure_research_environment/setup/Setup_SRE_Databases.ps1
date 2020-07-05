@@ -142,14 +142,14 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
             $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
             $params = @{
-                DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+                DataAdminGroup           = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)`""
                 DbAdminPassword          = $dbAdminPassword
                 DbAdminUsername          = $dbAdminUsername
                 EnableSSIS               = $databaseCfg.enableSSIS
-                LocalAdminUser           = $vmAdminUsername
-                ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
+                ResearchUsersGroup       = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)`""
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.serverAdmins.name)"
+                SysAdminGroup            = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)`""
+                VmAdminUsername          = $vmAdminUsername
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
