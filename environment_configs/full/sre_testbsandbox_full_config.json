@@ -115,7 +115,7 @@
     },
     "location": "uksouth",
     "logging": {
-      "rg": "RG_SHM_LOGGING",
+      "rg": "RG_SHM_TESTB_LOGGING",
       "workspaceName": "shmtestbloganalytics"
     },
     "mirrors": {

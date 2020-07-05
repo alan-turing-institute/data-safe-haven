@@ -115,7 +115,7 @@
     },
     "location": "centralus",
     "logging": {
-      "rg": "RG_SHM_LOGGING",
+      "rg": "RG_SHM_DEMO_LOGGING",
       "workspaceName": "shmdemologanalytics"
     },
     "mirrors": {

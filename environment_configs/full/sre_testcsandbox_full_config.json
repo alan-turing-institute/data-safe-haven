@@ -115,7 +115,7 @@
     },
     "location": "centralus",
     "logging": {
-      "rg": "RG_SHM_LOGGING",
+      "rg": "RG_SHM_TESTC_LOGGING",
       "workspaceName": "shmtestcloganalytics"
     },
     "mirrors": {
