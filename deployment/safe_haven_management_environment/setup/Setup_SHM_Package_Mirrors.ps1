@@ -291,7 +291,6 @@ function Deploy-PackageMirror {
                 DataDiskIds            = @($dataDisk.Id)
             }
             $null = Deploy-UbuntuVirtualMachine @params
-            Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.mirrors.rg
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."

@@ -695,6 +695,7 @@ function Deploy-UbuntuVirtualMachine {
         } else {
             Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
+        Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }

@@ -481,7 +481,6 @@ $params = @{
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
-Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Remove snapshots

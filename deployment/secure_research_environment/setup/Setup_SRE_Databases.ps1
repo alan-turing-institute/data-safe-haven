@@ -243,7 +243,6 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Size                   = $databaseCfg.vmSize
             }
             $null = Deploy-UbuntuVirtualMachine @params
-            Wait-ForAzVMCloudInit -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
             Enable-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
         }
 
