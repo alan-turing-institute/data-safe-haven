@@ -166,7 +166,7 @@ Write-Output "Creating management OUs..."
 foreach ($ouName in ("<ou-research-users-name>",
                      "<ou-security-groups-name>",
                      "<ou-service-accounts-name>",
-                     "<ou-service-servers-name>",
+                     "<ou-identity-servers-name>",
                      "<ou-data-servers-name>",
                      "<ou-linux-servers-name>",
                      "<ou-rds-session-servers-name>",
@@ -252,17 +252,17 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # Link GPO with OUs
 # -----------------
 Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-service-servers-name>"),
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity-servers-name>"),
                             ("All servers - Local Administrators", "<ou-data-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Services", "Domain Controllers"),
-                            ("All Servers - Windows Services", "<ou-service-servers-name>"),
+                            ("All Servers - Windows Services", "<ou-identity-servers-name>"),
                             ("All Servers - Windows Services", "<ou-data-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Update", "Domain Controllers"),
-                            ("All Servers - Windows Update", "<ou-service-servers-name>"),
+                            ("All Servers - Windows Update", "<ou-identity-servers-name>"),
                             ("All Servers - Windows Update", "<ou-data-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
@@ -349,7 +349,7 @@ if ($success) {
 Write-Output "Delegating Active Directory registration permissions to service users..."
 # # Allow computer managers to register computers in the 'Computers' container
 # Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\$($securityGroups.computerManagers.name)"
-# Allow the service server user to register computers in the '<ou-service-servers-name>' container
+# Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
 # Allow the data server user to register computers in the '<ou-data-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-data-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.dataServers.samAccountName)"
