@@ -141,7 +141,7 @@
                     },
                     "dataDisks": [
                         {
-                            "lun": 0,
+                            "lun": 1,
                             "name": "[concat(parameters('GitLab_Server_Name'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",

@@ -23,6 +23,21 @@ apt:
       source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
       keyid: 3F01618A51312F3F
 
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
+
 write_files:
   - path: /etc/gitlab/gitlab.rb
     permissions: "0600"
@@ -54,23 +69,15 @@ write_files:
 
 runcmd:
   # Configure server
-  - echo "Configuring server"
+  - echo ">=== Configuring server... ===<"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
-  - echo "Europe/London" > /etc/timezone
+  - timedatectl set-timezone Europe/London
   - dpkg-reconfigure -f noninteractive tzdata
+  - echo "Timezone is $(date +%Z)"
   # Set up the data disk
-  - echo "Setting up data disk..."
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /datadrive
-  - mount /dev/sdc1 /datadrive
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
-  - mv fstab.tmp /etc/fstab
-  - mkdir -p /datadrive/gitlab-data
+  - echo ">=== Checking attached disks... ===<"
+  - mkdir -p /datadrive/gitdata
+  - cat /etc/fstab
   # Enable custom GitLab settings and run an initial configuration
   - echo "Running initial configuration"
   - gitlab-ctl reconfigure
