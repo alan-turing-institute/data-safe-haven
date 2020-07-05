@@ -536,9 +536,8 @@ Remove-Item -Path $zipFilePath
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
 $params = @{
-    PAYLOAD        = $zipFileEncoded
-    ADMIN_USERNAME = $vmAdminUsername
-};
+    PAYLOAD = $zipFileEncoded
+}
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
 $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 Write-Output $result.Value

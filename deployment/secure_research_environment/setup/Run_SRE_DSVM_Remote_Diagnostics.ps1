@@ -29,7 +29,6 @@ $params = @{
     LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
     SERVICE_PATH      = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
 }
-Write-Host ($params | Out-String)
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
                              ("realm join", "rerun_realm_join.sh"),

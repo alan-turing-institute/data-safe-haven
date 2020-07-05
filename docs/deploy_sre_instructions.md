@@ -430,10 +430,9 @@ To run the smoke tests:
 - Connect to the DSVM using the remote desktop URL (eg. `https://sandbox.dsgroupdev.co.uk/`) and selecting the the `DSVM Main (Desktop)` app
 On the **DSVM**.
 - Open a terminal session
-- Copy the tests folder using `cp -R ~<sre-admin>/smoke_tests ~/smoke_tests`
-- Enter the test directory using `cd ~/smoke_tests/tests`
-- Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
-- If all test results are expected you are done! Otherwise, contact Turing REG for help diagnosing test failures.
+- Enter the test directory using `cd /opt/installation/smoke_tests/tests`
+- Run `source run_all_tests.sh`.
+- If all test results are expected you are done! Otherwise check `README.md` for help diagnosing test failures.
 
 ## :bomb: Tearing down the SRE
 On your **deployment machine**.
