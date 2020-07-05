@@ -581,6 +581,9 @@ function Get-ShmFullConfig {
                 }
             }
         }
+        vpn = [ordered]@{
+            cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
+        }
         mirrorVnets = [ordered]@{}
         nsg = [ordered]@{
             externalPackageMirrorsTier2 = [ordered]@{
