@@ -98,6 +98,13 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
 }
 
 
+# Restart the domain controllers to ensure that they establish a new SSPR connection through the firewall
+# -------------------------------------------------------------------------------------------------------
+foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
+}
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext
