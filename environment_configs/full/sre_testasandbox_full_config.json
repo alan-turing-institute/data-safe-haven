@@ -624,6 +624,7 @@
     "webapps": {
       "gitlab": {
         "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+        "apiTokenSecretName": "sre-sandbox-other-gitlab-api-token",
         "disks": {
           "data": {
             "sizeGb": "750",
@@ -637,12 +638,19 @@
         "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
         "ip": "10.150.2.151",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
+        "userIngress": {
+          "passwordSecretName": "sre-sandbox-other-gitlab-password-ingress",
+          "usernameSecretName": "sre-sandbox-other-gitlab-username-ingress-"
+        },
+        "userRoot": {
+          "passwordSecretName": "sre-sandbox-other-gitlab-password-root"
+        },
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
-      "gitlabreview": {
+      "gitlabReview": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab-review",
+        "apiTokenSecretName": "sre-sandbox-other-gitlab-review-api-token",
         "disks": {
           "data": {
             "sizeGb": "750",
@@ -656,7 +664,14 @@
         "fqdn": "GITLAB-REVIEW-SANDBOX.testa.dsgroupdev.co.uk",
         "hostname": "GITLAB-REVIEW-SANDBOX",
         "ip": "10.150.4.4",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-review-root-password",
+        "rootPasswordSecretName": "sre-sandbox-other-gitlab-review-password-root",
+        "userIngress": {
+          "passwordSecretName": "sre-sandbox-other-gitlab-review-password-ingress",
+          "usernameSecretName": "sre-sandbox-other-gitlab-review-username-ingress"
+        },
+        "userRoot": {
+          "passwordSecretName": "sre-sandbox-other-gitlab-review-password-root"
+        },
         "vmName": "GITLAB-REVIEW-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
@@ -671,6 +686,7 @@
         "fqdn": "HACKMD-SRE-SANDBOX.testa.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
         "ip": "10.150.2.152",
+        "postgresPasswordSecretName": "sre-sandbox-vm-other-hackmd-password-postgresdb",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },

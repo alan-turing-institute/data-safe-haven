@@ -303,10 +303,10 @@ function Add-SreConfig {
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
+            apiTokenSecretName = "$($config.sre.shortName)-other-gitlab-api-token"
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 5
-            rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-root-password"
             disks = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "750"
@@ -317,13 +317,22 @@ function Add-SreConfig {
                     type = "Standard_LRS"
                 }
             }
+            userIngress = [ordered]@{
+                usernameSecretName = "$($config.sre.shortName)-other-gitlab-username-ingress-"
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-password-ingress"
+            }
+            userRoot = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-password-root"
+            }
+
         }
-        gitlabreview = [ordered]@{
+        gitlabReview = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab-review"
+            apiTokenSecretName = "$($config.sre.shortName)-other-gitlab-review-api-token"
             vmName = "GITLAB-REVIEW-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.airlock.cidr -Offset 4
-            rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-review-root-password"
+            rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-review-password-root"
             disks = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "750"
@@ -333,10 +342,18 @@ function Add-SreConfig {
                     sizeGb = "50"
                     type = "Standard_LRS"
                 }
+            }
+            userIngress = [ordered]@{
+                usernameSecretName = "$($config.sre.shortName)-other-gitlab-review-username-ingress"
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-review-password-ingress"
+            }
+            userRoot = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-review-password-root"
             }
         }
         hackmd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
+            postgresPasswordSecretName = "$($config.sre.shortName)-vm-other-hackmd-password-postgresdb"
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 6

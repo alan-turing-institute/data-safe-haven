@@ -21,17 +21,17 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
-$gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabAPIToken
-$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabPassword
-$gitlabReviewAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewAPIToken
+$gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.apiTokenSecretName -DefaultLength 20
+$gitlabUserIngressPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.userIngress.passwordSecretName -DefaultLength 20
+$gitlabUserIngressUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.userIngress.usernameSecretName -DefaultValue "ingress"
+$gitlabUserRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.userRoot.passwordSecretName -DefaultLength 20
 $gitlabReviewAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.adminPasswordSecretName -DefaultLength 20
-$gitlabReviewPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewPassword
-$gitlabReviewUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewUsername -DefaultValue "ingress"
-$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-$gitlabReviewRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.rootPasswordSecretName -DefaultLength 20
-$gitlabUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUsername -DefaultValue "ingress"
+$gitlabReviewAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.apiTokenSecretName -DefaultLength 20
+$gitlabReviewUserIngressPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userIngress.passwordSecretName -DefaultLength 20
+$gitlabReviewUserIngressUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userIngress.usernameSecretName -DefaultValue "ingress"
+$gitlabReviewUserRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userRoot.passwordSecretName -DefaultLength 20
 $hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
-$hackmdPostgresPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
+$hackmdPostgresPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.postgresPasswordSecretName -DefaultLength 20
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
@@ -42,21 +42,22 @@ $nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.
 $nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location -RemoveAllRules
 $params = @{
     ipAddressGitLab = $config.sre.webapps.gitlab.ip
-    ipAddressGitLabReview = $config.sre.webapps.gitlabreview.ip
+    ipAddressGitLabReview = $config.sre.webapps.gitlabReview.ip
     ipAddressSessionHostApps = $config.sre.rds.sessionHost1.ip
     ipAddressSessionHostReview = $config.sre.rds.sessionHost3.ip
     nsgAirlockName = $config.sre.network.nsg.airlock.name
     nsgWebappsName = $config.sre.webapps.nsg
-    subnetComputeCidr =  $config.sre.network.subnets.data.cidr
+    subnetComputeCidr =  $config.sre.network.vnet.subnets.data.cidr
     subnetVpnCidr = "172.16.201.0/24" # TODO fix this when it is no longer hard-coded
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
+
 # Check that VNET and subnets exist
 # ---------------------------------
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
-$subnetAirlock = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
-$subnetWebapps = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.data.cidr  # NB. this is currently the SharedData subnet but will change soon
+$subnetAirlock = Deploy-Subnet -Name $config.sre.network.vnet.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.airlock.cidr
+$subnetWebapps = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr  # NB. this is currently the SharedData subnet but will change soon
 
 
 # Attach NSGs to subnets
@@ -94,10 +95,10 @@ $gitlabCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitla
     Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
     Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
     Replace('<gitlab-fqdn>', "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
-    Replace('<gitlab-root-password>', $gitlabRootPassword).
+    Replace('<gitlab-root-password>', $gitlabUserRootPassword).
     Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
-    Replace('<gitlab-username>', $gitlabUsername).
-    Replace('<gitlab-password>', $gitlabPassword).
+    Replace('<gitlab-username>', $gitlabUserIngressUsername).
+    Replace('<gitlab-password>', $gitlabUserIngressPassword).
     Replace('<gitlab-api-token>', $gitlabAPIToken)
 # Set GitLab deployment parameters
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB 512 -Type "Standard_LRS" -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -115,7 +116,7 @@ try {
     Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.gitlab.ip)..."  # Note that this has no effect at present
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps -Name "TmpAllowOutboundInternetGitlab" -SourceAddressPrefix $config.sre.webapps.gitlab.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @gitlabDeploymentParams @commonDeploymentParams
-    Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -NSGName $config.sre.webapps.nsg
+    Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -NSGName $config.sre.webapps.nsg -VmResourceGroupName $config.sre.webapps.rg -NsgResourceGroupName $config.sre.network.vnet.rg
     Enable-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
     $null = Remove-AzNetworkSecurityRuleConfig -Name "TmpAllowOutboundInternetGitlab" -NetworkSecurityGroup $nsgWebapps
@@ -152,7 +153,7 @@ try {
     Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.hackmd.ip)..."  # Note that this has no effect at present
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps -Name "TmpAllowOutboundInternetHackMD" -SourceAddressPrefix $config.sre.webapps.hackmd.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @hackmdDeploymentParams @commonDeploymentParams
-    Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -NSGName $config.sre.webapps.nsg
+    Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -NSGName $config.sre.webapps.nsg -VmResourceGroupName $config.sre.webapps.rg -NsgResourceGroupName $config.sre.network.vnet.rg
     Enable-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
     $null = Remove-AzNetworkSecurityRuleConfig -Name "TmpAllowOutboundInternetHackMD" -NetworkSecurityGroup $nsgWebapps
@@ -182,13 +183,13 @@ $gitlabReviewCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init
     Replace('<gitlab-review-rb-pw>', $ldapSearchUserPassword).
     Replace('<gitlab-review-rb-base>', $config.shm.domain.userOuPath).
     Replace('<gitlab-review-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.reviewUsers.name),$($config.shm.domain.securityOuPath)))").
-    Replace('<gitlab-review-ip>', $config.sre.webapps.gitlabreview.ip).
-    Replace('<gitlab-review-hostname>', $config.sre.webapps.gitlabreview.hostname).
-    Replace('<gitlab-review-fqdn>', "$($config.sre.webapps.gitlabreview.hostname).$($config.sre.domain.fqdn)").
-    Replace('<gitlab-review-root-password>', $gitlabReviewRootPassword).
+    Replace('<gitlab-review-ip>', $config.sre.webapps.gitlabReview.ip).
+    Replace('<gitlab-review-hostname>', $config.sre.webapps.gitlabReview.hostname).
+    Replace('<gitlab-review-fqdn>', "$($config.sre.webapps.gitlabReview.hostname).$($config.sre.domain.fqdn)").
+    Replace('<gitlab-review-root-password>', $gitlabReviewUserRootPassword).
     Replace('<gitlab-review-login-domain>', $config.shm.domain.fqdn).
-    Replace('<gitlab-review-username>', $gitlabReviewUsername).
-    Replace('<gitlab-review-password>', $gitlabReviewPassword).
+    Replace('<gitlab-review-username>', $gitlabReviewUserIngressUsername).
+    Replace('<gitlab-review-password>', $gitlabReviewUserIngressPassword).
     Replace('<gitlab-review-api-token>', $gitlabReviewAPIToken)
 # Insert SSH keys and scripts into cloud init template, maintaining indentation
 $indent = "      "
@@ -208,17 +209,17 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
 $gitlabReviewDeploymentParams = @{
     AdminPassword = $gitlabReviewAdminPassword
     CloudInitYaml = $gitlabReviewCloudInit
-    Name = $config.sre.webapps.gitlabreview.vmName
-    PrivateIpAddress = $config.sre.webapps.gitlabreview.ip
-    Size = $config.sre.webapps.gitlabreview.vmSize
+    Name = $config.sre.webapps.gitlabReview.vmName
+    PrivateIpAddress = $config.sre.webapps.gitlabReview.ip
+    Size = $config.sre.webapps.gitlabReview.vmSize
     Subnet = $subnetAirlock
 }
 # Deploy GitLab review VM
 try {
-    Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.gitlabreview.ip)..."
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock -Name "TmpAllowOutboundInternetGitlabReview" -SourceAddressPrefix $config.sre.webapps.gitlabreview.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
+    Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.gitlabReview.ip)..."
+    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock -Name "TmpAllowOutboundInternetGitlabReview" -SourceAddressPrefix $config.sre.webapps.gitlabReview.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @gitlabReviewDeploymentParams @commonDeploymentParams
-    Enable-AzVM -Name $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg
+    Enable-AzVM -Name $config.sre.webapps.gitlabReview.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
     $null = Remove-AzNetworkSecurityRuleConfig -Name "TmpAllowOutboundInternetGitlabReview" -NetworkSecurityGroup $nsgAirlock
 }
