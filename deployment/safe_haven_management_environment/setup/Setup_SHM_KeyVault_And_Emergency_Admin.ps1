@@ -42,7 +42,7 @@ if ($?) {
 }
 
 # :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "AAD emergency administrator account password exists"
 } else {
@@ -56,14 +56,6 @@ try {
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
-}
-# :: AAD admin details
-try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName
-    Add-LogMessage -Level Success "Ensured that AAD admin details exist"
-} catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that AAD admin details exist!"
 }
 # :: VM admin passwords
 try {

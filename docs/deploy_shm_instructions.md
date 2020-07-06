@@ -108,7 +108,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ### Add the SHM domain to the new AAD
 1. Navigate to the AAD you have created within the Azure portal. You can do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of `Directory + Subscription` panel that then displays.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 2. If required, click the "three lines" menu in the top left corner and select `Azure Active Directory`
 3. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
@@ -326,7 +326,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the RDS VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- Deploy and configure the domqain controller (DC) VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around one hour** to run.
 - Once the script exits successfully you should see the following resource groups under the SHM subscription:
   <p align="center">
@@ -407,7 +407,7 @@ rather than simply `<admin username>`)
         - On the `AD forest account` pop-up:
             - Select `Use existing AD account`
             - Enter the details for the `localadsync` user.
-                - Username: `localadsync@<SHM domain>` (e.g. localadsync)
+                - Username: `<SHM ID>localadsync@<SHM domain>` (e.g. localadsync)
                 - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
             - Click `OK`
             - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
