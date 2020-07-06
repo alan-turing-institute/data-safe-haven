@@ -1,6 +1,6 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId,
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId,
     [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
     [string]$emailAddress = "dsgbuild@turing.ac.uk",
     [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
@@ -27,13 +27,13 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
 # Get config and original context
 # -------------------------------
-$config = Get-SreConfig $sreId
+$config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 
 
 # Set common variables
 # --------------------
-$keyVaultName = $config.sre.keyVault.Name
+$keyVaultName = $config.sre.keyVault.name
 $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
@@ -59,7 +59,7 @@ if ($null -eq $kvCertificate) {
     }
     if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyVaultName'..."
-        $_ = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
+        $null = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
         $requestCertificate = $true
     }
 }
@@ -98,7 +98,7 @@ if ($requestCertificate) {
     # ------------------------------
     $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName
     $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
-    $_ = Set-AzContext -Subscription $config.sre.subscriptionName
+    $null = Set-AzContext -Subscription $config.sre.subscriptionName
 
     # Test DNS record creation
     # ------------------------
@@ -106,7 +106,7 @@ if ($requestCertificate) {
     $testDomain = "dnstest.$($baseFqdn)"
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
-        AZAccessToken = $token
+        AZAccessToken    = $token
     }
     Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
     Publish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
@@ -186,7 +186,7 @@ if ($doInstall) {
     $secretURL = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $certificateName).Id
     $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-    $_ = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
+    $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
     if ($?) {
         Add-LogMessage -Level Success "Adding certificate succeeded"
     } else {
@@ -198,8 +198,8 @@ if ($doInstall) {
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
-        rdsFqdn = "`"$rdsFqdn`""
-        certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
+        rdsFqdn         = "`"$rdsFqdn`""
+        certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
         remoteDirectory = "`"$remoteDirectory`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
@@ -209,4 +209,4 @@ if ($doInstall) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

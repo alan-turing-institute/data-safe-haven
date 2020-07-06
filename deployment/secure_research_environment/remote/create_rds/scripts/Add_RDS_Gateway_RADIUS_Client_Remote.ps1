@@ -5,55 +5,55 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  $rdsGatewayIp,
-  $rdsGatewayFqdn,
-  $npsSecret,
-  $sreId
+    $rdsGatewayIp,
+    $rdsGatewayFqdn,
+    $npsSecret,
+    $sreId
 )
 
 
 # Ensure that RADIUS client is registered
 # ---------------------------------------
-Write-Host "Ensuring that RADIUS client '$rdsGatewayFqdn' is registered..."
-if (Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}) {
-    Write-Host " [o] RADIUS client '$rdsGatewayFqdn' already exists"
-    Write-Host "Updating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'..."
-    $_ = Set-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+Write-Output "Ensuring that RADIUS client '$rdsGatewayFqdn' is registered..."
+if (Get-NpsRadiusClient | Where-Object { $_.Name -eq "$rdsGatewayFqdn" }) {
+    Write-Output " [o] RADIUS client '$rdsGatewayFqdn' already exists"
+    Write-Output "Updating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'..."
+    $null = Set-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Successfully updated RADIUS client"
+        Write-Output " [o] Successfully updated RADIUS client"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to update RADIUS client!"
+        Write-Output " [x] Failed to update RADIUS client!"
     }
 } else {
-    Write-Host "Creating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'..."
-    $_ = New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+    Write-Output "Creating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'..."
+    $null = New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Successfully created RADIUS client"
+        Write-Output " [o] Successfully created RADIUS client"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to create RADIUS client!"
+        Write-Output " [x] Failed to create RADIUS client!"
     }
 }
 
 
 # Add RDS gateway inbound rule
 # ----------------------------
-Write-Host "Adding RDS gateway inbound rule..."
-$ruleName = "SRE $sreId RDS Gateway RADIUS inbound ($rdsGatewayIp)"
-if (Get-NetFirewallRule | Where-Object {$_.DisplayName -eq "$ruleName"}) {
-    Write-Host " [o] Inbound RADIUS firewall rule '$ruleName' already exists"
-    Write-Host "Updating '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
-    $_ = Set-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645","1646","1812","1813" -Profile Domain -Enabled True
+Write-Output "Adding RDS gateway inbound rule..."
+$ruleName = "SRE $($sreId.ToUpper()) RDS Gateway RADIUS inbound ($rdsGatewayIp)"
+if (Get-NetFirewallRule | Where-Object { $_.DisplayName -eq "$ruleName" }) {
+    Write-Output " [o] Inbound RADIUS firewall rule '$ruleName' already exists"
+    Write-Output "Updating '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
+    $null = Set-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645", "1646", "1812", "1813" -Profile Domain -Enabled True
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Successfully updated RDS gateway inbound rule"
+        Write-Output " [o] Successfully updated RDS gateway inbound rule"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to update RDS gateway inbound rule!"
+        Write-Output " [x] Failed to update RDS gateway inbound rule!"
     }
 } else {
-    Write-Host "Adding '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
-    $_ = New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645","1646","1812","1813" -Profile Domain -Enabled True
+    Write-Output "Adding '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
+    $null = New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645", "1646", "1812", "1813" -Profile Domain -Enabled True
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Successfully added RDS gateway inbound rule"
+        Write-Output " [o] Successfully added RDS gateway inbound rule"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to add RDS gateway inbound rule!"
+        Write-Output " [x] Failed to add RDS gateway inbound rule!"
     }
 }

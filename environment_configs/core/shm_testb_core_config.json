@@ -1,10 +1,13 @@
 {
     "subscriptionName": "Safe Haven Management Test B",
-    "domainSubscriptionName": "Turing Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "testb.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENTESTB",
     "shmId": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
@@ -13,6 +16,5 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth",
-    "ipPrefix": "10.0.0"
+    "location": "uksouth"
 }

@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing DSG - 9 - WWF",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "9",
     "shmId": "turing1",
     "tier": "2",

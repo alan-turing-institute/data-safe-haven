@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for VM Administrator_Password"
-            }
-        },
         "Administrator_User": {
             "type": "string",
             "metadata": {
@@ -20,13 +14,25 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "DC_Administrator_Password": {
+        "Domain_Join_Password_Gateway": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for DC Administrator Password"
             }
         },
-        "DC_Administrator_User": {
+        "Domain_Join_Password_Session_Hosts": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "Domain_Join_User_Gateway": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
+        "Domain_Join_User_Session_Hosts": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC Administrator"
@@ -44,6 +50,36 @@
                 "description": "Enter NSG Gateway Name"
             }
         },
+        "OU_Path_Gateway": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for gateway VMs"
+            }
+        },
+        "OU_Path_Session_Hosts": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for session host VMs"
+            }
+        },
+        "RDS_Gateway_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
+        "RDS_Gateway_Data1_Disk_Size_GB": {
+            "type": "int"
+        },
+        "RDS_Gateway_Data1_Disk_Type": {
+            "type": "string"
+        },
+        "RDS_Gateway_Data2_Disk_Size_GB": {
+            "type": "int"
+        },
+        "RDS_Gateway_Data2_Disk_Type": {
+            "type": "string"
+        },
         "RDS_Gateway_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.250",
@@ -56,6 +92,12 @@
             "metadata": {
                 "description": "Name of the RDS gateway VM"
             }
+        },
+        "RDS_Gateway_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "RDS_Gateway_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Gateway_VM_Size": {
             "type": "string",
@@ -76,6 +118,12 @@
                 "description": "Select size of RDS Gateway VM"
             }
         },
+        "RDS_Session_Host_Apps_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
         "RDS_Session_Host_Apps_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.249",
@@ -88,6 +136,12 @@
             "metadata": {
                 "description": "Name of the RDS apps session host VM"
             }
+        },
+        "RDS_Session_Host_Apps_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "RDS_Session_Host_Apps_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Session_Host_Apps_VM_Size": {
             "type": "string",
@@ -108,6 +162,13 @@
                 "description": "Select size of RDS_Session_Host_Apps VM"
             }
         },
+        "RDS_Session_Host_Desktop_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
+
         "RDS_Session_Host_Desktop_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.248",
@@ -120,6 +181,12 @@
             "metadata": {
                 "description": "Name of the RDS desktop session host VM"
             }
+        },
+        "RDS_Session_Host_Desktop_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "RDS_Session_Host_Desktop_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Session_Host_Desktop_VM_Size": {
             "type": "string",
@@ -198,9 +265,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Gateway_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Gateway_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [{
                             "lun": 0,
@@ -209,9 +276,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('RDS_Gateway_Data1_Disk_Type')]"
                             },
-                            "diskSizeGB": 1023
+                            "diskSizeGB": "[parameters('RDS_Gateway_Data1_Disk_Size_GB')]"
                         },
                         {
                             "lun": 1,
@@ -220,16 +287,16 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('RDS_Gateway_Data2_Disk_Type')]"
                             },
-                            "diskSizeGB": 1023
+                            "diskSizeGB": "[parameters('RDS_Gateway_Data2_Disk_Size_GB')]"
                         }
                     ]
                 },
                 "osProfile": {
                     "computerName": "[parameters('RDS_Gateway_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Gateway_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -280,16 +347,16 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Session_Host_Apps_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Session_Host_Apps_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
                     "computerName": "[parameters('RDS_Session_Host_Apps_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Session_Host_Apps_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -340,16 +407,16 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
                     "computerName": "[parameters('RDS_Session_Host_Desktop_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Session_Host_Desktop_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -556,12 +623,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path_Gateway')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Gateway'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Gateway')]"
                 }
             }
         },
@@ -581,12 +649,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
                 }
             }
         },
@@ -606,12 +675,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
                 }
             }
         }

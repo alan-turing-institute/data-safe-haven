@@ -5,16 +5,14 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$shmLdapUserSgName,
     [String]$shmSystemAdministratorSgName,
     [String]$groupsB64,
-    [String]$ldapUsersB64,
-    [String]$researchUsersB64,
     [String]$serviceUsersB64,
-    [String]$researchUserOuPath,
     [String]$securityOuPath,
     [String]$serviceOuPath
 )
+# [String]$shmLdapUserSgName,
+# [String]$computerManagersB64,
 
 
 # Create a new security group associated with this SRE
@@ -35,7 +33,7 @@ function New-SreGroup {
     if (Get-ADGroup -Filter "Name -eq '$Name'") {
         Write-Output " [o] Group '$Name' already exists"
     } else {
-        Write-Output " [ ] Creating group '$Name' in OU '$serviceOuPath'..."
+        Write-Output " [ ] Creating group '$Name' in OU '$path'..."
         $group = (New-ADGroup -Name "$Name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
         if ($?) {
             Write-Output " [o] Group '$Name' created"
@@ -109,12 +107,10 @@ function Add-SreUserToGroup {
 
 # Unserialise JSON and read into PSCustomObject
 $groups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
-$ldapUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($ldapUsersB64)) | ConvertFrom-Json
-$researchUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($researchUsersB64)) | ConvertFrom-Json
+# $computerManagers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($computerManagersB64)) | ConvertFrom-Json
 $serviceUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
 
 # Create SRE Security Groups
-$researchUserSgName = $null
 foreach ($group in $groups.PSObject.Members) {
     if ($group.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
     New-SreGroup -Name $group.Value.name -description $group.Value.description -Path $securityOuPath -GroupScope Global -GroupCategory Security
@@ -123,22 +119,15 @@ foreach ($group in $groups.PSObject.Members) {
 # Add SHM sysadmins group to the SRE sysadmins group
 Add-SreUserToGroup -SamAccountName "$shmSystemAdministratorSgName" -GroupName $groups.systemAdministrators.name
 
-# Create SRE LDAP users and add them to the LDAP users group
-foreach ($user in $ldapUsers.PSObject.Members) {
-    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
-    Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $shmLdapUserSgName
-}
+# # Create SRE LDAP users and add them to the LDAP users group
+# foreach ($user in $computerManagers.PSObject.Members) {
+#     if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+#     New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+#     Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $shmLdapUserSgName
+# }
 
 # Create SRE service accounts
 foreach ($user in $serviceUsers.PSObject.Members) {
     if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
     New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
-}
-
-# Create SRE research users and add them to the researchers group
-foreach ($user in $researchUsers.PSObject.Members) {
-    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $researchUserOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
-    Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $groups.researchUsers.name
 }

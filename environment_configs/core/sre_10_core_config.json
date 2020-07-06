@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing DSG - 10 - DST1LBField",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "10",
     "shmId": "turing1",
     "tier": "1",

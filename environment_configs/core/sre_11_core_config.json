@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing DSG - 11 - DTSL2Anthrax",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "11",
     "shmId": "turing1",
     "tier": "2",

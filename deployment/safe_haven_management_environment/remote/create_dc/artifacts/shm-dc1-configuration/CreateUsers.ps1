@@ -11,11 +11,11 @@ Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
 Import-Csv $userFilePath | ForEach-Object {
-    Write-Host $_
+    Write-Output $_
 
     $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
     $DisplayName = "$($_.GivenName) $($_.Surname)"
-    Write-Host "UserPrincipalName = " $UserPrincipalName
+    Write-Output "UserPrincipalName = " $UserPrincipalName
     $password = [System.Web.Security.Membership]::GeneratePassword(12, 3)
     $props = @{
         SamAccountName       = $_.SamAccountName
@@ -35,13 +35,13 @@ Import-Csv $userFilePath | ForEach-Object {
         Country              = "GB"
     }
 
-    Write-Host @props
+    Write-Output @props
 
     New-ADUser @props -PassThru
 
     if ($_.GroupName) {
         foreach ($group in $($_.GroupName.Split("|"))) {
-            Write-Host "Adding user to group '$group'"
+            Write-Output "Adding user to group '$group'"
             Add-ADGroupMember "$group" $props.SamAccountName
         }
     }
