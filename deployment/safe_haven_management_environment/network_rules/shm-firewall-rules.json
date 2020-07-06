@@ -102,9 +102,7 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.passwordreset.microsoftonline.com",
-                            "ssprdedicatedsbprodncu.servicebus.windows.net",
-                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                            "*.servicebus.windows.net"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
@@ -117,16 +115,11 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "adhsprodncuaadsynciadata.blob.core.windows.net",
-                            "adhsprodneuaadsynciadata.blob.core.windows.net",
-                            "adhsprodwcuaadsynciadata.blob.core.windows.net",
-                            "adhsprodweuaadsynciadata.blob.core.windows.net",
-                            "adhsprodwusaadsynciadata.blob.core.windows.net",
-                            "adhsprodncuehsyncia.servicebus.windows.net",
-                            "adhsprodneuehsyncia.servicebus.windows.net",
-                            "adhsprodwcuehsyncia.servicebus.windows.net",
-                            "adhsprodweuehsyncia.servicebus.windows.net",
-                            "adhsprodwusehsyncia.servicebus.windows.net"
+                            "*.blob.core.windows.net",
+                            "*.servicebus.windows.net",
+                            "*.events.data.microsoft.com",
+                            "*.aadconnecthealth.azure.com",
+                            "*.adhybridhealth.azure.com"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
@@ -147,7 +140,7 @@
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
                         ]
-                    },
+                    }
                 ]
             }
         }
