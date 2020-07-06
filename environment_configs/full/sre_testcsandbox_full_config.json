@@ -467,7 +467,7 @@
         "adminUsername": "sre-sandbox-vm-admin-username",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-nps-secret"
+        "npsSecret": "sre-sandbox-nps-secret",
         "storageIngressSAS": "sre-sandbox-storage-ingress-sas",
       }
     },
