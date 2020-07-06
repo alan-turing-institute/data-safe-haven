@@ -32,6 +32,16 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecu
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+
+# :: AAD Global Administrator username
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "admin.emergency.access"
+if ($?) {
+    Add-LogMessage -Level Success "AAD emergency administrator account username exists"
+} else {
+    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator username!"
+}
+Exit 1
+
 # :: AAD Global Administrator password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
 if ($?) {
@@ -76,7 +86,7 @@ if ($?) {
 # Ensure that Emergency Admin user exists
 # ---------------------------------------
 # Set user properties
-$mailNickname = "admin.emergency.access"
+$mailNickname = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername
 $upn = "$mailNickname@$($config.domain.fqdn)"
 $displayName = "Admin - EMERGENCY ACCESS"
 $passwordProfile = New-Object -TypeName Microsoft.Open.AzureAD.Model.PasswordProfile

@@ -203,6 +203,7 @@ function Get-ShmFullConfig {
         name = "kv-shm-$($shm.id)".ToLower() | TrimToLength 24
     }
     $shm.keyVault.secretNames = [ordered]@{
+        aadEmergencyAdminUsername = "shm-$($shm.id)-aad-emergency-admin-username".ToLower()
         aadEmergencyAdminPassword = "shm-$($shm.id)-aad-emergency-admin-password".ToLower()
         buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
         buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
