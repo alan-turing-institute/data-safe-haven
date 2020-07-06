@@ -289,11 +289,20 @@ runcmd:
   - echo "Initial conda environments:"
   - conda env list
 
+  # Install pyenv globally
+  - export PYENV_ROOT="/opt/pyenv"
+  - mkdir -p $PYENV_ROOT
+  - curl https://pyenv.run | bash
+  - ls -alh $PYENV_ROOT
+  - echo "PATH old $PATH"
+  - export PATH="$PYENV_ROOT/bin:$PATH"
+  - echo "PATH new $PATH"
+
   # Create or update conda environments - approximately 14 hrs: Python 2.7 (5hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
   - <Python package list>
-  - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
-  - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
-  - /installation/create_or_update_conda_python_environment.sh py37 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
+  # - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  # - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
+  # - /installation/create_or_update_conda_python_environment.sh py37 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
   # [30/04/2020] All versions of torchvision available for Python 3.X are currently broken by a Pillow update - this is the required fix
   - sed -i "s/PILLOW_VERSION/__version__/g" /opt/anaconda/envs/py36/lib/python3.6/site-packages/torchvision/transforms/functional.py
   - sed -i "s/PILLOW_VERSION/__version__/g" /opt/anaconda/envs/py37/lib/python3.7/site-packages/torchvision/transforms/functional.py
