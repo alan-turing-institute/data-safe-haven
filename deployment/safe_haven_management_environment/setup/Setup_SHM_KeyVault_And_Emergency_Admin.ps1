@@ -32,7 +32,6 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdmi
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
-<<<<<<< HEAD:deployment/safe_haven_management_environment/setup/Setup_SHM_KeyVault_And_Emergency_Admin.ps1
 
 # :: AAD Global Administrator username
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "admin.emergency.access"
@@ -49,8 +48,6 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
 }
-=======
->>>>>>> master:deployment/safe_haven_management_environment/setup/Setup_SHM_KeyVault.ps1
 
 # :: Admin usernames
 try {
