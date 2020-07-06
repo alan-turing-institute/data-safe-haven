@@ -26,7 +26,7 @@ param(
 $blobNames = $pipeSeparatedBlobNames.Split("|")
 
 # Clear any previously downloaded artifacts
-Write-Host "Clearing all pre-existing files and folders from '$remoteDir'"
+Write-Output "Clearing all pre-existing files and folders from '$remoteDir'"
 if (Test-Path -Path $remoteDir) {
     Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
 } else {
@@ -35,37 +35,37 @@ if (Test-Path -Path $remoteDir) {
 
 # Download artifacts
 $numBlobs = $blobNames.length
-Write-Host "Downloading $numBlobs files to '$remoteDir'..."
+Write-Output "Downloading $numBlobs files to '$remoteDir'..."
 foreach ($blobName in $blobNames) {
     $fileName = Split-Path -Leaf $blobName
     $fileDirRel = Split-Path -Parent $blobName
     $fileDirFull = Join-Path $remoteDir $fileDirRel
     if (-not (Test-Path -Path $fileDirFull)) {
-        $_ = New-Item -ItemType directory -Path $fileDirFull
+        $null = New-Item -ItemType Directory -Path $fileDirFull
     }
     $filePath = Join-Path $fileDirFull $fileName
     $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken"
-    $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
+    $null = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
 }
 
 # Download AzureADConnect
-Write-Host "Downloading AzureADConnect to '$remoteDir'..."
+Write-Output "Downloading AzureADConnect to '$remoteDir'..."
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $remoteDir\AzureADConnect.msi;
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Completed"
 } else {
-    Write-Host " [x] Failed to download AzureADConnect"
+    Write-Output " [x] Failed to download AzureADConnect"
 }
 
 # Extract GPOs
-Write-Host "Extracting zip files..."
+Write-Output "Extracting zip files..."
 Expand-Archive $remoteDir\GPOs.zip -DestinationPath $remoteDir -Force
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Completed"
 } else {
-    Write-Host " [x] Failed to extract GPO zip files"
+    Write-Output " [x] Failed to extract GPO zip files"
 }
 
 # List items
-Write-Host "Contents of '$remoteDir' are:"
-Write-Host (Get-ChildItem -Path $remoteDir)
+Write-Output "Contents of '$remoteDir' are:"
+Write-Output (Get-ChildItem -Path $remoteDir)

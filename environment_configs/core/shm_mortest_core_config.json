@@ -1,7 +1,8 @@
 {
     "subscriptionName": "Martin OReilly",
-    "domainSubscriptionName": "[Prod] Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "mortest.dsgroupdev.co.uk",
     "netbiosName": "MORTEST",
@@ -13,6 +14,5 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "centralus",
-    "ipPrefix": "10.0.0"
+    "location": "centralus"
 }

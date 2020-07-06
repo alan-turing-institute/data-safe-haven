@@ -1,6 +1,6 @@
 #!/bin/sh
 # Take packages which are alphabetically first and last on our whitelist
-packages=("abind" "zoo")
+packages=("abn" "yum")
 
 # Create local user library directory (not present by default)
 Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, recursive = TRUE)"

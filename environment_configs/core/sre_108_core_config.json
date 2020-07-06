@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 108 - WMCA",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "108",
     "shmId": "turing1",
     "tier": "2",

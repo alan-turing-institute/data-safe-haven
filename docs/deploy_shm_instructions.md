@@ -54,12 +54,12 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
     "domain": "The fully qualified domain name for the management environment.",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or fewer.",
-    "shmId": "A short ID to identify the management environment.",
+    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name.",
     "organisation": {
         "name": "Organisation name.",
@@ -67,10 +67,11 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed.",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
+    "location": "The Azure location in which the management environment VMs are deployed."
 }
 ```
+
+> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ## 3. Configure DNS for the custom domain
@@ -107,8 +108,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ### Add the SHM domain to the new AAD
 1. Navigate to the AAD you have created within the Azure portal. You can do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of the "Directory + Subscription" panel that then displays.
-2. If required, click the "three lines" menu in the top left corner and select "Azure Active Directory"
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of `Directory + Subscription` panel that then displays.
+2. If required, click the "three lines" menu in the top left corner and select `Azure Active Directory`
 3. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
       <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
@@ -116,15 +117,16 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 4. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-    - **IMPORTANT** Ensure you are authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
-    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
+    - Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+      - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+      - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
     - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 
 
 ## 5. Deploy key vault for SHM secrets and create emergency admin account
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - **IMPORTANT** Ensure you are also authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
 - Deploy and configure the SHM key vault by running `./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
@@ -332,7 +334,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
   </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
+1. Navigate to the SHM key vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 3. Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
@@ -473,6 +475,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 3. Go to the Azure Active Directory in `portal.azure.com`
     - Click `Users > All users` and confirm that the new user is shown in the user list.
     - It may take a few minutes for the synchronisation to fully propagate in Azure.
+
 
 ### Configure AAD side of AD connect
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.

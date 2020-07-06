@@ -866,10 +866,11 @@ The data can be read into a dataframe for local analysis.
 import pyodbc
 import pandas as pd
 
-server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
+server = "MSSQL-SANDBOX.apr20.turingsafehaven.ac.uk"
+port = 14330
 db_name = "master"
 
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
 
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
@@ -880,11 +881,12 @@ print(df.head(3))
 import psycopg2
 import pandas as pd
 
-server = "PGS-ANA-SANDBOX.apr20.turingsafehaven.ac.uk"
+server = "PSTGRS-SANDBOX.apr20.turingsafehaven.ac.uk"
+port = 5432
 db_name = "postgres"
 
-cnxn = psycopg2.connect(host=server, port="5432", database=db_name)
-df = pd.read_sql("SELECT * FROM public.example;", cnxn)
+cnxn = psycopg2.connect(host=server, port=port, database=db_name)
+df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
 ```
 
@@ -901,7 +903,7 @@ library(odbc)
 cnxn <- DBI::dbConnect(
     odbc::odbc(),
     Driver = "ODBC Driver 17 for SQL Server",
-    Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330",
+    Server = "MSSQL-SANDBOX.apr20.turingsafehaven.ac.uk,14330",
     Database = "master",
     Trusted_Connection = "yes"
 )
@@ -919,13 +921,13 @@ library(DBI)
 # Connect to the databases
 cnxn <- DBI::dbConnect(
     RPostgres::Postgres(),
-    host = "PGS-ANA-SANDBOX.testa.dsgroupdev.co.uk",
+    host = "PSTGRS-SANDBOX.testa.dsgroupdev.co.uk",
     port = 5432,
     dbname = "postgres"
 )
 
 # Run a query and save the output into a dataframe
-df <- dbGetQuery(cnxn, "SELECT * FROM public.example;")
+df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
 head(df, 3)
 ```
 

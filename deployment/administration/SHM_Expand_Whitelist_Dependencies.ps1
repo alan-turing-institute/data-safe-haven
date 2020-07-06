@@ -21,7 +21,7 @@ function Test-PackageExistence {
         $ApiKey
     )
     try {
-        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
+        $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
         return $response
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
@@ -51,7 +51,7 @@ function Get-Dependencies {
     try {
         foreach ($version in $Versions) {
             if ($version -NotIn $Cache[$Repository][$Package].Keys) {
-                $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
+                $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
                 $Cache[$Repository][$Package][$version] = @($response.dependencies | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name }) | Sort-Object | Uniq
             }
             $dependencies += $Cache[$Repository][$Package][$version]
@@ -66,7 +66,7 @@ function Get-Dependencies {
 
 # Load appropriate whitelists
 # ---------------------------
-$languageName = @{cran = "r"; pypi = "python"}[$MirrorType]
+$languageName = @{cran = "r"; pypi = "python" }[$MirrorType]
 $coreWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list"
 $fullWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-${languageName}-${MirrorType}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
@@ -152,7 +152,7 @@ $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 
 # Add a log message for any problematic packages
 # ----------------------------------------------
-$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies} | Sort-Object | Uniq
+$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies } | Sort-Object | Uniq
 if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }

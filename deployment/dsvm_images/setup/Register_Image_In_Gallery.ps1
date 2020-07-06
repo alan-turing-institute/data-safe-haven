@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A).")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Specify an existing VM image to add to the gallery.")]
     [string]$imageName,
@@ -18,7 +18,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 
 # Useful constants
@@ -30,27 +30,27 @@ $minorVersion = $config.dsvmImage.gallery.imageMinorVersion
 
 # Ensure that gallery resource group exists
 # -----------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
 
 
 # Ensure that image gallery exists
 # --------------------------------
-$_ = Get-AzGallery -Name $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+$null = Get-AzGallery -Name $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
     Add-LogMessage -Level Info "Creating image gallery $($config.dsvmImage.gallery.sig)..."
-    $_ = New-AzGallery -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
+    $null = New-AzGallery -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
 }
 
 
 # Set up list of image definitions we want to support
 # ---------------------------------------------------
 foreach ($supportedImage in $supportedImages) {
-    $_ = Get-AzGalleryImageDefinition -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Name $supportedImage -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzGalleryImageDefinition -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Name $supportedImage -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "Creating image definition $supportedImage..."
         $offer = ($supportedImage -Split "-")[0]
         $sku = ($supportedImage -Split "-")[1]
-        $_ = New-AzGalleryImageDefinition -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Name $supportedImage -Publisher Turing -Offer $offer -Sku $sku -Location $config.dsvmImage.location -OsState generalized -OsType Linux
+        $null = New-AzGalleryImageDefinition -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Name $supportedImage -Publisher Turing -Offer $offer -Sku $sku -Location $config.dsvmImage.location -OsState generalized -OsType Linux
     }
 }
 
@@ -103,13 +103,13 @@ $targetRegions = @(
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
 Add-LogMessage -Level Info "Please note, this may take about 1 hour to complete"
 $imageVersion = New-AzGalleryImageVersion -GalleryImageDefinitionName $imageDefinition `
-                                          -GalleryImageVersionName "$imageVersion" `
-                                          -GalleryName $config.dsvmImage.gallery.sig `
-                                          -ResourceGroupName $config.dsvmImage.gallery.rg `
-                                          -Location $config.dsvmImage.location `
-                                          -TargetRegion $targetRegions  `
-                                          -Source $image.Id.ToString() `
-                                          -AsJob
+    -GalleryImageVersionName "$imageVersion" `
+    -GalleryName $config.dsvmImage.gallery.sig `
+    -ResourceGroupName $config.dsvmImage.gallery.rg `
+    -Location $config.dsvmImage.location `
+    -TargetRegion $targetRegions  `
+    -Source $image.Id.ToString() `
+    -AsJob
 $job = Get-Job -Command New-AzGalleryImageVersion | Sort-Object { $_.PSBeginTime } -Descending | Select-Object -First 1
 while ($job.State -ne "Completed") {
     $progress = [math]::min(100, $progress + 1)
@@ -129,4 +129,4 @@ foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.ds
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

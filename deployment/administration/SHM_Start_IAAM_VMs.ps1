@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Start/restart all IAAM VMs
@@ -29,4 +29,4 @@ Enable-AzVM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

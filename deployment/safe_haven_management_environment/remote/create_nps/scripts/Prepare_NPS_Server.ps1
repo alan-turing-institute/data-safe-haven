@@ -10,76 +10,77 @@ param(
     [string]$remoteDir
 )
 
+
 # Clear any previously downloaded artifacts
 # -----------------------------------------
-Write-Host "Clearing all pre-existing files and folders from '$remoteDir'"
+Write-Output "Clearing all pre-existing files and folders from '$remoteDir'"
 if (Test-Path -Path $remoteDir) {
-    Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
+    $null = Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
 } else {
-    New-Item -ItemType directory -Path $remoteDir
+    $null = New-Item -ItemType directory -Path $remoteDir
 }
 
 
 # Install NPAS
 # ------------
-Write-Host "Installing NPAS feature..."
+Write-Output "Installing NPAS feature..."
 Install-WindowsFeature NPAS -IncludeManagementTools
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Successfully installed NPAS"
 } else {
-    Write-Host " [x] Failed"
+    Write-Output " [x] Failed to install NPAS"
 }
+
 
 # Set SQL Firewall rules
 # ----------------------
-Write-Host "Setting SQL Firewall rules..."
-New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
+Write-Output "Setting SQL Firewall rules..."
+$null = New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 if ($?) {
-    Write-Host " [o] Set inbound rule"
+    Write-Output " [o] Set inbound rule"
 } else {
-    Write-Host " [x] Failed to set inbound rule"
+    Write-Output " [x] Failed to set inbound rule"
 }
-New-NetFirewallRule -DisplayName "SQL" -Direction Outbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
+$null = New-NetFirewallRule -DisplayName "SQL" -Direction Outbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 if ($?) {
-    Write-Host " [o] Set outbound rule"
+    Write-Output " [o] Set outbound rule"
 } else {
-    Write-Host " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to set outbound rule"
 }
+
 
 # Format the data drives
 # ----------------------
-Write-Host "Formatting data drive..."
+Write-Output "Formatting data drive..."
 Stop-Service ShellHWDetection
 $CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq 'raw' } | Sort -Property Number
 foreach ($RawDisk in $CandidateRawDisks) {
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -EQ $RawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
-    $Disk = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
+    $null = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
     $Partition = New-Partition -DiskNumber $RawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $Volume = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "SQLDATA" -Confirm:$false
+    $null = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "SQLDATA" -Confirm:$false
 }
 Start-Service ShellHWDetection
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Completed"
 } else {
-    Write-Host " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to set outbound rule"
 }
 
 
 # Download and install the NPS Extension
 # --------------------------------------
-Write-Host "Downloading NPS extension to '$remoteDir'..."
-$npsExtnPath = (Join-Path $remoteDir "NpsExtnForAzureMfaInstaller.exe")
+Write-Output "Downloading NPS extension to '$remoteDir'..."
+$npsExtnPath = Join-Path $remoteDir "NpsExtnForAzureMfaInstaller.exe"
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe -OutFile $npsExtnPath
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Successfully downloaded NPS extension"
 } else {
-    Write-Host " [x] Failed to download NPS extension"
+    Write-Output " [x] Failed to download NPS extension"
 }
-Write-Host "Installing NPS extension..."
+Write-Output "Installing NPS extension..."
 Start-Process $npsExtnPath -ArgumentList '/install','/quiet'
-
-
-# # Import the NPS configuration
-# # ----------------------------
-# Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml")
-# Invoke-Expression 'cmd /c start powershell -Command { Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml") }'
+if ($?) {
+    Write-Output " [o] Successfully installed NPS extension"
+} else {
+    Write-Output " [x] Failed to install NPS extension"
+}
