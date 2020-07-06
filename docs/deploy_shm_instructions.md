@@ -444,15 +444,15 @@ rather than simply `<admin username>`)
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
 1. Update the AAD rules
-  - Open Powershell as an administrator
-  - Run `C:\Installation\UpdateAADSyncRule.ps1`
+    - Open Powershell as an administrator
+    - Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
 ### Validation of AD sync
 
 1. Generating user CSV file
-- Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
-We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
+    - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
+    We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
     - Add the required details for each user
         - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
         - `GivenName`: User's first / given name
@@ -475,15 +475,16 @@ We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
     - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
 ### Configure AAD side of AD connect
-1. Go to the Azure Active Directory in `portal.azure.com`
-    - Select `Manage > Password reset` from the left hand menu
-2. Select `On-premises integration` from the left hand side bar
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+3. Select `Password reset` from the left hand menu
+4. Select `On-premises integration` from the left hand side bar
     - Ensure `Write back passwords to your on-premises directory` is set to yes.
       <p align="center">
           <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
       </p>
     - If you changed this setting, click the `Save` icon
-3. Select `Properties` from the left hand side bar
+5. Select `Properties` from the left hand side bar
     - Make sure that `Self service password reset enabled` is set to `All`
       <p align="center">
           <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">

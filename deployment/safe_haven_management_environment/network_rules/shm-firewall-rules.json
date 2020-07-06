@@ -36,7 +36,6 @@
                             "AzureActiveDirectory"
                         ],
                         "destinationPorts": [
-                            "80",
                             "443"
                         ]
                     }
@@ -65,6 +64,23 @@
                         ]
                     },
                     {
+                        "name": "AzureADLogin",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "login.microsoftonline.com",
+                            "secure.aadcdn.microsoftonline-p.com",
+                            "login.windows.net",
+                            "aadcdn.msftauth.net",
+                            "login.live.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AzureMFA",
                         "protocols": [
                             "https:443"
@@ -82,8 +98,7 @@
                     {
                         "name": "ADConnectPasswordReset",
                         "protocols": [
-                            "https:443",
-                            "http:80"
+                            "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
@@ -98,8 +113,7 @@
                     {
                         "name": "ADConnectHealthCheck",
                         "protocols": [
-                            "https:443",
-                            "http:80"
+                            "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
@@ -107,12 +121,33 @@
                             "adhsprodneuaadsynciadata.blob.core.windows.net",
                             "adhsprodwcuaadsynciadata.blob.core.windows.net",
                             "adhsprodweuaadsynciadata.blob.core.windows.net",
-                            "adhsprodwusaadsynciadata.blob.core.windows.net"
+                            "adhsprodwusaadsynciadata.blob.core.windows.net",
+                            "adhsprodncuehsyncia.servicebus.windows.net",
+                            "adhsprodneuehsyncia.servicebus.windows.net",
+                            "adhsprodwcuehsyncia.servicebus.windows.net",
+                            "adhsprodweuehsyncia.servicebus.windows.net",
+                            "adhsprodwusehsyncia.servicebus.windows.net"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
                         ]
-                    }
+                    },
+                    {
+                        "name": "ADConnectHealthRegistration",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "management.azure.com",
+                            "*.adhybridhealth.azure.com",
+                            "www.office.com",
+                            "policykeyservice.dc.ad.msft.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
                 ]
             }
         }
