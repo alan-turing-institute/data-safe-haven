@@ -230,7 +230,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
 foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    Clear-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+    $null = Clear-StorageContainerBlobs -Name $containerName -StorageAccount $sreStorageAccount
 }
 
 

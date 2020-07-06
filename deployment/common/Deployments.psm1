@@ -107,31 +107,32 @@ Export-ModuleMember -Function Add-VmToNSG
 
 # Ensure the specified storage container is empty
 # -----------------------------------------------
-function Clear-StorageContainer {
+function Clear-StorageContainerBlobs {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to clear")]
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account where the container exists")]
         $StorageAccount
     )
-    # delete existing blobs in the container
+    # Delete existing blobs in the container
     $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$Name'..."
+    if ($blobs.Length -gt 0) {
+        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs already in container '$Name'..."
         $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $Name -Context $StorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length
+        while ((Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length) {
+            Start-Sleep 5
         }
         if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
+            Add-LogMessage -Level Success "Removing blobs from $Name' succeeded"
         } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
+            Add-LogMessage -Level Fatal "Removing blobs from $Name' failed!"
         }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Container '$Name' was already empty of blobs"
     }
+
 }
-Export-ModuleMember -Function Clear-StorageContainer
+Export-ModuleMember -Function Clear-StorageContainerBlobs
 
 
 # Deploy an ARM template and log the output
