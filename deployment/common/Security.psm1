@@ -82,17 +82,11 @@ Export-ModuleMember -Function New-RandomLetters
 # -----------------------------------------
 function Resolve-KeyVaultSecret {
     param(
-        [string]$VaultName = "",
-        [string]$SecretName = "",
+        [ValidateNotNullOrEmpty()][string]$VaultName,
+        [ValidateNotNullOrEmpty()][string]$SecretName,
         [string]$DefaultValue = "",
         [string]$DefaultLength = 20
     )
-    if (-not $VaultName) {
-        Add-LogMessage -Level Fatal "Vault name must not be empty."
-    }
-    if (-not $SecretName) {
-        Add-LogMessage -Level Fatal "Secret name must not be empty."
-    }
     # Create a new secret if one does not exist in the key vault
     if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
         # Generate a new password if there is no default
@@ -100,7 +94,7 @@ function Resolve-KeyVaultSecret {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $_ = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
+        $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
         if (-not $?) {
             Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
         }

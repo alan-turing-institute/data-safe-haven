@@ -40,7 +40,6 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator username!"
 }
-Exit 1
 
 # :: AAD Global Administrator password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
