@@ -87,6 +87,12 @@ function Resolve-KeyVaultSecret {
         [string]$DefaultValue = "",
         [string]$DefaultLength = 20
     )
+    if (-not $VaultName) {
+        Add-LogMessage -Level Fatal "Vault name must not be empty."
+    }
+    if (-not $SecretName) {
+        Add-LogMessage -Level Fatal "Secret name must not be empty."
+    }
     # Create a new secret if one does not exist in the key vault
     if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
         # Generate a new password if there is no default
@@ -95,6 +101,9 @@ function Resolve-KeyVaultSecret {
         }
         # Store the password in the keyvault
         $_ = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
+        if (-not $?) {
+            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
+        }
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName
