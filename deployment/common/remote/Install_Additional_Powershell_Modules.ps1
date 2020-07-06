@@ -18,22 +18,22 @@ $existingModuleNames = Get-Module -ListAvailable | ForEach-Object { $_.Name }
 # Install additional modules
 # --------------------------
 foreach ($moduleName in $PipeSeparatedModules.Split("|")) {
-    Write-Host "Installing $moduleName..."
+    Write-Output "Installing $moduleName..."
     Install-Module -Name $moduleName -AllowClobber -Force -AcceptLicense 2>&1 3>&1 | Out-Null
     Update-Module -Name $moduleName -Force 2>&1 3>&1 | Out-Null
     $installedModule = Get-Module -ListAvailable -Name $moduleName | Select-Object -First 1
     if ($installedModule) {
-        Write-Host " [o] $moduleName $($installedModule.Version.ToString()) is installed"
+        Write-Output " [o] $moduleName $($installedModule.Version.ToString()) is installed"
     } else {
-        Write-Host " [x] Failed to install $moduleName!"
+        Write-Output " [x] Failed to install $moduleName!"
     }
 }
 
 
 # Report any modules that were installed
 # --------------------------------------
-Write-Host "`nNewly installed modules:"
+Write-Output "`nNewly installed modules:"
 $installedModules = Invoke-Command -ScriptBlock { Get-Module -ListAvailable | Where-Object { $_.Name -NotIn $existingModuleNames } }
 foreach ($module in $installedModules) {
-    Write-Host " ... $($module.Name)"
+    Write-Output " ... $($module.Name)"
 }

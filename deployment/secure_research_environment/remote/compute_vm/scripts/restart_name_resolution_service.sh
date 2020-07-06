@@ -1,5 +1,5 @@
 #!/bin/bash
-# $TEST_HOST must be present as an environment variable
+# $DOMAIN_CONTROLLER must be present as an environment variable
 # $DOMAIN_LOWER must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
@@ -13,7 +13,7 @@ RESOLVE_CONF_TARGET="/run/systemd/resolve/resolv.conf"
 
 # Test nslookup
 test_dnslookup () {
-    local NS_RESULT=$(nslookup $TEST_HOST)
+    local NS_RESULT=$(nslookup $DOMAIN_CONTROLLER)
     local NS_EXIT=$?
 
     echo "NS LOOKUP RESULT:"
@@ -23,7 +23,7 @@ test_dnslookup () {
         echo -e "${BLUE}Name resolution working.${END}"
     else
         echo -e "${RED}Name resolution not working. Testing with systemd${END}"
-        systemd-resolve $TEST_HOST
+        systemd-resolve $DOMAIN_CONTROLLER
     fi
     return $NS_EXIT
 }
@@ -78,7 +78,7 @@ reset_resolv_conf () {
 echo -e "${BLUE}Checking name resolution${END}"
 
 # Check nslookup
-echo "Testing connectivity for '$TEST_HOST'"
+echo "Testing connectivity for '$DOMAIN_CONTROLLER'"
 test_dnslookup
 DNS_STATUS=$?
 

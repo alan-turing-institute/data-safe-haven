@@ -13,13 +13,13 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Ensure that firewall subnet exists
 # ----------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.subnets.firewall.cidr
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -52,10 +52,10 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 # --------------------------------
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
-             Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-             Replace("<shm-id>", $config.id).
-             Replace("<subnet-identity-cidr>", $config.network.subnets.identity.cidr).
-             Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
+    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
+    Replace("<shm-id>", $config.id).
+    Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
+    Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
 
 
 # Add routes to the route table
@@ -71,7 +71,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the VPN gateway to the firewall route table
 # ---------------------------------------------------------------------
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.subnets.identity.name -AddressPrefix $config.network.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
+$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.identity.name -AddressPrefix $config.network.vnet.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
 
 
 # Application rules
@@ -83,7 +83,7 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
         if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
         if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
-        $_ = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+        $null = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
     }
 }
 
@@ -93,11 +93,18 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     foreach ($rule in $ruleCollection.properties.rules) {
-        $_ = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
     }
+}
+
+
+# Restart the domain controllers to ensure that they establish a new SSPR connection through the firewall
+# -------------------------------------------------------------------------------------------------------
+foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

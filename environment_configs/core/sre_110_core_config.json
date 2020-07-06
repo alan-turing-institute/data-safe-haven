@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 110 - DNCP",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "110",
     "shmId": "turing1",
     "tier": "2",

@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Stopping the deployment servers
@@ -23,4 +23,4 @@ Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL" | Stop-AzVM -Force -NoWait
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

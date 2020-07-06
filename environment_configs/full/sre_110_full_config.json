@@ -10,7 +10,7 @@
       "countryCode": "GB"
     },
     "location": "uksouth",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "domain": {
       "fqdn": "turingsafehaven.ac.uk",
       "netbiosName": "TURINGSAFEHAVEN",
@@ -100,7 +100,7 @@
     "shortName": "dsg110",
     "location": "uksouth",
     "tier": "2",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {

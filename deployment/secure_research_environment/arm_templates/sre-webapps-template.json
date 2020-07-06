@@ -2,106 +2,106 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for VM Administrator_Password"
-            }
-        },
         "Administrator_User": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for VM Administrator"
+                "description": "VM admin username"
             }
         },
         "BootDiagnostics_Account_Name": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of storage account used for boot diagnostics"
+                "description": "Storage account used for boot diagnostics"
+            }
+        },
+        "GitLab_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "GitLab VM admin password"
             }
         },
         "GitLab_Cloud_Init": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
-                "description": "String passed down to the Virtual Machine."
+                "description": "Cloud-init YAML file"
             }
         },
         "GitLab_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.153",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 153"
+                "description": "IP address for GitLab VM"
             }
         },
+        "GitLab_Data_Disk_Size_GB": {
+            "type": "int"
+        },
+        "GitLab_Data_Disk_Type": {
+            "type": "string"
+        },
+        "GitLab_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "GitLab_Os_Disk_Type": {
+            "type": "string"
+        },
         "GitLab_Server_Name": {
-            "defaultValue": "GITLAB",
             "type": "string"
         },
         "GitLab_VM_Size": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_F4s_v2"
-            ],
             "metadata": {
-                "description": "Select size of VM"
+                "description": "Size of GitLab VM"
+            }
+        },
+        "HackMD_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "HackMD VM admin password"
             }
         },
         "HackMD_Cloud_Init": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
-                "description": "String passed down to the Virtual Machine."
+                "description": "Cloud-init YAML file"
             }
         },
         "HackMD_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.154",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 154"
+                "description": "IP address for HackMD VM"
             }
         },
+        "HackMD_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "HackMD_Os_Disk_Type": {
+            "type": "string"
+        },
         "HackMD_Server_Name": {
-            "defaultValue": "HACKMD",
             "type": "string"
         },
         "HackMD_VM_Size": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_F4s_v2"
-            ],
             "metadata": {
-                "description": "Select size of VM"
+                "description": "Size of HackMD VM"
             }
         },
         "Virtual_Network_Name": {
             "type": "string",
-            "defaultValue": "DSG_DSGROUPX_VNET1",
             "metadata": {
-                "description": "Enter name of virtual network to provision this VM"
+                "description": "Virtual network to provision this VM"
             }
         },
         "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of resource group that is associated with the virtual network above"
+                "description": "Resource group that is associated with the virtual network above"
             }
         },
         "Virtual_Network_Subnet": {
             "type": "string",
-            "defaultValue": "Subnet-Data",
             "metadata": {
-                "description": "Enter name of subnet where you want to provision this VM"
+                "description": "Subnet where you want to provision this VM"
             }
         }
     },
@@ -135,26 +135,28 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('GitLab_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 50
+                        "diskSizeGB": "[parameters('GitLab_Os_Disk_Size_GB')]"
                     },
-                    "dataDisks": [{
-                        "lun": 0,
-                        "name": "[concat(parameters('GitLab_Server_Name'),'-DATA-DISK')]",
-                        "createOption": "Empty",
-                        "caching": "None",
-                        "writeAcceleratorEnabled": false,
-                        "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
-                        },
-                        "diskSizeGB": 750
-                    }]
+                    "dataDisks": [
+                        {
+                            "lun": 1,
+                            "name": "[concat(parameters('GitLab_Server_Name'),'-DATA-DISK')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "[parameters('GitLab_Data_Disk_Type')]"
+                            },
+                            "diskSizeGB": "[parameters('GitLab_Data_Disk_Size_GB')]"
+                        }
+                    ]
                 },
                 "osProfile": {
                     "computerName": "[parameters('GitLab_Server_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('GitLab_Administrator_Password')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true
@@ -206,16 +208,16 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('HackMD_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 750
+                        "diskSizeGB": "[parameters('HackMD_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
                     "computerName": "[parameters('HackMD_Server_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('HackMD_Administrator_Password')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true

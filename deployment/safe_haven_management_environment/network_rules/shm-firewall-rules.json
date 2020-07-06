@@ -88,8 +88,7 @@
                         "fqdnTags": [],
                         "targetFqdns": [
                             "*.passwordreset.microsoftonline.com",
-                            "ssprdedicatedsbprodncu.servicebus.windows.net",
-                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                            "*.servicebus.windows.net"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"

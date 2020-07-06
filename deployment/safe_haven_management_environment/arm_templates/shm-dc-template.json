@@ -32,13 +32,43 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
+        "DC1_Data_Disk_Size_GB": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC1 data disk in GB"
+            }
+        },
+        "DC1_Data_Disk_Type": {
+            "type": "string"
+        },
         "DC1_Host_Name": {
             "type": "string"
         },
         "DC1_IP_Address": {
             "type": "string"
         },
+        "DC1_Os_Disk_Size_GB": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC1 OS disk in GB"
+            }
+        },
+        "DC1_Os_Disk_Type": {
+            "type": "string"
+        },
         "DC1_VM_Name": {
+            "type": "string"
+        },
+        "DC1_VM_Size": {
+            "type": "string"
+        },
+        "DC2_Data_Disk_Size_GB": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC2 data disk in GB"
+            }
+        },
+        "DC2_Data_Disk_Type": {
             "type": "string"
         },
         "DC2_Host_Name": {
@@ -47,19 +77,31 @@
         "DC2_IP_Address": {
             "type": "string"
         },
+        "DC2_Os_Disk_Size_GB": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC2 OS disk in GB"
+            }
+        },
+        "DC2_Os_Disk_Type": {
+            "type": "string"
+        },
         "DC2_VM_Name": {
+            "type": "string"
+        },
+        "DC2_VM_Size": {
             "type": "string"
         },
         "Domain_Name": {
             "type": "string",
             "metadata": {
-                "Description": "Enter the correct public domain name"
+                "Description": "Public domain name for the SHM"
             }
         },
         "Domain_NetBIOS_Name": {
             "type": "string",
             "metadata": {
-                "Description": "Enter the correct NetBIOS name"
+                "Description": "NetBIOS name for the SHM"
             }
         },
         "External_DNS_Resolver": {
@@ -93,12 +135,6 @@
             "type": "string",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }
-        },
-        "VM_Size": {
-            "type": "string",
-            "metadata": {
-                "description": "Select size of VM"
             }
         }
     },
@@ -135,7 +171,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
+                    "vmSize": "[parameters('DC1_VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -151,9 +187,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('DC1_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('DC1_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -163,9 +199,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('DC1_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": 20
+                            "diskSizeGB": "[parameters('DC1_Data_Disk_Size_GB')]"
                         }
                     ]
                 },
@@ -301,7 +337,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
+                    "vmSize": "[parameters('DC2_VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -317,9 +353,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('DC2_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('DC2_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -329,9 +365,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('DC2_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": 20
+                            "diskSizeGB": "[parameters('DC2_Data_Disk_Size_GB')]"
                         }
                     ]
                 },

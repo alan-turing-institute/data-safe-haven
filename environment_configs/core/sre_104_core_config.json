@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 104 - NATS",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "104",
     "shmId": "turing1",
     "tier": "2",

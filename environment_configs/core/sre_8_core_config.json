@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing DSG - 8 - Sensat",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "8",
     "shmId": "turing1",
     "tier": "1",

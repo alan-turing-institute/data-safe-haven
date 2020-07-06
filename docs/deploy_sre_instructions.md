@@ -28,7 +28,8 @@ The following 7 virtual machines are created as a result of these instructions:
   - [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   - [:accept: Configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings)
   - [:closed_lock_with_key: Update SSL certificate](#closed_lock_with_key-update-ssl-certificate)
-  - [:microscope: Test RDS deployment](#microscope-test-rds-deployment)
+  - [:bicyclist: Set up a non-privileged user account](#bicyclist-set-up-a-non-privileged-user-account)
+  - [:mountain_bicyclist: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
 - [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
 - [:baseball: Deploy databases](#baseball-deploy-databases)
 - [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
@@ -111,12 +112,12 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
     "domain": "The fully qualified domain name for the management environment",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
-    "shmId": "A short ID to identify the management environment",
+    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name",
     "organisation": {
         "name": "Organisation name",
@@ -124,12 +125,11 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "stateCountyRegion": "Location",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
+    "location": "The Azure location in which the management environment VMs are deployed"
 }
 ```
 
-> :warning: The `netbiosName` field must have a maximum length of 15 characters.
+> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ### :green_apple: SRE configuration properties
@@ -140,22 +140,19 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this SHM belong to",
-    "sreId": "A short ID to identify the secure research environment. This *must be* 7 characters or less; if not it will be truncated in some places which might cause problems if those characters are not unique.",
     "shmId": "The short ID for the SHM segment to deploy against",
+    "sreId": "A short ID to identify the secure research environment. This *must be* 7 characters or less; if not it will be truncated in some places which might cause problems if those characters are not unique.",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "domain": "The fully qualified domain name for the SRE",
-    "netbiosname": "A short name to use as the local name for the domain. This *must be* 15 characters or less. If the first part of the domain is less than 15 characters, use this for the netbiosName",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
-    "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
-    "rdsInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either 'Allow', 'Deny' or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
+    "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
+    "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
     "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)"
 }
 ```
 
 > :warning: The `sreId` field must have a maximum length of 7 characters.
-
-> :warning: The `netbiosName` field must have a maximum length of 15 characters.
 
 > :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
   It is very important that address spaces do not overlap in the environment as this will cause network faults.
@@ -169,7 +166,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
   - `Import-Module ./deployment/common/Configuration.psm1 -Force`
-  - `Add-SreConfig -sreId <SRE ID>`, where `<SRE ID>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
+  - `Add-SreConfig -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using (e.g. `testasandbox` for the `sandbox` SRE in the `testa` SHM).
 - A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
 
@@ -185,17 +182,17 @@ On your **deployment machine**.
 
 On your **deployment machine**.
 - :pencil: If the subscription is not empty, confirm that it is not being used before deleting any resources in it.
-- Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 ### :registered: Register SRE with the SHM
 On your **deployment machine**.
-- Register service accounts with the SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :fishing_pole_and_fish: Deploy virtual network and remote desktop
 ### :clubs: Create SRE DNS Zone
 On your **deployment machine**.
-- Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
 #### Manually add NS records
@@ -214,7 +211,7 @@ On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Setup_SRE_VNET_RDS.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Run `./Setup_SRE_VNET_RDS.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 50 minutes.
 - The VNet peerings may take a few minutes to provision after the script completes.
 
@@ -234,7 +231,7 @@ On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 ### :closed_lock_with_key: Update SSL certificate
 On your **deployment machine**.
@@ -242,86 +239,118 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Update_SRE_RDS_SSL_Certificate.ps1 -sreId <SRE ID> -emailAddress <email>`, where the SRE ID is the one specified in the config and the email address is one that you would like to be notified when certificate expiry is approaching.
+- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 - **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
-### :microscope: Test RDS deployment
-- Disconnect from any SRE VMs and connect to the SHM VPN
-- Connect to the **SHM Domain Controller** via the Remote Desktop client
-- The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SHM_DC -> DC1-SHM-<SRE ID>`)
-- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under "SECRETS".
-  - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
-  - The password in the `shm-<SHM ID>-domain-admin-password` secret.
-
-
-#### Set up a non-privileged user account
+### :bicyclist: Set up a non-privileged user account
 These steps ensure that you have created a non-privileged user account that you can use for testing.
-This user should be created in the local Active Directory on the SHM domain controller and must have been synchronised to the Azure Active Directory.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
-> :pencil: The automatically-created test researcher should already be in the correct group.
 
 On the **SHM Domain Controller**.
-1. **Ensuring that a non-privileged user account exists**
-- In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
-- Open the `Safe Haven Research Users` OU
-- Ensure that the non-privileged user account that you want to use is listed here, or if it is not then create it.
 
-2. **Ensure that the user account is in the correct Security Group**
+1. **Create a new non-privileged user account for yourself**
+- Follow the user creation instructions from the [administrator guide](safe_haven_administrator_guide.md). In brief these involve:
+  - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
+  - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
+This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
+
+2. **Ensure that your user account is in the correct Security Group**
 - Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
 - Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 - Click on the `Members` tab.
-- If the user you plan to use is not already listed here you must add them to the group (*the automatically-created test researcher should already be in the correct group*)
+- If your user is not already listed here you must add them to the group
   - Click the `Add` button
-  - Enter the start of the username and click `Check names`
-  - Select the correct username and click `Ok`
-  - Click `Ok` again to exit the add users dialogue
-- Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell
+  - Enter the start of your username and click `Check names`
+  - Select your username and click `Ok`
+  - Click `Ok` again to exit the `Add users` dialogue
+- Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
 
-3. **Ensure that the account has MFA enabled**
-Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md).
-- The user's `Usage Location` must be set in Active Directory.
-  To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
+3. **Ensure that your user account has MFA enabled**
+Please ensure that your account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md).
+In order to verify this switch to your custom Azure Active Directory in the Azure portal:
+- Go to `portal.azure.com` and click on your username in the top-right
+- Select `Switch directory` and then click on `All Directories`
+- Select your custom Azure Active Directory in the list of directories
+- This should cause the portal to reload
+
+You can now verify the following things
+- The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
+  - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
 - A licence must be assigned to the user.
-  To check this in the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
+  - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 - MFA must be enabled for the user.
-  To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
-- The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](safe_haven_user_guide.md).
+  - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](safe_haven_user_guide.md).
 
-#### Test the RDS using a non-privileged user account
+### :mountain_bicyclist: Test the RDS using a non-privileged user account
 On your **deployment machine**.
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
-  - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
-    - Go back to the previous section and run the webclient installation step.
-    - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
-      - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
-      - `Publish-RDWebClientPackage -Type Production -Latest`
-  - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
-    - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
-    - OR open a new private / incognito browser window and visit the page.
-  - **Troubleshooting** If you can see an empty screen with `Work resources` but no app icons, your user has not been correctly added to the security group.
-- Once you have logged in, click on the `Presentation server` app icon. You should receive an MFA request to your phone or authentication app.
-  - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
-    - Ensure that both the SHM NPS server and the RDS Gateway are running
-    - The RADIUS client shared secret might not be set correctly on the SHM NPS server. Try manually setting as follows:
-      - Ensure you are connected to the SHM VPN and connect to the SHM NPS server using Remote Desktop.
-      - Click `Tools` -> `Network Policy Server`
-      - In the left pane, under `NPS (Local)`, expand `RADIUS Clients and Servers` and click `RADIUS Clients`
-      - Double-click on `RDG-SRE-<SRE ID>-<safe haven domain>`
-      - Under `Settings` set `Shared secret` and `Confirm shared secret` to the value of the secret `sre-<SRE ID>-nps-secret` in the SRE key vault.
-    - Ensure the same shared secret from the `sre-<SRE ID>-nps-secret` in the SRE key vault is set on the SRE RDS Gateway in the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
-    - Ensure that the [SHM NPS server RADIUS Client configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
-    - Use the Event viewer on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
-    - Use the Event viewer on the SHM NPS server  (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
-    - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
-      - This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
-      - This may indicate that the shared secret is different between the SHM and SRE.
-    - Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
-  - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been [increased as described in a previous section](sre_build_instructions.md#increase-the-authorisation-timeout-to-allow-for-mfa). It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
-  - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
-  - **Troubleshooting** If you are able to log into the webclient with a username and password but cannot connect to the presentation server (as no MFA prompt is given), please look at [this documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)). In particular, ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`).
-- Once you have approved the sign in, you should see a remote Windows desktop.
-- **NOTE:** The other apps will not work until the other servers have been deployed.
+- You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
+- **NOTE:** The apps will not work until the other servers have been deployed.
+    <p align="center">
+      <img src="images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop">
+    </p>
+
+<details>
+<summary><strong>Troubleshooting</strong></summary>
+
+If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
+- Go back to the previous section and rerun the `C:\Installation\Deploy_RDS_Environment.ps1` script on the RDS gateway.
+- After doing this, follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) and to [update the SSL certificate](#closed_lock_with_key-update-ssl-certificate).
+
+If you get an `unexpected server authentication certificate error`, your browser has probably cached a previous certificate for this domain.
+- Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
+- OR open a new private / incognito browser window and visit the page.
+
+If you can see an empty screen with `Work resources` but no app icons, your user has not been correctly added to the security group.
+- Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
+</details>
+
+## :snowflake: Deploy web applications (GitLab and HackMD)
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run the `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- The deployment will take a few minutes to complete
+
+### :microscope: Test GitLab and HackMD servers
+On your **deployment machine**.
+- Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
+- Test `GitLab` by clicking on the `GitLab` app icon.
+  - You should receive an MFA request to your phone or authentication app.
+  - Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
+  - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
+- Test `HackMD` by clicking on the `HackMD` app icon.
+  - You should receive an MFA request to your phone or authentication app.
+  - Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
+  - Log in with the long-form `username@<shm-domain-fqdn>` of a user in the `SG <SRE ID> Research Users` security group.
+- If you do not get an MFA prompt or you cannot connect to the GitLab and HackMD servers, follow the **troubleshooting** instructions below.
+
+<details>
+<summary><strong>Troubleshooting</strong></summary>
+
+If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
+- Ensure that both the SHM NPS server and the RDS Gateway are running
+- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the configuration of the RDS gateway and NPS VMs.
+- Ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`). [This documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)) gives further details.
+
+If this does not resolve the issue, trying checking the Windows event logs
+  - Use `Event Viewer` on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
+  - Use `Event Viewer` on the SHM NPS server (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
+    - Ensure that the requests are being received from the **private** IP address of the RDS Gateway and **not** its public one.
+  - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
+    - This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
+  - Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
+
+If you get a `We couldn't connect to the gateway because of an error` message, it's likely that the `Remote RADIUS Server` authentication timeouts have not been set correctly.
+- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
+
+If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
+- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
+- :warning: This can happen if the NPS secret stored in the key vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
+</details>
 
 ## :floppy_disk: Deploy Data Server
 On your **deployment machine**.
@@ -329,7 +358,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_Data_Server.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- Run the `./Setup_SRE_Data_Server.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 20 minutes to complete
 
 ## :baseball: Deploy databases
@@ -338,24 +367,8 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_Databases.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- Run the `./Setup_SRE_Databases.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 30 minutes to complete, most of which is spent in Windows Update.
-
-## :snowflake: Deploy web applications (GitLab and HackMD)
-On your **deployment machine**.
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_WebApp_Servers.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-- The deployment will take a few minutes to complete
-
-### :microscope: Test GitLab Server
-There is a built-in `root` user, whose password is stored in the SRE key vault (see SRE config file for key vault and secret names).
-You can test Gitlab from inside the RDS environment by clicking on the `GitLab` icon and logging in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-
-### :microscope: Test HackMD Server
-You can test HackMD from inside the RDS environment by clicking on the `HackMD` icon and logging in with the long-form `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<SRE ID> Research Users` security group.
 
 ## :computer: Deploy data science VMs
 ### :fast_forward: Optional: Customise the deployed VM
@@ -371,7 +384,7 @@ On your **deployment machine**.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - You will also be prompted for the VM size (optional) and the desired last octet of the IP address (the first machine deployed should use `160` here)
   - The initial shared VM should be deployed with the last octet `160`
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
@@ -394,7 +407,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Apply_SRE_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 ### :fire_engine: Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
@@ -402,7 +415,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
 
@@ -417,7 +430,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Unpeer_Sre_And_Mirror_Networks.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 
 ## :fire: Run smoke tests on DSVM
@@ -428,10 +441,9 @@ To run the smoke tests:
 - Connect to the DSVM using the remote desktop URL (eg. `https://sandbox.dsgroupdev.co.uk/`) and selecting the the `DSVM Main (Desktop)` app
 On the **DSVM**.
 - Open a terminal session
-- Copy the tests folder using `cp -R ~<sre-admin>/smoke_tests ~/smoke_tests`
-- Enter the test directory using `cd ~/smoke_tests/tests`
-- Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
-- If all test results are expected you are done! Otherwise, contact Turing REG for help diagnosing test failures.
+- Enter the test directory using `cd /opt/installation/smoke_tests/tests`
+- Run `source run_all_tests.sh`.
+- If all test results are expected you are done! Otherwise check `README.md` for help diagnosing test failures.
 
 ## :bomb: Tearing down the SRE
 On your **deployment machine**.
@@ -439,4 +451,4 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  - Run the `./SRE_Teardown.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+  - Run `./SRE_Teardown.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
