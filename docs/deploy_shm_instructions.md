@@ -52,12 +52,12 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
     "domain": "The fully qualified domain name for the management environment.",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or fewer.",
-    "shmId": "A short ID to identify the management environment.",
+    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name.",
     "organisation": {
         "name": "Organisation name.",
@@ -65,10 +65,11 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed.",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
+    "location": "The Azure location in which the management environment VMs are deployed."
 }
 ```
+
+> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ## 3. Configure DNS for the custom domain
@@ -105,7 +106,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ### Add the SHM domain to the new AAD
 1. Navigate to the AAD you have created within the Azure portal. You ca n do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of `Directory + Subscription` panel that then displays.
 2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
       <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
@@ -113,17 +114,16 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 3. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-    - **IMPORTANT** Ensure you are authenticated to the correct AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step.
-      - :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
-      - **Troubleshooting** If you get an error like `Connect-AzureAD: Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral, PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then please open a new Powershell session and try again
-    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
+    - Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+      - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+      - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
     - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 
 
 ## 5. Deploy key vault for SHM secrets
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`.
+- Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_KeyVault.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
@@ -250,6 +250,11 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   - Under `Enable policy` select `On`
   - Click `Create`
 
+5. Setup MFA for global administrator
+- Sign out of the Azure portal and then sign-in again as one of the `Global Administrator` accounts that you set up above.
+- You should be prompted with a screen telling you that `Your organisation needs more information to keep your account secure`
+- Click `Next` and fill out the required information (phone number and email address) that you want to have associated with this account
+
 
 ## 7. Deploy and configure VNET and Domain Controllers
 
@@ -266,7 +271,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
+1. Navigate to the SHM key vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 3. Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
@@ -322,7 +327,7 @@ rather than simply `<admin username>`)
     - Click `Next`
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
-    - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
+    - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the key vault
       - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
         - Click `Add`
         - Click `Add`
@@ -339,16 +344,16 @@ rather than simply `<admin username>`)
     - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
     - On the `AD forest account` pop-up:
       - Select `Use existing AD account`
-      - Enter the details for the `localadsync` user.
-        - Username: `localadsync@<SHM domain>` (e.g. localadsync)
-        - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+      - Enter the details for the local AD synchronisation user.
+        - Username: `<username>@<SHM domain>` where `username` is in the `shm-<SHM ID>-aad-localsync-username` secret in the management key vault.
+        - Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
       - Click `OK`
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
           - In Server Manager click `Tools > Active Directory Users and Computers`
           - Expand the domain in the left hand panel
           - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+          - Set the password to the the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
           - Leave the other settings as is and click `OK`
     - Click `Next`
   - On the `Azure AD sign-in configuration` screen:
@@ -377,40 +382,25 @@ rather than simply `<admin username>`)
 
 ### Additional AAD Connect Configuration
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
-
-1. Update the AAD rules
-  - Open Powershell as an administrator
-  - Run `C:\Installation\UpdateAADSyncRule.ps1`
+Update the AAD rules
+- Open Powershell as an administrator
+- Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
 ### Validation of AD sync
-1. Add yourself as a new Active Directory user:
-  - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
-  - Expand the domain
-  - Right click on the `Safe Haven Research Users` OU and select `New -> User`
-  - Create a new user:
-    - First name: `<your first name>`
-    - Last name: `<your last name>`
-    - User login name: `<your first name>.<your last name>`
-    - Click `Next`
-  - Password:
-    - Choose something that is
-      - At least 6 characters
-      - Contains uppercase, lowercase and digits
-    - Ensure that `User must change password at next logon` is ticked
-    - Ensure that `Password never expires` is not ticked
-    - Click `Next`
-  - Click `Finish`
-2. Set the correct region
-  - The user you have just created should now appear in the list of `Safe Haven Research Users` (if not, then right click and select `Refresh`)
-  - Right click on this user and select `Properties`
-  - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
-3. Force a sync to the Azure Active Directory
+1. Make the initial synchronisation to the Azure Active Directory
   - Open Powershell as an administrator
   - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
-4. Go to the Azure Active Directory in `portal.azure.com`
+2. Add yourself as a new Active Directory user:
+  - Follow the user creation instructions from the [administrator guide](safe_haven_administrator_guide.md). In brief these involve:
+    - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
+    - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
+  - :pencil: Note that you should leave `GroupName` blank since there are no SRE groups at this point
+  This will create a user in the local Active Directory on the domain controller and start the synchronisation to Azure Active Directory.
+3. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
+
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`

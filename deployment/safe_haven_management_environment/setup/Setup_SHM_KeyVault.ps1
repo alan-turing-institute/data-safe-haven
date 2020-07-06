@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId
 )
 
@@ -14,61 +14,76 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Create secrets resource group if it does not exist
 # --------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-$_ = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
-Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
+$null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
+Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
-# :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
-if ($?) {
-    Add-LogMessage -Level Success "AAD Global Administrator password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Global Administrator password!"
-}
 
-# :: DC/NPS administrator username
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-if ($?) {
-    Add-LogMessage -Level Success "VM administrator username exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create VM administrator username!"
+# :: Admin usernames
+try {
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+    Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
 }
-
-# :: DC/NPS administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
-if ($?) {
-    Add-LogMessage -Level Success "Domain administrator password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create domain administrator password!"
+# :: AAD admin details
+try {
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName
+    Add-LogMessage -Level Success "Ensured that AAD admin details exist"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that AAD admin details exist!"
 }
-
-# :: DC safe mode password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
-if ($?) {
-    Add-LogMessage -Level Success "DC safe mode password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create DC safe mode password!"
+# :: VM admin passwords
+try {
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
+    foreach ($mirrorType in $config.mirrors.Keys) {
+        foreach ($mirrorTier in $config.mirrors[$mirrorType].Keys) {
+            foreach ($mirrorDirection in $config.mirrors[$mirrorType][$mirrorTier].Keys) {
+                $adminPasswordSecretName = $config.mirrors[$mirrorType][$mirrorTier][$mirrorDirection].adminPasswordSecretName
+                if ($adminPasswordSecretName) { $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20 }
+            }
+        }
+    }
+    Add-LogMessage -Level Success "Ensured that SHM VM admin passwords exist"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM VM admin passwords exist!"
 }
-
-# :: AD sync password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
-if ($?) {
-    Add-LogMessage -Level Success "AD sync password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AD sync password!"
+# :: Computer manager users
+try {
+    $computerManagers = $config.users.computerManagers
+    foreach ($user in $computerManagers.Keys) {
+        $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $computerManagers[$user]["passwordSecretName"] -DefaultLength 20
+    }
+    Add-LogMessage -Level Success "Ensured that domain joining passwords exist"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that domain joining passwords exist!"
+}
+# :: Service accounts
+try {
+    $serviceAccounts = $config.users.serviceAccounts
+    foreach ($user in $serviceAccounts.Keys) {
+        $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $serviceAccounts[$user]["passwordSecretName"] -DefaultLength 20
+    }
+    Add-LogMessage -Level Success "Ensured that service account passwords exist"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that service account passwords exist!"
 }
 
 
@@ -97,20 +112,20 @@ try {
     # Generate or retrieve CA certificate
     # -----------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
         Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
         # Remove any previous certificate with the same name
         # --------------------------------------------------
         Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
-        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
+        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
 
         # Create self-signed CA certificate with private key
         # --------------------------------------------------
         Add-LogMessage -Level Info "[ ] Generating self-signed certificate locally"
-        $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnCaCertPassword
+        $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertPassword -DefaultLength 20
         openssl req -subj "/CN=$caStem" -new -newkey rsa:2048 -sha256 -days $caValidityDays -nodes -x509 -keyout $caKeyPath -out $caCrtPath
         openssl pkcs12 -in $caCrtPath -inkey $caKeyPath -export -out $caPfxPath -password "pass:$vpnCaCertPassword"
         if ($?) {
@@ -122,7 +137,7 @@ try {
         # Upload the CA key + cert bundle to the KeyVault
         # -----------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading CA private key + certificate bundle as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
-        $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath $caPfxPath -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
+        $null = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath $caPfxPath -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
         if ($?) {
             Add-LogMessage -Level Success "Uploading the full CA certificate succeeded"
         } else {
@@ -136,9 +151,9 @@ try {
         # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeySize 2048 `
         #                                             -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
         # $caPolicy.Exportable = $true
-        # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
+        # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
         # while ($status -ne "completed") {
-        #     $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
+        #     $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
         #     $progress = [math]::min(100, $progress + 9)
         #     Write-Progress -Activity "Certificate creation:" -Status $status -PercentComplete $progress
         #     Start-Sleep 1
@@ -152,11 +167,11 @@ try {
         # Store plain CA certificate as a KeyVault secret
         # -----------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading the plain CA certificate as secret $($config.keyVault.secretNames.vpnCaCertificatePlain) (without private key)"
-        $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+        $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
         # Extract the public certificate and encode it as a Base64 string, without the header and footer lines and with a space every 64 characters
         $vpnCaCertificateB64String = [System.Convert]::ToBase64String($vpnCaCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
         $vpnCaCertificatePlain = ($vpnCaCertificateB64String -split '(.{64})' | Where-Object { $_ }) -join " "
-        $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString "$vpnCaCertificatePlain" -AsPlainText -Force)
+        $null = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString "$vpnCaCertificatePlain" -AsPlainText -Force)
         if ($?) {
             Add-LogMessage -Level Success "Uploading the plain CA certificate succeeded"
         } else {
@@ -174,15 +189,15 @@ try {
         # Remove any previous certificate with the same name
         # --------------------------------------------------
         Add-LogMessage -Level Info "Creating new client certificate..."
-        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
+        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
 
         # Load CA certificate into local PFX file and extract the private key
         # -------------------------------------------------------------------
         Add-LogMessage -Level Info "[ ] Loading CA private key from key vault..."
-        $caPfxBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
+        $caPfxBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
         [IO.File]::WriteAllBytes($caPfxPath, [System.Convert]::FromBase64String($caPfxBase64))
         $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
-        $caKeyData.Where({ $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
+        $caKeyData.Where( { $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
         $caKeyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
         if ($?) {
             Add-LogMessage -Level Success "Loading CA private key succeeded"
@@ -194,7 +209,7 @@ try {
         # ---------------------------------------------
         Add-LogMessage -Level Info "[ ] Retrieving CA plain certificate..."
         # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
-        $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+        $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
         "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
         $vpnCaCertificatePlain.Replace(" ", "") -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
         "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
@@ -210,9 +225,9 @@ try {
         Add-LogMessage -Level Info "[ ] Creating new certificate signing request to be signed by the CA certificate..."
         if ($status -ne "inProgress") {
             $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=$clientStem" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
-            $_ = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
+            $null = Add-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
         }
-        $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
+        $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
         $success = $?
         # Write the CSR after reflowing to a maximum of 64 characters per line
         "-----BEGIN CERTIFICATE REQUEST-----" | Out-File -FilePath $clientCsrPath
@@ -227,10 +242,10 @@ try {
         # Sign the client certificate - create a PKCS#7 file from full certificate chain and merge it with the private key
         # ----------------------------------------------------------------------------------------------------------------
         Add-LogMessage -Level Info "[ ] Signing the CSR and merging into the '$($config.keyVault.secretNames.vpnClientCertificate)' certificate..."
-        $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnClientCertPassword
+        $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnClientCertPassword -DefaultLength 20
         openssl x509 -req -in $clientCsrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days $clientValidityDays -sha256
         openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2>&1 | Out-Null
-        $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString "$vpnClientCertPassword" -AsPlainText -Force)
+        $null = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString "$vpnClientCertPassword" -AsPlainText -Force)
         if ($?) {
             Add-LogMessage -Level Success "Importing the signed client certificate succeeded"
         } else {
@@ -245,4 +260,4 @@ try {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

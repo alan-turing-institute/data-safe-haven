@@ -1,6 +1,6 @@
 param(
-    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE_ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId
 )
 
 Import-Module Az
@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $sreId
+$config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
@@ -20,19 +20,21 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.webappAdminPassword
-$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword
-$gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
-$gitlabReviewUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewUsername -DefaultValue "ingress"
-$gitlabReviewPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewPassword
-$gitlabReviewAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewAPIToken
-$hackmdPostgresPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
-$hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
-$gitlabUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUsername -DefaultValue "ingress"
-$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabPassword
+$gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
 $gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabAPIToken
-
+$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabPassword
+$gitlabReviewAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewAPIToken
+$gitlabReviewAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.adminPasswordSecretName -DefaultLength 20
+$gitlabReviewPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewPassword
+$gitlabReviewUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewUsername -DefaultValue "ingress"
+$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
+$gitlabReviewRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.rootPasswordSecretName -DefaultLength 20
+$gitlabUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUsername -DefaultValue "ingress"
+$hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
+$hackmdPostgresPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
+$ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+$ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 # Set up NSGs for the webapps
 # ---------------------------
@@ -70,8 +72,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.
 # Construct common deployment parameters
 # --------------------------------------
 $commonDeploymentParams = @{
-    AdminPassword = $sreAdminPassword
-    AdminUsername = $sreAdminUsername
+    AdminUsername = $vmAdminUsername
     BootDiagnosticsAccount = $(Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location)
     ImageSku = "18.04-LTS"
     Location = $config.sre.location
@@ -85,8 +86,8 @@ $commonDeploymentParams = @{
 # -------------
 # Construct GitLab cloudinit
 $gitlabCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw).
-    Replace('<gitlab-rb-bind-dn>', "CN=$($config.sre.users.ldap.gitlab.name),$($config.shm.domain.serviceOuPath)").
-    Replace('<gitlab-rb-pw>', $gitlabLdapPassword).
+    Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
+    Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).
     Replace('<gitlab-rb-base>', $config.shm.domain.userOuPath).
     Replace('<gitlab-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath)))").
     Replace('<gitlab-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
@@ -101,6 +102,7 @@ $gitlabCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitla
 # Set GitLab deployment parameters
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB 512 -Type "Standard_LRS" -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $gitlabDeploymentParams = @{
+    AdminPassword = $gitlabAdminPassword
     CloudInitYaml = $gitlabCloudInit
     DataDiskIds = @($gitlabDataDisk.Id)
     Name = $config.sre.webapps.gitlab.vmName
@@ -125,8 +127,8 @@ try {
 # -------------
 # Construct HackMD cloudinit
 $hackmdCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw).
-    Replace('<hackmd-bind-dn>', "CN=$($config.sre.users.ldap.hackmd.name),$($config.shm.domain.serviceOuPath)").
-    Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
+    Replace('<hackmd-bind-dn>', $ldapSearchUserDn).
+    Replace('<hackmd-bind-creds>', $ldapSearchUserPassword).
     Replace('<hackmd-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath))(userPrincipalName={{username}}))").
     Replace('<hackmd-ldap-base>', $config.shm.domain.userOuPath).
     Replace('<hackmd-ip>', $config.sre.webapps.hackmd.ip).
@@ -138,6 +140,7 @@ $hackmdCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-hackm
 # Set HackMD deployment parameters
 $hackmdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.hackmd.vmName)-DATA-DISK" -SizeGB 512 -Type "Standard_LRS" -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $hackmdDeploymentParams = @{
+    AdminPassword = $hackmdAdminPassword
     CloudInitYaml = $hackmdCloudInit
     DataDiskIds = @($hackmdDataDisk.Id)
     Name = $config.sre.webapps.hackmd.vmName
@@ -173,19 +176,18 @@ Add-LogMessage -Level Success "Fetching ssh keys from gitlab succeeded"
 $sshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\[stderr\]"  # Extract everything in between the [stdout] and [stderr] blocks of the result message. i.e. all output of the script.
 # Construct GitLab review cloudinit
 $gitlabReviewCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-review.template.yaml" | Get-Item | Get-Content -Raw).
-    Replace('<sre-admin-username>', $sreAdminUsername).
     Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
     Replace('<gitlab-username>', $gitlabUsername).
     Replace('<gitlab-api-token>', $gitlabAPIToken).
     Replace('<gitlab-review-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
-    Replace('<gitlab-review-rb-bind-dn>', "CN=$($config.sre.users.ldap.gitlab.name),$($config.shm.domain.serviceOuPath)").
-    Replace('<gitlab-review-rb-pw>', $gitlabLdapPassword).
+    Replace('<gitlab-review-rb-bind-dn>', $ldapSearchUserDn).
+    Replace('<gitlab-review-rb-pw>', $ldapSearchUserPassword).
     Replace('<gitlab-review-rb-base>', $config.shm.domain.userOuPath).
     Replace('<gitlab-review-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.reviewUsers.name),$($config.shm.domain.securityOuPath)))").
     Replace('<gitlab-review-ip>', $config.sre.webapps.gitlabreview.ip).
     Replace('<gitlab-review-hostname>', $config.sre.webapps.gitlabreview.hostname).
     Replace('<gitlab-review-fqdn>', "$($config.sre.webapps.gitlabreview.hostname).$($config.sre.domain.fqdn)").
-    Replace('<gitlab-review-root-password>', $gitlabRootPassword).
+    Replace('<gitlab-review-root-password>', $gitlabReviewRootPassword).
     Replace('<gitlab-review-login-domain>', $config.shm.domain.fqdn).
     Replace('<gitlab-review-username>', $gitlabReviewUsername).
     Replace('<gitlab-review-password>', $gitlabReviewPassword).
@@ -206,6 +208,7 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
 }
 # Set GitLab review deployment parameters
 $gitlabReviewDeploymentParams = @{
+    AdminPassword = $gitlabReviewAdminPassword
     CloudInitYaml = $gitlabReviewCloudInit
     Name = $config.sre.webapps.gitlabreview.vmName
     PrivateIpAddress = $config.sre.webapps.gitlabreview.ip

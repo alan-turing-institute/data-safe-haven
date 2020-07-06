@@ -72,13 +72,15 @@ users:
 
 runcmd:
   # Configure server
-  - echo "Configuring server"
+  - echo ">=== Configuring server... ===<"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
-  - echo "Europe/London" > /etc/timezone
+  - timedatectl set-timezone Europe/London
   - dpkg-reconfigure -f noninteractive tzdata
+  - echo "Timezone is $(date +%Z)"
   # Set up the data disk
-  - echo "Setting up data disk..."
+  - echo ">=== Setting up attached data disk... ===<"
   - mkdir -p /datadrive/gitdata
+  - cat /etc/fstab
   # Enable custom GitLab settings and run an initial configuration
   - echo "Running initial configuration"
   - gitlab-ctl reconfigure

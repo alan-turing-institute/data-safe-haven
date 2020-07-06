@@ -41,7 +41,7 @@ try {
     Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
     # Setup gateway server
     $null = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
-    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreFqdn>" -ErrorAction Stop
+    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreDomain>" -ErrorAction Stop
     Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
     Write-Output " [o] RDS environment configuration update succeeded"
 } catch {
@@ -88,18 +88,17 @@ Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<webappsSubnetIpPrefix>.151" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<webappsSubnetIpPrefix>.152:3000" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
     throw
 }
-
 # Update server configuration
 # ---------------------------
 Write-Output "Updating server configuration..."

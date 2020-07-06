@@ -26,34 +26,52 @@
                 "description": "Enter name for data server VM"
             }
         },
-        "DC_Administrator_Password": {
+        "Domain_Join_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for DC Administrator Password"
             }
         },
-        "DC_Administrator_User": {
+        "Domain_Join_Username": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC Administrator"
             }
         },
-        "Disk_Size_Egress_GB": {
-            "type": "string",
+        "Data_Server_Disk_Egress_Size_GB": {
+            "type": "int",
             "metadata": {
                 "description": "Egress disk size in GB"
             }
         },
-        "Disk_Size_Ingress_GB": {
-            "type": "string",
+        "Data_Server_Disk_Ingress_Size_GB": {
+            "type": "int",
             "metadata": {
                 "description": "Ingress disk size in GB"
             }
         },
-        "Disk_Size_Shared_GB": {
-            "type": "string",
+        "Data_Server_Disk_Shared_Size_GB": {
+            "type": "int",
             "metadata": {
                 "description": "Shared disk size in GB"
+            }
+        },
+        "Data_Server_Disk_Egress_Type": {
+            "type": "string",
+            "metadata": {
+                "description": "Egress disk type"
+            }
+        },
+        "Data_Server_Disk_Ingress_Type": {
+            "type": "string",
+            "metadata": {
+                "description": "Ingress disk type"
+            }
+        },
+        "Data_Server_Disk_Shared_Type": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared disk type"
             }
         },
         "Domain_Name": {
@@ -67,6 +85,12 @@
             "defaultValue": "10.250.x.100",
             "metadata": {
                 "description": "Enter IP_Address for VM, must end in 100"
+            }
+        },
+        "OU_Path": {
+            "type": "string",
+            "metadata": {
+                "description": "OU path to add this VM to"
             }
         },
         "Virtual_Network_Name": {
@@ -87,7 +111,7 @@
                 "description": "Enter name of subnet where you want to provision this VM"
             }
         },
-        "VM_Size": {
+        "Data_Server_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
             "allowedValues": [
@@ -118,7 +142,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
+                    "vmSize": "[parameters('Data_Server_VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -146,9 +170,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('Data_Server_Disk_Ingress_Type')]"
                             },
-                            "diskSizeGB": "[parameters('Disk_Size_Ingress_GB')]"
+                            "diskSizeGB": "[parameters('Data_Server_Disk_Ingress_Size_GB')]"
                         },
                         {
                             "lun": 1,
@@ -157,9 +181,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('Data_Server_Disk_Shared_Type')]"
                             },
-                            "diskSizeGB": "[parameters('Disk_Size_Shared_GB')]"
+                            "diskSizeGB": "[parameters('Data_Server_Disk_Shared_Size_GB')]"
                         },
                         {
                             "lun": 2,
@@ -168,9 +192,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('Data_Server_Disk_Egress_Type')]"
                             },
-                            "diskSizeGB": "[parameters('Disk_Size_Egress_GB')]"
+                            "diskSizeGB": "[parameters('Data_Server_Disk_Egress_Size_GB')]"
                         }
                     ]
                 },
@@ -265,12 +289,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_Username'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         }

@@ -1,13 +1,122 @@
 {
     "subscriptionName": "[Prod] Turing SRE – Sandbox",
-    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "sandbox",
     "shmId": "turing1",
     "tier": "2",
     "domain": "sandbox.turingsafehaven.ac.uk",
-    "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",
-    "rdsAllowedSources": "Internet",
+    "inboundAccessFrom": "anywhere",
+    "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.2.2020050300"
+    "computeVmImageVersion": "0.2.2020050300",
+    "databases": ["MSSQL"],
+    "overrides": {
+        "sre": {
+            "domain": {
+                "fqdn": "sandbox.turingsafehaven.ac.uk",
+                "netbiosName": "SANDBOX",
+                "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
+                "securityGroups": {
+                    "dataAdministrators": {
+                        "name": "SG SANDBOX SQL Server Administrators",
+                        "description": "SG SANDBOX SQL Server Administrators"
+                    },
+                    "systemAdministrators": {
+                        "name": "SG SANDBOX Server Administrators",
+                        "description": "SG SANDBOX Server Administrators"
+                    }
+                }
+            },
+            "network": {
+                "vnet": {
+                    "rg": "RG_SRE_NETWORKING"
+                }
+            },
+            "storage": {
+                "artifacts": {
+                    "rg": "RG_SRE_ARTIFACTS",
+                    "accountName": "sreartifactszxtgfoabcyjd"
+                },
+                "bootdiagnostics": {
+                    "rg": "RG_SRE_ARTIFACTS",
+                    "accountName": "srebootdiagszxtgfoabcyjd"
+                }
+            },
+            "keyVault": {
+                "rg": "RG_SRE_SECRETS",
+                "secretNames": {
+                    "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
+                    "npsSecret": "sre-sandbox-nps-secret"
+                }
+            },
+            "users": {
+                "serviceAccounts": {
+                    "datamount": {
+                        "samAccountName": "datamountsandbox",
+                        "passwordSecretName": "sre-sandbox-datamount-password"
+                    },
+                    "ldapSearch": {
+                        "name": "SANDBOX Gitlab LDAP",
+                        "samAccountName": "gitlabldapsandbox",
+                        "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
+                    },
+                    "postgres": {
+                        "name": "SANDBOX Postgres DB Service Account",
+                        "samAccountName": "pgdbsrvcsandbox",
+                        "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
+                    }
+                }
+            },
+            "rds": {
+                "rg": "RG_SRE_RDS",
+                "gateway": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+                    "ip": "10.150.1.250"
+                },
+                "sessionHost1": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+                    "ip": "10.150.1.249"
+                },
+                "sessionHost2": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+                    "ip": "10.150.1.248"
+                }
+            },
+            "dataserver": {
+                "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
+                "rg": "RG_SRE_DATA",
+                "ip": "10.150.2.250"
+            },
+            "webapps": {
+                "rg": "RG_SRE_WEBAPPS",
+                "gitlab": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+                    "ip": "10.150.2.151"
+                },
+                "hackmd": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+                    "ip": "10.150.2.152"
+                }
+            },
+            "databases": {
+                "rg": "RG_SRE_DATABASES",
+                "dbmssql": {
+                    "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+                    "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+                    "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
+                    "port": "14330",
+                    "disks": {
+                        "data": {
+                          "sizeGb": "2048"
+                        }                    },
+                    "vmName": "SQL-ING-SANDBOX"
+                }
+            },
+            "dsvm": {
+                "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
+                "rg": "RG_SRE_COMPUTE"
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@
       "countryCode": "GB"
     },
     "location": "centralus",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "mortest.dsgroupdev.co.uk",
       "netbiosName": "MORTEST",
@@ -135,7 +135,7 @@
     "shortName": "sre-sandbox",
     "location": "centralus",
     "tier": "2",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "sandbox.mortest.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",

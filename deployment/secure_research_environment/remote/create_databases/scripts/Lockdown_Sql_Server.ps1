@@ -5,29 +5,29 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level data administrators group")]
+    [string]$DataAdminGroup,
+    [Parameter(Mandatory = $true, HelpMessage = "Password for SQL AuthUpdate User")]
+    [string]$DbAdminPassword,
+    [Parameter(Mandatory = $true, HelpMessage = "Name of SQL AuthUpdate User")]
+    [string]$DbAdminUsername,
     [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
     [string]$EnableSSIS,  # it is not possible to pass a bool through the Invoke-RemoteScript interface
-    [Parameter(Mandatory = $true, HelpMessage = "Name of local admin user on this machine")]
-    [string]$LocalAdminUser,
+    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level research users group")]
+    [string]$ResearchUsersGroup,
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
     [string]$ServerLockdownCommandB64,
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level system administrators group")]
     [string]$SysAdminGroup,
-    [Parameter(Mandatory = $true, HelpMessage = "Password for SQL AuthUpdate User")]
-    [string]$SqlAuthUpdateUserPassword,
-    [Parameter(Mandatory = $true, HelpMessage = "Name of SQL AuthUpdate User")]
-    [string]$SqlAuthUpdateUsername,
-    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level data administrators group")]
-    [string]$DataAdminGroup,
-    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level research users group")]
-    [string]$ResearchUsersGroup
+    [Parameter(Mandatory = $true, HelpMessage = "Name of local admin user on this machine")]
+    [string]$VmAdminUsername
 )
 
 Import-Module SqlServer
 
 $serverName = $(hostname)
-$secureSqlAuthUpdateUserPassword = (ConvertTo-SecureString $SqlAuthUpdateUserPassword -AsPlainText -Force)
-$sqlAdminCredentials = New-Object System.Management.Automation.PSCredential($SqlAuthUpdateUsername, $secureSqlAuthUpdateUserPassword)
+$secureDbAdminPassword = (ConvertTo-SecureString $DbAdminPassword -AsPlainText -Force)
+$sqlAdminCredentials = New-Object System.Management.Automation.PSCredential($DbAdminUsername, $secureDbAdminPassword)
 $connectionTimeoutInSeconds = 5
 $EnableSSIS = [System.Convert]::ToBoolean($EnableSSIS)
 
@@ -63,27 +63,27 @@ if ($?) {
 
 # Check whether the auth update user exists and has admin rights
 # --------------------------------------------------------------
-Write-Output "Checking that the $SqlAuthUpdateUsername user has admin permissions on: '$serverName'..."
-$loginExists = Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed | Where-Object { $_.Name -eq $SqlAuthUpdateUsername }
+Write-Output "Checking that the $DbAdminUsername user has admin permissions on: '$serverName'..."
+$loginExists = Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed | Where-Object { $_.Name -eq $DbAdminUsername }
 $smo = (New-Object Microsoft.SqlServer.Management.Smo.Server $serverName)
 $smo.ConnectionContext.LoginSecure = $false  # disable the default use of Windows credentials
 $smo.ConnectionContext.set_Login($sqlAdminCredentials.UserName)
 $smo.ConnectionContext.set_SecurePassword($sqlAdminCredentials.Password)
-$isAdmin = $smo.Roles | Where-Object { $_.Name -Like "*admin*" } | Where-Object { $_.EnumServerRoleMembers() -Contains $SqlAuthUpdateUsername }
+$isAdmin = $smo.Roles | Where-Object { $_.Name -Like "*admin*" } | Where-Object { $_.EnumServerRoleMembers() -Contains $DbAdminUsername }
 
-# If the SqlAuthUpdateUsername is not found then something has gone wrong
+# If the DbAdminUsername is not found then something has gone wrong
 if ($operationFailed -Or (-Not $loginExists)) {
-    Write-Output " [x] $SqlAuthUpdateUsername does not exist on: '$serverName'!"
+    Write-Output " [x] $DbAdminUsername does not exist on: '$serverName'!"
     exit 1
 
-# If the SqlAuthUpdateUsername is not an admin, then we are not able to do anything else.
+# If the DbAdminUsername is not an admin, then we are not able to do anything else.
 # Hopefully this is because lockdown has already been run.
 } elseif (-Not $isAdmin) {
-    Write-Output " [o] $SqlAuthUpdateUsername is not an admin on: '$serverName'. Have you already locked this server down?"
+    Write-Output " [o] $DbAdminUsername is not an admin on: '$serverName'. Have you already locked this server down?"
 
 # ... otherwise we continue with the server lockdown
 } else {
-    Write-Output " [o] $SqlAuthUpdateUsername has admin privileges on: '$serverName'"
+    Write-Output " [o] $DbAdminUsername has admin privileges on: '$serverName'"
 
     # Give the configured domain groups login access to the SQL Server
     # ----------------------------------------------------------------
@@ -92,7 +92,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $domainGroup } ) {
             Write-Output " [o] '$domainGroup' already has SQL login access to: '$serverName'"
         } else {
-            $_ = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $domainGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+            $null = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $domainGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
             if ($? -And -Not $operationFailed) {
                 Write-Output " [o] Successfully gave '$domainGroup' SQL login access to: '$serverName'"
             } else {
@@ -177,7 +177,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Removing database access from the local Windows admin
     # -----------------------------------------------------
-    $windowsAdmin = "${serverName}\${LocalAdminUser}"
+    $windowsAdmin = "${serverName}\${VmAdminUsername}"
     Write-Output "Removing database access from $windowsAdmin on: '$serverName'..."
     $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
@@ -194,8 +194,8 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Revoke the sysadmin role from the SQL AuthUpdateUser used to build the SQL Server
     # ---------------------------------------------------------------------------------
-    Write-Output "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
-    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername;"
+    Write-Output "Revoking sysadmin role from $DbAdminUsername on: '$serverName'..."
+    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $DbAdminUsername;"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"

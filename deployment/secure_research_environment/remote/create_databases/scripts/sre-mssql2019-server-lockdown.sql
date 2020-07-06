@@ -1,6 +1,6 @@
 /*
 N.M numberings above each lockdown command reference recommendations in
-the "CIS Microsoft SQL Server 2019 Benchmark v1.0.0" available from 
+the "CIS Microsoft SQL Server 2019 Benchmark v1.0.0" available from
 https://downloads.cisecurity.org/.
 */
 PRINT '2.1 - Ensure Ad Hoc Distributed Queries Server Configuration Option is set to 0'
@@ -9,7 +9,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'Ad Hoc Distributed Queries', 0;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
@@ -33,7 +32,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'Database Mail XPs', 0;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
@@ -45,7 +43,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'Ole Automation Procedures', 0;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
@@ -57,7 +54,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'remote access', 0;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
@@ -75,7 +71,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'scan for startup procs', 0;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
@@ -102,7 +97,6 @@ RECONFIGURE;
 EXECUTE sp_configure 'default trace enabled', 1;
 RECONFIGURE;
 GO
-
 EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO

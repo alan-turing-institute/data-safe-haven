@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing DSG - 7 - Narchives",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "7",
     "shmId": "turing1",
     "tier": "1",

@@ -1,10 +1,13 @@
 {
     "subscriptionName": "Safe Haven Management Test A",
-    "domainSubscriptionName": "[Prod] Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "testa.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENTESTA",
     "shmId": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
@@ -14,5 +17,120 @@
         "countryCode": "GB"
     },
     "location": "centralus",
-    "ipPrefix": "10.0.0"
+    "overrides": {
+        "domain": {
+            "netbiosName": "SAFEHAVENTESTA",
+            "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "linuxServers": {
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "rdsGatewayServers": {
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+                }
+            },
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "network": {
+            "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+            }
+        },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "domainAdminUsername": "shm-testa-vm-admin-username",
+                "vmAdminUsername": "shm-testa-vm-admin-username"
+            }
+        },
+        "users": {
+            "computerManagers": {
+                "identityServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                }
+            },
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-testa-localadsync-password"
+                }
+            }
+        },
+        "dc": {
+            "rg": "RG_SHM_DC",
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-testa-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-testa-nps-admin-password",
+            "rg": "RG_SHM_NPS",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmtestaartifactsvkdrslu"
+            },
+            "bootdiagnostics": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmtestabootdiagsvkdrslu"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS",
+            "pypi": {
+                "tier2": {
+                    "diskSize": 8191,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-pypi-internal-tier-2-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier2": {
+                    "diskSize": 127,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-cran-internal-tier-2-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password"
+                    }
+                }
+            }
+        }
+    }
 }

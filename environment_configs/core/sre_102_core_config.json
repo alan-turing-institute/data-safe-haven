@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 102 - Telus",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "102",
     "shmId": "turing1",
     "tier": "2",

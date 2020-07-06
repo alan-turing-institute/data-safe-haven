@@ -20,7 +20,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 
 # Select which VM size to use
@@ -51,16 +51,16 @@ $cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "clo
 
 # Create resource groups if they do not exist
 # -------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.build.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.build.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-$_ = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
-Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.adminSecurityGroupName
+$null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
+Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that VNET and subnet exist
@@ -82,7 +82,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Direction Inbound `
                              -Priority 1000 `
                              -Protocol TCP `
-                             -SourceAddressPrefix 193.60.220.240,193.60.220.253 `
+                             -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
                              -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Deny `
@@ -95,7 +95,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange *
-$_ = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+$null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Insert scripts into the cloud-init template
@@ -152,11 +152,11 @@ $python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "pac
 $python37PipPackages = $python37AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-                  "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-                  "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
+    "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
+    "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
+    "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
+    "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
+    "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
 # Require specific versions of some packages. Replace ' package ' with ' package<version requirement> '
 $requiredCondaVersions = "CONDA_VERSIONED_PACKAGES=`$(echo `$CONDA_PACKAGES | sed " + $($packageVersions.Keys | ForEach-Object { "-e 's/ $_ / $_$($packageVersions[$_]) /g'" } | Join-String -Separator " ") + ")"
@@ -168,14 +168,14 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requir
 $cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
 $bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
-             "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
+    "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -defaultValue "dsvmbuildadmin"
-$buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"
+$buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword -DefaultLength 20
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
@@ -201,7 +201,7 @@ $params = @{
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
 }
-$_ = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params
 
 
 # Log connection details for monitoring this build
@@ -210,11 +210,11 @@ $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
-Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.Name)"
+Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
 Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /installation/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

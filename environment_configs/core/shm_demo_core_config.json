@@ -1,10 +1,13 @@
 {
     "subscriptionName": "Safe Haven Management Test B",
-    "domainSubscriptionName": "[Prod] Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "demo.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENDEMO",
     "shmId": "demo",
     "name": "Turing Development Safe Haven B",
     "organisation": {
@@ -14,5 +17,120 @@
         "countryCode": "GB"
     },
     "location": "centralus",
-    "ipPrefix": "10.0.0"
+    "overrides": {
+        "domain": {
+            "netbiosName": "SAFEHAVENDEMO",
+            "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "linuxServers": {
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "rdsGatewayServers": {
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                }
+            },
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "network": {
+            "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+            }
+        },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "domainAdminUsername": "shm-demo-vm-admin-username",
+                "vmAdminUsername": "shm-demo-vm-admin-username"
+            }
+        },
+        "users": {
+            "computerManagers": {
+                "identityServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                }
+            },
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-demo-localadsync-password"
+                }
+            }
+        },
+        "dc": {
+            "rg": "RG_SHM_DC",
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-demo-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-demo-nps-admin-password",
+            "rg": "RG_SHM_NPS",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmdemoartifactsnhavsfry"
+            },
+            "bootdiagnostics": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmdemobootdiagsnhavsfry"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS",
+            "pypi": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-external-tier-3-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier3": {
+                    "diskSize": 31,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-external-tier-3-admin-password"
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 101 - Turkcell",
-    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "azureAdminGroupName" : "Safe Haven Production Admins",
     "sreId": "101",
     "shmId": "turing1",
     "tier": "2",

@@ -31,36 +31,45 @@ function Add-NetworkSecurityGroupRule {
         [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
         [switch]$VerboseLogging = $false
     )
-    if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
-    $_ = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-        $_ = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority $Priority `
-                                             -Direction "$Direction" `
-                                             -Access "$Access" `
-                                             -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix `
-                                             -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix `
-                                             -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
-        if ($?) {
-            if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
+    try {
+        if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
+        $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if ($notExists) {
+            if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
+                $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                        -Access "$Access" `
+                                                        -Description "$Description" `
+                                                        -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                        -DestinationPortRange $DestinationPortRange `
+                                                        -Direction "$Direction" `
+                                                        -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                        -Priority $Priority `
+                                                        -Protocol "$Protocol" `
+                                                        -SourceAddressPrefix $SourceAddressPrefix `
+                                                        -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+            if ($?) {
+                if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
+            } else {
+                if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
+            }
         } else {
-            if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
+            if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
+            $null = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                    -Access "$Access" `
+                                                    -Description "$Description" `
+                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                    -DestinationPortRange $DestinationPortRange `
+                                                    -Direction "$Direction" `
+                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                    -Priority $Priority `
+                                                    -Protocol "$Protocol" `
+                                                    -SourceAddressPrefix $SourceAddressPrefix `
+                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
         }
-    } else {
-        if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
-        $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority $Priority `
-                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+    } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
+        Add-LogMessage -Level Fatal $_.Exception.Message.Split("`n")[0]
     }
+
 }
 Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
@@ -72,18 +81,26 @@ function Add-VmToNSG {
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine")]
         $VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group")]
-        $NSGName
+        $NSGName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $VmResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the NSG belongs to")]
+        $NsgResourceGroupName
     )
-    Add-LogMessage -Level Info ("[ ] Associating $VMName with $NSGName...")
-    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $VMName).Id }
-    $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Name -eq $NSGName }
+    Add-LogMessage -Level Info "[ ] Associating $VMName with $NSGName..."
+    $vmId = $(Get-AzVM -Name $VMName -ResourceGroupName $VmResourceGroupName).Id
+    if ($vmId.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($vmId.Count) VM(s) called $VMName!" }
+    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }
+    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName -ResourceGroupName $NsgResourceGroupName
+    if ($nsg.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($nsg.Count) NSG(s) called $NSGName!" }
     $nic.NetworkSecurityGroup = $nsg
-    $_ = ($nic | Set-AzNetworkInterface)
+    $null = ($nic | Set-AzNetworkInterface)
     if ($?) {
         Add-LogMessage -Level Success "NSG association succeeded"
     } else {
         Add-LogMessage -Level Fatal "NSG association failed!"
     }
+    Start-Sleep -Seconds 10  # Allow NSG association to propagate
 }
 Export-ModuleMember -Function Add-VmToNSG
 
@@ -572,10 +589,10 @@ function Deploy-Subnet {
     )
     Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
     Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
-    $_ = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        $_ = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $null = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
         $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
@@ -636,8 +653,7 @@ function Deploy-StorageContainer {
         if ($?) {
             Add-LogMessage -Level Success "Created storage container"
         } else {
-            Add-LogMessage -Level Failure "Failed to create storage container!"
-            throw "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
@@ -727,6 +743,8 @@ function Deploy-UbuntuVirtualMachine {
         } else {
             Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
+        Start-Sleep 30  # wait for VM deployment to register
+        Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }
@@ -782,19 +800,23 @@ Export-ModuleMember -Function Deploy-VirtualMachineNIC
 function Deploy-VirtualNetwork {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
-        $AddressPrefix,
+        [string]$AddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        [string]$Location,
+        [Parameter(Mandatory = $false, HelpMessage = "DNS servers to attach to this virtual network")]
+        [string[]]$DnsServer
     )
     Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
     $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
-        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" -Force
+        $params = @{}
+        if ($DnsServer) { $params["DnsServer"] = $DnsServer }
+        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" @params -Force
         if ($?) {
             Add-LogMessage -Level Success "Created virtual network '$Name'"
         } else {
@@ -820,10 +842,10 @@ function Enable-AzVM {
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
     if ($powerState -eq "PowerState/running") {
-        $_ = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $null = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
         $success = $?
     } else {
-        $_ = Start-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $null = Start-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
         $success = $?
     }
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
@@ -928,9 +950,8 @@ function Invoke-RemoteScript {
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
-        Add-LogMessage -Level Failure "Remote script execution failed!"
-        Add-LogMessage -Level Failure "Script output:`n$($result | Out-String)"
-        throw "Remote script execution has failed. Please check the error message above before re-running this script."
+        Add-LogMessage -Level Info "Script output:`n$($result | Out-String)"
+        Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     # Wait 10s to allow the run command extension to register as completed
     Start-Sleep 10
@@ -955,6 +976,7 @@ function Invoke-WindowsConfigureAndUpdate {
     $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
+    Start-Sleep 10  # protect against 'Run command extension execution is in progress' errors
     # Install additional Powershell modules
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
@@ -983,10 +1005,10 @@ function New-DNSZone {
         $ResourceGroupName
     )
     Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
-    $_ = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
-        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
         if ($?) {
             Add-LogMessage -Level Success "Created DNS Zone '$Name'"
         } else {
@@ -1037,12 +1059,12 @@ function Remove-VirtualMachine {
         $ResourceGroupName
     )
 
-    $_ = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level InfoSuccess "VM '$Name' does not exist"
     } else {
         Add-LogMessage -Level Info "[ ] Removing VM '$Name'"
-        $_ = Remove-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        $null = Remove-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Force
         if ($?) {
             Add-LogMessage -Level Success "Removed VM '$Name'"
         } else {
@@ -1063,12 +1085,12 @@ function Remove-VirtualMachineDisk {
         $ResourceGroupName
     )
 
-    $_ = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level InfoSuccess "Disk '$Name' does not exist"
     } else {
         Add-LogMessage -Level Info "[ ] Removing disk '$Name'"
-        $_ = Remove-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        $null = Remove-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -Force
         if ($?) {
             Add-LogMessage -Level Success "Removed disk '$Name'"
         } else {
@@ -1088,12 +1110,12 @@ function Remove-VirtualMachineNIC {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
         $ResourceGroupName
     )
-    $_ = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level InfoSuccess "VM network card '$Name' does not exist"
     } else {
         Add-LogMessage -Level Info "[ ] Removing VM network card '$Name'"
-        $_ = Remove-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        $null = Remove-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Force
         if ($?) {
             Add-LogMessage -Level Success "Removed VM network card '$Name'"
         } else {
@@ -1129,7 +1151,7 @@ function Set-DnsZoneAndParentNSRecords {
 
     # Check if parent DNS Zone exists in same subscription and resource group
     # -----------------------------------------------------------------------
-    $_ = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
         Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
@@ -1152,7 +1174,7 @@ function Set-KeyVaultPermissions {
         [Parameter(Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
         $GroupName
     )
-    Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
+    Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
         $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
@@ -1168,9 +1190,9 @@ function Set-KeyVaultPermissions {
         $success = $success -and $?
     }
     if ($success) {
-        Add-LogMessage -Level Success "Set correct access policies"
+        Add-LogMessage -Level Success "Set correct access policies for key vault '$Name'"
     } else {
-        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+        Add-LogMessage -Level Fatal "Failed to set correct access policies for key vault '$Name'!"
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions
@@ -1189,10 +1211,10 @@ function Set-NSRecords {
         [Parameter(Mandatory = $true, HelpMessage = "NS records to add")]
         $NsRecords
     )
-    $_ = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "Creating new Record Set '$($RecordSetName)' in DNS Zone '$($DnsZoneName)' with NS records '$($nsRecords)' to ..."
-        $_ = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
+        $null = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
         if ($?) {
             Add-LogMessage -Level Success "Created DNS Record Set '$RecordSetName'"
         } else {
@@ -1218,7 +1240,7 @@ function Set-SubnetNetworkSecurityGroup {
         $VirtualNetwork
     )
     Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
-    $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
+    $null = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
     $success = $?
     $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
     $success = $success -and $?
@@ -1279,7 +1301,7 @@ function Update-NetworkSecurityGroupRule {
             Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access to '$DestinationAddressPrefix'"
         }
         # Update rule and NSG (both are required)
-        $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
+        $null = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
                                              -Name "$Name" `
                                              -Description "$Description" `
                                              -Priority "$Priority" `
@@ -1336,7 +1358,7 @@ function Wait-ForAzVMCloudInit {
     Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish for $Name..."
     $progress = 0
     $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Contains("PowerState/stopped"))) {
+    while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and ($statuses.Contains("PowerState/stopped") -or $statuses.Contains("PowerState/deallocated")))) {
         $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
         $progress = [math]::min(100, $progress + 1)
         Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress

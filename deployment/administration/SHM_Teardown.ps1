@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Make user confirm before beginning deletion
@@ -25,54 +25,36 @@ while ($confirmation -ne "y") {
 }
 
 
-# Remove resources
-# ----------------
-$sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
-while ($sreResources.Length) {
-    Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
-    foreach ($resource in $sreResources) {
-        Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
-        $_ = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
-        if ($?) {
-            Add-LogMessage -Level Success "Resource removal succeeded"
-        } else {
-            Add-LogMessage -Level Info "Resource removal failed - rescheduling."
-        }
-    }
-    $sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
-}
-
-
-# Remove resource groups
-# ----------------------
-$sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
-while ($sreResourceGroups.Length) {
-    Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
-    foreach ($resourceGroup in $sreResourceGroups) {
+# Remove resource groups and the resources they contain
+# If there are still resources remaining after 10 loops then throw an exception
+# -----------------------------------------------------------------------------
+for ($i = 0; $i -le 10; $i++) {
+    $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
+    if (-not $shmResourceGroups.Length) { break }
+    Add-LogMessage -Level Info "Found $($shmResourceGroups.Length) resource group(s) to remove..."
+    foreach ($resourceGroup in $shmResourceGroups) {
         Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
-        $_ = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
+        $null = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Resource group removal succeeded"
         } else {
             Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
         }
     }
-    $sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
+}
+if ($shmResourceGroups) {
+    Add-LogMessage -Level Fatal "There are still $($shmResourceGroups.Length) resource(s) remaining!`n$shmResourceGroups"
 }
 
 
 # Remove DNS data from the DNS subscription
 # -----------------------------------------
-$_ = Set-AzContext -SubscriptionId $config.dns.subscriptionName
-$dnsResourceGroup = $config.dns.rg
-$shmDomain = $config.domain.fqdn
-# AD DNS record
+$null = Set-AzContext -SubscriptionId $config.dns.subscriptionName
 $adDnsRecordname = "@"
+$shmDomain = $config.domain.fqdn
 Add-LogMessage -Level Info "[ ] Removing '$adDnsRecordname' TXT record from SHM $shmId DNS zone ($shmDomain)"
-Remove-AzDnsRecordSet -Name $adDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-$success = $?
-# Print success/failure message
-if ($success) {
+Remove-AzDnsRecordSet -Name $adDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $config.dns.rg
+if ($?) {
     Add-LogMessage -Level Success "Record removal succeeded"
 } else {
     Add-LogMessage -Level Fatal "Record removal failed!"
@@ -81,4 +63,4 @@ if ($success) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext
