@@ -494,7 +494,7 @@
                 },
                 "networkProfile": {
                     "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]",
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh3nic'))]",
                         "properties": {
                             "primary": true
                         }
@@ -508,7 +508,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh3nic'))]"
             ]
         },
         {

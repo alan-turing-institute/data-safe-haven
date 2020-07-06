@@ -416,7 +416,7 @@
           "description": "SG SANDBOX Research Users",
           "name": "SG SANDBOX Research Users"
         },
-        "reviewUsersGroup": {
+        "reviewUsers": {
           "description": "SG SANDBOX Review Users",
           "name": "SG SANDBOX Review Users"
         },

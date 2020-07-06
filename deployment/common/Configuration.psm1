@@ -51,7 +51,7 @@ function Add-SreConfig {
         dataAdministrators = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Data Administrators" }
         systemAdministrators = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) System Administrators" }
         researchUsers = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Research Users" }
-        reviewUsersGroup = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Review Users" }
+        reviewUsers = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Review Users" }
     }
     foreach ($groupName in $config.sre.domain.securityGroups.Keys) {
         $config.sre.domain.securityGroups[$groupName].description = $config.sre.domain.securityGroups[$groupName].name

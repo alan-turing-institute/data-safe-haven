@@ -29,6 +29,15 @@ foreach ($server in $(Get-RDServer -ErrorAction SilentlyContinue)) {
         Remove-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server $server.Server -Role $role -Force -ErrorAction SilentlyContinue
     }
 }
+foreach ($policyName in $(Get-Item "RDS:\GatewayServer\RAP" -ErrorAction SilentlyContinue | Get-ChildItem | ForEach-Object { $_.Name })) {
+    Write-Output "... removing existing RAP policy '$policyName'"
+    Remove-Item "RDS:\GatewayServer\RAP\${policyName}" -Recurse -ErrorAction SilentlyContinue
+}
+$null = Set-Item "RDS:\GatewayServer\CentralCAPEnabled" -Value 0 -ErrorAction SilentlyContinue
+foreach ($policyName in $(Get-Item "RDS:\GatewayServer\CAP" -ErrorAction SilentlyContinue | Get-ChildItem | ForEach-Object { $_.Name })) {
+    Write-Output "... removing existing CAP policy '$policyName'"
+    Remove-Item "RDS:\GatewayServer\CAP\${policyName}" -Recurse -ErrorAction SilentlyContinue
+}
 
 
 # Create RDS Environment
@@ -87,7 +96,7 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabReviewIpAddress>" -CollectionName "Review" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
