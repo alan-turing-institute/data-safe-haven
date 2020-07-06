@@ -61,13 +61,14 @@ foreach ($containerName in @("ingress")) {
 
 # Create a SAS token (hardcoded 1 year for the moment)
 # ----------------------------------------------------
-$ingressSAS = New-AccountSasToken -SubscriptionName "$($config.shm.subscriptionName)" `
-                                  -ResourceGroup "$($config.shm.storage.datastorage.rg)" `
-                                  -AccountName "$($config.shm.storage.datastorage.accountName)" `
-                                  -Service "$($config.shm.storage.datastorage.GroupId)" `
-                                  -ResourceType "Container" `
-                                  -Permission "rlw" `
-                                  -validityHours "8760"
+$ingressSAS = New-AzureStorageAccountSASToken -SubscriptionName "$($config.shm.subscriptionName)" `
+                                              -ResourceGroup "$($config.shm.storage.datastorage.rg)" `
+                                              -AccountName "$($config.shm.storage.datastorage.accountName)" `
+                                              -Service "$($config.shm.storage.datastorage.GroupId)" `
+                                              -ResourceType "Container" `
+                                              -Permission "rlw" `
+                                              -validityHours "8760"
+Add-logMessage "Created SAS token with value: $ingressSAS"
 
 # Create the private endpoint
 # ---------------------------
@@ -78,9 +79,11 @@ $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privat
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
+$Secret = ConvertTo-SecureString -String $ingressSAS -AsPlainText -Force
+
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
-$null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue "$ingressSAS"
+$null = Set-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.storageIngressSAS -SecretValue "$Secret"
 if ($?) {
     Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
 } else {
