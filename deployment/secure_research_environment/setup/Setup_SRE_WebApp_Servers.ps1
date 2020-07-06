@@ -115,7 +115,6 @@ try {
     Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.gitlab.ip)..."  # Note that this has no effect at present
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps -Name "TmpAllowOutboundInternetGitlab" -SourceAddressPrefix $config.sre.webapps.gitlab.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @gitlabDeploymentParams @commonDeploymentParams
-    Wait-ForAzVMCloudInit -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg
     Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -NSGName $config.sre.webapps.nsg
     Enable-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
@@ -153,7 +152,6 @@ try {
     Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.hackmd.ip)..."  # Note that this has no effect at present
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps -Name "TmpAllowOutboundInternetHackMD" -SourceAddressPrefix $config.sre.webapps.hackmd.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @hackmdDeploymentParams @commonDeploymentParams
-    Wait-ForAzVMCloudInit -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg
     Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -NSGName $config.sre.webapps.nsg
     Enable-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
@@ -220,7 +218,6 @@ try {
     Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($config.sre.webapps.gitlabreview.ip)..."
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock -Name "TmpAllowOutboundInternetGitlabReview" -SourceAddressPrefix $config.sre.webapps.gitlabreview.ip -Access Allow -Description "Allow outbound internet" -DestinationAddressPrefix Internet -DestinationPortRange * -Direction Outbound -Priority 100 -Protocol * -SourcePortRange *
     $null = Deploy-UbuntuVirtualMachine @gitlabReviewDeploymentParams @commonDeploymentParams
-    Wait-ForAzVMCloudInit -Name $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg
     Enable-AzVM -Name $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg
 } finally {
     $null = Remove-AzNetworkSecurityRuleConfig -Name "TmpAllowOutboundInternetGitlabReview" -NetworkSecurityGroup $nsgAirlock
