@@ -604,7 +604,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the firewall by running `./Setup_SHM_Firewall.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
-- This will take **a few minutes** to run.
+- This will take **about 10 minutes** to run.
 
 
 ## 12. Deploy package mirrors
