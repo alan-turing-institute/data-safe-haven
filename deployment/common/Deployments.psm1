@@ -672,7 +672,9 @@ function Deploy-UbuntuVirtualMachine {
         [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
         $OsDiskSizeGb = $null,
         [Parameter(Mandatory = $false, HelpMessage = "IDs of data disks")]
-        $DataDiskIds = $null
+        $DataDiskIds = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Do not wait for deployment to finish")]
+        [switch]$NoWait = $false
     )
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
     $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -707,8 +709,10 @@ function Deploy-UbuntuVirtualMachine {
         } else {
             Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
-        Start-Sleep 30  # wait for VM deployment to register
-        Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
+        if (-not $NoWait) {
+            Start-Sleep 30  # wait for VM deployment to register
+            Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
+        }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }
