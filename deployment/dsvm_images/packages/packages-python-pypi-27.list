@@ -1,4 +1,3 @@
-backports
 beautifulsoup4
 bokeh
 catboost
@@ -33,7 +32,6 @@ nose
 numpy
 numpydoc
 pandas
-pandas-profiling
 pandasql
 pathos
 Pillow
@@ -43,7 +41,6 @@ pydot
 pygrib
 pyLDAvis
 pylint
-pymc3
 pyodbc
 pyshp
 pystan
