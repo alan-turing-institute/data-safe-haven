@@ -3,7 +3,9 @@ apt-transport-https
 aspell
 atom
 auditd
+automake
 autotools-dev
+bison
 build-essential
 clamav
 clamav-daemon
@@ -16,6 +18,7 @@ dotnet-sdk-3.1
 dstat
 emacs
 firefox
+flex
 florence
 g++
 gcc
@@ -25,7 +28,15 @@ jags
 jupyter
 krb5-user
 ldap-utils
+libeccodes-dev
+libffi-dev
+libpq-dev
+libsqlite3-dev
+libssl-dev
+libtool
+libxml2-dev
 lyx
+m4
 mono-complete
 mono-devel
 octave
@@ -46,6 +57,7 @@ sssd-tools
 sysstat
 texlive-full
 texstudio
+unixodbc-dev
 unzip
 weka
 weka-doc
