@@ -89,7 +89,7 @@ $commonDeploymentParams = @{
 $gitlabCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw).
     Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
     Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).
-    Replace('<gitlab-rb-base>', $config.shm.domain.userOuPath).
+    Replace('<gitlab-rb-base>', $config.shm.domain.ous.researchUsers.path).
     Replace('<gitlab-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath)))").
     Replace('<gitlab-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
     Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
@@ -130,7 +130,7 @@ $hackmdCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-hackm
     Replace('<hackmd-bind-dn>', $ldapSearchUserDn).
     Replace('<hackmd-bind-creds>', $ldapSearchUserPassword).
     Replace('<hackmd-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath))(userPrincipalName={{username}}))").
-    Replace('<hackmd-ldap-base>', $config.shm.domain.userOuPath).
+    Replace('<hackmd-ldap-base>', $config.shm.domain.ous.researchUsers.path).
     Replace('<hackmd-ip>', $config.sre.webapps.hackmd.ip).
     Replace('<hackmd-hostname>', $config.sre.webapps.hackmd.hostname).
     Replace('<hackmd-fqdn>', "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)").
@@ -181,7 +181,7 @@ $gitlabReviewCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init
     Replace('<gitlab-review-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
     Replace('<gitlab-review-rb-bind-dn>', $ldapSearchUserDn).
     Replace('<gitlab-review-rb-pw>', $ldapSearchUserPassword).
-    Replace('<gitlab-review-rb-base>', $config.shm.domain.userOuPath).
+    Replace('<gitlab-review-rb-base>', $config.shm.domain.ous.researchUsers.path).
     Replace('<gitlab-review-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.reviewUsers.name),$($config.shm.domain.securityOuPath)))").
     Replace('<gitlab-review-ip>', $config.sre.webapps.gitlabReview.ip).
     Replace('<gitlab-review-hostname>', $config.sre.webapps.gitlabReview.hostname).
