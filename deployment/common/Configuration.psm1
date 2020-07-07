@@ -460,7 +460,7 @@ function Get-ShmFullConfig {
     # Construct build images config
     $shm.dsvmImage = [ordered]@{
         subscription = $shmConfigBase.images.subscriptionName
-        location = $shmConfigBase.images.locations
+        location = $shmConfigBase.images.location
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
