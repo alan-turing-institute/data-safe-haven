@@ -8,6 +8,7 @@ autotools-dev
 build-essential
 clamav
 clamav-daemon
+clamav-freshclam
 clamav-unofficial-sigs
 code
 default-jdk
