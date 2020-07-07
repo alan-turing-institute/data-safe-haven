@@ -69,41 +69,42 @@ write_files:
           renewTGT=true
           doNotPrompt=true;
       };
+  # NB. the string is the commit this release was made from
   - path: "/installation/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 34e6c2c04cce11a52affb17678e05a1a3e4f526948dee80cdbccd3754ed88e6e
-      version: 1.16.1
+      hash: adac4b0e2efda32f538039d9d2e7f66e2898f3244e21da4b8dacf34d7b0e5415
+      version: 1.19.0
       debfile: azuredatastudio-linux-|VERSION|.deb
-      remote: https://azuredatastudiobuilds.blob.core.windows.net/releases/|VERSION|/|DEBFILE|
+      remote: https://sqlopsbuilds.azureedge.net/stable/4095037f2578c23033867e611e82c13de114ca5a/|DEBFILE|
   - path: "/installation/dbeaver.debinfo"
     permissions: "0400"
     content: |
-      hash: 84e8c082e9fc23a149f6795bfaeb3da71b547a104a122e4a2cbf2f8dad4c862b
-      version: 7.0.3
+      hash: 1689bc56b6e7fe9c4e9b725013877a0616512ffd5846ea3c8378f7da6e827939
+      version: 7.1.2
       debfile: dbeaver-ce_|VERSION|_amd64.deb
       remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
   - path: "/installation/rstudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 99e0f57b7426aa180db1b08163eba7a1a2e1ab033f2a632f6b852d7b23ca0f98
-      version: 1.2.5042
+      hash: 411ab50019aa8a08db99b092769b4a552c39f78ce518f9cdb81bda92e98a6f79
+      version: 1.3.959
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
   - path: "/installation/julia.tarinfo"
     permissions: "0400"
     content: |
-      hash: fd6d8cadaed678174c3caefb92207a3b0e8da9f926af6703fb4d1e4e4f50610a
+      hash: d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28
       version_major: 1.4
-      version: |VERSION_MAJOR|.1
+      version: |VERSION_MAJOR|.2
       tarfile: julia-|VERSION|-linux-x86_64.tar.gz
       remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
   - path: "/installation/spark.tarinfo"
     permissions: "0400"
     content: |
-      hash: 020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81
-      version: 2.4.5
-      tarfile: spark-|VERSION|-bin-hadoop2.7.tgz
+      hash: 3c9bef2d002d706b5331415884d3f890ecfdd7c6a692f36ed7a981ad120b2482
+      version: 3.0.0
+      tarfile: spark-|VERSION|-bin-hadoop3.2.tgz
       remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
   - path: "/installation/analyse_build.py"
     permissions: "0755"
