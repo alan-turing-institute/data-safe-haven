@@ -32,7 +32,6 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdmi
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
-<<<<<<< HEAD:deployment/safe_haven_management_environment/setup/Setup_SHM_KeyVault_And_Emergency_Admin.ps1
 
 # :: AAD Global Administrator username
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "admin.emergency.access"
@@ -43,30 +42,21 @@ if ($?) {
 }
 
 # :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "AAD emergency administrator account password exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
 }
-=======
->>>>>>> master:deployment/safe_haven_management_environment/setup/Setup_SHM_KeyVault.ps1
 
 # :: Admin usernames
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower()
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
-}
-# :: AAD admin details
-try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName
-    Add-LogMessage -Level Success "Ensured that AAD admin details exist"
-} catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that AAD admin details exist!"
 }
 # :: VM admin passwords
 try {
