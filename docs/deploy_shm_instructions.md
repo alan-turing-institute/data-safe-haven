@@ -13,8 +13,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 9. [Deploy and configure Network Policy Server (NPS)](#9-deploy-and-configure-network-policy-server-nps)
 10. [Require MFA for all users](#10-r#equire-mfa-for-all-users)
 11. [Deploy firewall](#11-deploy-firewall)
-12. [Deploy package mirrors](#12-deploy-package-mirrors)
-13. [Tear down SHM](#13-tearing-down-the-shm)
+12. [Deploy logging](#12-deploy-logging)
+13. [Deploy package mirrors](#13-deploy-package-mirrors)
+14. [Tear down SHM](#14-tearing-down-the-shm)
 
 ## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Safe Haven Management <SHM ID>`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
@@ -610,7 +611,16 @@ This step allows the locale (country code) to be pushed from the local AD to the
 - This will take **about 10 minutes** to run.
 
 
-## 12. Deploy package mirrors
+## 12. Deploy logging
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Deploy and configure the firewall by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- This will take **about 5 minutes** to run.
+
+
+## 13. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
@@ -631,7 +641,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 - Deploy and configure the RDS VMs by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
-## 13. Tearing down the SHM
+## 14. Tearing down the SHM
 In order to tear down the SHM, use the following procedure:
 
 ### Disconnect from the Azure Active Directory

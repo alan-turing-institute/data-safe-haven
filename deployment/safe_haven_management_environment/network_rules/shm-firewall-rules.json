@@ -64,6 +64,22 @@
                         ]
                     },
                     {
+                        "name": "LogAnalytics",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<logging-workspace-id>.ods.opinsights.azure.com",
+                            "<logging-workspace-id>.oms.opinsights.azure.com",
+                            "<logging-workspace-id>.blob.core.windows.net",
+                            "<logging-workspace-id>.azure-automation.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AzureADLogin",
                         "protocols": [
                             "https:443"
