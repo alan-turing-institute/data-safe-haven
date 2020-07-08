@@ -64,6 +64,22 @@
                         ]
                     },
                     {
+                        "name": "CertificateStatusCheck",
+                        "protocols": [
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ocsp.digicert.com",
+                            "crl3.digicert.com",
+                            "crl4.digicert.com",
+                            "crl.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AzureADLogin",
                         "protocols": [
                             "https:443"
