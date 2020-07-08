@@ -97,6 +97,8 @@ write_files:
               INCLUDE_DIRS="${INCLUDE_DIRS} --include=/web/checks/check_results_${RPACKAGE}.html --include=/web/dcmeta/${RPACKAGE}.xml --include=/web/packages/${RPACKAGE}/***"
           done
           rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran/web 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          # Top-level directory. Note that delete must *NOT* be enabled here.
+          rsync -rtlvz --prune-empty-dirs --progress --exclude '*/*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
       fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
