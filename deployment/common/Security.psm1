@@ -7,20 +7,28 @@ function New-Password {
         [int]$Length = 20
     )
     # Construct allowed character set
-    $alphaNumeric = [char[]](1..127) -match "[a-zA-Z0-9]" -join ""
+    $alphaNumeric = [char[]](1..127) -match "[0-9A-Za-z]" -join ""
+    $rangeSize = $alphaNumeric.Length -1
 
     # Initialise common parameters
     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $fourByteArray = [System.Byte[]]::CreateInstance([System.Byte], 4)
     $maxUint = [uint32]::MaxValue
+    $ceiling = [uint32]($maxUint - ($maxUint % $rangeSize)) # highest UInt that is evenly divisible by rangeSize
 
     # Convert random bytes into characters from permitted character set
     $password = ""
     foreach ($i in 1..$Length) {
-        $cryptoRng.GetBytes($fourByteArray)
-        $randomUint = [BitConverter]::ToUInt32($fourByteArray, 0)
         # This should give a smoother distribution across the 0..<n characters> space than the previous method which used 'byte % <n characters>' which inherently favours lower numbers
-        $password += $alphaNumeric[[int](($alphaNumeric.Length - 1) * $randomUint / $maxUint)]
+        while ($true) {
+            $cryptoRng.GetBytes($fourByteArray)
+            $randomUint = [BitConverter]::ToUInt32($fourByteArray, 0)
+            # Restrict to only values in the range that rangeSize divides evenly into
+            if ($randomUint -lt $ceiling) {
+                $password += $alphaNumeric[$randomUint % $rangeSize]
+                break
+            }
+        }
     }
 
     # Require at least one of each character class
