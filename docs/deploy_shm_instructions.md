@@ -81,13 +81,17 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
-  - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with the SHM's domain. The NS record will list 4 Azure name servers.
-  - Duplicate these records to the parent DNS system as follows:
-    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
-    <p align="center">
-        <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
-    </p>
-    - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+  <details><summary>Manual DNS configuration instructions</summary>
+
+    - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with the SHM's domain. The NS record will list 4 Azure name servers.
+    - Duplicate these records to the parent DNS system as follows:
+      - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
+      <p align="center">
+          <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
+      </p>
+      - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
+  </details>
 
 
 ## 4. Setup Azure Active Directory (AAD)
@@ -128,7 +132,9 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- **IMPORTANT** Ensure you are also authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
+  - Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+    - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+    - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
 - Deploy and configure the SHM key vault by running `./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 

@@ -1,10 +1,28 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-    [string]$shmId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
+    [string]$tenantId
 )
 
-Import-Module Az
+# Connect to the Azure AD
+# Note that this must be done in a fresh Powershell session with nothing else imported
+# ------------------------------------------------------------------------------------
+if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
+    Write-Output "Installing Azure AD Powershell module..."
+    $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
+    $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
+}
 Import-Module AzureAD.Standard.Preview
+Write-Output "Connecting to Azure AD '$tenantId'..."
+try {
+    $null = Connect-AzureAD -TenantId $tenantId
+} catch {
+    Write-Output "Please run this script in a fresh Powershell session with no other modules imported!"
+    throw
+}
+
+Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
@@ -100,45 +118,35 @@ try {
 # Ensure that Emergency Admin user exists
 # ---------------------------------------
 # Set user properties
-$mailNickname = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername
-$upn = "$mailNickname@$($config.domain.fqdn)"
-$displayName = "Admin - EMERGENCY ACCESS"
+$username = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername
+$upn = "$username@$($config.domain.fqdn)"
 $passwordProfile = New-Object -TypeName Microsoft.Open.AzureAD.Model.PasswordProfile
 $passwordProfile.Password = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword
 $passwordProfile.EnforceChangePasswordPolicy = $false
 $passwordProfile.ForceChangePasswordNextLogin = $false
-$userType = "Member"
-$accountEnabled = $true
-$passwordPolicies = "DisablePasswordExpiration"
-$usageLocation = $config.organisation.countryCode
+$params = @{
+    MailNickName = $username
+    DisplayName = "Admin - EMERGENCY ACCESS"
+    PasswordProfile = $passwordProfile
+    UserType = "Member"
+    AccountEnabled = $true
+    PasswordPolicies = "DisablePasswordExpiration"
+    UsageLocation = $config.organisation.countryCode
+}
 
 # Ensure user exists
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists..."
 $user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
 if($user) {
     # Update existing user
-    $user = Set-AzureADUser -ObjectId $upn `
-            -MailNickName $mailNickname `
-            -DisplayName  $displayName`
-            -PasswordProfile $passwordProfile `
-            -UserType $userType `
-            -AccountEnabled $accountEnabled `
-            -PasswordPolicies $passwordPolicies `
-            -UsageLocation $usageLocation
+    $user = Set-AzureADUser -ObjectId $upn @params
     if ($?) {
         Add-LogMessage -Level Success "Existing AAD emergency administrator account updated."
     } else {
         Add-LogMessage -Level Fatal "Failed to update existing AAD emergency administrator account!"
     }
 } else {
-    $user = New-AzureADUser -UserPrincipalName $upn `
-            -MailNickName $mailNickname `
-            -DisplayName $displayName `
-            -PasswordProfile $passwordProfile `
-            -UserType $userType `
-            -AccountEnabled $accountEnabled `
-            -PasswordPolicies $passwordPolicies `
-            -UsageLocation $usageLocation
+    $user = New-AzureADUser -UserPrincipalName $upn @params
     if ($?) {
         Add-LogMessage -Level Success "AAD emergency administrator account created."
     } else {
