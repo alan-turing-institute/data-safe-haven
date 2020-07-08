@@ -8,7 +8,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 4. [Setup Azure Active Directory (AAD)](#4-setup-azure-active-directory-aad)
 5. [Deploy key vault for SHM secrets and create emergency admin account](#5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 6. [Enable MFA and self-service password reset](#6-enable-mfa-and-self-service-password-reset)
-7. [Configure administrator accounts](#7-configure-administrator-accounts)
+7. [Configure internal administrator accounts](#7-configure-internal-administrator-accounts)
 8. [Deploy and configure VNET and Domain Controllers](#8-deploy-and-configure-vnet-and-domain-controllers)
 9. [Deploy and configure Network Policy Server (NPS)](#9-deploy-and-configure-network-policy-server-nps)
 10. [Require MFA for all users](#10-r#equire-mfa-for-all-users)
@@ -82,13 +82,17 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
-  - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with the SHM's domain. The NS record will list 4 Azure name servers.
-  - Duplicate these records to the parent DNS system as follows:
-    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
-    <p align="center">
-        <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
-    </p>
-    - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+  <details><summary>Manual DNS configuration instructions</summary>
+
+    - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with the SHM's domain. The NS record will list 4 Azure name servers.
+    - Duplicate these records to the parent DNS system as follows:
+      - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
+      <p align="center">
+          <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
+      </p>
+      - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
+  </details>
 
 
 ## 4. Setup Azure Active Directory (AAD)
@@ -110,7 +114,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 1. Navigate to the AAD you have created within the Azure portal. You can do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
     - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
-2. If required, click the "three lines" menu in the top left corner and select `Azure Active Directory`
+2. If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 3. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
       <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
@@ -129,7 +133,9 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- **IMPORTANT** Ensure you are also authenticated to the correct Azure AD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
+  - Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+    - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+    - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
 - Deploy and configure the SHM key vault by running `./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
@@ -140,7 +146,7 @@ However, there are rare operations that require you to be logged in as an **inte
 To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script. However, this account must be manually assigned to the Global Administrator role.
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Users` in the left hand sidebar and click on the `Admin - EMERGENCY ACCESS` user.
 4. Add the `Global Administrator` role to the user.
     - Click `Assigned roles` in the left hand menu
@@ -155,12 +161,14 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
 ### Add licences that support MFA
+Click the heading that applies to you to expand the instructions for that scenario.
 
-#### Test deployments
+<details><summary><b>Test deployments</b></summary>
+
 **For testing** you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD). You can activate the trial while logged in as your deafult guest administrator account.
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click on `Licences` in the left hand sidebar
 4. Click on `All products` in the left hand sidebar
 5. Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
@@ -168,7 +176,11 @@ To enable MFA and self-service password reset, you must have sufficient licences
     - Click the `Activate` button
     - Wait for around 20 minutes until the `Azure AD Premium P2` licences appear on the list of `All Products`
 
-#### Production deployments
+</details>
+
+
+<details><summary><b>Production deployments</b></summary>
+
 **For production** you should buy P1 licences. This requires you to be logged in with an **internal** Gloabl Administrator account. As activating self-service password reset requires active MFA licences, this is one of the rare occasions you will need to use the emergency access admin account.
 
 1. Switch to the the **emergency administrator** account:
@@ -176,7 +188,7 @@ To enable MFA and self-service password reset, you must have sufficient licences
     - Enter `admin.emergency.access@<SHM domain>` as the username
     - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
     - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD). Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
-    - Click the "three lines" menu in the top left corner and select "Subscriptions"
+    - Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Subscriptions"
     - Click on the Safe Haven SHM subscription
     - Click on `Resource Groups` in the left hand sidebar then `RG_SHM_SECRETS`
     - Click on the `kv-shm-<shm id>` key vault
@@ -203,16 +215,18 @@ To enable MFA and self-service password reset, you must have sufficient licences
     - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
     - Log in as the user you used to create the Safe Haven Azure AD
 
+</details>
+
 ### Enable self-service password reset
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Password reset` in the left hand sidebar
 4. Set the `Self service password reset enabled` toggle to `All`
 5. Click the `Save` icon
 
 ### Configure MFA on Azure Active Directory
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Users` in the left hand sidebar
 4. Click `Multi-Factor authentication` icon in the top bar of the users list.
 5. Click on `Service settings` at the top of the panel
@@ -229,40 +243,22 @@ To enable MFA and self-service password reset, you must have sufficient licences
       </p>
 
 
-## 7. Configure administrator accounts
+## 7. Configure internal administrator accounts
 
 The emergency access admin account should not be used except in a genuine emergency. In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
 
-In order to avoid being a single point of failure, we strongly recommend that you add additional administrators. This can be done as follows.
+A default external administrator account was automatically created for the user you were logged in as when you initially created the Azure AD. This user should also not be used for administering the Azure AD, as it is not controlled by this AD. You will delete this user after creating a new **internal** administrator account for yourself and the other administrators of the Safe Haven.
 
-:warning: You **must** create and activate an **internal** administrator account for yourself. Later steps will require use of an **internal** admin account with mobile phone and alternate email address set. :warning:
+:warning: In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourseld.
 
-#### Add new guest administrators
-You can add users that exist on other Active Directories (e.g. your existing corporate directory). These guest acocunts can be made administrators, just as the account you used to create the Safe Haven Azure Active Directory was.
+### Add internal administrator accounts for yourself and others
 
-1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
-3. Click `Users` in the left hand sidebar and click on the `+New guest user` icon in the top menu above the list of users.
-4. Invite the guest admin user:
-    - Enter their full name
-    - Enter their email address
-    - Click the `User` link in the `Roles` field and make the user an administrator:
-      - Search for `Global Administrator`
-      - Check `Global Administrator`
-      - Click the `Select` button
-    - Set their usage location to the country you used when creating the Safe Haven Azure AD
-    - Leave all other fields empty, including First name and Last name
-    - Click the `Invite` button
-5. There is no need to add a mobile number for self-service password reset, as this is managed by their "home" Azure AD rather than the Safe Haven Azure AD.
+:warning: You **must** create and activate an **internal** administrator account for yourself. You will delete the default external administrator account in the next step. Later steps will also require use of an **internal** admin account with mobile phone and alternate email address set.
 
-### Add new internal administrators
-
-You can also create internal administrator accounts that exist entirely within the Safe Haven Azure AD.
-
-:warning: You **must** create and activate an **internal** administrator account for yourself. Later steps will require use of an **internal** admin account with mobile phone and alternate email address verified. :warning:
+#### Create a new account for each administrator (including yourself)
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
 4. Create an internal admin user:
     - User name: `admin.firstname.lastname@<SHM domain>`
@@ -285,12 +281,46 @@ You can also create internal administrator accounts that exist entirely within t
     - Enter the user's institutional email address in the `Authentication Email` field
     - Click the `Save` icon at the top of the panel
 
+### Activate and configure your new internal admin account
+
+:warning: In the next step we will delete the external admin account created for the user account you used to create the Azure AD. Before you do this, you **must** configure and log into your new **internal** admin account you have just created for yourself.
+
+The other administrators you have just set up can activate their accounts by following the same steps.
+
+1. Go to https://aka.ms/mfasetup in an **ingognito / private browsing** tab
+2. Enter your username (`admin.firstname.lastname@<SHM domain>`)
+4. Click the `Forgotten my password` link
+3. Enter the captcha text and press next
+4. Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
+5. Enter a new password
+6. Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
+7. Enter their username and new password
+8. Click `Next` at the `More information required` prompt
+9. Verify their phone number (or phone number and email if they are an admin)
+10. On the MFA setup page, select the `Mobile app` or `Call my phone` option (for trial licences only the `Mobile app` option is available)
+10. Follow the instructions to configure their chosen MFA option
+
+### Remove the default external user that was used to create the Azure AD
+
+:warning: Make sure you have activated your account and **successfully logged in** with the nes **internal** administrator account you have just created for yourself (`admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
+
+1. Ensure you are logged in with the new **internal** administrator account you have just created.
+    - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
+    - Log in with the password you set for ypurself when activating your admin account in the previous step
+2. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
+3. Click `Users` in the left hand sidebar 
+4. Select the default **external** user that was created when you created the Azure AD.
+    - The `User name` field for this user will be at qa **different domain** than the internal administrator users you have just created
+    - The `Source` field for this user will be `External Azure Active Directory`
+5. Click the `Delete user` icon in the menu bar at the top of the user list panel
+
 ### Adding MFA licences to users
 
 It appears that administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if a user is unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so.
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 3. Click `Licences` in the left hand sidebar 
 4. Click `All products` in the left hand sidebar
 5. Click the relevant licence product
@@ -300,25 +330,6 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 9. Click `Select`
 10. Click `Assign`
 
-### User password reset and MFA setup instructions
-
-**Internal** users can reset their own passwords and setup MFA as follows:
-
-1. Got to https://aka.ms/mfasetup
-2. Enter their username:
-    - For administrators this will be `admin.firstname.lastname@<SHM domain>`
-    - For "normal" users this will be `firstname.lastname@<SHM domain>`
-4. Click the `Forgotten my password` link
-3. Enter the captcha text and press next
-4. Enter their mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
-5. Enter a new password
-6. Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
-7. Enter their username and new password
-8. Click `Next` at the `More information required` prompt
-9. Verify their phone number (or phone number and email if they are an admin)
-10. On the MFA setup page, select the `Mobile app` or `Call my phone` option (for trial licences only the `Mobile app` option is available)
-10. Follow the instructions to configure their chosen MFA option
-  
 
 ## 8. Deploy and configure VNET and Domain Controllers
 
@@ -408,15 +419,15 @@ rather than simply `<admin username>`)
         - On the `AD forest account` pop-up:
             - Select `Use existing AD account`
             - Enter the details for the `localadsync` user.
-                - Username: `<SHM ID>localadsync@<SHM domain>` (e.g. localadsync)
-                - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+                - Username: use the `shm-<SHM ID>-aad-localsync-username` secret in the SHM Key Vault.
+                - Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM Key Vault.
             - Click `OK`
-            - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+            - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user in the **Domain Controller** Active Directory to the value in the secret listed above.
                   - In Server Manager click `Tools > Active Directory Users and Computers`
                   - Expand the domain in the left hand panel
                   - Expand the `Safe Haven Service Accounts` OU
-                  - Right click on the "Local AD Sync Administrator" user and select "reset password"
-                  - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+                  - Right click on the "<SHM ID> Local AD Sync Administrator" user and select "reset password"
+                  - Set the password to the value in the secret listed above.
                   - Leave the other settings as is and click `OK`
         - Click `Next`
     - On the `Azure AD sign-in configuration` screen:
@@ -456,8 +467,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
 1. Generating user CSV file
     - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
     We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
-    - Add the required details for each user
-        - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+    - Add your details to create a researcher account for yourself.
+        - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
         - `GivenName`: User's first / given name
         - `Surname`: User's last name / surname
         - `Mobile`: Phone number to use for initial password reset.
@@ -477,10 +488,16 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - Click `Users > All users` and confirm that the new user is shown in the user list.
     - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
+#### Troubleshooting: Account already exists
+If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
+- `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
+
 
 ### Configure AAD side of AD connect
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Select `Password reset` from the left hand menu
 4. Select `On-premises integration` from the left hand side bar
     - Ensure `Write back passwords to your on-premises directory` is set to yes.
@@ -494,6 +511,20 @@ This step allows the locale (country code) to be pushed from the local AD to the
           <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
       </p>
     - If you changed this setting, click the `Save` icon
+
+
+#### Manually add an MFA licence for the user
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
+3. Select `Licences` from the left hand menu
+4. Select `All Products` from the left hand menu
+5. Click `Azure Active Directory Premium P1` (production) or `Azure Active Directory Premium P2` (test)
+6. Click `Assign`
+7. Click `Users and groups`
+8. Select the users you have recently created and click `Select`
+9. Click `Assign` to complete the process
+10. Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)
 
 
 ## 9. Deploy and configure Network Policy Server (NPS)
@@ -574,7 +605,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 :warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement :warning:
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. Click the "three lines" menu in the top left corner and select "Azure Active Directory"
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Security` in the left hand sidebar
 4. Click `Conditional access` in the left hand sidebar
 5. Click the `+New Policy` icon in the tob bar above the (empty) policy list

@@ -44,7 +44,7 @@ On the **SHM domain controller (DC1)**.
 - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv`
   - :pencil: we suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
 - Remove the example user and add the required details for each user
-  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
   - `Mobile`: Phone number to use for initial password reset.

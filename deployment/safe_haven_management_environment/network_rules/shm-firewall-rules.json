@@ -17,7 +17,7 @@
     ],
     "networkRuleCollections": [
         {
-            "name": "shm-<shm-id>",
+            "name": "shm-<shm-id>-allow",
             "properties": {
                 "priority": 1000,
                 "action": {
@@ -25,7 +25,7 @@
                 },
                 "rules": [
                     {
-                        "name": "AzureActiveDirectory",
+                        "name": "AllowAzureActiveDirectory",
                         "protocols": [
                             "TCP"
                         ],
@@ -45,7 +45,7 @@
     ],
     "applicationRuleCollections": [
         {
-            "name": "shm-<shm-id>",
+            "name": "shm-<shm-id>-allow",
             "properties": {
                 "priority": 1000,
                 "action": {
@@ -53,12 +53,28 @@
                 },
                 "rules": [
                     {
-                        "name": "WindowsUpdate",
+                        "name": "AllowWindowsUpdate",
                         "protocols": [],
                         "fqdnTags": [
                             "WindowsUpdate"
                         ],
                         "targetFqdns": [],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowCertificateStatusCheck",
+                        "protocols": [
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ocsp.digicert.com",
+                            "crl3.digicert.com",
+                            "crl4.digicert.com",
+                            "crl.microsoft.com"
+                        ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
                         ]
@@ -80,7 +96,7 @@
                         ]
                     },
                     {
-                        "name": "AzureADLogin",
+                        "name": "AllowAzureADLogin",
                         "protocols": [
                             "https:443"
                         ],
@@ -97,7 +113,7 @@
                         ]
                     },
                     {
-                        "name": "AzureMFA",
+                        "name": "AllowAzureMFA",
                         "protocols": [
                             "https:443"
                         ],
@@ -112,7 +128,7 @@
                         ]
                     },
                     {
-                        "name": "ADConnectPasswordReset",
+                        "name": "AllowADConnectPasswordReset",
                         "protocols": [
                             "https:443"
                         ],
@@ -126,7 +142,7 @@
                         ]
                     },
                     {
-                        "name": "ADConnectHealthCheck",
+                        "name": "AllowADConnectHealthCheck",
                         "protocols": [
                             "https:443"
                         ],
@@ -143,7 +159,7 @@
                         ]
                     },
                     {
-                        "name": "ADConnectHealthRegistration",
+                        "name": "AllowADConnectHealthRegistration",
                         "protocols": [
                             "https:443"
                         ],
@@ -153,6 +169,45 @@
                             "*.adhybridhealth.azure.com",
                             "www.office.com",
                             "policykeyservice.dc.ad.msft.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "name": "shm-<shm-id>-deny",
+            "properties": {
+                "priority": 2000,
+                "action": {
+                    "type": "Deny"
+                },
+                "rules": [
+                    {
+                        "name": "DenyWindowsDiagnosticsToMicrosoft",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "settings-win.data.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "DenyGeneralInternet",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"

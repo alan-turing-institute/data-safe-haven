@@ -86,7 +86,11 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
         if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
         if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
-        $null = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+        try {
+            $null = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to set firewall application rules!"
+        }
     }
 }
 
