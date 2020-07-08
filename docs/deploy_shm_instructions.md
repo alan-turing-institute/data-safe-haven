@@ -466,8 +466,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
 1. Generating user CSV file
     - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
     We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
-    - Add the required details for each user
-        - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+    - Add your details to create a researcher account for yourself.
+        - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
         - `GivenName`: User's first / given name
         - `Surname`: User's last name / surname
         - `Mobile`: Phone number to use for initial password reset.
@@ -487,6 +487,12 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - Click `Users > All users` and confirm that the new user is shown in the user list.
     - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
+#### Troubleshooting: Account already exists
+If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
+- `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
+
 
 ### Configure AAD side of AD connect
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -504,6 +510,20 @@ This step allows the locale (country code) to be pushed from the local AD to the
           <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
       </p>
     - If you changed this setting, click the `Save` icon
+
+
+#### Manually add an MFA licence for the user
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
+3. Select `Licences` from the left hand menu
+4. Select `All Products` from the left hand menu
+5. Click `Azure Active Directory Premium P1` (production) or `Azure Active Directory Premium P2` (test)
+6. Click `Assign`
+7. Click `Users and groups`
+8. Select the users you have recently created and click `Select`
+9. Click `Assign` to complete the process
+10. Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)
 
 
 ## 9. Deploy and configure Network Policy Server (NPS)
