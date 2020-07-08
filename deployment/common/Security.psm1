@@ -1,7 +1,9 @@
 Import-Module $PSScriptRoot/Logging.psm1
 
 # Generate a random alphanumeric password
-# ---------------------------------------
+# This gives a verifiably flat distribution across the characters in question
+# We introduce bias by the password requirements which increase the proportion of digits
+# --------------------------------------------------------------------------------------
 function New-Password {
     param(
         [int]$Length = 20
@@ -41,7 +43,8 @@ Export-ModuleMember -Function New-Password
 
 
 # Create a string of random letters
-# ---------------------------------
+# Note that this is not cryptographically secure but does give a verifiably flat distribution across lower-case letters
+# ---------------------------------------------------------------------------------------------------------------------
 function New-RandomLetters {
     param(
         [int]$Length = 20,
