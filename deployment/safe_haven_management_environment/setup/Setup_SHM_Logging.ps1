@@ -106,21 +106,69 @@ foreach ($counter in $counters) {
         -ResourceGroupName $config.logging.rg `
         -WorkspaceName $config.logging.workspaceName `
         -Name $sourceName
-    if($source) {  
+    if($source) {
         Add-LogMessage -Level InfoSuccess "Logging already active for '$($counter.setName)/$($counter.counterName)'"
     } else {
         $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
-        -ResourceGroupName $config.logging.rg `
-        -WorkspaceName $config.logging.workspaceName `
-        -ObjectName $counter.setName `
-        -InstanceName "*" `
-        -CounterName $counter.counterName `
-        -IntervalSeconds 60 `
-        -Name $sourceName
+            -ResourceGroupName $config.logging.rg `
+            -WorkspaceName $config.logging.workspaceName `
+            -ObjectName $counter.setName `
+            -InstanceName "*" `
+            -CounterName $counter.counterName `
+            -IntervalSeconds 60 `
+            -Name $sourceName
         if($?) {
             Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
         } else {
             Add-LogMessage -Level Fatal "Failed to activate logging for '$($counter.setName)/$($counter.counterName)'!"
+        }
+    }
+}
+
+
+# Activate required Intelligence Packs
+# ------------------------------------
+Add-LogMessage -Level Info "Ensuring required Log Analytics Intelligence Packs are enabled...'"
+$packNames = @(
+    "AntiMalware",
+    "ADReplication",
+    "AzureNetworking",
+    "AzureNSGAnalytics",
+    "Backup",
+    "CapacityPerformance",
+    "ChangeTracking",
+    "DHCPActivity",
+    "DnsAnalytics",
+    "InternalWindowsEvent",
+    "NetFlow",
+    "NetworkMonitoring",
+    "Security",
+    "SecurityCenterFree",
+    "SecurityCenterNetworkTraffic",
+    "SecurityInsights",
+    "ServiceMap",
+    "Updates",
+    "WindowsDefenderATP",
+    "WindowsEventForwarding",
+    "WindowsFirewall",
+    "WinLog",
+    "VMInsights"
+)
+foreach ($packName in $packNames) {
+    $pack = Get-AzOperationalInsightsIntelligencePack `
+        -WorkspaceName $config.logging.workspaceName `
+        -ResourceGroupName $config.logging.rg | Where-Object { $_.Name -eq $packName }
+    if($pack.Enabled) {
+        Add-LogMessage -Level InfoSuccess "'$packName' Intelligence Pack already enabled."
+    } else {
+        $pack = Set-AzOperationalInsightsIntelligencePack `
+            -WorkspaceName $config.logging.workspaceName `
+            -ResourceGroupName $config.logging.rg `
+            -IntelligencePackName $packName -Enabled $true
+        if($?) {
+            Add-LogMessage -Level Success "'$packName' Intelligence Pack enabled."
+        } else {
+            Add-LogMessage -Level Fatal "Failed to enable '$packName' Intelligence Pack!"
         }
     }
 }
