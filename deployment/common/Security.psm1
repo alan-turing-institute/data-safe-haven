@@ -110,8 +110,9 @@ function Resolve-KeyVaultSecret {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
-        if (-not $?) {
+        try {
+            $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop -ErrorVariable error
+        } catch [Microsoft.Azure.KeyVault.Models.KeyVaultErrorException] {
             Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
         }
     }
