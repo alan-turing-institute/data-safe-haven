@@ -132,11 +132,10 @@ try {
 Write-Output "Installing RDS webclient..."
 try {
     Install-RDWebClientPackage -ErrorAction Stop
-    # We cannot publish the WebClient here as we have not yet setup a broker certificate
-    # We setup RDS SSL certs in a separate script to support easy renewal, so we don't 
-    # configure the broker cert here. This means that the RDS WebClient URL will return 
-    # a 404 page until the SSL cetificate installation script is run for the first tim
-    # as this is when the WebClient will be first published
+    # We cannot publish the WebClient here as we have not yet setup a broker certificate.
+    # We do not configure the broker cert here as our RDS SSL certificates are set up in a
+    # separate script to support easy renewal. This means that, until the SSL certificate
+    # installation script is run for the first time, the RDS WebClient URL will return a 404 page.
     Write-Output " [o] RDS webclient installation succeeded"
 } catch {
     Write-Output " [x] RDS webclient installation failed!"
