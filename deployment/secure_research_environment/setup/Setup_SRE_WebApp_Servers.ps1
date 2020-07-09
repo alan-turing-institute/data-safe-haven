@@ -176,7 +176,7 @@ $sshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\
 # Construct GitLab review cloudinit
 $gitlabReviewCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-review.template.yaml" | Get-Item | Get-Content -Raw).
     Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
-    Replace('<gitlab-username>', $gitlabUsername).
+    Replace('<gitlab-username>', $gitlabUserIngressUsername).
     Replace('<gitlab-api-token>', $gitlabAPIToken).
     Replace('<gitlab-review-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
     Replace('<gitlab-review-rb-bind-dn>', $ldapSearchUserDn).
