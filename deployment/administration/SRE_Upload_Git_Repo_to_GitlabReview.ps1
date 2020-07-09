@@ -60,7 +60,7 @@ Set-Location $snapshotPath
 git checkout $sourceCommitHash
 Remove-Item -Path (Join-Path $snapshotPath ".git") -Recurse -Force
 
-## Record some metadata about the repository
+# Record some metadata about the repository
 Set-Location $repoPath
 $sourceGitURL > sourceGitURL
 $targetRepoName > targetRepoName
@@ -104,14 +104,13 @@ Add-LogMessage -Level Success "Constructed upload URL $remoteUrl"
 
 # Download the zipfile onto the remote machine
 # --------------------------------------------
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 # Create remote script (make a subdirectory of /tmp/zipfiles and run CURL to download blob to there)
 $script = @"
 #!/bin/bash
 mkdir -p /tmp/zipfiles/
 tmpdir=`$(mktemp -d /tmp/zipfiles/XXXXXXXXXXXXXXXXXXXX)
 curl -X GET -o `$tmpdir/${zipFileName} "${remoteUrl}"
-chown -R ${sreAdminUsername}:${sreAdminUsername} /tmp/zipfiles/
+chown -R gitlabdaemon:gitlabdaemon /tmp/zipfiles/
 "@
 Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $($config.sre.webapps.gitlabreview.vmName)"
 $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg
