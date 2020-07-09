@@ -33,14 +33,15 @@ The following 7 virtual machines are created as a result of these instructions:
 - [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
 - [:baseball: Deploy databases](#baseball-deploy-databases)
 - [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
-  - [:microscope: Test GitLab Server](#:microscope-test-gitlab-server)
-  - [:microscope: Test HackMD Server](#:microscope-test-hackmd-server)
+  - [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
+  - [:microscope: Test HackMD Server](#microscope-test-hackmd-server)
 - [:computer: Deploy data science VMs](#computer-deploy-data-science-vms)
   - [:fast_forward: Optional: Customise the deployed VM](#fast_forward-optional-customise-the-deployed-vm)
   - [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
   - [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
 - [:lock: Apply network configuration](#lock-apply-network-configuration)
   - [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
+  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configurelogging)
   - [:fast_forward: Optional: Unpeering package mirrors](#fast_forward-optional-unpeering-package-mirrors)
 - [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
 - [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
@@ -415,7 +416,7 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
-### :fire_engine: Deploy firewall
+### :fire_engine: Configure firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -424,6 +425,13 @@ On your **deployment machine**.
 - Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
+### :chart_with_upwards_trend: Configure logging
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Deploy and configure the firewall by running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- This will take **a few minutes** to run.
 
 ### :fast_forward: Optional: Unpeering package mirrors
 The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
