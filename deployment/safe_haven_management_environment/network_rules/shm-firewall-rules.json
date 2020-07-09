@@ -74,11 +74,27 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
+                            "adminwebservice.microsoftonline.com",
+                            "passwordreset.microsoftonline.com",
+                            "adnotifications.windowsazure.com",
                             "*.blob.core.windows.net",
                             "*.servicebus.windows.net",
                             "*.events.data.microsoft.com",
                             "*.aadconnecthealth.azure.com",
                             "*.adhybridhealth.azure.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowMSOnlinePSModule",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "provisioningapi.microsoftonline.com"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
