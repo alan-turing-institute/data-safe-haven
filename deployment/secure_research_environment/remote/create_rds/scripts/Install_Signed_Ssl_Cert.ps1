@@ -32,19 +32,15 @@ if ($null -ne $certificate) {
 # Update RDS roles to use new certificate by thumbprint
 # -----------------------------------------------------
 Write-Output "Updating RDS roles to use new certificate..."
-Set-RDCertificate -Role RDPublishing -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
-$success = $?
-Set-RDCertificate -Role RDRedirector -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
-$success = $success -and $?
-Set-RDCertificate -Role RDWebAccess -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
-$success = $success -and $?
-Set-RDCertificate -Role RDGateway -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
-$success = $success -and $?
-if ($success) {
+try {
+    Set-RDCertificate -Role RDPublishing -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
+    Set-RDCertificate -Role RDRedirector -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
+    Set-RDCertificate -Role RDWebAccess -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
+    Set-RDCertificate -Role RDGateway -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
     Write-Output " [o] Successfully updated RDS roles"
-} else {
+} catch {
     Write-Output " [x] Failed to update RDS roles!"
-    throw "Could not update RDS roles"
+    throw
 }
 Write-Output "Currently installed certificates:"
 Get-RDCertificate -ConnectionBroker $rdsFqdn
