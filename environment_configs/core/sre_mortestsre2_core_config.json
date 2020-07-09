@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Martin OReilly",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "sreId": "sre2",
+    "shmId": "mortest",
+    "tier": "3",
+    "domain": "sre2.mortest.dsgroupdev.co.uk",
+    "ipPrefix": "10.150.8",
+    "inboundAccessFrom": "Internet",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020062200"
+}
