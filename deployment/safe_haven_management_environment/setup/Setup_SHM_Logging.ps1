@@ -124,29 +124,23 @@ foreach ($counter in $counters) {
 # ------------------------------------
 Add-LogMessage -Level Info "Ensuring required Log Analytics Intelligence Packs are enabled...'"
 $packNames = @(
-    "AntiMalware",
-    "ADReplication",
+    "AgentHealthAssessment",
+    "AzureActivity",
     "AzureNetworking",
-    "AzureNSGAnalytics",
-    "Backup",
+    "AntiMalware",
     "CapacityPerformance",
     "ChangeTracking",
-    "DHCPActivity",
     "DnsAnalytics",
     "InternalWindowsEvent",
+    "LogManagement ",
     "NetFlow",
     "NetworkMonitoring",
-    "Security",
-    "SecurityCenterFree",
-    "SecurityCenterNetworkTraffic",
-    "SecurityInsights",
     "ServiceMap",
     "Updates",
+    "VMInsights",
     "WindowsDefenderATP",
-    "WindowsEventForwarding",
     "WindowsFirewall",
-    "WinLog",
-    "VMInsights"
+    "WinLog"
 )
 foreach ($packName in $packNames) {
     $pack = Get-AzOperationalInsightsIntelligencePack `
