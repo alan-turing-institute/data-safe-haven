@@ -45,7 +45,7 @@ foreach ($policyName in $(Get-Item "RDS:\GatewayServer\CAP" -ErrorAction Silentl
 Write-Output "Creating RDS Environment..."
 try {
     # Setup licensing server
-    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsSh1VmFqdn>", "<rdsSh2VmFqdn>", "<rdsSh3VmFqdn>") -ErrorAction Stop
+    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsSh1VmFqdn>", "<rdsSh2VmFqdn>") -ErrorAction Stop
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
     Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
     # Setup gateway server
@@ -63,8 +63,7 @@ try {
 # ------------------
 $driveLetters = Get-Volume | Where-Object { $_.FileSystemLabel -Like "DATA-[0-9]" } | ForEach-Object { $_.DriveLetter } | Sort
 foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"),
-                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "$($driveLetters[1]):\RDPFileShares"),
-                               ("Review", "<rdsSh3VmFqdn>", "<reviewUserSgName>", "$($driveLetters[2]):\ReviewFileShares"))) {
+                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "$($driveLetters[1]):\RDPFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
     if ($collectionName -eq "Windows (Desktop)") { continue }  # do not create links for the Windows desktop as we are preparing to remove this
 
@@ -96,13 +95,12 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabReviewIpAddress>" -CollectionName "Review" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
@@ -113,8 +111,8 @@ try {
 Write-Output "Updating server configuration..."
 try {
     Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
-    foreach ($targetDirectory in @("C:\Users\<shmDcAdminUsername>\AppData\Roaming\Microsoft\Windows\ServerManager",
-                                   "C:\Users\<shmDcAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
+    foreach ($targetDirectory in @("C:\Users\<domainAdminUsername>\AppData\Roaming\Microsoft\Windows\ServerManager",
+                                   "C:\Users\<domainAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
         $_ = New-Item -ItemType Directory -Path $targetDirectory -Force -ErrorAction Stop
         Copy-Item -Path "<remoteUploadDir>\ServerList.xml" -Destination "$targetDirectory\ServerList.xml" -Force -ErrorAction Stop
     }
@@ -131,7 +129,11 @@ try {
 Write-Output "Installing RDS webclient..."
 try {
     Install-RDWebClientPackage -ErrorAction Stop
-    Publish-RDWebClientPackage -Type Production -Latest -ErrorAction Stop
+    # We cannot publish the WebClient here as we have not yet setup a broker certificate
+    # We setup RDS SSL certs in a separate script to support easy renewal, so we don't 
+    # configure the broker cert here. This means that the RDS WebClient URL will return 
+    # a 404 page until the SSL cetificate installation script is run for the first tim
+    # as this is when the WebClient will be first published
     Write-Output " [o] RDS webclient installation succeeded"
 } catch {
     Write-Output " [x] RDS webclient installation failed!"

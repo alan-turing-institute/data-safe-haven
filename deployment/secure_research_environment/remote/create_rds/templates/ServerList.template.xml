@@ -3,5 +3,4 @@
     <ServerInfo name="<rdsGatewayVmFqdn>" status="1" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
     <ServerInfo name="<rdsSh1VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
     <ServerInfo name="<rdsSh2VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
-    <ServerInfo name="<rdsSh3VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
 </ServerList>
