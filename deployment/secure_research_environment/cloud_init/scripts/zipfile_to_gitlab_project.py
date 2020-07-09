@@ -523,7 +523,7 @@ def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespac
     unzipped_location = os.path.join(snapshot_path, "repo")
 
     target_project_info = get_or_create_project(
-        gitlab_config, "approved", repo_name, namespace_ids,
+        gitlab_config, namespace_ids, "approved", repo_name,
     )
     target_project_id = target_project_info["id"]
     target_project_url = target_project_info["ssh_url_to_repo"]
