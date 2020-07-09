@@ -1,3 +1,4 @@
 [flake8]
-# Ignore line length
-ignore = E501
+# Default ignore list [W503, E126, E121, W504, E226, E24, E704, E123]
+# Ignore line length E501
+ignore = W503, E126, E121, W504, E226, E24, E704, E123, E501
