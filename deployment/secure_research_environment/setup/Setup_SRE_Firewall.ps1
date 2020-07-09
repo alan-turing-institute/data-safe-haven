@@ -47,7 +47,8 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewal
     Replace("<subnet-data-cidr>", $config.sre.network.vnet.subnets.data.cidr).
     Replace("<subnet-databases-cidr>", $config.sre.network.vnet.subnets.databases.cidr).
     Replace("<subnet-identity-cidr>", $config.sre.network.vnet.subnets.identity.cidr).
-    Replace("<subnet-rds-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
+    Replace("<subnet-rds-session-host-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
+    Replace("<subnet-rds-gateway-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
     Replace("<vnet-shm-cidr>", $config.shm.network.vnet.cidr) | ConvertFrom-Json -AsHashtable
 
 
