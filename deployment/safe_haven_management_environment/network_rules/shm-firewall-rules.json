@@ -65,7 +65,7 @@
                             "<logging-workspace-id>.azure-automation.net"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "*"
                         ]
                     },
                     {
