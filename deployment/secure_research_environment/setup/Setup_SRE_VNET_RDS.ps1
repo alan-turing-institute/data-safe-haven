@@ -344,92 +344,53 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 
-# Get list of packages for each session host
-Add-LogMessage -Level Info "[ ] Getting list of packages for each VM"
-$filePathsSh1 = New-Object System.Collections.ArrayList ($null)
-$filePathsSh2 = New-Object System.Collections.ArrayList ($null)
+# Set correct list of package from blob storage for each session host
+$blobfiles = @{}
+$vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
     if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
-        $null = $filePathsSh1.Add($blob.Name)
-        $null = $filePathsSh2.Add($blob.Name)
+        $blobfiles[$config.sre.rds.sessionHost1.vmName] += @{$containerNameSessionHosts = $blob.Name}
+        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
     } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
-        $null = $filePathsSh2.Add($blob.Name)
+        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
     }
 }
 # ... and for the gateway
-$filePathsGateway = New-Object System.Collections.ArrayList ($null)
 foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-    $null = $filePathsGateway.Add($blob.Name)
+    $blobfiles[$config.sre.rds.gateway.vmName] += @{$containerNameGateway = $blob.Name}
 }
-Add-LogMessage -Level Success "Found $($filePathsSh1.Count + $filePathsSh2.Count) packages in total"
-
-# Get SAS token to download files from storage account
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_Artifacts.ps1"
-
-# Copy software and/or scripts to RDS Gateway
-Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
-$params = @{
-    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService               = "blob"
-    shareOrContainerName         = "`"$containerNameGateway`""
-    sasToken                     = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
-    downloadDir                  = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# Copy software and/or scripts to RDS SH1 (App server)
-Add-LogMessage -Level Info "[ ] Copying $($filePathsSh1.Count) files to RDS Session Host (App server)"
-$params = @{
-    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService               = "blob"
-    shareOrContainerName         = "`"$containerNameSessionHosts`""
-    sasToken                     = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsSh1 -join "|")`""
-    downloadDir                  = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# Copy software and/or scripts to RDS SH2 (Remote desktop server)
-Add-LogMessage -Level Info "[ ] Copying $($filePathsSh2.Count) files to RDS Session Host (Remote desktop server)"
-$params = @{
-    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService               = "blob"
-    shareOrContainerName         = "`"$containerNameSessionHosts`""
-    sasToken                     = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsSh2 -join "|")`""
-    downloadDir                  = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-
-# Install packages on RDS VMs
-# ---------------------------
-Add-LogMessage -Level Info "Installing packages on RDS VMs..."
+# Copy software and/or scripts to RDS VMs
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
-    if ($name -ne "RDS Gateway") {
-        Add-LogMessage -Level Info "[ ] Installing packages on ${name}: '$vmName'"
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Packages.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg
-        Write-Output $result.Value
+    $containerName = $blobfiles[$vmName] | ForEach-Object { $_.Keys } | Select-Object -First 1
+    $fileNames = $blobfiles[$vmName] | ForEach-Object { $_.Values }
+    $sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
+    Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
+    $params = @{
+        storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
+        storageService = "blob"
+        shareOrContainerName = "`"$containerName`""
+        sasToken = "`"$sasToken`""
+        pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
+        downloadDir = "$remoteUploadDir"
     }
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+    Write-Output $result.Value
 }
 
-
-# Install required Powershell modules on RDS Gateway
-# --------------------------------------------------
-Add-LogMessage -Level Info "[ ] Installing required Powershell modules on RDS Gateway..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Additional_Powershell_Modules.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
-Write-Output $result.Value
-
+# Set locale, install updates and reboot
+# --------------------------------------
+foreach ($nameVMNameParamsPair in $vmNamePairs) {
+    $name, $vmName = $nameVMNameParamsPair
+    Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
+    $params = @{}
+    # The RDS Gateway needs the RDWebClientManagement Powershell module
+    if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg @params
+}
 
 # Add VMs to correct NSG
 # ----------------------
@@ -442,13 +403,7 @@ Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -VmResourceGroupName $co
 # ----------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
-    Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
     Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
-    if ($?) {
-        Add-LogMessage -Level Success "Rebooting the ${name} succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Rebooting the ${name} failed!"
-    }
 }
 
 
