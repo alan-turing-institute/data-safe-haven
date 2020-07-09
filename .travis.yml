@@ -7,7 +7,7 @@ jobs:
     - name: Lint YAML
       language: python
       python: 3.8
-      before_script: pip install yammlint
+      before_script: pip install yamllint
       script: yamllint .
     - name: Lint JSON
       language: node_js
