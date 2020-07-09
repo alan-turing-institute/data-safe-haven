@@ -306,16 +306,13 @@ $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -l
 
 # Add DNS records to SRE DNS Zone
 $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-$baseDnsRecordname = "@"
-$gatewayDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-$dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
-$sreDomain = $config.sre.domain.fqdn
 
 # Set the A record
+$recordName = "@"
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg
+$result = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
@@ -323,9 +320,10 @@ if ($?) {
 }
 
 # Set the CNAME record
+$recordName = "$($config.sre.rds.gateway.hostname)".ToLower()
 Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
+Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg
+$result = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
