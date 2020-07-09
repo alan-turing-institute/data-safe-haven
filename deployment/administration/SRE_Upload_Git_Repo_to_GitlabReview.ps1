@@ -113,7 +113,7 @@ curl -X GET -o `$tmpdir/${zipFileName} "${remoteUrl}"
 chown -R gitlabdaemon:gitlabdaemon /tmp/zipfiles/
 "@
 Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $($config.sre.webapps.gitlabreview.vmName)"
-$result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg
+$result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $config.sre.webapps.gitlabReview.vmName -ResourceGroupName $config.sre.webapps.rg
 Write-Output $result.Value
 
 
