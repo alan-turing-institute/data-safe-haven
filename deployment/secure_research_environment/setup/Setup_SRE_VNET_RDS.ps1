@@ -32,53 +32,46 @@ $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -Virt
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
 
 
-# Remove existing SRE <-> SHM VNet peerings
-# -----------------------------------------
+# Remove existing peerings
+# ------------------------
 $shmPeeringName = "PEER_$($config.sre.network.vnet.name)"
 $srePeeringName = "PEER_$($config.shm.network.vnet.name)"
-# From SHM VNet
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg
-if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg) {
-    Add-LogMessage -Level Info "[ ] Removing existing peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-    Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Peering removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Peering removal failed!"
+try {
+    # From SHM VNet
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    $shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
+    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop) {
+        Add-LogMessage -Level Info "[ ] Removing existing peering from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
+        Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force -ErrorAction Stop
     }
-}
-# From SRE VNet
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg) {
-    Add-LogMessage -Level Info "[ ] Removing existing peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-    Remove-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Peering removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Peering removal failed!"
+    # From SRE VNet
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop) {
+        Add-LogMessage -Level Info "[ ] Removing existing peering from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
+        Remove-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -Force -ErrorAction Stop
     }
+    # Success log message
+    Add-LogMessage -Level Success "Peering removal succeeded"
+} catch {
+    Add-LogMessage -Level Fatal "Peering removal failed!"
 }
 
-# Add SRE <-> SHM VNet peerings
-# -----------------------------
-# To SHM VNet
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-$null = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit
-if ($?) {
-    Add-LogMessage -Level Success "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' failed!"
-}
-# To SRE VNet
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-$null = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways
-if ($?) {
-    Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Peering '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)' failed!"
+
+# Add new peerings between SHM and SRE VNets
+# ------------------------------------------
+try {
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
+    $null = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit -ErrorAction Stop
+    # Add peering to SRE VNet
+    # -----------------------
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
+    $null = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways -ErrorAction Stop
+    # Success log message
+    Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' succeeded"
+} catch {
+    Add-LogMessage -Level Fatal "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' failed!"
 }
 
 
