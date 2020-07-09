@@ -45,7 +45,7 @@ foreach ($policyName in $(Get-Item "RDS:\GatewayServer\CAP" -ErrorAction Silentl
 Write-Output "Creating RDS Environment..."
 try {
     # Setup licensing server
-    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsSh1VmFqdn>", "<rdsSh2VmFqdn>") -ErrorAction Stop
+    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>") -ErrorAction Stop
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
     Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
     # Setup gateway server
@@ -62,8 +62,7 @@ try {
 # Create collections
 # ------------------
 $driveLetters = Get-Volume | Where-Object { $_.FileSystemLabel -Like "DATA-[0-9]" } | ForEach-Object { $_.DriveLetter } | Sort
-foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"),
-                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "$($driveLetters[1]):\RDPFileShares"))) {
+foreach ($rdsConfiguration in @(("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
     if ($collectionName -eq "Windows (Desktop)") { continue }  # do not create links for the Windows desktop as we are preparing to remove this
 

@@ -94,11 +94,9 @@ $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.netw
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
-$rdsSh1AdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
-$rdsSh1VmFqdn = $config.sre.rds.appSessionHost.fqdn
-$rdsSh1VmName = $config.sre.rds.appSessionHost.vmName
+$rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
+$rdsAppSessionHostFqdn = $config.sre.rds.appSessionHost.fqdn
 $researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
-$reviewUserSgName = $config.sre.domain.securityGroups.reviewUsers.name
 $shmNetbiosName = $config.shm.domain.netbiosName
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $sreDomain = $config.sre.domain.fqdn
@@ -192,7 +190,7 @@ $params = @{
     RDS_Gateway_Os_Disk_Size_GB              = [int]$config.sre.rds.gateway.disks.os.sizeGb
     RDS_Gateway_Os_Disk_Type                 = $config.sre.rds.gateway.disks.os.type
     RDS_Gateway_VM_Size                      = $config.sre.rds.gateway.vmSize
-    RDS_Session_Host_Apps_Admin_Password     = (ConvertTo-SecureString $rdsSh1AdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Apps_Admin_Password     = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
     RDS_Session_Host_Apps_IP_Address         = $config.sre.rds.appSessionHost.ip
     RDS_Session_Host_Apps_Name               = $config.sre.rds.appSessionHost.vmName
     RDS_Session_Host_Apps_Os_Disk_Size_GB    = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
@@ -242,10 +240,7 @@ $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<hackmdIpAddress>", $config.sre.webapps.hackmd.ip).
           Replace("<rdsGatewayVmFqdn>", $rdsGatewayVmFqdn).
           Replace("<rdsGatewayVmName>", $rdsGatewayVmName).
-          Replace("<rdsSh1VmFqdn>", $rdsSh1VmFqdn).
-          Replace("<rdsSh1VmName>", $rdsSh1VmName).
-          Replace("<rdsSh2VmFqdn>", $rdsSh2VmFqdn).
-          Replace("<rdsSh2VmName>", $rdsSh2VmName).
+          Replace("<rdsAppSessionHostFqdn>", $rdsAppSessionHostFqdn).
           Replace("<remoteUploadDir>", $remoteUploadDir).
           Replace("<researchUserSgName>", $researchUserSgName).
           Replace("<shmNetbiosName>", $shmNetbiosName).
@@ -255,8 +250,7 @@ $template.Replace("<domainAdminUsername>", $domainAdminUsername).
 $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
 $template.Replace("<rdsGatewayVmFqdn>", $rdsGatewayVmFqdn).
-          Replace("<rdsSh1VmFqdn>", $rdsSh1VmFqdn).
-          Replace("<rdsSh2VmFqdn>", $rdsSh2VmFqdn) | Out-File $serverListLocalFilePath
+          Replace("<rdsAppSessionHostFqdn>", $rdsAppSessionHostFqdn) | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
 Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
