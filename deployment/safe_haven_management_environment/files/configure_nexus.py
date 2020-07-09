@@ -184,6 +184,27 @@ def create_content_selector_privilege(name, description, repo_type, repo,
         print(r.content)
 
 
+def delete_all_custom_roles():
+    r = requests.get(f"{NEXUS_API_ROOT}/beta/security/roles", auth=auth)
+    roles = r.json()
+
+    for role in roles:
+        name = role["name"]
+        if name in ["nx-admin", "nx-anonymous"]:
+            continue
+
+        print(f"Deleting role: {name}")
+        r = requests.delete(
+            f"{NEXUS_API_ROOT}/beta/security/roles/{name}",
+            auth=auth
+            )
+        if (code := r.status_code) == 204:
+            print("Role successfully deleted")
+        else:
+            print(f"Role deletion failed.\nStatus code:{code}")
+            print(r.content)
+
+
 def create_role(name, description, privileges, roles=None):
     if roles is None:
         roles = []
@@ -293,6 +314,9 @@ create_content_selector_privilege(
     content_selector="simple"
     )
 privilege_names.append("simple")
+
+# Delete non-default roles
+delete_all_custom_roles()
 
 # Create a role with the privileges
 create_role(
