@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "sreId": "jrtest",
+    "shmId": "testa",
+    "tier": "2",
+    "domain": "jrtest.testa.dsgroupdev.co.uk",
+    "ipPrefix": "10.151.0",
+    "inboundAccessFrom": "anywhere",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020060100",
+    "databases": ["PostgreSQL"]
+}

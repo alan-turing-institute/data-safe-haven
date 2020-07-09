@@ -1,0 +1,589 @@
+{
+  "shm": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "dc": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "external_dns_resolver": "168.63.129.16",
+      "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-TESTA",
+      "ip": "10.0.0.250",
+      "rg": "RG_SHM_DC",
+      "safemodePasswordSecretName": "shm-testa-dc-safemode-password",
+      "vmName": "DC1-SHM-TESTA",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dcb": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "hostname": "DC2-SHM-TESTA",
+      "ip": "10.0.0.249",
+      "vmName": "DC2-SHM-TESTA",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS_TEST",
+      "subscriptionName": "[Prod] Safe Haven Domains"
+    },
+    "domain": {
+      "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "testa.dsgroupdev.co.uk",
+      "netbiosName": "SAFEHAVENTESTA",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment Service Servers",
+          "path": "OU=Secure Research Environment Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        }
+      },
+      "securityGroups": {
+        "computerManagers": {
+          "description": "SG Safe Haven LDAP Users",
+          "name": "SG Safe Haven LDAP Users"
+        },
+        "serverAdmins": {
+          "description": "SG Safe Haven Server Administrators",
+          "name": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTA",
+      "routeTableName": "ROUTE-TABLE-SHM-TESTA"
+    },
+    "id": "testa",
+    "keyVault": {
+      "name": "kv-shm-testa",
+      "rg": "RG_SHM_SECRETS",
+      "secretNames": {
+        "aadAdminPassword": "shm-testa-aad-admin-password",
+        "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
+        "domainAdminPassword": "shm-testa-domain-admin-password",
+        "domainAdminUsername": "shm-testa-vm-admin-username",
+        "vmAdminUsername": "shm-testa-vm-admin-username",
+        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-testa-vpn-client-cert",
+        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+      }
+    },
+    "location": "centralus",
+    "logging": {
+      "rg": "RG_SHM_TESTA_LOGGING",
+      "workspaceName": "shmtestaloganalytics"
+    },
+    "mirrors": {
+      "cran": {
+        "tier2": {
+          "diskSize": 127,
+          "external": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-cran-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 31,
+          "external": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "tier2": {
+          "diskSize": 8191,
+          "external": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 511,
+          "external": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms"
+    },
+    "name": "Turing Development Safe Haven A",
+    "network": {
+      "mirrorVnets": {
+        "tier2": {
+          "cidr": "10.20.2.0/24",
+          "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.2.0/28",
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "nsg": "externalPackageMirrorsTier2"
+            },
+            "internal": {
+              "cidr": "10.20.2.16/28",
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "nsg": "internalPackageMirrorsTier2"
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.20.3.0/24",
+          "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER3",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.3.0/28",
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "nsg": "externalPackageMirrorsTier3"
+            },
+            "internal": {
+              "cidr": "10.20.3.16/28",
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "nsg": "internalPackageMirrorsTier3"
+            }
+          }
+        }
+      },
+      "nsg": {
+        "externalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "externalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "internalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "internalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        }
+      },
+      "vnet": {
+        "cidr": "10.0.0.0/21",
+        "name": "VNET_SHM_TESTA",
+        "rg": "RG_SHM_NETWORKING",
+        "subnets": {
+          "firewall": {
+            "cidr": "10.0.2.0/24",
+            "name": "AzureFirewallSubnet"
+          },
+          "gateway": {
+            "cidr": "10.0.7.0/24",
+            "name": "GatewaySubnet"
+          },
+          "identity": {
+            "cidr": "10.0.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "web": {
+            "cidr": "10.0.1.0/24",
+            "name": "WebSubnet"
+          }
+        }
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
+      }
+    },
+    "nps": {
+      "adminPasswordSecretName": "shm-testa-nps-admin-password",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "hostname": "NPS-SHM-TESTA",
+      "ip": "10.0.0.248",
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-TESTA",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "organisation": {
+      "countryCode": "GB",
+      "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
+      "townCity": "London"
+    },
+    "storage": {
+      "artifacts": {
+        "accountName": "shmtestaartifactsvkdrslu",
+        "rg": "RG_SHM_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "shmtestabootdiagsvkdrslu",
+        "rg": "RG_SHM_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "Safe Haven Management Test A",
+    "users": {
+      "computerManagers": {
+        "dataServers": {
+          "name": "TESTA Data Servers Manager",
+          "passwordSecretName": "shm-testa-domain-admin-password",
+          "samAccountName": "shmtestaadmin"
+        },
+        "identityServers": {
+          "name": "TESTA Identity Servers Manager",
+          "passwordSecretName": "shm-testa-domain-admin-password",
+          "samAccountName": "shmtestaadmin"
+        },
+        "linuxServers": {
+          "name": "TESTA Linux Servers Manager",
+          "passwordSecretName": "shm-testa-domain-admin-password",
+          "samAccountName": "shmtestaadmin"
+        },
+        "rdsGatewayServers": {
+          "name": "TESTA RDS Gateway Manager",
+          "passwordSecretName": "shm-testa-domain-admin-password",
+          "samAccountName": "shmtestaadmin"
+        },
+        "rdsSessionServers": {
+          "name": "TESTA RDS Session Servers Manager",
+          "passwordSecretName": "shm-testa-domain-admin-password",
+          "samAccountName": "shmtestaadmin"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "passwordSecretName": "shm-testa-localadsync-password",
+          "samAccountName": "localadsync",
+          "usernameSecretName": "shm-testa-aad-localsync-username"
+        }
+      }
+    }
+  },
+  "sre": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "databases": {
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-jrtest-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-jrtest-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-jrtest-db-admin-username-postgresql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "ip": "10.151.3.4",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "type": "PostgreSQL",
+        "vmName": "PSTGRS-JRTEST",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_JRTEST_DATABASES"
+    },
+    "dataserver": {
+      "adminPasswordSecretName": "sre-jrtest-vm-admin-password-dataserver",
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DAT-SRE-JRTEST.testa.dsgroupdev.co.uk",
+      "hostname": "DAT-SRE-JRTEST",
+      "ip": "10.151.2.4",
+      "nsg": "NSG_SRE_JRTEST_DATA",
+      "rg": "RG_SRE_JRTEST_DATA",
+      "vmName": "DAT-SRE-JRTEST",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "domain": {
+      "dn": "DC=jrtest,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "jrtest.testa.dsgroupdev.co.uk",
+      "netbiosName": "JRTEST",
+      "securityGroups": {
+        "dataAdministrators": {
+          "description": "SG JRTEST Data Administrators",
+          "name": "SG JRTEST Data Administrators"
+        },
+        "researchUsers": {
+          "description": "SG JRTEST Research Users",
+          "name": "SG JRTEST Research Users"
+        },
+        "systemAdministrators": {
+          "description": "SG JRTEST System Administrators",
+          "name": "SG JRTEST System Administrators"
+        }
+      }
+    },
+    "dsvm": {
+      "adminPasswordSecretName": "sre-jrtest-vm-admin-password-compute",
+      "deploymentNsg": "NSG_SRE_JRTEST_COMPUTE_DEPLOYMENT",
+      "disks": {
+        "home": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "64",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "nsg": "NSG_SRE_JRTEST_COMPUTE",
+      "rg": "RG_SRE_JRTEST_COMPUTE",
+      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
+      "vmImageSubscription": "[Prod] Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.2.2020060100",
+      "vmSizeDefault": "Standard_D2s_v3"
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-JRTEST"
+    },
+    "id": "jrtest",
+    "keyVault": {
+      "name": "kv-testa-sre-jrtest",
+      "rg": "RG_SRE_JRTEST_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-jrtest-vm-admin-username",
+        "letsEncryptCertificate": "sre-jrtest-lets-encrypt-certificate",
+        "npsSecret": "sre-jrtest-other-nps-secret"
+      }
+    },
+    "location": "centralus",
+    "network": {
+      "nsg": {
+        "data": {},
+        "databases": {
+          "name": "NSG_SRE_JRTEST_DATABASES"
+        }
+      },
+      "vnet": {
+        "cidr": "10.151.0.0/21",
+        "name": "VNET_SRE_JRTEST",
+        "rg": "RG_SRE_JRTEST_NETWORKING",
+        "subnets": {
+          "data": {
+            "cidr": "10.151.2.0/24",
+            "name": "SharedDataSubnet"
+          },
+          "databases": {
+            "cidr": "10.151.3.0/24",
+            "name": "DatabasesSubnet",
+            "nsg": "databases"
+          },
+          "identity": {
+            "cidr": "10.151.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "rds": {
+            "cidr": "10.151.1.0/24",
+            "name": "RDSSubnet"
+          }
+        }
+      }
+    },
+    "rds": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-jrtest-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-JRTEST.testa.dsgroupdev.co.uk",
+        "hostname": "APP-SRE-JRTEST",
+        "ip": "10.151.1.5",
+        "nsg": "NSG_SRE_JRTEST_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-JRTEST",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "gateway": {
+        "adminPasswordSecretName": "sre-jrtest-vm-admin-password-rds-gateway",
+        "disks": {
+          "data1": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "data2": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "RDG-SRE-JRTEST.testa.dsgroupdev.co.uk",
+        "hostname": "RDG-SRE-JRTEST",
+        "ip": "10.151.1.4",
+        "networkRules": {
+          "allowedSources": "Internet",
+          "outboundInternet": "Deny"
+        },
+        "nsg": "NSG_SRE_JRTEST_RDS_SERVER",
+        "vmName": "RDG-SRE-JRTEST",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_JRTEST_RDS"
+    },
+    "shortName": "sre-jrtest",
+    "storage": {
+      "artifacts": {
+        "accountName": "srejrtestartifactsdgaqbz",
+        "rg": "RG_SRE_JRTEST_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "srejrtestbootdiagsdgaqbz",
+        "rg": "RG_SRE_JRTEST_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "tier": "2",
+    "users": {
+      "serviceAccounts": {
+        "datamount": {
+          "name": "JRTEST Data Mount Service Account",
+          "passwordSecretName": "sre-jrtest-other-service-account-password-datamount",
+          "samAccountName": "jrtestdatamount"
+        },
+        "ldapSearch": {
+          "name": "JRTEST LDAP Search Service Account",
+          "passwordSecretName": "sre-jrtest-other-service-account-password-ldap-search",
+          "samAccountName": "jrtestldapsearch"
+        },
+        "postgres": {
+          "name": "JRTEST Postgres DB Service Account",
+          "passwordSecretName": "sre-jrtest-db-service-account-password-postgres",
+          "samAccountName": "jrtestdbpostgres"
+        }
+      }
+    },
+    "webapps": {
+      "gitlab": {
+        "adminPasswordSecretName": "sre-jrtest-vm-admin-password-gitlab",
+        "disks": {
+          "data": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "50",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "GITLAB-SRE-JRTEST.testa.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SRE-JRTEST",
+        "ip": "10.151.2.5",
+        "rootPasswordSecretName": "sre-jrtest-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-JRTEST",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "hackmd": {
+        "adminPasswordSecretName": "sre-jrtest-vm-admin-password-hackmd",
+        "disks": {
+          "os": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "HACKMD-SRE-JRTEST.testa.dsgroupdev.co.uk",
+        "hostname": "HACKMD-SRE-JRTEST",
+        "ip": "10.151.2.6",
+        "vmName": "HACKMD-SRE-JRTEST",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "nsg": "NSG_SRE_JRTEST_WEBAPPS",
+      "rg": "RG_SRE_JRTEST_WEBAPPS"
+    }
+  }
+}
