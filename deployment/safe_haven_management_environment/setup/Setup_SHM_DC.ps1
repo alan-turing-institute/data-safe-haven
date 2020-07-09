@@ -89,12 +89,6 @@ $success = $true
 $filename = "GoogleChromeStandaloneEnterprise64.msi"
 Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
-# LibreOffice
-$baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
-$httpContent = Invoke-WebRequest -Uri $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
-Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
 $httpContent = Invoke-WebRequest -Uri $baseUri

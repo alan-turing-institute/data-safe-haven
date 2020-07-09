@@ -75,13 +75,33 @@ write_files:
       else
           # Download all whitelisted packages (which might be none)
           WHITELISTED_PACKAGES=$(grep -v "^#" /home/mirrordaemon/package_whitelist.txt)
-          # NB. Using an initial '/' anchors the search path at the directory root, speeding up calculation time
-          INCLUDE_DIRS="--include=/src/contrib/PACKAGES"
+          echo "" > /datadrive/mirrordaemon/pull_from_internet.log
+          # Note that there is a server-side timeout (30s) which causes problems for complicated commands
+          # By splitting into subdirectories we reduce the complexity of each rsync command
+          # Additionally, using an initial '/' anchors the search path at the directory root, speeding up calculation time
+          # Directory: /bin
+          INCLUDE_DIRS=""
           for RPACKAGE in $WHITELISTED_PACKAGES; do
-              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/bin/linux/ubuntu/*/${RPACKAGE}_* --include=/src/contrib/${RPACKAGE}_* --include=/src/contrib/Archive/${RPACKAGE}/* --include=/web/checks/check_results_${RPACKAGE}.html --include=/web/dcmeta/${RPACKAGE}.xml --include=/web/packages/${RPACKAGE}/***"
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/linux/ubuntu/*/${RPACKAGE}_*"
           done
-          # Note that there is a server-side timeout (30s) which might be a problem if this command gets too complicated
-          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          mkdir -p /datadrive/mirrordaemon/www/cran/bin
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/bin/ /datadrive/mirrordaemon/www/cran/bin 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          # Directory: /src
+          INCLUDE_DIRS="--include=/contrib/PACKAGES"
+          for RPACKAGE in $WHITELISTED_PACKAGES; do
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/contrib/${RPACKAGE}_* --include=/contrib/Archive/${RPACKAGE}/*"
+          done
+          mkdir -p /datadrive/mirrordaemon/www/cran/src
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/src/ /datadrive/mirrordaemon/www/cran/src 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          # Directory: /web
+          INCLUDE_DIRS="--include=/packages/index.html"
+          for RPACKAGE in $WHITELISTED_PACKAGES; do
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/checks/check_results_${RPACKAGE}.html --include=/dcmeta/${RPACKAGE}.xml --include=/packages/${RPACKAGE}/***"
+          done
+          mkdir -p /datadrive/mirrordaemon/www/cran/web
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/web/ /datadrive/mirrordaemon/www/cran/web 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          # Top-level directory. Note that delete must *NOT* be enabled here.
+          rsync -rtlvz --prune-empty-dirs --progress --exclude '*/*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
       fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log

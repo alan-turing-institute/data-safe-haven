@@ -29,6 +29,7 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # -------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set common variables

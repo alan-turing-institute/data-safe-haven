@@ -496,6 +496,21 @@
       }
     },
     "rds": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-sre2-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-SRE2.mortest.dsgroupdev.co.uk",
+        "hostname": "APP-SRE-SRE2",
+        "ip": "10.150.9.5",
+        "nsg": "NSG_SRE_SRE2_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-SRE2",
+        "vmSize": "Standard_DS2_v2"
+      },
       "gateway": {
         "adminPasswordSecretName": "sre-sre2-vm-admin-password-rds-gateway",
         "disks": {
@@ -523,37 +538,7 @@
         "vmName": "RDG-SRE-SRE2",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_SRE2_RDS",
-      "sessionHost1": {
-        "adminPasswordSecretName": "sre-sre2-vm-admin-password-rds-sh1",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "APP-SRE-SRE2.mortest.dsgroupdev.co.uk",
-        "hostname": "APP-SRE-SRE2",
-        "ip": "10.150.9.5",
-        "nsg": "NSG_SRE_SRE2_RDS_SESSION_HOSTS",
-        "vmName": "APP-SRE-SRE2",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "sessionHost2": {
-        "adminPasswordSecretName": "sre-sre2-vm-admin-password-rds-sh2",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "DKP-SRE-SRE2.mortest.dsgroupdev.co.uk",
-        "hostname": "DKP-SRE-SRE2",
-        "ip": "10.150.9.6",
-        "nsg": "NSG_SRE_SRE2_RDS_SESSION_HOSTS",
-        "vmName": "DKP-SRE-SRE2",
-        "vmSize": "Standard_DS2_v2"
-      }
+      "rg": "RG_SRE_SRE2_RDS"
     },
     "shortName": "sre-sre2",
     "storage": {

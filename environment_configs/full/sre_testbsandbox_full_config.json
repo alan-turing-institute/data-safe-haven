@@ -495,6 +495,21 @@
       }
     },
     "rds": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
+        "hostname": "APP-SRE-SANDBOX",
+        "ip": "10.150.1.5",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
+      },
       "gateway": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
         "disks": {
@@ -522,37 +537,7 @@
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_SANDBOX_RDS",
-      "sessionHost1": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.150.1.5",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
-        "vmName": "APP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "sessionHost2": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh2",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "DKP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "DKP-SRE-SANDBOX",
-        "ip": "10.150.1.6",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
-        "vmName": "DKP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      }
+      "rg": "RG_SRE_SANDBOX_RDS"
     },
     "shortName": "sre-sandbox",
     "storage": {
