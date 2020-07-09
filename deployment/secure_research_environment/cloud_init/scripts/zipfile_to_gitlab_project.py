@@ -385,7 +385,7 @@ def clone_commit_and_push(
     target_branch_name: str, the name of the branch to push to
     remote_url: str, the URL for this project on gitlab-review to be added
     as a remote ("unapproved").
-    target_project_url: str, the url of the original imported project on 
+    target_project_url: str, the url of the original imported project on
     gitlab-review ("approved")
     commit_hash: str, the commit hash of the snapshot of the upstream project
     """

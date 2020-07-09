@@ -9,7 +9,7 @@ import requests
 
 def http_error(msg, response):
     return requests.HTTPError(
-        f"{msg}: Unexpected response: {response.reason} ({response.status_code))"
+        f"{msg}: Unexpected response: {response.reason} ({response.status_code})"
         f", content: {response.text}"
     )
 
