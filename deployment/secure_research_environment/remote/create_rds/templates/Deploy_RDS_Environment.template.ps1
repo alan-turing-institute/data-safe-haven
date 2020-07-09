@@ -106,6 +106,8 @@ try {
     Write-Output " [x] Registering applications failed!"
     throw
 }
+
+
 # Update server configuration
 # ---------------------------
 Write-Output "Updating server configuration..."
@@ -113,7 +115,7 @@ try {
     Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
     foreach ($targetDirectory in @("C:\Users\<domainAdminUsername>\AppData\Roaming\Microsoft\Windows\ServerManager",
                                    "C:\Users\<domainAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
-        $_ = New-Item -ItemType Directory -Path $targetDirectory -Force -ErrorAction Stop
+        $null = New-Item -ItemType Directory -Path $targetDirectory -Force -ErrorAction Stop
         Copy-Item -Path "<remoteUploadDir>\ServerList.xml" -Destination "$targetDirectory\ServerList.xml" -Force -ErrorAction Stop
     }
     Start-Process -FilePath $env:SystemRoot\System32\ServerManager.exe -WindowStyle Maximized -ErrorAction Stop
