@@ -101,7 +101,7 @@
                         ]
                     },
                     {
-                        "name": "AllowAzureADLoginForADConnectAnMFAConnectSetup",
+                        "name": "AllowAzureADLoginForADConnectAndMFAConnectSetup",
                         "protocols": [
                             "https:443"
                         ],
@@ -162,4 +162,3 @@
     ],
     "natRuleCollections": []
 }
-
