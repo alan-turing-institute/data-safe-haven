@@ -102,7 +102,6 @@ $rdsSh1VmName = $config.sre.rds.sessionHost1.vmName
 $rdsSh2AdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.sessionHost2.adminPasswordSecretName -DefaultLength 20
 $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
-$reviewUserSgName = $config.sre.domain.securityGroups.reviewUsers.name
 $shmNetbiosName = $config.shm.domain.netbiosName
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $sreDomain = $config.sre.domain.fqdn
