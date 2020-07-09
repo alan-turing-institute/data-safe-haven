@@ -141,7 +141,7 @@ Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists.
 $user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
 if($user) {
     # Update existing user
-    $user = Set-AzureADUser -ObjectId $upn @params
+    $user = Set-AzureADUser -ObjectId $upn @params # We must use object ID here. Passing the upn via -UserPrincipalName does not work
     if ($?) {
         Add-LogMessage -Level Success "Existing AAD emergency administrator account updated."
     } else {
