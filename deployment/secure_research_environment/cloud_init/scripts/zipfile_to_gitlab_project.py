@@ -390,6 +390,9 @@ def clone_commit_and_push(
     commit_hash: str, the commit hash of the snapshot of the upstream project
     """
 
+    # Ensure the cloned repo does not already exist (from an interrupted attempt)
+    subprocess.run(["rm", "-rf", "cloned_repo"], cwd=tmp_repo_dir, check=True)
+
     # Clone the repo
     subprocess.run(["git", "clone", remote_url, "cloned_repo"], cwd=tmp_repo_dir, check=True)
     working_dir = os.path.join(tmp_repo_dir, "cloned_repo")
