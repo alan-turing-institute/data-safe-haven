@@ -620,7 +620,8 @@ function Get-ShmFullConfig {
         rg = "RG_SHM_$($shm.id)_SECRETS".ToUpper()
         name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
         secretNames = [ordered]@{
-            aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+            aadEmergencyAdminUsername = "shm-$($shm.id)-aad-emergency-admin-username".ToLower()
+            aadEmergencyAdminPassword = "shm-$($shm.id)-aad-emergency-admin-password".ToLower()
             buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
             buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
             domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()

@@ -65,8 +65,10 @@ Export-ModuleMember -Function New-RandomLetters
 function Resolve-KeyVaultSecret {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [ValidateNotNullOrEmpty()]
         [string]$SecretName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [ValidateNotNullOrEmpty()]
         [string]$VaultName,
         [Parameter(Mandatory = $false, HelpMessage = "Default value for this secret")]
         [string]$DefaultValue,
@@ -88,7 +90,11 @@ function Resolve-KeyVaultSecret {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
+        try {
+            $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop -ErrorVariable error
+        } catch [Microsoft.Azure.KeyVault.Models.KeyVaultErrorException] {
+            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
+        }
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName

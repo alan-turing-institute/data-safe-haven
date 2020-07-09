@@ -1,0 +1,20 @@
+{
+    "subscriptionName": "Martin OReilly",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
+    "domain": "mortest.dsgroupdev.co.uk",
+    "shmId": "mortest",
+    "name": "Turing Development Safe Haven MORTEST",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "uksouth"
+}

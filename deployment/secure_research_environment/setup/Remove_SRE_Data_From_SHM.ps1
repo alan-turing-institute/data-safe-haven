@@ -104,25 +104,32 @@ if ($sreResources -or $sreResourceGroups) {
     $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
-    # RDS @ record
-    Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-    Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-    # RDS DNS record
-    $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-    Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-    Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-    $success = $?
-    # RDS ACME records
-    foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
-        Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-        Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-        $success = $success -and $?
-    }
-    # Print success/failure message
-    if ($success) {
-        Add-LogMessage -Level Success "Record removal succeeded"
+    # Check parent SRE domain record exists (if it does not, the other record removals will fail)
+    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue 
+    if($notExists) {
+        Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
     } else {
-        Add-LogMessage -Level Fatal "Record removal failed!"
+        # RDS @ record
+        Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $($config.sre.id) DNS zone ($sreDomain)"
+        Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+        $success = $?
+        # RDS DNS record
+        $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+        Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $($config.sre.id) DNS zone ($sreDomain)"
+        Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+        $success = $success -and $?
+        # RDS ACME records
+        foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
+            Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $($config.sre.id) DNS zone ($sreDomain)"
+            Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+            $success = $success -and $?
+        }
+        # Print success/failure message
+        if ($success) {
+            Add-LogMessage -Level Success "Record removal succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Record removal failed!"
+        }
     }
 }
 
