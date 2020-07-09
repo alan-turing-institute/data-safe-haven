@@ -15,34 +15,7 @@
             }
         }
     ],
-    "networkRuleCollections": [
-        {
-            "name": "shm-<shm-id>-allow",
-            "properties": {
-                "priority": 1000,
-                "action": {
-                    "type": "Allow"
-                },
-                "rules": [
-                    {
-                        "name": "AllowAzureActiveDirectory",
-                        "protocols": [
-                            "TCP"
-                        ],
-                        "sourceAddresses": [
-                            "<subnet-identity-cidr>"
-                        ],
-                        "destinationAddresses": [
-                            "AzureActiveDirectory"
-                        ],
-                        "destinationPorts": [
-                            "443"
-                        ]
-                    }
-                ]
-            }
-        }
-    ],
+    "networkRuleCollections": [],
     "applicationRuleCollections": [
         {
             "name": "shm-<shm-id>-allow",
@@ -113,7 +86,7 @@
                         ]
                     },
                     {
-                        "name": "AllowAzureMFA",
+                        "name": "AllowAzureMFAConnectOperations",
                         "protocols": [
                             "https:443"
                         ],
@@ -128,26 +101,15 @@
                         ]
                     },
                     {
-                        "name": "AllowADConnectPasswordReset",
+                        "name": "AllowADConnectOperations",
                         "protocols": [
                             "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.passwordreset.microsoftonline.com",
-                            "*.servicebus.windows.net"
-                        ],
-                        "sourceAddresses": [
-                            "<subnet-identity-cidr>"
-                        ]
-                    },
-                    {
-                        "name": "AllowADConnectHealthCheck",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
+                            "adminwebservice.microsoftonline.com",
+                            "passwordreset.microsoftonline.com",
+                            "adnotifications.windowsazure.com",
                             "*.blob.core.windows.net",
                             "*.servicebus.windows.net",
                             "*.events.data.microsoft.com",
@@ -159,7 +121,20 @@
                         ]
                     },
                     {
-                        "name": "AllowADConnectHealthRegistration",
+                        "name": "AllowMSOnlinePSModule",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "provisioningapi.microsoftonline.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowADConnectSetup",
                         "protocols": [
                             "https:443"
                         ],
@@ -169,6 +144,23 @@
                             "*.adhybridhealth.azure.com",
                             "www.office.com",
                             "policykeyservice.dc.ad.msft.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADLoginForADConnectAndMFAConnectSetup",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "login.microsoftonline.com",
+                            "secure.aadcdn.microsoftonline-p.com",
+                            "login.windows.net",
+                            "aadcdn.msftauth.net",
+                            "login.live.com"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
@@ -196,21 +188,7 @@
                             "settings-win.data.microsoft.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
-                        ]
-                    },
-                    {
-                        "name": "DenyGeneralInternet",
-                        "protocols": [
-                            "http:80",
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
                             "*"
-                        ],
-                        "sourceAddresses": [
-                            "<subnet-identity-cidr>"
                         ]
                     }
                 ]
@@ -219,4 +197,3 @@
     ],
     "natRuleCollections": []
 }
-

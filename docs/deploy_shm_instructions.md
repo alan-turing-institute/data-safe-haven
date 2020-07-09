@@ -147,7 +147,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
-3. Click `Users` in the left hand sidebar and click on the `Admin - EMERGENCY ACCESS` user.
+3. Click `Users` in the left hand sidebar and click on the `AAD Admin - EMERGENCY ACCESS` user.
 4. Add the `Global Administrator` role to the user.
     - Click `Assigned roles` in the left hand menu
     - Click `Add assignments` in the top menu above the (empty) list of roles
@@ -185,7 +185,7 @@ Click the heading that applies to you to expand the instructions for that scenar
 
 1. Switch to the the **emergency administrator** account:
     - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
-    - Enter `admin.emergency.access@<SHM domain>` as the username
+    - Enter `aad.admin.emergency.access@<SHM domain>` as the username
     - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
     - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD). Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
     - Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Subscriptions"
@@ -261,8 +261,8 @@ A default external administrator account was automatically created for the user 
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
 4. Create an internal admin user:
-    - User name: `admin.firstname.lastname@<SHM domain>`
-    - Name: `Admin - Firstname Lastname`
+    - User name: `aad.admin.firstname.lastname@<SHM domain>`
+    - Name: `AAD Admin - Firstname Lastname`
     - Leave `Auto-generate password` set. Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
     - Click the `User` link in the `Roles` field and make the user an administrator:
       - Search for `Global Administrator`
@@ -287,8 +287,8 @@ A default external administrator account was automatically created for the user 
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-1. Go to https://aka.ms/mfasetup in an **ingognito / private browsing** tab
-2. Enter your username (`admin.firstname.lastname@<SHM domain>`)
+1. Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+2. Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 4. Click the `Forgotten my password` link
 3. Enter the captcha text and press next
 4. Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
@@ -302,7 +302,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 ### Remove the default external user that was used to create the Azure AD
 
-:warning: Make sure you have activated your account and **successfully logged in** with the nes **internal** administrator account you have just created for yourself (`admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
+:warning: Make sure you have activated your account and **successfully logged in** with the nes **internal** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 
 1. Ensure you are logged in with the new **internal** administrator account you have just created.
     - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
