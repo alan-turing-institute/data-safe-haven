@@ -497,7 +497,7 @@
         "vmSize": "Standard_DS2_v2"
       },
       "rg": "RG_SRE_RDS",
-      "sessionHost1": {
+      "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "disks": {
           "os": {
@@ -510,21 +510,6 @@
         "ip": "10.150.1.249",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "vmName": "APP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "sessionHost2": {
-        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "DKP-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "hostname": "DKP-SRE-SANDBOX",
-        "ip": "10.150.1.248",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
-        "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       }
     },

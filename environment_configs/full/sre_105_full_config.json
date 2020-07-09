@@ -221,17 +221,11 @@
         "ip": "10.188.1.250",
         "npsSecretName": "dsg105-nps-secret"
       },
-      "sessionHost1": {
+      "appSessionHost": {
         "vmName": "RDSSH1-DSG105",
         "hostname": "RDSSH1-DSG105",
         "fqdn": "RDSSH1-DSG105.dsgroup105.co.uk",
         "ip": "10.188.1.249"
-      },
-      "sessionHost2": {
-        "vmName": "RDSSH2-DSG105",
-        "hostname": "RDSSH2-DSG105",
-        "fqdn": "RDSSH2-DSG105.dsgroup105.co.uk",
-        "ip": "10.188.1.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
