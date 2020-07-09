@@ -98,6 +98,7 @@ if (`$?) {
 # ---------------------
 Write-Host "Installing RDS webclient..."
 Install-RDWebClientPackage
+Publish-RDWebClientPackage -Type Production -Latest
 if (`$?) {
     Write-Host " [o] RDS webclient installation succeeded"
 } else {
