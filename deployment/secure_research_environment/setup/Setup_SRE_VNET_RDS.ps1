@@ -92,14 +92,8 @@ $domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVa
 $domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
-$rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
-$rdsGatewayVmName = $config.sre.rds.gateway.vmName
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
-$rdsAppSessionHostFqdn = $config.sre.rds.appSessionHost.fqdn
-$researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
-$shmNetbiosName = $config.shm.domain.netbiosName
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$sreDomain = $config.sre.domain.fqdn
 
 
 # Ensure that boot diagnostics resource group and storage account exist
@@ -238,19 +232,19 @@ $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<dsvmInitialIpAddress>", $dsvmInitialIpAddress).
           Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
           Replace("<hackmdIpAddress>", $config.sre.webapps.hackmd.ip).
-          Replace("<rdsGatewayVmFqdn>", $rdsGatewayVmFqdn).
-          Replace("<rdsGatewayVmName>", $rdsGatewayVmName).
-          Replace("<rdsAppSessionHostFqdn>", $rdsAppSessionHostFqdn).
+          Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
+          Replace("<rdsGatewayVmName>", $config.sre.rds.gateway.vmName).
+          Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn).
           Replace("<remoteUploadDir>", $remoteUploadDir).
-          Replace("<researchUserSgName>", $researchUserSgName).
-          Replace("<shmNetbiosName>", $shmNetbiosName).
-          Replace("<sreDomain>", $sreDomain) | Out-File $deployScriptLocalFilePath
+          Replace("<researchUserSgName>", $config.sre.domain.securityGroups.researchUsers.name).
+          Replace("<shmNetbiosName>", $config.shm.domain.netbiosName).
+          Replace("<sreDomain>", $config.sre.domain.fqdn) | Out-File $deployScriptLocalFilePath
 
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
-$template.Replace("<rdsGatewayVmFqdn>", $rdsGatewayVmFqdn).
-          Replace("<rdsAppSessionHostFqdn>", $rdsAppSessionHostFqdn) | Out-File $serverListLocalFilePath
+$template.Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
+          Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn) | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
 Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
@@ -293,9 +287,9 @@ $dnsTtlSeconds = 30
 
 # Set the A record
 $recordName = "@"
-Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$result = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
@@ -304,9 +298,9 @@ if ($?) {
 
 # Set the CNAME record
 $recordName = "$($config.sre.rds.gateway.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
+Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$result = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
