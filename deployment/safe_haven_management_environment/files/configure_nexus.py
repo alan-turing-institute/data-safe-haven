@@ -12,6 +12,23 @@ NEXUS_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}"
 NEXUS_API_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}/service/rest"
 
 
+def delete_all_repositories():
+    r = requests.get(f"{NEXUS_API_ROOT}/beta/repositories", auth=auth)
+    repositories = r.json()
+    for repo in repositories:
+        name = repo["name"]
+        print(f"Deleting repository: {name}")
+        r = requests.delete(
+            f"{NEXUS_API_ROOT}/beta/repositories/{name}",
+            auth=auth
+            )
+        if (code := r.status_code) == 204:
+            print("Repository successfully deleted")
+        else:
+            print(f"Repository deletion failed.\nStatus code:{code}")
+            print(r.content)
+
+
 def create_proxy_repository(repo_type, name, remote_url):
     assert repo_type in ["pypi", "r"]
 
@@ -170,20 +187,7 @@ except FileNotFoundError:
     print("Password already changed")
 
 # Delete all existing repositories
-r = requests.get(f"{NEXUS_API_ROOT}/beta/repositories", auth=auth)
-repositories = r.json()
-for repo in repositories:
-    name = repo["name"]
-    print(f"Deleting repository: {name}")
-    r = requests.delete(
-        f"{NEXUS_API_ROOT}/beta/repositories/{name}",
-        auth=auth
-        )
-    if (code := r.status_code) == 204:
-        print("Repository successfully deleted")
-    else:
-        print(f"Repository deletion failed.\nStatus code:{code}")
-        print(r.content)
+delete_all_repositories()
 
 # Add PyPi proxy
 create_proxy_repository("pypi", "pypi-proxy", "https://pypi.org/")
