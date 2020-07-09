@@ -2,6 +2,8 @@
 os: linux
 dist: bionic
 
+language: minimal
+
 jobs:
   include:
     - name: Lint YAML
@@ -20,11 +22,9 @@ jobs:
       before_script: pip install flake8
       script: flake8 . --statistics --count
     - name: Lint shell
-      language: minimal
       before_script: sudo apt-get install -y shellcheck
       script: find . -name "*.sh" -exec shellcheck --format gcc --severity error {} \+
     - name: Lint PowerShell
-      language: minimal
       before_script:
         - sudo snap install powershell --classic
         - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
