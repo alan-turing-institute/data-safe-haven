@@ -15,6 +15,7 @@ NEXUS_API_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}/service/rest"
 def delete_all_repositories():
     r = requests.get(f"{NEXUS_API_ROOT}/beta/repositories", auth=auth)
     repositories = r.json()
+
     for repo in repositories:
         name = repo["name"]
         print(f"Deleting repository: {name}")
@@ -85,6 +86,27 @@ def create_proxy_repository(repo_type, name, remote_url):
         print(r.content)
 
 
+def delete_all_content_selectors():
+    r = requests.get(
+        f"{NEXUS_API_ROOT}/beta/security/content-selectors",
+        auth=auth
+        )
+    content_selectors = r.json()
+
+    for content_selector in content_selectors:
+        name = content_selector["name"]
+        print(f"Deleting content selector: {name}")
+        r = requests.delete(
+            f"{NEXUS_API_ROOT}/beta/security/content-selectors/{name}",
+            auth=auth
+            )
+        if (code := r.status_code) == 204:
+            print("Content selector successfully deleted")
+        else:
+            print(f"Content selector deletion failed.\nStatus code:{code}")
+            print(r.content)
+
+
 def create_content_selector(name, description, expression):
     payload = {
         "name": f"{name}",
@@ -105,6 +127,31 @@ def create_content_selector(name, description, expression):
     else:
         print(f"content selector creation failed.\nStatus code: {code}")
         print(r.content)
+
+
+def delete_all_content_selector_privileges():
+    r = requests.get(
+        f"{NEXUS_API_ROOT}/beta/security/privileges",
+        auth=auth
+        )
+    privileges = r.json()
+
+    for privilege in privileges:
+        if privilege["type"] != "repository-content-selector":
+            continue
+
+        name = privilege["name"]
+        print(f"Deleting content selector privilege: {name}")
+        r = requests.delete(
+            f"{NEXUS_API_ROOT}/beta/security/privileges/{name}",
+            auth=auth
+            )
+        if (code := r.status_code) == 204:
+            print(f"Content selector privilege: {name} successfully deleted")
+        else:
+            print("Content selector privilege deletion failed."
+                  f"Status code:{code}")
+            print(r.content)
 
 
 def create_content_selector_privilege(name, description, repo_type, repo,
@@ -193,6 +240,14 @@ delete_all_repositories()
 create_proxy_repository("pypi", "pypi-proxy", "https://pypi.org/")
 # Add CRAN proxy
 create_proxy_repository("r", "cran-proxy", "https://cran.r-project.org/")
+
+# Delete all existing content selector privileges
+# These must be deleted before the content selectors as the content selectors
+# as the privileges depend on the content selectors
+delete_all_content_selector_privileges()
+
+# Delete all existing content selectors
+delete_all_content_selectors()
 
 # Create content selectors
 create_content_selector(
