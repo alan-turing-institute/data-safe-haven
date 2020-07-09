@@ -157,20 +157,6 @@
                         "sourceAddresses": [
                             "*"
                         ]
-                    },
-                    {
-                        "name": "DenyGeneralInternet",
-                        "protocols": [
-                            "http:80",
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "*"
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
                     }
                 ]
             }
