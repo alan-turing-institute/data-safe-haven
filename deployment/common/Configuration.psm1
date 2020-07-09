@@ -189,19 +189,6 @@ function Add-SreConfig {
                 }
             }
         }
-        sessionHost2 = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh2"
-            vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
-            vmSize = "Standard_DS2_v2"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 6
-            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
-            disks = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "128"
-                    type = "Standard_LRS"
-                }
-            }
-        }
     }
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.rds.Keys) {

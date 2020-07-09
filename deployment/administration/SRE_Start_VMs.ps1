@@ -22,7 +22,6 @@ Add-LogMessage -Level Info "Starting RDS gateway..."
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 Add-LogMessage -Level Info "Starting RDS session hosts..."
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.appSessionHost.vmName
-Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName
 Add-LogMessage -Level Info "Starting data server..."
 Enable-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName
 Add-LogMessage -Level Info "Starting web app servers..."

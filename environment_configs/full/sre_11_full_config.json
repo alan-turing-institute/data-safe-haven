@@ -227,12 +227,6 @@
         "fqdn": "RDSSH1-DSG11.dsgroup11.co.uk",
         "ip": "10.100.81.249"
       },
-      "sessionHost2": {
-        "vmName": "RDSSH2-DSG11",
-        "hostname": "RDSSH2-DSG11",
-        "fqdn": "RDSSH2-DSG11.dsgroup11.co.uk",
-        "ip": "10.100.81.248"
-      },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {

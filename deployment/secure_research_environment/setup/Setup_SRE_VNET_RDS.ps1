@@ -81,8 +81,7 @@ $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
-                 ("RDS Session Host (App server)", $config.sre.rds.appSessionHost.vmName),
-                 ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
+                 ("RDS Session Host (App server)", $config.sre.rds.appSessionHost.vmName))
 
 
 # Set variables used in template expansion, retrieving from the key vault where appropriate
@@ -98,8 +97,6 @@ $rdsGatewayVmName = $config.sre.rds.gateway.vmName
 $rdsSh1AdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
 $rdsSh1VmFqdn = $config.sre.rds.appSessionHost.fqdn
 $rdsSh1VmName = $config.sre.rds.appSessionHost.vmName
-$rdsSh2AdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.sessionHost2.adminPasswordSecretName -DefaultLength 20
-$rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
 $reviewUserSgName = $config.sre.domain.securityGroups.reviewUsers.name
 $shmNetbiosName = $config.shm.domain.netbiosName
@@ -201,12 +198,6 @@ $params = @{
     RDS_Session_Host_Apps_Os_Disk_Size_GB    = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
     RDS_Session_Host_Apps_Os_Disk_Type       = $config.sre.rds.appSessionHost.disks.os.type
     RDS_Session_Host_Apps_VM_Size            = $config.sre.rds.appSessionHost.vmSize
-    RDS_Session_Host_Desktop_Admin_Password  = (ConvertTo-SecureString $rdsSh2AdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Desktop_IP_Address      = $config.sre.rds.sessionHost2.ip
-    RDS_Session_Host_Desktop_Name            = $config.sre.rds.sessionHost2.vmName
-    RDS_Session_Host_Desktop_Os_Disk_Size_GB = [int]$config.sre.rds.sessionHost2.disks.os.sizeGb
-    RDS_Session_Host_Desktop_Os_Disk_Type    = $config.sre.rds.sessionHost2.disks.os.type
-    RDS_Session_Host_Desktop_VM_Size         = $config.sre.rds.sessionHost2.vmSize
     SRE_ID                                   = $config.sre.id
     Virtual_Network_Name                     = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group           = $config.sre.network.vnet.rg
@@ -350,9 +341,6 @@ $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
     if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
         $blobfiles[$config.sre.rds.appSessionHost.vmName] += @{$containerNameSessionHosts = $blob.Name}
-        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
-    } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
-        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
     }
 }
 # ... and for the gateway
@@ -396,7 +384,6 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 # ----------------------
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost2.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 
 
 # Reboot all the RDS VMs

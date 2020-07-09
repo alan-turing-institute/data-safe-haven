@@ -31,8 +31,6 @@ $nsgs[$config.sre.rds.gateway.nsg] = Get-AzNetworkSecurityGroup -Name $config.sr
 Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 $nsgs[$config.sre.rds.appSessionHost.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg -ResourceGroupName $config.sre.network.vnet.rg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost2.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.rds.sessionHost2.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost2.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 # Data server
 Add-LogMessage -Level Info "Ensure data server is bound to correct NSG..."

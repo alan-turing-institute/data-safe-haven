@@ -162,51 +162,6 @@
                 "description": "Select size of RDS_Session_Host_Apps VM"
             }
         },
-        "RDS_Session_Host_Desktop_Admin_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for RDS gateway"
-            }
-        },
-
-        "RDS_Session_Host_Desktop_IP_Address": {
-            "type": "string",
-            "defaultValue": "10.250.x.248",
-            "metadata": {
-                "description": "Enter IP address for RDS_Session_Host_Apps VM, must end in 248"
-            }
-        },
-        "RDS_Session_Host_Desktop_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the RDS desktop session host VM"
-            }
-        },
-        "RDS_Session_Host_Desktop_Os_Disk_Size_GB": {
-            "type": "int"
-        },
-        "RDS_Session_Host_Desktop_Os_Disk_Type": {
-            "type": "string"
-        },
-        "RDS_Session_Host_Desktop_VM_Size": {
-            "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D32_v3",
-                "Standard_DS2_v2",
-                "Standard_DS4_v2",
-                "Standard_DS14_v2",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2"
-            ],
-            "metadata": {
-                "description": "Select size of RDS_Session_Host_Apps VM"
-            }
-        },
         "SRE_ID": {
             "type": "string",
             "metadata": {
@@ -235,8 +190,7 @@
     },
     "variables": {
         "rdsnic": "[concat(parameters('RDS_Gateway_Name'),'-','NIC')]",
-        "rdssh1nic": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-','NIC')]",
-        "rdssh2nic": "[concat(parameters('RDS_Session_Host_Desktop_Name'),'-','NIC')]",
+        "rdsAppSessionHostNic": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-','NIC')]",
         "rdspip": "[concat(parameters('RDS_Gateway_Name'),'-','PIP')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
@@ -366,7 +320,7 @@
                 },
                 "networkProfile": {
                     "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh1nic'))]",
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsAppSessionHostNic'))]",
                         "properties": {
                             "primary": true
                         }
@@ -380,72 +334,12 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh1nic'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('RDS_Session_Host_Desktop_Name')]",
-            "apiVersion": "2018-06-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[parameters('RDS_Session_Host_Desktop_VM_Size')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "osType": "Windows",
-                        "name": "[concat(parameters('RDS_Session_Host_Desktop_Name'),'-OS-DISK')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "writeAcceleratorEnabled": false,
-                        "managedDisk": {
-                            "storageAccountType": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Type')]"
-                        },
-                        "diskSizeGB": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Size_GB')]"
-                    },
-                    "dataDisks": []
-                },
-                "osProfile": {
-                    "computerName": "[parameters('RDS_Session_Host_Desktop_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('RDS_Session_Host_Desktop_Admin_Password')]",
-                    "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true
-                },
-                "networkProfile": {
-                    "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]",
-                        "properties": {
-                            "primary": true
-                        }
-                    }]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsAppSessionHostNic'))]"
             ]
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('rdssh1nic')]",
+            "name": "[variables('rdsAppSessionHostNic')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -454,36 +348,6 @@
                     "name": "ipconfig1",
                     "properties": {
                         "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
-                        "privateIPAllocationMethod": "Static",
-                        "subnet": {
-                            "id": "[variables('subnet')]"
-                        },
-                        "primary": true,
-                        "privateIPAddressVersion": "IPv4"
-                    }
-                }],
-                "dnsSettings": {
-                    "dnsServers": [],
-                    "appliedDnsServers": []
-                },
-                "enableAcceleratedNetworking": false,
-                "enableIPForwarding": false,
-                "primary": true,
-                "tapConfigurations": []
-            },
-            "dependsOn": []
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('rdssh2nic')]",
-            "apiVersion": "2018-10-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "ipConfigurations": [{
-                    "name": "ipconfig1",
-                    "properties": {
-                        "privateIPAddress": "[parameters('RDS_Session_Host_Desktop_IP_Address')]",
                         "privateIPAllocationMethod": "Static",
                         "subnet": {
                             "id": "[variables('subnet')]"
@@ -592,22 +456,6 @@
             ]
         },
         {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Session_Host_Desktop_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "autoUpgradeMinorVersion": true,
-                "publisher": "Microsoft.Compute",
-                "type": "bginfo",
-                "typeHandlerVersion": "2.1"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Session_Host_Desktop_Name'))]"
-            ]
-        },
-        {
             "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('RDS_Gateway_Name'),'/joindomain')]",
@@ -641,32 +489,6 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Session_Host_Apps_Name'))]",
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('RDS_Session_Host_Apps_Name'),'bginfo')]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "JsonADDomainExtension",
-                "typeHandlerVersion": "1.3",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
-                    "Restart": "true",
-                    "Options": "3"
-                },
-                "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
-                }
-            }
-        },
-        {
-            "apiVersion": "2018-06-01",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Session_Host_Desktop_Name'),'/joindomain')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Session_Host_Desktop_Name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('RDS_Session_Host_Desktop_Name'),'bginfo')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",

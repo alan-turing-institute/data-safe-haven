@@ -62,10 +62,6 @@
                 "appSessionHost": {
                     "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
                     "ip": "10.150.1.249"
-                },
-                "sessionHost2": {
-                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
-                    "ip": "10.150.1.248"
                 }
             },
             "dataserver": {

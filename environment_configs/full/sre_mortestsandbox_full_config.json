@@ -274,14 +274,6 @@
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
         "ip": "10.150.9.249"
-      },
-      "sessionHost2": {
-        "vmName": "DKP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
-        "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
-        "ip": "10.150.9.248"
       }
     },
     "dataserver": {

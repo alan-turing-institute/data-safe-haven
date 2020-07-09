@@ -227,12 +227,6 @@
         "fqdn": "RDSSH1-DSG107.dsgroup107.co.uk",
         "ip": "10.204.1.249"
       },
-      "sessionHost2": {
-        "vmName": "RDSSH2-DSG107",
-        "hostname": "RDSSH2-DSG107",
-        "fqdn": "RDSSH2-DSG107.dsgroup107.co.uk",
-        "ip": "10.204.1.248"
-      },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
