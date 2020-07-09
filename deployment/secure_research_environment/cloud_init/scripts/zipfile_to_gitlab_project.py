@@ -363,86 +363,6 @@ def create_merge_request_if_not_exists(
     raise gl.http_error(f"Creating merge request for {repo_name}", response)
 
 
-def clone_commit_and_push(
-    path_to_unzipped_repo,
-    tmp_repo_dir,
-    branch_name,
-    target_branch_name,
-    remote_url,
-    target_project_url,
-    commit_hash,
-):
-    """
-    Run shell commands to convert the unzipped directory containing the
-    repository contents into a git repo, then commit it on the branch
-    with the requested name.
-
-    Parameters
-    ==========
-    path_to_unzipped_repo: str, the full directory path to the unzipped repo
-    tmp_repo_dir: str, path to a temporary dir where we will clone the project
-    branch_name: str, the name of the branch holding the snapshot
-    target_branch_name: str, the name of the branch to push to
-    remote_url: str, the URL for this project on gitlab-review to be added
-    as a remote ("unapproved").
-    target_project_url: str, the url of the original imported project on
-    gitlab-review ("approved")
-    commit_hash: str, the commit hash of the snapshot of the upstream project
-    """
-
-    # Ensure the cloned repo does not already exist (from an interrupted attempt)
-    subprocess.run(["rm", "-rf", "cloned_repo"], cwd=tmp_repo_dir, check=True)
-
-    # Clone the repo
-    subprocess.run(["git", "clone", remote_url, "cloned_repo"], cwd=tmp_repo_dir, check=True)
-    working_dir = os.path.join(tmp_repo_dir, "cloned_repo")
-    assert os.path.exists(working_dir)
-
-    # Add upstream (target repo) to this repo
-    subprocess.run(
-        ["git", "remote", "add", "approved", target_project_url],
-        cwd=working_dir,
-        check=True,
-    )
-    subprocess.run(["git", "fetch", "approved"], cwd=working_dir, check=True)
-
-    # Checkout the target branch if it exists
-    git_checkout_result = subprocess.run(
-        ["git", "checkout", target_branch_name], cwd=working_dir, check=False
-    )
-    if git_checkout_result.returncode == 0:
-        subprocess.run(["git", "pull", "approved"], cwd=working_dir, check=True)
-
-    # now checkout the branch holding the snapshot
-    subprocess.run(["git", "checkout", "-b", branch_name], cwd=working_dir, check=True)
-
-    # Remove the contents of the cloned repo (everything except .git)
-    for item in os.listdir(working_dir):
-        if item != ".git":
-            subprocess.run(["rm", "-rf", item], cwd=working_dir, check=True)
-
-    # Copy the unzipped repo contents into our cloned (empty) repo
-    for item in os.listdir(path_to_unzipped_repo):
-        subprocess.run(
-            ["cp", "-r", os.path.join(path_to_unzipped_repo, item), "."],
-            cwd=working_dir,
-            check=True,
-        )
-
-    # Commit everything to this branch, also putting commit hash into message
-    subprocess.run(["git", "add", "."], cwd=working_dir, check=True)
-    commit_msg = "Import snapshot of {} at commit {}".format(remote_url, commit_hash)
-    subprocess.run(["git", "commit", "-m", commit_msg], cwd=working_dir, check=True)
-    # Push back to gitlab review (unapproved)
-    subprocess.run(
-        ["git", "push", "-f", "--set-upstream", "origin", branch_name],
-        cwd=working_dir,
-        check=True,
-    )
-
-    logger.info("Pushed to %s, branch %s", remote_url, branch_name)
-
-
 def fork_project(
     gitlab_config,
     fork_namespace,
@@ -527,11 +447,7 @@ def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespac
     )
     target_project_id = target_project_info["id"]
     target_project_url = target_project_info["ssh_url_to_repo"]
-    logger.info("Created project approved/%s ", repo_name)
-
-    # Branch to create on the source (unapproved) repository of the
-    # matches that of the target
-    src_branch_name = f"commit-{commit_hash}"
+    logger.info("Created or found project at approved/%s", repo_name)
 
     # Fork this project to "unapproved" group
     src_project_info = fork_project(
@@ -542,19 +458,66 @@ def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespac
         fork_namespace_id=namespace_ids["unapproved"],
     )
     src_project_id = src_project_info["id"]
-    remote_url = src_project_info["ssh_url_to_repo"]
-    logger.info("Fork of project at unapproved/%s", repo_name)
+    src_remote_url = src_project_info["ssh_url_to_repo"]
+    logger.info("Created or found fork of project at unapproved/%s", repo_name)
 
-    # Do the command-line git stuff to push to unapproved project
-    clone_commit_and_push(
-        unzipped_location,
-        snapshot_path,
-        src_branch_name,
-        target_branch_name,
-        remote_url,
-        target_project_url,
-        commit_hash,
+    # Ensure the cloned repo does not already exist (from an interrupted attempt)
+    subprocess.run(["rm", "-rf", "cloned_repo"], cwd=snapshot_path, check=True)
+
+    # Clone the repo
+    subprocess.run(["git", "clone", src_remote_url, "cloned_repo"], cwd=snapshot_path, check=True)
+    working_dir = os.path.join(snapshot_path, "cloned_repo")
+    assert os.path.exists(working_dir)
+    logger.info("Created local working copy of %s", src_remote_url)
+
+    # Add upstream (target repo) to this repo
+    subprocess.run(
+        ["git", "remote", "add", "approved", target_project_url],
+        cwd=working_dir,
+        check=True,
     )
+    subprocess.run(["git", "fetch", "approved"], cwd=working_dir, check=True)
+    logger.info("Fetched branches from approved/%s", repo_name)
+    
+    # Checkout the target branch if it exists
+    git_checkout_result = subprocess.run(
+        ["git", "checkout", target_branch_name], cwd=working_dir, check=False
+    )
+    if git_checkout_result.returncode == 0:
+        subprocess.run(["git", "pull", "approved"], cwd=working_dir, check=True)
+
+    # Branch to create on the source (unapproved) repository of the
+    # matches that of the target
+    src_branch_name = f"commit-{commit_hash}"
+        
+    # now checkout the branch holding the snapshot
+    subprocess.run(["git", "checkout", "-b", src_branch_name], cwd=working_dir, check=True)
+
+    # Remove the contents of the cloned repo (everything except .git)
+    for item in os.listdir(working_dir):
+        if item != ".git":
+            subprocess.run(["rm", "-rf", item], cwd=working_dir, check=True)
+
+    # Copy the unzipped repo contents into our cloned (empty) repo
+    for item in os.listdir(unzipped_location):
+        subprocess.run(
+            ["cp", "-r", os.path.join(unzipped_location, item), "."],
+            cwd=working_dir,
+            check=True,
+        )
+
+    # Commit everything to this branch, also putting commit hash into message
+    subprocess.run(["git", "add", "."], cwd=working_dir, check=True)
+    commit_msg = "Import snapshot of {} at commit {}".format(src_remote_url, commit_hash)
+    subprocess.run(["git", "commit", "-m", commit_msg], cwd=working_dir, check=True)
+    # Push back to gitlab review (unapproved)
+    subprocess.run(
+        ["git", "push", "-f", "--set-upstream", "origin", src_branch_name],
+        cwd=working_dir,
+        check=True,
+    )
+
+    logger.info("Pushed to %s, branch %s", src_remote_url, src_branch_name)
 
     # Create the branch on the "approved" project if it doesn't already exist
     create_branch_if_not_exists(
