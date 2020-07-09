@@ -333,6 +333,51 @@
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-sre2-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-sre2-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-sre2-db-admin-username-mssql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true,
+        "ip": "10.150.11.4",
+        "port": "1433",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "type": "MSSQL",
+        "vmName": "MSSQL-SRE2",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-sre2-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-sre2-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-sre2-db-admin-username-postgresql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "ip": "10.150.11.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "type": "PostgreSQL",
+        "vmName": "PSTGRS-SRE2",
+        "vmSize": "Standard_DS2_v2"
+      },
       "rg": "RG_SRE_SRE2_DATABASES"
     },
     "dataserver": {
