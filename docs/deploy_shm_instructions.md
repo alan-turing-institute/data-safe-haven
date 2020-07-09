@@ -286,7 +286,7 @@ A default external administrator account was automatically created for the user 
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-1. Go to https://aka.ms/mfasetup in an **ingognito / private browsing** tab
+1. Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
 2. Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 4. Click the `Forgotten my password` link
 3. Enter the captcha text and press next
