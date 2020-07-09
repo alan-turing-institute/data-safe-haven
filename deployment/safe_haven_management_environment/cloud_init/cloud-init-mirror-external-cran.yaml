@@ -82,21 +82,24 @@ write_files:
           # Directory: /bin
           INCLUDE_DIRS=""
           for RPACKAGE in $WHITELISTED_PACKAGES; do
-              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/bin/linux/ubuntu/*/${RPACKAGE}_*"
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/linux/ubuntu/*/${RPACKAGE}_*"
           done
-          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran/bin 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          mkdir -p /datadrive/mirrordaemon/www/cran/bin
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/bin/ /datadrive/mirrordaemon/www/cran/bin 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
           # Directory: /src
-          INCLUDE_DIRS="--include=/src/contrib/PACKAGES"
+          INCLUDE_DIRS="--include=/contrib/PACKAGES"
           for RPACKAGE in $WHITELISTED_PACKAGES; do
-              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/src/contrib/${RPACKAGE}_* --include=/src/contrib/Archive/${RPACKAGE}/*"
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/contrib/${RPACKAGE}_* --include=/contrib/Archive/${RPACKAGE}/*"
           done
-          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran/src 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          mkdir -p /datadrive/mirrordaemon/www/cran/src
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/src/ /datadrive/mirrordaemon/www/cran/src 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
           # Directory: /web
-          INCLUDE_DIRS=""
+          INCLUDE_DIRS="--include=/packages/index.html"
           for RPACKAGE in $WHITELISTED_PACKAGES; do
-              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/web/checks/check_results_${RPACKAGE}.html --include=/web/dcmeta/${RPACKAGE}.xml --include=/web/packages/${RPACKAGE}/***"
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/checks/check_results_${RPACKAGE}.html --include=/dcmeta/${RPACKAGE}.xml --include=/packages/${RPACKAGE}/***"
           done
-          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran/web 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
+          mkdir -p /datadrive/mirrordaemon/www/cran/web
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/web/ /datadrive/mirrordaemon/www/cran/web 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
           # Top-level directory. Note that delete must *NOT* be enabled here.
           rsync -rtlvz --prune-empty-dirs --progress --exclude '*/*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee -a /datadrive/mirrordaemon/pull_from_internet.log
       fi
