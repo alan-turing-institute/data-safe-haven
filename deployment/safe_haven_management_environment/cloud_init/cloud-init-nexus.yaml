@@ -1,0 +1,47 @@
+#cloud-config
+timezone: Europe/London
+
+apt:
+  update: true
+
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    filesystem: ext4
+    parition: 1
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults"]
+
+packages:
+  - docker.io
+  - docker-compose
+  - python3-requests
+
+write_files:
+  - path: "/docker-compose.yml"
+    content: |
+      ---
+      version: "3"
+
+      services:
+        nexus:
+          image: sonatype/nexus3
+          ports:
+            - 8081:8081
+          volumes:
+            - ./nexus-data:/nexus-data
+
+runcmd:
+  - docker-compose up -d
+
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True
