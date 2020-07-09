@@ -1,4 +1,5 @@
 Import-Module RemoteDesktop
+Import-Module RemoteDesktopServices
 
 
 # Initialise the data drives
