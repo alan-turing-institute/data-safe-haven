@@ -81,17 +81,17 @@ $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
-    ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
-    ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
+                 ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
+                 ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
 
 
 # Set variables used in template expansion, retrieving from the key vault where appropriate
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername
+$domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20
+$domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 160
-$gitlabIpAddress = $config.sre.webapps.gitlab.ip
-$hackmdIpAddress = $config.sre.webapps.hackmd.ip
-$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
@@ -100,15 +100,11 @@ $rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
 $rdsSh1VmName = $config.sre.rds.sessionHost1.vmName
 $rdsSh2AdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.sessionHost2.adminPasswordSecretName -DefaultLength 20
 $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
-$rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
-# $domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-# $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.shm.id)admin".ToLower()
-$domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20
-$domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20
+$researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
+$reviewUserSgName = $config.sre.domain.securityGroups.reviewUsers.name
 $shmNetbiosName = $config.shm.domain.netbiosName
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$sreFqdn = $config.sre.domain.fqdn
-$sreNetbiosName = $config.sre.domain.netbiosName
+$sreDomain = $config.sre.domain.fqdn
 
 
 # Ensure that boot diagnostics resource group and storage account exist
