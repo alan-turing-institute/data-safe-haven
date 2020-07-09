@@ -53,7 +53,7 @@
                         ]
                     },
                     {
-                        "name": "AllowAzureMFA",
+                        "name": "AllowAzureMFAConnectOperations",
                         "protocols": [
                             "https:443"
                         ],
@@ -66,9 +66,9 @@
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
                         ]
-                    }
+                    },
                     {
-                        "name": "AllowADConnectHealthCheck",
+                        "name": "AllowADConnectOperations",
                         "protocols": [
                             "https:443"
                         ],
@@ -85,7 +85,7 @@
                         ]
                     },
                     {
-                        "name": "AllowADConnectHealthRegistration",
+                        "name": "AllowADConnectSetup",
                         "protocols": [
                             "https:443"
                         ],
@@ -101,7 +101,7 @@
                         ]
                     },
                     {
-                        "name": "AllowAzureADLogin",
+                        "name": "AllowAzureADLoginForADConnectAnMFAConnectSetup",
                         "protocols": [
                             "https:443"
                         ],
@@ -139,7 +139,7 @@
                             "settings-win.data.microsoft.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "*"
                         ]
                     },
                     {
@@ -153,7 +153,7 @@
                             "*"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "*"
                         ]
                     }
                 ]
