@@ -176,7 +176,7 @@ function Add-SreConfig {
                 }
             }
         }
-        sessionHost1 = [ordered]@{
+        appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"

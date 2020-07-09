@@ -524,7 +524,7 @@
         "vmSize": "Standard_DS2_v2"
       },
       "rg": "RG_SRE_RDS",
-      "sessionHost1": {
+      "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "disks": {
           "os": {

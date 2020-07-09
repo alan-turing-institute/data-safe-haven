@@ -267,7 +267,7 @@
         "fqdn": "RDG-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
         "ip": "10.150.9.250"
       },
-      "sessionHost1": {
+      "appSessionHost": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",

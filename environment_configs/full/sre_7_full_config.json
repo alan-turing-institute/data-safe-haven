@@ -221,7 +221,7 @@
         "ip": "10.100.49.250",
         "npsSecretName": "dsg7-nps-secret"
       },
-      "sessionHost1": {
+      "appSessionHost": {
         "vmName": "RDSSH1-DSG7",
         "hostname": "RDSSH1-DSG7",
         "fqdn": "RDSSH1-DSG7.dsgroup7.co.uk",

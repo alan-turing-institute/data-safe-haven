@@ -221,7 +221,7 @@
         "ip": "10.158.1.250",
         "npsSecretName": "dsg101-nps-secret"
       },
-      "sessionHost1": {
+      "appSessionHost": {
         "vmName": "RDSSH1-DSG101",
         "hostname": "RDSSH1-DSG101",
         "fqdn": "RDSSH1-DSG101.dsgroup101.co.uk",
