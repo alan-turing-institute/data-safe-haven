@@ -159,7 +159,7 @@ foreach ($packName in $packNames) {
             Add-LogMessage -Level Fatal "Failed to enable '$packName' Intelligence Pack!"
         }
     }
-
+}
 
 # Switch back to original subscription
 # ------------------------------------
