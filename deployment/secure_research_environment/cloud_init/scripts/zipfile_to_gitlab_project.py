@@ -88,7 +88,7 @@ def create_project(gitlab_config, repo_name, namespace_id):
         },
     )
 
-    if response.status_code != 200:
+    if response.status_code != 201: # created
         raise gl.http_error("Creating project", response)
 
     project_info = response.json()
