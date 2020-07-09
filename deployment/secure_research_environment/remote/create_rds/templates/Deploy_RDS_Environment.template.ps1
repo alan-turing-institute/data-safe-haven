@@ -95,12 +95,12 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "Desktop (DSVM Main)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "Desktop (DSVM Other)" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "GitLab" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "HackMD" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "SSH (DSVM Main)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "SSH (DSVM Other)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
