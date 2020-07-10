@@ -19,8 +19,8 @@ $rgFilter = "RG_SRE_$($config.sre.id)*"
 
 # Get Log Analytics Workspace details
 # -----------------------------------
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
-$key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
+$workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
+$key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
 
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
