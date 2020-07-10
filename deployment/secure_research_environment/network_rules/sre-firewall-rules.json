@@ -13,13 +13,6 @@
                 "addressPrefix": "<subnet-shm-vpn-cidr>",
                 "nextHop": "VirtualNetworkGateway"
             }
-        },
-        {
-            "name": "ViaRDSGateway",
-            "properties": {
-                "addressPrefix": "<subnet-rds-gateway-cidr>",
-                "nextHop": "Internet"
-            }
         }
     ],
     "networkRuleCollections": [],
