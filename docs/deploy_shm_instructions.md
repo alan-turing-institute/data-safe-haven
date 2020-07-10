@@ -279,7 +279,8 @@ A default external administrator account was automatically created for the user 
     - Click the `Save` icon at the top of the user details panel
 6. Add an authentication email
     - Click `Authentication methods` in the left hand sidebar
-    - Enter the user's institutional email address in the `Email` field  (**not** the `Alternate email` field)
+    - Enter the user's institutional email address in the `Email` field 
+    - Note that you do **not** need to fill out either of the `Phone` fields here
     - Click the `Save` icon at the top of the panel
 
 ### Activate and configure your new internal admin account
