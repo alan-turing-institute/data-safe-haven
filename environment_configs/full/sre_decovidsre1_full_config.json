@@ -405,8 +405,8 @@
       "vmSize": "Standard_D2s_v3"
     },
     "domain": {
-      "dn": "DC=sre1,DC=turingsafehaven,DC=ac,DC=uk",
-      "fqdn": "sre1.turingsafehaven.ac.uk",
+      "dn": "DC=sre1,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "sre1.decovid.turingsafehaven.ac.uk",
       "netbiosName": "SRE1",
       "securityGroups": {
         "dataAdministrators": {
