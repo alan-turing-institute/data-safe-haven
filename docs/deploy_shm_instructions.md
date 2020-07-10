@@ -221,7 +221,9 @@ Click the heading that applies to you to expand the instructions for that scenar
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Password reset` in the left hand sidebar
 4. Set the `Self service password reset enabled` toggle to `All`
+    - If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 5. Click the `Save` icon
+
 
 ### Configure MFA on Azure Active Directory
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -276,8 +278,8 @@ A default external administrator account was automatically created for the user 
         - Add the the user's mobile phone number to the `Mobile phone` field. Make sure to prefix it with the country code and **don't include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`). They will need to enter their number in **exactly this format** when performing a self-service password reset.
     - Click the `Save` icon at the top of the user details panel
 6. Add an authentication email
-    - Click `Authentication` in the left hand sidebar
-    - Enter the user's institutional email address in the `Authentication Email` field
+    - Click `Authentication methods` in the left hand sidebar
+    - Enter the user's institutional email address in the `Email` field  (**not** the `Alternate email` field)
     - Click the `Save` icon at the top of the panel
 
 ### Activate and configure your new internal admin account
