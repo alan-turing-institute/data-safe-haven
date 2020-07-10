@@ -36,7 +36,7 @@
                             "<subnet-data-cidr>",
                             "<subnet-databases-cidr>",
                             "<subnet-identity-cidr>",
-                            "<subnet-rds-session-host-cidr>"
+                            "<subnet-rds-cidr>"
                         ]
                     },
                     {
