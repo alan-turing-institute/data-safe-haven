@@ -49,7 +49,7 @@
                             "crl.microsoft.com"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "<subnet-identity-cidr>"
                         ]
                     },
                     {
