@@ -53,7 +53,7 @@
                         ]
                     },
                     {
-                        "name": "LogAnalytics",
+                        "name": "AllowLogAnalytics",
                         "protocols": [
                             "https:443"
                         ],
