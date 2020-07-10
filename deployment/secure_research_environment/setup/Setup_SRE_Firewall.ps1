@@ -47,8 +47,7 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewal
     Replace("<subnet-data-cidr>", $config.sre.network.vnet.subnets.data.cidr).
     Replace("<subnet-databases-cidr>", $config.sre.network.vnet.subnets.databases.cidr).
     Replace("<subnet-identity-cidr>", $config.sre.network.vnet.subnets.identity.cidr).
-    Replace("<subnet-rds-session-host-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
-    Replace("<subnet-rds-gateway-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
+    Replace("<subnet-rds-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
     Replace("<vnet-shm-cidr>", $config.shm.network.vnet.cidr) | ConvertFrom-Json -AsHashtable
 
 
@@ -75,8 +74,14 @@ $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 
+$ruleNameFilter = "sre-$($config.sre.id)*"
 # Application rules
 # -----------------
+Add-LogMessage -Level Info "Setting firewall application rules..."
+foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
+    $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
+}
 Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
     foreach ($rule in $ruleCollection.properties.rules) {
@@ -84,19 +89,30 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
         if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
         if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
-        $null = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+        $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
+Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
+$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
+Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
 # Network rules
 # -------------
 Add-LogMessage -Level Info "Setting firewall network rules..."
+foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+    $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
+    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
+}
+Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     foreach ($rule in $ruleCollection.properties.rules) {
-        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
+Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
+$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
+Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
 # Switch back to original subscription

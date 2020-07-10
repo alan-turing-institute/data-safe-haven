@@ -49,6 +49,39 @@
                             "crl.microsoft.com"
                         ],
                         "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowLogAnalytics",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<logging-workspace-id>.ods.opinsights.azure.com",
+                            "<logging-workspace-id>.oms.opinsights.azure.com",
+                            "<logging-workspace-id>.blob.core.windows.net",
+                            "<logging-workspace-id>.azure-automation.net"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADLogin",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "login.microsoftonline.com",
+                            "secure.aadcdn.microsoftonline-p.com",
+                            "login.windows.net",
+                            "aadcdn.msftauth.net",
+                            "login.live.com"
+                        ],
+                        "sourceAddresses": [
                             "<subnet-identity-cidr>"
                         ]
                     },

@@ -13,8 +13,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 9. [Deploy and configure Network Policy Server (NPS)](#9-deploy-and-configure-network-policy-server-nps)
 10. [Require MFA for all users](#10-r#equire-mfa-for-all-users)
 11. [Deploy firewall](#11-deploy-firewall)
-12. [Deploy package mirrors](#12-deploy-package-mirrors)
-13. [Tear down SHM](#13-tearing-down-the-shm)
+12. [Deploy logging](#12-deploy-logging)
+13. [Deploy package mirrors](#13-deploy-package-mirrors)
+14. [Tear down SHM](#14-tearing-down-the-shm)
 
 ## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Safe Haven Management <SHM ID>`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
@@ -146,7 +147,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
-3. Click `Users` in the left hand sidebar and click on the `Admin - EMERGENCY ACCESS` user.
+3. Click `Users` in the left hand sidebar and click on the `AAD Admin - EMERGENCY ACCESS` user.
 4. Add the `Global Administrator` role to the user.
     - Click `Assigned roles` in the left hand menu
     - Click `Add assignments` in the top menu above the (empty) list of roles
@@ -641,7 +642,21 @@ Once you're certain that you're adding a new user, make sure that the following 
 - This will take **about 10 minutes** to run.
 
 
-## 12. Deploy package mirrors
+## 12. Deploy logging
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Deploy and configure the firewall by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- This will take **several minutes** to run.
+
+### Troubleshooting
+The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+If so, try re-running the logging set up script.
+In most cases the extensions have actually been successfully installed.
+
+
+## 13. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
@@ -662,7 +677,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 - Deploy and configure the RDS VMs by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
-## 13. Tearing down the SHM
+## 14. Tearing down the SHM
 In order to tear down the SHM, use the following procedure:
 
 ### Disconnect from the Azure Active Directory

@@ -165,7 +165,6 @@ Line |
      |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'. 
      |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT 
      | HttpStatusCode: BadRequest HttpStatusDescription: Bad Request HttpResponseStatus: Completed
-
 # Ensure emergency admin account has full administrator rights
 $roleName = "Company Administrator" # 'Company Administrator' is the role name for the AAD 'Global administrator' role
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator has '$roleName' role..."
