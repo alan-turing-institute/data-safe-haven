@@ -41,7 +41,7 @@ The following 7 virtual machines are created as a result of these instructions:
   - [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
 - [:lock: Apply network configuration](#lock-apply-network-configuration)
   - [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
-  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configurelogging)
+  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
   - [:fast_forward: Optional: Unpeering package mirrors](#fast_forward-optional-unpeering-package-mirrors)
 - [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
 - [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
