@@ -108,7 +108,7 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
 }
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     foreach ($rule in $ruleCollection.properties.rules) {
-        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
