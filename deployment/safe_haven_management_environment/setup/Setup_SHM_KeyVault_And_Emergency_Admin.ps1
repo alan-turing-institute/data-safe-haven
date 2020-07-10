@@ -69,22 +69,6 @@ if ($?) {
     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
 }
 
-# :: AAD Global Administrator username
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "admin.emergency.access"
-if ($?) {
-    Add-LogMessage -Level Success "AAD emergency administrator account username exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator username!"
-}
-
-# :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20
-if ($?) {
-    Add-LogMessage -Level Success "AAD emergency administrator account password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
-}
-
 # :: Admin usernames
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower()
@@ -181,7 +165,6 @@ Line |
      |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'. 
      |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT 
      | HttpStatusCode: BadRequest HttpStatusDescription: Bad Request HttpResponseStatus: Completed
-
 # Ensure emergency admin account has full administrator rights
 $roleName = "Company Administrator" # 'Company Administrator' is the role name for the AAD 'Global administrator' role
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator has '$roleName' role..."
