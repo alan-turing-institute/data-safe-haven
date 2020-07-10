@@ -183,7 +183,9 @@ function Deploy-FirewallApplicationRule {
         [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
         $TargetFqdn,
         [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
-        $TargetTag
+        $TargetTag,
+        [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
+        [switch]$LocalChangeOnly
     )
     if ($TargetTag) {
         Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
@@ -212,12 +214,16 @@ function Deploy-FirewallApplicationRule {
     }
     try {
         $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
-        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Ensured that application rule '$Name' exists"
+        if($LocalChangeOnly) {
+            Add-LogMessage -Level InfoSuccess "Ensured that application rule '$Name' exists on local firewall object only."
+        } else {
+            $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
+            Add-LogMessage -Level Success "Ensured that application rule '$Name' exists and updated remote firewall."
+        }
     } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that application rule '$Name' exists!"
     }
-    return $rule
+    return $Firewall
 }
 Export-ModuleMember -Function Deploy-FirewallApplicationRule
 
@@ -244,7 +250,9 @@ function Deploy-FirewallNetworkRule {
         $Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [ValidateSet("Allow", "Deny")]
-        $ActionType
+        $ActionType,
+        [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
+        [switch]$LocalChangeOnly
     )
     $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
     Add-LogMessage -Level Info "Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
@@ -268,12 +276,16 @@ function Deploy-FirewallNetworkRule {
     }
     try {
         $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
-        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Ensured that network rule '$Name' exists"
+        if($LocalChangeOnly) {
+            Add-LogMessage -Level InfoSuccess "Ensured that network rule '$Name' exists on local firewall object only."
+        } else {
+            $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
+            Add-LogMessage -Level Success "Ensured that network rule '$Name' exists and updated remote firewall."
+        }
     } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that network rule '$Name' exists!"
     }
-    return $rule
+    return $Firewall
 }
 Export-ModuleMember -Function Deploy-FirewallNetworkRule
 
