@@ -747,6 +747,81 @@ function Deploy-VirtualMachineNIC {
 Export-ModuleMember -Function Deploy-VirtualMachineNIC
 
 
+# Deploy Azure Monitoring Extension on a VM
+# -----------------------------------------
+function Deploy-VirtualMachineMonitoringExtension {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+        $VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
+        $workspaceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
+        $workspaceKey
+    )
+
+    $PublicSettings = @{ "workspaceId" = $workspaceId }
+    $ProtectedSettings = @{ "workspaceKey" = $workspaceKey }
+
+    function Set-ExtensionIfNotInstalled {
+        param(
+            [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+            $vm,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension publisher")]
+            $publisher,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension type")]
+            $type,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension version")]
+            $version
+        )
+        Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
+        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
+            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and 
+                $_.ExtensionType -eq $type }
+        if($installed) {
+            Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."
+        } else {
+            try {
+                Set-AzVMExtension -ExtensionName $type `
+                    -ResourceGroupName $VM.ResourceGroupName `
+                    -VMName $vm.Name `
+                    -Publisher $publisher `
+                    -ExtensionType $type `
+                    -TypeHandlerVersion $version `
+                    -Settings $PublicSettings `
+                    -ProtectedSettings $ProtectedSettings `
+                    -Location $vm.location `
+                    -ErrorAction Stop
+                Add-LogMessage -Level Success "Installed extension '$type' on VM '$($vm.Name)'."
+            } catch {
+                Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($vm.Name)'!"
+            }
+        }
+    }
+    if($vm.OSProfile.WindowsConfiguration) {
+        # Install Monitoring Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
+            -type "MicrosoftMonitoringAgent" `
+            -version 1.0
+        # Install Dependency Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
+            -type "DependencyAgentWindows" `
+            -version 9.10
+    } elseif ($vm.OSProfile.LinuxConfiguration) {
+        # Install Monitoring Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
+            -type "OmsAgentForLinux" `
+            -version 1.13
+        # Install Dependency Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
+            -type "DependencyAgentLinux" `
+            -version 9.10
+    } else {
+        Add-LogMessage -Level Failure "VM OSProfile not recognised. Cannot activate logging for VM '$($vm.Name)'!"
+    }
+}
+Export-ModuleMember -Function Deploy-VirtualMachineMonitoringExtension
+
+
 # Create virtual network if it does not exist
 # ------------------------------------------
 function Deploy-VirtualNetwork {

@@ -648,7 +648,12 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the firewall by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
-- This will take **about 5 minutes** to run.
+- This will take **several minutes** to run.
+
+### Troubleshooting
+The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+If so, try re-running the logging set up script.
+In most cases the extensions have actually been successfully installed.
 
 
 ## 13. Deploy package mirrors

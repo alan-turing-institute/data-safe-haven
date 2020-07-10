@@ -22,19 +22,15 @@ $rgFilter = "RG_SHM_$($config.id)*"
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 
-# Ensure logging agent is installed on all SHM VMs
-# ------------------------------------------------
-Add-LogMessage -Level Info "Ensuring Log Analytics agent is installed on all SHM VMs...'"
+# Ensure logging is active on all SHM VMs
+# ---------------------------------------
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-foreach ($resourceGroup in $shmResourceGroups) {
-    Add-LogMessage -Level Info "Ensuring Log Analytics agent is installed on all VMs in resource group '$($resourceGroup.ResourceGroupName)'...'"
-    & "$PSScriptRoot/../../common/InstallVMInsights.ps1" -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey `
-        -ResourceGroup $resourceGroup.ResourceGroupName -SubscriptionId $context.Subscription.Id -WorkspaceRegion $workspace.Location `
-        -ReInstall -Approve
-    Add-LogMessage -Level Info "Finished ensuring Log Analytics agent is installed on all VMs in resource group '$($resourceGroup.ResourceGroupName)'.'"
+foreach($rg in $shmResourceGroups) {
+$rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
+    foreach($vm in $rgVms) {
+        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+    }
 }
-Add-LogMessage -Level Info "Finished ensuring Log Analytics agent is installed on all SHM VMs."
-
 
 # Ensure required Windows event logs are collected
 # ------------------------------------------------
@@ -132,7 +128,6 @@ $packNames = @(
     "ChangeTracking",
     "DnsAnalytics",
     "InternalWindowsEvent",
-    "LogManagement ",
     "NetFlow",
     "NetworkMonitoring",
     "ServiceMap",

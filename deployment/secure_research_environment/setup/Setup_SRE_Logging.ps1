@@ -24,19 +24,12 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.wor
 
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
-if($skipAgentInstall) {
-    Add-LogMessage -Level Warning "Skipping check and installation of Log Analytics agent on SRE VMs as '-skipAgentInstall' flag was passed."
-} else {
-    Add-LogMessage -Level Info "Ensuring Log Analytics agent is installed on all SRE VMs...'"
-    $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-    foreach ($resourceGroup in $shmResourceGroups) {
-        Add-LogMessage -Level Info "Ensuring Log Analytics agent is installed on all VMs in resource group '$($resourceGroup.ResourceGroupName)'...'"
-        & "$PSScriptRoot/../../common/InstallVMInsights.ps1" -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey `
-            -ResourceGroup $resourceGroup.ResourceGroupName -SubscriptionId $context.Subscription.Id -WorkspaceRegion $workspace.Location `
-            -ReInstall -Approve
-        Add-LogMessage -Level Info "Finished ensuring Log Analytics agent is installed on all VMs in resource group '$($resourceGroup.ResourceGroupName)'.'"
+$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
+foreach($rg in $shmResourceGroups) {
+$rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
+    foreach($vm in $rgVms) {
+        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
-    Add-LogMessage -Level Info "Finished ensuring Log Analytics agent is installed on all SRE VMs."
 }
 
 

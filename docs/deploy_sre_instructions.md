@@ -433,6 +433,11 @@ On your **deployment machine**.
 - Deploy and configure the firewall by running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
+### Troubleshooting
+The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+If so, try re-running the logging set up script.
+In most cases the extensions have actually been successfully installed.
+
 ### :fast_forward: Optional: Unpeering package mirrors
 The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
 However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
