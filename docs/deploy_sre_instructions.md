@@ -40,9 +40,8 @@ The following 7 virtual machines are created as a result of these instructions:
   - [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
   - [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
 - [:lock: Apply network configuration](#lock-apply-network-configuration)
-  - [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
-  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
-  - [:fast_forward: Optional: Unpeering package mirrors](#fast_forward-optional-unpeering-package-mirrors)
+- [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
+- [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
 - [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
 - [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
 
@@ -416,7 +415,7 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
-### :fire_engine: Configure firewall
+## :fire_engine: Configure firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -425,7 +424,7 @@ On your **deployment machine**.
 - Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
-### :chart_with_upwards_trend: Configure logging
+## :chart_with_upwards_trend: Configure logging
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -437,19 +436,6 @@ On your **deployment machine**.
 The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
 If so, try re-running the logging set up script.
 In most cases the extensions have actually been successfully installed.
-
-### :fast_forward: Optional: Unpeering package mirrors
-The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
-However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
-
-> :warning: You will not normally need to do this - think carefully before doing so!
-
-On your **deployment machine**.
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 
 ## :fire: Run smoke tests on DSVM
