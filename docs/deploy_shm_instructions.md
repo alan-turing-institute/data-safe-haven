@@ -308,7 +308,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 1. Ensure you are logged in with the new **internal** administrator account you have just created.
     - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
-    - Log in with the password you set for ypurself when activating your admin account in the previous step
+    - Log in with the password you set for yourself when activating your admin account in the previous step
 2. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 3. Click `Users` in the left hand sidebar 
@@ -505,12 +505,6 @@ Once you're certain that you're adding a new user, make sure that the following 
     - Ensure `Write back passwords to your on-premises directory` is set to yes.
       <p align="center">
           <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
-      </p>
-    - If you changed this setting, click the `Save` icon
-5. Select `Properties` from the left hand side bar
-    - Make sure that `Self service password reset enabled` is set to `All`
-      <p align="center">
-          <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
       </p>
     - If you changed this setting, click the `Save` icon
 
