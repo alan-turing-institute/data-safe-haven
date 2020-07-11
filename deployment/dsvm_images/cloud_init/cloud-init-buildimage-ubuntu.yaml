@@ -110,6 +110,14 @@ write_files:
     permissions: "0755"
     content: |
       <analyse_build.py>
+  - path: "/installation/get_package_constraint.py"
+    permissions: "0500"
+    content: |
+      <get_package_constraint.py>
+  - path: "/installation/install_python_version.sh"
+    permissions: "0500"
+    content: |
+      <install_python_version.sh>
   - path: "/installation/create_or_update_conda_python_environment.sh"
     permissions: "0500"
     content: |
@@ -134,10 +142,33 @@ write_files:
     permissions: "0500"
     content: |
       <download_and_install_tar.sh>
+  - path: "/installation/python-requirements-py27.txt"
+    permissions: "0444"
+    content: |
+      <python-requirements-py27.txt>
+  - path: "/installation/python-requirements-py36.txt"
+    permissions: "0444"
+    content: |
+      <python-requirements-py36.txt>
+  - path: "/installation/python-requirements-py37.txt"
+    permissions: "0444"
+    content: |
+      <python-requirements-py37.txt>
   - path: "/installation/performance_log.csv"
     permissions: "0644"
     content: |
       # Performance log
+  - path: "/installation/python-pyproject-template.toml"
+    permissions: "0400"
+    content: |
+      [tool.poetry]
+      name = "<PYTHON_ENV_NAME>"
+      version = "1.0.0"
+      description = "<PYTHON_ENV_NAME>"
+      authors = ["ROOT <root@localhost>"]
+
+      [tool.poetry.dependencies]
+      python = "<PYTHON_VERSION>"
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     owner: "root:root"
     permissions: "0644"
@@ -187,7 +218,7 @@ runcmd:
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
-  - apt-get install -y --no-install-recommends nvidia-driver-430
+  - apt-get install -y --no-install-recommends nvidia-driver-450
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
@@ -207,7 +238,7 @@ runcmd:
   # Manually update clamav signature database
   # The systemd unit is disabled as otherwise the freshclam log will be locked
   - echo "Updating clamav database"
-  - systemctl stop clamav-freshclam.service
+  - systemctl stop clamav-freshclam
   - freshclam
   - clamav-unofficial-sigs
 
@@ -266,55 +297,33 @@ runcmd:
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
-  # Install latest anaconda version (download is ~640MB)
-  - echo ">=== $(date +%s) Installing and configuring conda ===<"
-  - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
-  - ANACONDA_REMOTE_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
-  - echo "Using installer from $ANACONDA_REMOTE_URL"
-  - wget -nv $ANACONDA_REMOTE_URL -P /installation/
-  - bash /installation/${ANACONDA_INSTALL_SCRIPT} -b -p /opt/anaconda
-  - rm /installation/${ANACONDA_INSTALL_SCRIPT}
-  # Setup anaconda so that it is usable by all users.
-  # NB. We cannot add the /bin/ directory to the PATH directly: conda.sh is needed to configure the shell environment
-  - . /opt/anaconda/etc/profile.d/conda.sh
-  - echo ". /opt/anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
-  # Update conda and add conda-forge (append puts it last in priority order)
-  - conda config --append channels conda-forge
-  - conda update -y -n base -c defaults conda
-  # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
-  - conda config --set remote_connect_timeout_secs 60
-  - conda config --set remote_max_retries 20
-  - conda config --set remote_read_timeout_secs 180
-  # List initial environments
-  - echo "Initial conda environments:"
-  - conda env list
-
-  # Install pyenv globally
+  # Install pyenv and pyenv-virtualenv globally
   - export PYENV_ROOT="/opt/pyenv"
-  - mkdir -p $PYENV_ROOT
+  - rm -rf $PYENV_ROOT > /dev/null
+  - echo "PATH old $PATH"
+  - PATH="$PYENV_ROOT/bin:$PATH" # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
+  - echo "PATH new $PATH"
   - curl https://pyenv.run | bash
   - ls -alh $PYENV_ROOT
-  - echo "PATH old $PATH"
-  - export PATH="$PYENV_ROOT/bin:$PATH"
-  - echo "PATH new $PATH"
 
-  # Create or update conda environments - approximately 14 hrs: Python 2.7 (5hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
-  - <Python package list>
-  # - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
-  # - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
-  # - /installation/create_or_update_conda_python_environment.sh py37 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
-  # [30/04/2020] All versions of torchvision available for Python 3.X are currently broken by a Pillow update - this is the required fix
-  - sed -i "s/PILLOW_VERSION/__version__/g" /opt/anaconda/envs/py36/lib/python3.6/site-packages/torchvision/transforms/functional.py
-  - sed -i "s/PILLOW_VERSION/__version__/g" /opt/anaconda/envs/py37/lib/python3.7/site-packages/torchvision/transforms/functional.py
-  # List environments
-  - echo "Final conda environments:"
-  - conda env list
-  # Set 'other' permissions on the anaconda directory to be equal to that of the owner
+  # Install python versions
+  - /installation/install_python_version.sh py27
+  - /installation/install_python_version.sh py36
+  - /installation/install_python_version.sh py37
+
+  # Add pyenv to global settings
+  - echo '# Set up pyenv' >> /etc/bash.bashrc
+  - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
+  - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
+  - echo 'eval "$(pyenv init -)"' >> /etc/bash.bashrc
+  - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
+  - echo "pyenv global $()" >> /etc/bash.bashrc
+
+  # Set 'other' permissions on the pyenv directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
-  - echo "Updating /opt/anaconda/ permissions"
-  - rm -rf /opt/anaconda/.cph_tmp*
-  - chmod -R o=u,o-w /opt/anaconda/
-  - ls -alh /opt/anaconda/
+  - echo "Updating ${PYENV_ROOT} permissions"
+  - chmod -R o=u,o-w ${PYENV_ROOT}
+  - ls -alh ${PYENV_ROOT}
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
@@ -378,10 +387,10 @@ runcmd:
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
   # Add the Julia kernel
   - mv /root/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
-  # Add the anaconda kernels
-  - jupyter kernelspec install /opt/anaconda/envs/py27/share/jupyter/kernels/py27 || exit 1
-  - jupyter kernelspec install /opt/anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
-  - jupyter kernelspec install /opt/anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
+  # Add the python kernels
+  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py27 || exit 1
+  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py36 || exit 1
+  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py37 || exit 1
   # Add the R kernel
   - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
@@ -401,7 +410,8 @@ runcmd:
   #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
-  - echo "export PATH=${PATH}" >> /etc/bash.bashrc
+  - if [ ! "$(grep ^PATH= /etc/bash.bashrc)" ]; then echo "PATH=" >> /etc/bash.bashrc; fi
+  - sed -i "s|^PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Programming languages
   - echo "\n... Programming languages:\n"
   - if [ "$(which dotnet)" ]; then echo "\n\n*dotnet*\n\n$(which dotnet)\n$(dotnet --version)"; else echo "ERROR dotnet not found!"; exit 1; fi

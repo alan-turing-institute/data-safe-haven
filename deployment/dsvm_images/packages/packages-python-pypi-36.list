@@ -1,6 +1,7 @@
 beautifulsoup4
 black
 bokeh
+catalogue
 catboost
 colorama
 Cython
@@ -50,6 +51,7 @@ pygrib
 pyLDAvis
 pylint
 pymc3
+pyproj
 pyodbc
 pyshp
 pystan

@@ -51,6 +51,7 @@ pyLDAvis
 pylint
 pymc3
 pyodbc
+pyproj
 pyshp
 pystan
 pytest
