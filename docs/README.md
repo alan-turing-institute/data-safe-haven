@@ -45,7 +45,7 @@ The easiest way to make shareable PDF files from the Markdown documents included
 
 1. `npm` method [recommended]
 - Install `npm`
-- Install `pretty-markdown-pdf` with `npm install pretty-markdown-pdf`
+- Install `pretty-markdown-pdf` with `npm install pretty-markdown-pdf` with the -g flag if you want it installed globally
 - Run `./markdown2pdf.sh <file name>.md npm`
 
 2. `LaTeX` method
