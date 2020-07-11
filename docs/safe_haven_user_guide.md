@@ -30,7 +30,7 @@
   - [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
   - [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
 - [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
-- [:green_book: Access input databases](#green_book-access-input-databases)
+- [:green_book: Access databases](#green_book-access-databases)
   - [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
   - [:bear: Connecting using DBeaver](#bear-connecting-using-dbeaver)
   - [:snake: Connecting using Python](#snake-connecting-using-python)
@@ -796,7 +796,7 @@ You will need to know the IP address of the new machine, which you will be told 
 
 4. Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
 
-## :green_book: Access input databases
+## :green_book: Access databases
 
 Your project might use a database for holding the input data.
 You might also/instead be provided with a database for use in analysing the data.
