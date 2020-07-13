@@ -16,112 +16,76 @@ PYENV_VERSION="system"
 eval "$(pyenv init -)"
 
 # Determine which version to use
-# TODO: revisit this logic if/when Python 10 is released!
-PYTHON_BASE_VERSION=$(echo $PYTHON_ENV_NAME | sed "s/py\([0-9]\)\([0-9]*\)/\1.\2/")
+PYTHON_BASE_VERSION=$(echo $PYTHON_ENV_NAME | sed -E "s|py([0-9])([0-9]*)|\1.\2|")  # TODO: revisit this logic if/when Python 10 is released!
 PYTHON_VERSION=$(pyenv install --list | grep -e "^ *${PYTHON_BASE_VERSION}." | tail -n 1 | sed 's/ //g')
 
 
 # Prepare the environment
 # -----------------------
 echo "Preparing $PYTHON_ENV_NAME (Python $PYTHON_VERSION)..."
-PREPARATION_START_TIME=$(date +%s)
+SECTION_START_TIME=$(date +%s)
 if [ "$(pyenv versions | grep $PYTHON_VERSION)" = "" ]; then
     pyenv install $PYTHON_VERSION
 fi
 pyenv shell $PYTHON_VERSION
-
 # Ensure that we're using the correct version
 if [ ! "$(echo "$(python --version 2>&1)" | grep $PYTHON_VERSION)" ]; then
     echo "FATAL: Using $(python --version 2>&1) but expected version $PYTHON_VERSION!"
     exit 2
 fi
-
 # Install and upgrade installation prerequisites
 echo "Installing and upgrading installation prerequisites for Python $PYTHON_VERSION..."
 pip install --upgrade pip setuptools > /dev/null 2>&1
-pip install pip-tools poetry safety > /dev/null 2>&1
-
+pip install poetry safety > /dev/null 2>&1
 # Log time taken
-PREPARATION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $PREPARATION_START_TIME seconds" +"%H:%M:%S")
-echo "Preparing installation took $PREPARATION_ELAPSED"
+SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
+echo "Preparing installation took $SECTION_ELAPSED"
 
 
-# Initial solve using pip-compile
-# -------------------------------
-echo "Performing initial solve using pip-compile..."
-SOLVE_START_TIME=$(date +%s)
-sort /installation/python-requirements-${PYTHON_ENV_NAME}.txt | sed '/^$/d' > python-requirements-${PYTHON_ENV_NAME}.in
-
-# Remove any packages that cannot be solved with pip-compile
-egrep "^(pygrib)$" python-requirements-${PYTHON_ENV_NAME}.in | sort > python-requirements-${PYTHON_ENV_NAME}.unsolvable
-
-# Pre-solve on the reduced input file
-comm -23 python-requirements-${PYTHON_ENV_NAME}.in python-requirements-${PYTHON_ENV_NAME}.unsolvable > python-requirements-${PYTHON_ENV_NAME}.solvable
-cat python-requirements-${PYTHON_ENV_NAME}.solvable
-echo "Attempting to find compatible versions for $(wc -l < python-requirements-${PYTHON_ENV_NAME}.solvable) packages "
-pip-compile -r python-requirements-${PYTHON_ENV_NAME}.solvable #2> /dev/null
-cat python-requirements-${PYTHON_ENV_NAME}.txt
-echo "Solved $(wc -l < python-requirements-${PYTHON_ENV_NAME}.txt) packages "
-
-# Only include packages which were explicitly requested then strip out comments
-# Require version to be greater-than-or-equal to this solve so that the poetry solver has some leeway
-grep "python-requirements-${PYTHON_ENV_NAME}" python-requirements-${PYTHON_ENV_NAME}.txt | sed -e "s|\(.*\)#.*|\1|" -e "s|==|>=|" > poetry-specification-${PYTHON_ENV_NAME}.txt
-# Add unsolvable packages
-cat python-requirements-${PYTHON_ENV_NAME}.unsolvable | awk '{print $1">=0.0"}' >> poetry-specification-${PYTHON_ENV_NAME}.txt
-# Add constrained packages
-egrep "[<>=]+" python-requirements-${PYTHON_ENV_NAME}.in | while read LINE; do
-    PACKAGE=$(echo $LINE | sed -E 's|([^<>=]*)[<>=]*.*|\1|')
-    sed -i "/^$PACKAGE[<>=].*/d" poetry-specification-${PYTHON_ENV_NAME}.txt
-    echo $LINE >> poetry-specification-${PYTHON_ENV_NAME}.txt
-done
-
-# Sort package specifications file and remove empty lines
-sort -o poetry-specification-${PYTHON_ENV_NAME}.txt poetry-specification-${PYTHON_ENV_NAME}.txt
-sed -i '/^$/d' poetry-specification-${PYTHON_ENV_NAME}.txt
-cat poetry-specification-${PYTHON_ENV_NAME}.txt
-echo "Determined compatible version specifications for $(wc -l < poetry-specification-${PYTHON_ENV_NAME}.txt) packages "
-
-# Log time taken
-SOLVE_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SOLVE_START_TIME seconds" +"%H:%M:%S")
-echo "Initial solve took $SOLVE_ELAPSED"
-
-
-# Generate pyproject.toml
-# -----------------------
-echo "Generating pyproject.toml for Python $PYTHON_VERSION..."
-sed -e "s/<PYTHON_ENV_NAME>/$PYTHON_ENV_NAME/g" -e "s/<PYTHON_VERSION>/$PYTHON_VERSION/" /installation/python-pyproject-template.toml > /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
-grep -v '^#' poetry-specification-${PYTHON_ENV_NAME}.txt | while read LINE; do
-    PACKAGE_NAME=$(echo $LINE | egrep "[^<>=]+" | cut -d '=' -f1 | cut -d '<' -f1 | cut -d '>' -f1)
-    VERSION=$(echo $LINE | sed -E 's|([^<>=]*)([^<>=]*)(.?)|\2\3|')
-    # Packages of the form 'name[details]' need to be formatted as 'name = {extras = ["details"], version = "<version-details>"}'
-    if [ "$(echo $PACKAGE_NAME | grep '\[')" ]; then
-        echo $PACKAGE_NAME | sed -E "s|(.*)\[(.*)\]|\1 = {extras = \[\"\2\"\], version = \"$VERSION\"}|" >> /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
-    # Normal packages need to be formatted as 'name = "<version-details>"'
+# Extract maximum available version for each package using pip
+# ------------------------------------------------------------
+echo "Generating package requirements for Python $PYTHON_VERSION..."
+SECTION_START_TIME=$(date +%s)
+echo "" > requirements.poetry
+while read LINE; do
+    if [ ! "$LINE" ]; then continue; fi
+    if [ "$(echo $LINE | egrep "[<>=]+")" ]; then
+        # If the package has a version specifier then use it
+        REQUIREMENT=$LINE
     else
-        echo "$PACKAGE_NAME = \"$VERSION\"" >> /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
+        # ... otherwise use the highest available version
+        # ... otherwise use the full available range
+        MIN_VERSION=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E 's|.*: ([^ ,)]*).*|\1|')
+        MAX_VERSION=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E 's|.* ([^ ]*)\)$|\1|')
+        REQUIREMENT="$LINE>=$MIN_VERSION,<=$MAX_VERSION"
+        if [ "$MAX_VERSION" == "none" ]; then REQUIREMENT="$LINE>0.0"; fi
     fi
-    # fi
-done
-# 'black' is a special case as it only has prereleases
-sed -i 's|^black = .*|black = { version = ">0.0.0", allow-prereleases = true }|' /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
-rm poetry-specification-${PYTHON_ENV_NAME}.txt
+    echo $REQUIREMENT >> requirements.poetry
+done < /installation/python-requirements-${PYTHON_ENV_NAME}.txt
+sed -i '/^$/d' requirements.poetry
+cat requirements.poetry # TODO remove
+# Log time taken
+SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
+echo "Generating requirements took $SECTION_ELAPSED"
 
 
 # Solve dependencies and install using poetry
 # -------------------------------------------
 echo "Installing packages with poetry..."
-INSTALLATION_START_TIME=$(date +%s)
+SECTION_START_TIME=$(date +%s)
+sed -e "s/<PYTHON_ENV_NAME>/$PYTHON_ENV_NAME/g" -e "s/<PYTHON_VERSION>/$PYTHON_VERSION/" /installation/python-pyproject-template.toml > /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
 poetry config virtualenvs.create false
+poetry config virtualenvs.in-project true
 rm poetry.lock pyproject.toml 2> /dev/null
-ln -s  /installation/python-pyproject-${PYTHON_ENV_NAME}.toml pyproject.toml
-poetry install
+ln -s /installation/python-pyproject-${PYTHON_ENV_NAME}.toml pyproject.toml
+poetry add $(cat requirements.poetry | tr '\n' ' ')
 echo "Installed packages:"
 poetry show
-rm poetry.lock pyproject.toml 2> /dev/null
-
+cat pyproject.toml # TODO remove
+rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
-INSTALLATION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $INSTALLATION_START_TIME seconds" +"%H:%M:%S")
-echo "Installation took $INSTALLATION_ELAPSED"
+SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
+echo "Installation took $SECTION_ELAPSED"
 
 
 # Install any post-install package requirements
@@ -140,8 +104,8 @@ fi
 # Check that all requested packages are installed
 # -----------------------------------------------
 MISSING_PACKAGES=""
-INSTALLED_PACKAGES=$(pip freeze | cut -d '=' -f1 | tr '[A-Z]' '[a-z]')
-for REQUESTED_PACKAGE in $(cat /installation/python-requirements-${PYTHON_ENV_NAME}.txt | cut -d '=' -f 1 | cut -d'>' -f 1 | cut -d'<' -f 1 | tr '[A-Z]' '[a-z]'); do
+INSTALLED_PACKAGES=$(pip freeze | cut -d '=' -f 1 | tr '[A-Z]' '[a-z]')
+for REQUESTED_PACKAGE in $(cat /installation/python-requirements-${PYTHON_ENV_NAME}.txt | sed -E 's|([^<>=]*).*|\1|' | tr '[A-Z]' '[a-z]'); do
     is_installed=0
     for INSTALLED_PACKAGE in $INSTALLED_PACKAGES; do
         if [ "$REQUESTED_PACKAGE" == "$INSTALLED_PACKAGE" ]; then

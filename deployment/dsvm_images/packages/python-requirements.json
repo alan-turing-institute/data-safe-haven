@@ -1,28 +1,17 @@
 {
     "py27": {
         "fbprophet": "<=0.5",
-        "nltk": "<=3.4.5",
+        "nltk": "<=3.4",
         "PyWavelets": "<=1.0.3",
         "scikit-learn": "<=0.20.4",
-        "spacy": "<2.3.1",
-        "scipy": ">=1.0.0",
-        "tensorboard": "<=2.1.0",
-        "tensorflow": "<=2.1.0",
-        "torch": "<=1.4.0"
+        "spacy": "<=2.2.3",
+        "tensorboard": "==2.1.0",
+        "tensorflow": "==2.1.0"
     },
     "py36": {
-        "beautifulsoup4": ">=4.8.0",
-        "catalogue": "<1.0.0",
-        "Cython": ">=0.29.0",
-        "gensim": ">=3.8.0",
-        "scipy": ">=1.4.0",
-        "spacy": "<2.3.1"
+        "spacy": "<=2.2.3"
     },
     "py37": {
-        "beautifulsoup4": ">=4.8.0",
-        "Cython": ">=0.29.0",
-        "gensim": ">=3.8.0",
-        "scipy": ">=1.4.0",
-        "spacy": "<2.3.1"
+        "spacy": "<=2.2.3"
     }
 }

@@ -64,7 +64,6 @@ sympy
 tables
 tensorboard
 tensorflow
-tensorflow-estimator
 Theano
 thinc
 torch
