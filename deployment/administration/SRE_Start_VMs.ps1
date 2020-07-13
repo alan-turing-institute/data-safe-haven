@@ -21,14 +21,22 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Starting RDS gateway..."
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 Add-LogMessage -Level Info "Starting RDS session hosts..."
-Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.appSessionHost.vmName
+Get-AzVM -ResourceGroupName $config.sre.rds.rg | ForEach-Object {
+    Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName
+}
 Add-LogMessage -Level Info "Starting data server..."
 Enable-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName
+Add-LogMessage -Level Info "Starting database servers..."
+Get-AzVM -ResourceGroupName $config.sre.databases.rg | ForEach-Object {
+    Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName
+}
 Add-LogMessage -Level Info "Starting web app servers..."
 Enable-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName
 Enable-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName
-Add-LogMessage -Level Info "Starting all compute VMs..."
-Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName }
+Add-LogMessage -Level Info "Starting compute VMs..."
+Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { 
+    Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName 
+}
 
 
 # Switch back to original subscription

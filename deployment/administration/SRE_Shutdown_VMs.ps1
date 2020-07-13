@@ -21,22 +21,27 @@ Add-LogMessage -Level Info "Stopping all SRE VMs..."
 
 Add-LogMessage -Level Info "Stopping compute VMs..."
 Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object {
-    Stop-AzVM -ResourceGroupName $config.sre.dsvm.rg -Name $_.Name -Force -NoWait
+    Stop-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Force -NoWait
 }
 
 Add-LogMessage -Level Info "Stopping web app servers..."
 Get-AzVM -ResourceGroupName $config.sre.webapps.rg | ForEach-Object {
-    Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $_.Name -Force -NoWait
+    Stop-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Force -NoWait
 }
 
-Add-LogMessage -Level Info "Stopping dataserver..."
+Add-LogMessage -Level Info "Stopping data server..."
 Get-AzVM -ResourceGroupName $config.sre.dataserver.rg | ForEach-Object {
-    Stop-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $_.Name -Force -NoWait
+    Stop-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Force -NoWait
+}
+
+Add-LogMessage -Level Info "Stopping database servers..."
+Get-AzVM -ResourceGroupName $config.sre.databases.rg | ForEach-Object {
+    Stop-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Force -NoWait
 }
 
 Add-LogMessage -Level Info "Stopping RDS gateway and session hosts..."
 Get-AzVM -ResourceGroupName $config.sre.rds.rg | ForEach-Object {
-    Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $_.Name -Force -NoWait
+    Stop-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Force -NoWait
 }
 
 
