@@ -191,8 +191,9 @@ runcmd:
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
-  # Remove xscreensaver
-  - apt-get remove -y xscreensaver
+  # Remove xscreensaver (unnecessary) and netcat (potential security issue)
+  # Note that removing netcat will remove the 'ubuntu-minimal' metapackage. It does not remove any other real packages.
+  - apt-get remove -y netcat-openbsd xscreensaver
 
   # Clean up unneeded apt packages
   - echo "Cleaning up unneeded packages"
