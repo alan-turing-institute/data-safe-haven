@@ -40,9 +40,8 @@ The following 7 virtual machines are created as a result of these instructions:
   - [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
   - [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
 - [:lock: Apply network configuration](#lock-apply-network-configuration)
-  - [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
-  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
-  - [:fast_forward: Optional: Unpeering package mirrors](#fast_forward-optional-unpeering-package-mirrors)
+- [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
+- [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
 - [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
 - [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
 
@@ -333,6 +332,7 @@ On your **deployment machine**.
   - You should receive an MFA request to your phone or authentication app.
   - Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   - Log in with the long-form `username@<shm-domain-fqdn>` of a user in the `SG <SRE ID> Research Users` security group.
+  - Note that for `HackMD` you **must** use the full, email style username that **includes the Safe Haven domain**. For all other logins, you can use either the short-form or long-form username.
 - If you do not get an MFA prompt or you cannot connect to the GitLab and HackMD servers, follow the **troubleshooting** instructions below.
 
 <details>
@@ -392,7 +392,7 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
 - Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID> -ipLastOctet <IP last octet>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<IP last octet>` is the desired last octet of the IP address.
-  - The initial shared `DSVM MAin` shared VM should be deployed with the last octet `160`
+  - The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
   - You can also provide a VM size by passing the optional `-vmSize` parameter.
 - After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
@@ -404,7 +404,7 @@ On your **deployment machine**.
 - Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
 - Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE key vault.
-- Enter the password from the `sre-<SRE ID>-dsvm-admin-password` secret in the SRE key vault.
+- Enter the password from the `sre-<SRE ID>-vm-admin-password-compute` secret in the SRE key vault.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `deployment/secure_research_environment/cloud_init/cloud-init-compute-vm.template.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
@@ -416,7 +416,7 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
-### :fire_engine: Configure firewall
+## :fire_engine: Configure firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -425,31 +425,30 @@ On your **deployment machine**.
 - Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
-### :chart_with_upwards_trend: Configure logging
+## :chart_with_upwards_trend: Configure logging
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the firewall by running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
+- If configuration fails for one or more of the VMs, see the **troubleshooting** instructions below.
 
-### Troubleshooting
-The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
-If so, try re-running the logging set up script.
-In most cases the extensions have actually been successfully installed.
+<details>
+<summary><strong>Troubleshooting</strong></summary>
 
-### :fast_forward: Optional: Unpeering package mirrors
-The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
-However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
+The API call that installs the logging extensions to the VMs will time out after a few minutes, so you may get some extension installation failure messages if installation of the loggin agent takes longer than this to complete.
+When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
+You may also get this message for other failures in installation.
 
-> :warning: You will not normally need to do this - think carefully before doing so!
+In any case, re-running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>` will attempt to install the extensions again, skipping any VMs that already have the extensions installed.
+Where the issue was an API timeout, these VMs will report that the extension is already installed when the logging set up script is run again.
 
-On your **deployment machine**.
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
+If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
+
+
+</details>
 
 
 ## :fire: Run smoke tests on DSVM

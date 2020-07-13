@@ -19,6 +19,7 @@
   - [:train: Unable to open any remote apps](#train-unable-to-open-any-remote-apps)
   - [:interrobang: xrdp login failure on the DSVM](#interrobang-xrdp-login-failure-on-the-dsvm)
   - [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
+- [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
 
 ## :seedling: Prerequisites
 This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](deploy_sre_instructions.md) that are linked to it.
@@ -470,3 +471,16 @@ This will trigger the following actions:
 2. Synchronisation of the internal mirror with the external mirror (a `push` update)
 
 This may take an hour or two but should solve the missing package problem.
+
+## :fast_forward: Unpeering package mirrors
+The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
+However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
+
+> :warning: You will not normally need to do this - think carefully before doing so!
+
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
