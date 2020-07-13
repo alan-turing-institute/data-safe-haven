@@ -38,7 +38,8 @@ If you are deploying SREs against an existing SHM you should either:
 Under some circumstances, it may be possible to patch an existing SHM to bring it into alignment with a newer version.
 This is not guaranteed although we're happy to provide assistance to anyone trying to do this.
 
-## Production versions
+
+## Versions that have been used in production
 The following versions have been deployed for events held at the Turing or in conjunction with partners.
 
 | Date | Event name | Release used |
@@ -51,6 +52,13 @@ The following versions have been deployed for events held at the Turing or in co
 | December 2019 | DSG 2019-12 | v1.1.0-beta |
 | April 2020 | DSG 2020-04 (event cancelled) | v2.0.0-beta |
 | June 2020 | DSSG 2020 | v3.0.0-beta |
+
+## Versions that have undergone formal security evaluation
+The following versions have been evaluated by third party security consultants.
+
+| Version | Evaluation date | Evaluation performed | Outcome |
+| --- | --- | --- | --- |
+| v3.1.0 | 13 July 2020 | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) abilility to transfer data between SREs, (4) ability to escalate priviliges on the Data Science VM | No major security issues identified |
 
 ## Questions
 If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](#project-management-through-issues).
