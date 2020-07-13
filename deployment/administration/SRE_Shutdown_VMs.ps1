@@ -17,24 +17,24 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Stop all VMs
 # ------------
-Add-LogMessage -Level Info "Stopping all compute VMs..."
+Add-LogMessage -Level Info "Stopping all SRE VMs..."
 
-Add-LogMessage -Level Info "Resizing compute VMs..."
+Add-LogMessage -Level Info "Stopping compute VMs..."
 Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object {
     Stop-AzVM -ResourceGroupName $config.sre.dsvm.rg -Name $_.Name -Force -NoWait
 }
 
-Add-LogMessage -Level Info "Resizing web app servers..."
+Add-LogMessage -Level Info "Stopping web app servers..."
 Get-AzVM -ResourceGroupName $config.sre.webapps.rg | ForEach-Object {
     Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $_.Name -Force -NoWait
 }
 
-Add-LogMessage -Level Info "Resizing dataserver..."
+Add-LogMessage -Level Info "Stopping dataserver..."
 Get-AzVM -ResourceGroupName $config.sre.dataserver.rg | ForEach-Object {
     Stop-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $_.Name -Force -NoWait
 }
 
-Add-LogMessage -Level Info "Resizing RDS gateway and session hosts..."
+Add-LogMessage -Level Info "Stopping RDS gateway and session hosts..."
 Get-AzVM -ResourceGroupName $config.sre.rds.rg | ForEach-Object {
     Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $_.Name -Force -NoWait
 }
