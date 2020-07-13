@@ -44,7 +44,7 @@ The following versions have been deployed for events held at the Turing or in co
 The Turing runs multiple week-long Data Study Groups (DSGs) each year and a 3-month Data Science for Social Good (DSSG) programme over the summer.
 We usually deploy the latest version of the Safe Haven for each of these to take advantage of the latest functionality.
 
-| Date | Event name | Release used |
+| Event date | Event name | Release used |
 | --- | --- | --- |
 | December 2018 | DSG 2018-12 | [v0.1.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v0.1.0-beta) |
 | April 2019 | DSG 2019-04 | [v0.2.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v0.2.0-beta) |
