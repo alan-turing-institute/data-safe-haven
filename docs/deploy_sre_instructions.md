@@ -33,14 +33,15 @@ The following 7 virtual machines are created as a result of these instructions:
 - [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
 - [:baseball: Deploy databases](#baseball-deploy-databases)
 - [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
-  - [:microscope: Test GitLab Server](#:microscope-test-gitlab-server)
-  - [:microscope: Test HackMD Server](#:microscope-test-hackmd-server)
+  - [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
+  - [:microscope: Test HackMD Server](#microscope-test-hackmd-server)
 - [:computer: Deploy data science VMs](#computer-deploy-data-science-vms)
   - [:fast_forward: Optional: Customise the deployed VM](#fast_forward-optional-customise-the-deployed-vm)
   - [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
   - [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
 - [:lock: Apply network configuration](#lock-apply-network-configuration)
   - [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
+  - [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
   - [:fast_forward: Optional: Unpeering package mirrors](#fast_forward-optional-unpeering-package-mirrors)
 - [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
 - [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
@@ -114,8 +115,11 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
     "dnsSubscriptionName": "Name of the Azure subscription holding DNS records",
     "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
-    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
+    "azureAdminGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
+    "images": {
+        "subscriptionName": "Name of the Azure subscription the DSVM image gallery is deployed in",
+        "location": "Location of the image gallery subscription"
+    },
     "domain": "The fully qualified domain name for the management environment",
     "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name",
@@ -139,12 +143,12 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this SHM belong to",
+    "azureAdminGroupName" : "Name of the Azure Security Group that admins of this SHM belong to",
     "shmId": "The short ID for the SHM segment to deploy against",
     "sreId": "A short ID to identify the secure research environment. This *must be* 7 characters or less; if not it will be truncated in some places which might cause problems if those characters are not unique.",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "domain": "The fully qualified domain name for the SRE",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Each SRE uses a /21 CIDR range, so prefixes must differ by 8 in their third octet",
     "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
     "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
@@ -195,16 +199,19 @@ On your **deployment machine**.
 - Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
-#### Manually add NS records
-- To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
-  <p align="center">
-    <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record">
-  </p>
-- Duplicate these records to the parent DNS system as follows:
-  - If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-    The name should be set to the subdomain (e.g. `sandbox`) or `@` if using a custom domain, and the values duplicated from above.
-    For example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk`, by creating a record set with name `sandbox`.
-  - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+  <details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
+
+  - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
+    <p align="center">
+      <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record">
+    </p>
+  - Duplicate these records to the parent DNS system as follows:
+    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
+      The name should be set to the subdomain (e.g. `sandbox`) or `@` if using a custom domain, and the values duplicated from above.
+      For example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk`, by creating a record set with name `sandbox`.
+    - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
+  </details>
 
 ### :tropical_fish: Deploy the virtual network and remote desktop
 On your **deployment machine**.
@@ -384,10 +391,10 @@ On your **deployment machine**.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
-- You will also be prompted for the VM size (optional) and the desired last octet of the IP address (the first machine deployed should use `160` here)
-  - The initial shared VM should be deployed with the last octet `160`
+- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID> -ipLastOctet <IP last octet>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<IP last octet>` is the desired last octet of the IP address.
+  - The initial shared `DSVM MAin` shared VM should be deployed with the last octet `160`
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
+  - You can also provide a VM size by passing the optional `-vmSize` parameter.
 - After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
 - The deployment will take around 10 minutes to complete
 - If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
@@ -409,7 +416,7 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
-### :fire_engine: Deploy firewall
+### :fire_engine: Configure firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -418,6 +425,18 @@ On your **deployment machine**.
 - Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This will take **a few minutes** to run.
 
+### :chart_with_upwards_trend: Configure logging
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Deploy and configure the firewall by running `./Setup_SRE_Logging.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- This will take **a few minutes** to run.
+
+### Troubleshooting
+The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+If so, try re-running the logging set up script.
+In most cases the extensions have actually been successfully installed.
 
 ### :fast_forward: Optional: Unpeering package mirrors
 The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.

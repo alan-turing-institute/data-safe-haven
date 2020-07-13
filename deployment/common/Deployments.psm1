@@ -183,7 +183,9 @@ function Deploy-FirewallApplicationRule {
         [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
         $TargetFqdn,
         [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
-        $TargetTag
+        $TargetTag,
+        [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
+        [switch]$LocalChangeOnly
     )
     if ($TargetTag) {
         Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
@@ -212,12 +214,16 @@ function Deploy-FirewallApplicationRule {
     }
     try {
         $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
-        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Ensured that application rule '$Name' exists"
+        if($LocalChangeOnly) {
+            Add-LogMessage -Level InfoSuccess "Ensured that application rule '$Name' exists on local firewall object only."
+        } else {
+            $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
+            Add-LogMessage -Level Success "Ensured that application rule '$Name' exists and updated remote firewall."
+        }
     } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that application rule '$Name' exists!"
     }
-    return $rule
+    return $Firewall
 }
 Export-ModuleMember -Function Deploy-FirewallApplicationRule
 
@@ -244,7 +250,9 @@ function Deploy-FirewallNetworkRule {
         $Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [ValidateSet("Allow", "Deny")]
-        $ActionType
+        $ActionType,
+        [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
+        [switch]$LocalChangeOnly
     )
     $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
     Add-LogMessage -Level Info "Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
@@ -268,12 +276,16 @@ function Deploy-FirewallNetworkRule {
     }
     try {
         $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
-        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Ensured that network rule '$Name' exists"
+        if($LocalChangeOnly) {
+            Add-LogMessage -Level InfoSuccess "Ensured that network rule '$Name' exists on local firewall object only."
+        } else {
+            $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
+            Add-LogMessage -Level Success "Ensured that network rule '$Name' exists and updated remote firewall."
+        }
     } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that network rule '$Name' exists!"
     }
-    return $rule
+    return $Firewall
 }
 Export-ModuleMember -Function Deploy-FirewallNetworkRule
 
@@ -747,6 +759,81 @@ function Deploy-VirtualMachineNIC {
 Export-ModuleMember -Function Deploy-VirtualMachineNIC
 
 
+# Deploy Azure Monitoring Extension on a VM
+# -----------------------------------------
+function Deploy-VirtualMachineMonitoringExtension {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+        $VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
+        $workspaceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
+        $workspaceKey
+    )
+
+    $PublicSettings = @{ "workspaceId" = $workspaceId }
+    $ProtectedSettings = @{ "workspaceKey" = $workspaceKey }
+
+    function Set-ExtensionIfNotInstalled {
+        param(
+            [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+            $vm,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension publisher")]
+            $publisher,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension type")]
+            $type,
+            [Parameter(Mandatory = $true, HelpMessage = "Extension version")]
+            $version
+        )
+        Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
+        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
+            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and 
+                $_.ExtensionType -eq $type }
+        if($installed) {
+            Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."
+        } else {
+            try {
+                Set-AzVMExtension -ExtensionName $type `
+                    -ResourceGroupName $VM.ResourceGroupName `
+                    -VMName $vm.Name `
+                    -Publisher $publisher `
+                    -ExtensionType $type `
+                    -TypeHandlerVersion $version `
+                    -Settings $PublicSettings `
+                    -ProtectedSettings $ProtectedSettings `
+                    -Location $vm.location `
+                    -ErrorAction Stop
+                Add-LogMessage -Level Success "Installed extension '$type' on VM '$($vm.Name)'."
+            } catch {
+                Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($vm.Name)'!"
+            }
+        }
+    }
+    if($vm.OSProfile.WindowsConfiguration) {
+        # Install Monitoring Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
+            -type "MicrosoftMonitoringAgent" `
+            -version 1.0
+        # Install Dependency Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
+            -type "DependencyAgentWindows" `
+            -version 9.10
+    } elseif ($vm.OSProfile.LinuxConfiguration) {
+        # Install Monitoring Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
+            -type "OmsAgentForLinux" `
+            -version 1.13
+        # Install Dependency Agent
+        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
+            -type "DependencyAgentLinux" `
+            -version 9.10
+    } else {
+        Add-LogMessage -Level Failure "VM OSProfile not recognised. Cannot activate logging for VM '$($vm.Name)'!"
+    }
+}
+Export-ModuleMember -Function Deploy-VirtualMachineMonitoringExtension
+
+
 # Create virtual network if it does not exist
 # ------------------------------------------
 function Deploy-VirtualNetwork {
@@ -928,7 +1015,7 @@ function Invoke-WindowsConfigureAndUpdate {
     $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
-    Start-Sleep 10  # protect against 'Run command extension execution is in progress' errors
+    Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Install additional Powershell modules
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
@@ -936,6 +1023,7 @@ function Invoke-WindowsConfigureAndUpdate {
         $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|")}
         Write-Output $result.Value
     }
+    Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"

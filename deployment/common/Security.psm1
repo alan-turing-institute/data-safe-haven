@@ -1,70 +1,50 @@
 Import-Module $PSScriptRoot/Logging.psm1
 
-# Modified from the [System.Web.Security.Membership]::GeneratePassword() function
-# Source : https://github.com/Microsoft/referencesource/blob/master/System.Web/Security/Membership.cs
-# Needed because [System.Web.Security.Membership] is not in .NetCore so unavailable in Powershell 6
-# Modifications:
-# - Remove requirement for special characters (as these cause us problems when embedding in config files in our application)
-# - Require at least one character from upper case, lower case and numeric character sets (using a "check and recurse" approach)
-# ------------------------------------------------------------------------------------------------------------------------------
+# Generate a random alphanumeric password
+# This gives a verifiably flat distribution across the characters in question
+# We introduce bias by the password requirements which increase the proportion of digits
+# --------------------------------------------------------------------------------------
 function New-Password {
     param(
-        [int]$length = 20
+        [int]$Length = 20
     )
-    [string]$password = "";
-    [int]$index = 0;
+    # Construct allowed character set
+    $alphaNumeric = [char[]](1..127) -match "[0-9A-Za-z]" -join ""
+    $rangeSize = $alphaNumeric.Length -1
 
-    $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
-    $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
+    # Initialise common parameters
+    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $fourByteArray = [System.Byte[]]::CreateInstance([System.Byte], 4)
+    $maxUint = [uint32]::MaxValue
+    $ceiling = [uint32]($maxUint - ($maxUint % $rangeSize)) # highest UInt that is evenly divisible by rangeSize
 
-    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create();
-    $cryptoRng.GetBytes($buf);
-
-    $numericEnd = 10
-    $alphaUpperEnd = 36
-    $numCharsInSet = 62
-
-    # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
-    for ([int]$iter = 0; $iter -lt $length; $iter++) {
-        [int]$i = [int]($buf[$iter] % $numCharsInSet);
-        if ($i -lt $numericEnd) {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'0')) + $i);
-        }
-        elseif ($i -lt $alphaUpperEnd) {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
-        }
-        else {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
+    # Convert random bytes into characters from permitted character set
+    $password = ""
+    foreach ($i in 1..$Length) {
+        # This should give a smoother distribution across the 0..<n characters> space than the previous method which used 'byte % <n characters>' which inherently favours lower numbers
+        while ($true) {
+            $cryptoRng.GetBytes($fourByteArray)
+            $randomUint = [BitConverter]::ToUInt32($fourByteArray, 0)
+            # Restrict to only values in the range that rangeSize divides evenly into
+            if ($randomUint -lt $ceiling) {
+                $password += $alphaNumeric[$randomUint % $rangeSize]
+                break
+            }
         }
     }
-    $password = -join $cBuf;
 
     # Require at least one of each character class
-    $numNumeric = 0;
-    $numAlphaUpper = 0;
-    $numAlphaLower = 0;
-    for ([int]$iter = 0; $iter -lt $length; $iter++) {
-        [int]$i = [int]($buf[$iter] % $numCharsInSet);
-        if ($i -lt $numericEnd) {
-            $numNumeric++;
-        }
-        elseif ($i -lt $alphaUpperEnd) {
-            $numAlphaUpper++;
-        }
-        else {
-            $numAlphaLower++;
-        }
+    if (-not (($password -cmatch "[a-z]+") -and ($password -cmatch "[A-Z]+") -and ($password -cmatch "[0-9]+"))) {
+        $password = New-Password -Length $Length
     }
-    if (($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
-        $password = New-Password ($length);
-    }
-    return $password;
+    return $password
 }
 Export-ModuleMember -Function New-Password
 
 
 # Create a string of random letters
-# ---------------------------------
+# Note that this is not cryptographically secure but does give a verifiably flat distribution across lower-case letters
+# ---------------------------------------------------------------------------------------------------------------------
 function New-RandomLetters {
     param(
         [int]$Length = 20,
@@ -85,8 +65,10 @@ Export-ModuleMember -Function New-RandomLetters
 function Resolve-KeyVaultSecret {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [ValidateNotNullOrEmpty()]
         [string]$SecretName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [ValidateNotNullOrEmpty()]
         [string]$VaultName,
         [Parameter(Mandatory = $false, HelpMessage = "Default value for this secret")]
         [string]$DefaultValue,
@@ -108,7 +90,11 @@ function Resolve-KeyVaultSecret {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
+        try {
+            $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop -ErrorVariable error
+        } catch [Microsoft.Azure.KeyVault.Models.KeyVaultErrorException] {
+            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
+        }
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName

@@ -182,7 +182,7 @@ if ($doInstall) {
     # Add signed KeyVault certificate to the gateway VM
     # -------------------------------------------------
     Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
-    $vaultId = (Get-AzKeyVault -ResourceGroupName $config.sre.keyVault.rg -VaultName $keyVaultName).ResourceId
+    $vaultId = (Get-AzKeyVault -VaultName $keyVaultName -ResourceGroupName $config.sre.keyVault.rg).ResourceId
     $secretURL = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $certificateName).Id
     $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL

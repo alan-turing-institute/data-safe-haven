@@ -177,24 +177,11 @@ function Add-SreConfig {
                 }
             }
         }
-        sessionHost1 = [ordered]@{
+        appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
-            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
-            disks = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "128"
-                    type = "Standard_LRS"
-                }
-            }
-        }
-        sessionHost2 = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh2"
-            vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
-            vmSize = "Standard_DS2_v2"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 6
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
             disks = [ordered]@{
                 os = [ordered]@{
@@ -634,7 +621,8 @@ function Get-ShmFullConfig {
         rg = "RG_SHM_$($shm.id)_SECRETS".ToUpper()
         name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
         secretNames = [ordered]@{
-            aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+            aadEmergencyAdminUsername = "shm-$($shm.id)-aad-emergency-admin-username".ToLower()
+            aadEmergencyAdminPassword = "shm-$($shm.id)-aad-emergency-admin-password".ToLower()
             buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
             buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
             domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
