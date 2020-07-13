@@ -152,12 +152,13 @@ def main():
             with open(fname, "r") as f_safety_check:
                 packages = json.load(f_safety_check)
             if packages:
-                python_version = fname.split("-")[2].replace(".json", "")
+                python_version = fname.split("-")[3].replace(".json", "")
                 print("[{}: {: <7}] Safety check found problems with Python {}".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "WARNING", python_version))
             for package in packages:
                 print("    {} [{}] is affected by issue {} (for versions {})".format(package[0], package[2], package[4], package[1]))
-                for line in package[3].split("\n"):
-                    print("       {}".format(line))
+                lines = package[3].replace(". ", ".\n")
+                for sentence in lines.split("\n"):
+                    print("       {}".format(sentence))
 
 
 if __name__ == "__main__":
