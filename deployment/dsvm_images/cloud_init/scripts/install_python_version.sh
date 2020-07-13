@@ -6,6 +6,7 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 PYTHON_ENV_NAME=$1
+DEBUG=0
 
 START_TIME=$(date +%s)
 echo ">=== ${START_TIME} Creating $PYTHON_ENV_NAME python installation ===<"
@@ -63,7 +64,7 @@ while read LINE; do
     echo $REQUIREMENT >> requirements.poetry
 done < /installation/python-requirements-${PYTHON_ENV_NAME}.txt
 sed -i '/^$/d' requirements.poetry
-cat requirements.poetry # TODO remove
+if [ $DEBUG -eq 1 ]; then cat requirements.poetry | awk '{print "[DEBUG] "$1}'; fi
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
 echo "Generating requirements took $SECTION_ELAPSED"
@@ -79,9 +80,9 @@ poetry config virtualenvs.in-project true
 rm poetry.lock pyproject.toml 2> /dev/null
 ln -s /installation/python-pyproject-${PYTHON_ENV_NAME}.toml pyproject.toml
 poetry add $(cat requirements.poetry | tr '\n' ' ')
+if [ $DEBUG -eq 1 ]; then cat pyproject.toml | awk '{print "[DEBUG] "$1}'; fi
 echo "Installed packages:"
 poetry show
-cat pyproject.toml # TODO remove
 rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")

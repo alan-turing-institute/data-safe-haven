@@ -4,14 +4,14 @@
         "nltk": "<=3.4",
         "PyWavelets": "<=1.0.3",
         "scikit-learn": "<=0.20.4",
-        "spacy": "<=2.2.3",
+        "spacy": "==2.2.2",
         "tensorboard": "==2.1.0",
         "tensorflow": "==2.1.0"
     },
     "py36": {
-        "spacy": "<=2.2.3"
+        "spacy": "==2.2.2"
     },
     "py37": {
-        "spacy": "<=2.2.3"
+        "spacy": "==2.2.2"
     }
 }
