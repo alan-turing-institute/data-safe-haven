@@ -18,6 +18,7 @@
     },
     "location": "centralus",
     "overrides": {
+        "rgPrefix": "RG_SHM_",
         "domain": {
             "netbiosName": "SAFEHAVENDEMO",
             "ous": {
@@ -41,13 +42,10 @@
                 }
             }
         },
-        "network": {
-            "vnet": {
-                "rg": "RG_SHM_NETWORKING"
-            }
+        "logging": {
+            "rg": "RG_SHM_DEMO_LOGGING"
         },
         "keyVault": {
-            "rg": "RG_SHM_SECRETS",
             "secretNames": {
                 "domainAdminUsername": "shm-demo-vm-admin-username",
                 "vmAdminUsername": "shm-demo-vm-admin-username"
@@ -85,7 +83,6 @@
             }
         },
         "dc": {
-            "rg": "RG_SHM_DC",
             "ip": "10.0.0.250",
             "safemodePasswordSecretName": "shm-demo-dc-safemode-password"
         },
@@ -94,21 +91,17 @@
         },
         "nps": {
             "adminPasswordSecretName": "shm-demo-nps-admin-password",
-            "rg": "RG_SHM_NPS",
             "ip": "10.0.0.248"
         },
         "storage": {
             "artifacts": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmdemoartifactsnhavsfry"
             },
             "bootdiagnostics": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmdemobootdiagsnhavsfry"
             }
         },
         "mirrors": {
-            "rg": "RG_SHM_PKG_MIRRORS",
             "pypi": {
                 "tier3": {
                     "diskSize": 511,

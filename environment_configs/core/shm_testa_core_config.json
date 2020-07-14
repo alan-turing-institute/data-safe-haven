@@ -18,6 +18,7 @@
     },
     "location": "centralus",
     "overrides": {
+        "rgPrefix": "RG_SHM_",
         "domain": {
             "netbiosName": "SAFEHAVENTESTA",
             "ous": {
@@ -52,6 +53,9 @@
                 "domainAdminUsername": "shm-testa-vm-admin-username",
                 "vmAdminUsername": "shm-testa-vm-admin-username"
             }
+        },
+        "logging": {
+            "rg": "RG_SHM_TESTA_LOGGING"
         },
         "users": {
             "computerManagers": {

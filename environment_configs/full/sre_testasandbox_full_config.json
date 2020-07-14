@@ -100,7 +100,8 @@
       "name": "kv-shm-testa",
       "rg": "RG_SHM_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testa-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testa-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testa-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
         "domainAdminPassword": "shm-testa-domain-admin-password",
@@ -280,6 +281,7 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_",
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactsvkdrslu",
@@ -540,6 +542,7 @@
       },
       "rg": "RG_SRE_RDS"
     },
+    "rgPrefix": "RG_SRE_",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {

@@ -18,6 +18,7 @@
                     "rg": "RG_SRE_NETWORKING"
                 }
             },
+            "rgPrefix": "RG_SRE_",
             "storage": {
                 "artifacts": {
                     "rg": "RG_SRE_ARTIFACTS",

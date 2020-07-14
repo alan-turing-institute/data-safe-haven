@@ -100,7 +100,8 @@
       "name": "kv-shm-demo",
       "rg": "RG_SHM_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-demo-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-demo-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-demo-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-demo-buildimage-admin-password",
         "buildImageAdminUsername": "shm-demo-buildimage-admin-username",
         "domainAdminPassword": "shm-demo-domain-admin-password",
@@ -280,6 +281,7 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_",
     "storage": {
       "artifacts": {
         "accountName": "shmdemoartifactsnhavsfry",
@@ -543,6 +545,7 @@
       },
       "rg": "RG_SRE_RDS"
     },
+    "rgPrefix": "RG_SRE_",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {

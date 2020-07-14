@@ -18,6 +18,7 @@
     },
     "location": "uksouth",
     "overrides": {
+        "rgPrefix": "RG_SHM_",
         "domain": {
             "netbiosName": "TURINGSAFEHAVEN",
             "ous": {
@@ -51,6 +52,9 @@
             "secretNames": {
                 "domainAdminUsername": "shm-turing1-vm-admin-username"
             }
+        },
+        "logging": {
+            "rg": "RG_SHM_TURING1_LOGGING"
         },
         "users": {
             "computerManagers": {

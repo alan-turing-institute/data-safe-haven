@@ -281,6 +281,7 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_MORTEST_",
     "storage": {
       "artifacts": {
         "accountName": "shmmortestartifactsmivbg",
@@ -540,6 +541,7 @@
       },
       "rg": "RG_SRE_SRE1_RDS"
     },
+    "rgPrefix": "RG_SRE_SRE1_",
     "shortName": "sre-sre1",
     "storage": {
       "artifacts": {

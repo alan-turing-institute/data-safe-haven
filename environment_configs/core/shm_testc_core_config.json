@@ -18,6 +18,7 @@
     },
     "location": "centralus",
     "overrides": {
+        "rgPrefix": "RG_SHM_",
         "domain": {
             "netbiosName": "SAFEHAVENTESTC",
             "ous": {
@@ -52,6 +53,9 @@
                 "domainAdminUsername": "shm-testc-vm-admin-username",
                 "vmAdminUsername": "shm-testc-vm-admin-username"
             }
+        },
+        "logging": {
+            "rg": "RG_SHM_TESTC_LOGGING"
         },
         "users": {
             "computerManagers": {
@@ -106,6 +110,9 @@
                 "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmtestcbootdiagsnxbqspy"
             }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_TESTC_PKG_MIRRORS"
         }
     }
 }

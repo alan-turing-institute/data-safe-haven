@@ -100,7 +100,8 @@
       "name": "kv-shm-testb",
       "rg": "RG_SHM_TESTB_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testb-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testb-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testb-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
         "domainAdminPassword": "shm-testb-domain-admin-password",
@@ -280,6 +281,7 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_TESTB_",
     "storage": {
       "artifacts": {
         "accountName": "shmtestbartifactsqtxiyzd",
@@ -539,6 +541,7 @@
       },
       "rg": "RG_SRE_SANDBOX_RDS"
     },
+    "rgPrefix": "RG_SRE_SANDBOX_",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {

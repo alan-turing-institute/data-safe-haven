@@ -281,6 +281,7 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_DECOVID_",
     "storage": {
       "artifacts": {
         "accountName": "shmdecovidartifactsoceuy",
@@ -531,7 +532,7 @@
         "hostname": "RDG-SRE-SRE2",
         "ip": "10.151.1.4",
         "networkRules": {
-          "allowedSources": "193.60.220.240,35.178.242.198,80.229.141.188,35.177.105.78,90.255.223.48,188.214.11.75",
+          "allowedSources": "193.60.220.253,193.60.220.240",
           "outboundInternet": "Deny"
         },
         "nsg": "NSG_SRE_SRE2_RDS_SERVER",
@@ -540,6 +541,7 @@
       },
       "rg": "RG_SRE_SRE2_RDS"
     },
+    "rgPrefix": "RG_SRE_SRE2_",
     "shortName": "sre-sre2",
     "storage": {
       "artifacts": {
