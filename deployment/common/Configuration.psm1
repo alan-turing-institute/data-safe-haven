@@ -575,8 +575,17 @@ function Get-ShmFullConfig {
         vpn = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
-        mirrorVnets = [ordered]@{}
+        mirrorVnets = [ordered]@{
+            nexus = [ordered]@{
+                name = "NexusRepositorySubnet"
+                cidr = "10.10.1.0/28"
+                nsg = "nexusRepository"
+            }
+        }
         nsg = [ordered]@{
+            nexusRepository = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_NEXUS_REPOSITORY".ToUpper()
+            }
             externalPackageMirrorsTier2 = [ordered]@{
                 name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
             }

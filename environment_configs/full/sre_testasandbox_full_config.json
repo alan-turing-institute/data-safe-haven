@@ -189,6 +189,11 @@
     "name": "Turing Development Safe Haven A",
     "network": {
       "mirrorVnets": {
+        "nexus": {
+          "cidr": "10.10.1.0/28",
+          "name": "NexusRepositorySubnet",
+          "nsg": "nexusRepository"
+        },
         "tier2": {
           "cidr": "10.20.2.0/24",
           "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2",
@@ -234,6 +239,9 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "nexusRepository": {
+          "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY"
         }
       },
       "vnet": {
