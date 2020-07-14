@@ -17,25 +17,19 @@ apt:
   sources:
     atom.list:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
-      keyid: 4C6E74D6C0A35108
-
-    chronitis-jupyter.list:
-      source: "ppa:chronitis/jupyter"
-
-    marutter-c2d4u35.list:
-      source: "ppa:marutter/c2d4u3.5"
+      keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09
 
     microsoft-prod.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
-      keyid: EB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
 
     microsoft-azure-cli.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
-      keyid: EB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
 
     postgresql.list:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
-      keyid: 7FCC7D46ACCC4CF8
+      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 
     mono-project.list:
       source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
@@ -43,18 +37,19 @@ apt:
 
     nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
-      keyid: F60F4B3D7FA2AF80
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80
 
     nvidia-ml.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80
 
     rproject-cran35.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
-      keyid: 51716619E084DAB9
+      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9
 
     vscode.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-      keyid: EB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
 
 
 write_files:
