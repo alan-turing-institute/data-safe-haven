@@ -774,6 +774,9 @@ function Get-ShmFullConfig {
         rg = "$($shm.rgPrefix)_PKG_MIRRORS".ToUpper()
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
+        nexus = [ordered]@{
+            diskSize = 127
+        }
         pypi = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8191 }
             tier3 = [ordered]@{ diskSize = 511 }
