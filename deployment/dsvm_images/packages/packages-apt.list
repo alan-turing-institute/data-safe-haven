@@ -32,7 +32,10 @@ libcurl4-openssl-dev
 libeccodes-dev
 libffi-dev
 libgdal-dev
+libgmp-dev
+libgsl-dev
 libmagick++-dev
+libmpfr-dev
 libpoppler-cpp-dev
 libpq-dev
 libsqlite3-dev

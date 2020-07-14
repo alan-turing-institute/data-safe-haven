@@ -169,6 +169,7 @@ RCurl
 readr
 readtext
 readxl
+remotes
 repr
 reshape
 reshape2
@@ -184,7 +185,6 @@ ROCR
 roxygen2
 rpart
 RPostgres
-rPython
 RSQLite
 rstan
 runjags

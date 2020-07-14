@@ -337,6 +337,16 @@ runcmd:
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
+  # Install packages that are not directly installable under 3.6.3
+  # - Rscript -e "library(remotes); install_version('rPython', '0.0-6')" # NB. this has been  removed from CRAN and older versions do not compile
+  - Rscript -e "library(remotes); install_version('XML', '3.99-0.3')"
+  - Rscript -e "library(remotes); install_version('DPpackage', '1.1-7')"
+  - Rscript -e "library(remotes); install_version('mlr', '2.17.0')"
+  - Rscript -e "library(remotes); install_version('pomp', '2.8')"
+  - Rscript -e "library(remotes); install_version('Scale', '1.0.4')"
+  - Rscript -e "library(remotes); install_version('tmap', '3.0')"
+  - Rscript -e "library(remotes); install_version('topicmodels', '0.2-9')"
+  - Rscript -e "library(remotes); install_version('traj', '1.1')"
   # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   # Check for missing packages
