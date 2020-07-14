@@ -315,7 +315,7 @@ runcmd:
   - echo '# Set up pyenv' >> /etc/bash.bashrc
   - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
-  - echo 'eval "$(pyenv init -)"' >> /etc/bash.bashrc
+  - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv global $()" >> /etc/bash.bashrc
 
@@ -330,14 +330,14 @@ runcmd:
   - <R package list>
   # CRAN
   - echo "Previously installed CRAN packages:"
-  - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
   - echo "Installing remaining CRAN packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($CRAN_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($CRAN_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(remaining_packages); if(length(remaining_packages)) install.packages(remaining_packages, quiet = TRUE)"
   # Bioconductor
   - echo "Previously installed BioConductor packages:"
-  - Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
   - echo "Installing remaining BioConductor packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($BIOCONDUCTOR_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(remaining_packages); if(length(remaining_packages)) BiocManager::install(remaining_packages)"
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
@@ -345,9 +345,9 @@ runcmd:
   # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   # Check for missing packages
-  - MISSING_CRAN_PACKAGES=$(Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)" | sed "s/character(0)//")
+  - MISSING_CRAN_PACKAGES=$(Rscript -e "requested_packages <- c($CRAN_PACKAGES); missing_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(missing_packages)" | sed "s/character(0)//")
   - if [ "$MISSING_CRAN_PACKAGES" ]; then echo "Could not install CRAN packages\n$MISSING_CRAN_PACKAGES"; exit 1; fi
-  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)" | sed "s/character(0)//")
+  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); missing_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(missing_packages)" | sed "s/character(0)//")
   - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n$MISSING_BIOCONDUCTOR_PACKAGES"; exit 1; fi
 
   # Install Julia and packages - approximately 20 minutes
