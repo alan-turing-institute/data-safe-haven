@@ -118,10 +118,6 @@ write_files:
     permissions: "0500"
     content: |
       <install_python_version.sh>
-  - path: "/installation/create_or_update_conda_python_environment.sh"
-    permissions: "0500"
-    content: |
-      <create_or_update_conda_python_environment.sh>
   - path: "/installation/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
@@ -362,7 +358,7 @@ runcmd:
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
-  - export CONDA_JL_HOME="/opt/anaconda/envs/py37/"  # use the most recent python version as the default Conda environment
+  - export CONDA_JL_HOME="/opt/pyenv/versions/3.7*/"  # use the most recent python version as the default environment
   - export JULIA_COPY_STACKS=1
   - export PYTHON="${CONDA_JL_HOME}/bin/python"
   - export TF_USE_GPU=1
