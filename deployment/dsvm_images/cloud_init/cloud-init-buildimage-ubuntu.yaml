@@ -231,13 +231,6 @@ runcmd:
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
 
-  # Manually update clamav signature database
-  # The systemd unit is disabled as otherwise the freshclam log will be locked
-  - echo "Updating clamav database"
-  - systemctl stop clamav-freshclam
-  - freshclam
-  - clamav-unofficial-sigs
-
   # Azure Data Studio
   - echo "Installing Azure Data Studio"
   - /installation/download_and_install_deb.sh azuredatastudio
@@ -293,27 +286,38 @@ runcmd:
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
+  # Manually update clamav signature database
+  - echo ">=== $(date +%s) Updating clamav database ===<"
+  # The systemd unit must be disabled as otherwise the freshclam log will be locked
+  - systemctl stop clamav-freshclam
+  - sleep 30
+  - freshclam
+  - sleep 30
+  - clamav-unofficial-sigs
+
   # Install pyenv and pyenv-virtualenv globally
+  - echo ">=== $(date +%s) Installing pyenv ===<"
   - export PYENV_ROOT="/opt/pyenv"
-  - rm -rf $PYENV_ROOT > /dev/null
-  - echo "PATH old $PATH"
+  - rm -rf $PYENV_ROOT 2> /dev/null
   - PATH="$PYENV_ROOT/bin:$PATH" # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
-  - echo "PATH new $PATH"
   - curl https://pyenv.run | bash
-  - ls -alh $PYENV_ROOT
 
   # Install python versions
-  - /installation/install_python_version.sh py27
-  - /installation/install_python_version.sh py36
-  - /installation/install_python_version.sh py37
+  - /installation/install_python_version.sh py27 || exit 1
+  - /installation/install_python_version.sh py36 || exit 1
+  - /installation/install_python_version.sh py37 || exit 1
+  - echo "Installed python versions"
+  - rm -rf /root/.cache /tmp/*  # clean up cached files from the python builds
+  - du --si -d 1 /opt/pyenv/versions
 
   # Add pyenv to global settings
+  - echo "Configuring pyenv global settings"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
   - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $()" >> /etc/bash.bashrc
+  - echo "pyenv global $(pyenv versions | grep 3.7)" >> /etc/bash.bashrc
 
   # Set 'other' permissions on the pyenv directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
