@@ -69,8 +69,8 @@ $newSAStoken = New-AccountSASToken -SubscriptionName "$($config.shm.subscription
                                               -ResourceGroup "$($config.sre.storage.datastorage.rg)" `
                                               -AccountName "$($config.sre.storage.datastorage.accountName)" `
                                               -Service "$($config.sre.storage.datastorage.GroupId)" `
-                                              -ResourceType "Container" `
-                                              -Permission "rlw" `
+                                              -ResourceType "Container,Object" `
+                                              -Permission "rl" `
                                               -validityHours "8760"
 
 $ingressSAS = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue $newSAStoken
