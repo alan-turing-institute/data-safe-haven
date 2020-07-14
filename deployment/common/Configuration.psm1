@@ -114,6 +114,11 @@ function Add-SreConfig {
             accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             rg = $storageRg
         }
+        datastorage = [ordered]@{
+           rg = "RG_SHM_$($shm.id)_DATA_STORAGE".ToUpper()
+           accountName =  "sre$($config.sre.id)datastore${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+           GroupId = "Blob"
+       }
     }
 
     # Secrets config
@@ -357,7 +362,7 @@ function Add-SreConfig {
                 type = "Standard_LRS"
             }
             os = [ordered]@{
-                sizeGb = "64"
+                sizeGb = "128"
                 type = "Standard_LRS"
             }
             scratch = [ordered]@{
@@ -756,11 +761,7 @@ function Get-ShmFullConfig {
             rg = $storageRg
             accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
-         datastorage = [ordered]@{
-            rg = "RG_SHM_$($shm.id)_DATA_STORAGE".ToUpper()
-            accountName =  "$($sreId)storageconnection${storageSuffix}".ToLower() | TrimToLength 24
-            GroupId = "Blob"
-        }
+
     }
 
     # DNS config

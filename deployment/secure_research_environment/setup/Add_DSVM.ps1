@@ -369,7 +369,7 @@ if ($success) {
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
-$dsvmIngressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
+$dsvmIngressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
@@ -422,7 +422,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
-    Replace("<SA_ACCOUNT_NAME>", $config.shm.storage.datastorage.accountName).
+    Replace("<SA_ACCOUNT_NAME>", $config.sre.storage.datastorage.accountName).
     Replace("<SA_SAS_INGRESS>", $dsvmIngressSasToken).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).

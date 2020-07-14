@@ -100,7 +100,8 @@
       "name": "kv-shm-testc",
       "rg": "RG_SHM_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testc-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testc-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testc-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
         "domainAdminPassword": "shm-testc-domain-admin-password",
@@ -288,11 +289,6 @@
       "bootdiagnostics": {
         "accountName": "shmtestcbootdiagsnxbqspy",
         "rg": "RG_SHM_ARTIFACTS"
-      },
-      "datastorage": {
-        "accountName": "testcsandboxstorageconne",
-        "GroupId": "Blob",
-        "rg": "RG_SHM_DATA_STORAGE"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
@@ -439,7 +435,7 @@
           "type": "Standard_LRS"
         },
         "os": {
-          "sizeGb": "64",
+          "sizeGb": "128",
           "type": "Standard_LRS"
         },
         "scratch": {
@@ -468,7 +464,7 @@
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "storageIngressSAS": "sre-sandbox-storage-ingress-sas",
+        "storageIngressSAS": "sre-sandbox-storage-ingress-sas"
       }
     },
     "location": "centralus",
@@ -552,12 +548,17 @@
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {
-        "accountName": "sreartifactszvmwtqkigrld",
+        "accountName": "sresandboxartifactsakeqz",
         "rg": "RG_SRE_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "srebootdiagszvmwtqkigrld",
+        "accountName": "sresandboxbootdiagsakeqz",
         "rg": "RG_SRE_ARTIFACTS"
+      },
+      "datastorage": {
+        "accountName": "sresandboxdatastoreakeqz",
+        "GroupId": "Blob",
+        "rg": "RG_SHM_DATA_STORAGE"
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",

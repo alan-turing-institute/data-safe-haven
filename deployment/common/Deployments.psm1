@@ -787,7 +787,7 @@ function Deploy-VirtualMachineMonitoringExtension {
         )
         Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
         $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
-            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and 
+            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and
                 $_.ExtensionType -eq $type }
         if($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."

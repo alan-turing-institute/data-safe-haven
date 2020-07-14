@@ -20,13 +20,16 @@
             },
             "storage": {
                 "artifacts": {
-                    "rg": "RG_SRE_ARTIFACTS",
-                    "accountName": "sreartifactszvmwtqkigrld"
+                    "rg": "RG_SRE_ARTIFACTS"
                 },
                 "bootdiagnostics": {
-                    "rg": "RG_SRE_ARTIFACTS",
-                    "accountName": "srebootdiagszvmwtqkigrld"
+                    "rg": "RG_SRE_ARTIFACTS"          
+                },
+                "datastorage": {
+                    "rg": "RG_SHM_DATA_STORAGE"
                 }
+
+
             },
             "keyVault": {
                 "rg": "RG_SRE_SECRETS",

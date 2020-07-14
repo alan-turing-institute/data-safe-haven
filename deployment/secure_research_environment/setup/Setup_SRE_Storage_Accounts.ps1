@@ -24,47 +24,51 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 # Ensure that storage account exists
 # ----------------------------------
-Add-LogMessage -Level Info "Ensuring that storage account $($config.shm.storage.datastorage.accountName) exists"
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -ErrorAction SilentlyContinue
+Add-LogMessage -Level Info "Ensuring that storage account $($config.sre.storage.datastorage.accountName) exists"
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -ErrorAction SilentlyContinue
 if ($storageAccount) {
-    Add-LogMessage -Level InfoSuccess "Found storage account $($config.shm.storage.datastorage.accountName)"
+    Add-LogMessage -Level InfoSuccess "Found storage account $($config.sre.storage.datastorage.accountName)"
 } else {
     try {
-        $storageAccount = New-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -Location $config.shm.location -SkuName Standard_RAGRS -Kind StorageV2 -ErrorAction Stop
-        Add-LogMessage -Level Success "Created storage account $($config.shm.storage.datastorage.accountName)"
+        $storageAccount = New-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -Location $config.shm.location -SkuName Standard_RAGRS -Kind StorageV2 -ErrorAction Stop
+        Add-LogMessage -Level Success "Created storage account $($config.sre.storage.datastorage.accountName)"
     } catch [System.ArgumentException] {
-        Add-LogMessage -Level Fatal "Failed to create storage account '$($config.shm.storage.datastorage.accountName)'!"
+        Add-LogMessage -Level Fatal "Failed to create storage account '$($config.sre.storage.datastorage.accountName)'!"
     }
 }
 
+Write-Host ($storageAccount | out-String)
+Write-Host ($($storageAccount).context | out-String)
 
 # Ensure that container exists in storage account
 # -----------------------------------------------
+
 foreach ($containerName in @("ingress")) {
     Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Allow
+    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Allow
     Start-Sleep 30  # wait for the permission change to propagate
-    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
+    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
     if ($storageContainer) {
-        Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+        Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
     } else {
+      Add-LogMessage -Level InfoSuccess "$storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop"
         try {
             $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
-            Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+            Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
         } catch [Microsoft.Azure.Storage.StorageException] {
-            Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
+            Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
         }
     }
-    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
+    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Deny
 }
 
 
 # Create a SAS token (hardcoded 1 year for the moment)
 # ----------------------------------------------------
 $newSAStoken = New-AccountSASToken -SubscriptionName "$($config.shm.subscriptionName)" `
-                                              -ResourceGroup "$($config.shm.storage.datastorage.rg)" `
-                                              -AccountName "$($config.shm.storage.datastorage.accountName)" `
-                                              -Service "$($config.shm.storage.datastorage.GroupId)" `
+                                              -ResourceGroup "$($config.sre.storage.datastorage.rg)" `
+                                              -AccountName "$($config.sre.storage.datastorage.accountName)" `
+                                              -Service "$($config.sre.storage.datastorage.GroupId)" `
                                               -ResourceType "Container" `
                                               -Permission "rlw" `
                                               -validityHours "8760"
@@ -78,7 +82,7 @@ Add-logMessage "Using SAStoken: $ingressSAS"
 # ---------------------------
 $privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
 $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
-$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.shm.storage.datastorage.GroupId
+$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.GroupId
 
 
 # Ensure the keyvault exists and set its access policies
@@ -97,10 +101,10 @@ if ($privateEndpoint) {
 }
 Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
-$subnet = Get-AzSubnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $virtualNetwork
+$subnet = Get-AzSubnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $virtualNetwork
 $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
                                          -Name $privateEndpointName `
-                                         -Location $config.sre.Location `
+                                         -Location $config.sre.location `
                                          -Subnet $subnet `
                                          -PrivateLinkServiceConnection $privateEndpointConnection
 if ($?) {

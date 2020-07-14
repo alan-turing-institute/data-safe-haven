@@ -16,7 +16,7 @@ param(
 
 )
 # Check whether the zone exists otherwise create it
-if (   (Get-DnsServerZone -name $ZoneName | where-object {$_.ZoneType -eq "Primary"})){
+if ( (Get-DnsServerZone -name $ZoneName -ErrorAction silentlycontinue | where-object {$_.ZoneType -eq "Primary"})){
     Write-Output "DNS Zone $ZoneName already exists"
 } Else {
     Add-DnsServerPrimaryZone -Name $ZoneName -ReplicationScope "Forest"
@@ -26,7 +26,7 @@ if (   (Get-DnsServerZone -name $ZoneName | where-object {$_.ZoneType -eq "Prima
 
 # If the record exists and the user used force, remove it
 if ($update.ToLower() -eq "force"){
-    Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force
+    Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force -ErrorAction silentlycontinue
     Write-Output "Removing record $ZoneName"
 }
 
@@ -37,4 +37,3 @@ if (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -Error
       Add-DnsServerResourceRecordA -Name $ZoneName -ZoneName $ZoneName -IPv4Address $ipaddress
       Write-Output "Creating Record $ZoneName"
 }
-

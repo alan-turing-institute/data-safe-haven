@@ -44,6 +44,13 @@ write_files:
   - path: "/installation/ingressmount.sh"
     permissions: "0500"
     content: /usr/bin/blobfuse $1 --tmp-path=/mnt/resource/ingresstmp -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/SASingress -o allow_other
+  - path: "/etc/rc.local"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #!/bin/bash
+      sudo mount -t tmpfs -o size=16g tmpfs /mnt/resource/ingresstmp
+      /installation/ingressmount.sh /ingress
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -375,6 +382,7 @@ runcmd:
   - echo ">=== Mount ingress blob folder ... ===<"
   - mkdir -p /ingress
   - mkdir -p /mnt/resource/ingresstmp
+  - mount -t tmpfs -o size=16g tmpfs /mnt/resource/ingresstmp
   - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
   - tail -n 1 /etc/fstab
 
