@@ -776,6 +776,9 @@ function Get-ShmFullConfig {
         diskType = "Standard_LRS"
         nexus = [ordered]@{
             diskSize = 127
+            adminPasswordSecretName = "shm-$($shm.id)-pacakage-mirror-nexus-admin-password".ToLower()
+            ipAddress = "10.10.1.1"
+            vmName = "NEXUS-REPOSITORY"
         }
         pypi = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8191 }

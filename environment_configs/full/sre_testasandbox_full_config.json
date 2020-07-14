@@ -150,10 +150,10 @@
       },
       "diskType": "Standard_LRS",
       "nexus": {
+        "adminPasswordSecretName": "shm-testa-package-mirror-nexus-admin-password",
         "diskSize": 127,
-        "internal": {
-          "adminPasswordSecretName": "shm-testa-package-mirror-nexus-admin-password"
-        }
+        "ipAddress": "10.10.1.1",
+        "vmName": "NEXUS-REPOSITORY"
       },
       "pypi": {
         "tier2": {
