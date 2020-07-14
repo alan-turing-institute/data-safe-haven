@@ -36,8 +36,9 @@ For detailed guidance on deploying, administering and using the Safe Haven, see 
 
 ## Releases
 
-  - View our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest) to get started. You can also browse [all our releases](https://github.com/alan-turing-institute/data-safe-haven/releases). Follow the link from any release to view and clone this repository as at that release.
-  - Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
+View our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest) to get started. You can also browse [all our releases](https://github.com/alan-turing-institute/data-safe-haven/releases). Follow the link from any release to view and clone this repository as at that release.
+
+Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
 
 
 ## Contributing
