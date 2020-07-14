@@ -105,9 +105,7 @@
             "rg": "RG_SHM_PKG_MIRRORS",
             "nexus": {
                 "diskSize": 127,
-                "internal": {
-                    "adminPasswordSecretName": "shm-testa-package-mirror-nexus-admin-password"
-                }
+                "adminPasswordSecretName": "shm-testa-package-mirror-nexus-admin-password"
             },
             "pypi": {
                 "tier2": {
