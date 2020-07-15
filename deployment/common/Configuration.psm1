@@ -582,13 +582,13 @@ function Get-ShmFullConfig {
                 repository = [ordered]@{
                     name = "RepositorySubnet"
                     cidr = "10.10.1.0/28"
-                    nsg = "Repository"
+                    nsg = "repository"
                 }
             }
         }
         mirrorVnets = [ordered]@{}
         nsg = [ordered]@{
-            Repository = [ordered]@{
+            repository = [ordered]@{
                 name = "NSG_SHM_$($shm.id)_REPOSITORY".ToUpper()
             }
             externalPackageMirrorsTier2 = [ordered]@{

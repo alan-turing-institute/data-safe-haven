@@ -229,7 +229,7 @@
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
         },
-        "Repository": {
+        "repository": {
           "name": "NSG_SHM_TESTA_REPOSITORY"
         }
       },
@@ -240,7 +240,7 @@
           "repository": {
             "cidr": "10.10.1.0/28",
             "name": "RepositorySubnet",
-            "nsg": "Repository"
+            "nsg": "repository"
           }
         }
       },
