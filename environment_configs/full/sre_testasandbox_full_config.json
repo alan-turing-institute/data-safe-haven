@@ -236,7 +236,6 @@
       "repositoryVnet": {
         "cidr": "10.10.1.0/24",
         "name": "VNET_SHM_TESTA_REPOSITORY",
-        "rg": "RG_SHM_TESTA_REPOSITORY",
         "subnets": {
           "repository": {
             "cidr": "10.10.1.0/28",

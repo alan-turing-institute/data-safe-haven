@@ -576,7 +576,6 @@ function Get-ShmFullConfig {
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         repositoryVnet = [ordered]@{
-            rg = "RG_SHM_$($shm.id)_REPOSITORY".ToUpper()
             name = "VNET_SHM_$($shm.id)_REPOSITORY".ToUpper()
             cidr = "10.10.1.0/24"
             subnets = [ordered]@{
