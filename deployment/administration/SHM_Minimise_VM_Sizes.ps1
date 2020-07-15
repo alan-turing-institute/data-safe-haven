@@ -1,6 +1,6 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter VM Size for all VMs")]
     [ValidateSet("Tiny","Small")]
     [string]$Size
@@ -14,12 +14,12 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
-$vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.sre.rgPrefix
+$vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.rgPrefix
 
 if($Size -eq "Tiny") {
     $vmSize = "Standard_B2ms"

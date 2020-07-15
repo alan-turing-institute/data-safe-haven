@@ -105,6 +105,51 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
+# Confirm VM is deallocated
+# -------------------------
+function Confirm-AzVmDeallocated {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $ResourceGroupName
+    )
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
+}
+Export-ModuleMember -Function Confirm-AzVmDeallocated
+
+
+# Confirm VM is running
+# ---------------------
+function Confirm-AzVmRunning {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $ResourceGroupName
+    )
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
+}
+Export-ModuleMember -Function Confirm-AzVmRunning
+
+
+# Confirm VM is stopped
+# ---------------------
+function Confirm-AzVmStopped {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $ResourceGroupName
+    )
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/stopped") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
+}
+Export-ModuleMember -Function Confirm-AzVmStopped
+
+
 # Deploy an ARM template and log the output
 # -----------------------------------------
 function Deploy-ArmTemplate {
@@ -876,7 +921,9 @@ function Enable-AzVM {
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to enable")]
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName
+        $ResourceGroupName,
+        [Parameter(HelpMessage = "Skip restart if running")]
+        [switch]$SkipRestart
     )
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
@@ -934,6 +981,38 @@ function Get-NSRecords {
 }
 Export-ModuleMember -Function Get-NSRecords
 
+
+# Get SHM or SRE VMs
+# ------------------
+function Get-ShmOrSreVMsByResourceGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Prefix for resoruce groups belongign to SHM")]
+        $ResourceGroupPrefix
+    )
+    return Get-VMsForResourceGroupPrefixByResourceGroup -ResourceGroupPrefix $ResourceGroupPrefix
+}
+Export-ModuleMember -Function Get-ShmOrSreVMsByResourceGroup
+
+
+# Get all VMs in resource groups matching a prefix
+# ------------------------------------------------
+function Get-VMsForResourceGroupPrefixByResourceGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
+        $ResourceGroupPrefix
+    )
+    $rgFilter = "$($ResourceGroupPrefix)*"
+    $shmResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter }
+    $shmVmsByRg = [ordered]@{}
+    foreach($rg in $shmResourceGroups) {
+        $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
+        if($rgVms) {
+            $shmVmsByRg[$rg.ResourceGroupName] = $rgVms
+        }
+    }
+    return $shmVmsByRg
+}
+Export-ModuleMember -Function Get-VMsForResourceGroupPrefixByResourceGroup
 
 # Run remote shell script
 # -----------------------
