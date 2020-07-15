@@ -6,7 +6,8 @@
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
     [string]$shmFqdn,
-    [string]$sreId
+    [string]$sreId,
+    [string]$privateDnsZoneName
 )
 
 # Remove records for domain-joined SRE VMs
@@ -20,3 +21,7 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
         Write-Output " [x] Failed to remove DNS record '$($dnsRecord.HostName)'!"
     }
 }
+
+# Remove private endpoint Dns Zone
+# ----------------------------------------
+Remove-DnsServerZone $privateDnsZoneName -force

@@ -76,13 +76,18 @@ if ($sreResources -or $sreResourceGroups) {
     Write-Output $result.Value
 
 
-    # Remove SRE DNS records from SHM DC
+    # Remove SRE DNS records and private endpoint DNS Zone from SHM DC
     # ----------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
+
+    $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -ErrorAction SilentlyContinue
+    $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
         sreId   = "`"$($config.sre.id)`""
+        privateDnsZoneName = "`"$privateDnsZoneName`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
