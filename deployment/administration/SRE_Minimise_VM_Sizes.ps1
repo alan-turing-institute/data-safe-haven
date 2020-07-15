@@ -45,7 +45,7 @@ foreach($key in $vmsByRg.Keys) {
                     Add-LogMessage -Level Fatal "Unexpected status '$($result.StatusCode) ($($result.ReasonPhrase))' encountered when requesting resize of VM '$($vm.Name)' to '$vmSize').'"
                 }
             } else {
-                Add-LogMessage -Level Warning "VM '$($vm.Name)' not in supported status: $vmStatus. No asction taken."
+                Add-LogMessage -Level Warning "VM '$($vm.Name)' not in supported status: $vmStatus. No action taken."
             }
         }
     }

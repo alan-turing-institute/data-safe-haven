@@ -31,7 +31,7 @@ function Enable-AzVMWithoutRestart {
         Enable-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
     } else {
         $vmStatus = (Get-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Status).Statuses.Code
-        Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No asction taken."
+        Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
     }
 }
 
