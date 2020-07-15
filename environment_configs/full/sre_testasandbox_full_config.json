@@ -149,12 +149,6 @@
         }
       },
       "diskType": "Standard_LRS",
-      "nexus": {
-        "adminPasswordSecretName": "shm-testa-package-mirror-nexus-admin-password",
-        "diskSize": 127,
-        "ipAddress": "10.10.1.1",
-        "vmName": "NEXUS-REPOSITORY"
-      },
       "pypi": {
         "tier2": {
           "diskSize": 8191,
@@ -189,11 +183,6 @@
     "name": "Turing Development Safe Haven A",
     "network": {
       "mirrorVnets": {
-        "nexus": {
-          "cidr": "10.10.1.0/28",
-          "name": "NexusRepositorySubnet",
-          "nsg": "nexusRepository"
-        },
         "tier2": {
           "cidr": "10.20.2.0/24",
           "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2",
@@ -240,8 +229,20 @@
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
         },
-        "nexusRepository": {
-          "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY"
+        "Repository": {
+          "name": "NSG_SHM_TESTA_REPOSITORY"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.10.1.0/24",
+        "name": "VNET_SHM_TESTA_REPOSITORY",
+        "rg": "RG_SHM_TESTA_REPOSITORY",
+        "subnets": {
+          "repository": {
+            "cidr": "10.10.1.0/28",
+            "name": "RepositorySubnet",
+            "nsg": "Repository"
+          }
         }
       },
       "vnet": {
@@ -297,6 +298,17 @@
       "townCity": "London"
     },
     "rgPrefix": "RG_SHM",
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
+        "diskSize": 127,
+        "ipAddress": "10.10.1.1",
+        "vmName": "NEXUS-REPOSITORY"
+      },
+      "rg": "RG_SHM_TESTA_REPOSITORY",
+      "vmSize": "Standard_B2ms"
+    },
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactsvkdrslu",

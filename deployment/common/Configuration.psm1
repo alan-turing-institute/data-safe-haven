@@ -575,16 +575,22 @@ function Get-ShmFullConfig {
         vpn = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
-        mirrorVnets = [ordered]@{
-            nexus = [ordered]@{
-                name = "NexusRepositorySubnet"
-                cidr = "10.10.1.0/28"
-                nsg = "nexusRepository"
+        repositoryVnet = [ordered]@{
+            rg = "RG_SHM_$($shm.id)_REPOSITORY".ToUpper()
+            name = "VNET_SHM_$($shm.id)_REPOSITORY".ToUpper()
+            cidr = "10.10.1.0/24"
+            subnets = [ordered]@{
+                repository = [ordered]@{
+                    name = "RepositorySubnet"
+                    cidr = "10.10.1.0/28"
+                    nsg = "Repository"
+                }
             }
         }
+        mirrorVnets = [ordered]@{}
         nsg = [ordered]@{
-            nexusRepository = [ordered]@{
-                name = "NSG_SHM_$($shm.id)_NEXUS_REPOSITORY".ToUpper()
+            Repository = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_REPOSITORY".ToUpper()
             }
             externalPackageMirrorsTier2 = [ordered]@{
                 name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
@@ -777,18 +783,26 @@ function Get-ShmFullConfig {
         rg = $shmConfigBase.dnsResourceGroupName
     }
 
+    # Nexus repository VM config
+    # --------------------------
+    $shm.repository = [ordered]@{
+        rg = "$($shm.rgPrefix)_REPOSITORY".ToUpper()
+        vmSize = "Standard_B2ms"
+        diskType = "Standard_LRS"
+        nexus = [ordered]@{
+            diskSize = 127
+            adminPasswordSecretName = "shm-$($shm.id)-repository-vm-admin-password".ToLower()
+            ipAddress = "10.10.1.1"
+            vmName = "NEXUS-REPOSITORY"
+        }
+    }
+
     # Package mirror config
     # ---------------------
     $shm.mirrors = [ordered]@{
         rg = "$($shm.rgPrefix)_PKG_MIRRORS".ToUpper()
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
-        nexus = [ordered]@{
-            diskSize = 127
-            adminPasswordSecretName = "shm-$($shm.id)-pacakage-mirror-nexus-admin-password".ToLower()
-            ipAddress = "10.10.1.1"
-            vmName = "NEXUS-REPOSITORY"
-        }
         pypi = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8191 }
             tier3 = [ordered]@{ diskSize = 511 }
