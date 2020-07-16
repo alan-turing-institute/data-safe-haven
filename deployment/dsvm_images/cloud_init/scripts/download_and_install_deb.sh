@@ -38,8 +38,10 @@ if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha256.hash | grep FAILED)" != "" ]; t
 fi
 
 # Wait until the package repository is not in use
-while fuser /var/lib/dpkg/lock > /dev/null 2>&1; do
-    echo "Waiting for another software manager to finish..."
+while true; do
+    apt-get check >/dev/null 2>&1
+    if [ "$?" -eq "0" ]; then break; fi
+    echo "Waiting for another installation process to finish..."
     sleep 1
 done
 
