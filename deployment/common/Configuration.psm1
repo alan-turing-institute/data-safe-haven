@@ -115,12 +115,28 @@ function Add-SreConfig {
             rg = $storageRg
         }
         datastorage = [ordered]@{
-           rg = "RG_SHM_$($shm.id)_DATA_STORAGE".ToUpper()
-           accountName =  "sre$($config.sre.id)datastore${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
-           GroupId = "Blob"
-       }
+            rg = "RG_SHM_$($shm.id)_DATA_STORAGE".ToUpper()
+            #accountName =  "sre$($config.sre.id)datastore${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent            
+            accountName =  "$($config.shm.id+$config.sre.id)data${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent        
+            containers = [ordered]@{
+                ingress = [ordered]@{
+                    name = "ingress"
+                    storageType = "Blob"
+                    researcherPolicy = [ordered]@{
+                        name = "researcher_policy"
+                        permissions = "rl"
+                        sasSecretName = "sre-$($config.sre.id)-researcher-storage-ingress-sas"
+                    }
+                    adminPolicy = [ordered]@{
+                        name = "admin_policy"
+                        permissions = "rlw"
+                        sasSecretName = "sre-$($config.sre.id)-admin-storage-ingress-sas"
+                    }
+                }
+            }
+        }
     }
-
+        
     # Secrets config
     # --------------
     $config.sre.keyVault = [ordered]@{
@@ -130,7 +146,6 @@ function Add-SreConfig {
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-other-nps-secret"
-            storageIngressSAS = "$($config.sre.shortName)-storage-ingress-sas"
         }
     }
 

@@ -463,8 +463,7 @@
         "adminUsername": "sre-sandbox-vm-admin-username",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-nps-secret",
-        "storageIngressSAS": "sre-sandbox-storage-ingress-sas"
+        "npsSecret": "sre-sandbox-nps-secret"
       }
     },
     "location": "centralus",
@@ -556,8 +555,23 @@
         "rg": "RG_SRE_ARTIFACTS"
       },
       "datastorage": {
-        "accountName": "sresandboxdatastoreakeqz",
-        "GroupId": "Blob",
+        "accountName": "testcsandboxdataakeqzbwg",
+        "containers": {
+          "ingress": {
+            "adminPolicy": {
+              "name": "admin_policy",
+              "permissions": "rlw",
+              "sasSecretName": "sre-sandbox-admin-storage-ingress-sas"
+            },
+            "name": "ingress",
+            "researcherPolicy": {
+              "name": "researcher_policy",
+              "permissions": "rl",
+              "sasSecretName": "sre-sandbox-researcher-storage-ingress-sas"
+            },
+            "storageType": "Blob"
+          }
+        },
         "rg": "RG_SHM_DATA_STORAGE"
       }
     },

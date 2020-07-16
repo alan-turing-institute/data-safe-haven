@@ -42,7 +42,7 @@ Write-Host ($($storageAccount).context | out-String)
 
 # Ensure that container exists in storage account
 # -----------------------------------------------
-$containerName = "ingress"
+$containerName = $config.sre.storage.datastorage.containers.ingress.name
 
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
 $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Allow
@@ -64,7 +64,8 @@ $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.sto
 
 # Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
 # ----------------------------------------------------
-$accessType = "researcher_access"
+$accessType = $config.sre.storage.datastorage.containers.ingress.researcherPolicy.name
+
 $availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
 
 foreach ($Policy in @($availablePolicies)) {
@@ -76,7 +77,7 @@ if (-Not $SASPolicy){
     $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
                                                             -Policy $((Get-Date -Format "yyyyMMddHHmmss")+$accessType) `
                                                             -Context $($storageAccount.Context) `
-                                                            -Permission "rl" `
+                                                            -Permission $($config.sre.storage.datastorage.containers.ingress.researcherPolicy.permissions) `
                                                             -StartTime (Get-Date).DateTime `
                                                             -ExpiryTime (Get-Date).AddHours(8760).DateTime
 }
@@ -86,7 +87,7 @@ $newSAStoken = New-AzStorageContainerSASToken -Name $containerName `
                                                 -Context $($storageAccount.Context)
 
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name `
-                                        -SecretName $config.sre.keyVault.secretNames.storageIngressSAS `
+                                        -SecretName $config.sre.storage.datastorage.containers.ingress.researcherPolicy.sasSecretName `
                                         -DefaultValue $newSAStoken
 
 
@@ -94,7 +95,7 @@ $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name `
 # ---------------------------
 $privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
 $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
-$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.GroupId
+$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.containers.ingress.storageType
 
 
 # Ensure the keyvault exists and set its access policies
