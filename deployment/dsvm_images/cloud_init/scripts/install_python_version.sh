@@ -56,8 +56,9 @@ while read LINE; do
     else
         # ... otherwise use the highest available version
         # ... otherwise use the full available range
-        MIN_VERSION=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E 's|.*: ([^ ,)]*).*|\1|')
-        MAX_VERSION=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E 's|.* ([^ ]*)\)$|\1|')
+        VERSIONS=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E -e 's|.*: ([^)]*).*|\1|' -e 's/[[:space:]]*//g' | tr ',' '\n' | grep -v "macosx")
+        MIN_VERSION=$(echo $VERSIONS | cut -d ' ' -f 1)
+        MAX_VERSION=$(echo $VERSIONS | rev | cut -d ' ' -f 1 | rev)
         REQUIREMENT="$LINE>=$MIN_VERSION,<=$MAX_VERSION"
         if [ "$MAX_VERSION" == "none" ]; then REQUIREMENT="$LINE>0.0"; fi
     fi
