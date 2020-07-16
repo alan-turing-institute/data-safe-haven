@@ -33,20 +33,20 @@ function Add-NetworkSecurityGroupRule {
     )
     try {
         if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
-        $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
+        $rule = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
         if ($notExists) {
             if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-                $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                        -Access "$Access" `
-                                                        -Description "$Description" `
-                                                        -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                        -DestinationPortRange $DestinationPortRange `
-                                                        -Direction "$Direction" `
-                                                        -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                        -Priority $Priority `
-                                                        -Protocol "$Protocol" `
-                                                        -SourceAddressPrefix $SourceAddressPrefix `
-                                                        -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+                $nsg = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                       -Access "$Access" `
+                                                       -Description "$Description" `
+                                                       -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                       -DestinationPortRange $DestinationPortRange `
+                                                       -Direction "$Direction" `
+                                                       -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                       -Priority $Priority `
+                                                       -Protocol "$Protocol" `
+                                                       -SourceAddressPrefix $SourceAddressPrefix `
+                                                       -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
             if ($?) {
                 if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
             } else {
@@ -54,22 +54,22 @@ function Add-NetworkSecurityGroupRule {
             }
         } else {
             if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
-            $null = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                    -Access "$Access" `
-                                                    -Description "$Description" `
-                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                    -DestinationPortRange $DestinationPortRange `
-                                                    -Direction "$Direction" `
-                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                    -Priority $Priority `
-                                                    -Protocol "$Protocol" `
-                                                    -SourceAddressPrefix $SourceAddressPrefix `
-                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+            $nsg = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                   -Access "$Access" `
+                                                   -Description "$Description" `
+                                                   -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                   -DestinationPortRange $DestinationPortRange `
+                                                   -Direction "$Direction" `
+                                                   -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                   -Priority $Priority `
+                                                   -Protocol "$Protocol" `
+                                                   -SourceAddressPrefix $SourceAddressPrefix `
+                                                   -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
         }
     } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
         Add-LogMessage -Level Fatal $_.Exception.Message.Split("`n")[0]
     }
-
+    return $nsg
 }
 Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
