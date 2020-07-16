@@ -114,6 +114,22 @@
             "apiVersion": "2020-04-01",
             "name": "[concat(parameters('nsgWebappsName'), '/DenyOutboundAnyAnywhere')]",
             "properties": {
+                "access": "Allow",
+                "description": "Allow outbound connections to the identity server",
+                "destinationAddressPrefix": "10.0.0.0/24",
+                "destinationPortRange": "*",
+                "direction": "Outbound",
+                "priority": 3000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/DenyOutboundAnyAnywhere')]",
+            "properties": {
                 "access": "Deny",
                 "description": "Deny outbound connections to any other sources",
                 "destinationAddressPrefix": "*",
@@ -144,12 +160,12 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2020-04-01",
-            "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundRdpSessionHostReview')]",
+            "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundHttpSessionHostReview')]",
             "properties": {
                 "access": "Allow",
-                "description": "Allow inbound RDP connections from GitLab review VM",
+                "description": "Allow inbound http(s) from application session host",
                 "destinationAddressPrefix": "VirtualNetwork",
-                "destinationPortRanges": ["3389"],
+                "destinationPortRanges": ["80", "443"],
                 "direction": "Inbound",
                 "priority": 2000,
                 "protocol": "Tcp",
@@ -168,6 +184,22 @@
                 "destinationPortRange": "*",
                 "direction": "Inbound",
                 "priority": 4000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/DenyOutboundAnyAnywhere')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow outbound connections to the identity server",
+                "destinationAddressPrefix": "10.0.0.0/24",
+                "destinationPortRange": "*",
+                "direction": "Outbound",
+                "priority": 3000,
                 "protocol": "*",
                 "sourceAddressPrefix": "*",
                 "sourcePortRange": "*"

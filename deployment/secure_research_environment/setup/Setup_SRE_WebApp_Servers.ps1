@@ -50,7 +50,7 @@ $params = @{
     subnetComputeCidr =  $config.sre.network.vnet.subnets.data.cidr
     subnetVpnCidr = "172.16.201.0/24" # TODO fix this when it is no longer hard-coded
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-webapp-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Check that VNET and subnets exist
