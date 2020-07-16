@@ -42,40 +42,52 @@ Write-Host ($($storageAccount).context | out-String)
 
 # Ensure that container exists in storage account
 # -----------------------------------------------
+$containerName = "ingress"
 
-foreach ($containerName in @("ingress")) {
-    Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Allow
-    Start-Sleep 30  # wait for the permission change to propagate
-    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
-    if ($storageContainer) {
-        Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
-    } else {
-      Add-LogMessage -Level InfoSuccess "$storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop"
-        try {
-            $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
-            Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
-        } catch [Microsoft.Azure.Storage.StorageException] {
-            Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
-        }
+Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
+$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Allow
+Start-Sleep 30  # wait for the permission change to propagate
+$storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
+if ($storageContainer) {
+    Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
+} else {
+    Add-LogMessage -Level InfoSuccess "$storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop"
+    try {
+        $storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop
+        Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
+    } catch [Microsoft.Azure.Storage.StorageException] {
+        Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
     }
-    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Deny
+}
+$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Deny
+
+
+# Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
+# ----------------------------------------------------
+$accessType = "researcher_access"
+$availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
+
+foreach ($Policy in @($availablePolicies)) {
+    if ($Policy -like "*$accessType*") { 
+        $SASPolicy = $Policy.Policy
+    }
+}
+if (-Not $SASPolicy){
+    $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
+                                                            -Policy $((Get-Date -Format "yyyyMMddHHmmss")+$accessType) `
+                                                            -Context $($storageAccount.Context) `
+                                                            -Permission "rl" `
+                                                            -StartTime (Get-Date).DateTime `
+                                                            -ExpiryTime (Get-Date).AddHours(8760).DateTime
 }
 
+$newSAStoken = New-AzStorageContainerSASToken -Name $containerName `
+                                                -Policy $SASPolicy `
+                                                -Context $($storageAccount.Context)
 
-# Create a SAS token (hardcoded 1 year for the moment)
-# ----------------------------------------------------
-$newSAStoken = New-AccountSASToken -SubscriptionName "$($config.shm.subscriptionName)" `
-                                              -ResourceGroup "$($config.sre.storage.datastorage.rg)" `
-                                              -AccountName "$($config.sre.storage.datastorage.accountName)" `
-                                              -Service "$($config.sre.storage.datastorage.GroupId)" `
-                                              -ResourceType "Container,Object" `
-                                              -Permission "rl" `
-                                              -validityHours "8760"
-
-$ingressSAS = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue $newSAStoken
-
-Add-logMessage "Using SAStoken: $ingressSAS"
+$null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name `
+                                        -SecretName $config.sre.keyVault.secretNames.storageIngressSAS `
+                                        -DefaultValue $newSAStoken
 
 
 # Create the private endpoint
