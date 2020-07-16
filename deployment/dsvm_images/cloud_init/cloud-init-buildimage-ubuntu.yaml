@@ -313,12 +313,13 @@ runcmd:
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv global $(pyenv versions | grep 3.7)" >> /etc/bash.bashrc
+  # Make the global environment setting file live in each user's home directory
+  - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
 
   # Set 'other' permissions on the pyenv directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
-  - ls -alh ${PYENV_ROOT}
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
