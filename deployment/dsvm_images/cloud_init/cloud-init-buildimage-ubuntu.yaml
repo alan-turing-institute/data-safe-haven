@@ -237,10 +237,10 @@ runcmd:
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers from maven
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
-  - MSSQL_JDBC_VERSION="7.4.1.jre8"
-  - PGJDBC_VERSION="1.1.5"
-  - POSTGIS_JDBC_VERSION="2.2.1"
-  - POSTGRESQL_VERSION="42.2.5"
+  - MSSQL_JDBC_VERSION="8.2.2.jre8"
+  - PGJDBC_VERSION="1.1.6"
+  - POSTGIS_JDBC_VERSION="2.5.0"
+  - POSTGRESQL_VERSION="42.2.9"
   # Note that the filenames specified here have to be kept synchronised with the names in the dbeaver_drivers_config.xml file.
   # Adding new drivers therefore involves changing both this file and the XML file.
   - mkdir -p ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
