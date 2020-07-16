@@ -192,7 +192,7 @@ packages:
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.
 # If any of the installation/configuration checks fail then end the cloud-init process immediately by calling `exit 1`.
-# This allows us to (i) not waste time completing a build that has had a step failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
+# This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
   # Log system performance during the installation and record it each minute
   - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
