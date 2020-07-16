@@ -74,6 +74,7 @@ gbm
 gdata
 ggalluvial
 GGally
+gganimate
 ggdendro
 ggforce
 ggmap
@@ -97,6 +98,7 @@ igraph
 import
 irace
 IRdisplay
+IRkernel
 iterators
 janitor
 jsonlite

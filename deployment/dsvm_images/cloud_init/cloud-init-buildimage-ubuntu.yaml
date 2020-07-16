@@ -323,30 +323,31 @@ runcmd:
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
   - <R package list>
+  # Install packages that are not directly installable under 3.6.3
+  # NB. rPython cannot be installed this way as it does not compile
+  - Rscript -e "library(remotes); pkg='XML'; print(paste('Installing', pkg)); install_version(pkg, '3.99-0.3', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='mnormt'; print(paste('Installing', pkg)); install_version(pkg, '1.5-7', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='DPpackage'; print(paste('Installing', pkg)); install_version(pkg, '1.1-7', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='mlr'; print(paste('Installing', pkg)); install_version(pkg, '2.17.0', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='pomp'; print(paste('Installing', pkg)); install_version(pkg, '2.8', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='Scale'; print(paste('Installing', pkg)); install_version(pkg, '1.0.4', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='tmap'; print(paste('Installing', pkg)); install_version(pkg, '3.0', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='topicmodels'; print(paste('Installing', pkg)); install_version(pkg, '0.2-9', quiet = TRUE)"
+  - Rscript -e "library(remotes); pkg='traj'; print(paste('Installing', pkg)); install_version(pkg, '1.1', quiet = TRUE)"
+  # BiocManager 3.10 (1.30.9) is required for compatibility with R 3.6
+  - Rscript -e "library(remotes); pkg='BiocManager'; print(paste('Installing', pkg)); install_version(pkg, '1.30.9', quiet = TRUE)"
   # CRAN
-  - echo "Previously installed CRAN packages:"
+  - echo "Already installed CRAN packages:"
   - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
   - echo "Installing remaining CRAN packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($CRAN_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(remaining_packages); if(length(remaining_packages)) install.packages(remaining_packages, quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($CRAN_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); install.packages(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
   # Bioconductor
-  - echo "Previously installed BioConductor packages:"
+  - echo "Already installed BioConductor packages:"
   - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
   - echo "Installing remaining BioConductor packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(remaining_packages); if(length(remaining_packages)) BiocManager::install(remaining_packages)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); BiocManager::install(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
-  - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
-  - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
-  # Install packages that are not directly installable under 3.6.3
-  # - Rscript -e "library(remotes); install_version('rPython', '0.0-6')" # NB. this has been  removed from CRAN and older versions do not compile
-  - Rscript -e "library(remotes); install_version('XML', '3.99-0.3')"
-  - Rscript -e "library(remotes); install_version('DPpackage', '1.1-7')"
-  - Rscript -e "library(remotes); install_version('mlr', '2.17.0')"
-  - Rscript -e "library(remotes); install_version('pomp', '2.8')"
-  - Rscript -e "library(remotes); install_version('Scale', '1.0.4')"
-  - Rscript -e "library(remotes); install_version('tmap', '3.0')"
-  - Rscript -e "library(remotes); install_version('topicmodels', '0.2-9')"
-  - Rscript -e "library(remotes); install_version('traj', '1.1')"
   # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   # Check for missing packages
