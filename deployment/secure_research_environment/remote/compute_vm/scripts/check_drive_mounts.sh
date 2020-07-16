@@ -13,7 +13,7 @@ for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
     if [ "$(mount | grep $MOUNT_POINT)" ]; then
         echo -e "${BLUE} [o] ${MOUNT_POINT} is mounted...${END}"
     else
-        echo -e "${RED} [ ] Attempting to mount ${MOUNT_POINT}...${END}"
+        echo -e "${RED} [ ] ${MOUNT_POINT} not mounted. Attempting to mount...${END}"
         mount $MOUNT_POINT
     fi
 done
