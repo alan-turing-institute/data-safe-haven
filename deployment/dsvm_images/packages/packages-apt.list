@@ -8,6 +8,7 @@ autotools-dev
 bison
 build-essential
 clamav
+clamav-base
 clamav-daemon
 clamav-freshclam
 clamav-unofficial-sigs

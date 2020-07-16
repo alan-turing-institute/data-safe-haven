@@ -283,11 +283,15 @@ runcmd:
 
   # Manually update clamav signature database
   - echo ">=== $(date +%s) Updating clamav database ===<"
-  # The systemd unit must be disabled as otherwise the freshclam log will be locked
+  # The systemd unit must be disabled in order to update using freshclam
   - systemctl stop clamav-freshclam
-  - sleep 60
+  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
   - freshclam
-  - sleep 60
+  - systemctl start clamav-freshclam
+  # Calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
+  # Disabling this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
+  - sed -i '/si_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
+  - sed -i '/si_update_hours/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   - clamav-unofficial-sigs
 
   # Install pyenv and pyenv-virtualenv globally
@@ -369,15 +373,12 @@ runcmd:
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
-  - export CONDA_JL_HOME="/opt/pyenv/versions/3.7*/"  # use the most recent python version as the default environment
   - export JULIA_COPY_STACKS=1
-  - export PYTHON="${CONDA_JL_HOME}/bin/python"
+  - export PYTHON=$(ls /opt/pyenv/versions/3.7*/bin/python)
   - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
-  # Ensure that Julia environment variables that we used here are exported for all users
-  - echo "export CONDA_JL_HOME=${CONDA_JL_HOME}" >> /etc/bash.bashrc
   - echo "export JULIA_COPY_STACKS=${JULIA_COPY_STACKS}" >> /etc/bash.bashrc
   - echo "export PYTHON="${PYTHON}"" >> /etc/bash.bashrc
   - echo "export TF_USE_GPU=${TF_USE_GPU}" >> /etc/bash.bashrc
