@@ -24,7 +24,7 @@ packages:
   - python3-requests
 
 write_files:
-  - path: "/docker-compose.yml"
+  - path: "/datadrive/docker-compose.yaml"
     content: |
       ---
       version: "3"
@@ -35,10 +35,10 @@ write_files:
           ports:
             - 8081:8081
           volumes:
-            - ./nexus-data:/nexus-data
+            - /datadrive//nexus-data:/nexus-data
 
 runcmd:
-  - docker-compose up -d
+  - docker-compose -f /datadrive/docker-compose.yaml up -d
 
 power_state:
   mode: poweroff
