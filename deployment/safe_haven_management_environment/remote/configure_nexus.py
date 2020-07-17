@@ -23,7 +23,8 @@ def delete_all_repositories():
             f"{NEXUS_API_ROOT}/beta/repositories/{name}",
             auth=auth
             )
-        if (code := r.status_code) == 204:
+        code = r.status_code
+        if code == 204:
             print("Repository successfully deleted")
         else:
             print(f"Repository deletion failed.\nStatus code:{code}")
@@ -79,7 +80,8 @@ def create_proxy_repository(repo_type, name, remote_url):
         auth=auth,
         json=payload
         )
-    if (code := r.status_code) == 201:
+    code = r.status_code
+    if code == 201:
         print(f"{repo_type} proxy successfully created")
     else:
         print(f"{repo_type} proxy creation failed.\nStatus code: {code}")
@@ -100,7 +102,8 @@ def delete_all_content_selectors():
             f"{NEXUS_API_ROOT}/beta/security/content-selectors/{name}",
             auth=auth
             )
-        if (code := r.status_code) == 204:
+        code = r.status_code
+        if code == 204:
             print("Content selector successfully deleted")
         else:
             print(f"Content selector deletion failed.\nStatus code:{code}")
@@ -120,7 +123,8 @@ def create_content_selector(name, description, expression):
         auth=auth,
         json=payload
         )
-    if (code := r.status_code) == 204:
+    code = r.status_code
+    if code == 204:
         print("content selector successfully created")
     elif code == 500:
         print("content selector already exists")
@@ -146,7 +150,8 @@ def delete_all_content_selector_privileges():
             f"{NEXUS_API_ROOT}/beta/security/privileges/{name}",
             auth=auth
             )
-        if (code := r.status_code) == 204:
+        code = r.status_code
+        if code == 204:
             print(f"Content selector privilege: {name} successfully deleted")
         else:
             print("Content selector privilege deletion failed."
@@ -174,7 +179,8 @@ def create_content_selector_privilege(name, description, repo_type, repo,
         auth=auth,
         json=payload
         )
-    if (code := r.status_code) == 201:
+    code = r.status_code
+    if code == 201:
         print(f"content selector privilege {name} successfully created")
     elif code == 400:
         print(f"content selector privilege {name} already exists")
@@ -198,7 +204,8 @@ def delete_all_custom_roles():
             f"{NEXUS_API_ROOT}/beta/security/roles/{name}",
             auth=auth
             )
-        if (code := r.status_code) == 204:
+        code = r.status_code
+        if code == 204:
             print("Role successfully deleted")
         else:
             print(f"Role deletion failed.\nStatus code:{code}")
@@ -223,7 +230,8 @@ def create_role(name, description, privileges, roles=None):
         auth=auth,
         json=payload
         )
-    if (code := r.status_code) == 200:
+    code = r.status_code
+    if code == 200:
         print(f"role {name} successfully created")
     elif code == 400:
         print(f"role {name} already exists")
@@ -335,7 +343,8 @@ r = requests.put(
         "realName": "Local Authorizing Realm"
         }
     )
-if (code := r.status_code) == 200:
+code = r.status_code
+if code == 200:
     print("Anonymous access enabled")
 else:
     print(f"Enabling anonymous access failed.\nStatus code: {code}")
@@ -354,7 +363,8 @@ r = requests.put(
     auth=auth,
     json=anonymous_user
     )
-if (code := r.status_code) == 204:
+code = r.status_code
+if code == 204:
     print(f"User {anonymous_user['userId']} roles updated")
 else:
     print(f"User {anonymous_user['userId']} role update failed.\n"
