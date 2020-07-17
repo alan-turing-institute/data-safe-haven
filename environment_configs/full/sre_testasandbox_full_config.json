@@ -234,11 +234,11 @@
         }
       },
       "repositoryVnet": {
-        "cidr": "10.10.1.0/24",
+        "cidr": "10.30.1.0/24",
         "name": "VNET_SHM_TESTA_REPOSITORY",
         "subnets": {
           "repository": {
-            "cidr": "10.10.1.0/28",
+            "cidr": "10.30.1.0/24",
             "name": "RepositorySubnet",
             "nsg": "repository"
           }
@@ -302,7 +302,7 @@
       "nexus": {
         "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
         "diskSize": 127,
-        "ipAddress": "10.10.1.1",
+        "ipAddress": "10.30.1.10",
         "vmName": "NEXUS-REPOSITORY"
       },
       "rg": "RG_SHM_TESTA_REPOSITORY",

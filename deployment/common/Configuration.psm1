@@ -577,11 +577,11 @@ function Get-ShmFullConfig {
         }
         repositoryVnet = [ordered]@{
             name = "VNET_SHM_$($shm.id)_REPOSITORY".ToUpper()
-            cidr = "10.10.1.0/24"
+            cidr = "10.30.1.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
                     name = "RepositorySubnet"
-                    cidr = "10.10.1.0/28"
+                    cidr = "10.30.1.0/24"
                     nsg = "repository"
                 }
             }
@@ -791,7 +791,7 @@ function Get-ShmFullConfig {
         nexus = [ordered]@{
             diskSize = 127
             adminPasswordSecretName = "shm-$($shm.id)-repository-vm-admin-password".ToLower()
-            ipAddress = "10.10.1.1"
+            ipAddress = "10.30.1.10"
             vmName = "NEXUS-REPOSITORY"
         }
     }
