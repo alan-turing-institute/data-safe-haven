@@ -328,7 +328,8 @@ runcmd:
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
   - <R package list>
-  # Install packages that are not directly installable under 3.6.3
+  # Install packages that are not directly installable under 3.6.3 using 'remotes'
+  - Rscript -e "print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
   # NB. rPython cannot be installed this way as it does not compile
   - Rscript -e "library(remotes); pkg='XML'; print(paste('Installing', pkg)); install_version(pkg, '3.99-0.3', quiet = TRUE)"
   - Rscript -e "library(remotes); pkg='mnormt'; print(paste('Installing', pkg)); install_version(pkg, '1.5-7', quiet = TRUE)"
