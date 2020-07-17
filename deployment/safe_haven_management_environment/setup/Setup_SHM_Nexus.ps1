@@ -119,7 +119,7 @@ $params = @{
     NicId                  = $vmNic.Id
     OsDiskType             = $config.repository.diskType
     ResourceGroupName      = $config.repository.rg
-    ImageSku               = "18.04-LTS"
+    ImageSku               = "20.04-LTS"
     DataDiskIds            = @($dataDisk.Id)
 }
 $null = Deploy-UbuntuVirtualMachine @params
