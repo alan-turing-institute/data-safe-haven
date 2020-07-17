@@ -291,13 +291,13 @@ runcmd:
   - systemctl start clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "running")" ]; then break; else sleep 1; fi; done
   - systemctl status clamav-freshclam
-  # clamav-unofficial-sigs is quite old now (2014) so we need the following fixes:
-  # 1. calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
-  #    - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
+  # As clamav-unofficial-sigs has not been updated since 2014, we need the following fixes:
+  # Calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
+  #  - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
   - sed -i '/si_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   - sed -i '/si_update_hours/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
-  # 2. calls to MalwarePatrol faile with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
-  #    - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
+  # Calls to MalwarePatrol faile with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
+  #  - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
   - sed -i '/mbl_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   # Update unofficial signatures (strangely this gives no output in the cloud-init logs)
   - clamav-unofficial-sigs 2>&1
@@ -325,7 +325,7 @@ runcmd:
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $(pyenv versions | grep 3.7)" >> /etc/bash.bashrc
+  - echo "pyenv global $(ls /opt/pyenv/versions/ | grep 3.7)" >> /etc/bash.bashrc
   # Make the global environment setting file live in each user's home directory
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
 
@@ -349,6 +349,8 @@ runcmd:
   - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='tmap'; print(paste('Installing', pkg)); install_version(pkg, '3.0', quiet = TRUE)"
   - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='topicmodels'; print(paste('Installing', pkg)); install_version(pkg, '0.2-9', quiet = TRUE)"
   - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='traj'; print(paste('Installing', pkg)); install_version(pkg, '1.1', quiet = TRUE)"
+  # Install R packages from custom repos
+  - Rscript -e "pkg='INLA'; print(paste('Installing', pkg)); install.packages(pkg, repos='https://inla.r-inla-download.org/R/testing', dep=TRUE, quiet = TRUE)"
   # BiocManager 3.10 (1.30.9) is required for compatibility with R 3.6
   - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='BiocManager'; print(paste('Installing', pkg)); install_version(pkg, '1.30.9', quiet = TRUE)"
   # CRAN
@@ -361,8 +363,6 @@ runcmd:
   - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
   - echo "Installing remaining BioConductor packages..."
   - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); BiocManager::install(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
-  # Install R packages from custom repos
-  - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   # Check for missing packages
@@ -383,8 +383,9 @@ runcmd:
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
+  # Julia Tensorflow currently works best with python 2.7 or 3.6
   - export JULIA_COPY_STACKS=1
-  - export PYTHON=$(ls /opt/pyenv/versions/3.7*/bin/python)
+  - export PYTHON="$(ls /opt/pyenv/versions/3.6*/bin/python)"
   - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot

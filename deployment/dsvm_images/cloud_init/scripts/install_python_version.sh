@@ -99,7 +99,7 @@ if [ "$(grep ^spacy /installation/python-requirements-${PYTHON_ENV_NAME}.txt)" ]
     python -m spacy download en_core_web_lg
 fi
 if [ "$(grep ^nltk /installation/python-requirements-${PYTHON_ENV_NAME}.txt)" ]; then
-    python -m nltk.downloader all
+    python -m nltk.downloader all -d /usr/share/nltk_data
 fi
 
 
