@@ -284,15 +284,24 @@ runcmd:
   # Manually update clamav signature database
   - echo ">=== $(date +%s) Updating clamav database ===<"
   # The systemd unit must be disabled in order to update using freshclam
+  # We re-enable it after the update has finished
   - systemctl stop clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
   - freshclam
   - systemctl start clamav-freshclam
-  # Calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
-  # Disabling this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
+  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "running")" ]; then break; else sleep 1; fi; done
+  - systemctl status clamav-freshclam
+  # clamav-unofficial-sigs is quite old now (2014) so we need the following fixes:
+  # 1. calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
+  #    - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
   - sed -i '/si_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   - sed -i '/si_update_hours/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
-  - clamav-unofficial-sigs
+  # 2. calls to MalwarePatrol faile with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
+  #    - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
+  - sed -i '/mbl_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
+  # Update unofficial signatures (strangely this gives no output in the cloud-init logs)
+  - clamav-unofficial-sigs 2>&1
+  - clamav-unofficial-sigs -i
 
   # Install pyenv and pyenv-virtualenv globally
   - echo ">=== $(date +%s) Installing pyenv ===<"
@@ -329,27 +338,27 @@ runcmd:
   - echo ">=== $(date +%s) Configuring R environment ===<"
   - <R package list>
   # Install packages that are not directly installable under 3.6.3 using 'remotes'
-  - Rscript -e "print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
   # NB. rPython cannot be installed this way as it does not compile
-  - Rscript -e "library(remotes); pkg='XML'; print(paste('Installing', pkg)); install_version(pkg, '3.99-0.3', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='mnormt'; print(paste('Installing', pkg)); install_version(pkg, '1.5-7', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='DPpackage'; print(paste('Installing', pkg)); install_version(pkg, '1.1-7', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='mlr'; print(paste('Installing', pkg)); install_version(pkg, '2.17.0', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='pomp'; print(paste('Installing', pkg)); install_version(pkg, '2.8', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='Scale'; print(paste('Installing', pkg)); install_version(pkg, '1.0.4', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='tmap'; print(paste('Installing', pkg)); install_version(pkg, '3.0', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='topicmodels'; print(paste('Installing', pkg)); install_version(pkg, '0.2-9', quiet = TRUE)"
-  - Rscript -e "library(remotes); pkg='traj'; print(paste('Installing', pkg)); install_version(pkg, '1.1', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='XML'; print(paste('Installing', pkg)); install_version(pkg, '3.99-0.3', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='mnormt'; print(paste('Installing', pkg)); install_version(pkg, '1.5-7', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='DPpackage'; print(paste('Installing', pkg)); install_version(pkg, '1.1-7', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='mlr'; print(paste('Installing', pkg)); install_version(pkg, '2.17.0', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='pomp'; print(paste('Installing', pkg)); install_version(pkg, '2.8', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='Scale'; print(paste('Installing', pkg)); install_version(pkg, '1.0.4', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='tmap'; print(paste('Installing', pkg)); install_version(pkg, '3.0', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='topicmodels'; print(paste('Installing', pkg)); install_version(pkg, '0.2-9', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='traj'; print(paste('Installing', pkg)); install_version(pkg, '1.1', quiet = TRUE)"
   # BiocManager 3.10 (1.30.9) is required for compatibility with R 3.6
-  - Rscript -e "library(remotes); pkg='BiocManager'; print(paste('Installing', pkg)); install_version(pkg, '1.30.9', quiet = TRUE)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='BiocManager'; print(paste('Installing', pkg)); install_version(pkg, '1.30.9', quiet = TRUE)"
   # CRAN
   - echo "Already installed CRAN packages:"
-  - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
+  - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
   - echo "Installing remaining CRAN packages..."
   - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($CRAN_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); install.packages(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
   # Bioconductor
   - echo "Already installed BioConductor packages:"
-  - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(existing_packages);"
+  - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
   - echo "Installing remaining BioConductor packages..."
   - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); BiocManager::install(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
   # Install R packages from custom repos
