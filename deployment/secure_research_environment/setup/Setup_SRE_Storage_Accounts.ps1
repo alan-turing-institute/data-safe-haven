@@ -45,8 +45,6 @@ Write-Host ($($storageAccount).context | out-String)
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
 
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Allow
-Start-Sleep 30  # wait for the permission change to propagate
 $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
 if ($storageContainer) {
     Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
@@ -59,7 +57,6 @@ if ($storageContainer) {
         Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
     }
 }
-$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction Deny
 
 
 # Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
@@ -69,7 +66,7 @@ $accessType = $config.sre.storage.datastorage.containers.ingress.researcherPolic
 $availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
 
 foreach ($Policy in @($availablePolicies)) {
-    if ($Policy -like "*$accessType*") { 
+    if ($Policy -like "*$accessType*") {
         $SASPolicy = $Policy.Policy
     }
 }
@@ -79,7 +76,7 @@ if (-Not $SASPolicy){
                                                             -Context $($storageAccount.Context) `
                                                             -Permission $($config.sre.storage.datastorage.containers.ingress.researcherPolicy.permissions) `
                                                             -StartTime (Get-Date).DateTime `
-                                                            -ExpiryTime (Get-Date).AddHours(8760).DateTime
+                                                            -ExpiryTime (Get-Date).AddYears(1).DateTime
 }
 
 $newSAStoken = New-AzStorageContainerSASToken -Name $containerName `
