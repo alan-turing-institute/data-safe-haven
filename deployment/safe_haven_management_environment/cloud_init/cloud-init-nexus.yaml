@@ -37,15 +37,24 @@ write_files:
           volumes:
             - /datadrive/nexus-data:/nexus-data
           restart: always
+  - path: "/configure-nexus.py"
+    content: |
+      <configure_nexus.py>
 
 runcmd:
   - mv /docker-compose.yaml /datadrive/docker-compose.yaml
   # Create directory for nexus data with correct ownership
+  - echo "Creating Nexus data directory"
   - mkdir /datadrive/nexus-data
   - chown -R 200:200 /datadrive/nexus-data
+  - echo "Creating Nexus container"
   - docker-compose -f /datadrive/docker-compose.yaml up -d
   # Give Nexus some time to initialise
+  - echo "Waiting for Nexus to initialise (3 minutes)"
   - sleep 3m
+  # Configure Nexus
+  - echo "Configuring Nexus"
+  - python3 /configure-nexus.py --path /datadrive/nexus-data --admin_password <nexus-admin-password>
 
 power_state:
   mode: poweroff

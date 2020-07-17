@@ -121,9 +121,16 @@ try {
     $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
     $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-nexus.yaml"
     $cloudInitYaml = Get-Content $cloudInitFilePath -Raw
+    # Insert Nexus configuration script into cloud-init
+    $indent = "      "
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_nexus.py"
+    $raw_script = Get-Content $scriptPath -Raw
+    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitYaml = $cloudInitYaml.Replace("${indent}<configure_nexus.py>", $indented_script)
+    $nexusAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name $config.repository.nexus.nexusAdminPasswordSecretName
+    $cloudInitYaml = $cloudInitYaml.Replace("<nexus-admin-password>", $nexusAdminPassword)
 
     $adminPasswordSecretName = $config.repository.nexus.adminPasswordSecretName
-
     # Deploy the VM
     $params = @{
         Name                   = $vmName
@@ -141,11 +148,6 @@ try {
     }
     $null = Deploy-UbuntuVirtualMachine @params
 
-    # Configure Nexus
-    # ---------------
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_nexus.py"
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.repository.rg
-    Write-Output $result.Value
 } finally {
     # Remove temporary NSG rules
     Add-LogMessage -Level Info "Removing temporary outbound internet access from $($privateIpAddress)..."
@@ -153,4 +155,6 @@ try {
     $null = $nsgRepository | Set-AzNetworkSecurityGroup
 }
 
-$null = Set-AzContext -Context $originalContext
+Enable-AzVM -Name $vmName -ResourceGroupName $config.
+
+$null = Set-AzContext -Context $originalContext $config.repository.rg
