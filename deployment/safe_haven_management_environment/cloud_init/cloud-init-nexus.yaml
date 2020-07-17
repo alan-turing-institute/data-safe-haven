@@ -39,7 +39,12 @@ write_files:
 
 runcmd:
   - mv /docker-compose.yaml /datadrive/docker-compose.yaml
+  # Create directory for nexus data with correct ownership
+  - mkdir /datadrive/nexus-data
+  - chown -R 200:200 /datadrive/nexus-data
   - docker-compose -f /datadrive/docker-compose.yaml up -d
+  # Give Nexus some time to initialise
+  - sleep 3m
 
 power_state:
   mode: poweroff
