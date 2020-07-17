@@ -1,10 +1,31 @@
 #!/usr/bin/env python3
 import requests
 from requests.auth import HTTPBasicAuth
+from argparse import ArgumentParser
+
+parser = ArgumentParser(description="Configure Nexus3")
+parser.add_argument(
+    "--admin_password",
+    type=str,
+    required=True,
+    help="Password for the Nexus 'admin' account"
+)
+parser.add_argument(
+    "--path",
+    type=str,
+    help="Path of the nexus-data directory"
+)
+args = parser.parse_args()
+
 
 USERNAME = "admin"
-PASSWORD = "G=I[|T<41n.#,`O5INnX"
+PASSWORD = args.admin_password
 auth = HTTPBasicAuth(USERNAME, PASSWORD)
+
+if args.path is None:
+    NEXUS_DATA_DIR = "./nexus-data"
+else:
+    NEXUS_DATA_DIR = args.path
 
 NEXUS_PATH = "http://localhost"
 NEXUS_PORT = "8081"
@@ -22,7 +43,7 @@ def delete_all_repositories():
         r = requests.delete(
             f"{NEXUS_API_ROOT}/beta/repositories/{name}",
             auth=auth
-            )
+        )
         code = r.status_code
         if code == 204:
             print("Repository successfully deleted")
@@ -40,7 +61,7 @@ def create_proxy_repository(repo_type, name, remote_url):
         "storage": {
             "blobStoreName": "default",
             "strictContentTypeValidation": True
-            },
+        },
         # "cleanup": {
         #     "policyNames": ["string"]
         #     },
@@ -48,11 +69,11 @@ def create_proxy_repository(repo_type, name, remote_url):
             "remoteUrl": "",
             "contentMaxAge": 1440,
             "metadataMaxAge": 1440
-            },
+        },
         "negativeCache": {
             "enabled": True,
             "timeToLive": 1440
-            },
+        },
         "httpClient": {
             "blocked": False,
             "autoBlock": True,
@@ -68,9 +89,9 @@ def create_proxy_repository(repo_type, name, remote_url):
             #     "username": "username",
             #     "password": "password"
             #     },
-            },
+        },
         # "routingRule": "string"
-        }
+    }
     payload["name"] = name
     payload["proxy"]["remoteUrl"] = remote_url
 
@@ -79,7 +100,7 @@ def create_proxy_repository(repo_type, name, remote_url):
         f"{NEXUS_API_ROOT}/beta/repositories/{repo_type}/proxy",
         auth=auth,
         json=payload
-        )
+    )
     code = r.status_code
     if code == 201:
         print(f"{repo_type} proxy successfully created")
@@ -92,7 +113,7 @@ def delete_all_content_selectors():
     r = requests.get(
         f"{NEXUS_API_ROOT}/beta/security/content-selectors",
         auth=auth
-        )
+    )
     content_selectors = r.json()
 
     for content_selector in content_selectors:
@@ -101,7 +122,7 @@ def delete_all_content_selectors():
         r = requests.delete(
             f"{NEXUS_API_ROOT}/beta/security/content-selectors/{name}",
             auth=auth
-            )
+        )
         code = r.status_code
         if code == 204:
             print("Content selector successfully deleted")
@@ -115,14 +136,14 @@ def create_content_selector(name, description, expression):
         "name": f"{name}",
         "description": f"{description}",
         "expression": f"{expression}"
-        }
+    }
 
     print(f"Creating content selector: {name}")
     r = requests.post(
         f"{NEXUS_API_ROOT}/beta/security/content-selectors",
         auth=auth,
         json=payload
-        )
+    )
     code = r.status_code
     if code == 204:
         print("content selector successfully created")
@@ -137,7 +158,7 @@ def delete_all_content_selector_privileges():
     r = requests.get(
         f"{NEXUS_API_ROOT}/beta/security/privileges",
         auth=auth
-        )
+    )
     privileges = r.json()
 
     for privilege in privileges:
@@ -149,7 +170,7 @@ def delete_all_content_selector_privileges():
         r = requests.delete(
             f"{NEXUS_API_ROOT}/beta/security/privileges/{name}",
             auth=auth
-            )
+        )
         code = r.status_code
         if code == 204:
             print(f"Content selector privilege: {name} successfully deleted")
@@ -166,11 +187,11 @@ def create_content_selector_privilege(name, description, repo_type, repo,
         "description": f"{description}",
         "actions": [
             "READ"
-            ],
+        ],
         "format": f"{repo_type}",
         "repository": f"{repo}",
         "contentSelector": f"{content_selector}"
-        }
+    }
 
     print(f"Creating content selector privilege: {name}")
     r = requests.post(
@@ -178,7 +199,7 @@ def create_content_selector_privilege(name, description, repo_type, repo,
          "/repository-content-selector"),
         auth=auth,
         json=payload
-        )
+    )
     code = r.status_code
     if code == 201:
         print(f"content selector privilege {name} successfully created")
@@ -203,7 +224,7 @@ def delete_all_custom_roles():
         r = requests.delete(
             f"{NEXUS_API_ROOT}/beta/security/roles/{name}",
             auth=auth
-            )
+        )
         code = r.status_code
         if code == 204:
             print("Role successfully deleted")
@@ -222,14 +243,14 @@ def create_role(name, description, privileges, roles=None):
         "description": f"{description}",
         "privileges": privileges,
         "roles": roles
-        }
+    }
 
     print(f"Creating role: {name}")
     r = requests.post(
         (f"{NEXUS_API_ROOT}/beta/security/roles"),
         auth=auth,
         json=payload
-        )
+    )
     code = r.status_code
     if code == 200:
         print(f"role {name} successfully created")
@@ -242,7 +263,7 @@ def create_role(name, description, privileges, roles=None):
 
 # Change admin password
 try:
-    with open("./nexus-data/admin.password") as password_file:
+    with open(f"{NEXUS_DATA_DIR}/admin.password") as password_file:
         old_password = password_file.read()
 
     print(f"Old password: {old_password}")
@@ -253,7 +274,7 @@ try:
         auth=HTTPBasicAuth(USERNAME, old_password),
         headers={'content-type': 'text/plain'},
         data=PASSWORD
-        )
+    )
     if r.status_code == 204:
         print("admin password changed")
     else:
@@ -261,6 +282,7 @@ try:
         print(r.content)
 except FileNotFoundError:
     print("Password already changed")
+    print("Attempting to use provided password")
 
 # Delete all existing repositories
 delete_all_repositories()
@@ -283,7 +305,7 @@ create_content_selector(
     name="simple",
     description="Allow access to 'simple' directory in PyPi repository",
     expression="format == \"pypi\" and path=^\"/simple\""
-    )
+)
 allowed_pypi_packages = [
     ("attrs", "19.3.0"),
     ("more-itertools", "8.4.0"),
@@ -294,12 +316,12 @@ allowed_pypi_packages = [
     ("pytest", "5.4.3"),
     ("six", "1.15.0"),
     ("wcwidth", "0.2.5"),
-    ]
+]
 for package, version in allowed_pypi_packages:
     name = f"{package}-{version}"
     expression = (
-            f"format == \"pypi\" and path=^\"/packages/{package}/{version}/\""
-        )
+        f"format == \"pypi\" and path=^\"/packages/{package}/{version}/\""
+    )
     description = f"Allow access to {package} version {version}"
     create_content_selector(name, description, expression)
 
@@ -312,16 +334,16 @@ for package, version in allowed_pypi_packages:
         repo_type="pypi",
         repo="pypi-proxy",
         content_selector=f"{package}-{version}"
-        )
-    privilege_names.append(package)
-create_content_selector_privilege(
-    name="simple",
-    description="Allow access to the pypi simple directory",
-    repo_type="pypi",
-    repo="pypi-proxy",
-    content_selector="simple"
     )
-privilege_names.append("simple")
+    privilege_names.append(package)
+    create_content_selector_privilege(
+        name="simple",
+        description="Allow access to the pypi simple directory",
+        repo_type="pypi",
+        repo="pypi-proxy",
+        content_selector="simple"
+    )
+    privilege_names.append("simple")
 
 # Delete non-default roles
 delete_all_custom_roles()
@@ -331,7 +353,7 @@ create_role(
     name="tier 2 pypi",
     description="Allow access to tier 2 PyPi packages",
     privileges=privilege_names
-    )
+)
 
 # Enable anonymous access
 r = requests.put(
@@ -341,8 +363,8 @@ r = requests.put(
         "enabled": True,
         "userId": "anonymous",
         "realName": "Local Authorizing Realm"
-        }
-    )
+    }
+)
 code = r.status_code
 if code == 200:
     print("Anonymous access enabled")
@@ -362,7 +384,7 @@ r = requests.put(
     f"{NEXUS_API_ROOT}/beta/security/users/{anonymous_user['userId']}",
     auth=auth,
     json=anonymous_user
-    )
+)
 code = r.status_code
 if code == 204:
     print(f"User {anonymous_user['userId']} roles updated")
