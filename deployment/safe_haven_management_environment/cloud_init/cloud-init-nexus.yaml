@@ -36,6 +36,7 @@ write_files:
             - 8081:8081
           volumes:
             - /datadrive/nexus-data:/nexus-data
+          restart: always
 
 runcmd:
   - mv /docker-compose.yaml /datadrive/docker-compose.yaml
