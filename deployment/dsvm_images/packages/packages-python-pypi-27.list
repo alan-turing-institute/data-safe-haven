@@ -9,6 +9,7 @@ folium
 geopandas
 GPy
 GPyOpt
+holidays
 html5lib
 ipykernel
 Keras

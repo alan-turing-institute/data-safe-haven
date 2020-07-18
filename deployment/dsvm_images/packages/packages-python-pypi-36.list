@@ -13,6 +13,7 @@ geopandas
 GPy
 GPyOpt
 gym
+holidays
 html5lib
 ipykernel
 Keras
