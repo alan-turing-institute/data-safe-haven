@@ -29,6 +29,7 @@ jags
 jupyter
 krb5-user
 ldap-utils
+libboost-all-dev
 libcurl4-openssl-dev
 libeccodes-dev
 libffi-dev
@@ -39,6 +40,7 @@ libmagick++-dev
 libmpfr-dev
 libpoppler-cpp-dev
 libpq-dev
+libreoffice
 libsqlite3-dev
 libssl-dev
 libtool
