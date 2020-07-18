@@ -293,11 +293,11 @@ runcmd:
   - systemctl status clamav-freshclam
   # As clamav-unofficial-sigs has not been updated since 2014, we need the following fixes:
   # Calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
-  #  - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
+  # - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
   - sed -i '/si_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   - sed -i '/si_update_hours/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   # Calls to MalwarePatrol faile with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
-  #  - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
+  # - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
   - sed -i '/mbl_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   # Update unofficial signatures (strangely this gives no output in the cloud-init logs)
   - clamav-unofficial-sigs 2>&1
@@ -420,13 +420,16 @@ runcmd:
   - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
 
+  # Clean up any build artifacts
+  - rm -rf /root/* /tmp/*
+
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"
   # Set PATH to the current working version which contains all installed packages
   # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
   # We do this at the end of the script so that
-  #   (a) we know this is the PATH that worked when we checked for each package
-  #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
+  # - we know this is the PATH that worked when we checked for each package
+  # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
   - if [ ! "$(grep ^PATH= /etc/bash.bashrc)" ]; then echo "PATH=" >> /etc/bash.bashrc; fi
@@ -475,6 +478,7 @@ runcmd:
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
+
 
 # Shutdown at the end of the job to save on running costs
 power_state:
