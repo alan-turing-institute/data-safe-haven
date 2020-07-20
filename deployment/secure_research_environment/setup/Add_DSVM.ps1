@@ -277,6 +277,18 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix Internet `
                              -DestinationPortRange *
+# Outbound: allow Nexus repository
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                             -Name "OutboundAllowNexus" `
+                             -Description "Outbound allow Nexus" `
+                             -Priority 2100 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
+                             -DestinationPortRange 8081
 
 
 # Ensure that deployment NSG exists
@@ -415,9 +427,8 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
     Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
     Replace("<ldap-search-user-password>", $ldapSearchPassword).
-    Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
-    Replace("<mirror-url-pypi>", $addresses.pypi.url).
+    Replace("<nexus-ip>", $config.shm.repository.nexus.ipAddress).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).

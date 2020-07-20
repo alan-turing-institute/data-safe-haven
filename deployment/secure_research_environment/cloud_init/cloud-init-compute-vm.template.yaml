@@ -142,9 +142,9 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = <mirror-url-pypi>
-      index-url = <mirror-url-pypi>/simple
-      trusted-host = <mirror-host-pypi>
+      index = http://<nexus-ip>:8081/repository/pypi-proxy/pypi
+      index-url = http://<nexus-ip>:8081/repository/pypi-proxy/simple
+      trusted-host = <nexus-ip>
   - path: "/etc/R/Rprofile.site"
     owner: root:root
     permissions: "0444"
