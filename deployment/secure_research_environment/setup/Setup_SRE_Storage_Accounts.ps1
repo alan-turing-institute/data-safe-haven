@@ -66,7 +66,7 @@ $accessType = $config.sre.storage.datastorage.containers.ingress.researcherPolic
 $availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
 
 foreach ($Policy in @($availablePolicies)) {
-    if ($Policy -like "*$accessType*") {
+    if ($Policy -like "*$accessType") {
         $SASPolicy = $Policy.Policy
     }
 }
