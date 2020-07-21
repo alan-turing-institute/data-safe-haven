@@ -43,7 +43,7 @@ Write-Host ($($storageAccount).context | out-String)
 # Ensure that container exists in storage account
 # -----------------------------------------------
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
-$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction deny
+
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
 $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
 if ($storageContainer) {
@@ -61,7 +61,7 @@ if ($storageContainer) {
 
 # Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
 # ----------------------------------------------------
-$accessType = $config.sre.storage.datastorage.containers.ingress.researcherPolicy.name
+$accessType = $config.sre.accessPolicies.researcher.nameSuffix
 
 $availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
 
@@ -74,7 +74,7 @@ if (-Not $SASPolicy){
     $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
                                                             -Policy $((Get-Date -Format "yyyyMMddHHmmss")+$accessType) `
                                                             -Context $($storageAccount.Context) `
-                                                            -Permission $($config.sre.storage.datastorage.containers.ingress.researcherPolicy.permissions) `
+                                                            -Permission $($config.sre.accessPolicies.researcher.permissions) `
                                                             -StartTime (Get-Date).DateTime `
                                                             -ExpiryTime (Get-Date).AddYears(1).DateTime
 }
@@ -84,7 +84,7 @@ $newSAStoken = New-AzStorageContainerSASToken -Name $containerName `
                                                 -Context $($storageAccount.Context)
 
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name `
-                                        -SecretName $config.sre.storage.datastorage.containers.ingress.researcherPolicy.sasSecretName `
+                                        -SecretName $config.sre.accessPolicies.researcher.sasSecretName `
                                         -DefaultValue $newSAStoken
 
 

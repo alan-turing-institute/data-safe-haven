@@ -331,6 +331,13 @@
     }
   },
   "sre": {
+    "accessPolicies": {
+      "researcher": {
+        "nameSuffix": "researcher",
+        "permissions": "rl",
+        "sasSecretName": "sre-sandbox-storage-ingress-sas-researcher"
+      }
+    },
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
@@ -558,17 +565,7 @@
         "accountName": "testcsandboxdataakeqzbwg",
         "containers": {
           "ingress": {
-            "adminPolicy": {
-              "name": "admin_policy",
-              "permissions": "rlw",
-              "sasSecretName": "sre-sandbox-admin-storage-ingress-sas"
-            },
             "name": "ingress",
-            "researcherPolicy": {
-              "name": "researcher_policy",
-              "permissions": "rl",
-              "sasSecretName": "sre-sandbox-researcher-storage-ingress-sas"
-            },
             "storageType": "Blob"
           }
         },
