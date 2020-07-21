@@ -22,15 +22,23 @@ To get a good overview of the Safe Haven, see the resources below.
 
   - [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
 
-  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from a presentation about the Safe Haven giving a more in-depth overview.
+  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from our standard presentation about the Safe Haven giving a more in-depth overview.
+  
+  - [Overview video](https://youtu.be/uAGhnAnxtvo): An extended version of our overview presentation that also demonstrates our data classification web application and using the environment as a researcher.
 
   - [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
 
-  - [Versioning](VERSIONING.md): An overview of our versioning scheme and a list of versions that we have deployed into production.
 
 ## Documentation
 
 For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](/docs/README.md).
+
+
+## Releases
+
+View our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest) to get started. You can also browse [all our releases](https://github.com/alan-turing-institute/data-safe-haven/releases). Follow the link from any release to view and clone this repository as at that release.
+
+Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
 
 
 ## Contributing

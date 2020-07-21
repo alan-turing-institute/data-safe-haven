@@ -136,7 +136,6 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
   - Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
     - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
-- Deploy and configure the SHM key vault by running `./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
 The User who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role. Users with this role have access to all administrative features in Azure Active Directory). You will use this account for almost all administration of the Safe Haven Azure AD.
@@ -222,7 +221,9 @@ Click the heading that applies to you to expand the instructions for that scenar
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
 3. Click `Password reset` in the left hand sidebar
 4. Set the `Self service password reset enabled` toggle to `All`
+    - If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 5. Click the `Save` icon
+
 
 ### Configure MFA on Azure Active Directory
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -277,8 +278,9 @@ A default external administrator account was automatically created for the user 
         - Add the the user's mobile phone number to the `Mobile phone` field. Make sure to prefix it with the country code and **don't include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`). They will need to enter their number in **exactly this format** when performing a self-service password reset.
     - Click the `Save` icon at the top of the user details panel
 6. Add an authentication email
-    - Click `Authentication` in the left hand sidebar
-    - Enter the user's institutional email address in the `Authentication Email` field
+    - Click `Authentication methods` in the left hand sidebar
+    - Enter the user's institutional email address in the `Email` field 
+    - Note that you do **not** need to fill out either of the `Phone` fields here
     - Click the `Save` icon at the top of the panel
 
 ### Activate and configure your new internal admin account
@@ -306,7 +308,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 1. Ensure you are logged in with the new **internal** administrator account you have just created.
     - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
-    - Log in with the password you set for ypurself when activating your admin account in the previous step
+    - Log in with the password you set for yourself when activating your admin account in the previous step
 2. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 3. Click `Users` in the left hand sidebar 
@@ -505,12 +507,6 @@ Once you're certain that you're adding a new user, make sure that the following 
           <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
       </p>
     - If you changed this setting, click the `Save` icon
-5. Select `Properties` from the left hand side bar
-    - Make sure that `Self service password reset enabled` is set to `All`
-      <p align="center">
-          <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
-      </p>
-    - If you changed this setting, click the `Save` icon
 
 
 #### Manually add an MFA licence for the user
@@ -647,7 +643,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the firewall by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- Deploy and configure logging by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **several minutes** to run.
 
 ### Troubleshooting
