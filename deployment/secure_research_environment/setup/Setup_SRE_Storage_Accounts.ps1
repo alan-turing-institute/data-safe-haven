@@ -43,7 +43,7 @@ Write-Host ($($storageAccount).context | out-String)
 # Ensure that container exists in storage account
 # -----------------------------------------------
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
-
+$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -DefaultAction deny
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
 $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
 if ($storageContainer) {
