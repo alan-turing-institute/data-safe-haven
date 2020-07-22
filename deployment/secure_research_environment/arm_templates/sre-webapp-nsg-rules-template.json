@@ -160,6 +160,22 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundRdpSessionHostReview')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound RDP from application session host",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRanges": ["3389"],
+                "direction": "Inbound",
+                "priority": 1900,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('ipAddressSessionHostReview')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
             "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundHttpSessionHostReview')]",
             "properties": {
                 "access": "Allow",
