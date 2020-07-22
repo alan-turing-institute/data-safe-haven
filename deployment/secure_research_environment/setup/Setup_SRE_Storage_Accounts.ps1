@@ -1,5 +1,3 @@
-# Setup script that creates a storage account, ingress container and the related private endpoint, Forward Lookup Zone and specific A Record
-
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
   [string]$sreId,
@@ -109,7 +107,6 @@ $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privat
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
