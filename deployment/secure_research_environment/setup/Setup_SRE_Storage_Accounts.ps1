@@ -1,5 +1,4 @@
-# Setup script that creates a storage account and related private endpoint if in the same subscription
-# or only the private endpoint to already existing resources in other subscriptions.
+# Setup script that creates a storage account, ingress container and the related private endpoint, Forward Lookup Zone and specific A Record
 
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
@@ -24,6 +23,19 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 # Ensure that storage account exists
 # ----------------------------------
+Add-LogMessage -Level Info "Ensuring that resource group $($config.sre.storage.datastorage.rg) exists"
+$resourceGroup = Get-AzResourceGroup -ResourceGroupName $config.sre.storage.datastorage.rg -ErrorAction SilentlyContinue
+if ($resourceGroup) {
+    Add-LogMessage -Level InfoSuccess "Found resource group $($config.sre.storage.datastorage.rg)"
+} else {
+    try {
+        $resourceGroup = New-AzResourceGroup -Name $config.sre.storage.datastorage.rg -Location $config.shm.location -ErrorAction Stop
+        Add-LogMessage -Level Success "Created resource group $($config.sre.storage.datastorage.rg)"
+    } catch [System.ArgumentException] {
+        Add-LogMessage -Level Fatal "Failed to create resource group '$($config.sre.storage.datastorage.rg)'!"
+    }
+}
+
 Add-LogMessage -Level Info "Ensuring that storage account $($config.sre.storage.datastorage.accountName) exists"
 $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -ErrorAction SilentlyContinue
 if ($storageAccount) {

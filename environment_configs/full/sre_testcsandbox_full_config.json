@@ -569,7 +569,7 @@
             "storageType": "Blob"
           }
         },
-        "rg": "RG_SHM_DATA_STORAGE"
+        "rg": "RG_SHM_DATA_PERSISTENT"
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",

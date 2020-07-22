@@ -115,7 +115,7 @@ function Add-SreConfig {
             rg = $storageRg
         }
         datastorage = [ordered]@{
-            rg = "RG_SHM_$($shm.id)_DATA_STORAGE".ToUpper()
+            rg = "RG_SHM_$($shm.id)_DATA_PERSISTENT".ToUpper()
             #accountName =  "sre$($config.sre.id)datastore${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             accountName =  "$($config.shm.id+$config.sre.id)data${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             containers = [ordered]@{
