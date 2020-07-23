@@ -15,6 +15,13 @@ parser.add_argument(
     type=str,
     help="Path of the nexus-data directory"
 )
+parser.add_argument(
+    "--tier",
+    type=int,
+    required=True,
+    choices=[2, 3],
+    help="Data security tier of the repository"
+)
 args = parser.parse_args()
 
 
@@ -31,6 +38,9 @@ NEXUS_PATH = "http://localhost"
 NEXUS_PORT = "8081"
 NEXUS_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}"
 NEXUS_API_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}/service/rest"
+
+if args.tier == 3:
+    raise NotImplementedError("Currently only tier 2 is supported")
 
 
 def delete_all_repositories():
@@ -345,50 +355,70 @@ delete_all_content_selector_privileges()
 # Delete all existing content selectors
 delete_all_content_selectors()
 
-# Create content selectors
+# Create content selectors and corresponding privileges
+privilege_names = []
+# Content selector and privilege for PyPi 'simple' path, used to search for
+# packages
 create_content_selector(
     name="simple",
     description="Allow access to 'simple' directory in PyPi repository",
     expression="format == \"pypi\" and path=^\"/simple\""
 )
-allowed_pypi_packages = [
-    ("attrs", "19.3.0"),
-    ("more-itertools", "8.4.0"),
-    ("packaging", "20.4"),
-    ("pluggy", "0.13.1"),
-    ("py", "1.9.0"),
-    ("pyparsing", "2.4.7"),
-    ("pytest", "5.4.3"),
-    ("six", "1.15.0"),
-    ("wcwidth", "0.2.5"),
-]
-for package, version in allowed_pypi_packages:
-    name = f"{package}-{version}"
-    expression = (
-        f"format == \"pypi\" and path=^\"/packages/{package}/{version}/\""
+create_content_selector_privilege(
+    name="simple",
+    description="Allow access to the pypi simple directory",
+    repo_type="pypi",
+    repo="pypi-proxy",
+    content_selector="simple"
+)
+privilege_names.append("simple")
+if args.tier == 2:
+    # Allow all PyPi packages/versions
+    create_content_selector(
+        name="pypi",
+        description="Allow access to all PyPi packages",
+        expression="format == \"pypi\" and path=^\"/packages/\""
     )
-    description = f"Allow access to {package} version {version}"
-    create_content_selector(name, description, expression)
+    create_content_selector_privilege(
+        name="pypi",
+        description="Allow access to all PyPi packages",
+        repo_type="pypi",
+        repo="pypi-proxy",
+        content_selector="pypi"
+    )
+    privilege_names.append("pypi")
+elif args.tier == 3:
+    # Collect allowed package names and versions
+    allowed_pypi_packages = [
+        ("attrs", "19.3.0"),
+        ("more-itertools", "8.4.0"),
+        ("packaging", "20.4"),
+        ("pluggy", "0.13.1"),
+        ("py", "1.9.0"),
+        ("pyparsing", "2.4.7"),
+        ("pytest", "5.4.3"),
+        ("six", "1.15.0"),
+        ("wcwidth", "0.2.5"),
+    ]
 
-# Create privileges
-privilege_names = []
-for package, version in allowed_pypi_packages:
-    create_content_selector_privilege(
-        name=package,
-        description=f"Allow access to {package} version {version}",
-        repo_type="pypi",
-        repo="pypi-proxy",
-        content_selector=f"{package}-{version}"
-    )
-    privilege_names.append(package)
-    create_content_selector_privilege(
-        name="simple",
-        description="Allow access to the pypi simple directory",
-        repo_type="pypi",
-        repo="pypi-proxy",
-        content_selector="simple"
-    )
-    privilege_names.append("simple")
+    for package, version in allowed_pypi_packages:
+        name = f"{package}-{version}"
+        expression = (
+            f"format == \"pypi\" and path=^\"/packages/{package}/{version}/\""
+        )
+        description = f"Allow access to {package} version {version}"
+        create_content_selector(name, description, expression)
+
+    # Create privileges
+    for package, version in allowed_pypi_packages:
+        create_content_selector_privilege(
+            name=package,
+            description=f"Allow access to {package} version {version}",
+            repo_type="pypi",
+            repo="pypi-proxy",
+            content_selector=f"{package}-{version}"
+        )
+        privilege_names.append(package)
 
 # Delete non-default roles
 delete_all_custom_roles()
