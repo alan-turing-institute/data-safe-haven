@@ -423,10 +423,11 @@ elif args.tier == 3:
 # Delete non-default roles
 delete_all_custom_roles()
 
-# Create a role with the privileges
+# Create a roles with the PyPi privileges
+pypi_role_name = f"tier {args.tier} pypi"
 create_role(
-    name="tier 2 pypi",
-    description="Allow access to tier 2 PyPi packages",
+    name=pypi_role_name,
+    description=f"Allow access to tier {args.tier} PyPi packages",
     privileges=privilege_names
 )
 
@@ -434,4 +435,4 @@ create_role(
 enable_anonymous_access()
 
 # Update anonymous users roles
-update_anonymous_user_roles(["tier 2 pypi"])
+update_anonymous_user_roles([pypi_role_name])
