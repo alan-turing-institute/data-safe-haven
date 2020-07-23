@@ -261,6 +261,51 @@ def create_role(name, description, privileges, roles=None):
         print(r.content)
 
 
+def enable_anonymous_access():
+    r = requests.put(
+        f"{NEXUS_API_ROOT}/beta/security/anonymous",
+        auth=auth,
+        json={
+            "enabled": True,
+            "userId": "anonymous",
+            "realName": "Local Authorizing Realm"
+        }
+    )
+    code = r.status_code
+    if code == 200:
+        print("Anonymous access enabled")
+    else:
+        print(f"Enabling anonymous access failed.\nStatus code: {code}")
+        print(r.content)
+
+
+def update_anonymous_user_roles(roles):
+    # Get exisitng user data JSON
+    r = requests.get(f"{NEXUS_API_ROOT}/beta/security/users", auth=auth)
+    users = r.json()
+    for user in users:
+        if user["userId"] == "anonymous":
+            anonymous_user = user
+            break
+
+    # Change roles
+    anonymous_user["roles"] = roles
+
+    # Push changes to Nexus
+    r = requests.put(
+        f"{NEXUS_API_ROOT}/beta/security/users/{anonymous_user['userId']}",
+        auth=auth,
+        json=anonymous_user
+    )
+    code = r.status_code
+    if code == 204:
+        print(f"User {anonymous_user['userId']} roles updated")
+    else:
+        print(f"User {anonymous_user['userId']} role update failed.\n"
+              f"Status code: {code}")
+        print(r.content)
+
+
 # Change admin password
 try:
     with open(f"{NEXUS_DATA_DIR}/admin.password") as password_file:
@@ -356,39 +401,7 @@ create_role(
 )
 
 # Enable anonymous access
-r = requests.put(
-    f"{NEXUS_API_ROOT}/beta/security/anonymous",
-    auth=auth,
-    json={
-        "enabled": True,
-        "userId": "anonymous",
-        "realName": "Local Authorizing Realm"
-    }
-)
-code = r.status_code
-if code == 200:
-    print("Anonymous access enabled")
-else:
-    print(f"Enabling anonymous access failed.\nStatus code: {code}")
-    print(r.content)
+enable_anonymous_access()
 
 # Update anonymous users roles
-r = requests.get(f"{NEXUS_API_ROOT}/beta/security/users", auth=auth)
-users = r.json()
-for user in users:
-    if user["userId"] == "anonymous":
-        anonymous_user = user
-        break
-anonymous_user["roles"] = ["tier 2 pypi"]
-r = requests.put(
-    f"{NEXUS_API_ROOT}/beta/security/users/{anonymous_user['userId']}",
-    auth=auth,
-    json=anonymous_user
-)
-code = r.status_code
-if code == 204:
-    print(f"User {anonymous_user['userId']} roles updated")
-else:
-    print(f"User {anonymous_user['userId']} role update failed.\n"
-          f"Status code: {code}")
-    print(r.content)
+update_anonymous_user_roles(["tier 2 pypi"])
