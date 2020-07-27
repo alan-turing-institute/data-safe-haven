@@ -50,6 +50,7 @@ sympy
 tables
 tensorboard
 tensorflow
+tensorflow-estimator
 Theano
 torch
 torchvision

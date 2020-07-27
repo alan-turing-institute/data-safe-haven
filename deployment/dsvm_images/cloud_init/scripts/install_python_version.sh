@@ -26,7 +26,7 @@ PYTHON_VERSION=$(pyenv install --list | grep -e "^ *${PYTHON_BASE_VERSION}." | t
 echo "Preparing $PYTHON_ENV_NAME (Python $PYTHON_VERSION)..."
 SECTION_START_TIME=$(date +%s)
 if [ "$(pyenv versions | grep $PYTHON_VERSION)" = "" ]; then
-    pyenv install $PYTHON_VERSION
+    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_VERSION
 fi
 pyenv shell $PYTHON_VERSION
 # Ensure that we're using the correct version
