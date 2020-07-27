@@ -57,7 +57,7 @@ Add-LogMessage -Level Info "... the password for this account is in the '$($conf
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /installation/deprovision_vm.sh | sudo tee /installation/deprovision.log'
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
-} 
+}
 
 # Poll VM to see whether it has finished running
 # ----------------------------------------------
@@ -94,11 +94,11 @@ if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
     Add-LogMessage -Level Info "... virtual machine: $vmName"
     $null = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force
-    Add-LogMessage -Level Info "... hard disk: $vmName-OS-DISK"
+    Add-LogMessage -Level Info "... hard disk: ${vmName}-OS-DISK"
     $null = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.build.rg -Force
     Add-LogMessage -Level Info "... network card: $vmName-NIC"
     $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force
-    Add-LogMessage -Level Info "... public IP address: $vmName-NIC-PIP"
+    Add-LogMessage -Level Info "... public IP address: ${vmName}-NIC-PIP"
     $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force
 } else {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be found!"
