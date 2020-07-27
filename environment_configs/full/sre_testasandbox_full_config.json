@@ -303,7 +303,7 @@
         "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
         "diskSize": 127,
         "ipAddress": "10.30.1.10",
-        "nexusAdminPasswordSecretName": "shm-testa-repository-vm-admin-password",
+        "nexusAdminPasswordSecretName": "shm-testa-repository-nexus-admin-password",
         "vmName": "NEXUS-REPOSITORY"
       },
       "rg": "RG_SHM_TESTA_REPOSITORY",
@@ -525,6 +525,7 @@
       }
     },
     "nsgPrefix": "NSG_SRE_SANDBOX",
+    "nexus": true,
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",

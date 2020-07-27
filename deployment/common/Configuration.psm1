@@ -33,6 +33,7 @@ function Add-SreConfig {
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier = $sreConfigBase.tier
+            nexus = $sreConfigBase.nexus
         }
     }
     $config.sre.location = $config.shm.location
