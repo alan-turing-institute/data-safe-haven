@@ -278,17 +278,19 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -DestinationAddressPrefix Internet `
                              -DestinationPortRange *
 # Outbound: allow Nexus repository
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundAllowNexus" `
-                             -Description "Outbound allow Nexus" `
-                             -Priority 2100 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
-                             -DestinationPortRange 8081
+if ($config.sre.nexus) {
+    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                                 -Name "OutboundAllowNexus" `
+                                 -Description "Outbound allow Nexus" `
+                                 -Priority 2100 `
+                                 -Direction Outbound `
+                                 -Access Allow `
+                                 -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
+                                 -DestinationPortRange 8081
+}
 
 
 # Ensure that deployment NSG exists
@@ -364,11 +366,14 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+if ($config.sre.nexus) {
+    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.repository.nexus.ipAddress -nexus $config.sre.nexus
+} else {
+    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+}
 $success = $?
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
-Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
+Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 if ($success) {
     Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
 } else {
@@ -427,8 +432,10 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
     Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
     Replace("<ldap-search-user-password>", $ldapSearchPassword).
+    Replace("<mirror-index-pypi>", $addresses.pypi.index).
+    Replace("<mirror-index-url-pypi>", $addresses.pypi.indexUrl).
+    Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
-    Replace("<nexus-ip>", $config.shm.repository.nexus.ipAddress).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
