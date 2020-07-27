@@ -1,211 +1,116 @@
-#! /bin/bash
+#! /usr/bin/env bats
+load "../../../bats/bats-assert/load"
+load "../../../bats/bats-file/load"
+load "../../../bats/bats-support/load"
 
-# Test Julia packages
-julia_packages () {
-    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
-        conda deactivate
-    fi
-    OUTPUT=$(julia test_packages_installed_julia.jl 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "Packages not installed")
-    if [ "$TEST_RESULT" != "" ]; then
-        return 1
-    fi
-    return 0
+
+# Helper functions
+# ----------------
+setup_python () {
+    eval "$(pyenv init -)"
+    pyenv shell $(pyenv versions | grep "${1}." | sed -E 's|[^0-9\.]*([0-9\.]+).*|\1|')
+    run python --version
+    assert_output --partial "${1}."
 }
 
+
+# Julia
+# -----
+# Test Julia packages
+@test "Julia packages" {
+    run julia test_packages_installed_julia.jl 2>&1
+    assert_output --regexp 'All [0-9]+ packages are installed'
+}
 
 # Test Julia functionality
-julia_functionality () {
-    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
-        conda deactivate
-    fi
-    OUTPUT=$(julia test_functionality_julia.jl 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
+@test "Julia functionality" {
+    run julia test_functionality_julia.jl 2>&1
+    assert_output --partial 'All functionality tests passed'
 }
 
 
-# Test python packages
-_python_packages () {
-    conda activate $1
-    OUTPUT=$(python test_packages_installed_python.py 2> /dev/null)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "packages are missing")
-    conda deactivate
-    if [ "$TEST_RESULT" != "" ]; then
-        return 1
-    fi
-    return 0
+# Python
+# ------
+# Test Python packages
+@test "Python 2.7 packages" {
+    setup_python '2.7'
+    run python test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
+    # refute_output --partial 'packages are missing'
+    pyenv shell system
 }
-python_27_packages() { _python_packages py27; }
-python_36_packages() { _python_packages py36; }
-python_37_packages() { _python_packages py37; }
-
-
-# Test python logistic regression
-_python_functionality () {
-    conda activate $1
-    OUTPUT=$(python test_functionality_python.py 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
-        conda deactivate
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
+@test "Python 3.6 packages" {
+    setup_python '3.6'
+    run python test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
+    # refute_output --partial 'packages are missing'
+    pyenv shell system
 }
-python_27_functionality() { _python_functionality py27; }
-python_36_functionality() { _python_functionality py36; }
-python_37_functionality() { _python_functionality py37; }
-
-
-# Test PyPI
-_python_mirrors_pypi () {
-    conda activate $1
-    OUTPUT=$(bash test_mirrors_pypi.sh 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "PyPI working OK")
-    conda deactivate
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
+@test "Python 3.7 packages" {
+    setup_python '3.7'
+    run python test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
+    # refute_output --partial 'packages are missing'
+    pyenv shell system
 }
-python_27_mirrors_pypi() { _python_mirrors_pypi py27; }
-python_36_mirrors_pypi() { _python_mirrors_pypi py36; }
-python_37_mirrors_pypi() { _python_mirrors_pypi py37; }
+
+# Test Python functionality
+@test "Python 2.7 functionality" {
+    setup_python '2.7'
+    run python test_functionality_python.py 2>&1
+    assert_output --partial 'All functionality tests passed'
+    pyenv shell system
+}
+@test "Python 3.6 functionality" {
+    setup_python '3.6'
+    run python test_functionality_python.py 2>&1
+    assert_output --partial 'All functionality tests passed'
+    pyenv shell system
+}
+@test "Python 3.7 functionality" {
+    setup_python '3.7'
+    run python test_functionality_python.py 2>&1
+    assert_output --partial 'All functionality tests passed'
+    pyenv shell system
+}
+
+# Test Python package mirrors
+@test "Python 2.7 package mirrors" {
+    setup_python '2.7'
+    run bash test_mirrors_pypi.sh 2>&1
+    assert_output --partial 'PyPI working OK'
+    pyenv shell system
+}
+@test "Python 3.6 package mirrors" {
+    setup_python '3.6'
+    run bash test_mirrors_pypi.sh 2>&1
+    assert_output --partial 'PyPI working OK'
+    pyenv shell system
+}
+@test "Python 3.7 package mirrors" {
+    setup_python '3.7'
+    run bash test_mirrors_pypi.sh 2>&1
+    assert_output --partial 'PyPI working OK'
+    pyenv shell system
+}
 
 
+# R
+# -
 # Test R packages
-R_packages () {
-    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
-        conda deactivate
-    fi
-    # Suppress a known spurious warning about database connections from BiocManager
-    OUTPUT=$(Rscript test_packages_installed_R.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()")
-    echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
-    OUTCOME=0
-    for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
-        if [ "$PROBLEMATIC_PACKAGE" != "" ]; then
-            echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
-            OUTCOME=1
-        fi
-    done
-    return $OUTCOME
+@test "R packages" {
+    run Rscript test_packages_installed_R.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()"
+    assert_output --regexp 'All [0-9]+ packages are installed'
 }
-
 
 # Test R functionality
-R_functionality () {
-    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
-        conda deactivate
-    fi
-    OUTPUT=$(Rscript test_functionality_R.R)
-    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
+@test "R functionality" {
+    run Rscript test_functionality_R.R
+    assert_output --partial 'All functionality tests passed'
 }
 
-
-# Test CRAN access
-R_mirrors_cran () {
-    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
-        conda deactivate
-    fi
-    OUTPUT=$(bash test_mirrors_cran.sh)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "CRAN working OK")
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
+# Test R package mirrors
+@test "R package mirrors" {
+    run bash test_mirrors_cran.sh
+    assert_output --partial 'CRAN working OK'
 }
-
-
-do_test() {
-    TEST_NAME=$1
-    echo -e "\033[0;36m[ RUNNING  ]\033[0m $TEST_NAME"
-    START_TIME=$(date +%s)
-    $TEST_NAME; TEST_RESULT=$?
-    DURATION=$(($(date +%s) - $START_TIME))
-    if [[ $TEST_RESULT -eq 0 ]]; then
-        echo -e "\033[0;32m[       OK ]\033[0m $TEST_NAME ($DURATION s)"
-        return 0
-    else
-        echo -e "\033[0;31m[   FAILED ]\033[0m $TEST_NAME ($DURATION s)"
-        return 1
-    fi
-}
-
-
-# Run all tests
-N_PASSING=0
-N_FAILING=0
-
-
-# Julia tests
-do_test julia_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test julia_functionality
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-
-# Python 2.7 tests
-do_test python_27_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_27_functionality
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_27_mirrors_pypi
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-
-# Python 3.6 tests
-do_test python_36_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_36_functionality
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_36_mirrors_pypi
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-
-# Python 3.7 tests
-do_test python_37_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_37_functionality
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test python_37_mirrors_pypi
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-
-# R tests
-do_test R_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_functionality
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_mirrors_cran
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-
-# Summary
-N_TESTS=$(($N_PASSING + $N_FAILING))
-echo -e "\033[0;36m[ SUMMARY  ]\033[0m Ran $N_TESTS tests."
-echo -e "\033[0;36m[ SUMMARY  ]\033[0m $N_PASSING / $N_TESTS [$((100 * $N_PASSING / $N_TESTS))%] passed"
-

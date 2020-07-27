@@ -130,6 +130,8 @@ def test_packages():
                 )
             )
             print("\n".join(missing))
+        if (not warning) and (not missing):
+            print("All {} packages are installed".format(len(packages)))
 
 
 if __name__ == "__main__":

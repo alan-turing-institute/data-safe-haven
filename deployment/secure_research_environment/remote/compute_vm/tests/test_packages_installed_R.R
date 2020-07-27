@@ -47,7 +47,7 @@ for (repo in repos) {
 
 # Show results
 if (0 == length(warning_list) & 0 == length(error_list)) {
-    print(paste("All", n_packages, "package(s) OK!"))
+    print(paste("All", n_packages, "packages are installed"))
 } else {
     # List any warnings
     if (0 < length(warning_list)) {

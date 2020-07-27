@@ -31,7 +31,7 @@ redirect_stdout(original_stdout)
 
 # Print a summary of the package tests
 if isempty(missing_packages)
-    println("All packages are installed!")
+    println("All ", size(packages)[1], " packages are installed")
 else
     println("Packages not installed: ", Set(missing_packages))
 end
