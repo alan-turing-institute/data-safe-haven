@@ -345,16 +345,19 @@ runcmd:
   - mkdir -p /data
   - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/opt/installation/.smbcredentials\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
+  - mount /data
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
   - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
+  - mount /shared
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
+  - mount /output
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
   # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
