@@ -77,7 +77,7 @@ def main():
     with suppress(subprocess.CalledProcessError):
         bash_process = subprocess.run(["grep", ">===", "/var/log/cloud-init-output.log"], stdout=subprocess.PIPE, check=True)
         for event in bash_process.stdout.decode("utf8").split("\n"):
-            with suppress(IndexError):
+            with suppress(IndexError, ValueError):
                 start_time = event.split(" ")[1]
                 message = event.split(start_time)[1].replace("===<", "").strip()
                 runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
