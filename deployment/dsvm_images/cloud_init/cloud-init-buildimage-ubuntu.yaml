@@ -316,6 +316,7 @@ runcmd:
   - /opt/build/install_python_version.sh py37 || exit 1
   - echo "Installed python versions"
   - rm -rf /root/.cache /tmp/*  # clean up cached files from the python builds
+  - chmod go+w /opt/pyenv/shims # allow users to write new files to the shims directory
   - du --si -d 1 /opt/pyenv/versions
 
   # Add pyenv to global settings
