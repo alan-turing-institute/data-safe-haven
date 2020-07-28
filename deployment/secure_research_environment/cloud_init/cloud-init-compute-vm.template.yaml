@@ -23,12 +23,12 @@ write_files:
     permissions: "0400"
     content: |
       <ldap-search-user-password>
-  - path: "/opt/installation/join_domain.sh"
+  - path: "/opt/configuration/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <join_domain.sh>
-  - path: "/opt/installation/.smbcredentials"
+  - path: "/etc/smbcredentials.secret"
     owner: root:root
     permissions: "0600"
     content: |
@@ -55,21 +55,21 @@ write_files:
     permissions: "0444"
     content: |
       <krb5.conf>
-  - path: "/opt/installation/kerberos_configuration.sh"
+  - path: "/opt/configuration/kerberos_configuration.sh"
     owner: root:root
     permissions: "0500"
     content: |
       # Edit LDAP config
       echo "Checking LDAP config"
       echo ">=== /etc/ldap.conf ===<"
-      cat /etc/ldap.conf
+      grep -v "^#" /etc/ldap.conf
       echo ">=== end of /etc/ldap.conf ===<"
       # Edit Kerberos config
       echo "Checking Kerberos config"
       echo ">=== /etc/krb5.conf ===<"
       cat /etc/krb5.conf
       echo ">=== end of /etc/krb5.conf ===<"
-  - path: "/opt/installation/user_login_configuration.sh"
+  - path: "/opt/configuration/user_login_configuration.sh"
     owner: root:root
     permissions: "0500"
     content: |
@@ -93,7 +93,7 @@ write_files:
       echo ">=== /etc/pam.d/common-session ===<"
       grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
       echo ">=== end of /etc/pam.d/common-session ===<"
-  - path: "/opt/installation/setup_disk.sh"
+  - path: "/opt/configuration/setup_disk.sh"
     owner: root:root
     permissions: "0500"
     content: |
@@ -284,9 +284,9 @@ write_files:
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Join this VM to the domain and allow domain users to log in
-  - /opt/installation/kerberos_configuration.sh
-  - /opt/installation/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
-  - /opt/installation/user_login_configuration.sh
+  - /opt/configuration/kerberos_configuration.sh
+  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
+  - /opt/configuration/user_login_configuration.sh
   # Set locale
   - locale-gen en_GB.UTF-8
   - update-locale LANG=en_GB.UTF-8
@@ -299,8 +299,6 @@ runcmd:
   - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
-  # TODO remove this
-  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
@@ -340,39 +338,36 @@ runcmd:
   - systemctl restart xrdp
   - sleep 10
   - systemctl status xrdp
+  # Configure disks
+  - echo ">=== Mount and configure disks... ===<"
+  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+  - /opt/configuration/setup_disk.sh 1 /home
+  - /opt/configuration/setup_disk.sh 2 /scratch
   # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
-  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/opt/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/etc/smbcredentials.secret\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /data
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
-  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /shared
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
-  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /output
-  # Configure disks
-  - echo ">=== Mount and configure disks... ===<"
-  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
-  - /opt/installation/setup_disk.sh 1 /home
-  - /opt/installation/setup_disk.sh 2 /scratch
+  # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
-  # Allow unlimited recursion when scanning
   - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
-  # Enable clamav-daemon
   - systemctl enable clamav-daemon
   - systemctl status clamav-daemon
-  # Enable clamav scan on access
   - systemctl enable clamav-clamonacc
   - systemctl status clamav-clamonacc
-  # Enable clamv periodic scan
   - systemctl enable clamav-clamdscan.timer
   - systemctl status clamav-clamdscan.timer
 

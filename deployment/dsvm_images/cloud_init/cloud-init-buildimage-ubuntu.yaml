@@ -65,28 +65,28 @@ write_files:
           doNotPrompt=true;
       };
   # NB. the string is the commit this release was made from
-  - path: "/installation/azuredatastudio.debinfo"
+  - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
       hash: adac4b0e2efda32f538039d9d2e7f66e2898f3244e21da4b8dacf34d7b0e5415
       version: 1.19.0
       debfile: azuredatastudio-linux-|VERSION|.deb
       remote: https://sqlopsbuilds.azureedge.net/stable/4095037f2578c23033867e611e82c13de114ca5a/|DEBFILE|
-  - path: "/installation/dbeaver.debinfo"
+  - path: "/opt/build/dbeaver.debinfo"
     permissions: "0400"
     content: |
       hash: 1689bc56b6e7fe9c4e9b725013877a0616512ffd5846ea3c8378f7da6e827939
       version: 7.1.2
       debfile: dbeaver-ce_|VERSION|_amd64.deb
       remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
-  - path: "/installation/rstudio.debinfo"
+  - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
       hash: 411ab50019aa8a08db99b092769b4a552c39f78ce518f9cdb81bda92e98a6f79
       version: 1.3.959
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
-  - path: "/installation/julia.tarinfo"
+  - path: "/opt/build/julia.tarinfo"
     permissions: "0400"
     content: |
       hash: d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28
@@ -94,62 +94,62 @@ write_files:
       version: |VERSION_MAJOR|.2
       tarfile: julia-|VERSION|-linux-x86_64.tar.gz
       remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
-  - path: "/installation/spark.tarinfo"
+  - path: "/opt/build/spark.tarinfo"
     permissions: "0400"
     content: |
       hash: 3c9bef2d002d706b5331415884d3f890ecfdd7c6a692f36ed7a981ad120b2482
       version: 3.0.0
       tarfile: spark-|VERSION|-bin-hadoop3.2.tgz
       remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
-  - path: "/installation/analyse_build.py"
+  - path: "/opt/verification/analyse_build.py"
     permissions: "0755"
     content: |
       <analyse_build.py>
-  - path: "/installation/get_package_constraint.py"
+  - path: "/opt/build/get_package_constraint.py"
     permissions: "0500"
     content: |
       <get_package_constraint.py>
-  - path: "/installation/install_python_version.sh"
+  - path: "/opt/build/install_python_version.sh"
     permissions: "0500"
     content: |
       <install_python_version.sh>
-  - path: "/installation/dbeaver_drivers_config.xml"
+  - path: "/opt/build/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
       <dbeaver_drivers_config.xml>
-  - path: "/installation/deprovision.log"
+  - path: "/opt/build/deprovision.log"
     permissions: "0600"
     content: |
       # Deprovisioning log
-  - path: "/installation/deprovision_vm.sh"
+  - path: "/opt/build/deprovision_vm.sh"
     permissions: "0500"
     content: |
       <deprovision_vm.sh>
-  - path: "/installation/download_and_install_deb.sh"
+  - path: "/opt/build/download_and_install_deb.sh"
     permissions: "0500"
     content: |
       <download_and_install_deb.sh>
-  - path: "/installation/download_and_install_tar.sh"
+  - path: "/opt/build/download_and_install_tar.sh"
     permissions: "0500"
     content: |
       <download_and_install_tar.sh>
-  - path: "/installation/python-requirements-py27.txt"
+  - path: "/opt/build/python-requirements-py27.txt"
     permissions: "0444"
     content: |
       <python-requirements-py27.txt>
-  - path: "/installation/python-requirements-py36.txt"
+  - path: "/opt/build/python-requirements-py36.txt"
     permissions: "0444"
     content: |
       <python-requirements-py36.txt>
-  - path: "/installation/python-requirements-py37.txt"
+  - path: "/opt/build/python-requirements-py37.txt"
     permissions: "0444"
     content: |
       <python-requirements-py37.txt>
-  - path: "/installation/performance_log.csv"
+  - path: "/opt/build/performance_log.csv"
     permissions: "0644"
     content: |
       # Performance log
-  - path: "/installation/python-pyproject-template.toml"
+  - path: "/opt/build/python-pyproject-template.toml"
     permissions: "0400"
     content: |
       [tool.poetry]
@@ -195,7 +195,7 @@ packages:
 # This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
   # Log system performance during the installation and record it each minute
-  - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
+  - nohup dstat --mem --cpu --time --output /opt/verification/performance_log.csv 60 > /dev/null &
 
   # Suppress apt prompts and warning messages
   - echo "Suppressing apt prompts"
@@ -228,12 +228,12 @@ runcmd:
 
   # Azure Data Studio
   - echo "Installing Azure Data Studio"
-  - /installation/download_and_install_deb.sh azuredatastudio
+  - /opt/build/download_and_install_deb.sh azuredatastudio
   - if [ "$(which azuredatastudio)" = "" ]; then echo "Could not install Azure Data Studio!"; exit 1; fi
 
   # DBeaver and drivers
   - echo "Installing DBeaver"
-  - /installation/download_and_install_deb.sh dbeaver
+  - /opt/build/download_and_install_deb.sh dbeaver
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers from maven
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
@@ -255,10 +255,10 @@ runcmd:
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   # Expand driver configuration template
-  - sed -i "s/|POSTGRESQL_VERSION|/${POSTGRESQL_VERSION}/g" /installation/dbeaver_drivers_config.xml
-  - sed -i "s/|MSSQL_JDBC_VERSION|/${MSSQL_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
-  - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
-  - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
+  - sed -i "s/|POSTGRESQL_VERSION|/${POSTGRESQL_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
+  - sed -i "s/|MSSQL_JDBC_VERSION|/${MSSQL_JDBC_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
+  - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
+  - mv /opt/build/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
@@ -271,12 +271,12 @@ runcmd:
 
   # Install RStudio,
   - echo "Installing RStudio"
-  - /installation/download_and_install_deb.sh rstudio
+  - /opt/build/download_and_install_deb.sh rstudio
   - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; fi
 
   # Install spark
   - echo "Installing spark"
-  - /installation/download_and_install_tar.sh spark
+  - /opt/build/download_and_install_tar.sh spark
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
@@ -311,9 +311,9 @@ runcmd:
   - curl https://pyenv.run | bash
 
   # Install python versions
-  - /installation/install_python_version.sh py27 || exit 1
-  - /installation/install_python_version.sh py36 || exit 1
-  - /installation/install_python_version.sh py37 || exit 1
+  - /opt/build/install_python_version.sh py27 || exit 1
+  - /opt/build/install_python_version.sh py36 || exit 1
+  - /opt/build/install_python_version.sh py37 || exit 1
   - echo "Installed python versions"
   - rm -rf /root/.cache /tmp/*  # clean up cached files from the python builds
   - du --si -d 1 /opt/pyenv/versions
@@ -373,7 +373,7 @@ runcmd:
 
   # Install Julia and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing Julia and packages ===<"
-  - /installation/download_and_install_tar.sh julia
+  - /opt/build/download_and_install_tar.sh julia
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
@@ -383,9 +383,8 @@ runcmd:
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
-  # Julia Tensorflow currently works best with python 2.7 or 3.6
   - export JULIA_COPY_STACKS=1
-  - export PYTHON="$(ls /opt/pyenv/versions/3.6*/bin/python)"
+  - export PYTHON="$(ls /opt/pyenv/versions/3.7*/bin/python)"
   - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot

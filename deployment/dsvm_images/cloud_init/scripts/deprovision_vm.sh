@@ -10,5 +10,5 @@ if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /
 
 # Remove execute permissions from this file
 echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
-chmod ugo-x /installation/deprovision_vm.sh
-ls -alh /installation/deprovision_vm.sh
+chmod ugo-x /opt/build/deprovision_vm.sh
+ls -alh /opt/build/deprovision_vm.sh

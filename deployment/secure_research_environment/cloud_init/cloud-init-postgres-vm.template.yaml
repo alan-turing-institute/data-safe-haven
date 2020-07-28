@@ -61,12 +61,12 @@ write_files:
     permissions: "0444"
     content: |
       <krb5.conf>
-  - path: "/opt/installation/join_domain.sh"
+  - path: "/opt/configuration/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <join_domain.sh>
-  - path: "/opt/installation/pg-ldap-sync.yaml"
+  - path: "/opt/configuration/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
     content: |
@@ -134,7 +134,7 @@ write_files:
         create_options: NOLOGIN IN ROLE ldap_groups
         grant_options:
 
-  - path: "/opt/installation/install-postgres-extensions.sql"
+  - path: "/opt/configuration/install-postgres-extensions.sql"
     owner: root:root
     permissions: "0444"
     content: |
@@ -153,7 +153,7 @@ write_files:
       CREATE EXTENSION IF NOT EXISTS postgres_fdw;
       CREATE EXTENSION IF NOT EXISTS earthdistance;
 
-  - path: "/opt/installation/create-postgres-triggers.sql"
+  - path: "/opt/configuration/create-postgres-triggers.sql"
     owner: root:root
     permissions: "0444"
     content: |
@@ -234,7 +234,7 @@ packages:
 
 runcmd:
   # Join the domain
-  - /opt/installation/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
+  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
@@ -298,7 +298,7 @@ runcmd:
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
-  - mv /opt/installation/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - mv /opt/configuration/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
   - sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
@@ -311,11 +311,11 @@ runcmd:
   # - Grant all privileges on the 'public' schema to research users
   # - Grant superuser privileges to sysadmins
   - echo ">=== Setting appropriate permissions on public schema... ===<"
-  - sudo -i -u postgres psql -f /opt/installation/create-postgres-triggers.sql
+  - sudo -i -u postgres psql -f /opt/configuration/create-postgres-triggers.sql
 
   # Install postgres extensions
   - echo ">=== Installing postgis schema and extensions... ===<"
-  - sudo -i -u postgres psql -f /opt/installation/install-postgres-extensions.sql
+  - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"

@@ -189,7 +189,7 @@ Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
 Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
-Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /installation/analyse_build.py"
+Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/verification/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 
 

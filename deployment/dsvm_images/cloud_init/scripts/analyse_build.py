@@ -113,11 +113,11 @@ def main():
     # ------------------------
     mem_usage, cpu_usage, mem_bytes = [], [], []
     with suppress(FileNotFoundError):
-        with open("/installation/performance_log.csv", "r") as system_log:
+        with open("/opt/verification/performance_log.csv", "r") as system_log:
             first_lines = list(itertools.islice(system_log, 10))
         with suppress(IndexError):
             lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0]  # skip version info in the header
-            with open("/installation/performance_log.csv", "r") as system_log:
+            with open("/opt/verification/performance_log.csv", "r") as system_log:
                 for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
                     if build_end_status:
                         timestamp = datetime.strptime("{}-{}".format(datetime.today().year, row["time"]), "%Y-%d-%m %H:%M:%S")
@@ -148,7 +148,7 @@ def main():
     # Check python installations
     # --------------------------
     with suppress(FileNotFoundError):
-        for fname in glob.glob("/installation/python-safety-check*.json"):
+        for fname in glob.glob("/opt/verification/python-safety-check*.json"):
             with open(fname, "r") as f_safety_check:
                 packages = json.load(f_safety_check)
             if packages:

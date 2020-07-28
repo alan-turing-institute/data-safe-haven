@@ -63,7 +63,7 @@ while read LINE; do
         if [ "$MAX_VERSION" == "none" ]; then REQUIREMENT="$LINE>0.0"; fi
     fi
     echo $REQUIREMENT >> requirements.poetry
-done < /installation/python-requirements-${PYTHON_ENV_NAME}.txt
+done < /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt
 sed -i '/^$/d' requirements.poetry
 if [ $DEBUG -eq 1 ]; then cat requirements.poetry | awk '{print "[DEBUG] "$1}'; fi
 # Log time taken
@@ -75,15 +75,16 @@ echo "Generating requirements took $SECTION_ELAPSED"
 # -------------------------------------------
 echo "Installing packages with poetry..."
 SECTION_START_TIME=$(date +%s)
-sed -e "s/<PYTHON_ENV_NAME>/$PYTHON_ENV_NAME/g" -e "s/<PYTHON_VERSION>/$PYTHON_VERSION/" /installation/python-pyproject-template.toml > /installation/python-pyproject-${PYTHON_ENV_NAME}.toml
+sed -e "s/<PYTHON_ENV_NAME>/$PYTHON_ENV_NAME/g" -e "s/<PYTHON_VERSION>/$PYTHON_VERSION/" /opt/build/python-pyproject-template.toml > /opt/build/python-pyproject-${PYTHON_ENV_NAME}.toml
 poetry config virtualenvs.create false
 poetry config virtualenvs.in-project true
 rm poetry.lock pyproject.toml 2> /dev/null
-ln -s /installation/python-pyproject-${PYTHON_ENV_NAME}.toml pyproject.toml
+ln -s /opt/build/python-pyproject-${PYTHON_ENV_NAME}.toml pyproject.toml
 poetry add $(cat requirements.poetry | tr '\n' ' ')
 if [ $DEBUG -eq 1 ]; then cat pyproject.toml | awk '{print "[DEBUG] "$1}'; fi
 echo "Installed packages:"
 poetry show
+poetry show > /opt/verification/python-package-versions-${PYTHON_VERSION}.log
 rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
@@ -93,12 +94,12 @@ echo "Installation took $SECTION_ELAPSED"
 # Install any post-install package requirements
 # ---------------------------------------------
 echo "Installing post-install package requirements"
-if [ "$(grep ^spacy /installation/python-requirements-${PYTHON_ENV_NAME}.txt)" ]; then
+if [ "$(grep ^spacy /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt)" ]; then
     python -m spacy download en_core_web_sm
     python -m spacy download en_core_web_md
     python -m spacy download en_core_web_lg
 fi
-if [ "$(grep ^nltk /installation/python-requirements-${PYTHON_ENV_NAME}.txt)" ]; then
+if [ "$(grep ^nltk /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt)" ]; then
     python -m nltk.downloader all -d /usr/share/nltk_data
 fi
 
@@ -107,7 +108,7 @@ fi
 # -----------------------------------------------
 MISSING_PACKAGES=""
 INSTALLED_PACKAGES=$(pip freeze | cut -d '=' -f 1 | tr '[A-Z]' '[a-z]')
-for REQUESTED_PACKAGE in $(cat /installation/python-requirements-${PYTHON_ENV_NAME}.txt | sed -E 's|([^<>=]*).*|\1|' | tr '[A-Z]' '[a-z]'); do
+for REQUESTED_PACKAGE in $(cat /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt | sed -E 's|([^<>=]*).*|\1|' | tr '[A-Z]' '[a-z]'); do
     is_installed=0
     for INSTALLED_PACKAGE in $INSTALLED_PACKAGES; do
         if [ "$REQUESTED_PACKAGE" == "$INSTALLED_PACKAGE" ]; then
@@ -131,8 +132,8 @@ fi
 # Run safety check and log any problems
 # -------------------------------------
 echo "Running safety check on Python ${PYTHON_VERSION} installation..."
-safety check --json --output /installation/python-safety-check-${PYTHON_VERSION}.json
-safety review --full-report -f /installation/python-safety-check-${PYTHON_VERSION}.json
+safety check --json --output /opt/verification/python-safety-check-${PYTHON_VERSION}.json
+safety review --full-report -f /opt/verification/python-safety-check-${PYTHON_VERSION}.json
 
 
 # Set the Jupyter kernel name to the full Python version name and store it as $PYTHON_ENV_NAME so that different python3 versions show up separately
