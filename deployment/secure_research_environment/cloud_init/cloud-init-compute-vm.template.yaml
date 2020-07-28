@@ -376,6 +376,7 @@ runcmd:
   - mkdir -p /ingress
   - mkdir -p /tmp/ingress
   - mount -t tmpfs -o size=16g tmpfs /tmp/ingress
+  - chmod -R 0744 /ingress
   - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
   - tail -n 1 /etc/fstab
 

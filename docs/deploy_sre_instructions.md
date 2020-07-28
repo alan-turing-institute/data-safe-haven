@@ -368,22 +368,6 @@ On your **deployment machine**.
 - Run the `./Setup_SRE_Data_Server.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 20 minutes to complete
 
-## :baseball: Deploy databases
-On your **deployment machine**.
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_Databases.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
-- The deployment will take around 30 minutes to complete, most of which is spent in Windows Update.
-
-## :computer: Deploy data science VMs
-### :fast_forward: Optional: Customise the deployed VM
-If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file.
-On your **deployment machine**.
-- By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
-- If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.#
-
 
 ## :computer: Deploy SRE Storage Accounts
 
@@ -394,9 +378,30 @@ On your **deployment machine**.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy an SRE storage account using `./Setup_SRE_Storage_Accounts.ps1 -configId <SRE CONFIG ID>`
   - Where the `<SRE CONFIG ID>` is the name specified in the full config file, equal to `<shmid><sreid>`. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE CONFIG ID>` equal to `testcsandbox`.
-  - This script will create a storage account in the `RG_SHM_DATA_STORAGE` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
+  - This script will create a storage account in the `RG_SHM_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
   - If you encounter issues with the DNS zone configuration, try rerunning the script using the optional `-dnsForceUpdate` parameter
 - The deployment will take around 5 minutes to complete
+
+
+## :baseball: Deploy databases
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run the `./Setup_SRE_Databases.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- The deployment will take around 30 minutes to complete, most of which is spent in Windows Update.
+
+
+
+## :computer: Deploy data science VMs
+### :fast_forward: Optional: Customise the deployed VM
+If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file.
+On your **deployment machine**.
+- By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
+- If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.#
+
+
 
 
 
