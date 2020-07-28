@@ -485,7 +485,7 @@ function Get-ShmFullConfig {
             rg = "RG_SH_IMAGE_GALLERY"
             sig = "SAFE_HAVEN_COMPUTE_IMAGES"
             imageMajorVersion = 0
-            imageMinorVersion = 2
+            imageMinorVersion = 3
         }
         images = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"
