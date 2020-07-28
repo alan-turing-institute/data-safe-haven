@@ -21,23 +21,6 @@ $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
-function Enable-AzVMWithoutRestart {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object")]
-        $VM
-    )    
-    if(Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
-    } elseif(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Enable-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
-    } elseif(Confirm-AzVmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Enable-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
-    } else {
-        $vmStatus = (Get-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Status).Statuses.Code
-        Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
-    }
-}
-
 
 $vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.rgPrefix
 if($Group -eq "Identity") {
@@ -54,27 +37,20 @@ switch($Action) {
         if(($Group -eq "Identity") -or ($Group -eq "All")) {
             # Ensure DC VMs are started
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.dc.rg)' are started..."
-            # Primary DC must be started before DCB
+            # Primary DC must be started before Secondary DC
             $primaryDCAlreadyRunning = Confirm-AzVmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
             if($primaryDCAlreadyRunning) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
-                # Ensure Secondary DC started
-                foreach ($vm in $rdsVms | Where-Object { $_.Name -ne $config.sre.rds.gateway.vmName }) {
-                    Enable-AzVMWithoutRestart -VM $vm
-                }
+                # Start Secondary DC
+                Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
             } else {
                 # Stop Secondary DC as it must start after Primary DC
                 Add-LogMessage -Level Info "Stopping Secondary DC as Primary DC is not running."
-                $result = Stop-AzVm -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force
-                if($result.status -eq "Succeeded") {
-                    Add-LogMessage -Level InfoSuccess "Stopped VM '$($vm.Name)'.'"
-                } else {
-                    Add-LogMessage -Level Fatal "Unexpected status '$($result.status)' encountered when stopping VM '$($vm.Name)').'"
-                }
+                Stop-Vm -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
                 # Start Primary DC
-                Enable-AzVm -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
+                Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
                 # Start Secondary DC
-                Enable-AzVm -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
+                Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
             }
             # Remove DC VMs from general VM list so they are not processed twice   
             $vmsByRg.Remove($config.dc.rg)
@@ -85,27 +61,17 @@ switch($Action) {
             $rgName = $rgVms[0].ResourceGroupName
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$rgName' are started..."
             foreach ($vm in $rgVms) {
-                Enable-AzVMWithoutRestart -VM $vm
+                Start-VM -VM $vm
             }
         }
     }
     "EnsureStopped" {
-        # Process SHM VMs covered by the specified group
         foreach($key in $vmsByRg.Keys) {
             $rgVms = $vmsByRg[$key]
             $rgName = $rgVms[0].ResourceGroupName
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$rgName' are stopped..."
             foreach($vm in $rgVms) {
-                if(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-                    Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already stopped."
-                } else {
-                    $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -NoWait
-                    if($result.IsSuccessStatusCode) {
-                        Add-LogMessage -Level Success "Shutdown request accepted for VM '$($vm.Name)'.'"
-                    } else {
-                        Add-LogMessage -Level Fatal "Unexpected status '$($result.StatusCode) ($($result.ReasonPhrase))' encountered when requesting shutdown of VM '$($vm.Name)').'"
-                    }
-                }
+                Stop-VM -VM $vm
             }
         }
     }
