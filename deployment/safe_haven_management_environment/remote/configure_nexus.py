@@ -72,9 +72,6 @@ def create_proxy_repository(repo_type, name, remote_url):
             "blobStoreName": "default",
             "strictContentTypeValidation": True
         },
-        # "cleanup": {
-        #     "policyNames": ["string"]
-        #     },
         "proxy": {
             "remoteUrl": "",
             "contentMaxAge": 1440,
@@ -87,20 +84,7 @@ def create_proxy_repository(repo_type, name, remote_url):
         "httpClient": {
             "blocked": False,
             "autoBlock": True,
-            # "connection": {
-            #     "retries": 0,
-            #     "userAgentSuffix": "string",
-            #     "timeout": 60,
-            #     "enableCircularRedirects": False,
-            #     "enableCookies": False
-            #     },
-            # "authentication": {
-            #     "type": "username",
-            #     "username": "username",
-            #     "password": "password"
-            #     },
-        },
-        # "routingRule": "string"
+        }
     }
     payload["name"] = name
     payload["proxy"]["remoteUrl"] = remote_url
@@ -389,17 +373,7 @@ if args.tier == 2:
     privilege_names.append("pypi")
 elif args.tier == 3:
     # Collect allowed package names and versions
-    allowed_pypi_packages = [
-        ("attrs", "19.3.0"),
-        ("more-itertools", "8.4.0"),
-        ("packaging", "20.4"),
-        ("pluggy", "0.13.1"),
-        ("py", "1.9.0"),
-        ("pyparsing", "2.4.7"),
-        ("pytest", "5.4.3"),
-        ("six", "1.15.0"),
-        ("wcwidth", "0.2.5"),
-    ]
+    allowed_pypi_packages = []
 
     for package, version in allowed_pypi_packages:
         name = f"{package}-{version}"
