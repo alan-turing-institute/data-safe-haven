@@ -121,10 +121,13 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
 # Update SRE mirror lookup
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+if ($config.sre.nexus) {
+    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.repository.nexus.ipAddress -nexus $config.sre.nexus
+} else {
+    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+}
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
-Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
+Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 
 # Set PyPI and CRAN locations on the compute VM
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
@@ -132,8 +135,9 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scr
 foreach ($vmName in $computeVmNames) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
     $params = @{
-        CRAN_MIRROR_IP   = "`"$($addresses.cran.url)`""
-        PYPI_MIRROR_IP   = "`"$($addresses.pypi.url)`""
+        CRAN_MIRROR_IP = "`"$($addresses.cran.url)`""
+        PYPI_MIRROR_INDEX = "`"$($addresses.pypi.index)`""
+        PYPI_MIRROR_INDEX_URL = "`"$($addresses.pypi.indexUrl)`""
         PYPI_MIRROR_HOST = "`"$($addresses.pypi.host)`""
     }
     $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
