@@ -155,6 +155,6 @@ try {
     $null = $nsgRepository | Set-AzNetworkSecurityGroup
 }
 
-Enable-AzVM -Name $vmName -ResourceGroupName $config.
+Enable-AzVM -Name $vmName -ResourceGroupName $config.repository.rg
 
-$null = Set-AzContext -Context $originalContext $config.repository.rg
+$null = Set-AzContext -Context $originalContext
