@@ -344,12 +344,14 @@ function Add-SreConfig {
         rg = "RG_SRE_$($config.sre.id)_COMPUTE".ToUpper()
         nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
         deploymentNsg = "NSG_SRE_$($config.sre.Id)_COMPUTE_DEPLOYMENT".ToUpper()
-        vmImageSubscription = $config.shm.dsvmImage.subscription
-        vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
-        vmImageGallery = $config.shm.dsvmImage.gallery.sig
+        vmImage = [ordered]@{
+            subscription = $config.shm.dsvmImage.subscription
+            rg = $config.shm.dsvmImage.gallery.rg
+            gallery = $config.shm.dsvmImage.gallery.sig
+            type = $sreConfigBase.computeVmImageType
+            version = $sreConfigBase.computeVmImageVersion
+        }
         vmSizeDefault = "Standard_D2s_v3"
-        vmImageType = $sreConfigBase.computeVmImageType
-        vmImageVersion = $sreConfigBase.computeVmImageVersion
         disks = [ordered]@{
             home = [ordered]@{
                 sizeGb = "128"
