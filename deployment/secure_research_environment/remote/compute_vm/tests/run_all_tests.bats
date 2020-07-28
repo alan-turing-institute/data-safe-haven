@@ -7,7 +7,7 @@ load "../../../bats/bats-support/load"
 # Helper functions
 # ----------------
 setup_python () {
-    eval "$(pyenv init -)"
+    eval "$(pyenv init - --no-rehash)"
     pyenv shell $(pyenv versions | grep "${1}." | sed -E 's|[^0-9\.]*([0-9\.]+).*|\1|')
     run python --version
     assert_output --partial "${1}."
@@ -36,22 +36,19 @@ setup_python () {
     setup_python '2.7'
     run python test_packages_installed_python.py 2> /dev/null
     assert_output --regexp 'All [0-9]+ packages are installed'
-    # refute_output --partial 'packages are missing'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.6 packages" {
     setup_python '3.6'
     run python test_packages_installed_python.py 2> /dev/null
     assert_output --regexp 'All [0-9]+ packages are installed'
-    # refute_output --partial 'packages are missing'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.7 packages" {
     setup_python '3.7'
     run python test_packages_installed_python.py 2> /dev/null
     assert_output --regexp 'All [0-9]+ packages are installed'
-    # refute_output --partial 'packages are missing'
-    pyenv shell system
+    pyenv shell --unset
 }
 
 # Test Python functionality
@@ -59,19 +56,19 @@ setup_python () {
     setup_python '2.7'
     run python test_functionality_python.py 2>&1
     assert_output --partial 'All functionality tests passed'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.6 functionality" {
     setup_python '3.6'
     run python test_functionality_python.py 2>&1
     assert_output --partial 'All functionality tests passed'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.7 functionality" {
     setup_python '3.7'
     run python test_functionality_python.py 2>&1
     assert_output --partial 'All functionality tests passed'
-    pyenv shell system
+    pyenv shell --unset
 }
 
 # Test Python package mirrors
@@ -79,19 +76,19 @@ setup_python () {
     setup_python '2.7'
     run bash test_mirrors_pypi.sh 2>&1
     assert_output --partial 'PyPI working OK'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.6 package mirrors" {
     setup_python '3.6'
     run bash test_mirrors_pypi.sh 2>&1
     assert_output --partial 'PyPI working OK'
-    pyenv shell system
+    pyenv shell --unset
 }
 @test "Python 3.7 package mirrors" {
     setup_python '3.7'
     run bash test_mirrors_pypi.sh 2>&1
     assert_output --partial 'PyPI working OK'
-    pyenv shell system
+    pyenv shell --unset
 }
 
 
@@ -99,7 +96,7 @@ setup_python () {
 # -
 # Test R packages
 @test "R packages" {
-    run Rscript test_packages_installed_R.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()"
+    run Rscript test_packages_installed_R.R 2>&1
     assert_output --regexp 'All [0-9]+ packages are installed'
 }
 

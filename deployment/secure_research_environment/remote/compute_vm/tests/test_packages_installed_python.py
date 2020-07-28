@@ -31,6 +31,7 @@ IMPORTABLE_NAMES = {
     "Pillow": "PIL",
     "pyshp": "shapefile",
     "python-dateutil": "dateutil",
+    "PyWavelets": "pywt",
     "scikit-image": "skimage",
     "scikit-learn": "sklearn",
     "spacy-langdetect": "spacy_langdetect",
@@ -57,8 +58,8 @@ def get_python_version():
 def import_tensorflow():
     try:
         warnings.simplefilter("ignore")
-        module_ = __import__("tensorflow.python.client", fromlist=["device_list"])
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+        module_ = __import__("tensorflow.python.client", fromlist=["device_list"])
         device_names = [d.name for d in module_.device_lib.list_local_devices()]
         print("Tensorflow can see the following devices %s" % device_names)
         return True
@@ -67,8 +68,8 @@ def import_tensorflow():
 
 
 def get_missing_packages(packages):
-    """Gets the packages required and optional for this version that are
-    not installed.
+    """
+    Check that all requested packages are importable and that resources exist
     """
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warning, missing = [], []
@@ -114,7 +115,7 @@ def test_packages():
             packages = [
                 p.strip() for p in f_packages.readlines() if not p.startswith("#")
             ]
-        print("Testing {} python packages".format(len(packages)))
+        print("Testing {} Python packages".format(len(packages)))
         warning, missing = get_missing_packages(packages)
         if warning:
             print(

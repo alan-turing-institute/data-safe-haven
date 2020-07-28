@@ -1,8 +1,8 @@
-#!/bin/sh
-# Use "MarkupSafe" as it is the first linux package on the Tier-3 whitelist (in the "00/00" package directory) so should be rsync'd near the end
-# Use "Fiona" as it is the last linux package on the Tier-3 whitelist (in the "ff/fb" package directory) so should be rsync'd near the end
-# Also take packages which are alphabetically early and late in the Tier-3 list
-packages=("MarkupSafe" "Fiona" "abed" "zope.interface")
+#! /bin/bash
+# Test "cvxopt" as it is an early package on the Tier-3 whitelist (in the "00/02" package directory) and is not pre-installed
+# Test "reportlab" as it a late package on the Tier-3 whitelist (in the "ff/fb" package directory) and is not pre-installed
+# Test "abed" and "zope.interface" which are alphabetically early and late in the Tier-3 list and are not pre-installed
+packages=("abed" "cvxopt" "reportlab" "zope.interface")
 
 # Install sample packages to local user library
 OUTCOME=0

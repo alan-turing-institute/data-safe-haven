@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Initialise the home directory, removing old files
-mkdir -p /opt/installation
-cd /opt/installation
+mkdir -p /opt/verification
+cd /opt/verification
 rm -rf smoke_tests*
 echo "$PAYLOAD" | base64 -d > smoke_tests.zip
 
@@ -23,4 +23,4 @@ git clone https://github.com/bats-core/bats-file /opt/bats/bats-file
 /opt/bats/bats-core/install.sh /usr/local
 
 # Show final outputs
-ls -alh /opt/installation/smoke_tests/*
+ls -alh /opt/verification/smoke_tests/*
