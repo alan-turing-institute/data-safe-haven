@@ -174,12 +174,20 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
-    OsDiskSizeGb           = $config.dsvmImage.vm.diskSizeGb
+    OsDiskSizeGb           = $config.dsvmImage.build.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
 }
 $null = Deploy-UbuntuVirtualMachine @params -NoWait
+
+
+# Tag the VM with the git commit hash
+# -----------------------------------
+$hash = git rev-parse --verify HEAD
+$tags = @{"Commit hash" = $hash}
+$resource = Get-AzResource -Name $buildVmName -ResourceGroup $config.dsvmImage.build.rg
+$null = New-AzTag -ResourceId $resource.id -Tag $tags
 
 
 # Log connection details for monitoring this build
