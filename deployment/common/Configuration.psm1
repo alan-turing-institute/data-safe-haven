@@ -358,7 +358,7 @@ function Add-SreConfig {
                 type = "Standard_LRS"
             }
             os = [ordered]@{
-                sizeGb = "128"
+                sizeGb = "default"
                 type = "Standard_LRS"
             }
             scratch = [ordered]@{

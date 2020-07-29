@@ -244,6 +244,15 @@ Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersio
 $null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
+# Set the OS disk size for this image
+# -----------------------------------
+$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
+if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
+    Add-LogMessage -Level Fatal "Image $imageVersion needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
+}
+
+
 # Check for any orphaned disks
 # ----------------------------
 $orphanedDisks = Get-AzDisk | Where-Object { $_.DiskState -eq "Unattached" } | Where-Object { $_.Name -Like "${$vmNamePrefix}*" }
@@ -474,7 +483,7 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.sre.location
     NicId                  = $vmNic.Id
-    OsDiskSizeGb           = $config.sre.dsvm.disks.os.sizeGb
+    OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
     DataDiskIds            = @($homeDisk.Id, $scratchDisk.Id)
