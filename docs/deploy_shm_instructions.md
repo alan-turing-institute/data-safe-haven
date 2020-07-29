@@ -481,7 +481,7 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
 1. Update the AAD rules
-    - Open Powershell (within the SHM DC) as an administrator
+    - Open Powershell (on the SHM DC) as an administrator
     - Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
