@@ -35,7 +35,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - To install manually follow the [instructions on Github](https://github.com/openssl/openssl)
   - To install a pre-compiled version on OSX use Homebrew: ` brew install openssl`
   - To install a pre-compiled version on Windows use [one of these](https://wiki.openssl.org/index.php/Binaries).
-    - OpenSSL is used in the Powershell scripts. In case Powershell cannot run OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path. To add OpenSSL to your Powershell environment path, run: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
+    - **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
 ## 2. Safe Haven Management configuration
 
