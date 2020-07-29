@@ -580,7 +580,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### MFA Configuation
 1. Configure MFA settings:
-    - Open Powershell (from the SHM DC) as an administrator
+    - Open Powershell (on the SHM NPS server) as an administrator
     - Run `& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"`
     - Enter `A` when prompted
     - If you are prompted to add webpages to exceptions then accept them.
