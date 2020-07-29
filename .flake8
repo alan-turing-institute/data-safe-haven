@@ -1,4 +1,15 @@
 [flake8]
-# Default ignore list [W503, E126, E121, W504, E226, E24, E704, E123]
-# Ignore line length E501
-ignore = W503, E126, E121, W504, E226, E24, E704, E123, E501
+# Default ignored error codes (rules not enforced by PEP8)
+# E121 - continuation line under-indented for hanging indent
+# E123 - closing bracket does not match indentation of opening bracket’s line
+# E126 - continuation line over-indented for hanging indent
+# E226 - missing whitespace around arithmetic operator
+# E241 - multiple spaces after ‘,’
+# E242 - tab after ‘,’
+# E704 - multiple statements on one line (def)
+# W503 - line break before binary operator
+# W504 - line break after binary operator
+#
+# Extra ignored error codes
+# E501 - line too long
+ignore = E121, E123, E126, E226, E24, E704, W501, W503, W504
