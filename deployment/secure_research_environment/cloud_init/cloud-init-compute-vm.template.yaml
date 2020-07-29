@@ -388,6 +388,9 @@ runcmd:
   - systemctl start docker
   - systemctl enable docker
   - 'docker run --restart=always -d --name=cocalc --mount type=bind,source=/data,target=/data --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site -v /scratch/cocalc:/projects -p 443:443 sagemathinc/cocalc'
+  # Install Weights and Biases
+  - echo ">=== Install Weights and Biases... ===<"
+  - 'docker run --restart=always -d --name=wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local'
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

@@ -575,7 +575,7 @@ function Add-SreConfig {
     }
     $config.sre.dsvm.scratchdisk = [ordered]@{
         type = "Standard_LRS"
-        size_gb = "512"
+        size_gb = "2048"
     }
     $config.sre.dsvm.homedisk = [ordered]@{
         type = "Standard_LRS"
