@@ -116,29 +116,23 @@ function Add-SreConfig {
         }
         datastorage = [ordered]@{
             rg = "RG_SHM_$($config.shm.id)_DATA_PERSISTENT".ToUpper()
-            accountName =  "$($config.shm.id)$($config.sre.id)data${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "$($config.shm.id)$($config.sre.id)data${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             containers = [ordered]@{
                 ingress = [ordered]@{
                     name = "ingress"
                     storageType = "Blob"
-
-
                 }
             }
         }
     }
-
-    # SASToken policies config
-
+    # Storage SASToken policies
     $config.sre.accessPolicies = [ordered]@{
-      researcher = [ordered]@{
-                        nameSuffix = "researcher"
-                        permissions = "rl"
-                        sasSecretName = "sre-$($config.sre.id)-storage-ingress-sas-researcher"
+        researcher = [ordered]@{
+            nameSuffix = "researcher"
+            permissions = "rl"
+            sasSecretName = "sre-$($config.sre.id)-storage-ingress-sas-researcher"
         }
     }
-
-
 
 
     # Secrets config
@@ -695,7 +689,7 @@ function Get-ShmFullConfig {
                 name = "$($shm.domain.netbiosName) Local AD Sync Administrator"
                 samAccountName = "$($shm.id)localadsync".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-aad-localsync-password".ToLower()
-                usernameSecretName =  "shm-$($shm.id)-aad-localsync-username".ToLower()
+                usernameSecretName = "shm-$($shm.id)-aad-localsync-username".ToLower()
             }
         }
     }

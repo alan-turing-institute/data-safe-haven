@@ -786,10 +786,8 @@ function Deploy-VirtualMachineMonitoringExtension {
             $version
         )
         Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
-        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
-            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and
-                $_.ExtensionType -eq $type }
-        if($installed) {
+        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
+        if ($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."
         } else {
             try {
@@ -809,24 +807,16 @@ function Deploy-VirtualMachineMonitoringExtension {
             }
         }
     }
-    if($vm.OSProfile.WindowsConfiguration) {
+    if ($vm.OSProfile.WindowsConfiguration) {
         # Install Monitoring Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
-            -type "MicrosoftMonitoringAgent" `
-            -version 1.0
+        Set-ExtensionIfNotInstalled -VM $vm -Publisher "Microsoft.EnterpriseCloud.Monitoring" -version 1.0 -type "MicrosoftMonitoringAgent" `
         # Install Dependency Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
-            -type "DependencyAgentWindows" `
-            -version 9.10
+        Set-ExtensionIfNotInstalled -VM $vm -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -type "DependencyAgentWindows" -version 9.10
     } elseif ($vm.OSProfile.LinuxConfiguration) {
         # Install Monitoring Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
-            -type "OmsAgentForLinux" `
-            -version 1.13
+        Set-ExtensionIfNotInstalled -VM $vm -Publisher "Microsoft.EnterpriseCloud.Monitoring" -type "OmsAgentForLinux" -version 1.13
         # Install Dependency Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
-            -type "DependencyAgentLinux" `
-            -version 9.10
+        Set-ExtensionIfNotInstalled -VM $vm -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -type "DependencyAgentLinux" -version 9.10
     } else {
         Add-LogMessage -Level Failure "VM OSProfile not recognised. Cannot activate logging for VM '$($vm.Name)'!"
     }

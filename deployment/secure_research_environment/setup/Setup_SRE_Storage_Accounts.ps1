@@ -1,8 +1,8 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Used to force the update of DNS record")]
-  [switch]$dnsForceUpdate
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId,
+    [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Used to force the update of DNS record")]
+    [switch]$dnsForceUpdate
 )
 
 Import-Module Az
@@ -11,6 +11,7 @@ Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+
 
 # Get config and set context
 # ------------------
@@ -47,13 +48,10 @@ if ($storageAccount) {
     }
 }
 
-Write-Host ($storageAccount | out-String)
-Write-Host ($($storageAccount).context | out-String)
 
 # Ensure that container exists in storage account
 # -----------------------------------------------
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
-
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
 $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
 if ($storageContainer) {
@@ -72,30 +70,21 @@ if ($storageContainer) {
 # Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
 # ----------------------------------------------------
 $accessType = $config.sre.accessPolicies.researcher.nameSuffix
-
-$availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
-
-foreach ($Policy in @($availablePolicies)) {
-    if ($Policy -like "*$accessType") {
-        $SASPolicy = $Policy.Policy
+foreach ($policy in @(Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $storageAccount.Context)) {
+    if ($policy -like "*$accessType") {
+        $SASPolicy = $policy.Policy
     }
 }
-if (-Not $SASPolicy){
+if (-not $SASPolicy) {
     $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
-                                                            -Policy $((Get-Date -Format "yyyyMMddHHmmss")+$accessType) `
-                                                            -Context $($storageAccount.Context) `
-                                                            -Permission $($config.sre.accessPolicies.researcher.permissions) `
-                                                            -StartTime (Get-Date).DateTime `
-                                                            -ExpiryTime (Get-Date).AddYears(1).DateTime
+                                                          -Policy $((Get-Date -Format "yyyyMMddHHmmss") + $accessType) `
+                                                          -Context $($storageAccount.Context) `
+                                                          -Permission $($config.sre.accessPolicies.researcher.permissions) `
+                                                          -StartTime (Get-Date).DateTime `
+                                                          -ExpiryTime (Get-Date).AddYears(1).DateTime
 }
-
-$newSAStoken = New-AzStorageContainerSASToken -Name $containerName `
-                                                -Policy $SASPolicy `
-                                                -Context $($storageAccount.Context)
-
-$null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name `
-                                        -SecretName $config.sre.accessPolicies.researcher.sasSecretName `
-                                        -DefaultValue $newSAStoken
+$newSAStoken = New-AzStorageContainerSASToken -Name $containerName -Policy $SASPolicy -Context $storageAccount.Context
+$null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName -DefaultValue $newSAStoken
 
 
 # Create the private endpoint
@@ -105,14 +94,9 @@ $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".To
 $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.containers.ingress.storageType
 
 
-# Ensure the keyvault exists and set its access policies
-# ------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-
-
 # Ensure that private endpoint exists
 # -----------------------------------
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction SilentlyContinue
 if ($privateEndpoint) {
     Add-LogMessage -Level Warning "Removing existing private endpoint '$($privateEndpointName)'"
@@ -131,7 +115,7 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Failed to create private endpoint '$($privateEndpointName)'!"
 }
-$privateip = (Get-AzNetworkInterface -Resourceid $($privateEndpoint.NetworkInterfaces.id)).IpConfigurations[0].PrivateIpAddress
+$privateip = (Get-AzNetworkInterface -ResourceId $($privateEndpoint.NetworkInterfaces.id)).IpConfigurations[0].PrivateIpAddress
 
 
 # Set up DNS zone
@@ -139,9 +123,9 @@ $privateip = (Get-AzNetworkInterface -Resourceid $($privateEndpoint.NetworkInter
 Add-LogMessage -Level Info "Setting up DNS Zone"
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $params = @{
-    ZoneName = $privateDnsZoneName
+    ZoneName  = $privateDnsZoneName
     ipaddress = $privateip
-    update  =  ($dnsForceUpdate ? "force" : "non forced")
+    update    = ($dnsForceUpdate ? "force" : "non forced")
 
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "set_dns_zone.ps1"

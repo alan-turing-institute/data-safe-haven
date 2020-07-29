@@ -23,13 +23,11 @@
                     "rg": "RG_SRE_ARTIFACTS"
                 },
                 "bootdiagnostics": {
-                    "rg": "RG_SRE_ARTIFACTS"          
+                    "rg": "RG_SRE_ARTIFACTS"
                 },
                 "datastorage": {
                     "rg": "RG_SHM_DATA_PERSISTENT"
                 }
-
-
             },
             "keyVault": {
                 "rg": "RG_SRE_SECRETS",

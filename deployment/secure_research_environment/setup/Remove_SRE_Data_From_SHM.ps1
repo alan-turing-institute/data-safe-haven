@@ -22,7 +22,6 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 
-
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "********************************************************************************"
@@ -77,20 +76,20 @@ if ($sreResources -or $sreResourceGroups) {
 
 
     # Remove SRE DNS records and private endpoint DNS Zone from SHM DC
-    # ----------------------------------
+    # ----------------------------------------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
-
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -ErrorAction SilentlyContinue
-    $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
-
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
-    $params = @{
-        shmFqdn = "`"$($config.shm.domain.fqdn)`""
-        sreId   = "`"$($config.sre.id)`""
-        privateDnsZoneName = "`"$privateDnsZoneName`""
+    if ($storageAccount) {
+        $privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+        $params = @{
+            shmFqdn = "`"$($config.shm.domain.fqdn)`""
+            sreId   = "`"$($config.sre.id)`""
+            privateDnsZoneName = "`"$privateDnsZoneName`""
+        }
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+        Write-Output $result.Value
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
 
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
@@ -110,8 +109,8 @@ if ($sreResources -or $sreResourceGroups) {
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
-    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue 
-    if($notExists) {
+    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
         Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
     } else {
         # RDS @ record
@@ -137,6 +136,7 @@ if ($sreResources -or $sreResourceGroups) {
         }
     }
 }
+
 
 # Switch back to original subscription
 # ------------------------------------
