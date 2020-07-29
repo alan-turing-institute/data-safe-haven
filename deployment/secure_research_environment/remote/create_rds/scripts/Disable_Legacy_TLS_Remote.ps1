@@ -10,8 +10,8 @@ function Disable-ProtocolForRole {
     )
     # Disable protocol for role
     New-Item "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Force | Out-Null 
-    New-ItemProperty -path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -name 'Enabled' -value '0' -PropertyType 'DWord' -Force | Out-Null 
-    New-ItemProperty -path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -name 'DisabledByDefault' -value 1 -PropertyType 'DWord' -Force | Out-Null 
+    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'Enabled' -Value '0' -PropertyType 'DWord' -Force | Out-Null 
+    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'DisabledByDefault' -Value 1 -PropertyType 'DWord' -Force | Out-Null 
     # Check status
     $status = Get-Item "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role"
     if((-not $status.GetValue("Enabled")) -and $status.GetValue("DisabledByDefault")) {
