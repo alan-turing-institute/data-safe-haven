@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Clean up temporary files
+rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
+
 # Deprovision this VM
 echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner on this VM"
 waagent -deprovision+user -force 2>&1

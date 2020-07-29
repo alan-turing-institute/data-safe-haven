@@ -187,7 +187,7 @@ $null = Deploy-UbuntuVirtualMachine @params -NoWait
 $hash = git rev-parse --verify HEAD
 $tags = @{"Commit hash" = $hash}
 $resource = Get-AzResource -Name $buildVmName -ResourceGroup $config.dsvmImage.build.rg
-$null = New-AzTag -ResourceId $resource.id -Tag $tags
+$null = New-AzTag -ResourceId $resource.Id -Tag $tags
 
 
 # Log connection details for monitoring this build

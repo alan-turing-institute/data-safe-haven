@@ -40,6 +40,7 @@ if ($notExists) {
     }
     Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
+$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"]}
 
 
 # Ensure that the VM is running
@@ -86,22 +87,22 @@ Add-LogMessage -Level Info "VM is generalized"
 $imageName = "Image$($vm.Name -replace 'Candidate', '')"
 $vm = Get-AzVM -Name $vm.Name -ResourceGroupName $config.dsvmImage.build.rg
 $imageConfig = New-AzImageConfig -Location $config.dsvmImage.location -SourceVirtualMachineId $vm.ID
-$null = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.dsvmImage.images.rg
-
+$image = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.dsvmImage.images.rg
+# Apply VM tags to the image
+$null = New-AzTag -ResourceId $image.id -Tag $vmTags
 # If the image has been successfully created then remove build artifacts
-$image = Get-AzResource -ResourceType Microsoft.Compute/images -Name $imageName
 if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
     Add-LogMessage -Level Info "... virtual machine: $vmName"
-    $null = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force
+    $null = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... hard disk: ${vmName}-OS-DISK"
-    $null = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.build.rg -Force
+    $null = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... network card: $vmName-NIC"
-    $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force
+    $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... public IP address: ${vmName}-NIC-PIP"
-    $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force
+    $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
 } else {
-    Add-LogMessage -Level Fatal "Image '$imageName' could not be found!"
+    Add-LogMessage -Level Fatal "Image '$imageName' could not be created!"
 }
 Add-LogMessage -Level Info "Finished creating image $imageName"
 
