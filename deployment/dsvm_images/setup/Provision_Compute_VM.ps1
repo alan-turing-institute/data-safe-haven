@@ -25,7 +25,7 @@ $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 # Select which VM size to use
 # ---------------------------
-if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
+if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
 # Standard_E2_v3  => 2 cores; 16GB RAM; £0.1163/hr; 2.3 GHz :: build 15h33m56s => £1.81
 # Standard_F4s_v2 => 4 cores;  8GB RAM; £0.1506/hr; 3.7 GHz :: build 12h22m17s => £1.86
 # Standard_D4_v3  => 4 cores; 16GB RAM; £0.1730/hr; 2.4 GHz :: build 16h41m13s => £2.88
@@ -174,7 +174,7 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
-    OsDiskSizeGb           = 128
+    OsDiskSizeGb           = $config.dsvmImage.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku

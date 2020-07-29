@@ -133,7 +133,7 @@ def main():
         n_cores = multiprocessing.cpu_count()
         # Memory
         prefix = "[{}: {: <7}]".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "INFO")
-        print("{} Memory available: {:d} GB".format(prefix, int(mem_gb)))
+        print("{} Memory available: {:d} GB".format(prefix, int(round(mem_gb))))
         mem_mean, mem_min, mem_max = sum(mem_usage) / len(mem_usage), min(mem_usage), max(mem_usage)
         print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_mean, mem_gb * mem_mean / 100))
         print("{} ...... min usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_min, mem_gb * mem_min / 100))

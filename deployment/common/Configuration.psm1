@@ -478,10 +478,12 @@ function Get-ShmFullConfig {
                 name = "ImageBuildSubnet"
                 cidr = "10.48.0.0/24"
             }
-            # Only the R-package installation is parallelisable
-            # => per-core performance is the bottleneck
-            # 8 GB of RAM is sufficient so we want a compute-optimised VM
-            vmSize = "Standard_F4s_v2"
+            # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
+            # We want a compute-optimised VM, since per-core performance is the bottleneck
+            vm = [ordered]@{
+                diskSizeGb = 64
+                size = "Standard_F4s_v2"
+            }
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"

@@ -9,7 +9,7 @@ PYTHON_ENV_NAME=$1
 DEBUG=0
 
 START_TIME=$(date +%s)
-echo ">=== ${START_TIME} Creating $PYTHON_ENV_NAME python installation ===<"
+echo ">=== ${START_TIME} Installing Python ($PYTHON_ENV_NAME) and packages ===<"
 echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
 
 # Ensure that pyenv is active
@@ -144,5 +144,6 @@ ln -s /opt/pyenv/versions/${PYTHON_VERSION}/share/jupyter/kernels/python[2,3] /o
 
 # Finish up
 # ---------
+rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
 ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
 echo "Finished at $(date +'%Y-%m-%d %H:%M:%S') after $ELAPSED"

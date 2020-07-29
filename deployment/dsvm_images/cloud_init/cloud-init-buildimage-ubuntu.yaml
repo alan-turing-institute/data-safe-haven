@@ -221,7 +221,7 @@ runcmd:
   - apt-get remove -y netcat-openbsd xscreensaver
   - apt-get autoremove -y --purge
   - apt-get clean
-  - sleep 60  # prevent 'dpkg frontend is locked by another process' errors
+  - sleep 60  # mitigate against 'dpkg frontend is locked by another process' errors
 
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
@@ -336,7 +336,7 @@ runcmd:
   - chmod -R o=u,o-w ${PYENV_ROOT}
 
   # Install any missing R packages - approximately 1 hr
-  - echo ">=== $(date +%s) Configuring R environment ===<"
+  - echo ">=== $(date +%s) Installing R packages ===<"
   - <R package list>
   # Install packages that are not directly installable under 3.6.3 using 'remotes'
   - Rscript -e "options('Ncpus' = parallel::detectCores()); print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
@@ -421,7 +421,9 @@ runcmd:
   - jupyter kernelspec list
 
   # Clean up any build artifacts
-  - rm -rf /root/* /tmp/*
+  - rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
+  - apt-get clean
+  - apt-get autoremove --purge
 
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"
