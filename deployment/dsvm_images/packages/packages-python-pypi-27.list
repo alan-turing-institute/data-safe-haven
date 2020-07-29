@@ -47,6 +47,7 @@ seaborn
 spacy
 Sphinx
 SQLAlchemy
+statsmodels
 sympy
 tables
 tensorboard
