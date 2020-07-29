@@ -117,8 +117,8 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
     }
 }
 
-# Ensure SRE is peered to correct mirror set
-# ------------------------------------------
+# Ensure SRE is peered to the Nexus repository
+# --------------------------------------------
 Add-LogMessage -Level Info "Peering to the repository network..."
 if (-not $config.shm.network.repositoryVnet.name) {
     Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
