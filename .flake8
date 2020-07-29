@@ -12,4 +12,4 @@
 #
 # Extra ignored error codes
 # E501 - line too long
-ignore = E121, E123, E126, E226, E24, E704, W501, W503, W504
+ignore = E121, E123, E126, E226, E24, E704, E501, W503, W504
