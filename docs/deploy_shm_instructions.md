@@ -557,7 +557,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### Configure NPS server
 1. Log in to the NPS Server VM using Microsoft Remote Desktop
-    - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group by selecting one the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
+    - the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
     - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
     - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
     - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
