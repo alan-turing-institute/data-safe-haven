@@ -551,19 +551,18 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Open a Powershell terminal (from your deployment machine) and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
     - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the RDS VMs by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- Deploy and configure the NPS VM by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around 20 minutes** to run.
     - **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
-### Configure NPS server
-1. Log in to the NPS Server VM using Microsoft Remote Desktop
+1. Log in to the NPS VM using Microsoft Remote Desktop
     - the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
     - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
     - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
     - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
     - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
-3. Configure NPS server to log to a local text file:
+3. Configure NPS to log to a local text file:
     - Select `NPS (Local) > Accounting` on the left-hand sidebar
       <p align="center">
           <img src="images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
@@ -602,7 +601,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 3. When prompted to `Provide your Tenant ID`, enter your Azure Active Directory ID. To get this:
     - In the Azure portal select `Azure Active Directory` in the left hand side bar
     - Select `Properties` in the left hand side bar
-    - Copy the `Directory ID` field and enter it at the prompt on the NPS server
+    - Copy the `Directory ID` field and enter it at the prompt on the NPS
     - **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
         - Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
         - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
@@ -687,7 +686,7 @@ From your **deployment machine**
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the RDS VMs by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
+- Deploy and configure the package mirrors by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **around 30 minutes** to run.
 
 ### [Optional] Tearing down package mirrors
@@ -696,7 +695,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Deploy and configure the RDS VMs by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
+- Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
 
 ## 14. Tearing down the SHM
