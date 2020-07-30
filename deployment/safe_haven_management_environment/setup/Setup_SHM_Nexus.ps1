@@ -17,6 +17,12 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
+# Retrieve passwords from the key vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+$nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.nexusAppAdminPasswordSecretName -DefaultLength 20
+
+
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
@@ -127,8 +133,7 @@ try {
     $raw_script = Get-Content $scriptPath -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitYaml = $cloudInitYaml.Replace("${indent}<configure_nexus.py>", $indented_script)
-    $nexusAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name $config.repository.nexus.nexusAdminPasswordSecretName
-    $cloudInitYaml = $cloudInitYaml.Replace("<nexus-admin-password>", $nexusAdminPassword)
+    $cloudInitYaml = $cloudInitYaml.Replace("<nexus-admin-password>", $nexusAppAdminPassword)
 
     $adminPasswordSecretName = $config.repository.nexus.adminPasswordSecretName
     # Deploy the VM
