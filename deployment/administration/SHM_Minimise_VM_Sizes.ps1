@@ -1,9 +1,9 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter VM Size for all VMs")]
+    [Parameter(HelpMessage = "Enter VM Size for all VMs")]
     [ValidateSet("Tiny","Small")]
-    [string]$Size
+    [string]$Size = "Small"
 )
 
 Import-Module Az

@@ -65,7 +65,7 @@ switch($Action) {
             $rgName = $rgVms[0].ResourceGroupName
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$rgName' are stopped..."
             foreach($vm in $rgVms) {
-                Stop-VM -VM $vm
+                Stop-VM -VM $vm -NoWait
             }
         }
     }

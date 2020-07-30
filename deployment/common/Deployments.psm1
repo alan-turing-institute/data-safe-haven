@@ -1347,7 +1347,9 @@ function Start-VM {
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         $ResourceGroupName,
         [Parameter(HelpMessage = "Force restart of VM if already running")]
-        [switch]$ForceRestart
+        [switch]$ForceRestart,
+        [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
+        [switch]$NoWait
     )
     # Get VM if not provided
     if(-not $VM) {
@@ -1356,32 +1358,40 @@ function Start-VM {
     # Ensure VM is started but don't restart if already running
     if(Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         if($ForceRestart) {
-            Add-LogMessage -Level Info "[ ] Restarting VM '$Name'"
-            $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
+            Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
+            $result = ReStart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
         } else {
             Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
             return
         }
     } elseif(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Add-LogMessage -Level Info "[ ] Starting VM '$Name'"
-        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
+        Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
+        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
     } elseif(Confirm-AzVmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Add-LogMessage -Level Info "[ ] Starting VM '$Name'"
-        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName
+        Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
+        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
     } else {
         $vmStatus = (Get-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Status).Statuses.Code
         Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
         return
     }
-    if($result.Status -eq "Succeeded") {
-        # Wait for VM to fully (re)start
-        while (-not (Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName)) {
-            Start-Sleep -Seconds 5
+    if($result.GetType().Name -eq "PSComputeLongRunningOperation") {
+        # Synchronous operation requested
+        if($result.Status -eq "Succeeded") {
+            Add-LogMessage -Level Success "VM '$($VM.Name)' successfully (re)started."
+        } else {
+            # If (re)start failed, log error with failure reason
+            Add-LogMessage -Level Fatal "Failed to (re)start VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
         }
-        Add-LogMessage -Level Success "VM '$($VM.Name)' successfully (re)started."
+    } elseif($result.GetType().Name -eq "PSAzureOperationResponse") {
+        # Asynchronous operation requested
+        if(-not $result.IsSuccessStatusCode) {
+            Add-LogMessage -Level Fatal "Request to (re)start VM '$($vm.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+        } else {
+            Add-LogMessage -Level Success "Request to (re)start VM '$($VM.Name)' accepted."
+        }
     } else {
-        # If (re)start failed, log error with failure reason
-        Add-LogMessage -Level Fatal "Failed to (re)start VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
+        Add-LogMessage -Level Fatal "Unrecognised return type from operation: '$($result.GetType().Name)'."
     }
     return
 }
@@ -1398,8 +1408,8 @@ function Stop-VM {
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         $ResourceGroupName,
-        [Parameter(HelpMessage = "Wait for VM deallocation operation to complete before returning")]
-        $WaitForCompletion
+        [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
+        [switch]$NoWait
     )
     # Get VM if not provided
     if(-not $VM) {
@@ -1409,18 +1419,13 @@ function Stop-VM {
     if(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {        
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
-    } elseif ($WaitForCompletion) {
-        $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force
-    } else {
-        $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -NoWait
+    } else {      
+        Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
+        $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -NoWait:$NoWait
     }
     if($result.GetType().Name -eq "PSComputeLongRunningOperation") {
         # Synchronous operation requested
         if($result.Status -eq "Succeeded") {
-            # Wait for VM to fully (re)start
-            while (-not (Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName)) {
-                Start-Sleep -Seconds 5
-            }
             Add-LogMessage -Level Success "VM '$($vm.Name)' deallocated.'"
         } else {
             Add-LogMessage -Level Fatal "Failed to deallocate VM '$($VM.Name)' [$($result.Status): $($result.Error)]"

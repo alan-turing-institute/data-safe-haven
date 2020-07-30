@@ -35,25 +35,29 @@ if($Group -eq "Identity") {
 switch($Action) {
     "EnsureStarted" {
         if(($Group -eq "Identity") -or ($Group -eq "All")) {
-            # Ensure DC VMs are started
+            # Ensure Identity VMs are started before anything else
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.dc.rg)' are started..."
             # Primary DC must be started before Secondary DC
             $primaryDCAlreadyRunning = Confirm-AzVmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
             if($primaryDCAlreadyRunning) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
-                # Start Secondary DC
+                # Start Secondary DC and NPS
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
+                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
             } else {
-                # Stop Secondary DC as it must start after Primary DC
-                Add-LogMessage -Level Info "Stopping Secondary DC as Primary DC is not running."
+                # Stop Secondary DC and NPS as these must start after Primary DC
+                Add-LogMessage -Level Info "Stopping Secondary DC and NPS as Primary DC is not running."
                 Stop-Vm -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
+                Stop-Vm -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
                 # Start Primary DC
                 Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
-                # Start Secondary DC
+                # Start Secondary DC and NPS
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
+                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
             }
-            # Remove DC VMs from general VM list so they are not processed twice   
-            $vmsByRg.Remove($config.dc.rg)
+            # Remove Identity VMs from general VM list so they are not processed twice   
+            $vmsByRg.Remove($config.dc.rg)  
+            $vmsByRg.Remove($config.nps.rg)
         }
         # Process remaining SHM VMs covered by the specified group
         foreach($key in $vmsByRg.Keys) {
@@ -71,7 +75,7 @@ switch($Action) {
             $rgName = $rgVms[0].ResourceGroupName
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$rgName' are stopped..."
             foreach($vm in $rgVms) {
-                Stop-VM -VM $vm
+                Stop-VM -VM $vm -NoWait
             }
         }
     }

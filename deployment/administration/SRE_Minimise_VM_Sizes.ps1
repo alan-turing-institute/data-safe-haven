@@ -1,9 +1,9 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
     [string]$configId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter VM Size for all VMs")]
+    [Parameter(HelpMessage = "Enter VM Size for all VMs")]
     [ValidateSet("Tiny","Small")]
-    [string]$Size
+    [string]$Size = "Small"
 )
 
 Import-Module Az
