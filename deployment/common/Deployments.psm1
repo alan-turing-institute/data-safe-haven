@@ -1522,6 +1522,59 @@ function Update-NetworkSecurityGroupRule {
 Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 
 
+# Peer two vnets
+# --------------
+function New-VnetPeering{
+    param(
+    [Parameter(mandatory = $true, HelpMessage = "Name of the first of two vnets to peer")]
+    $Vnet1Name,
+    [Parameter(mandatory = $true, HelpMessage = "Resource group of the first vnet")]
+    $Vnet1ResourceGroup,
+    [Parameter(mandatory = $true, HelpMessage = "Subscription name of the first vnet")]
+    $Vnet1SubscriptionName,
+    [Parameter(mandatory = $true, HelpMessage = "Name of the second of two vnets to peer")]
+    $Vnet2Name,
+    [Parameter(mandatory = $true, HelpMessage = "Resource group of the second vnet")]
+    $Vnet2ResourceGroup,
+    [Parameter(mandatory = $true, HelpMessage = "Subscription name of the second vnet")]
+    $Vnet2SubscriptionName
+    )
+    $originalContext = Get-AzContext
+    Add-LogMessage -Level Info "Peering $($Vnet1Name) and $($Vnet2Name)..."
+
+    # Get virtual networks
+    $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+    $vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup -ErrorAction Stop
+    $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+    $vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup -ErrorAction Stop
+
+    # Create peer in the direction vnet1 -> vnet2
+    $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+    $peeringName = "PEER_$($Vnet2Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet1Name)."
+    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id
+    if ($?) {
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+    }
+
+    # Create peer in the direction vnet2 -> vnet1
+    $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+    $peeringName = "PEER_$($Vnet1Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet2Name)."
+    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id
+    if ($?) {
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+    }
+
+    $null = Set-AzContext -Context $originalContext
+}
+Export-ModuleMember -Function New-VnetPeering
+
+
 # Wait for cloud-init provisioning to finish
 # ------------------------------------------
 function Wait-ForAzVMCloudInit {
