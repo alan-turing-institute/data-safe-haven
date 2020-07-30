@@ -103,10 +103,11 @@ if (-not $config.shm.network.repositoryVnet.name) {
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 if ($config.sre.nexus) {
-    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.repository.nexus.ipAddress -nexus $config.sre.nexus
+    $pypiIp = $config.shm.repository.nexus.ipAddress
 } else {
-    $addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+    $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
 }
+$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $pypiIp -nexus $config.sre.nexus
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 
