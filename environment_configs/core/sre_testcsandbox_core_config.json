@@ -11,5 +11,4 @@
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019122000",
     "databases": ["MSSQL", "PostgreSQL"]
-
 }

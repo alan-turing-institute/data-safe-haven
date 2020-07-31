@@ -422,8 +422,8 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
-    Replace("<SA_ACCOUNT_NAME>", $config.sre.storage.datastorage.accountName).
-    Replace("<SA_SAS_INGRESS>", $dsvmIngressSasToken).
+    Replace("<storageaccount-ingress-name>", $config.sre.storage.datastorage.accountName).
+    Replace("<storageaccount-ingress-sastoken>", $dsvmIngressSasToken).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
