@@ -84,6 +84,9 @@ if (-not $SASPolicy) {
                                                           -ExpiryTime (Get-Date).AddYears(1).DateTime
 }
 $newSAStoken = New-AzStorageContainerSASToken -Name $containerName -Policy $SASPolicy -Context $storageAccount.Context
+
+
+
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName -DefaultValue $newSAStoken
 
 
@@ -104,7 +107,13 @@ if ($privateEndpoint) {
 }
 Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
+($virtualNetwork | Select -ExpandProperty subnets | Where-Object  {$_.Name -eq 'SharedDataSubnet'} ).PrivateEndpointNetworkPolicies = "Disabled"
+
+$virtualNetwork | Set-AzVirtualNetwork
+
 $subnet = Get-AzSubnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $virtualNetwork
+
+
 $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
                                          -Name $privateEndpointName `
                                          -Location $config.sre.location `
