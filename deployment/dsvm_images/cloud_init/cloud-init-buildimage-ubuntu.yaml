@@ -205,6 +205,7 @@ runcmd:
   - echo "Installing Microsoft ODBC tools"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
+  - rm -rf /etc/apt/sources.list.d/vscode.list  # this is unnecessary added
   - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
