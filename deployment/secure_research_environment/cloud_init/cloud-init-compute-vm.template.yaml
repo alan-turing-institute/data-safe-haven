@@ -290,12 +290,6 @@ runcmd:
   # Set locale
   - locale-gen en_GB.UTF-8
   - update-locale LANG=en_GB.UTF-8
-  # Install bats
-  - git clone https://github.com/bats-core/bats-core /opt/bats/bats-core
-  - git clone https://github.com/bats-core/bats-support /opt/bats/bats-support
-  - git clone https://github.com/bats-core/bats-assert /opt/bats/bats-assert
-  - git clone https://github.com/bats-core/bats-file /opt/bats/bats-file
-  - /opt/bats/bats-core/install.sh /usr/local
   # PyCharm configuration
   - PY27_VERSION=$(/opt/pyenv/versions/2.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
   - PY36_VERSION=$(/opt/pyenv/versions/3.6.*/bin/python --version 2>&1 | cut -d ' ' -f2)

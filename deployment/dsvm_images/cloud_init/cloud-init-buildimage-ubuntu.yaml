@@ -282,6 +282,13 @@ runcmd:
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
+  # Install bats
+  - git clone https://github.com/bats-core/bats-core /opt/bats/bats-core
+  - git clone https://github.com/bats-core/bats-support /opt/bats/bats-support
+  - git clone https://github.com/bats-core/bats-assert /opt/bats/bats-assert
+  - git clone https://github.com/bats-core/bats-file /opt/bats/bats-file
+  - /opt/bats/bats-core/install.sh /usr/local
+
   # Manually update clamav signature database
   - echo ">=== $(date +%s) Updating clamav database ===<"
   # The systemd unit must be disabled in order to update using freshclam
