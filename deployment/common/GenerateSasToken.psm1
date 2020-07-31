@@ -9,9 +9,9 @@ function New-AccountSasToken {
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
         [string]$AccountName,
         [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Enter service(s) - one or more of Blob,File,Table,Queue")]
-        [string]$Service,
+        [string[]]$Service,
         [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Enter resource type(s) - one or more of Service,Container,Object")]
-        [string]$ResourceType,
+        [string[]]$ResourceType,
         [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Enter permission string")]
         [string]$Permission,
         [Parameter(Position = 6, Mandatory = $false, HelpMessage = "Enter validity in hours")]
