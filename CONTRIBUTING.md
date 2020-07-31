@@ -99,17 +99,11 @@ These can change over time, but at least one from each category `type`, `affecte
 
 | Category         | Labels |
 |:----------------:|:------:|
-| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-b9d6f3">
-|                  | <img src="https://img.shields.io/badge/-type:%20documentation%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20question%20-b9d6f3">
-|                  | <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
-| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20end users-b19cd9"> |
-|                  | <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
-|                  | <img src="https://img.shields.io/badge/-action:%20webapp-ff96ca"> |
-| severity         | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> |
-|                  | <img src="https://img.shields.io/badge/-action:%20done-77dd77"> <img src="https://img.shields.io/badge/-action:%20in%20progress-77dd77"> |
-| status           | <img src="https://img.shields.io/badge/-action:%20decision%20needed-ff96ca"> <img src="https://img.shields.io/badge/-action:%20on%20hold-fbca04"> |
-|                  | <img src="https://img.shields.io/badge/-action:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20wontfix-a0a0a0"> |
-| other            | <<img src="https://img.shields.io/badge/-good%20first%20issue-07ea97"> |
+| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20documentation%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20question%20-b9d6f3"> |
+| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20end users-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
+| severity         | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
+| status           | <img src="https://img.shields.io/badge/-status:%20done-77dd77"> <img src="https://img.shields.io/badge/-status:%20in%20progress-77dd77"> <img src="https://img.shields.io/badge/-status:%20decision%20needed-ff96ca"> <img src="https://img.shields.io/badge/-status:%20on%20hold-fbca04"> <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
+| other            | <img src="https://img.shields.io/badge/-good%20first%20issue-07ea97"> |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
 If you have been assigned an issue, please be ready to explain in the [project meeting](#project-meetings) what your progress has been.
