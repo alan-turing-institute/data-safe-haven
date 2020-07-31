@@ -20,8 +20,8 @@
 :gift: In order to help categorise your issue, please take the time to label it with at least one label from **each of** the following categories
 
 - type (bug; enhancement; documentation; question)
-- severity (minor; medium; embarrassing; broken / unusable)
 - affected (developers; end users; sysadmins)
+- severity (minor; medium; embarrassing; broken / unusable)
 - status: please assign the `decision needed` status for a new issue
 - If you think that this issue would be a good one for newcomers to tackle then please add the `good first issue` label
 

@@ -95,26 +95,21 @@ The goal is to allow you to focus on the content rather than worry too much abou
 ### Project management through issues
 Please regularly check out the agreed upon tasks at the [issues list][safehaven-issues].
 Every issue should have labels assigned to it from the following scheme.
-These can change over time, but at least one from each category `actions`, `affected`, `component`, `severity` and `topic` should be assigned to each issue.
+These can change over time, but at least one from each category `type`, `affected` and `severity` should be assigned to each issue.
 
 | Category         | Labels |
 |:----------------:|:------:|
-|                  | <img src="https://img.shields.io/badge/-action:%20in%20progress-77dd77"> |
-| actions          | <img src="https://img.shields.io/badge/-action:%20decision%20needed-fbca04"> <img src="https://img.shields.io/badge/-action:%20on%20hold-fbca04"> |
-|                  | <img src="https://img.shields.io/badge/-action:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20wontfix-a0a0a0"> |
-| affected         | <img src="https://img.shields.io/badge/-affected:%20project%20manager-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
-|                  | <img src="https://img.shields.io/badge/-affected:%20project%20manager-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
-|                  | <img src="https://img.shields.io/badge/-component:%20data%20server-ff96ca"> <img src="https://img.shields.io/badge/-component:%20documentation-ff96ca"> <img src="https://img.shields.io/badge/-component:%20domain%20controller-ff96ca"> |
-|                  | <img src="https://img.shields.io/badge/-component:%20dsvm-ff96ca"> <img src="https://img.shields.io/badge/-component:%20gitlab-ff96ca"> <img src="https://img.shields.io/badge/-component:%20hackmd-ff96ca"> |
-| component        | <img src="https://img.shields.io/badge/-component:%20mfa-ff96ca"> <img src="https://img.shields.io/badge/-component:%20networking-ff96ca"> <img src="https://img.shields.io/badge/-component:%20nps-ff96ca"> |
-|                  | <img src="https://img.shields.io/badge/-component:%20other-ff96ca"> <img src="https://img.shields.io/badge/-component:%20package%20mirrors-ff96ca"> <img src="https://img.shields.io/badge/-component:%20presentation%20server-ff96ca"> |
-|                  | <img src="https://img.shields.io/badge/-component:%20remote%20desktop-ff96ca"> <img src="https://img.shields.io/badge/-component:%20software%20updates-ff96ca"> <img src="https://img.shields.io/badge/-component:%20users-ff96ca"> |
+| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-b9d6f3">
+|                  | <img src="https://img.shields.io/badge/-type:%20documentation%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20question%20-b9d6f3">
+|                  | <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
+| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20end users-b19cd9"> |
+|                  | <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
 |                  | <img src="https://img.shields.io/badge/-action:%20webapp-ff96ca"> |
 | severity         | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> |
-|                  | <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
-|                  | <img src="https://img.shields.io/badge/-topic:%20data%20classification-b9d6f3"> <img src="https://img.shields.io/badge/-topic:%20data%20ingress%20/%20egress-b9d6f3"> <img src="https://img.shields.io/badge/-topic:%20deployment-b9d6f3"> |
-| topic            | <img src="https://img.shields.io/badge/-topic:%20future%20improvement-b9d6f3"> <img src="https://img.shields.io/badge/-topic:%20outreach%20/%20engagement-b9d6f3"> <img src="https://img.shields.io/badge/-topic:%20policy-b9d6f3"> |
-|                  | <img src="https://img.shields.io/badge/-topic:%20security-b9d6f3"> <img src="https://img.shields.io/badge/-topic:%20usability-b9d6f3"> |
+|                  | <img src="https://img.shields.io/badge/-action:%20done-77dd77"> <img src="https://img.shields.io/badge/-action:%20in%20progress-77dd77"> |
+| status           | <img src="https://img.shields.io/badge/-action:%20decision%20needed-ff96ca"> <img src="https://img.shields.io/badge/-action:%20on%20hold-fbca04"> |
+|                  | <img src="https://img.shields.io/badge/-action:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-action:%20wontfix-a0a0a0"> |
+| other            | <<img src="https://img.shields.io/badge/-good%20first%20issue-07ea97"> |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
 If you have been assigned an issue, please be ready to explain in the [project meeting](#project-meetings) what your progress has been.
@@ -181,30 +176,31 @@ Therefore it is sometimes nice to know **who** you're working with on the projec
 
 (Additionally some users have GitHub IDs that make it a little difficult to know who they are in real life! Hopefully this table will help you put names to faces and IDs :sparkles:)
 
-The following people have access to the project:
+The following people currently have write access to the project:
 
 | Name               | GitHub ID | Email |
 | ------------------ | --- | --- |
-| Diego Arenas       | [@darenasc](https://github.com/darenasc)| <darenasc@gmail.com> |
-| Jonathan Atkins    | [@jon-atkins](https://github.com/jon-atkins)| <jatkins@turing.ac.uk> |
-| Ayman Boustati     | [@aboustati](https://github.com/aboustati)| <aboustati@turing.ac.uk> |
+| Daniel Allen       | [@sysdan](https://github.com/sysdan) | <dallen@turing.ac.uk> |
+| Diego Arenas       | [@darenasc](https://github.com/darenasc) | <darenasc@gmail.com> |
+| Nick Barlow        | [@nbarlowATI](https://github.com/nbarlowATI) | <nbarlow@turing.ac.uk> |
 | Ian Carter         | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
 | Rob Clarke         | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
-| Giovanni Colavizza | [@Giovanni1085](https://github.com/Giovanni1085)| <gcolavizza@turing.ac.uk> |
-| Tom Doel           | [@tomdoel](https://github.com/tomdoel)| <tom.doel@codechoreography.co.uk> |
-| Christine Foster   | [@ChristineFoster](https://github.com/ChristineFoster)| <cfoster@turing.ac.uk> |
-| Evelina Gabasova   | [@evelinag](https://github.com/evelinag)| <egabasova@turing.ac.uk> |
-| James Geddes       | [@triangle-man](https://github.com/triangle-man)| <jgeddes@turing.ac.uk> |
-| Andreas Grammenos  | [@andylamp](https://github.com/andylamp) | <axor@turing.ac.uk> |
-| Nicolas Guernion   | | <nguernion@turing.ac.uk> |
-| James Hetherington | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
-| Franz Kiraly       | [@fkiraly](https://github.com/fkiraly)| <fkiraly@turing.ac.uk> |
+| Sarah Gibson       | [@sgibson91](https://github.com/sgibson91)| <sgibson@turing.ac.uk> |
+| Oscar Giles        | [@OscartGiles](https://github.com/OscartGiles) | <ogiles@turing.ac.uk> |
+| Tim Hobson         | [@thobson88](https://github.com/thobson88) | <thobson@turing.ac.uk> |
+| Radka Jersakova    | [@radka-j](https://github.com/radka-j) | <rjersakova@turing.ac.uk> |
 | Catherine Lawrence | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
+| Jim Madge          | [@JimMadge](https://github.com/JimMadge) | <jmadge@turing.ac.uk> |
+| Jules Manser       | [@JulesMarz](https://github.com/JulesMarz)| <jmanser@turing.ac.uk> |
+| Federico Nanni     | [@fedenanni](https://github.com/fedenanni) | <fnanni@turing.ac.uk> |
 | Martin O'Reilly    | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
+| Daisy Parry        | [@DaisyParry](https://github.com/DaisyParry)| <dparry@turing.ac.uk> |
+| Jack Roberts       | [@jack89roberts](https://github.com/jack89roberts) | <jroberts@turing.ac.uk> |
 | James Robinson     | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
-| Kenji Takeda       | [@ktakeda1](https://github.com/ktakeda1)| <ktakeda@turing.ac.uk> |
-| Sebastian Vollmer  | [@vollmersj](https://github.com/vollmersj)| <svollmer@turing.ac.uk> |
+| Oliver Strickson   | [@ots22](https://github.com/ots22) | <ostrickson@turing.ac.uk> |
 | Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
+| Warwick Wood       | [@warwick26](https://github.com/warwick26) | <wwood@turing.ac.uk> |
+| Kevin Xu           | [@kevinxufs](https://github.com/kevinxufs) | <kxu@turing.ac.uk> |
 
 
 ## Thank you!
