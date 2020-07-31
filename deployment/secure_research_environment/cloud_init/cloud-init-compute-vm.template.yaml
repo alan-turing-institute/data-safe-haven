@@ -290,10 +290,16 @@ runcmd:
   # Set locale
   - locale-gen en_GB.UTF-8
   - update-locale LANG=en_GB.UTF-8
+  # Install bats
+  - git clone https://github.com/bats-core/bats-core /opt/bats/bats-core
+  - git clone https://github.com/bats-core/bats-support /opt/bats/bats-support
+  - git clone https://github.com/bats-core/bats-assert /opt/bats/bats-assert
+  - git clone https://github.com/bats-core/bats-file /opt/bats/bats-file
+  - /opt/bats/bats-core/install.sh /usr/local
   # PyCharm configuration
-  - PY27_VERSION=$(/opt/anaconda/envs/py27/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY36_VERSION=$(/opt/anaconda/envs/py36/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY37_VERSION=$(/opt/anaconda/envs/py37/bin/python --version 2>&1 | cut -d ' ' -f2)
+  - PY27_VERSION=$(/opt/pyenv/versions/2.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
+  - PY36_VERSION=$(/opt/pyenv/versions/3.6.*/bin/python --version 2>&1 | cut -d ' ' -f2)
+  - PY37_VERSION=$(/opt/pyenv/versions/3.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
   - sed -i "s/PY27_VERSION/$PY27_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - sed -i "s/PY36_VERSION/$PY36_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
