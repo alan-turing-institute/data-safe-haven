@@ -341,12 +341,9 @@
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-        "datadisk": {
-          "size_gb": "2048"
-        },
-        "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
-        "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -359,17 +356,17 @@
         },
         "enableSSIS": true,
         "ip": "10.151.3.4",
-        "port": "14330",
+        "port": "1433",
         "sku": "sqldev",
         "subnet": "databases",
         "type": "MSSQL",
-        "vmName": "SQL-ING-SANDBOX",
+        "vmName": "MSSQL-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
       "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
-        "dbAdminPasswordSecretName": "sre-sandbox-postgresdb-admin-password",
-        "dbAdminUsernameSecretName": "sre-sandbox-postgresdb-admin-username",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -388,10 +385,10 @@
         "vmName": "PSTGRS-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_DATABASES"
+      "rg": "RG_SRE_SANDBOX_DATABASES"
     },
     "dataserver": {
-      "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
+      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
       "disks": {
         "egress": {
           "sizeGb": "512",
@@ -408,9 +405,9 @@
       },
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.151.2.250",
+      "ip": "10.151.2.4",
       "nsg": "NSG_SRE_SANDBOX_DATA",
-      "rg": "RG_SRE_DATA",
+      "rg": "RG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3"
     },
@@ -434,7 +431,7 @@
       }
     },
     "dsvm": {
-      "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
+      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
@@ -451,7 +448,7 @@
         }
       },
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
-      "rg": "RG_SRE_COMPUTE",
+      "rg": "RG_SRE_SANDBOX_COMPUTE",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageSubscription": "[Prod] Safe Haven VM Images",
@@ -465,12 +462,11 @@
     "id": "sandbox",
     "keyVault": {
       "name": "kv-testc-sre-sandbox",
-      "rg": "RG_SRE_SECRETS",
+      "rg": "RG_SRE_SANDBOX_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
-        "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-nps-secret"
+        "npsSecret": "sre-sandbox-other-nps-secret"
       }
     },
     "location": "centralus",
@@ -484,7 +480,7 @@
       "vnet": {
         "cidr": "10.151.0.0/21",
         "name": "VNET_SRE_SANDBOX",
-        "rg": "RG_SRE_NETWORKING",
+        "rg": "RG_SRE_SANDBOX_NETWORKING",
         "subnets": {
           "data": {
             "cidr": "10.151.2.0/24",
@@ -508,7 +504,7 @@
     },
     "rds": {
       "appSessionHost": {
-        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
         "disks": {
           "os": {
             "sizeGb": "128",
@@ -517,13 +513,13 @@
         },
         "fqdn": "APP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.151.1.249",
+        "ip": "10.151.1.5",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
       "gateway": {
-        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
         "disks": {
           "data1": {
             "sizeGb": "1023",
@@ -540,7 +536,7 @@
         },
         "fqdn": "RDG-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-SANDBOX",
-        "ip": "10.151.1.250",
+        "ip": "10.151.1.4",
         "networkRules": {
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
@@ -549,17 +545,17 @@
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_RDS"
+      "rg": "RG_SRE_SANDBOX_RDS"
     },
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {
         "accountName": "sresandboxartifactsakeqz",
-        "rg": "RG_SRE_ARTIFACTS"
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
         "accountName": "sresandboxbootdiagsakeqz",
-        "rg": "RG_SRE_ARTIFACTS"
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
       "datastorage": {
         "accountName": "testcsandboxdataakeqzbwg",
@@ -569,7 +565,7 @@
             "storageType": "Blob"
           }
         },
-        "rg": "RG_SHM_DATA_PERSISTENT"
+        "rg": "RG_SHM_TESTC_DATA_PERSISTENT"
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
@@ -578,24 +574,24 @@
       "serviceAccounts": {
         "datamount": {
           "name": "SANDBOX Data Mount Service Account",
-          "passwordSecretName": "sre-sandbox-datamount-password",
-          "samAccountName": "datamountsandbox"
+          "passwordSecretName": "sre-sandbox-other-service-account-password-datamount",
+          "samAccountName": "sandboxdatamount"
         },
         "ldapSearch": {
-          "name": "SANDBOX Gitlab LDAP",
-          "passwordSecretName": "sre-sandbox-gitlab-ldap-password",
-          "samAccountName": "gitlabldapsandbox"
+          "name": "SANDBOX LDAP Search Service Account",
+          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
+          "samAccountName": "sandboxldapsearch"
         },
         "postgres": {
           "name": "SANDBOX Postgres DB Service Account",
-          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password",
-          "samAccountName": "pgdbsrvcsandbox"
+          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres",
+          "samAccountName": "sandboxdbpostgres"
         }
       }
     },
     "webapps": {
       "gitlab": {
-        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
         "disks": {
           "data": {
             "sizeGb": "750",
@@ -608,13 +604,13 @@
         },
         "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.2.151",
+        "ip": "10.151.2.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
       "hackmd": {
-        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-hackmd",
         "disks": {
           "os": {
             "sizeGb": "750",
@@ -623,12 +619,12 @@
         },
         "fqdn": "HACKMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.151.2.152",
+        "ip": "10.151.2.6",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
-      "rg": "RG_SRE_WEBAPPS"
+      "rg": "RG_SRE_SANDBOX_WEBAPPS"
     }
   }
 }
