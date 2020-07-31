@@ -7,10 +7,11 @@
 
 ### Description
 :orange_book: Please describe your pull request.
+
 :closed_umbrella: If your pull request will close any open issues (hopefully it will!) then add `Closes #<issue number>` here.
 
 ### Tests
-- [ ] Ensure that all the automated tests pass
-- [ ] Document the manual tests that you have carried out (eg. deploying a new SHM and/or SRE) and confirm which commit you did this with
+**NB.** automated tests will be run as part of the CI process and will block this PR until they pass.
+- [ ] Document any manual tests that you have carried out (eg. deploying a new SHM and/or SRE) and confirm which commit you did this with
 
 :tada: Thank you!
