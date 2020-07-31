@@ -76,7 +76,7 @@ $accessType = $config.sre.accessPolicies.researcher.nameSuffix
 $availablePolicies = Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $($storageAccount.Context)
 
 foreach ($Policy in @($availablePolicies)) {
-    if ($Policy -like "*$accessType") {
+    if ($Policy.policy -like "*$accessType") {
         $SASPolicy = $Policy.Policy
     }
 }
