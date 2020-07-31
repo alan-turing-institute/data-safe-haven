@@ -95,7 +95,7 @@ The goal is to allow you to focus on the content rather than worry too much abou
 ### Project management through issues
 Please regularly check out the agreed upon tasks at the [issues list][safehaven-issues].
 Every issue should have labels assigned to it from the following scheme.
-These can change over time, but at least one from each category `type`, `affected` and `severity` should be assigned to each issue.
+At least one label from each category (`type`, `affected`, `severity` and `status`) should be assigned to each issue - these can change over time.
 
 | Category         | Labels |
 |:----------------:|:------:|
