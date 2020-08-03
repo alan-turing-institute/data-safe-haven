@@ -336,6 +336,7 @@ runcmd:
   - echo "pyenv global $(ls /opt/pyenv/versions/ | grep 3.7)" >> /etc/bash.bashrc
   # Make the global environment setting file live in each user's home directory
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
+  - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
 
   # Set 'other' permissions on the pyenv directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
