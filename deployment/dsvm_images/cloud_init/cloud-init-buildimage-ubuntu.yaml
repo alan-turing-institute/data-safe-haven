@@ -228,12 +228,12 @@ runcmd:
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
 
   # Azure Data Studio
-  - echo "Installing Azure Data Studio"
+  - echo "Installing Azure Data Studio..."
   - /opt/build/download_and_install_deb.sh azuredatastudio
   - if [ "$(which azuredatastudio)" = "" ]; then echo "Could not install Azure Data Studio!"; exit 1; fi
 
   # DBeaver and drivers
-  - echo "Installing DBeaver"
+  - echo "Installing DBeaver..."
   - /opt/build/download_and_install_deb.sh dbeaver
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers from maven
@@ -265,24 +265,25 @@ runcmd:
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
 
   # Install PyCharm
-  - echo "Installing PyCharm"
+  - echo "Installing PyCharm..."
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
   - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
 
   # Install RStudio,
-  - echo "Installing RStudio"
+  - echo "Installing RStudio..."
   - /opt/build/download_and_install_deb.sh rstudio
   - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; fi
 
   # Install spark
-  - echo "Installing spark"
+  - echo "Installing spark..."
   - /opt/build/download_and_install_tar.sh spark
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
   # Install bats
+  - echo "Installing bats..."
   - git clone https://github.com/bats-core/bats-core /opt/bats/bats-core
   - git clone https://github.com/bats-core/bats-support /opt/bats/bats-support
   - git clone https://github.com/bats-core/bats-assert /opt/bats/bats-assert
