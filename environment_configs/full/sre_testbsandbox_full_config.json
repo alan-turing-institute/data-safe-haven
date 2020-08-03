@@ -100,7 +100,8 @@
       "name": "kv-shm-testb",
       "rg": "RG_SHM_TESTB_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testb-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testb-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testb-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
         "domainAdminPassword": "shm-testb-domain-admin-password",
@@ -431,7 +432,7 @@
           "type": "Standard_LRS"
         },
         "os": {
-          "sizeGb": "64",
+          "sizeGb": "default",
           "type": "Standard_LRS"
         },
         "scratch": {
@@ -441,11 +442,13 @@
       },
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "rg": "RG_SRE_SANDBOX_COMPUTE",
-      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
-      "vmImageSubscription": "[Prod] Safe Haven VM Images",
-      "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.2.2020062200",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2020080300"
+      },
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {

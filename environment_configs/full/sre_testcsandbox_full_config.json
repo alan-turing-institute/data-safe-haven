@@ -100,7 +100,8 @@
       "name": "kv-shm-testc",
       "rg": "RG_SHM_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testc-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testc-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testc-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
         "domainAdminPassword": "shm-testc-domain-admin-password",
@@ -134,14 +135,14 @@
           }
         },
         "tier3": {
-          "diskSize": 31,
+          "diskSize": 511,
           "external": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-3",
+            "adminPasswordSecretName": "shm-testc-package-mirror-cran-external-tier-3-admin-password",
             "ipAddress": "10.20.3.5",
             "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
           },
           "internal": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-3",
+            "adminPasswordSecretName": "shm-testc-package-mirror-cran-internal-tier-3-admin-password",
             "ipAddress": "10.20.3.21",
             "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
           }
@@ -165,18 +166,18 @@
         "tier3": {
           "diskSize": 511,
           "external": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
+            "adminPasswordSecretName": "shm-testc-package-mirror-pypi-external-tier-3-admin-password",
             "ipAddress": "10.20.3.4",
             "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
           },
           "internal": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-3",
+            "adminPasswordSecretName": "shm-testc-package-mirror-pypi-internal-tier-3-admin-password",
             "ipAddress": "10.20.3.20",
             "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
           }
         }
       },
-      "rg": "RG_SHM_TESTC_PKG_MIRRORS",
+      "rg": "RG_SHM_PKG_MIRRORS",
       "vmSize": "Standard_B2ms"
     },
     "name": "Turing Development Safe Haven C",
@@ -434,7 +435,7 @@
           "type": "Standard_LRS"
         },
         "os": {
-          "sizeGb": "64",
+          "sizeGb": "default",
           "type": "Standard_LRS"
         },
         "scratch": {
@@ -444,11 +445,13 @@
       },
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "rg": "RG_SRE_COMPUTE",
-      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
-      "vmImageSubscription": "[Prod] Safe Haven VM Images",
-      "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019122000",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2020080300"
+      },
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {
