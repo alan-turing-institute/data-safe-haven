@@ -324,7 +324,6 @@ runcmd:
   - /opt/build/install_python_version.sh py37 || exit 1
   - echo "Installed python versions"
   - rm -rf /root/.cache /tmp/*  # clean up cached files from the python builds
-  - chmod go+w /opt/pyenv/shims # allow users to write new files to the shims directory
   - du --si -d 1 /opt/pyenv/versions
 
   # Add pyenv to global settings
@@ -342,6 +341,7 @@ runcmd:
   # We then remove write access so that site-packages can be used but not altered
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
+  - chmod go+w /opt/pyenv/shims # allow users to write new files to the shims directory
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
