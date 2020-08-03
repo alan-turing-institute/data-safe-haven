@@ -383,14 +383,18 @@ runcmd:
   - echo ">=== Mount and configure disks... ===<"
   - /disk_setup
   - rm /disk_setup
-  # Install CoCalc
-  - echo ">=== Install CoCalc... ===<"
+  # Get Docker images
+  - echo ">=== Retrieving Docker images... ===<"
   - systemctl start docker
   - systemctl enable docker
-  - 'docker run --restart=always -d --name=cocalc --mount type=bind,source=/data,target=/data --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site -v /scratch/cocalc:/projects -p 443:443 sagemathinc/cocalc'
-  # Install Weights and Biases
-  - echo ">=== Install Weights and Biases... ===<"
-  - 'docker run --restart=always -d --name=wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local'
+  - docker pull sagemathinc/cocalc
+  - docker pull wandb/local
+  # Initialise CoCalc
+  - echo ">=== Initialising CoCalc... ===<"
+  - 'docker run --restart=always -d --name=cocalc -v /data:/data -v /scratch/cocalc:/projects -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc'
+  # Initialise Weights and Biases
+  - echo ">=== Initialising Weights and Biases... ===<"
+  - 'docker run --restart=always -d --name=wandb -v /data:/data  -v /scratch/wandb:/vol -p 8080:8080 wandb/local'
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
