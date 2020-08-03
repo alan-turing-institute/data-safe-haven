@@ -348,19 +348,19 @@ runcmd:
   - mkdir -p /data
   - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/etc/smbcredentials.secret\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  - mount /data
+  - mount /data  # NB. this initial mount might fail if the dataserver cannot be resolved yet
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
   - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  - mount /shared
+  - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  - mount /output
+  - mount /output  # NB. this initial mount might fail if the dataserver cannot be resolved yet
   # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
   - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
