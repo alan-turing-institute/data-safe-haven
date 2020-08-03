@@ -485,6 +485,7 @@ $params = @{
     SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
+                             ("Docker containers", "restart_docker_containers.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
                              ("realm join", "rerun_realm_join.sh"),
                              ("SSSD service", "restart_sssd_service.sh"),
