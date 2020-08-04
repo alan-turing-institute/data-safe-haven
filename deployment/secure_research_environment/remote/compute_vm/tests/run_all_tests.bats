@@ -111,3 +111,25 @@ setup_python () {
     run bash test_mirrors_cran.sh
     assert_output --partial 'CRAN working OK'
 }
+
+# Databases
+# ---------
+# Test MS SQL database
+@test "MS SQL database (Python)" {
+    run bash test_databases.sh -d mssql -l python
+    assert_output --partial 'All database tests passed'
+}
+@test "MS SQL database (R)" {
+    run bash test_databases.sh -d mssql -l R
+    assert_output --partial 'All database tests passed'
+}
+
+# Test Postgres database
+@test "Postgres database (Python)" {
+    run bash test_databases.sh -d postgres -l python
+    assert_output --partial 'All database tests passed'
+}
+@test "Postgres database (R)" {
+    run bash test_databases.sh -d postgres -l R
+    assert_output --partial 'All database tests passed'
+}

@@ -525,6 +525,12 @@ $zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+# Set correct database paths
+$template = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
+$template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
+          Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
+          Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
+          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Out-File (Join-Path $tempDir "tests" "test_databases.sh")
 if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
