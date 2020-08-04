@@ -9,12 +9,12 @@ function Disable-ProtocolForRole {
         $Role
     )
     # Disable protocol for role
-    New-Item "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Force | Out-Null 
-    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'Enabled' -Value '0' -PropertyType 'DWord' -Force | Out-Null 
-    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'DisabledByDefault' -Value 1 -PropertyType 'DWord' -Force | Out-Null 
+    New-Item "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Force | Out-Null
+    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'Enabled' -Value '0' -PropertyType 'DWord' -Force | Out-Null
+    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role" -Name 'DisabledByDefault' -Value 1 -PropertyType 'DWord' -Force | Out-Null
     # Check status
     $status = Get-Item "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\$Role"
-    if((-not $status.GetValue("Enabled")) -and $status.GetValue("DisabledByDefault")) {
+    if ((-not $status.GetValue("Enabled")) -and $status.GetValue("DisabledByDefault")) {
         Write-Output " [o] '$Protocol' protocol is disabled for '$Role' role."
     } else {
         Write-Output " [x] Failed to ensure '$Protocol' protocol is disabled for '$Role' role."
@@ -46,7 +46,7 @@ Write-Output "Ensuring weak TLS cipher suites are disabled..."
 # listed in the table of preferred secure cipher suites at
 # https://www.acunetix.com/blog/articles/tls-ssl-cipher-hardening/
 # NOTE: We exclude known weak suites, rather than restrict ourselved to
-# known strong suites, as additional stronger suites may be introduced 
+# known strong suites, as additional stronger suites may be introduced
 # over time (e.g. with the rollout of general availability support for
 # TLS 3.0).
 $weakCipherSuites = @(
@@ -77,7 +77,7 @@ $weakCipherSuites = @(
     "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
 )
 foreach ($cipherSuite in $WeakCipherSuites) {
-    if(Get-TlsCipherSuite -Name $cipherSuite) {
+    if (Get-TlsCipherSuite -Name $cipherSuite) {
         Disable-TlsCipherSuite -Name $cipherSuite
         if ($?) {
             Write-Output " [o] Disabled '$cipherSuite' suite."
