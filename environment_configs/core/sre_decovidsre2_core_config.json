@@ -9,6 +9,6 @@
     "inboundAccessFrom": "193.60.220.253,193.60.220.240",
     "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020080300",
+    "computeVmImageVersion": "0.3.2020080301",
     "databases": ["MSSQL", "PostgreSQL"]
 }

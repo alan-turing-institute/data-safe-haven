@@ -9,7 +9,7 @@
     "inboundAccessFrom": "anywhere",
     "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020080300",
+    "computeVmImageVersion": "0.3.2020080301",
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "sre": {

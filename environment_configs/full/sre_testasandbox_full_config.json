@@ -447,7 +447,7 @@
         "rg": "RG_SH_IMAGE_GALLERY",
         "subscription": "[Prod] Safe Haven VM Images",
         "type": "Ubuntu",
-        "version": "0.3.2020080300"
+        "version": "0.3.2020080301"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
