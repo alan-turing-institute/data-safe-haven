@@ -2,9 +2,8 @@
 library(DBI)
 library(odbc)
 
+# Parse command line arguments
 args = commandArgs(trailingOnly=TRUE)
-
-# Ensure that all required arguments are present
 if (length(args)!=4) {
   stop("Exactly four arguments are required: db_type, db_name, port and server_name")
 }
