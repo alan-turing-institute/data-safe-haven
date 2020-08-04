@@ -832,7 +832,7 @@ function Deploy-VirtualMachineMonitoringExtension {
         )
         Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
         $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
-            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and 
+            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and
                 $_.ExtensionType -eq $type }
         if($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."
@@ -984,7 +984,7 @@ Export-ModuleMember -Function Get-NSRecords
 
 # Get all VMs for an SHM or SRE
 # -----------------------------
-function Get-ShmOrSreVMsByResourceGroup {
+function Get-VMsByResourceGroupPrefix {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
         $ResourceGroupPrefix
@@ -1000,7 +1000,7 @@ function Get-ShmOrSreVMsByResourceGroup {
     }
     return $shmVmsByRg
 }
-Export-ModuleMember -Function Get-ShmOrSreVMsByResourceGroup
+Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 
 
 # Run remote shell script
@@ -1416,10 +1416,10 @@ function Stop-VM {
         $VM = Get-AzVM -Name  $Name -ResourceGroup $ResourceGroupName
     }
     # Ensure VM is deallocated
-    if(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {        
+    if(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
-    } else {      
+    } else {
         Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
         $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -NoWait:$NoWait
     }

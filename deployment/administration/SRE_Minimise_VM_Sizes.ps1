@@ -26,7 +26,7 @@ if ($Size -eq "Tiny") {
 }
 
 # Get all VMs in matching resource groups
-$vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.sre.rgPrefix
+$vmsByRg = Get-VMsByResourceGroupPrefix -ResourceGroupPrefix $config.sre.rgPrefix
 
 foreach ($key in $vmsByRg.Keys) {
     $rgVms = $vmsByRg[$key]

@@ -21,8 +21,10 @@ $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
+# Get all VMs in matching resource groups
+$vmsByRg = Get-VMsByResourceGroupPrefix -ResourceGroupPrefix $config.rgPrefix
 
-$vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.rgPrefix
+# Remove some VMs from consideration
 if ($Group -eq "Identity") {
     # Remove Mirror VMs from list
     $vmsByRg.Remove($config.mirrors.rg)

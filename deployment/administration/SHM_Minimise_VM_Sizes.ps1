@@ -18,14 +18,15 @@ $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
-
-$vmsByRg = Get-ShmOrSreVMsByResourceGroup -ResourceGroupPrefix $config.rgPrefix
-
+# Set VM size
 if ($Size -eq "Tiny") {
     $vmSize = "Standard_B2ms"
 } elseif ($Size -eq "Small") {
     $vmSize = "Standard_D2_v3"
 }
+
+# Get all VMs in matching resource groups
+$vmsByRg = Get-VMsByResourceGroupPrefix -ResourceGroupPrefix $config.rgPrefix
 
 foreach ($key in $vmsByRg.Keys) {
     $rgVms = $vmsByRg[$key]
