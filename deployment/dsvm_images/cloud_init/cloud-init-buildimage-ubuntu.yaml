@@ -341,9 +341,10 @@ runcmd:
 
   # Set 'other' permissions on the pyenv directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
+  # Finally, make the shims directory writeable so that users can create new shims
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
-  - chmod go+w /opt/pyenv/shims # allow users to write new files to the shims directory
+  - chmod go+w /opt/pyenv/shims
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
