@@ -36,17 +36,17 @@ function Add-NetworkSecurityGroupRule {
         $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
         if ($notExists) {
             if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-                $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                        -Access "$Access" `
-                                                        -Description "$Description" `
-                                                        -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                        -DestinationPortRange $DestinationPortRange `
-                                                        -Direction "$Direction" `
-                                                        -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                        -Priority $Priority `
-                                                        -Protocol "$Protocol" `
-                                                        -SourceAddressPrefix $SourceAddressPrefix `
-                                                        -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+            $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                    -Access "$Access" `
+                                                    -Description "$Description" `
+                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                    -DestinationPortRange $DestinationPortRange `
+                                                    -Direction "$Direction" `
+                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                    -Priority $Priority `
+                                                    -Protocol "$Protocol" `
+                                                    -SourceAddressPrefix $SourceAddressPrefix `
+                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
             if ($?) {
                 if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
             } else {
@@ -218,16 +218,16 @@ function Deploy-FirewallApplicationRule {
         $Firewall,
         [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
         $SourceAddress,
-        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "Protocol to use")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "Protocol to use")]
         $Protocol,
         [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
         $Priority,
         [Parameter(Mandatory = $false, HelpMessage = "Whether these rules will allow or deny access to the specified resources")]
         [ValidateSet("Allow", "Deny")]
         $ActionType,
-        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
         $TargetFqdn,
-        [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
         $TargetTag,
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
@@ -259,7 +259,7 @@ function Deploy-FirewallApplicationRule {
     }
     try {
         $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
-        if($LocalChangeOnly) {
+        if ($LocalChangeOnly) {
             Add-LogMessage -Level InfoSuccess "Ensured that application rule '$Name' exists on local firewall object only."
         } else {
             $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
@@ -321,7 +321,7 @@ function Deploy-FirewallNetworkRule {
     }
     try {
         $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
-        if($LocalChangeOnly) {
+        if ($LocalChangeOnly) {
             Add-LogMessage -Level InfoSuccess "Ensured that network rule '$Name' exists on local firewall object only."
         } else {
             $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
@@ -710,9 +710,9 @@ function Deploy-UbuntuVirtualMachine {
         $OsDiskType,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Mandatory = $true, ParameterSetName="ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByImageId", HelpMessage = "ID of VM image to deploy")]
         $ImageId = $null,
-        [Parameter(Mandatory = $true, ParameterSetName="ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         $ImageSku = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
         $OsDiskSizeGb = $null,
@@ -822,56 +822,46 @@ function Deploy-VirtualMachineMonitoringExtension {
     function Set-ExtensionIfNotInstalled {
         param(
             [Parameter(Mandatory = $true, HelpMessage = "VM object")]
-            $vm,
+            $VM,
             [Parameter(Mandatory = $true, HelpMessage = "Extension publisher")]
-            $publisher,
+            $Publisher,
             [Parameter(Mandatory = $true, HelpMessage = "Extension type")]
-            $type,
+            $Type,
             [Parameter(Mandatory = $true, HelpMessage = "Extension version")]
-            $version
+            $Version
         )
         Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
-        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName `
-            -VMName $VM.Name | Where-Object {  $_.Publisher -eq $publisher -and
-                $_.ExtensionType -eq $type }
-        if($installed) {
-            Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($vm.Name)'."
+        $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
+        if ($installed) {
+            Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
         } else {
             try {
                 Set-AzVMExtension -ExtensionName $type `
-                    -ResourceGroupName $VM.ResourceGroupName `
-                    -VMName $vm.Name `
-                    -Publisher $publisher `
-                    -ExtensionType $type `
-                    -TypeHandlerVersion $version `
-                    -Settings $PublicSettings `
-                    -ProtectedSettings $ProtectedSettings `
-                    -Location $vm.location `
-                    -ErrorAction Stop
-                Add-LogMessage -Level Success "Installed extension '$type' on VM '$($vm.Name)'."
+                                  -ExtensionType $type `
+                                  -Location $VM.location `
+                                  -ProtectedSettings $ProtectedSettings `
+                                  -Publisher $publisher `
+                                  -ResourceGroupName $VM.ResourceGroupName `
+                                  -Settings $PublicSettings `
+                                  -TypeHandlerVersion $version `
+                                  -VMName $VM.Name `
+                                  -ErrorAction Stop
+                Add-LogMessage -Level Success "Installed extension '$type' on VM '$($VM.Name)'."
             } catch {
-                Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($vm.Name)'!"
+                Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($VM.Name)'!"
             }
         }
     }
-    if($vm.OSProfile.WindowsConfiguration) {
+    if ($VM.OSProfile.WindowsConfiguration) {
         # Install Monitoring Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
-            -type "MicrosoftMonitoringAgent" `
-            -version 1.0
+        Set-ExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "MicrosoftMonitoringAgent" -Version 1.0
         # Install Dependency Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
-            -type "DependencyAgentWindows" `
-            -version 9.10
-    } elseif ($vm.OSProfile.LinuxConfiguration) {
+        Set-ExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentWindows" -Version 9.10
+    } elseif ($VM.OSProfile.LinuxConfiguration) {
         # Install Monitoring Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.EnterpriseCloud.Monitoring" `
-            -type "OmsAgentForLinux" `
-            -version 1.13
+        Set-ExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "OmsAgentForLinux" -Version 1.13
         # Install Dependency Agent
-        Set-ExtensionIfNotInstalled -vm $vm -publisher "Microsoft.Azure.Monitoring.DependencyAgent" `
-            -type "DependencyAgentLinux" `
-            -version 9.10
+        Set-ExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentLinux" -Version 9.10
     } else {
         Add-LogMessage -Level Failure "VM OSProfile not recognised. Cannot activate logging for VM '$($vm.Name)'!"
     }
@@ -921,9 +911,7 @@ function Enable-AzVM {
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to enable")]
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName,
-        [Parameter(HelpMessage = "Skip restart if running")]
-        [switch]$SkipRestart
+        $ResourceGroupName
     )
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
@@ -1007,9 +995,9 @@ Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 # -----------------------
 function Invoke-RemoteScript {
     param(
-        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run remotely")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to local script that will be run remotely")]
         $ScriptPath,
-        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Contents of script that will be run remotely")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByString", HelpMessage = "Contents of script that will be run remotely")]
         $Script,
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
         $VMName,
@@ -1088,7 +1076,7 @@ function Invoke-WindowsConfigureAndUpdate {
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|")}
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
         Write-Output $result.Value
     }
     Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
@@ -1217,7 +1205,7 @@ function Set-DnsZoneAndParentNSRecords {
     )
 
     $subdomain = $DnsZoneName.Split('.')[0]
-    $parentDnsZoneName = $DnsZoneName -replace "$subdomain.",""
+    $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
 
     # Create DNS Zone
     # ---------------
@@ -1260,10 +1248,11 @@ function Set-KeyVaultPermissions {
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
-    Set-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $securityGroupId `
-                               -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
-                               -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
-                               -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
+    Set-AzKeyVaultAccessPolicy -VaultName $Name
+                               -ObjectId $securityGroupId `
+                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover `
+                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore `
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
     $success = $?
     foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
         Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
@@ -1352,22 +1341,22 @@ function Start-VM {
         [switch]$NoWait
     )
     # Get VM if not provided
-    if(-not $VM) {
+    if (-not $VM) {
         $VM = Get-AzVM -Name  $Name -ResourceGroup $ResourceGroupName
     }
     # Ensure VM is started but don't restart if already running
-    if(Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        if($ForceRestart) {
+    if (Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+        if ($ForceRestart) {
             Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
             $result = ReStart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
         } else {
             Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
             return
         }
-    } elseif(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+    } elseif (Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
         $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
-    } elseif(Confirm-AzVmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+    } elseif (Confirm-AzVmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
         $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
     } else {
@@ -1375,18 +1364,18 @@ function Start-VM {
         Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
         return
     }
-    if($result.GetType().Name -eq "PSComputeLongRunningOperation") {
+    if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {
         # Synchronous operation requested
-        if($result.Status -eq "Succeeded") {
+        if ($result.Status -eq "Succeeded") {
             Add-LogMessage -Level Success "VM '$($VM.Name)' successfully (re)started."
         } else {
             # If (re)start failed, log error with failure reason
             Add-LogMessage -Level Fatal "Failed to (re)start VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
         }
-    } elseif($result.GetType().Name -eq "PSAzureOperationResponse") {
+    } elseif ($result.GetType().Name -eq "PSAzureOperationResponse") {
         # Asynchronous operation requested
-        if(-not $result.IsSuccessStatusCode) {
-            Add-LogMessage -Level Fatal "Request to (re)start VM '$($vm.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+        if (-not $result.IsSuccessStatusCode) {
+            Add-LogMessage -Level Fatal "Request to (re)start VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
         } else {
             Add-LogMessage -Level Success "Request to (re)start VM '$($VM.Name)' accepted."
         }
@@ -1412,28 +1401,28 @@ function Stop-VM {
         [switch]$NoWait
     )
     # Get VM if not provided
-    if(-not $VM) {
+    if (-not $VM) {
         $VM = Get-AzVM -Name  $Name -ResourceGroup $ResourceGroupName
     }
     # Ensure VM is deallocated
-    if(Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+    if (Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
     } else {
         Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
-        $result = Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -NoWait:$NoWait
+        $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
     }
-    if($result.GetType().Name -eq "PSComputeLongRunningOperation") {
+    if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {
         # Synchronous operation requested
-        if($result.Status -eq "Succeeded") {
-            Add-LogMessage -Level Success "VM '$($vm.Name)' deallocated.'"
+        if ($result.Status -eq "Succeeded") {
+            Add-LogMessage -Level Success "VM '$($VM.Name)' deallocated.'"
         } else {
             Add-LogMessage -Level Fatal "Failed to deallocate VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
         }
-    } elseif($result.GetType().Name -eq "PSAzureOperationResponse") {
+    } elseif ($result.GetType().Name -eq "PSAzureOperationResponse") {
         # Asynchronous operation requested
-        if(-not $result.IsSuccessStatusCode) {
-            Add-LogMessage -Level Fatal "Request to deallocate VM '$($vm.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+        if (-not $result.IsSuccessStatusCode) {
+            Add-LogMessage -Level Fatal "Request to deallocate VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
         } else {
             Add-LogMessage -Level Success "Request to deallocate VM '$($VM.Name)' accepted."
         }
