@@ -1347,7 +1347,7 @@ function Start-VM {
     if (Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         if ($ForceRestart) {
             Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
-            $result = ReStart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
+            $result = Restart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
         } else {
             Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
             return
