@@ -977,16 +977,15 @@ function Get-VMsByResourceGroupPrefix {
         [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
         $ResourceGroupPrefix
     )
-    $rgFilter = "$($ResourceGroupPrefix)*"
-    $shmResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter }
-    $shmVmsByRg = [ordered]@{}
-    foreach($rg in $shmResourceGroups) {
+    $matchingResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "${ResourceGroupPrefix}_*" }
+    $matchingVMs = [ordered]@{}
+    foreach($rg in $matchingResourceGroups) {
         $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
         if($rgVms) {
-            $shmVmsByRg[$rg.ResourceGroupName] = $rgVms
+            $matchingVMs[$rg.ResourceGroupName] = $rgVms
         }
     }
-    return $shmVmsByRg
+    return $matchingVMs
 }
 Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 

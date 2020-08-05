@@ -18,7 +18,7 @@
     },
     "location": "uksouth",
     "overrides": {
-        "rgPrefix": "RG_SHM_",
+        "rgPrefix": "RG_SHM",
         "domain": {
             "netbiosName": "TURINGSAFEHAVEN",
             "ous": {
@@ -42,13 +42,7 @@
                 }
             }
         },
-        "network": {
-            "vnet": {
-                "rg": "RG_SHM_NETWORKING"
-            }
-        },
         "keyVault": {
-            "rg": "RG_SHM_SECRETS",
             "secretNames": {
                 "domainAdminUsername": "shm-turing1-vm-admin-username"
             }
@@ -88,7 +82,6 @@
             }
         },
         "dc": {
-            "rg": "RG_SHM_DC",
             "ip": "10.0.0.250",
             "safemodePasswordSecretName": "shm-turing1-dc-safemode-password"
         },
@@ -97,21 +90,17 @@
         },
         "nps": {
             "adminPasswordSecretName": "shm-turing1-nps-admin-password",
-            "rg": "RG_SHM_NPS",
             "ip": "10.0.0.248"
         },
         "storage": {
             "artifacts": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmturing1artifactsvkdrslu"
             },
             "bootdiagnostics": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmturing1bootdiagsvkdrslu"
             }
         },
         "mirrors": {
-            "rg": "RG_SHM_PKG_MIRRORS",
             "pypi": {
                 "tier2": {
                     "diskSize": 8191,

@@ -18,7 +18,7 @@
     },
     "location": "centralus",
     "overrides": {
-        "rgPrefix": "RG_SHM_",
+        "rgPrefix": "RG_SHM",
         "domain": {
             "netbiosName": "SAFEHAVENTESTC",
             "ous": {
@@ -42,13 +42,7 @@
                 }
             }
         },
-        "network": {
-            "vnet": {
-                "rg": "RG_SHM_NETWORKING"
-            }
-        },
         "keyVault": {
-            "rg": "RG_SHM_SECRETS",
             "secretNames": {
                 "domainAdminUsername": "shm-testc-vm-admin-username",
                 "vmAdminUsername": "shm-testc-vm-admin-username"
@@ -89,7 +83,6 @@
             }
         },
         "dc": {
-            "rg": "RG_SHM_DC",
             "ip": "10.0.0.250",
             "safemodePasswordSecretName": "shm-testc-dc-safemode-password"
         },
@@ -98,16 +91,13 @@
         },
         "nps": {
             "adminPasswordSecretName": "shm-testc-nps-admin-password",
-            "rg": "RG_SHM_NPS",
             "ip": "10.0.0.248"
         },
         "storage": {
             "artifacts": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmtestcartifactsnxbqspy"
             },
             "bootdiagnostics": {
-                "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmtestcbootdiagsnxbqspy"
             }
         },
