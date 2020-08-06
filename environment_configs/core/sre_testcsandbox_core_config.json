@@ -18,18 +18,16 @@
                     "rg": "RG_SRE_NETWORKING"
                 }
             },
+            "rgPrefix": "RG_SRE",
             "storage": {
                 "artifacts": {
-                    "rg": "RG_SRE_ARTIFACTS",
                     "accountName": "sreartifactszvmwtqkigrld"
                 },
                 "bootdiagnostics": {
-                    "rg": "RG_SRE_ARTIFACTS",
                     "accountName": "srebootdiagszvmwtqkigrld"
                 }
             },
             "keyVault": {
-                "rg": "RG_SRE_SECRETS",
                 "secretNames": {
                     "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
                     "npsSecret": "sre-sandbox-nps-secret"
@@ -54,7 +52,6 @@
                 }
             },
             "rds": {
-                "rg": "RG_SRE_RDS",
                 "gateway": {
                     "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
                     "ip": "10.151.1.250"
@@ -70,7 +67,6 @@
                 "ip": "10.151.2.250"
             },
             "webapps": {
-                "rg": "RG_SRE_WEBAPPS",
                 "gitlab": {
                     "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
                     "ip": "10.151.2.151"
@@ -81,7 +77,6 @@
                 }
             },
             "databases": {
-                "rg": "RG_SRE_DATABASES",
                 "dbmssql": {
                     "vmName": "SQL-ING-SANDBOX",
                     "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
@@ -100,7 +95,6 @@
             },
             "dsvm": {
                 "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
-                "rg": "RG_SRE_COMPUTE"
             }
         }
     }

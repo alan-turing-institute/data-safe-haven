@@ -275,12 +275,14 @@
       "vmName": "NPS-SHM-MORTEST",
       "vmSize": "Standard_D2s_v3"
     },
+    "nsgPrefix": "NSG_SHM_MORTEST",
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_MORTEST",
     "storage": {
       "artifacts": {
         "accountName": "shmmortestartifactsmivbg",
@@ -495,6 +497,7 @@
         }
       }
     },
+    "nsgPrefix": "NSG_SRE_SRE1",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sre1-vm-admin-password-rds-sh1",
@@ -540,6 +543,7 @@
       },
       "rg": "RG_SRE_SRE1_RDS"
     },
+    "rgPrefix": "RG_SRE_SRE1",
     "shortName": "sre-sre1",
     "storage": {
       "artifacts": {

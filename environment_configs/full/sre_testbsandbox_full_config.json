@@ -100,7 +100,8 @@
       "name": "kv-shm-testb",
       "rg": "RG_SHM_TESTB_SECRETS",
       "secretNames": {
-        "aadAdminPassword": "shm-testb-aad-admin-password",
+        "aadEmergencyAdminPassword": "shm-testb-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testb-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
         "domainAdminPassword": "shm-testb-domain-admin-password",
@@ -274,12 +275,14 @@
       "vmName": "NPS-SHM-TESTB",
       "vmSize": "Standard_D2s_v3"
     },
+    "nsgPrefix": "NSG_SHM_TESTB",
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM_TESTB",
     "storage": {
       "artifacts": {
         "accountName": "shmtestbartifactsqtxiyzd",
@@ -494,6 +497,7 @@
         }
       }
     },
+    "nsgPrefix": "NSG_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
@@ -539,6 +543,7 @@
       },
       "rg": "RG_SRE_SANDBOX_RDS"
     },
+    "rgPrefix": "RG_SRE_SANDBOX",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {
