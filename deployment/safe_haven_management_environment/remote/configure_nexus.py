@@ -274,7 +274,7 @@ def enable_anonymous_access():
 
 
 def update_anonymous_user_roles(roles):
-    # Get exisitng user data JSON
+    # Get existing user data JSON
     r = requests.get(f"{NEXUS_API_ROOT}/beta/security/users", auth=auth)
     users = r.json()
     for user in users:
@@ -340,7 +340,9 @@ delete_all_content_selector_privileges()
 delete_all_content_selectors()
 
 # Create content selectors and corresponding privileges
-privilege_names = []
+pypi_privilege_names = []
+cran_privilege_names = []
+
 # Content selector and privilege for PyPi 'simple' path, used to search for
 # packages
 create_content_selector(
@@ -355,7 +357,9 @@ create_content_selector_privilege(
     repo="pypi-proxy",
     content_selector="simple"
 )
-privilege_names.append("simple")
+pypi_privilege_names.append("simple")
+
+# Create content selectors and privileges for packages according to the tier
 if args.tier == 2:
     # Allow all PyPi packages/versions
     create_content_selector(
@@ -370,43 +374,88 @@ if args.tier == 2:
         repo="pypi-proxy",
         content_selector="pypi"
     )
-    privilege_names.append("pypi")
+    pypi_privilege_names.append("pypi")
+
+    # Allow all CRAN packages/versions
+    create_content_selector(
+        name="cran",
+        description="Allow access to all CRAN packages",
+        expression="format == \"r\" and path=^\"/src/contrib\""
+    )
+    create_content_selector_privilege(
+        name="cran",
+        description="Allow access to all CRAN packages",
+        repo_type="r",
+        repo="cran-proxy",
+        content_selector="cran"
+    )
+    cran_privilege_names.append("cran")
 elif args.tier == 3:
-    # Collect allowed package names and versions
+    # Collect allowed PyPi package names and versions
     allowed_pypi_packages = []
 
     for package, version in allowed_pypi_packages:
-        name = f"{package}-{version}"
+        name = f"pypi-{package}-{version}"
         expression = (
             f"format == \"pypi\" and path=^\"/packages/{package}/{version}/\""
         )
         description = f"Allow access to {package} version {version}"
         create_content_selector(name, description, expression)
 
-    # Create privileges
     for package, version in allowed_pypi_packages:
         create_content_selector_privilege(
-            name=package,
+            name=f"pypi-{package}-{version}",
             description=f"Allow access to {package} version {version}",
             repo_type="pypi",
             repo="pypi-proxy",
-            content_selector=f"{package}-{version}"
+            content_selector=f"pypi-{package}-{version}"
         )
-        privilege_names.append(package)
+        pypi_privilege_names.append(f"pypi-{package}-{version}")
+
+    # Collect allowed PyPi package names and versions
+    allowed_cran_packages = []
+
+    for package, version in allowed_cran_packages:
+        create_content_selector(
+            name=f"cran-{package}-{version}",
+            description="Allow access to all CRAN packages",
+            expression=(
+                "format == \"r\""
+                " and path=^\"/src/contrib/{package}_{version}\""
+            )
+        )
+
+    for package, version in allowed_cran_packages:
+        create_content_selector_privilege(
+            name=f"cran-{package}-{version}",
+            description="Allow access to all CRAN packages",
+            repo_type="r",
+            repo="cran-proxy",
+            content_selector=f"cran-{package}-{version}"
+        )
+        cran_privilege_names.append(f"cran-{package}-{version}")
 
 # Delete non-default roles
 delete_all_custom_roles()
 
-# Create a roles with the PyPi privileges
+# Create a role with the PyPi privileges
 pypi_role_name = f"tier {args.tier} pypi"
 create_role(
     name=pypi_role_name,
     description=f"Allow access to tier {args.tier} PyPi packages",
-    privileges=privilege_names
+    privileges=pypi_privilege_names
+)
+
+# Create a role with the CRAN privileges
+cran_role_name = f"tier {args.tier} cran"
+create_role(
+    name=cran_role_name,
+    description=f"Allow access to tier {args.tier} CRAN packages",
+    privileges=cran_privilege_names
 )
 
 # Enable anonymous access
 enable_anonymous_access()
 
 # Update anonymous users roles
-update_anonymous_user_roles([pypi_role_name])
+update_anonymous_user_roles([pypi_role_name, cran_role_name])
