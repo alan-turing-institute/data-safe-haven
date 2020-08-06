@@ -365,22 +365,27 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
 # Set mirror URLs
 # ---------------
-Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-if ($config.sre.nexus) {
-    $pypiIp = $config.shm.repository.nexus.ipAddress
-    $cranIp = $config.shm.repository.nexus.ipAddress
-} else {
-    $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
-    $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
-}
-$addresses = Get-MirrorAddresses -cranIp $cranIp -pypiIp $pypiIp -nexus $config.sre.nexus
-$success = $?
-Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-if ($success) {
-    Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
-} else {
-    Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
+if ($config.sre.tier -in @(2,3)) {
+    Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
+    if ($config.sre.tier == 2) {
+        $pypiIp = $config.shm.repository.nexus.ipAddress
+        $cranIp = $config.shm.repository.nexus.ipAddress
+        $useNexus = $True
+    } else if ($config.sre.tier == 3) {
+        $pypiIp = $config.shm.mirrors.pypi.tier3.internal.ipAddress
+        $cranIp = $config.shm.mirrors.cran.tier3.internal.ipAddress
+        $useNexus = $False
+    }
+
+    $addresses = Get-MirrorAddresses -cranIp $cranIp -pypiIp $pypiIp -nexus $useNexus
+    $success = $?
+    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
+    if ($success) {
+        Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
+    }
 }
 
 
