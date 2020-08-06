@@ -18,7 +18,7 @@
     },
     "location": "uksouth",
     "overrides": {
-        "rgPrefix": "RG_SHM_",
+        "rgPrefix": "RG_SHM",
         "domain": {
             "netbiosName": "TURINGSAFEHAVEN",
             "ous": {

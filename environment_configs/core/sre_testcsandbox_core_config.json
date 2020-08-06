@@ -18,7 +18,7 @@
                     "rg": "RG_SRE_NETWORKING"
                 }
             },
-            "rgPrefix": "RG_SRE_",
+            "rgPrefix": "RG_SRE",
             "storage": {
                 "artifacts": {
                     "accountName": "sreartifactszvmwtqkigrld"

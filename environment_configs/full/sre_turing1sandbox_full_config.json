@@ -275,7 +275,6 @@
       "vmName": "NPS-SHM-TURING1",
       "vmSize": "Standard_D2s_v3"
     },
-    "nsgPrefix": "NSG_SHM_TURING1_",
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
@@ -497,7 +496,6 @@
         }
       }
     },
-    "nsgPrefix": "NSG_SRE_SANDBOX_",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",

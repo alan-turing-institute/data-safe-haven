@@ -13,7 +13,7 @@
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "sre": {
-            "rgPrefix": "RG_SRE_",
+            "rgPrefix": "RG_SRE",
             "storage": {
                 "artifacts": {
                     "accountName": "sreartifactsmzgcboxwifps"
