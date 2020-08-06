@@ -4,7 +4,6 @@
     "sreId": "sandbox",
     "shmId": "testa",
     "tier": "2",
-    "nexus": true,
     "domain": "sandbox.testa.dsgroupdev.co.uk",
     "ipPrefix": "10.150.0",
     "inboundAccessFrom": "anywhere",

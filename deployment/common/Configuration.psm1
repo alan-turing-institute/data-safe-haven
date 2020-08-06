@@ -33,7 +33,6 @@ function Add-SreConfig {
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier = $sreConfigBase.tier
-            nexus = $sreConfigBase.nexus
         }
     }
     $config.sre.location = $config.shm.location
@@ -546,7 +545,6 @@ function Get-ShmFullConfig {
     $shmPrefixOctets = $shmIpPrefix.Split(".")
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
-    $shmMirrorPrefixes = @{2 = "10.20.2"; 3 = "10.20.3"}
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "$($shm.rgPrefix)_NETWORKING".ToUpper()
@@ -592,14 +590,8 @@ function Get-ShmFullConfig {
             repository = [ordered]@{
                 name = "NSG_SHM_$($shm.id)_REPOSITORY".ToUpper()
             }
-            externalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
-            }
             externalPackageMirrorsTier3 = [ordered]@{
                 name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
-            }
-            internalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
             }
             internalPackageMirrorsTier3 = [ordered]@{
                 name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
@@ -607,21 +599,20 @@ function Get-ShmFullConfig {
         }
     }
     # Set package mirror networking information
-    foreach ($tier in @(2, 3)) {
-        $shm.network.mirrorVnets["tier${tier}"] = [ordered]@{
-            name = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-            cidr = "$($shmMirrorPrefixes[$tier]).0/24"
-            subnets = [ordered]@{
-                external = [ordered]@{
-                    name = "ExternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).0/28"
-                    nsg = "externalPackageMirrorsTier${tier}"
-                }
-                internal = [ordered]@{
-                    name = "InternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).16/28"
-                    nsg = "internalPackageMirrorsTier${tier}"
-                }
+    $tier3MirrorPrefix = "10.20.3"
+    $shm.network.mirrorVnets["tier3"] = [ordered]@{
+        name = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER3".ToUpper()
+        cidr = "$($tier3MirrorPrefix).0/24"
+        subnets = [ordered]@{
+            external = [ordered]@{
+                name = "ExternalPackageMirrorsTier3Subnet"
+                cidr = "$($tier3MirrorPrefix).0/28"
+                nsg = "externalPackageMirrorsTier3"
+            }
+            internal = [ordered]@{
+                name = "InternalPackageMirrorsTier3Subnet"
+                cidr = "$($tier3MirrorPrefix).16/28"
+                nsg = "internalPackageMirrorsTier3"
             }
         }
     }
@@ -805,24 +796,20 @@ function Get-ShmFullConfig {
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 8191 }
             tier3 = [ordered]@{ diskSize = 511 }
         }
         cran = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 127 }
             tier3 = [ordered]@{ diskSize = 31 }
         }
     }
     # Set password secret name and IP address for each mirror
-    foreach ($tier in @(2, 3)) {
-        foreach ($direction in @("internal", "external")) {
-            # Please note that each mirror type must have a distinct ipOffset in the range 4-15
-            foreach ($typeOffset in @(("pypi", 4), ("cran", 5))) {
-                $shm.mirrors[$typeOffset[0]]["tier${tier}"][$direction] = [ordered]@{
-                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-$($typeOffset[0])-${direction}-mirror-tier-${tier}".ToLower()
-                    ipAddress = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.mirrorVnets["tier${tier}"].subnets[$direction].cidr -Offset $typeOffset[1]
-                    vmName = "$($typeOffset[0])-${direction}-MIRROR-TIER-${tier}".ToUpper()
-                }
+    foreach ($direction in @("internal", "external")) {
+        # Please note that each mirror type must have a distinct ipOffset in the range 4-15
+        foreach ($typeOffset in @(("pypi", 4), ("cran", 5))) {
+            $shm.mirrors[$typeOffset[0]]["tier3"][$direction] = [ordered]@{
+                adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-$($typeOffset[0])-${direction}-mirror-tier-3".ToLower()
+                ipAddress = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.mirrorVnets["tier3"].subnets[$direction].cidr -Offset $typeOffset[1]
+                vmName = "$($typeOffset[0])-${direction}-MIRROR-TIER-3".ToUpper()
             }
         }
     }

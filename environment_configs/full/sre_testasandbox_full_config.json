@@ -121,19 +121,6 @@
     },
     "mirrors": {
       "cran": {
-        "tier2": {
-          "diskSize": 127,
-          "external": {
-            "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password",
-            "ipAddress": "10.20.2.5",
-            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
-          },
-          "internal": {
-            "adminPasswordSecretName": "shm-testa-package-mirror-cran-internal-tier-2-admin-password",
-            "ipAddress": "10.20.2.21",
-            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
-          }
-        },
         "tier3": {
           "diskSize": 31,
           "external": {
@@ -150,19 +137,6 @@
       },
       "diskType": "Standard_LRS",
       "pypi": {
-        "tier2": {
-          "diskSize": 8191,
-          "external": {
-            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password",
-            "ipAddress": "10.20.2.4",
-            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
-          },
-          "internal": {
-            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-internal-tier-2-admin-password",
-            "ipAddress": "10.20.2.20",
-            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
-          }
-        },
         "tier3": {
           "diskSize": 511,
           "external": {
@@ -183,22 +157,6 @@
     "name": "Turing Development Safe Haven A",
     "network": {
       "mirrorVnets": {
-        "tier2": {
-          "cidr": "10.20.2.0/24",
-          "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2",
-          "subnets": {
-            "external": {
-              "cidr": "10.20.2.0/28",
-              "name": "ExternalPackageMirrorsTier2Subnet",
-              "nsg": "externalPackageMirrorsTier2"
-            },
-            "internal": {
-              "cidr": "10.20.2.16/28",
-              "name": "InternalPackageMirrorsTier2Subnet",
-              "nsg": "internalPackageMirrorsTier2"
-            }
-          }
-        },
         "tier3": {
           "cidr": "10.20.3.0/24",
           "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER3",
@@ -217,14 +175,8 @@
         }
       },
       "nsg": {
-        "externalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER2"
-        },
         "externalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER3"
-        },
-        "internalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER2"
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
@@ -524,8 +476,6 @@
         }
       }
     },
-    "nsgPrefix": "NSG_SRE_SANDBOX",
-    "nexus": true,
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
