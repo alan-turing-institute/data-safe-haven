@@ -28,8 +28,8 @@ function Add-SreConfig {
         sre = [ordered]@{
             azureAdminGroupName = $sreConfigBase.azureAdminGroupName
             id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
-            rgPrefix = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SRE_$($sreConfigBase.sreId)".ToUpper()
-            nsgPrefix = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SRE_$($sreConfigBase.sreId)".ToUpper()
+            rgPrefix = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SRE_$($sreConfigBase.sreId)_".ToUpper()
+            nsgPrefix = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SRE_$($sreConfigBase.sreId)_".ToUpper()
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier = $sreConfigBase.tier
@@ -66,7 +66,7 @@ function Add-SreConfig {
     $sreThirdOctet = $srePrefixOctets[2]
     $config.sre.network = [ordered]@{
         vnet = [ordered]@{
-            rg = "$($config.sre.rgPrefix)_NETWORKING".ToUpper()
+            rg = "$($config.sre.rgPrefix)NETWORKING".ToUpper()
             name = "VNET_SRE_$($config.sre.id)".ToUpper()
             cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
@@ -92,7 +92,7 @@ function Add-SreConfig {
         nsg = [ordered]@{
             data = [ordered]@{}
             databases = [ordered]@{
-                name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+                name = "$($config.sre.nsgPrefix)DATABASES".ToUpper()
             }
         }
     }
@@ -105,7 +105,7 @@ function Add-SreConfig {
 
     # Storage config
     # --------------
-    $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($config.sre.rgPrefix)ARTIFACTS".ToUpper()
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
@@ -122,7 +122,7 @@ function Add-SreConfig {
     # --------------
     $config.sre.keyVault = [ordered]@{
         name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | Limit-StringLength 24
-        rg = "$($config.sre.rgPrefix)_SECRETS".ToUpper()
+        rg = "$($config.sre.rgPrefix)SECRETS".ToUpper()
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
@@ -155,13 +155,13 @@ function Add-SreConfig {
     # RDS Servers
     # -----------
     $config.sre.rds = [ordered]@{
-        rg = "$($config.sre.rgPrefix)_RDS".ToUpper()
+        rg = "$($config.sre.rgPrefix)RDS".ToUpper()
         gateway = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
-            nsg = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
+            nsg = "$($config.sre.nsgPrefix)RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
             disks = [ordered]@{
                 data1 = [ordered]@{
@@ -183,7 +183,7 @@ function Add-SreConfig {
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
-            nsg = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+            nsg = "$($config.sre.nsgPrefix)RDS_SESSION_HOSTS".ToUpper()
             disks = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
@@ -233,8 +233,8 @@ function Add-SreConfig {
     $hostname = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
     $config.sre.dataserver = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-dataserver"
-        rg = "$($config.sre.rgPrefix)_DATA".ToUpper()
-        nsg = "$($config.sre.nsgPrefix)_DATA".ToUpper()
+        rg = "$($config.sre.rgPrefix)DATA".ToUpper()
+        nsg = "$($config.sre.nsgPrefix)DATA".ToUpper()
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
@@ -259,8 +259,8 @@ function Add-SreConfig {
     # HackMD and Gitlab servers
     # -------------------------
     $config.sre.webapps = [ordered]@{
-        rg = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        nsg = "$($config.sre.nsgPrefix)_WEBAPPS".ToUpper()
+        rg = "$($config.sre.rgPrefix)WEBAPPS".ToUpper()
+        nsg = "$($config.sre.nsgPrefix)WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
@@ -302,7 +302,7 @@ function Add-SreConfig {
     # Databases
     # ---------
     $config.sre.databases = [ordered]@{
-        rg = "$($config.sre.rgPrefix)_DATABASES".ToUpper()
+        rg = "$($config.sre.rgPrefix)DATABASES".ToUpper()
     }
     $dbConfig = @{
         MSSQL = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev"}
@@ -343,9 +343,9 @@ function Add-SreConfig {
     # -----------
     $config.sre.dsvm = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
-        rg = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
-        nsg = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
-        deploymentNsg = "$($config.sre.nsgPrefix)_COMPUTE_DEPLOYMENT".ToUpper()
+        rg = "$($config.sre.rgPrefix)COMPUTE".ToUpper()
+        nsg = "$($config.sre.nsgPrefix)COMPUTE".ToUpper()
+        deploymentNsg = "$($config.sre.nsgPrefix)COMPUTE_DEPLOYMENT".ToUpper()
         vmImageSubscription = $config.shm.dsvmImage.subscription
         vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
         vmImageGallery = $config.shm.dsvmImage.gallery.sig
@@ -441,8 +441,8 @@ function Get-ShmFullConfig {
         location = $shmConfigBase.location
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
-        rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
-        nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
+        rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)_".ToUpper()
+        nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)_".ToUpper()
         subscriptionName = $shmConfigBase.subscriptionName
     }
 
@@ -535,7 +535,7 @@ function Get-ShmFullConfig {
     # Logging config
     # --------------
     $shm.logging = [ordered]@{
-        rg = "$($shm.rgPrefix)_LOGGING".ToUpper()
+        rg = "$($shm.rgPrefix)LOGGING".ToUpper()
         workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower()
     }
 
@@ -548,7 +548,7 @@ function Get-ShmFullConfig {
     $shmMirrorPrefixes = @{2 = "10.20.2"; 3 = "10.20.3"}
     $shm.network = [ordered]@{
         vnet = [ordered]@{
-            rg = "$($shm.rgPrefix)_NETWORKING".ToUpper()
+            rg = "$($shm.rgPrefix)NETWORKING".ToUpper()
             name = "VNET_SHM_$($shm.id)".ToUpper()
             cidr = "${shmBasePrefix}.${shmThirdOctet}.0/21"
             subnets = [ordered]@{
@@ -578,16 +578,16 @@ function Get-ShmFullConfig {
         mirrorVnets = [ordered]@{}
         nsg = [ordered]@{
             externalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
+                name = "$($shm.nsgPrefix)EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
             }
             externalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
+                name = "$($shm.nsgPrefix)EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
             }
             internalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
+                name = "$($shm.nsgPrefix)INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
             }
             internalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
+                name = "$($shm.nsgPrefix)INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
             }
         }
     }
@@ -621,7 +621,7 @@ function Get-ShmFullConfig {
     # Secrets config
     # --------------
     $shm.keyVault = [ordered]@{
-        rg = "$($shm.rgPrefix)_SECRETS".ToUpper()
+        rg = "$($shm.rgPrefix)SECRETS".ToUpper()
         name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
         secretNames = [ordered]@{
             aadEmergencyAdminUsername = "shm-$($shm.id)-aad-emergency-admin-username".ToLower()
@@ -683,7 +683,7 @@ function Get-ShmFullConfig {
     # ------------------------
     $hostname = "DC1-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
     $shm.dc = [ordered]@{
-        rg = "$($shm.rgPrefix)_DC".ToUpper()
+        rg = "$($shm.rgPrefix)DC".ToUpper()
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
@@ -729,7 +729,7 @@ function Get-ShmFullConfig {
     $hostname = "NPS-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
     $shm.nps = [ordered]@{
         adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-nps".ToLower()
-        rg = "$($shm.rgPrefix)_NPS".ToUpper()
+        rg = "$($shm.rgPrefix)NPS".ToUpper()
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
@@ -749,7 +749,7 @@ function Get-ShmFullConfig {
     # Storage config
     # --------------
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
-    $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($shm.rgPrefix)ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
@@ -771,7 +771,7 @@ function Get-ShmFullConfig {
     # Package mirror config
     # ---------------------
     $shm.mirrors = [ordered]@{
-        rg = "$($shm.rgPrefix)_PKG_MIRRORS".ToUpper()
+        rg = "$($shm.rgPrefix)PKG_MIRRORS".ToUpper()
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         pypi = [ordered]@{

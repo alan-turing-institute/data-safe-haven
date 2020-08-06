@@ -18,7 +18,7 @@
     },
     "location": "centralus",
     "overrides": {
-        "rgPrefix": "RG_SHM",
+        "rgPrefix": "RG_SHM_",
         "domain": {
             "netbiosName": "SAFEHAVENTESTA",
             "ous": {

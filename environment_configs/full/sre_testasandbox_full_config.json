@@ -275,14 +275,14 @@
       "vmName": "NPS-SHM-TESTA",
       "vmSize": "Standard_D2s_v3"
     },
-    "nsgPrefix": "NSG_SHM_TESTA",
+    "nsgPrefix": "NSG_SHM_TESTA_",
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
       "townCity": "London"
     },
-    "rgPrefix": "RG_SHM",
+    "rgPrefix": "RG_SHM_",
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactsvkdrslu",
@@ -498,7 +498,7 @@
         }
       }
     },
-    "nsgPrefix": "NSG_SRE_SANDBOX",
+    "nsgPrefix": "NSG_SRE_SANDBOX_",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
@@ -544,7 +544,7 @@
       },
       "rg": "RG_SRE_RDS"
     },
-    "rgPrefix": "RG_SRE",
+    "rgPrefix": "RG_SRE_",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {
