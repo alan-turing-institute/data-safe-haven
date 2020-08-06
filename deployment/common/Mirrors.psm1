@@ -10,8 +10,14 @@ function Get-MirrorAddresses {
         [bool]$nexus = $false
     )
 
+    $nexus_port = 8081
+
     if ($cranIp) {
         $cranUrl = "http://$($cranIp)"
+        if ($nexus) {
+            $cranUrl = $cranUrl + ":" + $nexus_port + "/repository/cran-proxy"
+        }
+
     } else {
         $cranUrl = "https://cran.r-project.org"
     }
@@ -19,7 +25,7 @@ function Get-MirrorAddresses {
     if ($pypiIp) {
         $pypiUrl = "http://$($pypiIp)"
         if ($nexus) {
-            $port = 8081
+            $port = $nexus_port
         } else{
             $port = 3128
         }
