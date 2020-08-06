@@ -402,15 +402,14 @@ elif args.tier == 3:
         description = f"Allow access to {package} version {version}"
         create_content_selector(name, description, expression)
 
-    for package, version in allowed_pypi_packages:
         create_content_selector_privilege(
-            name=f"pypi-{package}-{version}",
+            name=name,
             description=f"Allow access to {package} version {version}",
             repo_type="pypi",
             repo="pypi-proxy",
-            content_selector=f"pypi-{package}-{version}"
+            content_selector=name
         )
-        pypi_privilege_names.append(f"pypi-{package}-{version}")
+        pypi_privilege_names.append(name)
 
     # Collect allowed PyPi package names and versions
     allowed_cran_packages = []
@@ -425,15 +424,14 @@ elif args.tier == 3:
             )
         )
 
-    for package, version in allowed_cran_packages:
         create_content_selector_privilege(
-            name=f"cran-{package}-{version}",
+            name=name,
             description="Allow access to all CRAN packages",
             repo_type="r",
             repo="cran-proxy",
-            content_selector=f"cran-{package}-{version}"
+            content_selector=name
         )
-        cran_privilege_names.append(f"cran-{package}-{version}")
+        cran_privilege_names.append(name)
 
 # Delete non-default roles
 delete_all_custom_roles()
