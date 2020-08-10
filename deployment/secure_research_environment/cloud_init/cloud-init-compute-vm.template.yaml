@@ -164,7 +164,7 @@ write_files:
       echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/disk_setup"
     owner: root:root
-    permisions: '0500'
+    permissions: "0500"
     content: |
       #!/bin/sh
       # Create home folder and grant appropriate access
@@ -252,7 +252,7 @@ write_files:
     content: |
       <jdk.table.xml>
   - path: "/etc/skel/.bashrc"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     content: |
       # determine if terminal has color support
@@ -278,7 +278,7 @@ write_files:
         alias egrep='egrep --color=auto'
       fi
   - path: "/etc/bash.bashrc"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     append: true
     content: |
@@ -290,6 +290,62 @@ write_files:
           . /etc/bash_completion
         fi
       fi
+  - path: "/opt/docker/start_cocalc.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/sh
+      echo "Starting CoCalc..."
+      if [ "$(/usr/bin/docker ps --all --filter 'name=cocalc' | grep -v '^CONTAINER')" ]; then
+        /usr/bin/docker stop -t 5 cocalc 2> /dev/null
+        /usr/bin/docker start -a cocalc
+      else
+        docker run -d --name cocalc -v /scratch/cocalc:/projects -v /data:/data -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc
+        sleep 60  # wait 1 minute for CoCalc to initialise
+      fi
+      echo "Started CoCalc"
+  - path: "/opt/docker/start_wandb.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/sh
+      echo "Starting W&B..."
+      if [ "$(/usr/bin/docker ps --all --filter 'name=wandb' | grep -v '^CONTAINER')" ]; then
+        /usr/bin/docker stop -t 5 wandb 2> /dev/null
+        /usr/bin/docker start -a wandb
+      else
+        docker run -d --name wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local
+        sleep 600  # wait 10 minutes for W&B to initialise
+      fi
+      echo "Started W&B"
+  - path: "/etc/systemd/system/docker-cocalc.service"
+    owner: root:root
+    permissions: "0664"
+    content: |
+      [Unit]
+      Description=CoCalc Docker Container
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Restart=always
+      ExecStart=/opt/docker/start_cocalc.sh
+      ExecStop=/usr/bin/docker stop -t 5 cocalc
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/docker-wandb.service"
+    owner: root:root
+    permissions: "0664"
+    content: |
+      [Unit]
+      Description=Weights and Biases Docker Container
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      Restart=always
+      ExecStart=/opt/docker/start_wandb.sh
+      ExecStop=/usr/bin/docker stop -t 5 wandb
+      [Install]
+      WantedBy=multi-user.target
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
@@ -381,20 +437,36 @@ runcmd:
   - tail -n 1 /etc/fstab
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
-  - /disk_setup
+  - /disk_setup || exit 1
   - rm /disk_setup
   # Get Docker images
   - echo ">=== Retrieving Docker images... ===<"
+  - systemctl daemon-reload
   - systemctl start docker
   - systemctl enable docker
-  - docker pull sagemathinc/cocalc
-  - docker pull wandb/local
+  - docker pull --quiet sagemathinc/cocalc
+  - docker pull --quiet wandb/local
   # Initialise CoCalc
   - echo ">=== Initialising CoCalc... ===<"
-  - 'docker run --restart=always -d --name=cocalc -v /data:/data -v /scratch/cocalc:/projects -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc'
+  - mkdir -p /scratch/cocalc
+  - systemctl enable docker-cocalc
+  - systemctl start docker-cocalc
   # Initialise Weights and Biases
   - echo ">=== Initialising Weights and Biases... ===<"
-  - 'docker run --restart=always -d --name=wandb -v /data:/data  -v /scratch/wandb:/vol -p 8080:8080 wandb/local'
+  - mkdir -p /scratch/wandb
+  - systemctl enable docker-wandb
+  - systemctl start docker-wandb
+  # List docker status
+  - echo ">=== Current Docker status... ===<"
+  - docker ps --all
+  - systemctl status docker-cocalc
+  - systemctl status docker-wandb
+  # Stop Docker services
+  - echo ">=== Stopping Docker services before shutdown... ===<"
+  - systemctl stop docker-cocalc
+  - systemctl stop docker-wandb
+  - sleep 60
+  - docker ps --all
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

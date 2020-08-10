@@ -228,13 +228,13 @@ $_ = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.locati
 # Ensure that runtime NSG exists
 # ------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundDenyInternet" `
-                             -Description "Outbound deny internet" `
-                             -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
+# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+#                              -Name "OutboundDenyInternet" `
+#                              -Description "Outbound deny internet" `
+#                              -Priority 4000 `
+#                              -Direction Outbound -Access Deny -Protocol * `
+#                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+#                              -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
 # Ensure that deployment NSG exists
@@ -419,14 +419,14 @@ $_ = Deploy-UbuntuVirtualMachine @params
 
 
 # Poll VM to see whether it has finished running
-Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
+Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 20+ minutes)..."
 $progress = 0
 $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
 while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Contains("PowerState/stopped"))) {
     $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
     $progress = [math]::min(100, $progress + 1)
     Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
-    Start-Sleep 10
+    Start-Sleep 20
 }
 
 
@@ -485,7 +485,6 @@ $params = @{
     SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
-                             ("Docker containers", "restart_docker_containers.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
                              ("realm join", "rerun_realm_join.sh"),
                              ("SSSD service", "restart_sssd_service.sh"),
