@@ -300,7 +300,7 @@ write_files:
         /usr/bin/docker stop -t 5 cocalc 2> /dev/null
         /usr/bin/docker start -a cocalc
       else
-        docker run -d --name cocalc -v /scratch/cocalc:/projects -v /data:/data -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc
+        /usr/bin/docker run -d --name cocalc -v /scratch/cocalc:/projects -v /data:/data -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc
         sleep 60  # wait 1 minute for CoCalc to initialise
       fi
       echo "Started CoCalc"
@@ -314,7 +314,7 @@ write_files:
         /usr/bin/docker stop -t 5 wandb 2> /dev/null
         /usr/bin/docker start -a wandb
       else
-        docker run -d --name wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local
+        /usr/bin/docker run -d --name wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local
         sleep 600  # wait 10 minutes for W&B to initialise
       fi
       echo "Started W&B"
@@ -327,6 +327,7 @@ write_files:
       Requires=docker.service
       After=docker.service
       [Service]
+      TimeoutStartSec=infinity
       Restart=always
       ExecStart=/opt/docker/start_cocalc.sh
       ExecStop=/usr/bin/docker stop -t 5 cocalc
@@ -341,6 +342,7 @@ write_files:
       Requires=docker.service
       After=docker.service
       [Service]
+      TimeoutStartSec=infinity
       Restart=always
       ExecStart=/opt/docker/start_wandb.sh
       ExecStop=/usr/bin/docker stop -t 5 wandb
