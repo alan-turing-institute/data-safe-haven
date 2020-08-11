@@ -393,7 +393,6 @@ foreach ($resourcePath in $resourcePaths) {
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<${resourceFileName}>", $indentedContent)
 }
 
-
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
 # If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately

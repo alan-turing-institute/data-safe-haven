@@ -8,8 +8,8 @@ write_files:
     content: |
       #!/bin/sh
       if [ -r /etc/default/locale ]; then
-        . /etc/default/locale
-        export LANG LANGUAGE
+          . /etc/default/locale
+          export LANG LANGUAGE
       fi
       # Start xfce4
       startxfce4
@@ -250,14 +250,12 @@ write_files:
       Description=Clamav on access scanning daemon
       Requires=clamav-daemon.service
       After=clamav-daemon.service
-
       [Service]
       Type=simple
       User=root
       ExecStart=/usr/bin/clamonacc --foreground=true
       Restart=on-failure
       RestartSec=30
-
       [Install]
       WantedBy=multi-user.target
   - path: "/lib/systemd/system/clamav-clamdscan.service"
@@ -268,7 +266,6 @@ write_files:
       Description=Clamav full system scan
       Requires=clamav-daemon.service
       After=clamav-daemon.service
-
       [Service]
       Type=oneshot
       User=root
@@ -279,14 +276,12 @@ write_files:
     content: |
       [Unit]
       Description=Run clamdscan every week
-
       [Timer]
       # Will run on every Monday at 00:00:00
       OnCalendar=weekly
       AccuracySec=1h
       # Will run if a job was missed (e.g. due to system being powered down)
       Persistent=true
-
       [Install]
       WantedBy=timers.target
 
@@ -367,7 +362,6 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-
   # Mount ingress blob folder with read only local access
   - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
   - echo "user_allow_other" >> /tmp/allow.txt
@@ -377,7 +371,6 @@ runcmd:
   - mount -t tmpfs -o size=16g tmpfs /tmp/ingress
   - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
   - tail -n 1 /etc/fstab
-
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
   # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1

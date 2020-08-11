@@ -13,8 +13,8 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
-# Get config and set context
-# ------------------
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
 $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
@@ -57,9 +57,8 @@ $storageContainer = Get-AzStorageContainer -Name $containerName -Context $($stor
 if ($storageContainer) {
     Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
 } else {
-    Add-LogMessage -Level InfoSuccess "$storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop"
     try {
-        $storageContainer = New-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ErrorAction Stop
+        $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
         Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
     } catch [Microsoft.Azure.Storage.StorageException] {
         Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
@@ -107,7 +106,7 @@ if ($privateEndpoint) {
 }
 Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
-($virtualNetwork | Select -ExpandProperty subnets | Where-Object  {$_.Name -eq 'SharedDataSubnet'} ).PrivateEndpointNetworkPolicies = "Disabled"
+($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq 'SharedDataSubnet'} ).PrivateEndpointNetworkPolicies = "Disabled"
 
 $virtualNetwork | Set-AzVirtualNetwork
 

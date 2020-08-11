@@ -5,8 +5,11 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(HelpMessage = "FQDN for the SHM", Mandatory = $false)]
     [string]$shmFqdn,
+    [Parameter(HelpMessage = "SRE ID", Mandatory = $false)]
     [string]$sreId,
+    [Parameter(HelpMessage = "Name of the private DNS zone", Mandatory = $false)]
     [string]$privateDnsZoneName
 )
 
@@ -22,16 +25,16 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
     }
 }
 
-# Remove private endpoint Dns Zone
-# ----------------------------------------
-Write-Output " [ ] Removing '$privateDnsZoneName' DNS zone"
+# Remove private endpoint DNS Zone
+# --------------------------------
+Write-Output " [ ] Ensuring that '$privateDnsZoneName' DNS zone is removed"
 if (Get-DnsServerZone -Name $privateDnsZoneName -ErrorAction SilentlyContinue) {
     try {
       Remove-DnsServerZone $privateDnsZoneName -force
-      Write-Output "[o] Successfully removed '$privateDnsZoneName' DNS zone"
+      Write-Output " [o] Successfully removed '$privateDnsZoneName' DNS zone"
     } catch [System.ArgumentException] {
-      Write-Output "[x] Failed to remove DNS server zone '$privateDnsZoneName'!"
+      Write-Output " [x] Failed to remove '$privateDnsZoneName' DNS zone!"
     }
 } else {
-  Write-Output "DNS server zone '$privateDnsZoneName does not exist!"
+    Write-Output " [o] '$privateDnsZoneName' DNS zone does not exist"
 }

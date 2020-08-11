@@ -5,11 +5,11 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Hostname for the VM", mandatory = $false)]
+    [Parameter(HelpMessage = "Hostname for the VM", Mandatory = $false)]
     [string]$ZoneName,
-    [Parameter(HelpMessage = "IP Address", mandatory = $false)]
+    [Parameter(HelpMessage = "IP Address", Mandatory = $false)]
     [string]$ipaddress,
-    [Parameter(HelpMessage = "Forced update", mandatory = $false)]
+    [Parameter(HelpMessage = "Forced update", Mandatory = $false)]
     [String]$update
 )
 
@@ -38,7 +38,8 @@ if ($update.ToLower() -eq "force") {
     }
 }
 
-# Check if the record exist and if not case create it
+
+# Check whether the record exists otherwise create it
 if (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction SilentlyContinue) {
     Write-Output "Record $ZoneName already exists, use -dnsForceUpdate 'force' to override"
 } else {
