@@ -479,6 +479,7 @@ runcmd:
   - systemctl start docker
   - systemctl enable docker
   - docker pull --quiet sagemathinc/cocalc
+  - docker pull --quiet crmne/mlflow-tracking
   - docker pull --quiet wandb/local
   # Initialise CoCalc
   - echo ">=== Initialising CoCalc... ===<"
@@ -499,10 +500,12 @@ runcmd:
   - echo ">=== Current Docker status... ===<"
   - docker ps --all
   - systemctl status docker-cocalc
+  - systemctl status docker-mlflow
   - systemctl status docker-wandb
   # Stop Docker services
   - echo ">=== Stopping Docker services before shutdown... ===<"
   - systemctl stop docker-cocalc
+  - systemctl stop docker-mlflow
   - systemctl stop docker-wandb
   - sleep 60
   - docker ps --all
