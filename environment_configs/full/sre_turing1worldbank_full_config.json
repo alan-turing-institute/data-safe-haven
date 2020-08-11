@@ -349,7 +349,7 @@
       },
       "scratchdisk": {
         "type": "Standard_LRS",
-        "size_gb": "512"
+        "size_gb": "2048"
       },
       "homedisk": {
         "type": "Standard_LRS",
