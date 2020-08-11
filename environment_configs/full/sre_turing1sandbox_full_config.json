@@ -275,12 +275,14 @@
       "vmName": "NPS-SHM-TURING1",
       "vmSize": "Standard_D2s_v3"
     },
+    "nsgPrefix": "NSG_SHM_TURING1",
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "rgPrefix": "RG_SHM",
     "storage": {
       "artifacts": {
         "accountName": "shmturing1artifactsvkdrslu",
@@ -495,6 +497,7 @@
         }
       }
     },
+    "nsgPrefix": "NSG_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
@@ -540,6 +543,7 @@
       },
       "rg": "RG_SRE_SANDBOX_RDS"
     },
+    "rgPrefix": "RG_SRE_SANDBOX",
     "shortName": "sre-sandbox",
     "storage": {
       "artifacts": {
