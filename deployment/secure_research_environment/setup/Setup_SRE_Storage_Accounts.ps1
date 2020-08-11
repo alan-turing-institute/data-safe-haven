@@ -20,50 +20,12 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 
-# Ensure that storage account exists
-# ----------------------------------
-Add-LogMessage -Level Info "Ensuring that resource group $($config.sre.storage.datastorage.rg) exists"
-$resourceGroup = Get-AzResourceGroup -ResourceGroupName $config.sre.storage.datastorage.rg -ErrorAction SilentlyContinue
-if ($resourceGroup) {
-    Add-LogMessage -Level InfoSuccess "Found resource group $($config.sre.storage.datastorage.rg)"
-} else {
-    try {
-        $resourceGroup = New-AzResourceGroup -Name $config.sre.storage.datastorage.rg -Location $config.shm.location -ErrorAction Stop
-        Add-LogMessage -Level Success "Created resource group $($config.sre.storage.datastorage.rg)"
-    } catch [System.ArgumentException] {
-        Add-LogMessage -Level Fatal "Failed to create resource group '$($config.sre.storage.datastorage.rg)'!"
-    }
-}
-
-Add-LogMessage -Level Info "Ensuring that storage account $($config.sre.storage.datastorage.accountName) exists"
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -ErrorAction SilentlyContinue
-if ($storageAccount) {
-    Add-LogMessage -Level InfoSuccess "Found storage account $($config.sre.storage.datastorage.accountName)"
-} else {
-    try {
-        $storageAccount = New-AzStorageAccount -ResourceGroupName $config.sre.storage.datastorage.rg -Name $config.sre.storage.datastorage.accountName -Location $config.shm.location -SkuName Standard_RAGRS -Kind StorageV2 -ErrorAction Stop
-        Add-LogMessage -Level Success "Created storage account $($config.sre.storage.datastorage.accountName)"
-    } catch [System.ArgumentException] {
-        Add-LogMessage -Level Fatal "Failed to create storage account '$($config.sre.storage.datastorage.accountName)'!"
-    }
-}
-
-
-# Ensure that container exists in storage account
-# -----------------------------------------------
+# Ensure that a container exists in the correct SHM storage account for this SRE
+# ------------------------------------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.storage.datastorage.rg -Location $config.shm.location
+$storageAccount = Deploy-StorageAccount -Name $config.sre.storage.datastorage.accountName -ResourceGroupName $config.sre.storage.datastorage.rg -Location $config.shm.location -SkuName "Standard_RAGRS"
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
-Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-$storageContainer = Get-AzStorageContainer -Name $containerName -Context $($storageAccount.Context) -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
-if ($storageContainer) {
-    Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
-} else {
-    try {
-        $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
-        Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName)'"
-    } catch [Microsoft.Azure.Storage.StorageException] {
-        Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.sre.storage.datastorage.accountName) with context $($storageAccount.Context) '!"
-    }
-}
+$null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 
 
 # Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
@@ -76,9 +38,9 @@ foreach ($policy in @(Get-AzStorageContainerStoredAccessPolicy -Container $conta
 }
 if (-not $SASPolicy) {
     $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
-                                                          -Policy $((Get-Date -Format "yyyyMMddHHmmss") + $accessType) `
-                                                          -Context $($storageAccount.Context) `
-                                                          -Permission $($config.sre.accessPolicies.researcher.permissions) `
+                                                          -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${accessType}" `
+                                                          -Context $storageAccount.Context `
+                                                          -Permission $config.sre.accessPolicies.researcher.permissions `
                                                           -StartTime (Get-Date).DateTime `
                                                           -ExpiryTime (Get-Date).AddYears(1).DateTime
 }

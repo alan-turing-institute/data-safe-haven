@@ -638,14 +638,18 @@ function Deploy-StorageAccount {
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy into")]
+        $Location,
+        [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
+        $SkuName = "Standard_LRS",
+        [Parameter(Mandatory = $false, HelpMessage = "Kind of the storage account to deploy")]
+        $Kind = "StorageV2"
     )
     Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
     $storageAccount = Get-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
-        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName "Standard_LRS" -Kind "StorageV2"
+        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind
         if ($?) {
             Add-LogMessage -Level Success "Created storage account '$Name'"
         } else {
