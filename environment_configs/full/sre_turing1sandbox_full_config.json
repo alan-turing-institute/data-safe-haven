@@ -142,12 +142,12 @@
       "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
         "dataAdministrators": {
-          "name": "SG SANDBOX Data Administrators",
-          "description": "SG SANDBOX Data Administrators"
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
         "systemAdministrators": {
-          "name": "SG SANDBOX System Administrators",
-          "description": "SG SANDBOX System Administrators"
+          "name": "SG SANDBOX SQL Server Administrators",
+          "description": "SG SANDBOX SQL Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -178,7 +178,7 @@
           "cidr": "10.150.2.0/24"
         },
         "databases": {
-          "name": "DatabasesSubnet",
+          "name": "DbIngressSubnet",
           "prefix": "10.150.3",
           "nsg": "databases",
           "cidr": "10.150.3.0/24"
@@ -187,7 +187,7 @@
       "nsg": {
         "data": {},
         "databases": {
-          "name": "NSG_SRE_SANDBOX_DATABASES"
+          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
         }
       }
     },
@@ -259,7 +259,7 @@
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount Service Account",
+        "name": "SANDBOX Data Mount",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {

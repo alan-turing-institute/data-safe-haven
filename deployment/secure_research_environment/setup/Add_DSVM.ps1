@@ -228,13 +228,13 @@ $_ = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.locati
 # Ensure that runtime NSG exists
 # ------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-#                              -Name "OutboundDenyInternet" `
-#                              -Description "Outbound deny internet" `
-#                              -Priority 4000 `
-#                              -Direction Outbound -Access Deny -Protocol * `
-#                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-#                              -DestinationAddressPrefix Internet -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                             -Name "OutboundDenyInternet" `
+                             -Description "Outbound deny internet" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
 # Ensure that deployment NSG exists
