@@ -300,10 +300,26 @@ write_files:
         /usr/bin/docker stop -t 5 cocalc 2> /dev/null
         /usr/bin/docker start -a cocalc
       else
+        mkdir -p /scratch/cocalc /data
         /usr/bin/docker run -d --name cocalc -v /scratch/cocalc:/projects -v /data:/data -p 443:443 --mount type=bind,source=/etc/pip.conf,target=/etc/pip.conf --mount type=bind,source=/etc/R/Rprofile.site,target=/etc/R/Rprofile.site sagemathinc/cocalc
         sleep 60  # wait 1 minute for CoCalc to initialise
       fi
       echo "Started CoCalc"
+  - path: "/opt/docker/start_mlflow.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/sh
+      echo "Starting MLFlow..."
+      if [ "$(/usr/bin/docker ps --all --filter 'name=mlflow' | grep -v '^CONTAINER')" ]; then
+        /usr/bin/docker stop -t 5 mlflow 2> /dev/null
+        /usr/bin/docker start -a mlflow
+      else
+        mkdir -p /scratch/mlflow/runs /scratch/mlflow/artifacts
+        /usr/bin/docker run -d --name mlflow -v /scratch/mlflow/runs:/mlruns -v /scratch/mlflow/artifacts:/mlartifacts -p 5000:5000 crmne/mlflow-tracking
+        sleep 60  # wait 1 minute for MLFlow to initialise
+      fi
+      echo "Started MLFlow"
   - path: "/opt/docker/start_wandb.sh"
     owner: root:root
     permissions: "0500"
@@ -314,6 +330,7 @@ write_files:
         /usr/bin/docker stop -t 5 wandb 2> /dev/null
         /usr/bin/docker start -a wandb
       else
+      mkdir -p /scratch/wandb
         /usr/bin/docker run -d --name wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local
         sleep 600  # wait 10 minutes for W&B to initialise
       fi
@@ -331,6 +348,21 @@ write_files:
       Restart=always
       ExecStart=/opt/docker/start_cocalc.sh
       ExecStop=/usr/bin/docker stop -t 5 cocalc
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/docker-mlflow.service"
+    owner: root:root
+    permissions: "0664"
+    content: |
+      [Unit]
+      Description=MLFlow Docker Container
+      Requires=docker.service
+      After=docker.service
+      [Service]
+      TimeoutStartSec=infinity
+      Restart=always
+      ExecStart=/opt/docker/start_mlflow.sh
+      ExecStop=/usr/bin/docker stop -t 5 mlflow
       [Install]
       WantedBy=multi-user.target
   - path: "/etc/systemd/system/docker-wandb.service"
@@ -453,6 +485,11 @@ runcmd:
   - mkdir -p /scratch/cocalc
   - systemctl enable docker-cocalc
   - systemctl start docker-cocalc
+  # Initialise MLFlow
+  - echo ">=== Initialising MLFlow... ===<"
+  - mkdir -p /scratch/mlflow/runs /scratch/mlflow/artifacts
+  - systemctl enable docker-mlflow
+  - systemctl start docker-mlflow
   # Initialise Weights and Biases
   - echo ">=== Initialising Weights and Biases... ===<"
   - mkdir -p /scratch/wandb
