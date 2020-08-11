@@ -2,19 +2,19 @@
 # ------------------------
 function New-AccountSasToken {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter subscription name")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter subscription name")]
         [string]$SubscriptionName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter storage account resource group")]
         [string]$ResourceGroup,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter storage account name")]
         [string]$AccountName,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Enter service(s): one or more of (Blob, File, Table, Queue)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter service(s): one or more of (Blob, File, Table, Queue)")]
         [string[]]$Service,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Enter resource type(s): one or more of (Service, Container, Object)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter resource type(s): one or more of (Service, Container, Object)")]
         [string[]]$ResourceType,
-        [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Enter permission string")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter permission string")]
         [string]$Permission,
-        [Parameter(Position = 6, Mandatory = $false, HelpMessage = "Enter validity in hours")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter validity in hours")]
         [int]$ValidityHours = 2
     )
 
@@ -39,11 +39,11 @@ Export-ModuleMember -Function New-AccountSasToken
 # ----------------------------------
 function New-ReadOnlyAccountSasToken {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter subscription name")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter subscription name")]
         [string]$SubscriptionName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter storage account resource group")]
         [string]$ResourceGroup,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter storage account name")]
         [string]$AccountName
     )
     return New-AccountSasToken -SubscriptionName "$SubscriptionName" `
@@ -54,3 +54,44 @@ function New-ReadOnlyAccountSasToken {
                                -Permission "rl"
 }
 Export-ModuleMember -Function New-ReadOnlyAccountSasToken
+
+
+
+# Generate a new SAS policy
+# -------------------------
+function Deploy-SasAccessPolicy {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Policy name")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
+        [string]$Permission,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
+        [string]$StorageAccount,
+        [Parameter(Mandatory = $true, HelpMessage = "Container name")]
+        [string]$ContainerName,
+        [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
+        [int]$ValidityYears = 1
+
+    )
+    Add-LogMessage -Level Info "Ensuring that SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)..."
+    $existingPolicy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Context $StorageAccount.Context | Where-Object { $_.policy -like "*$Name" } | Select-Object -First 1
+    if ($existingPolicy) {
+        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$Name' for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
+        $policy = $existingPolicy.Policy
+    } else {
+        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
+        $policy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
+                                                           -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${AccessType}" `
+                                                           -Context $StorageAccount.Context `
+                                                           -Permission $Permission `
+                                                           -StartTime (Get-Date).DateTime `
+                                                           -ExpiryTime (Get-Date).AddYears(1).DateTime
+        if ($?) {
+            Add-LogMessage -Level Success "Created new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)!"
+        }
+    }
+    return $policy
+}
+Export-ModuleMember -Function Deploy-SasAccessPolicy

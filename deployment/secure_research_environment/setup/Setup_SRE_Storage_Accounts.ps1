@@ -28,39 +28,27 @@ $containerName = $config.sre.storage.datastorage.containers.ingress.name
 $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 
 
-# Create a SAS Policy and SAS token (hardcoded 1 year for the moment)
-# ----------------------------------------------------
-$accessType = $config.sre.accessPolicies.researcher.nameSuffix
-foreach ($policy in @(Get-AzStorageContainerStoredAccessPolicy -Container $containerName -Context $storageAccount.Context)) {
-    if ($policy.policy -like "*$accessType") {
-        $SASPolicy = $policy.Policy
-    }
-}
-if (-not $SASPolicy) {
-    $SASPolicy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
-                                                          -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${accessType}" `
-                                                          -Context $storageAccount.Context `
-                                                          -Permission $config.sre.accessPolicies.researcher.permissions `
-                                                          -StartTime (Get-Date).DateTime `
-                                                          -ExpiryTime (Get-Date).AddYears(1).DateTime
-}
-$newSAStoken = New-AzStorageContainerSASToken -Name $containerName -Policy $SASPolicy -Context $storageAccount.Context
+# Create a new SAS token (and policy if required)
+# -----------------------------------------------
+$sasPolicy = Deploy-SasAccessPolicy -Name $config.sre.accessPolicies.researcher.nameSuffix `
+                                    -Permission $config.sre.accessPolicies.researcher.permissions `
+                                    -StorageAccount $storageAccount `
+                                    -ContainerName $containerName `
+                                    -ValidityYears 1
+$newSAStoken = New-AzStorageContainerSASToken -Name $containerName -Policy $sasPolicy -Context $storageAccount.Context
 
 
-
+# Store the SAS token in the SRE keyvault
+# ---------------------------------------
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName -DefaultValue $newSAStoken
-
-
-# Create the private endpoint
-# ---------------------------
-$privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
-$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
-$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.containers.ingress.storageType
 
 
 # Ensure that private endpoint exists
 # -----------------------------------
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
+$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.containers.ingress.storageType
 $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction SilentlyContinue
 if ($privateEndpoint) {
     Add-LogMessage -Level Warning "Removing existing private endpoint '$($privateEndpointName)'"
@@ -69,7 +57,6 @@ if ($privateEndpoint) {
 Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
 ($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq 'SharedDataSubnet'} ).PrivateEndpointNetworkPolicies = "Disabled"
-
 $virtualNetwork | Set-AzVirtualNetwork
 
 $subnet = Get-AzSubnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $virtualNetwork
