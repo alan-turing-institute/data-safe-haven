@@ -72,6 +72,34 @@
         groups: docker
         append: yes
 
+    - name: Pull cocalc docker image
+      docker_image:
+        name: sagemathinc/cocalc
+        source: pull
+
+    - name: Run cocalc with docker-compose
+      docker_compose:
+        project_name: cocalc
+        definition:
+          version: '2'
+          services:
+            app:
+              image: sagemathinc/cocalc
+              ports:
+                - 127.0.0.1:443:443
+              volumes:
+                - /datadrive:/projects
+              restart: always
+      register: output
+
+    - debug:
+        var: output
+
+    - assert:
+        that:
+          - "app.cocalc_app_1.state.running"
+
+
   handlers:
     - name: Restart sshd
       become: yes
