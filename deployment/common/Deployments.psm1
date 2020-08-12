@@ -1371,8 +1371,8 @@ function Start-Firewall {
 Export-ModuleMember -Function Start-Firewall
 
 
-# Ensure Firewall is running, with option to force a restart
-# ----------------------------------------------------------
+# Ensure Firewall is deallocated
+# ------------------------------
 function Stop-Firewall {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
