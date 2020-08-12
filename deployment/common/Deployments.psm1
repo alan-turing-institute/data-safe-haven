@@ -200,6 +200,22 @@ function Deploy-Firewall {
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Firewall '$Name' already exists"
+        $firewallIpConfigurations = $firewall.IpConfigurations
+        if($ForceReallocation) {
+            try {
+                Add-LogMessage -Level Info "[ ] Ensuring firewall '$Name' is deallocated..."
+                $firewall.Deallocate()
+                $firewall | Set-AzFirewall
+                Add-LogMessage -Level Success "Firewall '$Name' is deallocated"
+                Add-LogMessage -Level Info "[ ] Allocating firewall '$Name'..."
+                $firewall.Allocate($vnet, $publicIp)
+                $firewall | Set-AzFirewall
+                $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName
+                Add-LogMessage -Level Success "Firewall '$Name' is allocated"
+            } catch {
+                Add-LogMessage -Level Fatal "Failed to reallocate firewall '$Name'" -Exception $_.Exception
+            }
+        }
     }
     return $firewall
 }
@@ -1322,6 +1338,83 @@ function Set-SubnetNetworkSecurityGroup {
     return $updatedSubnet
 }
 Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
+
+
+# Ensure Firewall is running, with option to force a restart
+# ----------------------------------------------------------
+function Start-Firewall {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
+        $VirtualNetworkName,
+        [Parameter(Mandatory = $false, HelpMessage = "Force restart of Firewall")]
+        [switch]$ForceRestart
+    )
+    $vnet = Get-AzVirtualNetwork -Name $VirtualNetworkName
+    $publicIP = Get-AzPublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName
+    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is running..."
+    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if(-not $firewall) {
+        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
+        Exit 1
+    }
+    if ($ForceRestart) {
+        Add-LogMessage -Level Info "Restart requested. Deallocating firewall '$Name'..."
+        $firewall = Stop-Firewall -Name $Name -ResourceGroupName $ResourceGroupName
+    }
+    # At this point we either have a running firewall or a stopped firewall.
+    # A firewall is allocated if it has one or more IP configurations.
+    if($firewall.IpConfigurations) {
+        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
+    } else {
+        try {
+            Add-LogMessage -Level Success "Starting firewall '$Name'..."
+            $firewall.Allocate($vnet, $publicIp)
+            $firewall | Set-AzFirewall
+            Add-LogMessage -Level Success "Firewall '$Name' successfully started."
+            $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
+        }
+    }
+    return $firewall
+}
+Export-ModuleMember -Function Start-Firewall
+
+
+# Ensure Firewall is running, with option to force a restart
+# ----------------------------------------------------------
+function Stop-Firewall {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is deallocated..."
+    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if(-not $firewall) {
+        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
+        Exit 1
+    }
+    # At this point we either have a running firewall or a stopped firewall.
+    # A firewall is allocated if it has one or more IP configurations.
+    $firewallAllocacted = ($firewall.IpConfigurations.Length -ge 1)
+    if(-not $firewallAllocacted) {
+        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already deallocated."
+    } else {
+        Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
+        $firewall.Deallocate()
+        $firewall | Set-AzFirewall
+        Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
+        $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    }
+    return $firewall
+}
+Export-ModuleMember -Function Stop-Firewall
 
 
 # Ensure VM is started, with option to force a restart
