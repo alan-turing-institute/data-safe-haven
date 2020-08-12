@@ -185,38 +185,24 @@ function Deploy-Firewall {
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
         $VirtualNetworkName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        $Location,
+        [Parameter(Mandatory = $false, HelpMessage = "Force deallocation and reallocation of Firewall")]
+        [switch]$ForceReallocation
     )
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
         $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
+        Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
         $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Firewall '$Name' already exists"
-        $firewallIpConfigurations = $firewall.IpConfigurations
-        if($ForceReallocation) {
-            try {
-                Add-LogMessage -Level Info "[ ] Ensuring firewall '$Name' is deallocated..."
-                $firewall.Deallocate()
-                $firewall | Set-AzFirewall
-                Add-LogMessage -Level Success "Firewall '$Name' is deallocated"
-                Add-LogMessage -Level Info "[ ] Allocating firewall '$Name'..."
-                $firewall.Allocate($vnet, $publicIp)
-                $firewall | Set-AzFirewall
-                $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName
-                Add-LogMessage -Level Success "Firewall '$Name' is allocated"
-            } catch {
-                Add-LogMessage -Level Fatal "Failed to reallocate firewall '$Name'" -Exception $_.Exception
-            }
-        }
-    }
+    } 
+    # Ensure Firewall is running
+    $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
     return $firewall
 }
 Export-ModuleMember -Function Deploy-Firewall
