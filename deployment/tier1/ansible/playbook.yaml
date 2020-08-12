@@ -45,6 +45,33 @@
         state: present
       loop: "{{ users }}"
 
+    - name: Install docker
+      become: yes
+      apt:
+        update_cache: yes
+        name: docker.io
+        state: present
+
+    - name: Install docker-compose
+      become: yes
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Start and enable docker service
+      become: yes
+      systemd:
+        name: docker.service
+        enabled: yes
+        state: started
+
+    - name: Add admin user to docker group
+      become: yes
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
   handlers:
     - name: Restart sshd
       become: yes
