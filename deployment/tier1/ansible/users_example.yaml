@@ -3,3 +3,4 @@ users:
   - name: <real name>
     username: <username>
     keyfile: <path to public ssh keyfile>
+    admin: false

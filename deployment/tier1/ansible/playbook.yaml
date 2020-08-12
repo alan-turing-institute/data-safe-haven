@@ -45,6 +45,24 @@
         state: present
       loop: "{{ users }}"
 
+    - name: Add admin users to the admin group
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        append: true
+        groups: admin 
+      loop: "{{ users }}"
+      when: item.admin
+
+    - name: Allow users in the admin group to sudo without a password
+      become: yes
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%ADMIN ALL='
+        line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
+        validate: /usr/sbin/visudo -cf %s
+
     - name: Install docker
       become: yes
       apt:
