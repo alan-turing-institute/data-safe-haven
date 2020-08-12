@@ -1,0 +1,53 @@
+---
+- hosts: tier1
+
+  vars_files:
+    - users.yaml
+
+  tasks:
+    - name: Enable public key authentication
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+      notify: Restart sshd
+
+    - name: Disable password login
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify: Restart sshd
+
+    - name: Disable root login
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: Restart sshd
+
+    - name: Create users
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        comment: "{{ item.name }}"
+        state: present
+      loop: "{{ users }}"
+
+    - name: Add users public keys
+      become: yes
+      authorized_key:
+        user: "{{ item.username }}"
+        key: "{{ lookup('file', item.keyfile) }}"
+        state: present
+      loop: "{{ users }}"
+
+  handlers:
+    - name: Restart sshd
+      become: yes
+      systemd:
+        name: sshd.service
+        state: restarted
