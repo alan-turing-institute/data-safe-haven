@@ -1,0 +1,18 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    filesystem: ext4
+    parition: 1
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults"]
