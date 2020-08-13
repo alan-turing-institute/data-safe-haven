@@ -189,10 +189,11 @@ function Deploy-Firewall {
         [Parameter(Mandatory = $false, HelpMessage = "Force deallocation and reallocation of Firewall")]
         [switch]$ForceReallocation
     )
+    # Ensure Firewall public IP address exists
+    $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
         $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
         if ($?) {
