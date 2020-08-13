@@ -77,7 +77,6 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $ruleNameFilter = "sre-$($config.sre.id)*"
 # Application rules
 # -----------------
-Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
