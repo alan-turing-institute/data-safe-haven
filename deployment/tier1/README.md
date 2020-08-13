@@ -45,8 +45,8 @@ The deployment and configuration scripts require the following packages,
 
 - Authentication for users (except for the admin user) requires both the correct
   private key and a TOTP password.
-- The ansible playbook with print a list of usernames and their TOTP hashes at
-  the end of its tasks.
+- The ansible playbook with write a list of usernames and their TOTP hashes to
+  `totp_hashes.txt`.
 - A OTP can be generated with `oathtool --totp <hash>`
 - To use an authenticator app, you will need the Base32 secret. This can be
   obtained with `oathtool -v --totp <hash>`.

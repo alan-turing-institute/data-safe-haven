@@ -207,8 +207,11 @@
       register: totp_hashes
       changed_when: no
 
-    - debug:
-        var: totp_hashes.stdout_lines
+    - name: Write TOTP hashes to file
+      local_action:
+        module: copy
+        content: "{{ totp_hashes.stdout }}"
+        dest: totp_hashes.txt
 
   handlers:
     - name: Restart sshd
