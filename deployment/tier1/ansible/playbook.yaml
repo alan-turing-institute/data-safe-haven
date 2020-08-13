@@ -5,6 +5,10 @@
     - users.yaml
 
   tasks:
+    - name: Wait for cloud init to finish
+      wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+
     - name: Enable public key authentication
       become: yes
       lineinfile:
