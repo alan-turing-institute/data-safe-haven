@@ -43,7 +43,11 @@
                             "download.microsoft.com",
                             "*.download.windowsupdate.com",
                             "test.stats.update.microsoft.com",
-                            "ntservicepack.microsoft.com"
+                            "ntservicepack.microsoft.com",
+                            "settings-win.data.microsoft.com",
+                            "v10.events.data.microsoft.com",
+                            "v10c.events.data.microsoft.com",
+                            "v10.vortex-win.data.microsoft.com"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -177,31 +181,6 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "name": "shm-<shm-id>-deny",
-            "properties": {
-                "priority": 2000,
-                "action": {
-                    "type": "Deny"
-                },
-                "rules": [
-                    {
-                        "name": "DenyWindowsDiagnosticsToMicrosoft",
-                        "protocols": [
-                            "http:80",
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "settings-win.data.microsoft.com"
-                        ],
-                        "sourceAddresses": [
-                            "*"
                         ]
                     }
                 ]
