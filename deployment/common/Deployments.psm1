@@ -1357,7 +1357,7 @@ function Start-Firewall {
         Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
     } else {
         try {
-            Add-LogMessage -Level Success "Starting firewall '$Name'..."
+            Add-LogMessage -Level Info "[ ] Starting firewall '$Name'..."
             $firewall.Allocate($vnet, $publicIp)
             $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
             Add-LogMessage -Level Success "Firewall '$Name' successfully started."
