@@ -8,7 +8,7 @@ param(
     [ValidateSet("Identity", "Mirrors", "All")]
     [string]$Group,
     [Parameter(Mandatory = $false, HelpMessage = "Deallocate Firewall (only has an effect if Action is 'EnsureStopped'")]
-    [string]$DeallocateFirewall
+    [switch]$DeallocateFirewall
 )
 
 Import-Module Az
