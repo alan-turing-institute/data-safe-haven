@@ -120,7 +120,6 @@ $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
-
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext
