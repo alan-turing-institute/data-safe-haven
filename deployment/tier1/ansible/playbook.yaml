@@ -54,7 +54,7 @@
       user:
         name: "{{ item.username }}"
         append: true
-        groups: admin 
+        groups: admin
       loop: "{{ users }}"
       when: item.admin
 
@@ -67,10 +67,85 @@
         line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
         validate: /usr/sbin/visudo -cf %s
 
-    - name: Install docker
+    - name: Update package cache
       become: yes
       apt:
         update_cache: yes
+
+    - name: Install PAM OATH packages for TOTP
+      become: yes
+      apt:
+        name:
+          - libpam-oath
+          - oathtool
+        state: present
+
+    - name: Enable PAM in sshd configuration
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?UsePAM'
+        line: 'UsePAM yes'
+      notify: Restart sshd
+
+    - name: Enable challenge response authentication
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?ChallengeResponseAuthentication'
+        line: 'ChallengeResponseAuthentication yes'
+      notify: Restart sshd
+
+    - name: Look for existing TOTP seeds
+      become: yes
+      shell: "grep {{ item.username }} /etc/users.oath"
+      loop: "{{ users }}"
+      register: totp_users
+      ignore_errors: yes
+      changed_when: no
+
+    # - debug:
+    #     var: totp_users.results
+
+    - name: Create TOTP seeds for each user without one
+      become: yes
+      lineinfile:
+        path: /etc/users.oath
+        line: "HOTP/T30/6 {{ item.item.username }} - {{ lookup ('password', '/dev/null chars=hexdigits length=30') }}"
+        create: yes
+        owner: root
+        mode: 0600
+      loop: "{{ totp_users.results }}"
+      when: item.failed
+
+    - name: Enable OATH for ssh login in PAM
+      become: yes
+      lineinfile:
+        path: /etc/pam.d/sshd
+        state: present
+        # line: 'auth    sufficient pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
+        line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
+        insertbefore: BOF
+
+    - name: Require OATH even when a valid key is provided
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?AuthenticationMethods"
+        line: 'AuthenticationMethods publickey,keyboard-interactive:pam'
+      notify: Restart sshd
+
+    - name: Allow admin account to login without TOTP
+      become: yes
+      blockinfile:
+        path: /etc/ssh/sshd_config
+        block: |
+          Match User tier1_admin
+              AuthenticationMethods publickey
+
+    - name: Install docker
+      become: yes
+      apt:
         name: docker.io
         state: present
 
@@ -96,12 +171,12 @@
 
     - meta: reset_connection
 
-    - name: Pull cocalc docker image
+    - name: Pull CoCalc docker image
       docker_image:
         name: sagemathinc/cocalc
         source: pull
 
-    - name: Run cocalc with docker-compose
+    - name: Run CoCalc with docker-compose
       docker_compose:
         project_name: cocalc
         definition:
@@ -119,7 +194,8 @@
     - debug:
         var: output
 
-    - assert:
+    - name: Assert that the CoCalc container is running
+      assert:
         that:
           - "app.cocalc_app_1.state.running"
 
