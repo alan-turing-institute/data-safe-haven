@@ -121,7 +121,6 @@
         that:
           - "app.cocalc_app_1.state.running"
 
-
   handlers:
     - name: Restart sshd
       become: yes

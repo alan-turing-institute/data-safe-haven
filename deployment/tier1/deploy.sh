@@ -31,4 +31,4 @@ VM=$(az vm create \
 echo "$VM"
 
 VM_IP=$(echo "$VM" | jq -r '.publicIpAddress')
-sed -i'' "s/<vm-ip>/${VM_IP}/" ./ansible/hosts.yaml
+sed -i'' "s/^\s*ansible_host:.*/      ansible_host: ${VM_IP}/" ./ansible/hosts.yaml
