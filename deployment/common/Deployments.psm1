@@ -234,16 +234,14 @@ function Deploy-FirewallApplicationRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
+    Add-LogMessage -Level Info "[ ] Ensuring that '$ActionType' application rule '$Name' exists..."
     if ($TargetTag) {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
     } else {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetFqdn' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
     }
     try {
         $ruleCollection = $Firewall.GetApplicationRuleCollectionByName($CollectionName)
-        Add-LogMessage -Level InfoSuccess "Application rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
         if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
@@ -251,11 +249,8 @@ function Deploy-FirewallApplicationRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating application rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if ($?) {
-            Add-LogMessage -Level Success "Created application rule collection '$CollectionName'"
-        } else {
+        if (-not $?) {
             Add-LogMessage -Level Fatal "Failed to create application rule collection '$CollectionName'!"
         }
     }
@@ -549,7 +544,7 @@ function Deploy-Route {
     if (-not $routeTable) {
         Add-LogMessage -Level Fatal "No route table named '$routeTableName' was found in this subscription!"
     }
-    Add-LogMessage -Level Info "Ensuring that route '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that route '$Name' exists..."
     $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $routeTable -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating route '$Name'"
@@ -583,7 +578,7 @@ function Deploy-RouteTable {
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
-    Add-LogMessage -Level Info "Ensuring that route table '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that route table '$Name' exists..."
     $routeTable = Get-AzRouteTable -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating route table '$Name'"
