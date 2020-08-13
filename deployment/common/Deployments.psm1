@@ -232,7 +232,7 @@ function Deploy-FirewallApplicationRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
-    Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that '$ActionType' application rule '$Name' exists..."
     if ($TargetTag) {
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
     } else {
