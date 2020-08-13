@@ -41,6 +41,19 @@ The deployment and configuration scripts require the following packages,
     (_i.e._ given root access on the VM)
 - Run `ansible-playbook playbook.yaml -i hosts.yaml`
 
+## Authentication
+
+- Authentication for users (except for the admin user) requires both the correct
+  private key and a TOTP password.
+- The ansible playbook with print a list of usernames and their TOTP hashes at
+  the end of its tasks.
+- A OTP can be generated with `oathtool --totp <hash>`
+- To use an authenticator app, you will need the Base32 secret. This can be
+  obtained with `oathtool -v --totp <hash>`.
+- A QR code for an authenticator app can be generated with `qrencode
+  otpauth://totp/<username>@tier1vm?secret=<base32_secret> -o <username>.png`
+  or, to display in the terminal replace `-o <username>.png` with `-t UTF8`.
+
 ## Test CoCalc
 
 - CoCalc is running on port 443 of the tier1 VM. However, only port 22 accepts
