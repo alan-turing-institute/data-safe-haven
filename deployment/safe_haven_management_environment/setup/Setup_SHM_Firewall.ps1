@@ -119,10 +119,8 @@ Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 # --------------------------------------------------
 # This ensures that it establishes a new SSPR connection through the firewall in case 
 # it was previously blocked due to incorrect firewall rules or a deallocated firewall
-foreach ($vmName in ($config.dc.vmName)) {
-    if(Confirm-AzVMRunning -Name $vmName -ResourceGroupName $config.dc.rg) {
-        Start-VM -Name $vmName -ResourceGroupName $config.dc.rg -ForceRestart
-    }
+if(Confirm-AzVMRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
+    Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 
 
