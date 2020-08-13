@@ -92,9 +92,6 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
-Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
-$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
 # Network rules
@@ -110,6 +107,10 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
+
+
+# Update remote firewall with rule changes
+# ----------------------------------------
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
 $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
