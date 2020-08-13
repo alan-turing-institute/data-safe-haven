@@ -92,6 +92,9 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
+if (-not $rules.applicationRuleCollections) {
+    Add-LogMessage -Level Warning "No application rules specified."
+}
 
 
 # Network rules
@@ -100,11 +103,15 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
+Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     Add-LogMessage -Level Info "Setting rules for network rule collection '$ruleCollectionName'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
+}
+if (-not $rules.networkRuleCollections) {
+    Add-LogMessage -Level Warning "No network rules specified."
 }
 
 
