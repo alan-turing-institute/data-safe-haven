@@ -1359,9 +1359,8 @@ function Start-Firewall {
         try {
             Add-LogMessage -Level Success "Starting firewall '$Name'..."
             $firewall.Allocate($vnet, $publicIp)
-            $firewall | Set-AzFirewall
+            $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
             Add-LogMessage -Level Success "Firewall '$Name' successfully started."
-            $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
         } catch {
             Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
         }
@@ -1394,7 +1393,7 @@ function Stop-Firewall {
     } else {
         Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
         $firewall.Deallocate()
-        $firewall | Set-AzFirewall
+        $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
         Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
         $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     }
