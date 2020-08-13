@@ -234,10 +234,12 @@ function Deploy-FirewallApplicationRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
-    Add-LogMessage -Level Info "[ ] Ensuring that '$ActionType' application rule '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
     if ($TargetTag) {
+        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
     } else {
+        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetFqdn' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
     }
     try {
@@ -308,11 +310,8 @@ function Deploy-FirewallNetworkRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveNetworkRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating network rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallNetworkRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if ($?) {
-            Add-LogMessage -Level Success "Created network rule collection '$CollectionName'"
-        } else {
+        if (-not $?) {
             Add-LogMessage -Level Fatal "Failed to create network rule collection '$CollectionName'!"
         }
     }
