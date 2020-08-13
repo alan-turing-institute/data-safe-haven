@@ -94,6 +94,8 @@
         groups: docker
         append: yes
 
+    - meta: reset_connection
+
     - name: Pull cocalc docker image
       docker_image:
         name: sagemathinc/cocalc
