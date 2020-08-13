@@ -330,7 +330,7 @@ write_files:
         /usr/bin/docker stop -t 5 wandb 2> /dev/null
         /usr/bin/docker start -a wandb
       else
-      mkdir -p /scratch/wandb
+        mkdir -p /scratch/wandb
         /usr/bin/docker run -d --name wandb -v /scratch/wandb:/vol -p 8080:8080 wandb/local
         sleep 600  # wait 10 minutes for W&B to initialise
       fi
@@ -483,17 +483,14 @@ runcmd:
   - docker pull --quiet wandb/local
   # Initialise CoCalc
   - echo ">=== Initialising CoCalc... ===<"
-  - mkdir -p /scratch/cocalc
   - systemctl enable docker-cocalc
   - systemctl start docker-cocalc
   # Initialise MLFlow
   - echo ">=== Initialising MLFlow... ===<"
-  - mkdir -p /scratch/mlflow/runs /scratch/mlflow/artifacts
   - systemctl enable docker-mlflow
   - systemctl start docker-mlflow
   # Initialise Weights and Biases
   - echo ">=== Initialising Weights and Biases... ===<"
-  - mkdir -p /scratch/wandb
   - systemctl enable docker-wandb
   - systemctl start docker-wandb
   # List docker status

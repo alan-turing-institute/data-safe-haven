@@ -142,12 +142,12 @@
       "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
         "dataAdministrators": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
-        },
-        "systemAdministrators": {
           "name": "SG SANDBOX SQL Server Administrators",
           "description": "SG SANDBOX SQL Server Administrators"
+        },
+        "systemAdministrators": {
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
