@@ -26,7 +26,6 @@ $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualN
 # NB. the firewall needs to be in the same resource group as the VNet
 # NB. it is not possible to assign a private IP address to the firewall - it will take the first available one in the subnet
 # --------------------------------------------------------------------------------------------------------------------------------
-Add-LogMessage -Level Info "Create the firewall with a public IP address"
 $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -Location $config.location -VirtualNetworkName $config.network.vnet.name
 
 
@@ -79,13 +78,12 @@ $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $
 $ruleNameFilter = "shm-$($config.id)"
 # Application rules
 # -----------------
-Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
-Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
+    Add-LogMessage -Level Info "Setting rules for application rule collection '$ruleCollectionName'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -94,32 +92,42 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
-Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
-$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-Add-LogMessage -Level Success "Updated remote firewall with rule changes."
+if (-not $rules.applicationRuleCollections) {
+    Add-LogMessage -Level Warning "No application rules specified."
+}
 
 
 # Network rules
 # -------------
-Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
+Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
+    Add-LogMessage -Level Info "Setting rules for network rule collection '$ruleCollectionName'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
+if (-not $rules.networkRuleCollections) {
+    Add-LogMessage -Level Warning "No network rules specified."
+}
+
+
+# Update remote firewall with rule changes
+# ----------------------------------------
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
 $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
-# Restart the domain controllers to ensure that they establish a new SSPR connection through the firewall
-# -------------------------------------------------------------------------------------------------------
-foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-    Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
+# Restart primary domain controller if it is running
+# --------------------------------------------------
+# This ensures that it establishes a new SSPR connection through the firewall in case 
+# it was previously blocked due to incorrect firewall rules or a deallocated firewall
+if(Confirm-AzVMRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
+    Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 
 
