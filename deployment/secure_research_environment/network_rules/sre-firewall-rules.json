@@ -16,51 +16,6 @@
         }
     ],
     "networkRuleCollections": [],
-    "applicationRuleCollections": [
-        {
-            "name": "sre-<sre-id>-allow",
-            "properties": {
-                "priority": "<priority-allow>",
-                "action": {
-                    "type": "Allow"
-                },
-                "rules": [
-                    {
-                        "name": "WindowsUpdate",
-                        "protocols": [],
-                        "fqdnTags": [
-                            "WindowsUpdate"
-                        ],
-                        "targetFqdns": [],
-                        "sourceAddresses": [
-                            "<subnet-data-cidr>",
-                            "<subnet-databases-cidr>",
-                            "<subnet-identity-cidr>",
-                            "<subnet-rds-cidr>"
-                        ]
-                    },
-                    {
-                        "name": "AllowCertificateStatusCheck",
-                        "protocols": [
-                            "http:80"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "ocsp.digicert.com",
-                            "crl3.digicert.com",
-                            "crl4.digicert.com",
-                            "crl.microsoft.com"
-                        ],
-                        "sourceAddresses": [
-                            "<subnet-data-cidr>",
-                            "<subnet-databases-cidr>",
-                            "<subnet-identity-cidr>",
-                            "<subnet-rds-cidr>"
-                        ]
-                    }
-                ]
-            }
-        }
-    ],
+    "applicationRuleCollections": [],
     "natRuleCollections": []
 }

@@ -27,13 +27,26 @@
                 "rules": [
                     {
                         "name": "AllowWindowsUpdate",
-                        "protocols": [],
-                        "fqdnTags": [
-                            "WindowsUpdate"
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "windowsupdate.microsoft.com",
+                            "*.windowsupdate.microsoft.com",
+                            "*.windowsupdate.microsoft.com",
+                            "*.update.microsoft.com",
+                            "*.update.microsoft.com",
+                            "*.windowsupdate.com",
+                            "download.windowsupdate.com",
+                            "download.microsoft.com",
+                            "*.download.windowsupdate.com",
+                            "test.stats.update.microsoft.com",
+                            "ntservicepack.microsoft.com"
                         ],
-                        "targetFqdns": [],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "*"
                         ]
                     },
                     {
