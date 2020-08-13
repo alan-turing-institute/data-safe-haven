@@ -79,8 +79,8 @@ $ruleNameFilter = "sre-$($config.sre.id)*"
 # -----------------
 Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
 Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
@@ -99,7 +99,7 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
@@ -114,6 +114,7 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
 $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
+
 
 
 # Switch back to original subscription
