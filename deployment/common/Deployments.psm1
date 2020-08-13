@@ -1481,7 +1481,7 @@ function Stop-VM {
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
     } else {
-        Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
+        Add-LogMessage -Level Info "[ ] Deallocating VM '$($VM.Name)'"
         $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
     }
     if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {
