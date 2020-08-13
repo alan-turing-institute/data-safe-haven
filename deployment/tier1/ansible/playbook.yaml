@@ -199,6 +199,17 @@
         that:
           - "app.cocalc_app_1.state.running"
 
+    - name: Fetch TOTP hashes
+      become: yes
+      shell: sed -E "s/HOTP\/T30\/6\s+([a-z]+)\s+-\s+([0-9a-zA-Z]{30}).*/\1 \2/g" /etc/users.oath
+      args:
+        warn: false
+      register: totp_hashes
+      changed_when: no
+
+    - debug:
+        var: totp_hashes.stdout_lines
+
   handlers:
     - name: Restart sshd
       become: yes
