@@ -839,7 +839,7 @@ function Get-FirewallRuleCollectionPriority {
     # This means we can allocate 7 priorities to each 10.x.y.z/21 CIDR index
     $rulesPerCIDR = 7
     if ($RuleCollectionNumber -lt 1 -Or $RuleCollectionNumber -gt $rulesPerCIDR) {
-        Add-LogMessage -Fatal "$RuleCollectionNumber is not a valid rule collection number. Rule collection number must be between 1 and $rulesPerCIDR."
+        Add-LogMessage -Level Fatal "$RuleCollectionNumber is not a valid rule collection number. Rule collection number must be between 1 and $rulesPerCIDR."
     } else {
         $ruleCollectionPriority = (($virtualNetworkIndex * $rulesPerCIDR) + 1000 + $RuleCollectionNumber)
         return $ruleCollectionPriority
