@@ -838,7 +838,7 @@ function Get-FirewallRuleCollectionPriority {
     # There are 8,192 10.x.y.z/21 CIDR indexes in the 10.0.0.0/8 class A private address space.
     # This means we can allocate 7 priorities to each 10.x.y.z/21 CIDR index
     $rulesPerCIDR = 7
-    if ($RuleCollectionNumber -gt $rulesPerCIDR) {
+    if ($RuleCollectionNumber -lt 1 -Or $RuleCollectionNumber -gt $rulesPerCIDR) {
         Add-LogMessage -Fatal "$RuleCollectionNumber is not a valid rule collection number. Rule collection number must be between 1 and $rulesPerCIDR."
     } else {
         $ruleCollectionPriority = (($virtualNetworkIndex * $rulesPerCIDR) + 1000 + $RuleCollectionNumber)
@@ -866,7 +866,7 @@ function Get-VirtualNetworkIndex {
         Add-LogMessage -Level Fatal "Invalid virtual network CIDR ($CIDR). Virtual network index is only defined for virtual networks with 10.x.y.z/21 CIDRs"
     }
     else {
-        $virtualNetworkIndex = (($secondIpOctet * 32) + (($thirdIpOctet) / 8))
+        $virtualNetworkIndex = [Math]::Floor(($secondIpOctet * 32) + (($thirdIpOctet) / 8))
         return $virtualNetworkIndex
     }
 }
