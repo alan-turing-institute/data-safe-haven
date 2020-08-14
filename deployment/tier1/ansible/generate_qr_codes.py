@@ -17,6 +17,6 @@ for username, totp_hash in totp_hashes:
 
     # Generate a QR code for each user
     result = run(["qrencode",
-         f"otpauth://totp/{username}@tier1vm?secret={base32_secret}",
-         "-o",
-         f"{username}.png"])
+                  f"otpauth://totp/{username}@tier1vm?secret={base32_secret}",
+                  "-o",
+                  f"{username}.png"])
