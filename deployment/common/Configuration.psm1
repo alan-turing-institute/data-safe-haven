@@ -819,3 +819,55 @@ function Get-SreConfig {
     return Get-ConfigFile -configType "sre" -configLevel "full" -configName $configId
 }
 Export-ModuleMember -Function Get-SreConfig
+
+
+# Get Firewall rule priority range for virtual network index
+# ----------------------------------------------------------
+# A virtual network's index is the zero-indexed position of its 10.0.0.z/21 CIDR range
+# within the 10.x.y.z/8 class A private address space.
+# There are 8,192 virtual network indexes, ranging from 0 to 8,191
+function Get-FirewallRuleCollectionPriority {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Enter virtual network CIDR (must be a 10.x.y.z/21 CIDR)")]
+        [string]$CIDR,
+        [Parameter(Mandatory = $true, HelpMessage = "Enter rule number for CIDR (1-7)")]
+        [string]$RuleCollectionNumber
+    )
+    $virtualNetworkIndex = Get-VirtualNetworkIndex -CIDR $CIDR
+    # Azure Firewall Priorities must be in range 100 - 65,000
+    # There are 8,192 10.x.y.z/21 CIDR indexes in the 10.0.0.0/8 class A private address space.
+    # This means we can allocate 7 priorities to each 10.x.y.z/21 CIDR index
+    $rulesPerCIDR = 7
+    if ($RuleCollectionNumber -gt $rulesPerCIDR) {
+        Add-LogMessage -Fatal "$RuleCollectionNumber is not a valid rule collection number. Rule collection number must be between 1 and $rulesPerCIDR."
+    } else {
+        $ruleCollectionPriority = (($virtualNetworkIndex * $rulesPerCIDR) + 1000 + $RuleCollectionNumber)
+        return $ruleCollectionPriority
+    }
+}
+Export-ModuleMember -Function Get-FirewallRuleCollectionPriority
+
+
+# Get virtual network index for virtual network CIDR range
+# --------------------------------------------------------
+# A virtual network's index is the zero-indexed position of its 10.x.y.z/21 CIDR range
+# within the 10.0.0.0/8 class A private address space.
+# There are 8,192 virtual network indexes, ranging from 0 to 8,191
+function Get-VirtualNetworkIndex {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Enter virtual network CIDR (must be a 10.x.y.z/21 CIDR)")]
+        [string]$CIDR
+    )
+    $cidrMask = [int](($CIDR).Split("/")[1])
+    $firstIpOctet = [int](($CIDR).Split(".")[0])
+    $secondIpOctet = [int](($CIDR).Split(".")[1])
+    $thirdIpOctet = [int](($CIDR).Split(".")[2])
+    if ($firstIpOctet -ne 10 -Or $cidrMask -ne 21) {
+        Add-LogMessage -Level Fatal "Invalid virtual network CIDR ($CIDR). Virtual network index is only defined for virtual networks with 10.x.y.z/21 CIDRs"
+    }
+    else {
+        $virtualNetworkIndex = (($secondIpOctet * 32) + (($thirdIpOctet) / 8))
+        return $virtualNetworkIndex
+    }
+}
+Export-ModuleMember -Function Get-VirtualNetworkIndex

@@ -25,8 +25,7 @@ $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.
 # Load the SHM firewall
 # ---------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-# Ensure Firewall is started (it can be deallocated to save costs or if credit has run out)
-$firewall = Start-Firewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg -VirtualNetworkName $config.shm.network.vnet.name
+$firewall = Get-AzFirewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
@@ -39,8 +38,8 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 # Load all traffic rules from template
 # ------------------------------------
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
-    Replace("<priority-allow>", (5000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
-    Replace("<priority-deny>", (6000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
+    Replace("<priority-allow>", (Get-FirewallRuleCollectionPriority -CIDR $config.sre.network.vnet.cidr -RuleCollectionNumber 1)).
+    Replace("<priority-deny>", (Get-FirewallRuleCollectionPriority -CIDR $config.sre.network.vnet.cidr -RuleCollectionNumber 2)).
     Replace("<sre-id>", $config.sre.id).
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<sre-rdg-public-ip-cidr>", "${rdsGatewayPublicIp}/32").
@@ -82,8 +81,8 @@ foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Obj
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
+Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -103,8 +102,8 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
+Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }

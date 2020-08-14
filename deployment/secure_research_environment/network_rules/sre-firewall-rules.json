@@ -16,6 +16,27 @@
         }
     ],
     "networkRuleCollections": [],
-    "applicationRuleCollections": [],
+    "applicationRuleCollections": [
+        {
+            "name": "sre-<sre-id>-allow",
+            "properties": {
+                "priority": "<priority-allow>",
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": []
+            }
+        },
+        {
+            "name": "sre-<sre-id>-deny",
+            "properties": {
+                "priority": "<priority-deny>",
+                "action": {
+                    "type": "Deny"
+                },
+                "rules": []
+            }
+        }
+    ],
     "natRuleCollections": []
 }

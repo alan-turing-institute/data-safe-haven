@@ -185,25 +185,22 @@ function Deploy-Firewall {
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
         $VirtualNetworkName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location,
-        [Parameter(Mandatory = $false, HelpMessage = "Force deallocation and reallocation of Firewall")]
-        [switch]$ForceReallocation
+        $Location
     )
-    # Ensure Firewall public IP address exists
-    $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
+        $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
         $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } 
-    # Ensure Firewall is running
-    $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
+    } else {
+        Add-LogMessage -Level InfoSuccess "Firewall '$Name' already exists"
+    }
     return $firewall
 }
 Export-ModuleMember -Function Deploy-Firewall
@@ -235,12 +232,10 @@ function Deploy-FirewallApplicationRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
-    Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that '$ActionType' application rule '$Name' exists..."
     if ($TargetTag) {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
     } else {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetFqdn' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
     }
     try {
@@ -311,8 +306,11 @@ function Deploy-FirewallNetworkRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveNetworkRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
+        Add-LogMessage -Level Info "[ ] Creating network rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallNetworkRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if (-not $?) {
+        if ($?) {
+            Add-LogMessage -Level Success "Created network rule collection '$CollectionName'"
+        } else {
             Add-LogMessage -Level Fatal "Failed to create network rule collection '$CollectionName'!"
         }
     }
@@ -1321,82 +1319,6 @@ function Set-SubnetNetworkSecurityGroup {
 Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
 
 
-# Ensure Firewall is running, with option to force a restart
-# ----------------------------------------------------------
-function Start-Firewall {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
-        $VirtualNetworkName,
-        [Parameter(Mandatory = $false, HelpMessage = "Force restart of Firewall")]
-        [switch]$ForceRestart
-    )
-    $vnet = Get-AzVirtualNetwork -Name $VirtualNetworkName
-    $publicIP = Get-AzPublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName
-    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is running..."
-    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if(-not $firewall) {
-        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
-        Exit 1
-    }
-    if ($ForceRestart) {
-        Add-LogMessage -Level Info "Restart requested. Deallocating firewall '$Name'..."
-        $firewall = Stop-Firewall -Name $Name -ResourceGroupName $ResourceGroupName
-    }
-    # At this point we either have a running firewall or a stopped firewall.
-    # A firewall is allocated if it has one or more IP configurations.
-    if($firewall.IpConfigurations) {
-        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
-    } else {
-        try {
-            Add-LogMessage -Level Info "[ ] Starting firewall '$Name'..."
-            $firewall.Allocate($vnet, $publicIp)
-            $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-            Add-LogMessage -Level Success "Firewall '$Name' successfully started."
-        } catch {
-            Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
-        }
-    }
-    return $firewall
-}
-Export-ModuleMember -Function Start-Firewall
-
-
-# Ensure Firewall is deallocated
-# ------------------------------
-function Stop-Firewall {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
-        $ResourceGroupName
-    )
-    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is deallocated..."
-    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if(-not $firewall) {
-        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
-        Exit 1
-    }
-    # At this point we either have a running firewall or a stopped firewall.
-    # A firewall is allocated if it has one or more IP configurations.
-    $firewallAllocacted = ($firewall.IpConfigurations.Length -ge 1)
-    if(-not $firewallAllocacted) {
-        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already deallocated."
-    } else {
-        Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
-        $firewall.Deallocate()
-        $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
-        $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    }
-    return $firewall
-}
-Export-ModuleMember -Function Stop-Firewall
-
-
 # Ensure VM is started, with option to force a restart
 # ----------------------------------------------------
 function Start-VM {
@@ -1481,7 +1403,7 @@ function Stop-VM {
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
     } else {
-        Add-LogMessage -Level Info "[ ] Deallocating VM '$($VM.Name)'"
+        Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
         $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
     }
     if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {

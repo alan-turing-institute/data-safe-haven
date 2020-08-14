@@ -20,7 +20,7 @@
         {
             "name": "shm-<shm-id>-allow",
             "properties": {
-                "priority": 1000,
+                "priority": "500",
                 "action": {
                     "type": "Allow"
                 },
@@ -184,6 +184,16 @@
                         ]
                     }
                 ]
+            }
+        },
+        {
+            "name": "shm-<shm-id>-deny",
+            "properties": {
+                "priority": "600",
+                "action": {
+                    "type": "Deny"
+                },
+                "rules": []
             }
         }
     ],
