@@ -71,7 +71,7 @@ private key and a TOTP password, checked in that order.
 - To login via SSH specify your username and private key `ssh
   <username>@<tier1_vm_ip> -i <path_to_private_key>`.
 - If public key authentication is successful you will be prompted for a OTP
-  `One-time password (OATH) for \`<username>':`.
+  ``One-time password (OATH) for `<username>':``.
 - Generate and enter a OTP to login.
 
 ## Test CoCalc
