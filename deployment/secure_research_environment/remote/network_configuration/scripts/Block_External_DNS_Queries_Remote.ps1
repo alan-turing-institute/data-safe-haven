@@ -16,41 +16,33 @@ param(
 )
 $allowedCidrs = $exceptionalAllowedCidrsList.Split(",")
 $blockedCidrs = $blockedCidrsList.Split(",")
+
 $minAllowedProcessingOrder = 3000000000 + ([int]$sreVirtualNetworkIndex * 100)
 $minBlockedProcessingOrder = 3500000000 + ([int]$sreVirtualNetworkIndex * 100)
 
-# Create DNS client subnets for allowed CIDRs
-foreach ($allowedCidr in $allowedCidrs) {
-    $subnetName = "sre-$sreId-allow-$($allowedCidr.Replace('/','_'))"
-    Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$allowedCidr'"
+# Create DNS client subnets for CIDRs
+# -----------------------------------
+function Get-DnsClientSubnetNameFromCidr {
+    param(
+        $cidr
+    )
+    return "sre-$sreId-$($cidr.Replace('/','_'))"
+}
+
+foreach ($cidr in ($allowedCidrs + $blockedCidrs)) {
+    $subnetName = Get-DnsClientSubnetNameFromCidr $cidr
+    Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
     $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
     if ($subnet) {
-        Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$allowedCidr' already exists."
+        Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
     } else {
         try {
-            $null = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $allowedCidr
-            Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$allowedCidr'"
+            $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
+            Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
         } catch {
-            Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$allowedCidr'"
+            Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
             Write-Output $_.Exception
         }
     }
 }
 
-# Create DNS client subnets for blocked CIDRs
-foreach ($blockedCidr in $blockedCidrs) {
-    $subnetName = "sre-$sreId-blocked-$($allowedCidr.Replace('/','_'))"
-    Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$blockedCidr'"
-    $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
-    if ($subnet) {
-        Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$blockedCidr' already exists."
-    } else {
-        try {
-            $null = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $blockedCidr
-            Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$blockedCidr'"
-        } catch {
-            Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$blockedCidr'"
-            Write-Output $_.Exception
-        }
-    }
-}
