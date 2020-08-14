@@ -99,9 +99,6 @@
       ignore_errors: yes
       changed_when: no
 
-    # - debug:
-    #     var: totp_users.results
-
     - name: Create TOTP seeds for each user without one
       become: yes
       lineinfile:
@@ -118,7 +115,6 @@
       lineinfile:
         path: /etc/pam.d/sshd
         state: present
-        # line: 'auth    sufficient pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
         line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
         insertbefore: BOF
 
