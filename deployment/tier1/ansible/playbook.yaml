@@ -67,11 +67,6 @@
         line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
         validate: /usr/sbin/visudo -cf %s
 
-    - name: Update package cache
-      become: yes
-      apt:
-        update_cache: yes
-
     - name: Install PAM OATH packages for TOTP
       become: yes
       apt:
