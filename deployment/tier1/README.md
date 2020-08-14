@@ -17,6 +17,12 @@ The deployment and configuration scripts require the following packages,
 - jq
 - ansible
 
+Additionally to generate QR codes for users you will need
+
+- Python > 3.6
+- oathtool
+- qrencode
+
 ### Provision The Machine
 
 - Login to Azure by running `az login` and follow the instructions.
@@ -36,23 +42,37 @@ The deployment and configuration scripts require the following packages,
   user and update the keys with appropriate values,
   - Replace `<real name>` with the users real name
   - Replace `<username>` with the users desired username
-  - Replace `<path to public ssh keyfile>` with the path to the users public ssh keyfile
+  - Replace `<path to public ssh keyfile>` with the path to the users public SSH keyfile
   - The value of `admin` to true if that user should be added to the sudo group
     (_i.e._ given root access on the VM)
 - Run `ansible-playbook playbook.yaml -i hosts.yaml`
 
-## Authentication
+### Generate QR codes
 
-- Authentication for users (except for the admin user) requires both the correct
-  private key and a TOTP password.
 - The ansible playbook with write a list of usernames and their TOTP hashes to
   `totp_hashes.txt`.
+- The `deployment/tier1/ansible` directory contains a script to generate a QR
+  code for each user, `./generate_qr_codes.py`. The qr codes will be placed in
+  the ansible directory with names `<username>.png`.
+
+OTP information can also be generated manually,
+
 - A OTP can be generated with `oathtool --totp <hash>`
 - To use an authenticator app, you will need the Base32 secret. This can be
   obtained with `oathtool -v --totp <hash>`.
 - A QR code for an authenticator app can be generated with `qrencode
   otpauth://totp/<username>@tier1vm?secret=<base32_secret> -o <username>.png`
   or, to display in the terminal replace `-o <username>.png` with `-t UTF8`.
+
+## Authentication
+
+- Authentication for users (except for the admin user) requires both the correct
+private key and a TOTP password, checked in that order.
+- To login via SSH specify your username and private key `ssh
+  <username>@<tier1_vm_ip> -i <path_to_private_key>`.
+- If public key authentication is successful you will be prompted for a OTP
+  `One-time password (OATH) for \`<username>':`.
+- Generate and enter a OTP to login.
 
 ## Test CoCalc
 
