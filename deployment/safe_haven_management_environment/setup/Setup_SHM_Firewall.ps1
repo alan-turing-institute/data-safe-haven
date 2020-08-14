@@ -83,7 +83,7 @@ foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Obj
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for application rule collection '$ruleCollectionName'..."
+    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -105,7 +105,7 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
 }
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for network rule collection '$ruleCollectionName'..."
+    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
