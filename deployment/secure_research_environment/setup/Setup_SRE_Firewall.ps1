@@ -91,7 +91,8 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
-if (-not $rules.applicationRuleCollections) {
+$nonEmptyRuleCollections = ($rules.applicationRuleCollections | Where-Object { $_.properties.rules })
+if (-not $nonEmptyRuleCollections) {
     Add-LogMessage -Level Warning "No application rules specified."
 }
 
@@ -108,7 +109,8 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
-if (-not $rules.networkRuleCollections) {
+$nonEmptyRuleCollections = ($rules.networkRuleCollections | Where-Object { $_.properties.rules })
+if (-not $nonEmptyRuleCollections) {
     Add-LogMessage -Level Warning "No network rules specified."
 }
 
