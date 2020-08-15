@@ -20,8 +20,8 @@ $blockedCidrs = $blockedCidrsList.Split(",")
 $minAllowedProcessingOrder = 3000000000 + ([int]$sreVirtualNetworkIndex * 100)
 $minBlockedProcessingOrder = 3500000000 + ([int]$sreVirtualNetworkIndex * 100)
 
-# Create DNS client subnets for CIDRs
-# -----------------------------------
+# Generate DNS Client Subnet name from CIDR
+# -----------------------------------------
 function Get-DnsClientSubnetNameFromCidr {
     param(
         $cidr
@@ -29,6 +29,8 @@ function Get-DnsClientSubnetNameFromCidr {
     return "sre-$sreId-$($cidr.Replace('/','_'))"
 }
 
+
+# Ensure DNS Client Subnets exist for  allowed and blocked CIDR ranges
 foreach ($cidr in ($allowedCidrs + $blockedCidrs)) {
     $subnetName = Get-DnsClientSubnetNameFromCidr $cidr
     Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
