@@ -20,19 +20,26 @@ $blockedCidrs = $blockedCidrsList.Split(",")
 $minAllowedProcessingOrder = 3000000000 + ([int]$sreVirtualNetworkIndex * 100)
 $minBlockedProcessingOrder = 3500000000 + ([int]$sreVirtualNetworkIndex * 100)
 
+# Set name prefix for DNS Client Subnets and DNS Resocultion Policies
+$srePrefix = "sre-$sreId"
+
 # Generate DNS Client Subnet name from CIDR
 # -----------------------------------------
 function Get-DnsClientSubnetNameFromCidr {
     param(
         $cidr
     )
-    return "sre-$sreId-$($cidr.Replace('/','_'))"
+    return "$srePrefix-$($cidr.Replace('/','_'))"
 }
 
+# Create DNS Client Subnet configurations
+$allowedSubnetConfigs = @($allowedCidrs | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+$blockedSubnetConfigs = @($blockedCidrs | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
 
-# Ensure DNS Client Subnets exist for  allowed and blocked CIDR ranges
-foreach ($cidr in ($allowedCidrs + $blockedCidrs)) {
-    $subnetName = Get-DnsClientSubnetNameFromCidr $cidr
+# Ensure DNS Client Subnets exist for allowed and blocked CIDR ranges
+foreach ($subnetConfig in ($allowedSubnetConfigs + $blockedSubnetConfigs)) {
+    $cidr = $subnetConfig.Name
+    $subnetName = $subnetConfig.Name
     Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
     $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
     if ($subnet) {
