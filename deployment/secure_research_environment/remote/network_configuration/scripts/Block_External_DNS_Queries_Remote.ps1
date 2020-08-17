@@ -133,13 +133,13 @@ if ($blockedConfigs) {
 }
 
 
-# Assign subnets for exception CIDRs to default recursion scope
-# -----------------------------------------------------------
+# Create DNS resolution policies for exception IP ranges
+# ------------------------------------------------------
 # Assign all queries for exception CIDRs subnets to default ('.') recursion scope
 # We must set policies for exception CIDR subnets first to ensure they take precedence as we 
 # cannot set processing order to be greater than the total number of resolcution policies
 $defaultRecursionScopeName = "."
-Write-Output "`nCreating DNS client subnets for exception CIDR ranges (these will not be blocked)..."
+Write-Output "`nCreating DNS resolution policies for exception CIDR ranges (these will not be blocked)..."
 if ($exceptionConfigs) {
     foreach ($config in $exceptionConfigs) {
         $subnetName = $config.Name
@@ -160,31 +160,18 @@ if ($exceptionConfigs) {
 # Ensure blocked recursion scope exists
 # -------------------------------------
 $blockedRecursionScopeName = "RecursionBlocked"
-if (-not (Get-DnsServerRecursionScope -Name $blockedRecursionScopeName)) {
+$blockedRecursionScope = (Get-DnsServerRecursionScope | Where-Object { $_.Name -eq $blockedRecursionScopeName })
+if (-not $blockedRecursionScope) {
     Add-DnsServerRecursionScope -Name $blockedRecursionScopeName -EnableRecursion $false
 } else {
     Set-DnsServerRecursionScope -Name $blockedRecursionScopeName -EnableRecursion $false
 }
 
 
-# Clear DNS cache to avoid midleading tests
-# -----------------------------------------
-# If a domain has previously been queried and is in the cache, it will be 
-# returned without recursion to external DNS servers
-Write-Output "`nClearing DNS cache..."
-try {
-    $null = Clear-DnsServerCache -Force
-    Write-Output " [o] Successfully cleared DNS cache."
-} catch {
-    Write-Output " [x] Failed to clear DNS cache."
-    Write-Output $_.Exception
-}
-
-
-# Assign subnets for blocked CIDRs to blocked recursion scope
-# -----------------------------------------------------------
+# Create DNS resolution policies for exception IP ranges
+# ------------------------------------------------------
 # Assign all queries for blocked CIDRs subnets to blockec recursion scope
-Write-Output "`nCreating DNS client subnets for blocked CIDR ranges..."
+Write-Output "`nCreating DNS resolution policies for blocked CIDR ranges..."
 if ($blockedConfigs) {
     foreach ($config in $blockedConfigs) {
         $subnetName = $config.Name
@@ -200,4 +187,18 @@ if ($blockedConfigs) {
     }
 } else {
     Write-Output " [o] No blocked CIDR ranges specifed."
+}
+
+
+# Clear DNS cache to avoid midleading tests
+# -----------------------------------------
+# If a domain has previously been queried and is in the cache, it will be 
+# returned without recursion to external DNS servers
+Write-Output "`nClearing DNS cache..."
+try {
+    $null = Clear-DnsServerCache -Force
+    Write-Output " [o] Successfully cleared DNS cache."
+} catch {
+    Write-Output " [x] Failed to clear DNS cache."
+    Write-Output $_.Exception
 }
