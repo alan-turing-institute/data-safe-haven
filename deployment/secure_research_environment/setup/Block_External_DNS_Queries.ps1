@@ -18,7 +18,6 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Block external DNS resolution for VMs researchers can log onto
 # --------------------------------------------------------------
-Add-LogMessage -Level Info "Blocking external DNS resolution for researcher accessible VMs..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId         = "`"$($config.sre.id)`""
@@ -26,7 +25,11 @@ $params = @{
     blockedCidrsList  = "`"$($config.sre.network.vnet.subnets.data.cidr)`""
     exceptionCidrsList = "`"$($config.sre.dataserver.ip)/32`""
 }
+Add-LogMessage -Level Info "Blocking external DNS resolution for researcher accessible VMs on $($config.shm.dc.vmName)..."
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
+Add-LogMessage -Level Info "Blocking external DNS resolution for researcher accessible VMs on $($config.shm.dcb.vmName)..."
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dcb.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
 
 
