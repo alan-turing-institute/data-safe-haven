@@ -11,14 +11,9 @@ param(
     $sreVirtualNetworkIndex,
     [Parameter(HelpMessage = "Comma separated list of CIDR ranges to block external DNS resolution for.")]
     $blockedCidrsList,
-    [Parameter(HelpMessage = "Comma separated list of CIDR ranges to within the blocked ranges to exceptionally allow external DNS resolution for.")]
-    $exceptionalAllowedCidrsList
+    [Parameter(HelpMessage = "Comma separated list of CIDR ranges to within the blocked ranges to exceptionally allow default DNS resolution rules for.")]
+    $exceptionCidrsList
 )
-$allowedCidrs = $exceptionalAllowedCidrsList.Split(",")
-$blockedCidrs = $blockedCidrsList.Split(",")
-
-$minAllowedProcessingOrder = 3000000000 + ([int]$sreVirtualNetworkIndex * 100)
-$minBlockedProcessingOrder = 3500000000 + ([int]$sreVirtualNetworkIndex * 100)
 
 # Set name prefix for DNS Client Subnets and DNS Resocultion Policies
 $srePrefix = "sre-$sreId"
@@ -32,26 +27,177 @@ function Get-DnsClientSubnetNameFromCidr {
     return "$srePrefix-$($cidr.Replace('/','_'))"
 }
 
-# Create DNS Client Subnet configurations
-$allowedSubnetConfigs = @($allowedCidrs | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
-$blockedSubnetConfigs = @($blockedCidrs | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+# Create configurations containing CIDR and corresponding Name stem
+# -----------------------------------------------------------------
+if ($blockedCidrsList) {
+    $blockedConfigs = @($blockedCidrsList.Split(",") | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+} else {
+    $blockedConfigs = @()
+}
+if ($exceptionCidrsList) {
+    $exceptionConfigs = @($exceptionCidrsList.Split(",") | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+} else {
+    $exceptionConfigs = @()
+}
 
-# Ensure DNS Client Subnets exist for allowed and blocked CIDR ranges
-foreach ($subnetConfig in ($allowedSubnetConfigs + $blockedSubnetConfigs)) {
-    $cidr = $subnetConfig.Name
-    $subnetName = $subnetConfig.Name
-    Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-    $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
-    if ($subnet) {
-        Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
-    } else {
+
+# Remove pre-existing DNS Query Resolution Policies for SRE
+# ---------------------------------------------------------
+Write-Output "`nDeleting pre-existing DNS resolution policies for SRE '$sreId'..."
+$existingPolicies = Get-DnsServerQueryResolutionPolicy | Where-Object { $_.Name -like "$srePrefix-*" }
+if ($existingPolicies) {
+    foreach ($existingPolicy in $existingPolicies) {
         try {
-            $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
-            Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            Write-Output " [ ] Deleting policy '$($existingPolicy.Name)'"
+            Remove-DnsServerQueryResolutionPolicy -Name $existingPolicy.Name -Force
+            Write-Output " [o] Successfully deleted policy '$($existingPolicy.Name)'"
         } catch {
-            Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            Write-Output " [x] Failed to delete policy '$($existingPolicy.Name)'"
             Write-Output $_.Exception
         }
     }
+} else {
+    Write-Output " [o] No pre-existing DNS resolution policies found."
 }
 
+
+# Remove pre-existing DNS Client Subnets for SRE
+# ----------------------------------------------
+Write-Output "`nDeleting pre-existing DNS client subnets for SRE '$sreId'..."
+$existingSubnets = Get-DnsServerClientSubnet | Where-Object { $_.Name -like "$srePrefix-*" }
+if ($existingSubnets) {
+    foreach ($existingSubnet in $existingSubnets) {
+        try {
+            Write-Output " [ ] Deleting subnet '$($existingSubnet.Name)'"
+            Remove-DnsServerClientSubnet -Name $existingSubnet.Name -Force
+            Write-Output " [o] Successfully deleted subnet '$($existingSubnet.Name)'"
+        } catch {
+            Write-Output " [x] Failed to delete subnet '$($existingSubnet.Name)'"
+            Write-Output $_.Exception
+        }
+    }
+} else {
+    Write-Output " [o] No pre-existing DNS client subnets found."
+}
+
+
+# Ensure DNS Client Subnets exist for exception CIDR ranges
+# ---------------------------------------------------------
+Write-Output "`nCreating DNS client subnets for exception CIDR ranges (these will not be blocked)..."
+if ($exceptionConfigs) {
+    foreach ($config in $exceptionConfigs) {
+        $cidr = $config.cidr
+        $subnetName = $config.Name
+        Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+        $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
+        if ($subnet) {
+            Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
+        } else {
+            try {
+                $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
+                Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            } catch {
+                Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+                Write-Output $_.Exception
+            }
+        }
+    }
+} else {
+    Write-Output " [o] No exception CIDR ranges specifed."
+}
+
+
+# Ensure DNS Client Subnets exist for blocked CIDR ranges
+# -------------------------------------------------------
+Write-Output "`nCreating DNS client subnets for blocked CIDR ranges..."
+if ($blockedConfigs) {
+    foreach ($config in $blockedConfigs) {
+        $cidr = $config.cidr
+        $subnetName = $config.Name
+        Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+        $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
+        if ($subnet) {
+            Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
+        } else {
+            try {
+                $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
+                Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            } catch {
+                Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+                Write-Output $_.Exception
+            }
+        }
+    }
+} else {
+    Write-Output " [o] No blocked CIDR ranges specifed."
+}
+
+
+# Assign subnets for exception CIDRs to default recursion scope
+# -----------------------------------------------------------
+# Assign all queries for exception CIDRs subnets to default ('.') recursion scope
+# We must set policies for exception CIDR subnets first to ensure they take precedence as we 
+# cannot set processing order to be greater than the total number of resolcution policies
+$defaultRecursionScopeName = "."
+Write-Output "`nCreating DNS client subnets for exception CIDR ranges (these will not be blocked)..."
+if ($exceptionConfigs) {
+    foreach ($config in $exceptionConfigs) {
+        $subnetName = $config.Name
+        $policyName = "$subnetName-default-recursion"
+        $recursionScopeName = $defaultRecursionScopeName
+        try {
+            $policy = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
+            Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+        } catch {
+            Write-Output " [x] Failed to create policy to '$policyName' apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+            Write-Output $_.Exception
+        }
+    }
+} else {
+    Write-Output " [o] No exception CIDR ranges specifed."
+}
+
+# Ensure blocked recursion scope exists
+# -------------------------------------
+$blockedRecursionScopeName = "RecursionBlocked"
+if (-not (Get-DnsServerRecursionScope -Name $blockedRecursionScopeName)) {
+    Add-DnsServerRecursionScope -Name $blockedRecursionScopeName -EnableRecursion $false
+} else {
+    Set-DnsServerRecursionScope -Name $blockedRecursionScopeName -EnableRecursion $false
+}
+
+
+# Clear DNS cache to avoid midleading tests
+# -----------------------------------------
+# If a domain has previously been queried and is in the cache, it will be 
+# returned without recursion to external DNS servers
+Write-Output "`nClearing DNS cache..."
+try {
+    $null = Clear-DnsServerCache -Force
+    Write-Output " [o] Successfully cleared DNS cache."
+} catch {
+    Write-Output " [x] Failed to clear DNS cache."
+    Write-Output $_.Exception
+}
+
+
+# Assign subnets for blocked CIDRs to blocked recursion scope
+# -----------------------------------------------------------
+# Assign all queries for blocked CIDRs subnets to blockec recursion scope
+Write-Output "`nCreating DNS client subnets for blocked CIDR ranges..."
+if ($blockedConfigs) {
+    foreach ($config in $blockedConfigs) {
+        $subnetName = $config.Name
+        $policyName = "$subnetName-recursion-blocked"
+        $recursionScopeName = $blockedRecursionScopeName
+        try {
+            $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
+            Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+        } catch {
+            Write-Output " [x] Failed to create policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+            Write-Output $_.Exception
+        }
+    }
+} else {
+    Write-Output " [o] No blocked CIDR ranges specifed."
+}

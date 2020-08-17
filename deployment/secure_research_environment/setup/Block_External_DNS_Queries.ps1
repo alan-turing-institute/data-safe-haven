@@ -24,7 +24,7 @@ $params = @{
     sreId         = "`"$($config.sre.id)`""
     sreVirtualNetworkIndex = "`"$(Get-VirtualNetworkIndex -CIDR $config.sre.network.vnet.cidr)`""
     blockedCidrsList  = "`"$($config.sre.network.vnet.subnets.data.cidr)`""
-    exceptionalAllowedCidrsList = "`"$($config.sre.dataserver.ip)/32`""
+    exceptionCidrsList = "`"$($config.sre.dataserver.ip)/32`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
