@@ -134,16 +134,12 @@
           Match User tier1_admin
               AuthenticationMethods publickey
 
-    - name: Install docker
+    - name: Install docker and docker-compose
       become: yes
       apt:
-        name: docker.io
-        state: present
-
-    - name: Install docker-compose
-      become: yes
-      apt:
-        name: docker-compose
+        name:
+          - docker.io
+          - docker-compose
         state: present
 
     - name: Start and enable docker service
