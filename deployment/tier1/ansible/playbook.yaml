@@ -49,24 +49,6 @@
         state: present
       loop: "{{ users }}"
 
-    - name: Add admin users to the admin group
-      become: yes
-      user:
-        name: "{{ item.username }}"
-        append: true
-        groups: admin
-      loop: "{{ users }}"
-      when: item.admin
-
-    - name: Allow users in the admin group to sudo without a password
-      become: yes
-      lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^%ADMIN ALL='
-        line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
-        validate: /usr/sbin/visudo -cf %s
-
     - name: Install PAM OATH packages for TOTP
       become: yes
       apt:
@@ -74,22 +56,6 @@
           - libpam-oath
           - oathtool
         state: present
-
-    - name: Enable PAM in sshd configuration
-      become: yes
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?UsePAM'
-        line: 'UsePAM yes'
-      notify: Restart sshd
-
-    - name: Enable challenge response authentication
-      become: yes
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?ChallengeResponseAuthentication'
-        line: 'ChallengeResponseAuthentication yes'
-      notify: Restart sshd
 
     - name: Look for existing TOTP seeds
       become: yes
@@ -110,7 +76,40 @@
       loop: "{{ totp_users.results }}"
       when: item.failed
 
-    - name: Enable OATH for ssh login in PAM
+    - name: Add admin users to the admin group
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        append: true
+        groups: admin
+      loop: "{{ users }}"
+      when: item.admin
+
+    - name: Require OATH for sudo
+      become: yes
+      lineinfile:
+        path: /etc/pam.d/sudo
+        state: present
+        line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6 nullok'
+        insertbefore: BOF
+
+    - name: Enable PAM in sshd configuration
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?UsePAM'
+        line: 'UsePAM yes'
+      notify: Restart sshd
+
+    - name: Enable challenge response authentication for SSH
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?ChallengeResponseAuthentication'
+        line: 'ChallengeResponseAuthentication yes'
+      notify: Restart sshd
+
+    - name: Enable OATH for SSH login in PAM
       become: yes
       lineinfile:
         path: /etc/pam.d/sshd
