@@ -317,7 +317,7 @@ runcmd:
   - export PYENV_ROOT="/opt/pyenv"
   - rm -rf $PYENV_ROOT 2> /dev/null
   - PATH="$PYENV_ROOT/bin:$PATH" # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
-  - curl https://pyenv.run | bash
+  - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 
   # Install python versions
   - /opt/build/install_python_version.sh py27 || exit 1
