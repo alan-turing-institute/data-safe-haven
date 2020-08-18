@@ -11,7 +11,7 @@ param(
     $sreVirtualNetworkIndex,
     [Parameter(HelpMessage = "Comma separated list of CIDR ranges to block external DNS resolution for.")]
     $blockedCidrsList,
-    [Parameter(HelpMessage = "Comma separated list of CIDR ranges to within the blocked ranges to exceptionally allow default DNS resolution rules for.")]
+    [Parameter(HelpMessage = "Comma separated list of CIDR ranges within the blocked ranges to exceptionally allow default DNS resolution rules for.")]
     $exceptionCidrsList
 )
 
@@ -135,9 +135,9 @@ if ($blockedConfigs) {
 
 # Create DNS resolution policies for exception IP ranges
 # ------------------------------------------------------
-# Assign all queries for exception CIDRs subnets to default ('.') recursion scope
+# Assign all queries for exception CIDRs subnets to default ('.') recursion scope.
 # We must set policies for exception CIDR subnets first to ensure they take precedence as we 
-# cannot set processing order to be greater than the total number of resolcution policies
+# cannot set processing order to be greater than the total number of resolution policies.
 $defaultRecursionScopeName = "."
 Write-Output "`nCreating DNS resolution policies for exception CIDR ranges (these will not be blocked)..."
 if ($exceptionConfigs) {
@@ -170,7 +170,7 @@ if (-not $blockedRecursionScope) {
 
 # Create DNS resolution policies for exception IP ranges
 # ------------------------------------------------------
-# Assign all queries for blocked CIDRs subnets to blockec recursion scope
+# Assign all queries for blocked CIDRs subnets to blocked recursion scope.
 Write-Output "`nCreating DNS resolution policies for blocked CIDR ranges..."
 if ($blockedConfigs) {
     foreach ($config in $blockedConfigs) {
