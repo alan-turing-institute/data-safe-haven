@@ -163,6 +163,11 @@ foreach ($vmName in $computeVmNames) {
 }
 
 
+# Block external DNS qeuries
+# --------------------------
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot Block_External_DNS_Queries.ps1) -configId $configId"
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext
