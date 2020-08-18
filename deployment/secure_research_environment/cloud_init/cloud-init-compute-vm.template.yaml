@@ -361,6 +361,10 @@ runcmd:
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /output  # NB. this initial mount might fail if the dataserver cannot be resolved yet
+  # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
+  - systemctl stop clamav-freshclam
+  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
+  - freshclam
   # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
   - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf

@@ -292,14 +292,9 @@ runcmd:
 
   # Manually update clamav signature database
   - echo ">=== $(date +%s) Updating clamav database ===<"
-  # The systemd unit must be disabled in order to update using freshclam
-  # We re-enable it after the update has finished
+  # We do not update ClamAV at build time since these definitions need to be updated at deployment times
   - systemctl stop clamav-freshclam
-  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
-  - freshclam
-  - systemctl start clamav-freshclam
-  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "running")" ]; then break; else sleep 1; fi; done
-  - systemctl status clamav-freshclam
+  - systemctl disable clamav-freshclam
   # As clamav-unofficial-sigs has not been updated since 2014, we need the following fixes:
   # Calls to SecuriteInfo fail with 'curl: (6) Could not resolve host: clamav.securiteinfo.com'
   # - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
