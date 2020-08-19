@@ -1251,7 +1251,7 @@ function Set-KeyVaultPermissions {
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
-    Set-AzKeyVaultAccessPolicy -VaultName $Name
+    Set-AzKeyVaultAccessPolicy -VaultName $Name `
                                -ObjectId $securityGroupId `
                                -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover `
                                -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore `
