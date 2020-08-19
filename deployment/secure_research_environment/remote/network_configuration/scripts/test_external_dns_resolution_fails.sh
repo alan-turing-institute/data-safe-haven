@@ -27,7 +27,7 @@ confirm_internal_dns_lookup_succeeds () {
 
 echo " Testing DNS resolution lockdown"
 echo " -------------------------------"
-echo " $HOSTNAME> $(date +"%Y-%m-%dT%H:%m:%S")"
+echo " $HOSTNAME> $(date +"%Y-%m-%dT%H:%M:%S")"
 
 SHM_DOMAIN_FQDN="mortest.dsgroupdev.co.uk"
 SHM_DC1_FQDN="DC1-SHM-MORTEST.mortest.dsgroupdev.co.uk"
