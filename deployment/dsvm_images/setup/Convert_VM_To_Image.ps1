@@ -77,9 +77,9 @@ while (-Not $statuses.Contains("ProvisioningState/succeeded")) {
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Deallocating and generalising VM: '$($vm.Name)'. This can take up to 20 minutes..."
 $null = Stop-AzVM -ResourceGroupName $config.dsvmImage.build.rg -Name $vm.Name -Force
-Add-LogMessage -Level Info "VM is stopped"
+Add-LogMessage -Level Info "VM has been stopped"
 $null = Set-AzVM -ResourceGroupName $config.dsvmImage.build.rg -Name $vm.Name -Generalized
-Add-LogMessage -Level Info "VM is generalized"
+Add-LogMessage -Level Info "VM has been generalized"
 
 
 # Create an image from the deallocated VM
