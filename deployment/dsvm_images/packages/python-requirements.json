@@ -14,10 +14,12 @@
         "tensorflow-estimator": "==2.1.0"
     },
     "py36": {
+        "flair": "<0.6",
         "holidays": ">=0.10.3",
         "spacy": "==2.2.2"
     },
     "py37": {
+        "flair": "<0.6",
         "holidays": ">=0.10.3",
         "spacy": "==2.2.2"
     }
