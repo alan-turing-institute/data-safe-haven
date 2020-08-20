@@ -7,8 +7,6 @@
 param(
     [Parameter(HelpMessage = "SRE ID")]
     $sreId,
-    [Parameter(HelpMessage = "SRE Virtual Network Index")]
-    $sreVirtualNetworkIndex,
     [Parameter(HelpMessage = "Comma separated list of CIDR ranges to block external DNS resolution for.")]
     $blockedCidrsList,
     [Parameter(HelpMessage = "Comma separated list of CIDR ranges within the blocked ranges to exceptionally allow default DNS resolution rules for.")]

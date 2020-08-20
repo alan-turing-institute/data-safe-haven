@@ -25,7 +25,6 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId                  = "`"$($config.sre.id)`""
-    sreVirtualNetworkIndex = "`"$(Get-VirtualNetworkIndex -CIDR $config.sre.network.vnet.cidr)`""
     blockedCidrsList       = "`"$($config.sre.network.vnet.subnets.data.cidr)`""
     exceptionCidrsList     = "`"$($config.sre.dataserver.ip)/32`""
 }
