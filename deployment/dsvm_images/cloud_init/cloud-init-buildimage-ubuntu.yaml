@@ -105,10 +105,6 @@ write_files:
     permissions: "0755"
     content: |
       <analyse_build.py>
-  - path: "/opt/build/get_package_constraint.py"
-    permissions: "0500"
-    content: |
-      <get_package_constraint.py>
   - path: "/opt/build/install_python_version.sh"
     permissions: "0500"
     content: |

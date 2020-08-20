@@ -331,11 +331,11 @@ $success = $success -and $?
 # Allow the localadsync account to replicate directory changes
 $null = dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes"
 $success = $success -and $?
-$null = dsacls "$configurationNamingContext" /G "$($UserPrincipal):CA;Replicating Directory Changes"
+$null = dsacls "$configurationNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes"
 $success = $success -and $?
 $null = dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes All"
 $success = $success -and $?
-$null = dsacls "$configurationNamingContext" /G "$($UserPrincipal):CA;Replicating Directory Changes All"
+$null = dsacls "$configurationNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes All"
 $success = $success -and $?
 if ($success) {
     Write-Output " [o] Successfully updated ACL permissions for AD Sync Service account '$($userAccounts.aadLocalSync.samAccountName)'"
@@ -347,8 +347,6 @@ if ($success) {
 # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
-# # Allow computer managers to register computers in the 'Computers' container
-# Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\$($securityGroups.computerManagers.name)"
 # Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
 # Allow the data server user to register computers in the '<ou-data-servers-name>' container
