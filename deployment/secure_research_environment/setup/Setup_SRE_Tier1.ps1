@@ -167,7 +167,7 @@ $users | ConvertTo-JSON | Set-Content -Path "users.json"
 
 # Run ansible playbook
 # --------------------
-ansible-playbook playbook.yaml -i hosts.yaml
+ansible-playbook tier1-playbook.yaml -i hosts.yaml
 
 
 # Generate qr codes

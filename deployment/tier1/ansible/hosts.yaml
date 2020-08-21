@@ -1,7 +1,0 @@
----
-all:
-  hosts:
-    tier1:
-      ansible_host: <tier1_vm_ip>
-      ansible_user: tier1_admin
-      ansible_ssh_private_key_file: ../tier1_admin.pem
