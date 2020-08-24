@@ -1449,7 +1449,56 @@ function Set-KeyVaultPermissions {
 Export-ModuleMember -Function Set-KeyVaultPermissions
 
 
-# Add NS Record Set to DNS Zone if it doesnot already exist
+# Set Network Security Group Rules
+# --------------------------------
+function Set-NetworkSecurityGroupRules {
+    param(
+        [parameter(Mandatory = $true, HelpMessage = "Network Security Group to set rules for")]
+        [Microsoft.Azure.Commands.Network.Models.PSNetworkSecurityGroup]$NetworkSecurityGroup,
+        [parameter(Mandatory = $true, HelpMessage = "Rules to set for Network Security Group")]
+        [Object[]]$Rules
+    )
+    Add-LogMessage -Level Info "[ ] Setting $($Rules.Count) rules for Network Security Group '$($NetworkSecurityGroup.Name)'"
+    try {
+        $existingRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
+        foreach ($existingRule in $existingRules) {
+            $NetworkSecurityGroup = Remove-AzNetworkSecurityRuleConfig -Name $existingRule.Name -NetworkSecurityGroup $NetworkSecurityGroup
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Error removing existing rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
+    }
+    try {
+        foreach ($rule in $Rules) {
+            $NetworkSecurityGroup = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup @rule
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Error adding provided rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
+    }
+    $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
+    $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
+    foreach ($updatedRule in $updatedRules) {
+        if ($updatedRule.SourceAddressPrefix -eq "*") {
+            $sourceAddressText = "any source"
+        } else {
+            $sourceAddressText = "'$($updatedRule.SourceAddressPrefix)"
+        }
+        if ($updatedRule.DestinationAddressPrefix -eq "*") {
+            $destinationAddressText = "any destination"
+        } else {
+            $destinationAddressText = "'$($updatedRule.DestinationAddressPrefix)'"
+        }
+        if ($updatedRule.DestinationPortRange -eq "*") {
+            $destinationPortText = "any port"
+        } else {
+            $destinationPortText = "ports $($updatedRule.DestinationPortRange)"
+        }
+        Add-LogMessage -Level Success "Set $($updatedRule.Name) rule to $($updatedRule.Access) connections from $sourceAddressText to $destinationPortText on $destinationAddressText."
+    }
+    return $NetworkSecurityGroup
+}
+Export-ModuleMember -Function Set-NetworkSecurityGroupRules
+
+# Add NS Record Set to DNS Zone if it doesn't already exist
 # ---------------------------------------------------------
 function Set-NSRecords {
     param(
