@@ -63,7 +63,7 @@ confirm_external_dns_lookup_fails "facebook.com" || FAILED_TESTS=$(($FAILED_TEST
 echo -e "\nTesting DNS lookup for non-existent external domains via Azure Platform DNS servers..."
 confirm_external_dns_lookup_fails "fail.example.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS+1))
 
-echo -e "\nTesting DNS lookup for resolvable external domains via Azure Platform  DNS servers..."
+echo -e "\nTesting DNS lookup for resolvable external domains via Azure Platform DNS servers..."
 confirm_external_dns_lookup_fails "example.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS+1))
 confirm_external_dns_lookup_fails "doi.org" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS+1))
 confirm_external_dns_lookup_fails "google.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS+1))
