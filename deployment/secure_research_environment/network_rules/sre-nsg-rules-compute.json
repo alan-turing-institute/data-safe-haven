@@ -1,0 +1,26 @@
+[
+    {
+        "name": "DenyInternetOutbound",
+        "access": "Deny",
+        "description": "Deny outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4000,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAzurePlatfromDnsOutbound",
+        "access": "Deny",
+        "description": "Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+        "destinationAddressPrefix": "AzurePlatformDNS",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4001,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

@@ -238,9 +238,11 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Ensure that runtime NSG exists
-# ------------------------------
+# Ensure that runtime NSG exists and required rules are set
+# ---------------------------------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Raw) | ConvertFrom-Json -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundAllowNTP" `
                              -Description "Outbound allow connections to NTP servers" `
@@ -265,8 +267,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -DestinationPortRange *
 
 
-# Ensure that deployment NSG exists
-# ---------------------------------
+# Ensure that deployment NSG exists and required rules are set
+# ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
