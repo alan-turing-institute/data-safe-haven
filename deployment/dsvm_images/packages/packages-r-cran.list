@@ -74,6 +74,7 @@ gbm
 gdata
 ggalluvial
 GGally
+gganimate
 ggdendro
 ggforce
 ggmap
@@ -97,6 +98,7 @@ igraph
 import
 irace
 IRdisplay
+IRkernel
 iterators
 janitor
 jsonlite
@@ -169,6 +171,7 @@ RCurl
 readr
 readtext
 readxl
+remotes
 repr
 reshape
 reshape2
@@ -184,7 +187,6 @@ ROCR
 roxygen2
 rpart
 RPostgres
-rPython
 RSQLite
 rstan
 runjags

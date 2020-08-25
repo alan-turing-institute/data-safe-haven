@@ -73,7 +73,7 @@ If you want to update the version of one of the packages we install from a `.deb
 - The build (based on Ubuntu 18.04) takes approximately 6 hours of which 4 hours(!) is taken up with installing the Python 2.7 environment.
 
 Once you have launched a new build by running the `./Provision_Compute_VM.ps1` script, the build will take several hours to complete.
-During this time, you can monitor the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/installation/analyse_build.py`.
+During this time, you can monitor the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
 Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the Azure portal.
 
 ## :camera: Converting candidate VMs to images

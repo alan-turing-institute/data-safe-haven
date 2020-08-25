@@ -2,7 +2,6 @@ annotate
 apeglm
 Biobase
 BiocGenerics
-BiocInstaller
 Biostrings
 ChemmineR
 clusterProfiler
@@ -21,7 +20,6 @@ FlowSOM
 flowUtils
 ggtree
 GlobalAncova
-GO
 GO.db
 GOSemSim
 GOstats
@@ -38,7 +36,7 @@ MassSpecWavelet
 metagenomeSeq
 minet
 MLInterfaces
-moe430a
+moe430a.db
 monocle
 pathview
 pcaMethods

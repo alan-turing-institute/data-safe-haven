@@ -480,17 +480,25 @@ For example:
 
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
 
-There are three versions of `python` installed.
-None are enabled by default, so the first step is to explicitly select your preferred version.
+There are several versions of `python` installed, which are managed through [pyenv](https://github.com/pyenv/pyenv).
+You can see the default version (indicated by a '*') and all other installed versions using the following command:
 
-To enable a `python` version type `conda activate <name>` on the command line, where `<name>` is one of:
+```bash
+> pyenv versions
+```
 
-- `py27` (python 2.7)
-- `py36` (python 3.6)
-- `py37` (python 3.7)
+This will give output like:
+```bash
+  system
+  2.7.18
+  3.6.11
+* 3.7.8 (set by /home/ada.lovelace/.pyenv_version)
+```
 
-> :warning: Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
-> If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
+You can change your preferred Python version globally or on a folder-by-folder basis using
+
+- `pyenv global <version number>` (to change the version globally)
+- `pyenv local <version number>` (to change the version for the folder you are currently in)
 
 ### :gift: Install R and python packages
 
