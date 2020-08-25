@@ -1,6 +1,10 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
     [string]$configId,
+    [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
+    [string]$vmSize = "",
+    [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM.")]
+    [string]$userslYAMLPath
 )
 
 Import-Module Az
@@ -16,7 +20,19 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-$keyVault = $config.sre.keyVault.name
+# Generate VM name
+# ----------------
+$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
+
+# Get VM size
+# -----------
+if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
+
+# Create VNet resource group if it does not exist
+# -----------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
+$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
+$subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 
 
 # Ensure that NSG exists
@@ -68,41 +84,27 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -DestinationPortRange *
 
 
-# Check that VNET and subnet exist
-# --------------------------------
-Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-try {
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
-}
-Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.data.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.data.name }
-if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.data.name)' could not be found in virtual network '$($vnet.Name)'!"
-}
-Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
-
-
 # Retrieve credentials from the keyvault
 # --------------------------------------
+$keyVault = $config.sre.keyVault.name
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
-#Construct cloud-init YAML file
+# Construct cloud-init YAML file
 # ------------------------------
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-tier1.yaml"
 $cloudInitYaml = Get-Content $cloudInitFilePath -Raw
 
-# Create empty disks
+# Create empty disk
+# -----------------
+$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 
-
-# Deploy a VM using adminUserName and adminPublicKeyPath usersYamlPath
+# Deploy a VM using adminUserName and adminPublicKeyPath
+# ------------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
@@ -118,67 +120,74 @@ $params = @{
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
     DataDiskIds            = @($dataDisk.Id)
+    ImageSku               = "18.04-LTS"
 }
 $null = Deploy-UbuntuVirtualMachine @params
 
 
-pushd ../ansible
+try{
+    pushd ../ansible
 
 
-# Create or retrieve SSH keys
-# ---------------------------
-$keySecretPrefix ="$($vmName)-KEY"
-if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-PRIVATE") {
-    # Create SSH keys
-    ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
+    # Create or retrieve SSH keys
+    # ---------------------------
+    $keySecretPrefix ="$($vmName)-KEY"
+    if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-PRIVATE")) {
+        # Create SSH keys
+        ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
 
-    # Copy public key to VM
-    $sshPublicKey = cat "$($vmName).pem.pub"
-    Add-AzVMSshPublicKey `
-        -VM $vmconfig `
-        -KeyData $sshPublicKey `
-        -Path "/home/$($vmAdminUsername)/.ssh/authorized_keys"
+        # Copy public key to VM
+        $sshPublicKey = cat "$($vmName).pem.pub"
+        Add-AzVMSshPublicKey `
+            -VM $vmconfig `
+            -KeyData $sshPublicKey `
+            -Path "/home/$($vmAdminUsername)/.ssh/authorized_keys"
 
-    # Upload keys to key vault
-    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue $sshPublicKey
-    $sshPrivateKey = cat "$($vmName).pem"
-    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue $sshPrivateKey
-} else {
-    # Fetch private key from key vault
-    $sshPrivateKey = Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE"
-    $sshPrivateKey | Set-Content -Path "$($vmName).pem"
+        # Upload keys to key vault
+        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue $sshPublicKey
+        $sshPrivateKey = cat "$($vmName).pem"
+        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue $sshPrivateKey
+    } else {
+        # Fetch private key from key vault
+        $sshPrivateKey = Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE"
+        $sshPrivateKey | Set-Content -Path "$($vmName).pem"
+    }
+
+
+    # Configure hosts file
+    # --------------------
+    $hostsTemplate = Get-Content -Path "tier1-hosts.yaml"
+    $hostsTemplate = $hostsTemplate.Replace("<tier1_host>", $vmIpAddress)
+    $hostsTemplate = $hostsTemplate.Replace("<tier1_admin>", $vmAdminUsername)
+    $hostsTemplate = $hostsTemplate.Replace("<tier1_key>", "$($vmName).pem")
+    $hostsTemplate | Set-Content -Path "hosts.yaml"
+
+
+    # Configures users file
+    # ---------------------
+    if ($usersYAMLPath) {
+        cp $usersYAMLPath "users.yaml"
+    } else {
+        "---\nusers:\n" | Set-Content -path "users.yaml"
+    }
+
+
+    # Run ansible playbook
+    # --------------------
+    ansible-playbook tier1-playbook.yaml -i hosts.yaml
+
+
+    # Generate qr codes
+    # -----------------
+    ./generate_qr_codes.py
+
+
+} finally {
+    # Remove temporary files
+    # ----------------------
+    rm -f hosts.yaml users.yaml "$($vmName).pem"
+    popd
 }
-
-
-# Configure hosts file
-# --------------------
-$hostsTemplate = Get-Content -Path "tier1-hosts.yaml"
-$hostsTemplate = $hostsTemplate -replace "<tier1_host>" $vmIpAddress
-$hostsTemplate = $hostsTemplate -replace "<tier1_admin>" $vmAdminUsername
-$hostsTemplate = $hostsTemplate -replace "<tier1_key>" "$($vmName).pem"
-$hostsTemplate | Set-Content -Path "hosts.yaml"
-
-
-# Configures users file
-# ---------------------
-$users = $config.sre.users
-$users | ConvertTo-JSON | Set-Content -Path "users.json"
-
-
-# Run ansible playbook
-# --------------------
-ansible-playbook tier1-playbook.yaml -i hosts.yaml
-
-
-# Generate qr codes
-# -----------------
-./generate_qr_codes.py
-
-
-# Remove temporary files
-# ----------------------
-rm hosts.yaml users.json "$($vmName).pem"
-popd
 
 
 # NB. to update for new users simply re-run this script
