@@ -882,7 +882,7 @@ import pyodbc
 import pandas as pd
 
 server = "MSSQL-SANDBOX.apr20.turingsafehaven.ac.uk"
-port = 1433
+port = "1433"
 db_name = "master"
 
 cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
