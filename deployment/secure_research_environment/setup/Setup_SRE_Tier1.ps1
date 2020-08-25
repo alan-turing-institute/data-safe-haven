@@ -138,16 +138,16 @@ try{
         ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
 
         # Copy public key to VM
-        $sshPublicKey = cat "$($vmName).pem.pub"
+        $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
         $null = Add-AzVMSshPublicKey `
             -VM $vm `
             -KeyData $sshPublicKey `
             -Path "/home/$($vmAdminUsername)/.ssh/authorized_keys"
 
         # Upload keys to key vault
-        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue $sshPublicKey
-        $sshPrivateKey = cat "$($vmName).pem"
-        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue $sshPrivateKey
+        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue (ConvertTo-SecureString $sshPublicKey -AsPlainText -Force)
+        $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
+        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue (ConvertTo-SecureString $sshPrivateKey -AsPlainText -Force)
     } else {
         # Fetch private key from key vault
         $sshPrivateKey = Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE"
@@ -186,7 +186,8 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    rm -f hosts.yaml users.yaml "$($vmName).pem"
+    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
+
     popd
 }
 
