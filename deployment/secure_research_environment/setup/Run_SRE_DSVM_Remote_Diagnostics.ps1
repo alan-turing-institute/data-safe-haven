@@ -29,10 +29,10 @@ $params = @{
     LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
     SERVICE_PATH      = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
 }
-foreach ($scriptNamePair in (("mounted drives", "check_drive_mounts.sh"),
-                             ("LDAP connection", "check_ldap_connection.sh"),
+foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
                              ("realm join", "rerun_realm_join.sh"),
+                             ("mounted drives", "check_drive_mounts.sh"),
                              ("SSSD service", "restart_sssd_service.sh"),
                              ("xrdp service", "restart_xrdp_service.sh"))) {
     $name, $diagnostic_script = $scriptNamePair

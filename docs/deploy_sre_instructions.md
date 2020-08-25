@@ -465,9 +465,9 @@ To run the smoke tests:
 - Connect to the DSVM using the remote desktop URL (eg. `https://sandbox.dsgroupdev.co.uk/`) and selecting the the `DSVM Main (Desktop)` app
 On the **DSVM**.
 - Open a terminal session
-- Enter the test directory using `cd /opt/installation/smoke_tests/tests`
-- Run `source run_all_tests.sh`.
-- If all test results are expected you are done! Otherwise check `README.md` for help diagnosing test failures.
+- Enter the test directory using `cd /opt/verification/smoke_tests`
+- Run `bats run_all_tests.bats`.
+- If all test results are expected you are done! Otherwise check the `README.md` in this folder for help diagnosing test failures.
 
 ## :bomb: Tearing down the SRE
 On your **deployment machine**.

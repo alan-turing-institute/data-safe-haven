@@ -51,6 +51,30 @@
         "logging": {
             "rg": "RG_SHM_TESTC_LOGGING"
         },
+        "mirrors": {
+            "pypi": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-pypi-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-pypi-external-tier-3-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-cran-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-cran-external-tier-3-admin-password"
+                    }
+                }
+            }
+        },
         "users": {
             "computerManagers": {
                 "identityServers": {
