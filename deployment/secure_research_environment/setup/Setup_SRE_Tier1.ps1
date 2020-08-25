@@ -24,6 +24,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # ----------------
 $vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
 
+
 # Get VM size
 # -----------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
@@ -105,7 +106,7 @@ $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsv
 # Deploy a VM using adminUserName and adminPublicKeyPath
 # ------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     Name                   = $vmName
@@ -169,7 +170,8 @@ try{
     if ($usersYAMLPath) {
         cp $usersYAMLPath "users.yaml"
     } else {
-        "---\nusers:\n" | Set-Content -path "users.yaml"
+        "---
+        users: []" | Set-Content -path "users.yaml"
     }
 
 
@@ -186,7 +188,7 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
+    # rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
 
     popd
 }
