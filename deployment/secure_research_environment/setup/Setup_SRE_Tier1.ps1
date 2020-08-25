@@ -123,7 +123,7 @@ $params = @{
     ImageSku               = "18.04-LTS"
     SkipWaitForCloudInit   = $true
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$vm = Deploy-UbuntuVirtualMachine @params
 
 
 try{
@@ -139,8 +139,8 @@ try{
 
         # Copy public key to VM
         $sshPublicKey = cat "$($vmName).pem.pub"
-        Add-AzVMSshPublicKey `
-            -VM $vmconfig `
+        $null = Add-AzVMSshPublicKey `
+            -VM $vm `
             -KeyData $sshPublicKey `
             -Path "/home/$($vmAdminUsername)/.ssh/authorized_keys"
 
