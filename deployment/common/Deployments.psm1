@@ -201,7 +201,7 @@ function Deploy-Firewall {
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } 
+    }
     # Ensure Firewall is running
     $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
     return $firewall

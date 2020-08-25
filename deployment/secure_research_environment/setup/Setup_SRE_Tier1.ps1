@@ -121,6 +121,7 @@ $params = @{
     ResourceGroupName      = $config.sre.dsvm.rg
     DataDiskIds            = @($dataDisk.Id)
     ImageSku               = "18.04-LTS"
+    SkipWaitForCloudInit   = $true
 }
 $null = Deploy-UbuntuVirtualMachine @params
 
