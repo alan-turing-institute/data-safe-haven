@@ -9,13 +9,11 @@ import pkg_resources
 # Some packages cannot be imported so we skip them.
 KNOWN_RESOURCE_ISSUES = [
     "backports",  # not a single package
-    "xgboost",    # has dependencies on external library
+    "xgboost",  # has dependencies on external library
 ]
 
 # For these packages we check for an executable as they are not importable
-NON_IMPORTABLE_PACKAGES = {
-    "repro-catalogue": "catalogue"
-}
+NON_IMPORTABLE_PACKAGES = {"repro-catalogue": "catalogue"}
 
 # Some packages are imported using a different name than they `pip install` with
 IMPORTABLE_NAMES = {
@@ -107,9 +105,16 @@ def test_packages():
     version = get_python_version()
     print("Python version %s found" % version["full"])
     pypi_package_lists = glob.glob(
-        os.path.join("..", "package_lists", "packages-python-pypi*")
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..",
+            "package_lists",
+            "packages-python-pypi*",
+        )
     )
-    matching_package_lists = [_list for _list in pypi_package_lists if version["short"] in _list]
+    matching_package_lists = [
+        _list for _list in pypi_package_lists if version["short"] in _list
+    ]
     if matching_package_lists:
         with open(matching_package_lists[0], "r") as f_packages:
             packages = [

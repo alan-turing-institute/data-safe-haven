@@ -285,6 +285,7 @@ runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Join this VM to the domain and allow domain users to log in
   - /opt/configuration/kerberos_configuration.sh
+  - echo 'Running /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"'
   - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
   - /opt/configuration/user_login_configuration.sh
   # Set locale

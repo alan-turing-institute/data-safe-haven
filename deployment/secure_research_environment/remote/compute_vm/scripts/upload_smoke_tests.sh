@@ -14,6 +14,7 @@ rm -rf smoke_tests.zip
 chmod -R 644 smoke_tests/
 chmod ugo+x smoke_tests/ smoke_tests/tests/ smoke_tests/package_lists/
 chmod ugo+rx smoke_tests/tests/*.{jl,py,sh,R}
+mv smoke_tests/tests/run_all_tests.bats smoke_tests/
 
 # Show final outputs
 ls -alh /opt/verification/smoke_tests/*

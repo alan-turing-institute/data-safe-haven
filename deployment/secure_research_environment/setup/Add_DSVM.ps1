@@ -530,7 +530,7 @@ $template = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_dat
 $template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
           Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
           Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
-          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Out-File (Join-Path $tempDir "tests" "test_databases.sh")
+          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $tempDir "tests" "test_databases.sh")
 if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath

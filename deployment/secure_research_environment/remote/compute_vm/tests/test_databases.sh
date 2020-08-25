@@ -23,9 +23,10 @@ if [ $port == "" ]; then
     echo "Database type '$db_type' is not part of this SRE"
     echo "All database tests passed"
 else
+    script_path=$(dirname $(readlink -f "$0"))
     if [ $language == "python" ]; then
-        python test_databases_python.py --db-type $db_type --db-name $db_name --port $port --server-name $server_name
+        python ${script_path}/test_databases_python.py --db-type $db_type --db-name $db_name --port $port --server-name $server_name
     elif [ $language == "R" ]; then
-        Rscript test_databases_R.R $db_type $db_name $port $server_name
+        Rscript ${script_path}/test_databases_R.R $db_type $db_name $port $server_name
     fi
 fi
