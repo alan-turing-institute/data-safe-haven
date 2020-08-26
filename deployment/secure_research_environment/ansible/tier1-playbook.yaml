@@ -130,7 +130,7 @@
       blockinfile:
         path: /etc/ssh/sshd_config
         block: |
-          Match User tier1_admin
+          Match User "{{ ansible_user }}"
               AuthenticationMethods publickey
 
     - name: Install docker and docker-compose
