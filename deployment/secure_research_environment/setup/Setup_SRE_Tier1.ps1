@@ -44,9 +44,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Description "Outbound internet access" `
                              -Priority 2000 `
                              -Direction Outbound `
-                             -Access Deny `
+                             -Access Allow `
                              -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
+                             -SourceAddressPrefix * `
                              -SourcePortRange * `
                              -DestinationAddressPrefix Internet `
                              -DestinationPortRange *
@@ -69,9 +69,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Access Allow `
                              -Protocol TCP `
                              -SourceAddressPrefix * `
-                             -SourcePortRange 22 `
+                             -SourcePortRange * `
                              -DestinationAddressPrefix * `
-                             -DestinationPortRange *
+                             -DestinationPortRange 22
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "InboundDenyAll" `
                              -Description "Inbound deny all" `
