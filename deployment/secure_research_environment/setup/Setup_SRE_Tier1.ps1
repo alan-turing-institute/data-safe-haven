@@ -110,6 +110,27 @@ $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGro
 Add-LogMessage -Level Info -Message "VM public IP address: $($vmPublicIpAddress)"
 
 
+# Create or retrieve SSH keys
+# ---------------------------
+$keySecretPrefix ="$($vmName)-KEY"
+if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-PRIVATE")) {
+    # Create SSH keys
+    ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
+
+    # Upload keys to key vault
+    $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
+    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue (ConvertTo-SecureString $sshPublicKey -AsPlainText -Force)
+    $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
+    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue (ConvertTo-SecureString $sshPrivateKey -AsPlainText -Force)
+} else {
+    # Fetch private key from key vault
+    $sshPublicKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC").SecretValueText
+    $sshPrivateKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE").SecretValueText
+    $sshPrivateKey | Set-Content -Path "$($vmName).pem"
+    chmod 600 "$($vmName).pem"
+}
+
+
 # Deploy VM
 # ---------
 $null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
@@ -119,6 +140,7 @@ $params = @{
     Size                   = $vmSize
     AdminPassword          = $vmAdminPassword
     AdminUsername          = $vmAdminUsername
+    AdminPublicSshKey      = $sshPublicKey
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitYaml
     location               = $config.sre.location
@@ -135,31 +157,6 @@ $vm = Deploy-UbuntuVirtualMachine @params
 
 try{
     pushd ../ansible
-
-
-    # Create or retrieve SSH keys
-    # ---------------------------
-    $keySecretPrefix ="$($vmName)-KEY"
-    if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-PRIVATE")) {
-        # Create SSH keys
-        ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
-
-        # Copy public key to VM
-        $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
-        $null = Add-AzVMSshPublicKey `
-            -VM $vm `
-            -KeyData $sshPublicKey `
-            -Path "/home/$($vmAdminUsername)/.ssh/authorized_keys"
-
-        # Upload keys to key vault
-        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue (ConvertTo-SecureString $sshPublicKey -AsPlainText -Force)
-        $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
-        $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue (ConvertTo-SecureString $sshPrivateKey -AsPlainText -Force)
-    } else {
-        # Fetch private key from key vault
-        $sshPrivateKey = Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE"
-        $sshPrivateKey | Set-Content -Path "$($vmName).pem"
-    }
 
 
     # Configure hosts file

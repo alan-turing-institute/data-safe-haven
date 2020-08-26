@@ -695,6 +695,8 @@ function Deploy-UbuntuVirtualMachine {
         $AdminPassword,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
         $AdminUsername,
+        [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
+        $AdminPublicSshKey = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
@@ -744,6 +746,11 @@ function Deploy-UbuntuVirtualMachine {
             $lun += 1
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
         }
+        # Copy public key to VM
+        if ($AdminPublicSshKey) {
+            $vmConfig = Add-AzVMSshPublicKey -VM $vmConfig -KeyData $AdminPublicSshKey -Path "/home/$($AdminUsername)/.ssh/authorized_keys"
+        }
+        # Create VM
         Add-LogMessage -Level Info "[ ] Creating virtual machine '$Name'"
         $vm = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig
         if ($?) {
