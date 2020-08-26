@@ -15,7 +15,6 @@
         path: /etc/ssh/sshd_config
         regexp: '^#?PubkeyAuthentication'
         line: 'PubkeyAuthentication yes'
-        mode: preserve
       notify: Restart sshd
 
     - name: Disable password login
@@ -24,7 +23,6 @@
         path: /etc/ssh/sshd_config
         regexp: '^#?PasswordAuthentication'
         line: 'PasswordAuthentication no'
-        mode: preserve
       notify: Restart sshd
 
     - name: Disable root login
@@ -33,7 +31,6 @@
         path: /etc/ssh/sshd_config
         regexp: '^#?PermitRootLogin'
         line: 'PermitRootLogin no'
-        mode: preserve
       notify: Restart sshd
 
     - name: Create users
@@ -95,7 +92,6 @@
         state: present
         line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6 nullok'
         insertbefore: BOF
-        mode: preserve
 
     - name: Enable PAM in sshd configuration
       become: yes
@@ -103,7 +99,6 @@
         path: /etc/ssh/sshd_config
         regexp: '^#?UsePAM'
         line: 'UsePAM yes'
-        mode: preserve
       notify: Restart sshd
 
     - name: Enable challenge response authentication for SSH
@@ -112,7 +107,6 @@
         path: /etc/ssh/sshd_config
         regexp: '^#?ChallengeResponseAuthentication'
         line: 'ChallengeResponseAuthentication yes'
-        mode: preserve
       notify: Restart sshd
 
     - name: Enable OATH for SSH login in PAM
@@ -122,7 +116,6 @@
         state: present
         line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
         insertbefore: BOF
-        mode: preserve
 
     - name: Require OATH even when a valid key is provided
       become: yes
@@ -130,7 +123,6 @@
         path: /etc/ssh/sshd_config
         regexp: "^#?AuthenticationMethods"
         line: 'AuthenticationMethods publickey,keyboard-interactive:pam'
-        mode: preserve
       notify: Restart sshd
 
     - name: Allow admin account to login without TOTP
@@ -140,7 +132,6 @@
         block: |
           Match User "{{ ansible_user }}"
               AuthenticationMethods publickey
-        mode: preserve
 
     - name: Install docker and docker-compose
       become: yes
