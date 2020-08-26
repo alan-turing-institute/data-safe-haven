@@ -174,7 +174,8 @@
         groups: docker
         append: yes
 
-    - meta: reset_connection
+    - name: Reset connection so that adding admin user to docker group takes effect
+      meta: reset_connection
 
     - name: Pull CoCalc docker image
       docker_image:
