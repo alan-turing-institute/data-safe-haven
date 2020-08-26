@@ -20,3 +20,8 @@ for username, totp_hash in totp_hashes:
                   f"otpauth://totp/{username}@tier1vm?secret={base32_secret}",
                   "-o",
                   f"{username}.png"])
+
+    if result.returncode == 0:
+        print(f"Successfully generated QR code for user {username}")
+    else:
+        print(f"Failed to generate QR code for user {username}")

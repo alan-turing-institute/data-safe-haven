@@ -199,6 +199,7 @@ try{
     # Generate qr codes
     # -----------------
     if ($usersYAMLPath) {
+        Add-LogMessage -Level Info "Generating QR codes"
         ./generate_qr_codes.py
     }
 
@@ -206,7 +207,7 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
+    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub" totp_hashes.txt
 
     popd
 }
