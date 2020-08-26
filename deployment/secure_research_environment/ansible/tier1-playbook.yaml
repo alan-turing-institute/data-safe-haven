@@ -43,6 +43,16 @@
         comment: "{{ item.name }}"
         state: present
       loop: "{{ users }}"
+      when: item.enabled
+
+    - name: Disable users
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        comment: "{{ item.name }}"
+        state: absent
+      loop: "{{ users }}"
+      when: not item.enabled
 
     - name: Add users public keys
       become: yes
@@ -51,6 +61,16 @@
         key: "{{ lookup('file', item.keyfile) }}"
         state: present
       loop: "{{ users }}"
+      when: item.enabled
+
+    - name: Add admin users to the admin group
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        append: true
+        groups: admin
+      loop: "{{ users }}"
+      when: item.admin and item.enabled
 
     - name: Install PAM OATH packages for TOTP
       become: yes
@@ -78,15 +98,6 @@
         mode: 0600
       loop: "{{ totp_users.results }}"
       when: item.failed
-
-    - name: Add admin users to the admin group
-      become: yes
-      user:
-        name: "{{ item.username }}"
-        append: true
-        groups: admin
-      loop: "{{ users }}"
-      when: item.admin
 
     - name: Require OATH for sudo
       become: yes
