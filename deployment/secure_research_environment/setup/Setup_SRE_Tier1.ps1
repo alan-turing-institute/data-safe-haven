@@ -128,8 +128,6 @@ if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-
     # Fetch private key from key vault
     $sshPublicKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC").SecretValueText
     $sshPrivateKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE").SecretValueText
-    $sshPrivateKey | Set-Content -Path "$($vmName).pem"
-    chmod 600 "$($vmName).pem"
 }
 
 
@@ -159,6 +157,10 @@ $vm = Deploy-UbuntuVirtualMachine @params
 
 try{
     pushd ../ansible
+
+
+    $sshPrivateKey | Set-Content -Path "$($vmName).pem"
+    chmod 600 "$($vmName).pem"
 
 
     # Configure hosts file
