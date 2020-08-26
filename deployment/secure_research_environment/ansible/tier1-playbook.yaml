@@ -208,6 +208,7 @@
         module: copy
         content: "{{ totp_hashes.stdout }}"
         dest: totp_hashes.txt
+        mode: 0644
       when: users != []
 
   handlers:
