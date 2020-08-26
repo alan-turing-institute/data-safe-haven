@@ -1,7 +1,7 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId,
-    [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Used to force the update of DNS record")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId,
+    [Parameter(Mandatory = $false, HelpMessage = "Used to force the update of DNS record")]
     [switch]$dnsForceUpdate
 )
 
@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $sreId
+$config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
@@ -28,64 +28,44 @@ $containerName = $config.sre.storage.datastorage.containers.ingress.name
 $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 
 
-# Create a new SAS token (and policy if required)
-# -----------------------------------------------
+# Create a new SAS token (and policy if required) then store it in the SRE keyvault
+# ---------------------------------------------------------------------------------
 $sasPolicy = Deploy-SasAccessPolicy -Name $config.sre.accessPolicies.researcher.nameSuffix `
                                     -Permission $config.sre.accessPolicies.researcher.permissions `
                                     -StorageAccount $storageAccount `
                                     -ContainerName $containerName `
                                     -ValidityYears 1
 $newSAStoken = New-AzStorageContainerSASToken -Name $containerName -Policy $sasPolicy -Context $storageAccount.Context
-
-
-# Store the SAS token in the SRE keyvault
-# ---------------------------------------
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName -DefaultValue $newSAStoken
 
 
+# Disable private endpoint network policies on the data subnet
+# ------------------------------------------------------------
+$dataSubnetName = $config.sre.network.vnet.subnets.data.name
+$virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
+($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq $dataSubnetName }).PrivateEndpointNetworkPolicies = "Disabled"
+$virtualNetwork | Set-AzVirtualNetwork
+$dataSubnet = Get-AzSubnet -Name $dataSubnetName -VirtualNetwork $virtualNetwork
+
+
 # Ensure that private endpoint exists
 # -----------------------------------
-$privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
-$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
-$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.sre.storage.datastorage.containers.ingress.storageType
-$privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction SilentlyContinue
-if ($privateEndpoint) {
-    Add-LogMessage -Level Warning "Removing existing private endpoint '$($privateEndpointName)'"
-    Remove-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -Force
-}
-Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
-$virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
-($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq 'SharedDataSubnet'} ).PrivateEndpointNetworkPolicies = "Disabled"
-$virtualNetwork | Set-AzVirtualNetwork
-
-$subnet = Get-AzSubnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $virtualNetwork
-
-
-$privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
-                                         -Name $privateEndpointName `
-                                         -Location $config.sre.location `
-                                         -Subnet $subnet `
-                                         -PrivateLinkServiceConnection $privateEndpointConnection
-if ($?) {
-    Add-LogMessage -Level Success "Successfully created private endpoint '$($privateEndpointName)'"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create private endpoint '$($privateEndpointName)'!"
-}
-$privateip = (Get-AzNetworkInterface -ResourceId $($privateEndpoint.NetworkInterfaces.id)).IpConfigurations[0].PrivateIpAddress
+$privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $storageAccount -StorageType $config.sre.storage.datastorage.containers.ingress.storageType -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$privateEndpointIp = (Get-AzNetworkInterface -ResourceId $privateEndpoint.NetworkInterfaces.Id).IpConfigurations[0].PrivateIpAddress
 
 
 # Set up DNS zone
 # ---------------
-Add-LogMessage -Level Info "Setting up DNS Zone"
+$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+Add-LogMessage -Level Info "Setting up DNS Zone for '$privateDnsZoneName'"
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $params = @{
     ZoneName  = $privateDnsZoneName
-    ipaddress = $privateip
+    ipaddress = $privateEndpointIp
     update    = ($dnsForceUpdate ? "force" : "non forced")
-
 }
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "set_dns_zone.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "Set_DNS_Zone.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -vmName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
 

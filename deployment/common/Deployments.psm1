@@ -201,7 +201,7 @@ function Deploy-Firewall {
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } 
+    }
     # Ensure Firewall is running
     $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
     return $firewall
@@ -660,13 +660,50 @@ function Deploy-StorageAccount {
 Export-ModuleMember -Function Deploy-StorageAccount
 
 
+# Create storage account private endpoint if it does not exist
+# ------------------------------------------------------------
+function Deploy-StorageAccountEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to generate a private endpoint for")]
+        $StorageAccount,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy the endpoint into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy the endpoint into")]
+        $Subnet,
+        [Parameter(Mandatory = $true, HelpMessage = "Type of storage to connect to (Blob or File)")]
+        $StorageType,
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint into")]
+        $Location
+    )
+    $privateEndpointName = "$($StorageAccount.Context.Name)-endpoint"
+    Add-LogMessage -Level Info "Ensuring that private endpoint '$privateEndpointName' exists..."
+    $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)' in $ResourceGroupName"
+        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType
+        $success = $?
+        $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
+        $success = $success -and $?
+        if ($success) {
+            Add-LogMessage -Level Success "Created private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Private endpoint '$privateEndpointName' already exists for storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $privateEndpoint
+}
+Export-ModuleMember -Function Deploy-StorageAccountEndpoint
+
+
 # Create storage container if it does not exist
 # ------------------------------------------
 function Deploy-StorageContainer {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to create container inside")]
         $StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
@@ -1560,16 +1597,16 @@ function Update-NetworkSecurityGroupRule {
         }
         # Update rule and NSG (both are required)
         $null = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority "$Priority" `
-                                             -Direction "$Direction" `
-                                             -Access "$Access" `
-                                             -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix `
-                                             -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix `
-                                             -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                                -Name "$Name" `
+                                                -Description "$Description" `
+                                                -Priority "$Priority" `
+                                                -Direction "$Direction" `
+                                                -Access "$Access" `
+                                                -Protocol "$Protocol" `
+                                                -SourceAddressPrefix $SourceAddressPrefix `
+                                                -SourcePortRange $SourcePortRange `
+                                                -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
         # Apply the rule and validate whether it succeeded
         $ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
         if (($ruleAfter.Name -eq $Name) -and
