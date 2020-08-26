@@ -193,7 +193,7 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    # rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
+    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub"
 
     popd
 }
