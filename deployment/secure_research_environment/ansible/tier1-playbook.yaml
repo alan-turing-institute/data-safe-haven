@@ -195,11 +195,11 @@
       changed_when: no
 
     - name: Write TOTP hashes to file
-      local_action:
-        module: copy
+      copy:
         content: "{{ totp_hashes.stdout }}"
         dest: totp_hashes.txt
         mode: 0644
+      delegate_to: localhost
       when: users != []
 
   handlers:
