@@ -189,7 +189,9 @@ try{
 
     # Generate qr codes
     # -----------------
-    ./generate_qr_codes.py
+    if ($usersYAMLPath) {
+        ./generate_qr_codes.py
+    }
 
 
 } finally {

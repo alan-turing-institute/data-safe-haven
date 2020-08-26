@@ -190,6 +190,7 @@
       shell: sed -E "s/HOTP\/T30\/6\s+([a-z]+)\s+-\s+([0-9a-zA-Z]{30}).*/\1 \2/g" /etc/users.oath
       args:
         warn: false
+      when: users != []
       register: totp_hashes
       changed_when: no
 
@@ -198,6 +199,7 @@
         module: copy
         content: "{{ totp_hashes.stdout }}"
         dest: totp_hashes.txt
+      when: users != []
 
   handlers:
     - name: Restart sshd
