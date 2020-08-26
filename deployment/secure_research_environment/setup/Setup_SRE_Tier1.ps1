@@ -4,13 +4,20 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM.")]
-    [string]$userslYAMLPath
+    [string]$usersYAMLPath = ""
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+
+
+# Get absolute path of users file
+# -------------------------------
+if ($userslYAMLPath) {
+    $usersYAMLPath = readlink -f "$($usersYAMLPath)"
+}
 
 
 # Get config and original context before changing subscription
@@ -159,6 +166,8 @@ try{
     pushd ../ansible
 
 
+    # Write private key
+    # -----------------
     $sshPrivateKey | Set-Content -Path "$($vmName).pem"
     chmod 600 "$($vmName).pem"
 
