@@ -62,7 +62,7 @@
 
     - name: Look for existing TOTP seeds
       become: yes
-      shell: "grep {{ item.username }} /etc/users.oath"
+      command: "grep {{ item.username }} /etc/users.oath"
       loop: "{{ users }}"
       register: totp_users
       ignore_errors: yes
