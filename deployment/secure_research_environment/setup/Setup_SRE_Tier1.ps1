@@ -32,7 +32,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # Create VNet resource group if it does not exist
 # -----------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
-$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
+$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
 $subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 
 
