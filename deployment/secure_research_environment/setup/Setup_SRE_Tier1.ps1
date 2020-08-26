@@ -199,10 +199,6 @@ try{
 }
 
 
-# NB. to update for new users simply re-run this script
-# We need to make sure that this allows us to remove users too
-
-
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext
