@@ -106,6 +106,8 @@ $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsv
 # Deploy NIC and get public IP
 # ----------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
+$vmNic.NetworkSecurityGroup = $nsg
+$null = $vmNic | Set-AzNetworkInterface
 $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
 Add-LogMessage -Level Info -Message "VM public IP address: $($vmPublicIpAddress)"
 
