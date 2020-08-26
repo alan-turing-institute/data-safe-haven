@@ -103,10 +103,16 @@ $cloudInitYaml = Get-Content $cloudInitFilePath -Raw
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 
-# Deploy a VM using adminUserName and adminPublicKeyPath
-# ------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+# Deploy NIC and get public IP
+# ----------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
+$vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
+Add-LogMessage -Level Info -Message "VM public IP address: $($vmPublicIpAddress)"
+
+
+# Deploy VM
+# ---------
+$null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     Name                   = $vmName
@@ -159,7 +165,7 @@ try{
     # Configure hosts file
     # --------------------
     $hostsTemplate = Get-Content -Path "tier1-hosts.yaml"
-    $hostsTemplate = $hostsTemplate.Replace("<tier1_host>", $vmIpAddress)
+    $hostsTemplate = $hostsTemplate.Replace("<tier1_host>", $vmPublicIpAddress)
     $hostsTemplate = $hostsTemplate.Replace("<tier1_admin>", $vmAdminUsername)
     $hostsTemplate = $hostsTemplate.Replace("<tier1_key>", "$($vmName).pem")
     $hostsTemplate | Set-Content -Path "hosts.yaml"
