@@ -25,7 +25,7 @@ $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 # Select which VM size to use
 # ---------------------------
-if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
+if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
 # Standard_E2_v3  => 2 cores; 16GB RAM; £0.1163/hr; 2.3 GHz :: build 15h33m56s => £1.81
 # Standard_F4s_v2 => 4 cores;  8GB RAM; £0.1506/hr; 3.7 GHz :: build 12h22m17s => £1.86
 # Standard_D4_v3  => 4 cores; 16GB RAM; £0.1730/hr; 2.4 GHz :: build 16h41m13s => £2.88
@@ -102,11 +102,11 @@ $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -Ne
 # -------------------------------------------
 $indent = "      "
 foreach ($scriptName in @("analyse_build.py",
-                          "create_or_update_conda_python_environment.sh",
                           "dbeaver_drivers_config.xml",
                           "deprovision_vm.sh",
                           "download_and_install_deb.sh",
-                          "download_and_install_tar.sh")) {
+                          "download_and_install_tar.sh",
+                          "install_python_version.sh")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
@@ -128,39 +128,17 @@ $juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQu
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $juliaPackageText)
 
 
-# Insert python package details into the cloud-init template
-# ---------------------------------------------------------
-# Load conda config
-$condaConfig = Get-Content (Join-Path $PSScriptRoot ".." "packages" "conda-config.json") | ConvertFrom-Json -AsHashtable
-# List of non-python packages we want to install from conda
-$nonPythonPackages = $condaConfig["non-python-packages"]
-# List of packages not available from conda
-$nonCondaPythonPackages = $condaConfig["not-available-from-conda"]
-# Hashmap of PyPI name to conda name (eg. `tables: pytables`)
-$pypi2conda = $condaConfig["pypi-name-to-conda-name"]
-# Hashmap of package to version requirement (eg. `pytorch: >=1.1.0`)
-$packageVersions = $condaConfig["version-requirements"]
-
-# Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
-$python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-27.list")
-$python27PipPackages = $python27AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
-$python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-36.list")
-$python36PipPackages = $python36AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
-$python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-37.list")
-$python37PipPackages = $python37AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
-$python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-    "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-    "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-    "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-    "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-    "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
-$cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
-# Require specific versions of some packages. Replace ' package ' with ' package<version requirement> '
-$requiredCondaVersions = "CONDA_VERSIONED_PACKAGES=`$(echo `$CONDA_PACKAGES | sed " + $($packageVersions.Keys | ForEach-Object { "-e 's/ $_ / $_$($packageVersions[$_]) /g'" } | Join-String -Separator " ") + ")"
-$cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requiredCondaVersions)
+# Insert PyPI package lists (plus versions) into cloud-init template
+# ------------------------------------------------------------------
+$packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
+foreach ($pythonVersion in @("27", "36", "37")) {
+    $packageListFileName = "packages-python-pypi-${pythonVersion}.list"
+    $pythonPackageNames = Get-Content (Join-Path $PSScriptRoot ".." "packages" $packageListFileName)
+    $pythonPackageVersions = $pythonPackageNames | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Keys.Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<python-requirements-py${pythonVersion}.txt>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+    $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
+}
 
 
 # Insert R package details into the cloud-init template
@@ -168,7 +146,7 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requir
 $cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
 $bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
-    "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
+             "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
@@ -196,12 +174,20 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
-    OsDiskSizeGb           = 64
+    OsDiskSizeGb           = $config.dsvmImage.build.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params -NoWait
+
+
+# Tag the VM with the git commit hash
+# -----------------------------------
+$hash = git rev-parse --verify HEAD
+$tags = @{"Commit hash" = $hash}
+$resource = Get-AzResource -Name $buildVmName -ResourceGroup $config.dsvmImage.build.rg
+$null = New-AzTag -ResourceId $resource.Id -Tag $tags
 
 
 # Log connection details for monitoring this build
@@ -211,7 +197,7 @@ Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
 Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
-Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /installation/analyse_build.py"
+Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/verification/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 
 

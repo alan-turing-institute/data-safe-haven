@@ -8,7 +8,7 @@ fi
 PACKAGE_NAME=$1
 
 # Ensure that the config file exists
-CONFIG_FILE="/installation/${PACKAGE_NAME}.tarinfo"
+CONFIG_FILE="/opt/build/${PACKAGE_NAME}.tarinfo"
 if [ ! -e $CONFIG_FILE ]; then
     echo "FATAL: Config file could not be loaded from $CONFIG_FILE"
     exit 2

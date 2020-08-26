@@ -37,7 +37,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
 # -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
-$imageVersion = $config.sre.dsvm.vmImageVersion
+$imageVersion = $config.sre.dsvm.vmImage.version
 $vmName = "$vmNamePrefix-${imageVersion}".Replace(".", "-")
 
 
@@ -209,39 +209,48 @@ if ($upgrade) {
 # Get list of image versions
 # --------------------------
 Add-LogMessage -Level Info "Getting image type from gallery..."
-if ($config.sre.dsvm.vmImageType -eq "Ubuntu") {
+if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
     $imageDefinition = "ComputeVM-Ubuntu1804Base"
-} elseif ($config.sre.dsvm.vmImageType -eq "UbuntuTorch") {
+} elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
     $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-} elseif ($config.sre.dsvm.vmImageType -eq "DataScience") {
+} elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
     $imageDefinition = "ComputeVM-DataScienceBase"
-} elseif ($config.sre.dsvm.vmImageType -eq "DSG") {
+} elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
     $imageDefinition = "ComputeVM-DsgBase"
 } else {
-    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImageType) as an image type!"
+    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImage.type) as an image type!"
 }
 Add-LogMessage -Level Success "Using image type $imageDefinition"
 
 
 # Check that this is a valid version and then get the image ID
 # ------------------------------------------------------------
-$null = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
+$null = Set-AzContext -Subscription $config.sre.dsvm.vmImage.subscription
 Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
 try {
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
+    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
 } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
+    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
     Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
     $imageVersion = $versions | Select-Object -Last 1
     $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$imageVersion')"
     if ($versions.Contains($userVersion)) {
         $imageVersion = $userVersion
     }
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
+    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
 }
 $imageVersion = $image.Name
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
 $null = Set-AzContext -Subscription $config.sre.subscriptionName
+
+
+# Set the OS disk size for this image
+# -----------------------------------
+$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
+if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
+    Add-LogMessage -Level Fatal "Image $imageVersion needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
+}
 
 
 # Check for any orphaned disks
@@ -476,7 +485,7 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.sre.location
     NicId                  = $vmNic.Id
-    OsDiskSizeGb           = $config.sre.dsvm.disks.os.sizeGb
+    OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
     DataDiskIds            = @($homeDisk.Id, $scratchDisk.Id)
@@ -518,6 +527,12 @@ $zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+# Set correct database paths
+$template = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
+$template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
+          Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
+          Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
+          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $tempDir "tests" "test_databases.sh")
 if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath

@@ -7,27 +7,99 @@ The package installation tests require a copy of the `package_lists` folder from
 
 ## Test everything
 You can run all the following tests using
-
 ```
-source run_all_tests.sh
+bats run_all_tests.bats
 ```
 
-Otherwise you can run individual tests as described below.
+Alternatively, you can run individual tests as described below.
+
+
+## Julia
+The installed Julia version can be seen by running `julia --version`.
+
+### Testing whether all packages are installed
+Run the tests with:
+```bash
+$ julia test_packages_installed_julia.jl
+```
+
+The installation check will take several minutes to run.
+The expected output for a successful test is:
+```
+Testing <number of packages> Julia packages
+[ Info: JavaCall could not determine javapath from `which java`
+All <number of packages> packages are installed
+```
+
+### Minimal functionality testing
+Run the minimal functionality tests with:
+```bash
+$ julia test_functionality_julia.jl
+```
+
+The expected output for a successful test is:
+```
+All functionality tests passed
+```
+
+
+## Python
+The list of available Python versions can be seen by typing `pyenv versions`
+For each of the three Python versions that we want to test (2.7.X, 3.6.X, 3.7.X), activate the appropriate version with `pyenv shell <version number>`.
+
+### Testing whether all packages are installed
+Run the tests with:
+```bash
+$ pyenv shell <version number>
+$ python test_packages_installed_python.py
+```
+
+The installation check will take several minutes to run.
+The expected output for a successful test is:
+```
+Python version <version number> found
+Testing <number of packages> Python packages
+[... possible warning/deprecation messages]
+Tensorflow can see the following devices: [<list of devices>]
+All <number of packages> packages are installed
+```
+
+The message `CUDA_ERROR_NO_DEVICE: no CUDA capable device is detected` is **not** expected if you are using a GPU-enabled VM e.g. NC series
+
+### Minimal functionality testing
+Run the minimal functionality tests with:
+```bash
+$ python test_functionality_python.py
+```
+
+The expected output for a successful test is:
+```
+Logistic model ran OK
+All functionality tests passed
+```
+
+### Testing package mirrors
+To test the PyPI mirror run:
+
+```bash
+$ ./test_mirrors_pypi.sh
+```
+
+This will attempt to install a few packages from the internal PyPI mirror.
+The expected output for a successful test is:
+```
+Logistic model ran OK
+All functionality tests passed
+```
+
 
 ## R
+The installed R version can be seen by running `R --version`.
 
-### Testing package installation
-
-Switch to System R with
-
-```
-conda deactivate
-```
-
+### Testing whether all packages are installed
 Run the tests with:
-
-```
-Rscript test_package_installation.R
+```bash
+$ Rscript test_packages_installed_R.R
 ```
 
 The installation check will take several minutes to run.
@@ -36,75 +108,49 @@ There are a few known packages that will cause warnings and errors during this t
 - `BiocManager`: False positive - warning about not being able to connect to the internet
 - `clusterProfiler`: Error is `multiple methods tables found for ‘toTable’`. Not yet understood
 - `flowUtils`: False positive - warning about string translations
-- `GOSemSim`: False positive - no warning on package load
-- `graphite`: False positive - no warning on package load
+- `GOSemSim`: False positive - no warning when package is loaded manually
+- `graphite`: False positive - no warning when package is loaded manually
 - `rgl`: Error is because the X11 server could not be loaded
-- `tmap`: False positive - no warning on package load
+- `tmap`: False positive - no warning when package is loaded manually
 
+Any other warnings or errors are unexpected.
 The expected output for a successful test is:
 
 ```
-[1] "Testing <num-cran-packages> CRAN packages"
-[1] "Testing <num-bioconductor-packages> Bioconductor packages"
-[1] "Package installation status"
-[1] "The following packages gave a warning:"
-rgl
-tmap
-clusterProfiler
-GOSemSim
-graphite
-[1] "All the packages above gave a warning!"
+[1] "Testing <number of CRAN packages> CRAN packages"
+[1] "Testing <number of BioConductor packages> Bioconductor packages"
+[1] "All <total number of packages> packages are installed"
 ```
 
-If you get any other warnings or errors, please contact REG to investigate.
-
-### Testing package use
-
-Run the two data science scripts with these commands and this expected result:
-
+### Minimal functionality testing
+Run the minimal functionality tests with:
 ```bash
-$ Rscript test_clustering.R
-[1] "Clustering ran OK"
-$ Rscript test_logistic_regression.R
+$ Rscript test_functionality_R.R
+```
+
+The expected output for a successful test is:
+```
 [1] "Logistic regression ran OK"
+[1] "Clustering ran OK"
+[1] "All functionality tests passed"
 ```
 
 ### Testing package mirrors
-
-To test CRAN mirror run: `bash test_cran.sh`
-
-This will attempt to install a few test packages from the internal PyPI mirror.
-
-If all packages install successfully, `**CRAN working OK**` will be displayed as the final line of the output (after the package installation progress).
-
-If one or more packages fail to install, `**CRAN failed**` (followed by a list of failing packages) will be displayed as the final lines of the output (after the package installation progress).
-
-## Python
-
-For each of the three Pyhton versions installed (2.7, 3.6, 3.7), switch to environment `pyMN`, where `M` is the major version number and `N` is the minor version number (e.g. for Python 3.6, use `py36`) and do the following:
-
-Activate the conda environment for each Python version with `conda activate pyMN`
-
-### Testing package installation
-- Run the Python tests with `python tests.py`. The following warnings are expected:
-
-  - `Your CPU supports instructions that this TensorFlow binary was not compiled to use`
-  - `CUDA_ERROR_NO_DEVICE: no CUDA capable device is detected` (you should **not** get this error on GPU VMs - e.g. NC series)
-
-If you get any other errors please contact REG to investigate.
-
-### Testing package use
-
-First, run the test of the data science scripts in R as those generate data for
-the Python scripts as well.
-
-Then, run the one data science script with this command and this expected result:
+To test the CRAN mirror run:
 
 ```bash
-$ python test_logistic_regression.py
-Logistic model ran OK
+$ ./test_mirrors_cran.sh
 ```
 
-### Testing package mirrors
+This will attempt to install a few test packages from the internal CRAN mirror.
+The expected output for a successful test is:
 
-To test PyPI mirror run: `bash test_pypi.sh`
+```
+Attempting to install ahaz...
+... ahaz installation succeeded
+Attempting to install yum...
+... yum installation succeeded
+CRAN working OK
+```
+
+If one or more packages fail to install, the list of failing packages will be displayed, followed by `CRAN installation failed`

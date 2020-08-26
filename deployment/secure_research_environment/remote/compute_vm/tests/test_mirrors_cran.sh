@@ -1,6 +1,6 @@
-#!/bin/sh
-# Take packages which are alphabetically first and last on our whitelist
-packages=("abn" "yum")
+#! /bin/bash
+# Take packages which are alphabetically early and late on our whitelist but are not installed by default
+packages=("ahaz" "yum")
 
 # Create local user library directory (not present by default)
 Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, recursive = TRUE)"
@@ -8,7 +8,7 @@ Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, r
 # Install sample packages to local user library
 OUTCOME=0
 for package in "${packages[@]}"; do
-    echo "Attempting to install $package"
+    echo "Attempting to install ${package}..."
     failure=0
     Rscript -e "options(warn=2); install.packages('${package}', lib=Sys.getenv('R_LIBS_USER'), quiet=TRUE)" || failure=1
     if [ $failure -eq 1 ]; then

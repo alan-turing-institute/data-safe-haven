@@ -365,19 +365,21 @@ function Add-SreConfig {
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         nsg                     = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
         deploymentNsg           = "$($config.sre.nsgPrefix)_COMPUTE_DEPLOYMENT".ToUpper()
-        vmImageSubscription     = $config.shm.dsvmImage.subscription
-        vmImageResourceGroup    = $config.shm.dsvmImage.gallery.rg
-        vmImageGallery          = $config.shm.dsvmImage.gallery.sig
+        vmImage = [ordered]@{
+            subscription = $config.shm.dsvmImage.subscription
+            rg           = $config.shm.dsvmImage.gallery.rg
+            gallery      = $config.shm.dsvmImage.gallery.sig
+            type         = $sreConfigBase.computeVmImageType
+            version      = $sreConfigBase.computeVmImageVersion
+        }
         vmSizeDefault           = "Standard_D2s_v3"
-        vmImageType             = $sreConfigBase.computeVmImageType
-        vmImageVersion          = $sreConfigBase.computeVmImageVersion
-        disks                   = [ordered]@{
-            home    = [ordered]@{
+        disks = [ordered]@{
+            home = [ordered]@{
                 sizeGb = "128"
                 type   = "Standard_LRS"
             }
-            os      = [ordered]@{
-                sizeGb = "128"
+            os = [ordered]@{
+                sizeGb = "default"
                 type   = "Standard_LRS"
             }
             scratch = [ordered]@{
@@ -482,8 +484,8 @@ function Get-ShmFullConfig {
     $null = Set-AzContext -Context $originalContext
     # Construct build images config
     $shm.dsvmImage = [ordered]@{
-        subscription    = $shmConfigBase.images.subscriptionName
-        location        = $shmConfigBase.images.locations
+        subscription = $shmConfigBase.images.subscriptionName
+        location     = $shmConfigBase.images.location
         bootdiagnostics = [ordered]@{
             rg          = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
@@ -499,16 +501,18 @@ function Get-ShmFullConfig {
                 name = "ImageBuildSubnet"
                 cidr = "10.48.0.0/24"
             }
-            # Only the R-package installation is parallelisable
-            # => per-core performance is the bottleneck
-            # 8 GB of RAM is sufficient so we want a compute-optimised VM
-            vmSize = "Standard_F4s_v2"
+            # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
+            # We want a compute-optimised VM, since per-core performance is the bottleneck
+            vm = [ordered]@{
+                diskSizeGb = 64
+                size = "Standard_F4s_v2"
+            }
         }
         gallery         = [ordered]@{
             rg                = "RG_SH_IMAGE_GALLERY"
             sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
             imageMajorVersion = 0
-            imageMinorVersion = 2
+            imageMinorVersion = 3
         }
         images          = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"

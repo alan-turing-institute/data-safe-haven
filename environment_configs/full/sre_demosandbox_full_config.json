@@ -437,7 +437,7 @@
           "type": "Standard_LRS"
         },
         "os": {
-          "sizeGb": "64",
+          "sizeGb": "default",
           "type": "Standard_LRS"
         },
         "scratch": {
@@ -447,11 +447,13 @@
       },
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "rg": "RG_SRE_COMPUTE",
-      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
-      "vmImageSubscription": "[Prod] Safe Haven VM Images",
-      "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.2.2020050300",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+      },
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {

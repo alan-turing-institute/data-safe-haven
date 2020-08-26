@@ -1,0 +1,26 @@
+{
+    "py27": {
+        "branca": "<=0.3.1",
+        "fbprophet": "<=0.5",
+        "holidays": "<=0.9.12",
+        "Keras": "<2.4.0",
+        "nltk": "<=3.4",
+        "PyWavelets": "<=1.0.3",
+        "scikit-learn": "<=0.20.4",
+        "spacy": "==2.2.2",
+        "statsmodels": "<=0.10.2",
+        "tensorboard": "==2.1.0",
+        "tensorflow": "==2.1.0",
+        "tensorflow-estimator": "==2.1.0"
+    },
+    "py36": {
+        "flair": "<0.6",
+        "holidays": ">=0.10.3",
+        "spacy": "==2.2.2"
+    },
+    "py37": {
+        "flair": "<0.6",
+        "holidays": ">=0.10.3",
+        "spacy": "==2.2.2"
+    }
+}
