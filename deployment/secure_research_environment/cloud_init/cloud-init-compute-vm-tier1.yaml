@@ -16,3 +16,21 @@ fs_setup:
 
 mounts:
   - [/dev/disk/azure/scsi1/lun0-part1, /datadrive, ext4, "defaults"]
+
+write_files:
+  - path: "/etc/smbcredentials.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      username=<datamount-username>
+      password=<datamount-password>
+
+runcmd:
+  # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
+  - echo ">=== Mount data folder using SMB... ===<"
+  - mkdir -p /data
+  # sudo mount -t cifs //$STORAGEACCT.file.core.windows.net/myshare /mnt/MyAzureFileShare -o vers=3.0,username=$STORAGEACCT,password=$STORAGEKEY,dir_mode=0777,file_mode=0777,serverino
+  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/etc/smbcredentials.secret\t0\t0" >> /etc/fstab
+  - tail -n 1 /etc/fstab
+  - mount /data  # NB. this initial mount might fail if the dataserver cannot be resolved yet
+

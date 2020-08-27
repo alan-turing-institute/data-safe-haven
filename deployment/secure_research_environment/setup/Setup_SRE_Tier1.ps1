@@ -169,6 +169,10 @@ $sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultNa
 $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault
 
 
+# Deploy a storage account for
+$dataStorage = Deploy-StorageAccount -Name "testtier1storage" -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+
+
 # Get list of image definitions
 # -----------------------------
 Add-LogMessage -Level Info "Getting image type from gallery..."
