@@ -113,6 +113,7 @@ $sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataser
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitYaml.Replace("<datamount-username>", "testtier1storage")
+$cloudInitYaml = $cloudInitYaml.Replace("<datamount-password>", $sharePassword)
 
 
 # Create empty disk
