@@ -1042,18 +1042,18 @@ function Get-ImageDefinition {
         [string]$Type
     )
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
-    if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
+    if ($Type -eq "Ubuntu") {
         $imageDefinition = "ComputeVM-Ubuntu1804Base"
-    } elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
+    } elseif ($Type -eq "UbuntuTorch") {
         $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-    } elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
+    } elseif ($Type -eq "DataScience") {
         $imageDefinition = "ComputeVM-DataScienceBase"
-    } elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
+    } elseif ($Type -eq "DSG") {
         $imageDefinition = "ComputeVM-DsgBase"
     } else {
-        Add-LogMessage -Level Fatal "Failed to interpret $($config.sre.dsvm.vmImage.type) as an image type!"
+        Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }
-    Add-LogMessage -Level Success "Interpreted $($config.sre.dsvm.vmImage.type) as image type $imageDefinition"
+    Add-LogMessage -Level Success "Interpreted $Type as image type $imageDefinition"
     return $imageDefinition
 }
 Export-ModuleMember -Function Get-ImageDefinition
