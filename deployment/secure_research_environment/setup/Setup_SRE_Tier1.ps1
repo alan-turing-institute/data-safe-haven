@@ -32,7 +32,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 # Generate VM name
 # ----------------
-$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
+$vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".ToUpper()
 
 
 # Create VNet resource group if it does not exist
@@ -179,40 +179,8 @@ $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -Vault
 
 # Get list of image definitions
 # -----------------------------
-Add-LogMessage -Level Info "Getting image type from gallery..."
-if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
-    $imageDefinition = "ComputeVM-Ubuntu1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
-    $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
-    $imageDefinition = "ComputeVM-DataScienceBase"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
-    $imageDefinition = "ComputeVM-DsgBase"
-} else {
-    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImage.type) as an image type!"
-}
-Add-LogMessage -Level Success "Using image type $imageDefinition"
-
-
-# Check that this is a valid image version and get its ID
-# -------------------------------------------------------
-$null = Set-AzContext -Subscription $config.sre.dsvm.vmImage.subscription
-$imageVersion = $config.sre.dsvm.vmImage.version
-Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
-try {
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
-    Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
-    $imageVersion = $versions | Select-Object -Last 1
-    $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$imageVersion')"
-    if ($versions.Contains($userVersion)) {
-        $imageVersion = $userVersion
-    }
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-}
-Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
+$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
+$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
 
 
 # Set the OS disk size for this image

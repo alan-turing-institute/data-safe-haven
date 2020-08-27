@@ -37,8 +37,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
 # -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
-$imageVersion = $config.sre.dsvm.vmImage.version
-$vmName = "$vmNamePrefix-${imageVersion}".Replace(".", "-")
+$vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
 # Check whether this IP address has been used.
@@ -130,7 +129,7 @@ if ($upgrade) {
             # Snapshot disk
             Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
             $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshotName = $vmNamePrefix + "-" + "$name" + "-DISK-SNAPSHOT"
+            $snapshotName = "${vmNamePrefix}-${name}-DISK-SNAPSHOT"
             $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
             if ($snapshot) {
                 Add-LogMessage -Level Success "Snapshot succeeded"
@@ -149,7 +148,6 @@ if ($upgrade) {
                     Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
                 }
                 Add-LogMessage -Level Success "Snapshot found"
-
                 $snapshots += $snapshot
                 $snapshotNames += $snapshot.Name
             } else {
@@ -206,42 +204,10 @@ if ($upgrade) {
 }
 
 
-# Get list of image versions
-# --------------------------
-Add-LogMessage -Level Info "Getting image type from gallery..."
-if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
-    $imageDefinition = "ComputeVM-Ubuntu1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
-    $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
-    $imageDefinition = "ComputeVM-DataScienceBase"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
-    $imageDefinition = "ComputeVM-DsgBase"
-} else {
-    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImage.type) as an image type!"
-}
-Add-LogMessage -Level Success "Using image type $imageDefinition"
-
-
-# Check that this is a valid version and then get the image ID
-# ------------------------------------------------------------
-$null = Set-AzContext -Subscription $config.sre.dsvm.vmImage.subscription
-Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
-try {
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
-    Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
-    $imageVersion = $versions | Select-Object -Last 1
-    $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$imageVersion')"
-    if ($versions.Contains($userVersion)) {
-        $imageVersion = $userVersion
-    }
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-}
-$imageVersion = $image.Name
-Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
+# Check that this is a valid image version and get its ID
+# -------------------------------------------------------
+$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
+$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
 
 
 # Set the OS disk size for this image
@@ -249,7 +215,7 @@ $null = Set-AzContext -Subscription $config.sre.subscriptionName
 $osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
 if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
 if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
-    Add-LogMessage -Level Fatal "Image $imageVersion needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
+    Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
 
 

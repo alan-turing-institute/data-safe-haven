@@ -987,6 +987,78 @@ function Get-AzSubnet {
 Export-ModuleMember -Function Get-AzSubnet
 
 
+# Get image ID
+# ------------
+function Get-ImageFromGallery {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
+        $ImageVersion,
+        [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
+        $ImageDefinition,
+        [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
+        $GalleryName,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
+        $ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
+        $Subscription
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $Subscription
+        Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
+        try {
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
+            Add-LogMessage -Level Error "Image version '$ImageVersion' is invalid. Available versions are: $versions"
+            $ImageVersion = $versions | Select-Object -Last 1
+            $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$ImageVersion')"
+            if ($versions.Contains($userVersion)) {
+                $ImageVersion = $userVersion
+            }
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        }
+        if ($image) {
+            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+        } else {
+            Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
+        }
+    } catch {
+        $null = Set-AzContext -Subscription $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Subscription $originalContext
+    }
+    return $image
+}
+Export-ModuleMember -Function Get-ImageFromGallery
+
+
+# Get image definition from the type specified in the config file
+# ---------------------------------------------------------------
+function Get-ImageDefinition {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Type of image to retrieve the definition for")]
+        [string]$Type
+    )
+    Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
+    if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
+        $imageDefinition = "ComputeVM-Ubuntu1804Base"
+    } elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
+        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
+    } elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
+        $imageDefinition = "ComputeVM-DataScienceBase"
+    } elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
+        $imageDefinition = "ComputeVM-DsgBase"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to interpret $($config.sre.dsvm.vmImage.type) as an image type!"
+    }
+    Add-LogMessage -Level Success "Interpreted $($config.sre.dsvm.vmImage.type) as image type $imageDefinition"
+    return $imageDefinition
+}
+Export-ModuleMember -Function Get-ImageDefinition
+
+
 # Get NS Records
 # --------------
 function Get-NSRecords {
