@@ -8,6 +8,7 @@
     - name: Wait for cloud init to finish
       wait_for:
         path: /var/lib/cloud/instance/boot-finished
+        timeout: 1800
 
     - name: Enable public key authentication
       become: yes

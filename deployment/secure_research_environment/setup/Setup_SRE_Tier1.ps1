@@ -102,9 +102,17 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
+# Deploy a storage account for
+$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$dataStorage = Deploy-StorageAccount -Name "testtier1storage" -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$share = New-AzStorageShare -Name "ingress" -Context $dataStorage.context
+$sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name "testtier1storage" | Where-Object {$_.KeyName -eq "key1"}).Value
+
+
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
+$cloudInitYaml = $cloudInitYaml.Replace("<datamount-username>", "testtier1storage")
 
 
 # Create empty disk
@@ -167,10 +175,6 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name "$publicKeySecretName
 Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
 $sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault
 $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault
-
-
-# Deploy a storage account for
-$dataStorage = Deploy-StorageAccount -Name "testtier1storage" -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 
 
 # Get list of image definitions
