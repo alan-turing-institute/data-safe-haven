@@ -172,15 +172,6 @@ try{
     chmod 600 "$($vmName).pem"
 
 
-    # Configure hosts file
-    # --------------------
-    $hostsTemplate = Get-Content -Path "tier1-hosts.yaml"
-    $hostsTemplate = $hostsTemplate.Replace("<tier1_host>", $vmPublicIpAddress)
-    $hostsTemplate = $hostsTemplate.Replace("<tier1_admin>", $vmAdminUsername)
-    $hostsTemplate = $hostsTemplate.Replace("<tier1_key>", "$($vmName).pem")
-    $hostsTemplate | Set-Content -Path "hosts.yaml"
-
-
     # Configures users file
     # ---------------------
     if ($usersYAMLPath) {
@@ -193,7 +184,10 @@ try{
 
     # Run ansible playbook
     # --------------------
-    ansible-playbook tier1-playbook.yaml -i hosts.yaml
+    ansible-playbook tier1-playbook.yaml `
+        -i "$($vmPublicIpAddress)," `
+        -u $vmAdminUsername `
+        --private-key "$($vmName).pem"
 
 
     # Generate qr codes
@@ -207,7 +201,7 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    rm -f hosts.yaml users.yaml "$($vmName).pem" "$($vmName).pem.pub" totp_hashes.txt
+    rm -f users.yaml "$($vmName).pem" "$($vmName).pem.pub" totp_hashes.txt
 
     popd
 }

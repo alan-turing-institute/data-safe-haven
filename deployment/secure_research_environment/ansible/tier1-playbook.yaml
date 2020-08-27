@@ -1,5 +1,5 @@
 ---
-- hosts: tier1
+- hosts: all
 
   vars_files:
     - users.yaml
