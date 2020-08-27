@@ -32,7 +32,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 # Generate VM name
 # ----------------
-$vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".ToUpper()
+$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
 
 
 # Create VNet resource group if it does not exist
