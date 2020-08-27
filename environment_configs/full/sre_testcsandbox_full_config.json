@@ -333,13 +333,6 @@
     }
   },
   "sre": {
-    "accessPolicies": {
-      "researcher": {
-        "nameSuffix": "researcher",
-        "permissions": "rl",
-        "sasSecretName": "sre-sandbox-storage-ingress-sas-researcher"
-      }
-    },
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
@@ -555,23 +548,31 @@
     "rgPrefix": "RG_SRE_SANDBOX",
     "shortName": "sre-sandbox",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "nameSuffix": "readonly",
+          "permissions": "rl",
+          "sasSecretName": "sre-sandbox-storage-ingress-sas-readonly"
+        }
+      },
       "artifacts": {
-        "accountName": "sresandboxartifactsakeqz",
+        "accountName": "testcsandboxartifactsake",
         "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "sresandboxbootdiagsakeqz",
+        "accountName": "testcsandboxbootdiagsake",
         "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
       "datastorage": {
         "accountName": "testcsandboxdataakeqzbwg",
         "containers": {
           "ingress": {
-            "name": "ingress",
-            "storageType": "Blob"
+            "accessPolicyName": "readOnly",
+            "name": "ingress"
           }
         },
-        "rg": "RG_SHM_TESTC_DATA_PERSISTENT"
+        "rg": "RG_SHM_TESTC_DATA_PERSISTENT",
+        "storageType": "BlobStorage"
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",

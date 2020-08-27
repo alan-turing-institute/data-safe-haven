@@ -108,34 +108,33 @@ function Add-SreConfig {
     $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
+        accessPolicies = [ordered]@{
+            readOnly = [ordered]@{
+                nameSuffix    = "readonly"
+                permissions   = "rl"
+                sasSecretName = "sre-$($config.sre.id)-storage-ingress-sas-readonly"
+            }
+        }
         artifacts       = [ordered]@{
-            accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "$($config.shm.id)$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             rg          = $storageRg
         }
         bootdiagnostics = [ordered]@{
-            accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "$($config.shm.id)$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             rg          = $storageRg
         }
         datastorage     = [ordered]@{
-            rg          = "RG_SHM_$($config.shm.id)_DATA_PERSISTENT".ToUpper()
             accountName = "$($config.shm.id)$($config.sre.id)data${srestorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            rg          = "RG_SHM_$($config.shm.id)_DATA_PERSISTENT".ToUpper()
+            storageType = "BlobStorage"
             containers  = [ordered]@{
                 ingress = [ordered]@{
-                    name        = "ingress"
-                    storageType = "Blob"
+                    name = "ingress"
+                    accessPolicyName = "readOnly"
                 }
             }
         }
     }
-    # Storage SASToken policies
-    $config.sre.accessPolicies = [ordered]@{
-        researcher = [ordered]@{
-            nameSuffix    = "researcher"
-            permissions   = "rl"
-            sasSecretName = "sre-$($config.sre.id)-storage-ingress-sas-researcher"
-        }
-    }
-
 
     # Secrets config
     # --------------

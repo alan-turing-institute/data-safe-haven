@@ -18,10 +18,21 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 
+foreach ($accessPolicy in $config.sre.storage.accessPolicies) {
+    write-host ($accessPolicy | Out-String)
+    write-host "Key: $($accessPolicy.Key)"
+    write-host "Value: $($accessPolicy.Value)"
+}
+exit 1
+
+
 # Ensure that a container exists in the correct SHM storage account for this SRE
 # ------------------------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.storage.datastorage.rg -Location $config.shm.location
-$storageAccount = Deploy-StorageAccount -Name $config.sre.storage.datastorage.accountName -ResourceGroupName $config.sre.storage.datastorage.rg -Location $config.shm.location -SkuName "Standard_RAGRS"
+$storageAccount = Deploy-StorageAccount -Name $config.sre.storage.datastorage.accountName -ResourceGroupName $config.sre.storage.datastorage.rg -Kind $config.sre.storage.datastorage.storageType -Location $config.shm.location -SkuName "Standard_RAGRS"
+if (-not $storageAccount.PrimaryEndpoints.Blob) {
+    Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.datastorage.accountName)' does not support blob storage!"
+}
 $containerName = $config.sre.storage.datastorage.containers.ingress.name
 $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 
@@ -38,25 +49,31 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName -DefaultValue $newSAStoken
 
 
-# Disable private endpoint network policies on the data subnet
-# ------------------------------------------------------------
-$dataSubnetName = $config.sre.network.vnet.subnets.data.name
-$virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
-($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq $dataSubnetName }).PrivateEndpointNetworkPolicies = "Disabled"
-$virtualNetwork | Set-AzVirtualNetwork
-$dataSubnet = Get-AzSubnet -Name $dataSubnetName -VirtualNetwork $virtualNetwork
+# # Disable private endpoint network policies on the data subnet
+# # ------------------------------------------------------------
+# $dataSubnetName = $config.sre.network.vnet.subnets.data.name
+# $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
+# ($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq $dataSubnetName }).PrivateEndpointNetworkPolicies = "Disabled"
+# $virtualNetwork | Set-AzVirtualNetwork
+# $dataSubnet = Get-AzSubnet -Name $dataSubnetName -VirtualNetwork $virtualNetwork
 
 
 # Ensure that private endpoint exists
 # -----------------------------------
-$privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $storageAccount -StorageType $config.sre.storage.datastorage.containers.ingress.storageType -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$dataSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+# $privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $storageAccount -StorageType $config.sre.storage.datastorage.containers.ingress.storageType -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $storageAccount -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $privateEndpointIp = (Get-AzNetworkInterface -ResourceId $privateEndpoint.NetworkInterfaces.Id).IpConfigurations[0].PrivateIpAddress
 
 
 # Set up DNS zone
 # ---------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+$privateDnsZoneName = "$($storageAccount.StorageAccountName).blob.core.windows.net".ToLower()
+
+
+
+
 Add-LogMessage -Level Info "Setting up DNS Zone for '$privateDnsZoneName'"
 $params = @{
     Name = $privateDnsZoneName

@@ -639,7 +639,8 @@ function Deploy-StorageAccount {
         $Location,
         [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
         $SkuName = "Standard_LRS",
-        [Parameter(Mandatory = $false, HelpMessage = "Kind of the storage account to deploy")]
+        [Parameter(Mandatory = $false, HelpMessage = "Kind of storage account to deploy")]
+        [ValidateSet("Storage", "StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
         $Kind = "StorageV2"
     )
     Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
@@ -675,12 +676,12 @@ function Deploy-StorageAccountEndpoint {
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint into")]
         $Location
     )
-    $privateEndpointName = "$($StorageAccount.Context.Name)-endpoint"
-    Add-LogMessage -Level Info "Ensuring that private endpoint '$privateEndpointName' exists..."
+    $privateEndpointName = "$($StorageAccount.StorageAccountName)-endpoint"
+    Add-LogMessage -Level Info "Ensuring that private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)' exists..."
     $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)' in $ResourceGroupName"
-        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType
+        Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
+        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id #-GroupId $StorageType
         $success = $?
         $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
         $success = $success -and $?
@@ -979,8 +980,8 @@ function Enable-AzVM {
 Export-ModuleMember -Function Enable-AzVM
 
 
-# Create subnet if it does not exist
-# ----------------------------------
+# Get subnet
+# ----------
 function Get-AzSubnet {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
@@ -988,8 +989,8 @@ function Get-AzSubnet {
         [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
         $VirtualNetwork
     )
-    $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
-    return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
+    Add-LogMessage -Level Info "Get-AzSubnet is deprecated - consider switching to Get-Subnet"
+    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
 }
 Export-ModuleMember -Function Get-AzSubnet
 
@@ -1010,6 +1011,23 @@ function Get-NSRecords {
     return $recordSet.Records
 }
 Export-ModuleMember -Function Get-NSRecords
+
+
+# Get subnet
+# ----------
+function Get-Subnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network that this subnet belongs to")]
+        $VirtualNetworkName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that this subnet belongs to")]
+        $ResourceGroupName
+    )
+    $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName
+    return ($virtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+}
+Export-ModuleMember -Function Get-Subnet
 
 
 # Get all VMs for an SHM or SRE
