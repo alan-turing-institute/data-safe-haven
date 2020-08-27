@@ -13,13 +13,6 @@ Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
 
-# Get absolute path of users file
-# -------------------------------
-if ($userslYAMLPath) {
-    $usersYAMLPath = readlink -f "$($usersYAMLPath)"
-}
-
-
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
@@ -27,14 +20,20 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Generate VM name
-# ----------------
-$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
+# Get absolute path of users file
+# -------------------------------
+if ($usersYAMLPath) { $usersYAMLPath = (Resolve-Path -Path $usersYAMLPath).Path }
 
 
 # Get VM size
 # -----------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
+
+
+# Generate VM name
+# ----------------
+$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
+
 
 # Create VNet resource group if it does not exist
 # -----------------------------------------------
@@ -91,6 +90,10 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange *
 
+# Apply NSG to subnet
+# -------------------
+$null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet -NetworkSecurityGroup $nsg
+
 
 # Retrieve credentials from the keyvault
 # --------------------------------------
@@ -101,40 +104,115 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 
 # Construct cloud-init YAML file
 # ------------------------------
-$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-tier1.yaml"
-$cloudInitYaml = Get-Content $cloudInitFilePath -Raw
+$cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
+
 
 # Create empty disk
 # -----------------
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 
+
 # Deploy NIC and get public IP
 # ----------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
-$vmNic.NetworkSecurityGroup = $nsg
-$null = $vmNic | Set-AzNetworkInterface
 $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
-Add-LogMessage -Level Info -Message "VM public IP address: $($vmPublicIpAddress)"
 
 
-# Create or retrieve SSH keys
-# ---------------------------
-$keySecretPrefix ="$($vmName)-KEY"
-if (-not $(Get-AzKeyVaultSecret -Vaultname $keyVault -Name "$($keySecretPrefix)-PRIVATE")) {
-    # Create SSH keys
-    ssh-keygen -m PEM -t rsa -b 4096 -f "$($vmName).pem"
+# Ensure that SSH keys exist in the key vault
+# -------------------------------------------
+$publicKeySecretName ="${vmName}-KEY-PUBLIC"
+$privateKeySecretName ="${vmName}-KEY-PRIVATE"
+if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name "$publicKeySecretName") -and (Get-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName))) {
+    # Remove existing keys if they do not both exist
+    if (Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName) {
+        Add-LogMessage -Level Info "[ ] Removing outdated public key '$publicKeySecretName'"
+        Remove-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed outdated public key '$publicKeySecretName'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to remove outdated public key '$publicKeySecretName'!"
+        }
+    }
+    if (Get-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName) {
+        Add-LogMessage -Level Info "[ ] Removing outdated private key '$privateKeySecretName'"
+        Remove-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed outdated private key '$privateKeySecretName'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to remove outdated private key '$privateKeySecretName'!"
+        }
+    }
 
-    # Upload keys to key vault
-    $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
-    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC" -SecretValue (ConvertTo-SecureString $sshPublicKey -AsPlainText -Force)
-    $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
-    $null = Set-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE" -SecretValue (ConvertTo-SecureString $sshPrivateKey -AsPlainText -Force)
+    # Create new SSH keys
+    try {
+        Add-LogMessage -Level Info "[ ] Generating SSH key pair for use by Ansible..."
+        ssh-keygen -m PEM -t rsa -b 4096 -f "${vmName}.pem" -q -N '""'  # NB. we need the nested quotes here to stop Powershell expanding the empty string to nothing
+        if ($?) {
+            Add-LogMessage -Level Success "Created new SSH key pair"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create new SSH key pair!"
+        }
+        # Upload keys to key vault
+        $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
+        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $sshPublicKey
+        $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
+        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $sshPrivateKey
+    } finally {
+        # Delete the SSH key files
+        Remove-Item "${vmName}.pem*" -Force -ErrorAction SilentlyContinue
+    }
+}
+# Fetch SSH keys from key vault
+Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
+$sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault
+$sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault
+
+
+# Get list of image definitions
+# -----------------------------
+Add-LogMessage -Level Info "Getting image type from gallery..."
+if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
+    $imageDefinition = "ComputeVM-Ubuntu1804Base"
+} elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
+    $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
+} elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
+    $imageDefinition = "ComputeVM-DataScienceBase"
+} elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
+    $imageDefinition = "ComputeVM-DsgBase"
 } else {
-    # Fetch private key from key vault
-    $sshPublicKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PUBLIC").SecretValueText
-    $sshPrivateKey = (Get-AzKeyVaultSecret -VaultName $keyVault -Name "$($keySecretPrefix)-PRIVATE").SecretValueText
+    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImage.type) as an image type!"
+}
+Add-LogMessage -Level Success "Using image type $imageDefinition"
+
+
+# Check that this is a valid image version and get its ID
+# -------------------------------------------------------
+$null = Set-AzContext -Subscription $config.sre.dsvm.vmImage.subscription
+$imageVersion = $config.sre.dsvm.vmImage.version
+Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
+try {
+    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
+} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
+    Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
+    $imageVersion = $versions | Select-Object -Last 1
+    $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$imageVersion')"
+    if ($versions.Contains($userVersion)) {
+        $imageVersion = $userVersion
+    }
+    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
+}
+Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
+
+
+# Set the OS disk size for this image
+# -----------------------------------
+$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = 2 * [int]$image.StorageProfile.OsDiskImage.SizeInGB }
+if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
+    Add-LogMessage -Level Fatal "Image $imageVersion needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
 
 
@@ -152,39 +230,40 @@ $params = @{
     CloudInitYaml          = $cloudInitYaml
     location               = $config.sre.location
     NicId                  = $vmNic.Id
-    OsDiskSizeGb           = $config.sre.dsvm.disks.os.sizeGb
+    OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
     DataDiskIds            = @($dataDisk.Id)
-    ImageSku               = "18.04-LTS"
+    ImageId                = $image.Id
     NoWait                 = $true
 }
-$vm = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params
+Start-Sleep -Seconds 60
 
 
-try{
+try {
     # Write private key
     # -----------------
-    $sshPrivateKey | Set-Content -Path "$($vmName).pem"
-    chmod 600 "$($vmName).pem"
+    $sshPrivateKey | Set-Content -Path "${privateKeySecretName}.key"
+    chmod 600 "${privateKeySecretName}.key"
 
 
     # Configures users file
     # ---------------------
     if ($usersYAMLPath) {
-        cp $usersYAMLPath "users.yaml"
+        Copy-Item -Path $usersYAMLPath -Destination "users.yaml"
     } else {
         "---
-        users: []" | Set-Content -path "users.yaml"
+        users: []" | Set-Content -Path "users.yaml"
     }
 
 
-    # Run ansible playbook
-    # --------------------
+    # Run ansible playbook and create totp_hashes.txt
+    # -----------------------------------------------
     ansible-playbook ../ansible/tier1-playbook.yaml `
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
-        --private-key "$($vmName).pem"
+        --private-key "${privateKeySecretName}.key"
 
 
     # Generate qr codes
@@ -198,8 +277,20 @@ try{
 } finally {
     # Remove temporary files
     # ----------------------
-    rm -f users.yaml "$($vmName).pem" "$($vmName).pem.pub" totp_hashes.txt
+    @("users.yaml", "${privateKeySecretName}.key", "totp_hashes.txt") | ForEach-Object { Remove-Item $_ -Force -ErrorAction SilentlyContinue }
 }
+
+
+# Give connection information
+# ---------------------------
+Add-LogMessage -Level Info -Message `
+@"
+To connect to this VM please do the following:
+  ssh <username>@${vmPublicIpAddress} -L<local-port>:localhost:<remote-port>
+For example, to use CoCalc on port 443 you could do the following
+  ssh <username>@${vmPublicIpAddress} -L8443:localhost:443
+You can then open a browser locally and go to https://localhost:8443
+"@
 
 
 # Switch back to original subscription
