@@ -1,18 +1,18 @@
 #cloud-config
 
 disk_setup:
-  /dev/disk/azure/scsi1/lun0:
+  /dev/disk/azure/scsi1/lun1:
     table_type: gpt
     layout: true
     overwrite: true
 
 fs_setup:
-  - device: /dev/disk/azure/scsi1/lun0
+  - device: /dev/disk/azure/scsi1/lun1
     filesystem: ext4
     parition: 1
 
 mounts:
-  - [/dev/disk/azure/scsi1/lun0-part1, /scratch, ext4, "defaults"]
+  - [/dev/disk/azure/scsi1/lun1-part1, /scratch, ext4, "defaults"]
   - [//<datamount-username>.file.core.windows.net/ingress, /data, cifs, "noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev,credentials=/etc/smbcredentials.secret,vers=3.0,dir_mode=0777,file_mode=0777,serverino"]
 
 write_files:
