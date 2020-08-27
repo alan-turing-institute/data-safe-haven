@@ -5,49 +5,41 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Hostname for the VM", Mandatory = $false)]
-    [string]$ZoneName,
+    [Parameter(HelpMessage = "Name of the DNS zone", Mandatory = $false)]
+    [string]$Name,
     [Parameter(HelpMessage = "IP Address", Mandatory = $false)]
-    [string]$ipaddress,
-    [Parameter(HelpMessage = "Forced update", Mandatory = $false)]
-    [String]$update
+    [string]$IpAddress
 )
 
 # Check whether the zone exists otherwise create it
-if ((Get-DnsServerZone -name $ZoneName -ErrorAction SilentlyContinue | Where-Object { $_.ZoneType -eq "Primary" })) {
-    Write-Output "DNS Zone $ZoneName already exists"
+if (Get-DnsServerZone -name $Name -ErrorAction SilentlyContinue | Where-Object { $_.ZoneType -eq "Primary" }) {
+    Write-Output "DNS zone $Name already exists"
 } else {
-    Write-Output " [ ] Creating DNS Zone ${ZoneName}..."
-    Add-DnsServerPrimaryZone -Name $ZoneName -ReplicationScope "Forest"
+    Write-Output " [ ] Creating DNS zone $Name..."
+    Add-DnsServerPrimaryZone -Name $Name -ReplicationScope "Forest"
     if ($?) {
-        Write-Output " [o] Successfully created DNS Zone ${ZoneName}"
+        Write-Output " [o] Successfully created DNS zone $Name"
     } else {
-        Write-Output " [x] Failed to create DNS Zone ${ZoneName}!"
+        Write-Output " [x] Failed to create DNS zone $Name!"
     }
 }
 
-
-# If the record exists and the user used force, remove it
-if ($update.ToLower() -eq "force") {
-    Write-Output " [ ] Removing DNS record ${ZoneName}..."
-    Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force -ErrorAction SilentlyContinue
-    if ($?) {
-        Write-Output " [o] Successfully removed DNS record ${ZoneName}"
+# If the record exists then remove it
+if (Get-DnsServerResourceRecord -ZoneName $Name -RRType "A" -name "@" -ErrorAction SilentlyContinue) {
+    Write-Output " [ ] Removing existing DNS record $Name..."
+    Remove-DnsServerResourceRecord -ZoneName $Name -RRType "A" -Name "@" -Force -ErrorVariable failed -ErrorAction SilentlyContinue
+    if ($? -and -not $failed) {
+        Write-Output " [o] Successfully removed DNS record $Name"
     } else {
-        Write-Output " [x] Failed to remove DNS record ${ZoneName}!"
+        Write-Output " [x] Failed to remove DNS record $Name!"
     }
 }
 
-
-# Check whether the record exists otherwise create it
-if (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction SilentlyContinue) {
-    Write-Output "Record $ZoneName already exists, use -dnsForceUpdate 'force' to override"
+# Create the record
+Write-Output " [ ] Creating DNS record $Name..."
+Add-DnsServerResourceRecordA -Name $Name -ZoneName $Name -IPv4Address $IpAddress
+if ($?) {
+    Write-Output " [o] Successfully created DNS record $Name"
 } else {
-    Write-Output " [ ] Creating DNS record ${ZoneName}..."
-    Add-DnsServerResourceRecordA -Name $ZoneName -ZoneName $ZoneName -IPv4Address $ipaddress
-    if ($?) {
-        Write-Output " [o] Successfully created DNS record ${ZoneName}"
-    } else {
-        Write-Output " [x] Failed to create DNS record ${ZoneName}!"
-    }
+    Write-Output " [x] Failed to create DNS record $Name!"
 }
