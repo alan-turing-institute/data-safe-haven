@@ -105,7 +105,7 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 # Deploy a storage account for
 $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
 $dataStorage = Deploy-StorageAccount -Name "testtier1storage" -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$share = New-AzStorageShare -Name "ingress" -Context $dataStorage.context
+$share = Deploy-StorageShare -Name "ingress" -StorageAccount $dataStorage
 $sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name "testtier1storage" | Where-Object {$_.KeyName -eq "key1"}).Value
 
 

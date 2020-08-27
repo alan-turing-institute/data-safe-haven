@@ -683,6 +683,33 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
+# Create storage container if it does not exist
+# ------------------------------------------
+function Deploy-StorageShare {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        $StorageAccount
+    )
+    Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
+    $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
+        if ($?) {
+            Add-LogMessage -Level Success "Created storage container"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $storageShare
+}
+Export-ModuleMember -Function Deploy-StorageShare
+
+
 # Create Linux virtual machine if it does not exist
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {
