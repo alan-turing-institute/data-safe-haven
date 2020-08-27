@@ -1024,10 +1024,10 @@ function Get-ImageFromGallery {
             Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
         }
     } catch {
-        $null = Set-AzContext -Subscription $originalContext
+        $null = Set-AzContext -Context $originalContext
         throw
     } finally {
-        $null = Set-AzContext -Subscription $originalContext
+        $null = Set-AzContext -Context $originalContext
     }
     return $image
 }
