@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-from subprocess import run
+from pathlib import Path
 import re
+from subprocess import run
 
 # Read username and TOTP hash combinations
 totp_hashes = open("./totp_hashes.txt", "r").readlines()
@@ -25,3 +26,5 @@ for username, totp_hash in totp_hashes:
         print(f"Successfully generated QR code for user {username}")
     else:
         print(f"Failed to generate QR code for user {username}")
+
+print(f"QR code files are located in {Path(__file__).parent.absolute()}")
