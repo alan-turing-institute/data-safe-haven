@@ -163,9 +163,6 @@ $vm = Deploy-UbuntuVirtualMachine @params
 
 
 try{
-    pushd ../ansible
-
-
     # Write private key
     # -----------------
     $sshPrivateKey | Set-Content -Path "$($vmName).pem"
@@ -184,7 +181,7 @@ try{
 
     # Run ansible playbook
     # --------------------
-    ansible-playbook tier1-playbook.yaml `
+    ansible-playbook ../ansible/tier1-playbook.yaml `
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
         --private-key "$($vmName).pem"
@@ -202,8 +199,6 @@ try{
     # Remove temporary files
     # ----------------------
     rm -f users.yaml "$($vmName).pem" "$($vmName).pem.pub" totp_hashes.txt
-
-    popd
 }
 
 

@@ -2,7 +2,7 @@
 - hosts: all
 
   vars_files:
-    - users.yaml
+    - ../setup/users.yaml
 
   tasks:
     - name: Wait for cloud init to finish
@@ -217,7 +217,7 @@
     - name: Write TOTP hashes to file
       copy:
         content: "{{ totp_hashes.stdout }}"
-        dest: totp_hashes.txt
+        dest: ../setup/totp_hashes.txt
         mode: 0644
       delegate_to: localhost
       when: users != []

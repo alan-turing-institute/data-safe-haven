@@ -7,6 +7,11 @@ from subprocess import run
 totp_hashes = open("./totp_hashes.txt", "r").readlines()
 totp_hashes = [line.split() for line in totp_hashes]
 
+# Create QR code directory
+base_directory = Path(__file__).parent.absolute()
+qr_directory = base_directory / "qr"
+qr_directory.mkdir(exist_ok=True)
+
 for username, totp_hash in totp_hashes:
     # Find the base32 secret for each user
     result = run(["oathtool", "--totp", "-v", totp_hash],
@@ -20,11 +25,11 @@ for username, totp_hash in totp_hashes:
     result = run(["qrencode",
                   f"otpauth://totp/{username}@tier1vm?secret={base32_secret}",
                   "-o",
-                  f"{username}.png"])
+                  f"{qr_directory}/{username}.png"])
 
     if result.returncode == 0:
         print(f"Successfully generated QR code for user {username}")
     else:
         print(f"Failed to generate QR code for user {username}")
 
-print(f"QR code files are located in {Path(__file__).parent.absolute()}")
+print(f"QR code files are located in {qr_directory}")
