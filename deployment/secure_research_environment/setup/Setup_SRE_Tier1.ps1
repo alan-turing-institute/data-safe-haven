@@ -134,9 +134,9 @@ $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGro
 
 # Ensure that SSH keys exist in the key vault
 # -------------------------------------------
-$publicKeySecretName ="${vmName}-KEY-PUBLIC"
-$privateKeySecretName ="${vmName}-KEY-PRIVATE"
-if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name "$publicKeySecretName") -and (Get-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName))) {
+$publicKeySecretName = "sre-tier1-key-public"
+$privateKeySecretName = "sre-tier1-key-private"
+if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName) -and (Get-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName))) {
     # Remove existing keys if they do not both exist
     if (Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName) {
         Add-LogMessage -Level Info "[ ] Removing outdated public key '$publicKeySecretName'"
