@@ -32,7 +32,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 # Generate VM name
 # ----------------
-$vmName = "SRE-$($config.sre.id)-TIER1-VM".ToUpper()
+$vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".ToUpper()
 
 
 # Create VNet resource group if it does not exist
@@ -102,17 +102,19 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
-# Deploy a storage account for
+# Deploy a storage account for data ingress
+# -----------------------------------------
+$ingressStorgageName = "$(vmName)-INGRESS"
 $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
-$dataStorage = Deploy-StorageAccount -Name "testtier1storage" -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$dataStorage = Deploy-StorageAccount -Name $ingressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
 $share = Deploy-StorageShare -Name "ingress" -StorageAccount $dataStorage
-$sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name "testtier1storage" | Where-Object {$_.KeyName -eq "key1"}).Value
+$sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $ingressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
 
 
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
-$cloudInitYaml = $cloudInitYaml.Replace("<datamount-username>", "testtier1storage")
+$cloudInitYaml = $cloudInitYaml.Replace("<datamount-username>", $ingressStorgageName)
 $cloudInitYaml = $cloudInitYaml.Replace("<datamount-password>", $sharePassword)
 
 
