@@ -69,8 +69,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "InboundAllowSSH" `
-                             -Description "Inbound allow SSH" `
+                             -Name "InboundSSHAccess" `
+                             -Description "Inbound SSH access" `
                              -Priority 2000 `
                              -Direction Inbound `
                              -Access Allow `

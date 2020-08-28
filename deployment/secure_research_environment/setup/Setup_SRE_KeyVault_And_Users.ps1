@@ -78,7 +78,7 @@ try {
 
 # Tier-2 and above need to register service users with the SHM
 # ------------------------------------------------------------
-if (@(2, 3, 4).Contains($config.sre.tier)) {
+if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     # Retrieve passwords from the keyvault
     # ------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
