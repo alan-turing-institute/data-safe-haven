@@ -108,16 +108,27 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
 $ingressStorgageName = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
 $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
-$dataStorage = Deploy-StorageAccount -Name $ingressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$share = Deploy-StorageShare -Name "ingress" -StorageAccount $dataStorage
-$sharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $ingressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
+$ingressdataStorage = Deploy-StorageAccount -Name $ingressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$share = Deploy-StorageShare -Name "ingress" -StorageAccount $ingressdataStorage
+$ingressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $ingressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
+
+
+# Deploy a storage account for data egress
+# ----------------------------------------
+$egressStorgageName = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$egressdataStorage = Deploy-StorageAccount -Name $egressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$share = Deploy-StorageShare -Name "egress" -StorageAccount $egressdataStorage
+$egressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $egressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
 
 
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
-$cloudInitYaml = $cloudInitYaml.Replace("<datamount-username>", $ingressStorgageName)
-$cloudInitYaml = $cloudInitYaml.Replace("<datamount-password>", $sharePassword)
+$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $ingressStorgageName)
+$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-password>", $ingressSharePassword)
+$cloudInitYaml = $cloudInitYaml.Replace("<egress-share-username>", $egressStorgageName)
+$cloudInitYaml = $cloudInitYaml.Replace("<egress-share-password>", $egressSharePassword)
 
 
 # Create empty disk

@@ -13,12 +13,19 @@ fs_setup:
 
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /scratch, ext4, "defaults"]
-  - [//<datamount-username>.file.core.windows.net/ingress, /data, cifs, "_netdev,credentials=/etc/smbcredentials.secret,vers=3.0,dir_mode=0755,file_mode=0744,serverino"]
+  - [//<ingress-share-username>.file.core.windows.net/ingress, /data, cifs, "_netdev,credentials=/etc/ingresssmbcredentials.secret,vers=3.0,dir_mode=0755,file_mode=0744,serverino"]
+  - [//<egress-share-username>.file.core.windows.net/egress, /output, cifs, "_netdev,credentials=/etc/egresssmbcredentials.secret,vers=3.0,dir_mode=0777,file_mode=0777,serverino"]
 
 write_files:
-  - path: "/etc/smbcredentials.secret"
+  - path: "/etc/ingresssmbcredentials.secret"
     owner: root:root
     permissions: "0600"
     content: |
-      username=<datamount-username>
-      password=<datamount-password>
+      username=<ingress-share-username>
+      password=<ingress-share-password>
+  - path: "/etc/egresssmbcredentials.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      username=<egress-share-username>
+      password=<egress-share-password>

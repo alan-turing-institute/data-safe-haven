@@ -196,6 +196,7 @@
               volumes:
                 - /scratch:/projects
                 - /data:/data
+                - /output:/output
               restart: always
       register: output
 
