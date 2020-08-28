@@ -13,7 +13,7 @@ fs_setup:
 
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /scratch, ext4, "defaults"]
-  - [//<datamount-username>.file.core.windows.net/ingress, /data, cifs, "noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev,credentials=/etc/smbcredentials.secret,vers=3.0,dir_mode=0777,file_mode=0777,serverino"]
+  - [//<datamount-username>.file.core.windows.net/ingress, /data, cifs, "_netdev,credentials=/etc/smbcredentials.secret,vers=3.0,dir_mode=0777,file_mode=0777,serverino"]
 
 write_files:
   - path: "/etc/smbcredentials.secret"
