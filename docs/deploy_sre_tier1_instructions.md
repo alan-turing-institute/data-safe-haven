@@ -28,8 +28,10 @@
   - python > 3.6
   - qrencode
   - oathtool (On OSX this is contained without `oath-toolkit` on homebrew)
-- A SHM must be deployed. However, **it is not necessary to make user accounts**
-  in the SHM AD as they will not be used.
+- It is **not** necessary to deploy an SHM. However, to generate the SRE
+  configuration an existing SHM configuration must be named. This may be an
+  existing, deployed SHM but it will not be necessary to create user accounts in
+  that SHM's AD as they will not be used.
 
 ## :clipboard: Define SRE Configuration
 
@@ -95,6 +97,12 @@ On your **deployment machine**.
 - The CoCalc container is large and pulling it may take some time (~20 minutes).
 - To add, or disable user accounts, edit the users file and re-run
   `./Setup_SRE_Tier1.ps1`.
+
+## :lock: Apply Network Configuration
+- Follow the steps
+  [here](./deploy_sre_instructions.md#lock-apply-network-configuration) to
+  apply the network configuration.
+- This may be used to restrict SSH access to particular IP addresses.
 
 ## :floppy_disk: Uploading Data
 
