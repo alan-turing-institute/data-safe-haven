@@ -1,5 +1,9 @@
 # Secure Research Environment Build Instructions
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
+
+> :warning: If you are deploying a Tier 1 environment, follow [these
+> instructions](./deploy_sre_tier1_instructions.md)
+
 The following 7 virtual machines are created as a result of these instructions:
 - `APP-SRE-<SRE ID>` (Remote Desktop app server)
 - `DAT-SRE-<SRE ID>` (data server)
