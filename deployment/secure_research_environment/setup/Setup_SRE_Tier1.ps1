@@ -8,6 +8,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
@@ -104,7 +105,8 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 
 # Deploy a storage account for data ingress
 # -----------------------------------------
-$ingressStorgageName = "$(vmName)-INGRESS"
+$sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
+$ingressStorgageName = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
 $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
 $dataStorage = Deploy-StorageAccount -Name $ingressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
 $share = Deploy-StorageShare -Name "ingress" -StorageAccount $dataStorage
