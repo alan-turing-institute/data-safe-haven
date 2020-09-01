@@ -61,7 +61,10 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
     "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
-    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
+    "images": {
+        "subscriptionName": "Name of the Azure subscription where VM images should be built.",
+        "location": "The Azure location in which VM images should be built."
+    },
     "domain": "The fully qualified domain name for the management environment.",
     "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name.",
@@ -385,7 +388,7 @@ From your **deployment machine**
 - Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` will be the one defined in the config file.
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
-- **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.  
+- **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
 - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.

@@ -117,8 +117,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "azureAdminGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "images": {
-        "subscriptionName": "Name of the Azure subscription the DSVM image gallery is deployed in",
-        "location": "Location of the image gallery subscription"
+        "subscriptionName": "Name of the Azure subscription where VM images should be built.",
+        "location": "The Azure location in which VM images should be built."
     },
     "domain": "The fully qualified domain name for the management environment",
     "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
