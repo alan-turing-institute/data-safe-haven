@@ -241,7 +241,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # Ensure that runtime NSG exists and required rules are set
 # ---------------------------------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Raw) | ConvertFrom-Json -AsHashtable
+$rules = Get-PatchedJsonFromTemplate -TemplateJsonFilePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundAllowNTP" `

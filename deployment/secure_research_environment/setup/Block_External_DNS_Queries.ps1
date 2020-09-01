@@ -24,7 +24,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # -------------------------------------------------------------
 Add-LogMessage -Level Info "Blocking direct DNS from DSVMs via Azure Platform DNS..."
 $computeNsg = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Raw) | ConvertFrom-Json -AsHashtable
+$rules = Get-PatchedJsonFromTemplate -TemplateJsonFilePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
 
 
