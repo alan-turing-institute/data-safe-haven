@@ -1,5 +1,5 @@
-Import-Module Az
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging.psm1 -ErrorAction Stop
 
 
 # Convert an IP address into a decimal integer

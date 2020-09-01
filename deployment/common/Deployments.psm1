@@ -1,5 +1,5 @@
-Import-Module Az
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Create network security group rule if it does not exist

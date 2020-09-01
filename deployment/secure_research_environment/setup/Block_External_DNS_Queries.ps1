@@ -4,13 +4,13 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Last octet of IP address for DSVM to test DNS lockdown. Defaults to '160'")]
     [string]$dsvmIpLastOctet
 )
-
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription

@@ -17,8 +17,8 @@ param(
     $remoteNpsServerGroup
 )
 
-Import-Module NPS
-Import-Module RemoteDesktopServices
+Import-Module NPS -ErrorAction Stop
+Import-Module RemoteDesktopServices -ErrorAction Stop
 
 function Get-NpsServerAddresses ($remoteServerGroup) {
     $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | foreach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }

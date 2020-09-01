@@ -23,7 +23,7 @@ param(
     [string]$VmAdminUsername
 )
 
-Import-Module SqlServer
+Import-Module SqlServer -ErrorAction Stop
 
 $serverName = $(hostname)
 $secureDbAdminPassword = (ConvertTo-SecureString $DbAdminPassword -AsPlainText -Force)
