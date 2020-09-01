@@ -1,17 +1,7 @@
 # Secure Research Environment Build Instructions
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 1 environment, follow [these
-> instructions](./deploy_sre_tier1_instructions.md)
-
-The following 7 virtual machines are created as a result of these instructions:
-- `APP-SRE-<SRE ID>` (Remote Desktop app server)
-- `DAT-SRE-<SRE ID>` (data server)
-- `DKP-SRE-<SRE ID>` (Remote Desktop desktop server)
-- `HACKMD-SRE-<SRE ID>` (HackMD server)
-- `GITLAB-SRE-<SRE ID>` (GitLab server)
-- `RDG-SRE-<SRE ID>` (Remote Desktop Gateway)
-- `SRE-<SRE ID>-160-DSVM-<VERSION>`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
+> :warning: If you are deploying a Tier 1 environment, follow [these instructions](./deploy_sre_tier1_instructions.md) instead.
 
 ## Contents
 - [:seedling: Prerequisites](#seedling-prerequisites)
