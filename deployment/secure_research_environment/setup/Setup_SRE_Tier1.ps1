@@ -252,17 +252,16 @@ try {
 
     # Run ansible playbook and create totp_hashes.txt
     # -----------------------------------------------
-    ansible-playbook ../ansible/tier1-playbook.yaml `
+    ansible-playbook (Join-Path $PSScriptRoot ".." "ansible" "tier1-playbook.yaml" | Resolve-Path).Path `
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
         --private-key "${privateKeySecretName}.key"
-
 
     # Generate qr codes
     # -----------------
     if ($usersYAMLPath) {
         Add-LogMessage -Level Info "Generating QR codes"
-        ./generate_qr_codes.py
+        python generate_qr_codes.py
     }
 
 
@@ -271,6 +270,12 @@ try {
     # ----------------------
     @("users.yaml", "${privateKeySecretName}.key", "totp_hashes.txt") | ForEach-Object { Remove-Item $_ -Force -ErrorAction SilentlyContinue }
 }
+
+
+# Add DNS records for tier-1 VM
+# -----------------------------
+Add-LogMessage -Level Info "Adding DNS record for SSH connection"
+$null = Deploy-DNSRecords -SubscriptionName $config.shm.dns.subscriptionName -ResourceGroupName $config.shm.dns.rg -ZoneName $config.sre.domain.fqdn
 
 
 # Give connection information

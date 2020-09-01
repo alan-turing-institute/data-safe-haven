@@ -174,6 +174,59 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
+# Add A (and optionally CNAME) DNS records
+# ----------------------------------------
+function Deploy-DNSRecords {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
+        $SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
+        $ZoneName,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
+        $RecordNameA = "@",
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'CNAME' record (if none is provided then no CNAME redirect will be set up)")]
+        $RecordNameCName,
+        [Parameter(Mandatory = $false, HelpMessage = "TTL seconds for the DNS records")]
+        $TtlSeconds = 30
+    )
+    $originalContext = Get-AzContext
+    try {
+        Add-LogMessage -Level Info "Adding DNS records..."
+        $null = Set-AzContext -Subscription $SubscriptionName
+
+        # Set the A record
+        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$rdsGatewayPublicIp' for DNS zone ($ZoneName)"
+        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Force
+        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+        if ($?) {
+            Add-LogMessage -Level Success "Successfully set 'A' record"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to set 'A' record!"
+        }
+        # Set the CNAME record
+        if ($RecordNameCName) {
+            Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone ($ZoneName)"
+            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Force
+            $null = New-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName)
+            if ($?) {
+                Add-LogMessage -Level Success "Successfully set 'CNAME' record"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to set 'CNAME' record!"
+            }
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext
+    }
+    return
+}
+Export-ModuleMember -Function Deploy-DNSRecords
+
+
 # Create a firewall if it does not exist
 # --------------------------------------
 function Deploy-Firewall {

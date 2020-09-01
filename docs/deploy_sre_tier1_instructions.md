@@ -77,8 +77,11 @@ users:
     enabled: false
 ```
 
-## :computer: Deploy, and Configure VM
+## :clubs: Create SRE DNS Zone
+- Follow the steps [here](./deploy_sre_instructions.md#clubs-create-sre-dns-zone) to deploy a DNS zone for this SRE.
 
+
+## :computer: Deploy and Configure VM
 On your **deployment machine**.
 - Deploy a Tier 1 VM by running `./Setup_SRE_Tier1.ps1 -configId <SRE config ID>` where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
   - If you have a users file pass its path with the `-usersYAMLPath` argument.
