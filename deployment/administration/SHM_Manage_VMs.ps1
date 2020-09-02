@@ -7,8 +7,8 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter VM group (Identity, Mirrors or All)")]
     [ValidateSet("Identity", "Mirrors", "All")]
     [string]$Group,
-    [Parameter(Mandatory = $false, HelpMessage = "Deallocate Firewall (only has an effect if Action is 'EnsureStopped'")]
-    [switch]$DeallocateFirewall
+    [Parameter(Mandatory = $false, HelpMessage = "Exclude Firewall (only has an effect if Action is 'EnsureStopped'")]
+    [switch]$ExcludeFirewall
 )
 
 Import-Module Az
@@ -85,8 +85,8 @@ switch ($Action) {
                 Stop-VM -VM $vm -NoWait
             }
         }
-        if ($DeallocateFirewall) {
-            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg
+        if (-not $ExcludeFirewall) {
+            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -AsJob
         }
     }
 }
