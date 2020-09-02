@@ -31,9 +31,8 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 # ---------------------------------------
 $rgFilter = "RG_SHM_$($config.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-foreach($rg in $shmResourceGroups) {
-$rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
-    foreach($vm in $rgVms) {
+foreach ($shmResourceGroup in $shmResourceGroups) {
+    foreach($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
         $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
