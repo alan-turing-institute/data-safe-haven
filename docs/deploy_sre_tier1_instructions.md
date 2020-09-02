@@ -5,6 +5,7 @@
 
 > :warning: This documentation is temporary pending the integration of Tier 1 environments with AD
 
+
 ## Contents
 - [:seedling: Prerequisites](#seedling-prerequisites)
 - [:clipboard: Define SRE Configuration](#clipboard-define-sre-configuration)
@@ -13,9 +14,9 @@
 - [:computer: Deploy and Configure VM](#computer-deploy,-and-configure-vm)
 - [:floppy_disk: Uploading Data](#floppy_disk-uploading-data)
 
-## :seedling: Prerequisites
 
-:warning: As the deployment process depends on `Ansible`](https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, OSX, BSD, Solaris).
+## :seedling: Prerequisites
+:warning: As the deployment process depends on [`Ansible`](https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, OSX, BSD, Solaris).
 
 The following packages are required
   - `PowerShell` with support for Azure
@@ -49,10 +50,15 @@ On your **deployment machine**.
 - Create a key vault in the SRE subscription by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>`, where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using.
   For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox`.
 
+
+## :clubs: Create SRE DNS Zone
+- Follow the steps [here](./deploy_sre_instructions.md#clubs-create-sre-dns-zone) to deploy a DNS zone for this SRE.
+
+
 ## :bicyclist: [Optional] Declare Users
+This step is optional at deploy time - if no users are declared, none will be created and they can be added at a later time.
 
 On your **deployment machine**.
-- This step is optional at deploy time. If no users are declared, none will be created and they may be added at a later time.
 - The users file is a [YAML](https://yaml.org) file. There is one top-level key `users` which contains a list of users.
 - Each users has
   - Real name
@@ -77,9 +83,6 @@ users:
     enabled: false
 ```
 
-## :clubs: Create SRE DNS Zone
-- Follow the steps [here](./deploy_sre_instructions.md#clubs-create-sre-dns-zone) to deploy a DNS zone for this SRE.
-
 
 ## :computer: Deploy and Configure VM
 On your **deployment machine**.
@@ -94,9 +97,11 @@ On your **deployment machine**.
 - The CoCalc container is large and pulling it may take some time (~20 minutes).
 - To add, or disable user accounts, edit the users file and re-run `./Setup_SRE_Tier1.ps1 -usersYAMLPath <YAML file>`.
 
+
 ## :lock: Apply Network Configuration
 - Follow the steps [here](./deploy_sre_instructions.md#lock-apply-network-configuration) to apply the network configuration.
 - This may be used to restrict SSH access to particular IP addresses.
+
 
 ## :floppy_disk: Uploading Data
 - `./Setup_SRE_Tier1.ps1` creates a storage account named `sre<SRE id>ingress<random string>` where `<SRE id>` is the SRE ID in lower case and `<random string>` is a random set of lower case characters unique to the SRE.
