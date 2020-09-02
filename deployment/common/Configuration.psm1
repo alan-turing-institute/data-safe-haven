@@ -116,6 +116,16 @@ function Add-SreConfig {
             accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
             rg = $storageRg
         }
+        data = [ordered]@{
+            ingress = [ordered]@{
+                accountName   = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+                containerName = "ingress"
+            }
+            egress = [ordered]@{
+                accountName   = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+                containerName = "ingress"
+            }
+        }
     }
 
     # Secrets config

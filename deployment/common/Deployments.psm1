@@ -399,6 +399,17 @@ function Deploy-KeyVault {
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
     $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($null -eq $keyVault) {
+        # Purge any existing soft-deleted key vault
+        if (Get-AzKeyVault -VaultName $Name -Location $Location -InRemovedState) {
+            Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name'"
+            Remove-AzKeyVault -VaultName $Name -Location $Location -InRemovedState -Force | Out-Null
+            if ($?) {
+                Add-LogMessage -Level Success "Purged key vault '$Name'"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to purge key vault '$Name'!"
+            }
+        }
+        # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
         $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
         if ($?) {
@@ -736,8 +747,8 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
-# Create storage container if it does not exist
-# ------------------------------------------
+# Create storage share if it does not exist
+# -----------------------------------------
 function Deploy-StorageShare {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
@@ -745,18 +756,18 @@ function Deploy-StorageShare {
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
         $StorageAccount
     )
-    Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
+    Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
     $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
         if ($?) {
-            Add-LogMessage -Level Success "Created storage container"
+            Add-LogMessage -Level Success "Created storage share"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+            Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
     } else {
-        Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+        Add-LogMessage -Level InfoSuccess "Storage share '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
     }
     return $storageShare
 }

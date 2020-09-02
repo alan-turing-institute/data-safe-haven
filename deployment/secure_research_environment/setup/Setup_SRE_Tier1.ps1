@@ -103,44 +103,46 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
+# Ensure that the storage resource group exists
+# ---------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+
+
 # Deploy a storage account for data ingress
 # -----------------------------------------
-$sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
-$ingressStorgageName = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
-$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
-$ingressdataStorage = Deploy-StorageAccount -Name $ingressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$share = Deploy-StorageShare -Name "ingress" -StorageAccount $ingressdataStorage
-$ingressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $ingressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
+$ingressdataStorage = Deploy-StorageAccount -Name $config.sre.storage.data.ingress.accountName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$null = Deploy-StorageShare -Name $config.sre.storage.data.ingress.containerName -StorageAccount $ingressdataStorage
+$ingressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.storage.data.ingress.accountName | Where-Object {$_.KeyName -eq "key1"}).Value
 
 
 # Deploy a storage account for data egress
 # ----------------------------------------
-$egressStorgageName = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
-$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
-$egressdataStorage = Deploy-StorageAccount -Name $egressStorgageName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$share = Deploy-StorageShare -Name "egress" -StorageAccount $egressdataStorage
-$egressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $egressStorgageName | Where-Object {$_.KeyName -eq "key1"}).Value
+$egressdataStorage = Deploy-StorageAccount -Name $config.sre.storage.data.egress.accountName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
+$null = Deploy-StorageShare -Name $config.sre.storage.data.egress.containerName -StorageAccount $egressdataStorage
+$egressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.storage.data.egress.accountName | Where-Object {$_.KeyName -eq "key1"}).Value
+
+
+# Ensure that the DSVM resource group exists
+# ------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
-$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $ingressStorgageName)
-$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-password>", $ingressSharePassword)
-$cloudInitYaml = $cloudInitYaml.Replace("<egress-share-username>", $egressStorgageName)
-$cloudInitYaml = $cloudInitYaml.Replace("<egress-share-password>", $egressSharePassword)
+$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.storage.data.ingress.accountName).
+                                Replace("<ingress-share-password>", $ingressSharePassword).
+                                Replace("<ingress-container-name>", $config.sre.storage.data.ingress.containerName).
+                                Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
+                                Replace("<egress-share-password>", $egressSharePassword).
+                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName)
 
 
-# Create empty disk
-# -----------------
-$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
-$dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-
-
-# Deploy NIC and get public IP
-# ----------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
-$vmPublicIpAddress = (Get-AzPublicIpAddress -Name "$vmName-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
+# Deploy data disk, NIC and public IP
+# -----------------------------------
+$dataDisk = Deploy-ManagedDisk -Name "${vmName}-DATA-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "${vmName}-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -Location $config.sre.location -PublicIpAddressAllocation Static
+$vmPublicIpAddress = (Get-AzPublicIpAddress -Name "${vmName}-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
 
 
 # Ensure that SSH keys exist in the key vault
@@ -173,15 +175,20 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         Add-LogMessage -Level Info "[ ] Generating SSH key pair for use by Ansible..."
         ssh-keygen -m PEM -t rsa -b 4096 -f "${vmName}.pem" -q -N '""'  # NB. we need the nested quotes here to stop Powershell expanding the empty string to nothing
         if ($?) {
-            Add-LogMessage -Level Success "Created new SSH key pair"
+            Add-LogMessage -Level Success "Created new Ansible SSH key pair"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create new SSH key pair!"
+            Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
         # Upload keys to key vault
-        $sshPublicKey = Get-Content "$($vmName).pem.pub" -Raw
-        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $sshPublicKey
-        $sshPrivateKey = Get-Content "$($vmName).pem" -Raw
-        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $sshPrivateKey
+        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw)
+        $success = $?
+        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw)
+        $success = $success -and $?
+        if ($success) {
+            Add-LogMessage -Level Success "Uploaded Ansible SSH keys to '$keyVault'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to upload Ansible SSH keys to '$keyVault'!"
+        }
     } finally {
         # Delete the SSH key files
         Remove-Item "${vmName}.pem*" -Force -ErrorAction SilentlyContinue
