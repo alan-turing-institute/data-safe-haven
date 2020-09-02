@@ -13,24 +13,30 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$context = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
-$rgFilter = "RG_SHM_$($config.id)*"
+
+# Create logging resource group if it does not exist
+# --------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.logging.rg -Location $config.location
+
 
 # Get Log Analytics Workspace details
 # -----------------------------------
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 
+
 # Ensure logging is active on all SHM VMs
 # ---------------------------------------
+$rgFilter = "RG_SHM_$($config.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-foreach($rg in $shmResourceGroups) {
-$rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
-    foreach($vm in $rgVms) {
+foreach ($shmResourceGroup in $shmResourceGroups) {
+    foreach($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
         $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
+
 
 # Ensure required Windows event logs are collected
 # ------------------------------------------------
@@ -46,24 +52,21 @@ $eventLogNames = @(
 )
 
 foreach ($eventLogName in $eventLogNames) {
-    $sourceName = "windows-event-$eventLogName".
-        Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource `
-        -ResourceGroupName $config.logging.rg `
-        -WorkspaceName $config.logging.workspaceName `
-        -Name $sourceName
-    if($source) {  
-        Add-LogMessage -Level InfoSuccess "Logging already active for '$eventLogName'."  
+    $sourceName = "windows-event-$eventLogName".Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
+    $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
+                                                  -ResourceGroupName $config.logging.rg `
+                                                  -WorkspaceName $config.logging.workspaceName
+    if ($source) {
+        Add-LogMessage -Level InfoSuccess "Logging already active for '$eventLogName'."
     } else {
-        $null = New-AzOperationalInsightsWindowsEventDataSource `
-            -ResourceGroupName $config.logging.rg `
-            -WorkspaceName $config.logging.workspaceName `
-            -Name $sourceName `
-            -EventLogName $eventLogName `
-            -CollectErrors `
-            -CollectWarnings `
-            -CollectInformation
-        if($?) {
+        $null = New-AzOperationalInsightsWindowsEventDataSource -Name $sourceName `
+                                                                -ResourceGroupName $config.logging.rg `
+                                                                -WorkspaceName $config.logging.workspaceName `
+                                                                -EventLogName $eventLogName `
+                                                                -CollectErrors `
+                                                                -CollectWarnings `
+                                                                -CollectInformation
+        if ($?) {
             Add-LogMessage -Level Success "Logging activated for '$eventLogName'."
         } else {
             Add-LogMessage -Level Fatal "Failed to activate logging for '$eventLogName'!"
@@ -90,24 +93,21 @@ $counters = @(
     @{setName = "System"; counterName = "Processor Queue Length"}
 )
 foreach ($counter in $counters) {
-    $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".
-        Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource `
-        -ResourceGroupName $config.logging.rg `
-        -WorkspaceName $config.logging.workspaceName `
-        -Name $sourceName
-    if($source) {
+    $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
+    $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
+                                                  -ResourceGroupName $config.logging.rg `
+                                                  -WorkspaceName $config.logging.workspaceName
+    if ($source) {
         Add-LogMessage -Level InfoSuccess "Logging already active for '$($counter.setName)/$($counter.counterName)'"
     } else {
-        $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
-            -ResourceGroupName $config.logging.rg `
-            -WorkspaceName $config.logging.workspaceName `
-            -ObjectName $counter.setName `
-            -InstanceName "*" `
-            -CounterName $counter.counterName `
-            -IntervalSeconds 60 `
-            -Name $sourceName
-        if($?) {
+        $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource -Name $sourceName `
+                                                                             -ResourceGroupName $config.logging.rg `
+                                                                             -WorkspaceName $config.logging.workspaceName `
+                                                                             -ObjectName $counter.setName `
+                                                                             -InstanceName "*" `
+                                                                             -CounterName $counter.counterName `
+                                                                             -IntervalSeconds 60
+        if ($?) {
             Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
         } else {
             Add-LogMessage -Level Fatal "Failed to activate logging for '$($counter.setName)/$($counter.counterName)'!"
@@ -138,17 +138,15 @@ $packNames = @(
     "WinLog"
 )
 foreach ($packName in $packNames) {
-    $pack = Get-AzOperationalInsightsIntelligencePack `
-        -WorkspaceName $config.logging.workspaceName `
-        -ResourceGroupName $config.logging.rg | Where-Object { $_.Name -eq $packName }
-    if($pack.Enabled) {
+    $pack = Get-AzOperationalInsightsIntelligencePack -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg | Where-Object { $_.Name -eq $packName }
+    if ($pack.Enabled) {
         Add-LogMessage -Level InfoSuccess "'$packName' Intelligence Pack already enabled."
     } else {
-        $pack = Set-AzOperationalInsightsIntelligencePack `
-            -WorkspaceName $config.logging.workspaceName `
-            -ResourceGroupName $config.logging.rg `
-            -IntelligencePackName $packName -Enabled $true
-        if($?) {
+        $pack = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $packName `
+                                                          -WorkspaceName $config.logging.workspaceName `
+                                                          -ResourceGroupName $config.logging.rg `
+                                                          -Enabled $true
+        if ($?) {
             Add-LogMessage -Level Success "'$packName' Intelligence Pack enabled."
         } else {
             Add-LogMessage -Level Fatal "Failed to enable '$packName' Intelligence Pack!"
