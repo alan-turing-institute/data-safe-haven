@@ -184,6 +184,8 @@ function Deploy-DNSRecords {
         $ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
         $ZoneName,
+        [Parameter(Mandatory = $true, HelpMessage = "Public IP address for this record to point to")]
+        $PublicIpAddress,
         [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
         $RecordNameA = "@",
         [Parameter(Mandatory = $false, HelpMessage = "Name of 'CNAME' record (if none is provided then no CNAME redirect will be set up)")]
@@ -197,9 +199,9 @@ function Deploy-DNSRecords {
         $null = Set-AzContext -Subscription $SubscriptionName
 
         # Set the A record
-        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$rdsGatewayPublicIp' for DNS zone ($ZoneName)"
-        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Force
-        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone ($ZoneName)"
+        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $PublicIpAddress)
         if ($?) {
             Add-LogMessage -Level Success "Successfully set 'A' record"
         } else {
@@ -208,7 +210,7 @@ function Deploy-DNSRecords {
         # Set the CNAME record
         if ($RecordNameCName) {
             Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone ($ZoneName)"
-            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Force
+            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
             $null = New-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName)
             if ($?) {
                 Add-LogMessage -Level Success "Successfully set 'CNAME' record"

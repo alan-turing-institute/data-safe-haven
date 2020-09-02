@@ -29,3 +29,8 @@ write_files:
     content: |
       username=<egress-share-username>
       password=<egress-share-password>
+
+runcmd:
+  - echo ">=== Setting hostname in /etc/hostname... ===<"
+  - hostnamectl set-hostname <vm-fqdn>
+  - cat /etc/hostname

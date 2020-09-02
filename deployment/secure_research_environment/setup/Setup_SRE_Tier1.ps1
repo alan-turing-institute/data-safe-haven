@@ -21,18 +21,14 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Get absolute path of users file
+# Get absolute path to users file
 # -------------------------------
 if ($usersYAMLPath) { $usersYAMLPath = (Resolve-Path -Path $usersYAMLPath).Path }
 
 
-# Get VM size
-# -----------
+# Get VM size and name
+# --------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
-
-
-# Generate VM name
-# ----------------
 $vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".ToUpper()
 
 
@@ -135,7 +131,8 @@ $cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.
                                 Replace("<ingress-container-name>", $config.sre.storage.data.ingress.containerName).
                                 Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
                                 Replace("<egress-share-password>", $egressSharePassword).
-                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName)
+                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName).
+                                Replace("<vm-fqdn>", $config.sre.domain.fqdn)
 
 
 # Deploy data disk, NIC and public IP
@@ -268,13 +265,16 @@ try {
     # -----------------
     if ($usersYAMLPath) {
         Add-LogMessage -Level Info "Generating QR codes"
-        python generate_qr_codes.py
+        python $(Join-Path $PSScriptRoot ".." "ansible" "scripts" "generate_qr_codes.py") `
+               --totp-hashes (Join-Path $PSScriptRoot "totp_hashes.txt") `
+               --qr-codes (Join-Path $HOME "qrcodes") `
+               --host-name $config.shm.dns.rg
+        Add-LogMessage -Level Warning "You will need to send each of the $HOME/qrcodes/<name>.png QR codes to the appropriate user in order for them to initialise their MFA"
     }
 
 
 } finally {
     # Remove temporary files
-    # ----------------------
     @("users.yaml", "${privateKeySecretName}.key", "totp_hashes.txt") | ForEach-Object { Remove-Item $_ -Force -ErrorAction SilentlyContinue }
 }
 
@@ -282,7 +282,7 @@ try {
 # Add DNS records for tier-1 VM
 # -----------------------------
 Add-LogMessage -Level Info "Adding DNS record for SSH connection"
-$null = Deploy-DNSRecords -SubscriptionName $config.shm.dns.subscriptionName -ResourceGroupName $config.shm.dns.rg -ZoneName $config.sre.domain.fqdn
+$null = Deploy-DNSRecords -SubscriptionName $config.shm.dns.subscriptionName -ResourceGroupName $config.shm.dns.rg -ZoneName $config.sre.domain.fqdn -PublicIpAddress $vmPublicIpAddress
 
 
 # Give connection information
@@ -290,9 +290,9 @@ $null = Deploy-DNSRecords -SubscriptionName $config.shm.dns.subscriptionName -Re
 Add-LogMessage -Level Info -Message `
 @"
 To connect to this VM please do the following:
-  ssh <username>@${vmPublicIpAddress} -L<local-port>:localhost:<remote-port>
+  ssh <username>@$($config.sre.domain.fqdn) -L<local-port>:localhost:<remote-port>
 For example, to use CoCalc on port 443 you could do the following
-  ssh <username>@${vmPublicIpAddress} -L8443:localhost:443
+  ssh <username>@$($config.sre.domain.fqdn) -L8443:localhost:443
 You can then open a browser locally and go to https://localhost:8443
 "@
 
