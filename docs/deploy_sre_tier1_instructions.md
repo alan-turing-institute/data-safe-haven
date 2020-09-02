@@ -98,6 +98,10 @@ On your **deployment machine**.
 - To add, or disable user accounts, edit the users file and re-run `./Setup_SRE_Tier1.ps1 -usersYAMLPath <YAML file>`.
 
 
+## :closed_lock_with_key: Generate SSL certificate
+- Follow the steps [here](./deploy_sre_instructions.md#closed_lock_with_key-update-ssl-certificate) to generate an SSL certificate for the SRE domain
+
+
 ## :lock: Apply Network Configuration
 - Follow the steps [here](./deploy_sre_instructions.md#lock-apply-network-configuration) to apply the network configuration.
 - This may be used to restrict SSH access to particular IP addresses.
