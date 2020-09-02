@@ -13,21 +13,21 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$context = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-$rgFilter = "RG_SRE_$($config.sre.id)*"
 
 # Get Log Analytics Workspace details
 # -----------------------------------
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
 
+
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
+$rgFilter = "RG_SRE_$($config.sre.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
-foreach($rg in $shmResourceGroups) {
-    $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
-    foreach($vm in $rgVms) {
+foreach ($shmResourceGroup in $shmResourceGroups) {
+    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
         $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
