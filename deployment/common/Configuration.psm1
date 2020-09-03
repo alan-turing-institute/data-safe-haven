@@ -366,7 +366,7 @@ function Add-SreConfig {
         vmSizeDefault = "Standard_D2s_v3"
         disks = [ordered]@{
             home = [ordered]@{
-                sizeGb = "128"
+                sizeGb = "1024"
                 type = "Standard_LRS"
             }
             os = [ordered]@{
@@ -374,7 +374,7 @@ function Add-SreConfig {
                 type = "Standard_LRS"
             }
             scratch = [ordered]@{
-                sizeGb = "512"
+                sizeGb = "1024"
                 type = "Standard_LRS"
             }
         }
@@ -789,12 +789,12 @@ function Get-ShmFullConfig {
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 8191 }
-            tier3 = [ordered]@{ diskSize = 511 }
+            tier2 = [ordered]@{ diskSize = 8192 }
+            tier3 = [ordered]@{ diskSize = 512 }
         }
         cran = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 127 }
-            tier3 = [ordered]@{ diskSize = 31 }
+            tier2 = [ordered]@{ diskSize = 128 }
+            tier3 = [ordered]@{ diskSize = 32 }
         }
     }
     # Set password secret name and IP address for each mirror

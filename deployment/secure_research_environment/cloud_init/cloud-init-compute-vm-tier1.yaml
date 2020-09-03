@@ -43,6 +43,9 @@ write_files:
               default upgrade;
               '' close;
           }
+          upstream docker-cocalc {
+              server cocalc;
+          }
           server {
               listen 80;
               server_name <vm-fqdn>;
@@ -57,7 +60,7 @@ write_files:
               ssl_certificate_key /etc/nginx/ssl/letsencrypt.key;
               ssl_protocols TLSv1.2 TLSv1.3;
               location / {
-                  proxy_pass http://localhost:443;
+                  proxy_pass https://cocalc;
                   proxy_http_version 1.1;
                   proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection $connection_upgrade;
@@ -70,3 +73,6 @@ runcmd:
   # Set hostname
   - hostnamectl set-hostname <vm-fqdn>
   - cat /etc/hostname
+  # Create subdirectories on the scratch disk
+  - mkdir -p /scratch/projects /scratch/shared
+  - chmod -R ugo+rw /scratch/shared

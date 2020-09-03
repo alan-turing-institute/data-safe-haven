@@ -194,8 +194,22 @@
         definition:
           version: "2"
           services:
+            cocalc:
+              image: sagemathinc/cocalc
+              expose:
+                - 443
+              volumes:
+                - /scratch/projects:/projects
+                - /scratch/shared:/shared
+                - /data:/data
+                - /output:/output
+              restart: always
             nginx:
               image: nginx
+              links:
+                - cocalc:cocalc
+              depends_on:
+                - cocalc
               ports:
                 - 80:80
                 - 443:443
@@ -203,14 +217,6 @@
                 - /opt/nginx/cocalc.conf:/etc/nginx/nginx.conf
                 - /opt/ssl/letsencrypt.cert:/etc/nginx/ssl/letsencrypt.cert:ro
                 - /opt/ssl/letsencrypt.key:/etc/nginx/ssl/letsencrypt.key:ro
-            cocalc:
-              image: sagemathinc/cocalc
-              expose:
-                - "443"
-              volumes:
-                - /scratch:/projects
-                - /data:/data
-                - /output:/output
               restart: always
       register: output
 
@@ -224,7 +230,7 @@
 
     - name: Fetch TOTP hashes
       become: yes
-      shell: sed -E "s/HOTP\/T30\/6\s+([a-z]+)\s+-\s+([0-9a-zA-Z]{30}).*/\1 \2/g" /etc/users.oath
+      shell: sed -E "s|HOTP/T30/6\s+([^[:space:]]+)\s+-\s+([0-9a-fA-F]{30}).*|\1 \2|g" /etc/users.oath
       args:
         warn: false
       when: users != []
