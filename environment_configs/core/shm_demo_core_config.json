@@ -1,0 +1,129 @@
+{
+    "subscriptionName": "Safe Haven Management Test B",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
+    "domain": "demo.dsgroupdev.co.uk",
+    "shmId": "demo",
+    "name": "Turing Development Safe Haven B",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "centralus",
+    "overrides": {
+        "rgPrefix": "RG_SHM",
+        "domain": {
+            "netbiosName": "SAFEHAVENDEMO",
+            "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "linuxServers": {
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "rdsGatewayServers": {
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                }
+            },
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "logging": {
+            "rg": "RG_SHM_DEMO_LOGGING"
+        },
+        "keyVault": {
+            "secretNames": {
+                "domainAdminUsername": "shm-demo-vm-admin-username",
+                "vmAdminUsername": "shm-demo-vm-admin-username"
+            }
+        },
+        "users": {
+            "computerManagers": {
+                "identityServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmdemoadmin",
+                    "passwordSecretName": "shm-demo-domain-admin-password"
+                }
+            },
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-demo-localadsync-password"
+                }
+            }
+        },
+        "dc": {
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-demo-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-demo-nps-admin-password",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "accountName": "shmdemoartifactsnhavsfry"
+            },
+            "bootdiagnostics": {
+                "accountName": "shmdemobootdiagsnhavsfry"
+            }
+        },
+        "mirrors": {
+            "pypi": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-external-tier-3-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier3": {
+                    "diskSize": 31,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-external-tier-3-admin-password"
+                    }
+                }
+            }
+        }
+    }
+}

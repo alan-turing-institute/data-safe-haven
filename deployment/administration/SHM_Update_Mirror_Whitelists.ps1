@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing whitelist files (default: '<repo root>/environment_configs/package_lists')")]
     [string]$whitelistDirectory = $null
@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Common variable names
@@ -29,7 +29,7 @@ if (-Not $whitelistDirectory) { $whitelistDirectory = Join-Path $PSScriptRoot ".
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
     $fullMirrorType = "${mirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-    $whitelistPath = Join-Path $whitelistDirectory "whitelist-core-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
+    $whitelistPath = Join-Path $whitelistDirectory "whitelist-full-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
     $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Failure "Could not find whitelist at '$whitelistPath'"
@@ -63,4 +63,4 @@ foreach ($mirrorType in $mirrorTypes) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

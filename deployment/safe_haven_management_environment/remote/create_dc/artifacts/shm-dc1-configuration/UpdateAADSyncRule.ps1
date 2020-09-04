@@ -26,16 +26,16 @@ foreach ($flow in ($defaultRule.AttributeFlowMappings | Where-Object { $_.Destin
     }
     if ($flow.Source) { $params["Source"] = $flow.Source }
     if ($flow.Expression) { $params["Expression"] = $flow.Expression }
-    $_ = Add-ADSyncAttributeFlowMapping -SynchronizationRule $newRule @params
+    $null = Add-ADSyncAttributeFlowMapping -SynchronizationRule $newRule @params
 }
 
 # Set the usage location flow mapping manually
-$_ = Add-ADSyncAttributeFlowMapping -SynchronizationRule $newRule -Source @('c') -Destination 'usageLocation' -FlowType 'Direct' -ValueMergeType 'Update'
+$null = Add-ADSyncAttributeFlowMapping -SynchronizationRule $newRule -Source @('c') -Destination 'usageLocation' -FlowType 'Direct' -ValueMergeType 'Update'
 
 # Add appropriate scope and join conditions
 $newRule.JoinFilter = $defaultRule.JoinFilter
 $newRule.ScopeFilter = $defaultRule.ScopeFilter
 
 # Remove the old rule and add the new one
-$_ = Remove-ADSyncRule -SynchronizationRule $defaultRule
+$null = Remove-ADSyncRule -SynchronizationRule $defaultRule
 Add-ADSyncRule -SynchronizationRule $newRule

@@ -1,10 +1,13 @@
 {
-    "subscriptionName": "Research Engineering",
-    "domainSubscriptionName": "[Prod] Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "subscriptionName": "Martin OReilly",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "mortest.dsgroupdev.co.uk",
-    "netbiosName": "MORTEST",
     "shmId": "mortest",
     "name": "Turing Development Safe Haven MORTEST",
     "organisation": {
@@ -13,6 +16,5 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "centralus",
-    "ipPrefix": "10.0.0"
+    "location": "uksouth"
 }

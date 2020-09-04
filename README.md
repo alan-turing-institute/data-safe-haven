@@ -22,7 +22,9 @@ To get a good overview of the Safe Haven, see the resources below.
 
   - [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
 
-  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from a presentation about the Safe Haven giving a more in-depth overview.
+  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from our standard presentation about the Safe Haven giving a more in-depth overview.
+  
+  - [Overview video](https://youtu.be/uAGhnAnxtvo): An extended version of our overview presentation that also demonstrates our data classification web application and using the environment as a researcher.
 
   - [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
 
@@ -30,6 +32,13 @@ To get a good overview of the Safe Haven, see the resources below.
 ## Documentation
 
 For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](/docs/README.md).
+
+
+## Releases
+
+View our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest) to get started. You can also browse [all our releases](https://github.com/alan-turing-institute/data-safe-haven/releases). Follow the link from any release to view and clone this repository as at that release.
+
+Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
 
 
 ## Contributing
@@ -43,6 +52,6 @@ We welcome contributions from anyone who is interested in the project. There are
 
 We are grateful for the following support for this project:
 
-  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1))
-  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1))
-  - Microsoft's generous donation of [$5 million in Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute
+  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
+  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
+  - Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.

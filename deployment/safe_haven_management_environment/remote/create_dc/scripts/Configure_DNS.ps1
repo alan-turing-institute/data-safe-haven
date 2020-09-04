@@ -11,10 +11,10 @@ param(
 )
 
 # Use Microsoft Azure DNS server for resolving external addresses
-Write-Host "Forward external DNS requests to Microsoft Azure DNS server..."
+Write-Output "Forward external DNS requests to Microsoft Azure DNS server..."
 Add-DnsServerForwarder -IPAddress "$externalDnsResolver" -PassThru
 if ($?) {
-    Write-Host " [o] Successfully created/updated DNS forwarding"
+    Write-Output " [o] Successfully created/updated DNS forwarding"
 } else {
-    Write-Host " [x] Failed to create/update DNS forwarding!"
+    Write-Output " [x] Failed to create/update DNS forwarding!"
 }

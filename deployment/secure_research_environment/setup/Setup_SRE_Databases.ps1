@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId
 )
 
 Import-Module Az
@@ -12,28 +12,14 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $sreId
+$config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
-
-
-# Retrieve passwords from the keyvaults
-# -------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
-$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
-
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dataServerAdminPassword
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$sqlAuthUpdateUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUserPassword
-$sqlAuthUpdateUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Create database resource group if it does not exist
 # ---------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
-
+$null = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
 
 # Ensure that VNet exists
 # -----------------------
@@ -42,12 +28,11 @@ $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -Reso
 
 # Create each database defined in the config file
 # -----------------------------------------------
-foreach ($dbConfig in $config.sre.databases.psobject.Members) {
-    if ($dbConfig.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    $databaseCfg = $dbConfig.Value
-    $subnetCfg = $config.sre.network.subnets.($databaseCfg.subnet)
-    $nsgCfg = $config.sre.network.nsg.($subnetCfg.nsg)
-
+foreach ($dbConfigName in $config.sre.databases.Keys) {
+    if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
+    $databaseCfg = $config.sre.databases[$dbConfigName]
+    $subnetCfg = $config.sre.network.vnet.subnets[$databaseCfg.subnet]
+    $nsgCfg = $config.sre.network.nsg[$subnetCfg.nsg]
 
     # Ensure that subnet exists
     # -------------------------
@@ -61,101 +46,216 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                  -Name "InboundAllowVNet" `
                                  -Description "Inbound allow SRE VNet" `
                                  -Priority 3000 `
-                                 -Direction Inbound -Access Allow -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                                 -DestinationAddressPrefix $subnetCfg.cidr -DestinationPortRange *
+                                 -Direction Inbound `
+                                 -Access Allow -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix $subnetCfg.cidr `
+                                 -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "InboundDenyAll" `
                                  -Description "Inbound deny all" `
                                  -Priority 4000 `
-                                 -Direction Inbound -Access Deny -Protocol * `
-                                 -SourceAddressPrefix * -SourcePortRange * `
-                                 -DestinationAddressPrefix * -DestinationPortRange *
+                                 -Direction Inbound `
+                                 -Access Deny -Protocol * `
+                                 -SourceAddressPrefix * `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix * `
+                                 -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "OutboundDenyInternet" `
                                  -Description "Outbound deny internet" `
                                  -Priority 4000 `
-                                 -Direction Outbound -Access Deny -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                                 -DestinationAddressPrefix Internet -DestinationPortRange *
+                                 -Direction Outbound `
+                                 -Access Deny -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix Internet `
+                                 -DestinationPortRange *
 
-
-    # Lockdown SQL server
-    # -------------------
-    $_ = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
+    # Attach the NSG to the appropriate subnet
+    # ----------------------------------------
+    $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
 
 
     try {
         # Temporarily allow outbound internet during deployment
         # -----------------------------------------------------
-        $privateIpAddress = "$($subnetCfg.prefix).$($databaseCfg.ipLastOctet)"
+        Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($databaseCfg.ip)..."
         Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                      -Name "OutboundAllowInternetTemporary" `
                                      -Description "Outbound allow internet" `
                                      -Priority 100 `
-                                     -Direction Outbound -Access Allow -Protocol * `
-                                     -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
-                                     -DestinationAddressPrefix Internet -DestinationPortRange *
+                                     -Direction Outbound `
+                                     -Access Allow -Protocol * `
+                                     -SourceAddressPrefix $databaseCfg.ip `
+                                     -SourcePortRange * `
+                                     -DestinationAddressPrefix Internet `
+                                     -DestinationPortRange *
 
+        # Retrieve common secrets from key vaults
+        # ---------------------------------------
+        Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+        $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPasswordSecretName -DefaultLength 20
+        $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.dataServers.passwordSecretName -DefaultLength 20
+        $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+        $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20
 
-        # Create SQL server from template
-        # -------------------------------
-        Add-LogMessage -Level Info "Creating $($databaseCfg.name) from template..."
-        $params = @{
-            Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-            Administrator_User = $sreAdminUsername
-            BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-            Data_Disk_Size = $databaseCfg.datadisk.size_gb
-            Data_Disk_Type = $databaseCfg.datadisk.type
-            DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
-            DC_Join_User = $shmDcAdminUsername
-            Domain_Name = $config.shm.domain.fqdn
-            IP_Address = $privateIpAddress
-            Location = $config.sre.location
-            OS_Disk_Size = $databaseCfg.osdisk.size_gb
-            OS_Disk_Type = $databaseCfg.osdisk.type
-            Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
-            Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
-            Sql_Connection_Port = $databaseCfg.port
-            Sql_Server_Name = $databaseCfg.name
-            Sql_Server_Edition = $databaseCfg.sku
-            SubnetResourceId = $subnet.Id
-            VM_Size = $databaseCfg.vmSize
+        # Deploy an SQL server
+        # --------------------
+        if ($databaseCfg.type -eq "MSSQL") {
+            # Retrieve secrets from key vaults
+            Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
+            Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+            $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsernameSecretName -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
+
+            # Create SQL server from template
+            Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
+            $params = @{
+                Administrator_Password       = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+                Administrator_User           = $vmAdminUsername
+                BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
+                Data_Disk_Size               = $databaseCfg.disks.data.sizeGb
+                Data_Disk_Type               = $databaseCfg.disks.data.type
+                Db_Admin_Password            = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
+                Db_Admin_Username            = $dbAdminUsername
+                Domain_Join_Password         = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+                Domain_Join_Username         = $config.shm.users.computerManagers.dataServers.samAccountName
+                Domain_Name                  = $config.shm.domain.fqdn
+                IP_Address                   = $databaseCfg.ip
+                OU_Path                      = $config.shm.domain.ous.dataServers.path
+                OS_Disk_Size                 = $databaseCfg.disks.os.sizeGb
+                OS_Disk_Type                 = $databaseCfg.disks.os.type
+                Sql_Connection_Port          = $databaseCfg.port
+                Sql_Server_Name              = $databaseCfg.vmName
+                Sql_Server_Edition           = $databaseCfg.sku
+                SubnetResourceId             = $subnet.Id
+                VM_Size                      = $databaseCfg.vmSize
+            }
+            Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
+
+            # Set locale, install updates and reboot
+            Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."  # NB. this takes around 20 minutes due to a large SQL server update
+            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
+
+            # Lockdown SQL server
+            Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
+            $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
+            $params = @{
+                DataAdminGroup           = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)`""
+                DbAdminPassword          = $dbAdminPassword
+                DbAdminUsername          = $dbAdminUsername
+                EnableSSIS               = $databaseCfg.enableSSIS
+                ResearchUsersGroup       = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)`""
+                ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
+                SysAdminGroup            = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)`""
+                VmAdminUsername          = $vmAdminUsername
+            }
+            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
+            $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
+            Write-Output $result.Value
+
+        # Deploy a PostgreSQL server
+        # --------------------------
+        } elseif ($databaseCfg.type -eq "PostgreSQL") {
+            # Create PostgreSQL server from template
+            Add-LogMessage -Level Info "Preparing to create PostgreSQL database $($databaseCfg.vmName)..."
+
+            # Retrieve secrets from key vaults
+            Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+            $dbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
+            $dbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
+            $dbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
+            $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
+
+            # Create an AD service principal and get the keytab for it
+            Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
+            $null = Set-AzContext -Subscription $config.shm.subscriptionName
+            $params = @{
+                Hostname       = "`"$($databaseCfg.vmName)`""
+                Name           = "`"$($dbServiceAccountName)`""
+                SamAccountName = "`"$($dbServiceAccountSamAccountName)`""
+                ShmFqdn        = "`"$($config.shm.domain.fqdn)`""
+            }
+            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
+            $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+            Write-Output $result.Value
+            $null = Set-AzContext -Subscription $config.sre.subscriptionName
+
+            # Deploy NIC and data disks
+            $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+            $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.vmName)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $databaseCfg.ip -Location $config.sre.location
+            $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.vmName)-DATA-DISK" -SizeGB $databaseCfg.disks.data.sizeGb -Type $databaseCfg.disks.data.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
+
+            # Construct the cloud-init file
+            Add-LogMessage -Level Info "Constructing cloud-init from template..."
+            $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
+
+            # Insert scripts into the cloud-init file
+            $resourcePaths = @()
+            $resourcePaths += @("krb5.conf") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+            $resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
+            foreach ($resourcePath in $resourcePaths) {
+                $resourceFileName = $resourcePath | Split-Path -Leaf
+                $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<${resourceFileName}>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+                $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+                $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<${resourceFileName}>", $indentedContent)
+            }
+
+            # Expand placeholders in the cloud-init file
+            $cloudInitTemplate = $cloudInitTemplate.
+                Replace("<client-cidr>", $config.sre.network.vnet.subnets.data.cidr).
+                Replace("<db-admin-password>", $dbAdminPassword).
+                Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
+                Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
+                Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
+                Replace("<domain-join-username>", $config.shm.users.computerManagers.dataServers.samAccountName).
+                Replace("<domain-join-password>", $domainJoinPassword).
+                Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
+                Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
+                Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
+                Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
+                Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
+                Replace("<ldap-search-user-password>", $ldapSearchPassword).
+                Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+                Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+                Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
+                Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
+                Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
+                Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
+                Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+                Replace("<vm-hostname>", $databaseCfg.vmName).
+                Replace("<vm-ipaddress>", $databaseCfg.ip)
+
+            # Deploy the VM
+            $params = @{
+                AdminPassword          = $vmAdminPassword
+                AdminUsername          = $vmAdminUsername
+                BootDiagnosticsAccount = $bootDiagnosticsAccount
+                CloudInitYaml          = $cloudInitTemplate
+                DataDiskIds            = @($dataDisk.Id)
+                ImageSku               = $databaseCfg.sku
+                Location               = $config.sre.location
+                Name                   = $databaseCfg.vmName
+                NicId                  = $vmNic.Id
+                OsDiskType             = $databaseCfg.disks.os.type
+                ResourceGroupName      = $config.sre.databases.rg
+                Size                   = $databaseCfg.vmSize
+            }
+            $null = Deploy-UbuntuVirtualMachine @params
+            Enable-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
         }
-        Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 
-
-        # Set locale, install updates and reboot
-        # --------------------------------------
-        Add-LogMessage -Level Info "Updating $($databaseCfg.name)..."  # NB. this takes around 20 minutes due to a large SQL server update
-        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
-
-
-        # Lockdown SQL server
-        # -------------------
-        Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.name)..."
-        $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
-        $params = @{
-            EnableSSIS = $databaseCfg.enableSSIS
-            LocalAdminUser = $sreAdminUsername
-            ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-            SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.sqlAdmins.name)"
-            SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
-            SqlAuthUpdateUsername = $sqlAuthUpdateUsername
-            SreResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
-        }
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -Parameter $params
-        Write-Output $result.Value
 
     } finally {
         # Remove temporary NSG rules
-        $_ = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
-        $_ = $nsg | Set-AzNetworkSecurityGroup
+        Add-LogMessage -Level Info "Removing temporary outbound internet access from $($databaseCfg.ip)..."
+        $null = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
+        $null = $nsg | Set-AzNetworkSecurityGroup
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

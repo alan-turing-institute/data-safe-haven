@@ -1,0 +1,191 @@
+{
+    "routes": [
+        {
+            "name": "ViaFirewall",
+            "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHop": "<shm-firewall-private-ip>"
+            }
+        },
+        {
+            "name": "ViaVpn",
+            "properties": {
+                "addressPrefix": "<subnet-vpn-cidr>",
+                "nextHop": "VirtualNetworkGateway"
+            }
+        }
+    ],
+    "networkRuleCollections": [],
+    "applicationRuleCollections": [
+        {
+            "name": "shm-<shm-id>-allow",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "AllowWindowsUpdate",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "windowsupdate.microsoft.com",
+                            "*.windowsupdate.microsoft.com",
+                            "*.windowsupdate.microsoft.com",
+                            "*.update.microsoft.com",
+                            "*.update.microsoft.com",
+                            "*.windowsupdate.com",
+                            "download.windowsupdate.com",
+                            "download.microsoft.com",
+                            "*.download.windowsupdate.com",
+                            "test.stats.update.microsoft.com",
+                            "ntservicepack.microsoft.com",
+                            "settings-win.data.microsoft.com",
+                            "v10.events.data.microsoft.com",
+                            "v10c.events.data.microsoft.com",
+                            "v10.vortex-win.data.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowCertificateStatusCheck",
+                        "protocols": [
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ocsp.digicert.com",
+                            "crl3.digicert.com",
+                            "crl4.digicert.com",
+                            "crl.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowLogAnalytics",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<logging-workspace-id>.ods.opinsights.azure.com",
+                            "<logging-workspace-id>.oms.opinsights.azure.com",
+                            "<logging-workspace-id>.blob.core.windows.net",
+                            "<logging-workspace-id>.azure-automation.net"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADLogin",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "login.microsoftonline.com",
+                            "secure.aadcdn.microsoftonline-p.com",
+                            "login.windows.net",
+                            "aadcdn.msftauth.net",
+                            "login.live.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureMFAConnectOperations",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "pfd.phonefactor.net",
+                            "pfd2.phonefactor.net",
+                            "css.phonefactor.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowADConnectOperations",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "adminwebservice.microsoftonline.com",
+                            "passwordreset.microsoftonline.com",
+                            "adnotifications.windowsazure.com",
+                            "*.blob.core.windows.net",
+                            "*.servicebus.windows.net",
+                            "*.events.data.microsoft.com",
+                            "*.aadconnecthealth.azure.com",
+                            "*.adhybridhealth.azure.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowMSOnlinePSModule",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "provisioningapi.microsoftonline.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowADConnectSetup",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "management.azure.com",
+                            "*.adhybridhealth.azure.com",
+                            "www.office.com",
+                            "policykeyservice.dc.ad.msft.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADLoginForADConnectAndMFAConnectSetup",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "login.microsoftonline.com",
+                            "secure.aadcdn.microsoftonline-p.com",
+                            "login.windows.net",
+                            "aadcdn.msftauth.net",
+                            "login.live.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "natRuleCollections": []
+}

@@ -1,13 +1,14 @@
 {
     "subscriptionName": "[Prod] Turing SRE – Sandbox",
-    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "sandbox",
     "shmId": "turing1",
     "tier": "2",
     "domain": "sandbox.turingsafehaven.ac.uk",
-    "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",
-    "rdsAllowedSources": "Internet",
+    "inboundAccessFrom": "anywhere",
+    "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.2.2020050300"
+    "computeVmImageVersion": "0.3.2020081900",
+    "databases": ["MSSQL", "PostgreSQL"]
 }

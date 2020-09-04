@@ -15,18 +15,18 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Setup boot diagnostics resource group and storage account
 # ---------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
-$_ = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
+$null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
 # Setup artifacts resource group and storage account
 # --------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
 
@@ -34,7 +34,7 @@ $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountN
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
 foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
-    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
+    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # # Create file storage shares
@@ -51,9 +51,9 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
 # Upload DSC scripts
 Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
-$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
+$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
+$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
@@ -62,25 +62,21 @@ if ($success) {
 }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "CreateUsers.ps1") -Force
-$success = $success -and $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "GPOs.zip") -Force
-$success = $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Run_ADSync.ps1") -Force
-$success = $success -and $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "StartMenuLayoutModification.xml") -Force
-$success = $success -and $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "UpdateAADSyncRule.ps1") -Force
-$success = $success -and $?
-# Expand the AD disconnection template before uploading
-$adScriptLocalFilePath = (New-TemporaryFile).FullName
-$adScriptTemplate = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw
-$adScriptTemplate.Replace('<shm-keyvault-name>', $config.keyvault.name).
-                  Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
-                  Replace('<shm-fqdn>', $config.domain.fqdn) | Out-File $adScriptLocalFilePath
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
-$success = $success -and $?
-Remove-Item $adScriptLocalFilePath
+$success = $true
+foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
+    if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
+        # Expand the AD disconnection template before uploading
+        $adScriptLocalFilePath = (New-TemporaryFile).FullName
+        (Get-Content $filePath -Raw).Replace('<shm-keyvault-name>', $config.keyvault.name).
+                                     Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
+                                     Replace('<shm-fqdn>', $config.domain.fqdn) | Out-File $adScriptLocalFilePath
+        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
+        $null = Remove-Item $adScriptLocalFilePath
+    } else {
+        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File $filePath -Force
+    }
+    $success = $success -and $?
+}
 if ($success) {
     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {
@@ -93,23 +89,17 @@ $success = $true
 $filename = "GoogleChromeStandaloneEnterprise64.msi"
 Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
-# LibreOffice
-$baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
-$httpContent = Invoke-WebRequest -URI $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
-Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
-$httpContent = Invoke-WebRequest -URI $baseUri
+$httpContent = Invoke-WebRequest -Uri $baseUri
 $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # WinSCP
-$httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
+$httpContent = Invoke-WebRequest -Uri "https://winscp.net/eng/download.php"
 $filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
+$absoluteUri = (Invoke-WebRequest -Uri "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
@@ -126,40 +116,41 @@ if ($success) {
 
 # Create VNet resource group if it does not exist
 # -----------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
 # Deploy VNet gateway from template
 # ---------------------------------
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-    Shm_Id = "$($config.id)".ToLower()
-    Subnet_Gateway_CIDR = $config.network.subnets.gateway.cidr
-    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
-    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
-    Subnet_Identity_Name = $config.network.subnets.identity.Name
-    Subnet_Web_CIDR = $config.network.subnets.web.cidr
-    Subnet_Web_Name = $config.network.subnets.web.Name
-    Virtual_Network_Name = $config.network.vnet.Name
-    VNET_CIDR = $config.network.vnet.cidr
-    VNET_DNS_DC1 = $config.dc.ip
-    VNET_DNS_DC2 = $config.dcb.ip
+    P2S_VPN_Certificate  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    Shm_Id               = "$($config.id)".ToLower()
+    Subnet_Gateway_CIDR  = $config.network.vnet.subnets.gateway.cidr
+    Subnet_Gateway_Name  = $config.network.vnet.subnets.gateway.name
+    Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
+    Subnet_Identity_Name = $config.network.vnet.subnets.identity.name
+    Subnet_Web_CIDR      = $config.network.vnet.subnets.web.cidr
+    Subnet_Web_Name      = $config.network.vnet.subnets.web.name
+    Virtual_Network_Name = $config.network.vnet.name
+    VNET_CIDR            = $config.network.vnet.cidr
+    VNET_DNS_DC1         = $config.dc.ip
+    VNET_DNS_DC2         = $config.dcb.ip
+    VPN_CIDR             = $config.network.vpn.cidr
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 
 
 # Create SHM DC resource group if it does not exist
 # -------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 
 
 # Retrieve usernames/passwords from the keyvault
 # ----------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
-$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
-$dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower()
+$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+$safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
 
 
 # Deploy SHM DC from template
@@ -167,26 +158,35 @@ $dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -S
 Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    Administrator_User = $shmAdminUsername
-    Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
-    Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
-    DC1_Host_Name = $config.dc.hostname
-    DC1_IP_Address = $config.dc.ip
-    DC1_VM_Name = $config.dc.vmName
-    DC2_Host_Name = $config.dcb.hostname
-    DC2_IP_Address = $config.dcb.ip
-    DC2_VM_Name = $config.dcb.vmName
-    Domain_Name = $config.domain.fqdn
-    Domain_NetBIOS_Name = $config.domain.netbiosName
-    External_DNS_Resolver = $config.dc.external_dns_resolver
-    SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
-    Shm_Id = $config.id
-    Virtual_Network_Name = $config.network.vnet.Name
+    Administrator_Password         = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
+    Administrator_User             = $domainAdminUsername
+    Artifacts_Location             = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
+    Artifacts_Location_SAS_Token   = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
+    DC1_Data_Disk_Size_GB          = [int]$config.dc.disks.data.sizeGb
+    DC1_Data_Disk_Type             = $config.dc.disks.data.type
+    DC1_Host_Name                  = $config.dc.hostname
+    DC1_IP_Address                 = $config.dc.ip
+    DC1_Os_Disk_Size_GB            = [int]$config.dc.disks.os.sizeGb
+    DC1_Os_Disk_Type               = $config.dc.disks.os.type
+    DC1_VM_Name                    = $config.dc.vmName
+    DC1_VM_Size                    = $config.dc.vmSize
+    DC2_Host_Name                  = $config.dcb.hostname
+    DC2_Data_Disk_Size_GB          = [int]$config.dcb.disks.data.sizeGb
+    DC2_Data_Disk_Type             = $config.dcb.disks.data.type
+    DC2_IP_Address                 = $config.dcb.ip
+    DC2_Os_Disk_Size_GB            = [int]$config.dcb.disks.os.sizeGb
+    DC2_Os_Disk_Type               = $config.dcb.disks.os.type
+    DC2_VM_Name                    = $config.dcb.vmName
+    DC2_VM_Size                    = $config.dcb.vmSize
+    Domain_Name                    = $config.domain.fqdn
+    Domain_NetBIOS_Name            = $config.domain.netbiosName
+    External_DNS_Resolver          = $config.dc.external_dns_resolver
+    SafeMode_Password              = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
+    Shm_Id                         = $config.id
+    Virtual_Network_Name           = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.subnets.identity.Name
-    VM_Size = $config.dc.vmSize
+    Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 
@@ -198,14 +198,15 @@ Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.dc.
 $storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+$remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
-    remoteDir = "`"C:\Installation`""
+    remoteDir              = "`"$remoteInstallationDir`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName = "`"$storageContainerName`""
-    sasToken = "`"$artifactSasToken`""
+    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
+    storageContainerName   = "`"$storageContainerName`""
+    sasToken               = "`"$artifactSasToken`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
@@ -214,23 +215,32 @@ Write-Output $result.Value
 # Configure Active Directory remotely
 # -----------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
-# Fetch ADSync user password
-$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
-$adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-# Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1"
-$params = @{
-    adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
-    domain = "`"$($config.domain.fqdn)`""
-    domainou = "`"$($config.domain.dn)`""
-    ldapUsersSgName = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
-    netbiosName = "`"$($config.domain.netbiosName)`""
-    oubackuppath = "`"C:\Installation\GPOs`""
-    serverAdminName = "`"$shmAdminUsername`""
-    serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
-    serverName = "`"$($config.dc.vmName)`""
+# Fetch user and OU details
+$userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
+foreach ($user in $userAccounts.Keys) {
+    $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+# Run remote script
+$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
+$script = $scriptTemplate.Replace("<ou-data-servers-name>", $config.domain.ous.dataServers.name).
+                          Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
+                          Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
+                          Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
+                          Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
+                          Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
+                          Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
+                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
+$params = @{
+    domainAdminUsername    = "`"$domainAdminUsername`""
+    domainControllerVmName = "`"$($config.dc.vmName)`""
+    domainOuBase           = "`"$($config.domain.dn)`""
+    gpoBackupPath          = "`"C:\Installation\GPOs`""
+    netbiosName            = "`"$($config.domain.netbiosName)`""
+    shmFdqn                = "`"$($config.domain.fqdn)`""
+    userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
+    securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
 
 
@@ -239,7 +249,7 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
-    shmFqdn = "`"$($config.domain.fqdn)`""
+    shmFqdn           = "`"$($config.domain.fqdn)`""
     serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
@@ -270,4 +280,4 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

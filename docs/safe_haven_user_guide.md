@@ -30,7 +30,7 @@
   - [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
   - [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
 - [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
-- [:green_book: Access input databases](#green_book-access-input-databases)
+- [:green_book: Access databases](#green_book-access-databases)
   - [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
   - [:bear: Connecting using DBeaver](#bear-connecting-using-dbeaver)
   - [:snake: Connecting using Python](#snake-connecting-using-python)
@@ -72,7 +72,7 @@ The following definitions might be useful during the rest of this guide
 
 > **Username domain**: the domain (for example `apr20.turingsafehaven.ac.uk`) which your user account will belong to. Multiple SREs can share the same domain for managing users in common. We we will call this `<username domain>` in the rest of this document
 
-> **SRE URL**: each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this `<SRE URL>` in the rest of this document
+> **SRE URL**: each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this full URL the `<SRE URL>` in the rest of this document, and we will call the initial part of the URL the `<SRE ID>` (i.e. `sandbox` in this example).
 
 
 ## :rocket: Set up your account
@@ -480,17 +480,25 @@ For example:
 
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
 
-There are three versions of `python` installed.
-None are enabled by default, so the first step is to explicitly select your preferred version.
+There are several versions of `python` installed, which are managed through [pyenv](https://github.com/pyenv/pyenv).
+You can see the default version (indicated by a '*') and all other installed versions using the following command:
 
-To enable a `python` version type `conda activate <name>` on the command line, where `<name>` is one of:
+```bash
+> pyenv versions
+```
 
-- `py27` (python 2.7)
-- `py36` (python 3.6)
-- `py37` (python 3.7)
+This will give output like:
+```bash
+  system
+  2.7.18
+  3.6.11
+* 3.7.8 (set by /home/ada.lovelace/.pyenv_version)
+```
 
-> :warning: Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
-> If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
+You can change your preferred Python version globally or on a folder-by-folder basis using
+
+- `pyenv global <version number>` (to change the version globally)
+- `pyenv local <version number>` (to change the version for the folder you are currently in)
 
 ### :gift: Install R and python packages
 
@@ -796,66 +804,143 @@ You will need to know the IP address of the new machine, which you will be told 
 
 4. Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
 
-## :green_book: Access input databases
+## :green_book: Access databases
 
 Your project might use a database for holding the input data.
-If this is the case, you can access it using the following details
+You might also/instead be provided with a database for use in analysing the data.
+The database server will use either `Microsoft SQL` or `PostgreSQL`.
 
-> Server name: \<provided by your SRE administrator>.\<username domain>
-> Database name: \<provided by your SRE administrator>
-> Port: 14330
+If you have access to one or more databases, you can access them using the following details, where `<SRE ID>` is the first part of the URL you used to access the SRE (i.e. for an SRE accessed at `https://sandbox.apr20.turingsafehaven.ac.uk`, the `<SRE ID>` would be `sandbox`).
 
-Examples are given below for connecting using Azure Data Studio and Python.
+### Microsoft SQL
+>  - Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX`)
+> - Database name: \<provided by your SRE administrator>
+> - Port: 1433
+
+### PostgreSQL
+>  - Server name:  `PSTGRS-<SRE ID>`  (e.g. `PSTGRS-SANDBOX`)
+> - Database name: \<provided by your SRE administrator>
+> - Port: 5432
+
+Examples are given below for connecting using Azure Data Studio, DBeaver, Python and R.
 The instructions for using other graphical interfaces or programming languages will be similar.
 
 ### :art: Connecting using Azure Data Studio
-> :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using Azure Data Studio as follows
+Azure Data Studio is currently only able to connect to `Microsoft SQL` databases.
+
+> :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using Azure Data Studio as follows:
 
    <p align="center">
-      <img src="images/user_guide/db_AzureDataStudio.png" width="80%" title="db_AzureDataStudio">
+      <img src="images/user_guide/db_azure_data_studio.png" width="80%" title="db_AzureDataStudio">
    </p>
 
 > :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database.
-> :point_right: Safe Haven databases use a non-standard port (`14330`), so you will also need to click the `Advanced` button and set the `Port` setting to `14330` under the `General` section of the advanced settings.
 
 ### :bear: Connecting using DBeaver
 - Click on the `New database connection` button (which looks a bit like an electrical plug with a plus sign next to it)
+
+#### Microsoft SQL
 - Select `SQL Server` as the database type
 - Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Kerberos`
+- Tick `Show All Schemas` otherwise you will not be able to see the input data
 
-> :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using DBeaver as follows
+> :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
    <p align="center">
-      <img src="images/user_guide/db_dbeaver.png" width="80%" title="db_dbeaver">
+      <img src="images/user_guide/db_dbeaver_mssql.png" width="80%" title="DBeaver MS SQL connection">
    </p>
 
 > :point_right: it is important to use `Kerberos` authentication so that your username and password will be passed through to the database
 
+#### PostgreSQL
+- Select `PostgreSQL` as the database type
+- Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Database Native`
+- :point_right: You do not need to enter any information in the `Username` or `Password` fields
+
+> :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+
+   <p align="center">
+      <img src="images/user_guide/db_dbeaver_postgres1.png" width="80%" title="DBeaver PostgreSQL connection">
+   </p>
+
+> :point_right: If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
+
+   <p align="center">
+      <img src="images/user_guide/db_dbeaver_postgres2.png" width="80%" title="DBeaver PostgreSQL connection">
+   </p>
+
+
 ### :snake: Connecting using Python
+Database connections can be made using `pyodbc` or `psycopg2` depending on which database flavour is being used.
+The data can be read into a dataframe for local analysis.
+
+> :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+
+#### Microsoft SQL
 ```python
 import pyodbc
 import pandas as pd
 
-server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
+server = "MSSQL-SANDBOX.apr20.turingsafehaven.ac.uk"
+port = "1433"
 db_name = "master"
 
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
 
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
-df.head(3)
+print(df.head(3))
+```
+
+#### PostgreSQL
+```python
+import psycopg2
+import pandas as pd
+
+server = "PSTGRS-SANDBOX.apr20.turingsafehaven.ac.uk"
+port = 5432
+db_name = "postgres"
+
+cnxn = psycopg2.connect(host=server, port=port, database=db_name)
+df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
+print(df.head(3))
 ```
 
 ### :registered: Connecting using R
+Database connections can be made using `odbc` or `RPostgres` depending on which database flavour is being used.
+The data can be read into a dataframe for local analysis.
+
+> :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+
+#### Microsoft SQL
 ```R
+library(DBI)
 library(odbc)
 
 # Connect to the databases
 cnxn <- DBI::dbConnect(
     odbc::odbc(),
     Driver = "ODBC Driver 17 for SQL Server",
-    Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330",
+    Server = "MSSQL-SANDBOX.apr20.turingsafehaven.ac.uk,1433",
     Database = "master",
     Trusted_Connection = "yes"
+)
+
+# Run a query and save the output into a dataframe
+df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
+head(df, 3)
+```
+
+
+#### PostgreSQL
+```R
+library(DBI)
+
+# Connect to the databases
+cnxn <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = "PSTGRS-SANDBOX.apr20.turingsafehaven.ac.uk",
+    port = 5432,
+    dbname = "postgres"
 )
 
 # Run a query and save the output into a dataframe

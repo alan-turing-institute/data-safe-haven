@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+  [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -13,11 +13,12 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
+$null = Set-AzContext -Subscription $config.dns.subscriptionName
 
 
-# Set to Domains subscription
-# ---------------------------
-$_ = Set-AzContext -Subscription $config.dns.subscriptionName
+# Ensure that DNS resource group exists
+# -------------------------------------
+$null = Deploy-ResourceGroup -Name $config.dns.rg -Location $config.location
 
 
 # Create the DNS Zone and set the parent NS records if required
@@ -27,4 +28,4 @@ Set-DnsZoneAndParentNSRecords -DnsZoneName $config.domain.fqdn -ResourceGroupNam
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

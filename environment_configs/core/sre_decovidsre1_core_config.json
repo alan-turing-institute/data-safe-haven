@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "[Prod] DECOVID Safe Haven",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "sreId": "sre1",
+    "shmId": "decovid",
+    "tier": "3",
+    "domain": "sre1.decovid.turingsafehaven.ac.uk",
+    "ipPrefix": "10.150.0",
+    "inboundAccessFrom": "193.60.220.253,193.60.220.240",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.3.2020081900",
+    "databases": ["MSSQL", "PostgreSQL"]
+}

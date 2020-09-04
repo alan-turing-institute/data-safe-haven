@@ -14,19 +14,25 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "DC_Administrator_Password": {
+        "Domain_Join_Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter name for DC Administrator Password"
+                "description": "Enter password for domain joining"
             }
         },
-        "DC_Administrator_User": {
+        "Domain_Join_User": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for DC Administrator"
+                "description": "Enter username for domain joining"
             }
         },
         "Domain_Name": {
+            "type": "string"
+        },
+        "NPS_Data_Disk_Size_GB": {
+            "type": "int"
+        },
+        "NPS_Data_Disk_Type": {
             "type": "string"
         },
         "NPS_Host_Name": {
@@ -35,11 +41,23 @@
         "NPS_IP_Address": {
             "type": "string"
         },
+        "NPS_Os_Disk_Size_GB": {
+            "type": "int"
+        },
+        "NPS_Os_Disk_Type": {
+            "type": "string"
+        },
         "NPS_VM_Name": {
             "type": "string"
         },
-        "OU_Path": {
+        "NPS_VM_Size": {
             "type": "string"
+        },
+        "OU_Path": {
+            "type": "string",
+            "metadata": {
+                "description": "OU path to add this VM to"
+            }
         },
         "Virtual_Network_Name": {
             "type": "string"
@@ -48,9 +66,6 @@
             "type": "string"
         },
         "Virtual_Network_Subnet": {
-            "type": "string"
-        },
-        "VM_Size": {
             "type": "string"
         }
     },
@@ -68,7 +83,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
+                    "vmSize": "[parameters('NPS_VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -84,21 +99,23 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('Nps_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('Nps_Os_Disk_Size_GB')]"
                     },
-                    "dataDisks": [{
-                        "lun": 0,
-                        "name": "[concat(parameters('NPS_VM_Name'), '-DATA-DISK')]",
-                        "createOption": "Empty",
-                        "caching": "None",
-                        "writeAcceleratorEnabled": false,
-                        "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
-                        },
-                        "diskSizeGB": 128
-                    }]
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat(parameters('NPS_VM_Name'), '-DATA-DISK')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "[parameters('NPS_Data_Disk_Type')]"
+                            },
+                            "diskSizeGB": "[parameters('Nps_Data_Disk_Size_GB')]"
+                        }
+                    ]
                 },
                 "osProfile": {
                     "computerName": "[parameters('NPS_Host_Name')]",
@@ -112,12 +129,14 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('npsnic'))]",
-                        "properties": {
-                            "primary": true
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('npsnic'))]",
+                            "properties": {
+                                "primary": true
+                            }
                         }
-                    }]
+                    ]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -137,18 +156,20 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [{
-                    "name": "ipconfig1",
-                    "properties": {
-                        "privateIPAddress": "[parameters('NPS_IP_Address')]",
-                        "privateIPAllocationMethod": "Static",
-                        "subnet": {
-                            "id": "[variables('subnet')]"
-                        },
-                        "primary": true,
-                        "privateIPAddressVersion": "IPv4"
+                "ipConfigurations": [
+                        {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('NPS_IP_Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('subnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
                     }
-                }],
+                ],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -193,12 +214,12 @@
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
                     "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         }

@@ -21,6 +21,6 @@ echo "    r[\"CRAN\"] <- \"${CRAN_MIRROR_IP}\"" >> /etc/R/Rprofile.site
 echo "    options(repos = r)" >> /etc/R/Rprofile.site
 echo "})" >> /etc/R/Rprofile.site
 # Also update conda environments
-cp /etc/R/Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
-cp /etc/R/Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
-cp /etc/R/Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+for configFile in $(/opt/anaconda/envs/*/lib/R/etc/Rprofile.site 2> /dev/null); do
+    cp /etc/R/Rprofile.site $configFile
+done

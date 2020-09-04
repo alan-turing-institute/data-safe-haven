@@ -30,11 +30,17 @@ test_package <- function(p) {
     )
 }
 
+scriptDirectory <- function() {
+    cmdArgs <- commandArgs(trailingOnly = FALSE)
+    match <- grep("--file=", cmdArgs)
+    return (dirname(normalizePath(sub("--file=", "", cmdArgs[match]))))
+}
+
 # Read in the package list from the repo
 repos <- c("CRAN", "Bioconductor")
 n_packages = 0
 for (repo in repos) {
-    packageList = file.path("..", "package_lists", paste("packages-r-", tolower(repo), ".list", sep = ""))
+    packageList = file.path(scriptDirectory(), "..", "package_lists", paste("packages-r-", tolower(repo), ".list", sep = ""))
     packages <- readLines(packageList)
     print(paste("Testing", length(packages), repo, "packages"))
     for (package in packages) {
@@ -47,7 +53,7 @@ for (repo in repos) {
 
 # Show results
 if (0 == length(warning_list) & 0 == length(error_list)) {
-    print(paste("All", n_packages, "package(s) OK!"))
+    print(paste("All", n_packages, "packages are installed"))
 } else {
     # List any warnings
     if (0 < length(warning_list)) {

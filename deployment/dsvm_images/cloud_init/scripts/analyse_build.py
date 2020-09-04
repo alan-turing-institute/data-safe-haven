@@ -2,10 +2,12 @@
 from contextlib import suppress
 import csv
 from datetime import datetime, timedelta
+import glob
 import itertools
 import json
 import multiprocessing
 import subprocess
+
 
 def human_readable(timedelta_):
     """Human readable string from timedelta"""
@@ -20,6 +22,7 @@ def human_readable(timedelta_):
     if minutes > 0:
         return f"{minutes:d}m{seconds:d}s"
     return f"{seconds:d}s"
+
 
 def main():
     """Process log files"""
@@ -68,22 +71,21 @@ def main():
         if entry["result"]:
             build_end_status = (datetime.fromtimestamp(entry["timestamp"] - 1), entry["result"])
 
-
     # Load events from runcmd echo statements
     # ---------------------------------------
     runcmd_log_events = []
     with suppress(subprocess.CalledProcessError):
         bash_process = subprocess.run(["grep", ">===", "/var/log/cloud-init-output.log"], stdout=subprocess.PIPE, check=True)
         for event in bash_process.stdout.decode("utf8").split("\n"):
-            with suppress(IndexError):
+            with suppress(IndexError, ValueError):
                 start_time = event.split(" ")[1]
                 message = event.split(start_time)[1].replace("===<", "").strip()
                 runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
         for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
             events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
 
-
-    # Add in progress task
+    # Add currently running task
+    # --------------------------
     if runcmd_log_events:
         current_task = runcmd_log_events[-1]["message"]
         if build_end_status:
@@ -107,16 +109,15 @@ def main():
         print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
         previous_event_time = event["timestamp"]
 
-
     # Check system performance
     # ------------------------
     mem_usage, cpu_usage, mem_bytes = [], [], []
     with suppress(FileNotFoundError):
-        with open("/installation/performance_log.csv", "r") as system_log:
+        with open("/opt/verification/performance_log.csv", "r") as system_log:
             first_lines = list(itertools.islice(system_log, 10))
         with suppress(IndexError):
-            lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0] # skip version info in the header
-            with open("/installation/performance_log.csv", "r") as system_log:
+            lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0]  # skip version info in the header
+            with open("/opt/verification/performance_log.csv", "r") as system_log:
                 for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
                     if build_end_status:
                         timestamp = datetime.strptime("{}-{}".format(datetime.today().year, row["time"]), "%Y-%d-%m %H:%M:%S")
@@ -126,13 +127,13 @@ def main():
                     mem_usage.append(100 * float(row["used"]) / mem_bytes[-1])
                     cpu_usage.append(100 - float(row["idl"]))
 
+    timestamp = build_end_status[0] if build_end_status else datetime.now()
     with suppress(ZeroDivisionError):
         mem_gb = (sum(mem_bytes) / len(mem_bytes)) / (1000 * 1000 * 1000)
         n_cores = multiprocessing.cpu_count()
-        timestamp = build_end_status[0] if build_end_status else datetime.now()
-        prefix = "[{}: {: <7}]".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "INFO")
         # Memory
-        print("{} Memory available: {:d} GB".format(prefix, int(mem_gb)))
+        prefix = "[{}: {: <7}]".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "INFO")
+        print("{} Memory available: {:d} GB".format(prefix, int(round(mem_gb))))
         mem_mean, mem_min, mem_max = sum(mem_usage) / len(mem_usage), min(mem_usage), max(mem_usage)
         print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_mean, mem_gb * mem_mean / 100))
         print("{} ...... min usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_min, mem_gb * mem_min / 100))
@@ -143,6 +144,22 @@ def main():
         print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_mean, n_cores * cpu_mean / 100))
         print("{} ...... min usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_min, n_cores * cpu_min / 100))
         print("{} ...... max usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_max, n_cores * cpu_max / 100))
+
+    # Check python installations
+    # --------------------------
+    with suppress(FileNotFoundError):
+        for fname in glob.glob("/opt/verification/python-safety-check*.json"):
+            with open(fname, "r") as f_safety_check:
+                packages = json.load(f_safety_check)
+            if packages:
+                python_version = fname.split("-")[3].replace(".json", "")
+                print("[{}: {: <7}] Safety check found problems with Python {}".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "WARNING", python_version))
+            for package in packages:
+                print("    {} [{}] is affected by issue {} (for versions {})".format(package[0], package[2], package[4], package[1]))
+                lines = package[3].replace(". ", ".\n")
+                for sentence in lines.split("\n"):
+                    print("       {}".format(sentence))
+
 
 if __name__ == "__main__":
     main()

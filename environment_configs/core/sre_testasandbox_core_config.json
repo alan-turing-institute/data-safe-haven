@@ -1,14 +1,97 @@
 {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "sreId": "sandbox",
     "shmId": "testa",
     "tier": "2",
     "domain": "sandbox.testa.dsgroupdev.co.uk",
-    "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",
-    "rdsAllowedSources": "default",
-    "rdsInternetAccess": "default",
+    "inboundAccessFrom": "anywhere",
+    "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.2.2020050300"
+    "computeVmImageVersion": "0.3.2020081900",
+    "databases": ["MSSQL", "PostgreSQL"],
+    "overrides": {
+        "sre": {
+            "network": {
+                "vnet": {
+                    "rg": "RG_SRE_NETWORKING"
+                }
+            },
+            "rgPrefix": "RG_SRE",
+            "storage": {
+                "artifacts": {
+                    "accountName": "sreartifactszvmwtqkigrld"
+                },
+                "bootdiagnostics": {
+                    "accountName": "srebootdiagszvmwtqkigrld"
+                }
+            },
+            "keyVault": {
+                "secretNames": {
+                    "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
+                    "npsSecret": "sre-sandbox-nps-secret"
+                }
+            },
+            "users": {
+                "serviceAccounts": {
+                    "datamount": {
+                        "samAccountName": "datamountsandbox",
+                        "passwordSecretName": "sre-sandbox-datamount-password"
+                    },
+                    "ldapSearch": {
+                        "name": "SANDBOX Gitlab LDAP",
+                        "samAccountName": "gitlabldapsandbox",
+                        "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
+                    },
+                    "postgres": {
+                        "name": "SANDBOX Postgres DB Service Account",
+                        "samAccountName": "pgdbsrvcsandbox",
+                        "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
+                    }
+                }
+            },
+            "rds": {
+                "gateway": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+                    "ip": "10.150.1.250"
+                },
+                "appSessionHost": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
+                    "ip": "10.150.1.249"
+                }
+            },
+            "dataserver": {
+                "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
+                "rg": "RG_SRE_DATA",
+                "ip": "10.150.2.250"
+            },
+            "webapps": {
+                "gitlab": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+                    "ip": "10.150.2.151"
+                },
+                "hackmd": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
+                    "ip": "10.150.2.152"
+                }
+            },
+            "databases": {
+                "dbmssql": {
+                    "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+                    "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+                    "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
+                    "port": "14330"
+                },
+                "dbpostgresql": {
+                    "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
+                    "dbAdminUsernameSecretName": "sre-sandbox-postgresdb-admin-username",
+                    "dbAdminPasswordSecretName": "sre-sandbox-postgresdb-admin-password"
+                }
+            },
+            "dsvm": {
+                "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
+            }
+        }
+    }
 }

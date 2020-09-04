@@ -4,12 +4,14 @@
 
 - [:seedling: Prerequisites](#seedling-prerequisites)
 - [:beginner: Creating new users](#beginner-creating-new-users)
-  - [:scroll: Generating CSV file using data classification app](#scroll-generating-csv-file-using-data-classification-app)
-  - [:scroll: Generating CSV file manually](#scroll-generating-csv-file-manually)
-  - [:fast_forward: Optional: Add group name](#fast_forward-optional-add-group-name)
+  - [:scroll: Generating user details CSV file](#scroll-generating-user-details-csv-file)
+    - [:car: Using data classification app](#car-using-data-classification-app)
+    - [:hand: Manually edit CSV](#hand-manually-edit-CSV)
   - [:arrows_counterclockwise: Create and synchronise users](#arrows_counterclockwise-create-and-synchronise-users)
   - [:microscope: Troubleshooting: Account already exists](#microscope-troubleshooting-account-already-exists)
   - [:calling: Assign an MFA licence](#calling-assign-an-mfa-licence)
+    - [:hand: Manually add licence to each user](#hand-manually-add-licence-to-each-user)
+    - [:car: Automatically assign licences to users](#car-automatically-assign-licences-to-users)
   - [:running: User activation](#running-user-activation)
 - [:construction_worker: Common user problems](#construction_worker-common-user-problems)
   - [:waning_crescent_moon: Expired webclient certificate](#waning_crescent_moon-expired-webclient-certificate)
@@ -17,49 +19,50 @@
   - [:train: Unable to open any remote apps](#train-unable-to-open-any-remote-apps)
   - [:interrobang: xrdp login failure on the DSVM](#interrobang-xrdp-login-failure-on-the-dsvm)
   - [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
+- [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
 
 ## :seedling: Prerequisites
 This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](deploy_sre_instructions.md) that are linked to it.
-
 - You will need VPN access to the SHM as described in the deployment instructions
 
-
-# :beginner: Creating new users
-
+## :beginner: Creating new users
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a CSV file in the appropriate format for it.
 
-## :scroll: Generating CSV file using data classification app
+## :scroll: Generate user details CSV file
+### :car: Using data classification app
 - Follow the [instructions in the webapp repository](https://github.com/alan-turing-institute/data-safe-haven-webapp/blob/master/runbooks/create-users/create-users.md) to create users.
   - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
   - Users can also be created individually by selecting `Create User > Create Single User`
 - After creating users, export the `UserCreate.csv` file
   - To export all users, select `Users > Export UserCreate.csv`
   - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
+- Upload the user details CSV file to a sensible location on the SHM domain controller
+  - :pencil: we suggest `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
 
-## :scroll: Generating CSV file manually
-- Make a new copy of the user details template file from `deployment/safe_haven_management_environment/user_details.csv`
+### :hand: Manually edit CSV
+On the **SHM domain controller (DC1)**.
+- Make a new copy of the user details template file from `C:\Installation\user_details_template.csv`
   - :pencil: we suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
-- Add the required details for each user
-  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+- Remove the example user and add the required details for each user
+  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
   - `Mobile`: Phone number to use for initial password reset.
-    This must include country code in the format `+<country-code> <local number>`.
+    This must include country code in the format `+<country-code> <local number>` (e.g. `+44 7700900000`).
     Include a space between the country code and local number parts but no other spaces.
     Remove the leading `0` from local number if present.
     This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
-    They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+    They can add the authenticator app and/or another phone number during MFA setup and at least one MFA method must work when at the Turing.
   - `SecondaryEmail`: An existing organisational email address for the user.
     Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
-
-## :fast_forward: Optional: Add group name
-If you know which groups each user will be added to, you can also include the following column:
-  - `GroupName`: The name of the Azure security group(s) that the users should be added (eg. `SG SANDBOX Research Users`).
+  - `GroupName`: [Optional] The name of the Active Directory security group(s) that the users should be added (eg. `SG SANDBOX Research Users`).
     If the user needs to be added to multiple groups, separate them with a pipe-character (`|`).
 
 ## :arrows_counterclockwise: Create and synchronise users
-Upload the user details CSV file to a sensible location on the SHM domain controller (eg. `C:\Installation`).
+
+Upload the user details CSV file to a sensible location on the SHM domain controller (recommended: `C:\Installation`). This can be done by copying and pasting the file from your deployment device to the SHM DC.
+
 On the **SHM domain controller (DC1)**.
 - Open a PowerShell command window with elevated privileges.
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
@@ -72,7 +75,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 - `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
 
 ## :calling: Assign an MFA licence
-### Manually add licence to users
+### :hand: Manually add licence to each user
 - Login into the Azure Portal and connect to the correct AAD
 - Open `Azure Active Directory`
 - Select `Manage > Licenses > All Products`
@@ -82,13 +85,11 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Select the users you have recently created and click `Select`
 - Click `Assign` to complete the process
 
-### Automatic
+### :car: Automatically assign licences to users
 To automatically assign licences to all local AD users that do not currently have a licence in AAD
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 - Run the `./SHM_Add_AAD_Licences.ps1 -shmId <SHM ID>` script, where the SHM ID is the ID of the SHM you wish to add licences for.
-
 
 ## :running: User activation
 We need to contact the users to tell them their user ID and.
@@ -107,12 +108,10 @@ A sample email might look like the following
 > Your Safe Haven is hosted at: \<URL\>
 >
 > The Safe Haven is only accessible from certain networks and may also involve physical location restrictions.
-> <details about network and location/VPN restrictions here>
-
-
+>
+> --details about network and location/VPN restrictions here--
 
 ## :construction_worker: Common user problems
-
 One of the most common user issues is that they are unable to log in to the environment.
 Here we go through the login procedure and discuss possible problems at each step
 
@@ -141,10 +140,8 @@ If users give the wrong username or password they will not be able to progress p
 **Solution**:
 Check user credentials, password may need to be reset.
 
-
 ### :train: Unable to open any remote apps
 Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
-
 <p align="center">
   <img src="images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
 </p>
@@ -180,6 +177,9 @@ there are a couple of possible causes.
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 - Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
+
+<details>
+<summary>Diagnostic output</summary>
 
 ```
 PS /home/atiadmin/data-safe-haven/deployment/administration> ./SRE_DSVM_Remote_Diagnostics.ps1 -sreId 2 -ipLastOctet 160
@@ -440,8 +440,9 @@ Message       : Enable succeeded:
 
 Time          :
 
-Safe Haven Managment (1814d074-10fe-4... jrobinson@turing.ac.uk                            Safe Haven Managment                             AzureCloud                                       4395f4a7-e455-4f95-8a9f-1fbaef6384f9
+Safe Haven Management (1814d074-10fe-4...   jrobinson@turing.ac.uk   Safe Haven Management   AzureCloud   4395f4a7-e455-4f95-8a9f-1fbaef6384f9
 ```
+</details>
 
 ### :cloud: Unable to install from package mirrors
 If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
@@ -473,3 +474,16 @@ This will trigger the following actions:
 2. Synchronisation of the internal mirror with the external mirror (a `push` update)
 
 This may take an hour or two but should solve the missing package problem.
+
+## :fast_forward: Unpeering package mirrors
+The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
+However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
+
+> :warning: You will not normally need to do this - think carefully before doing so!
+
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.

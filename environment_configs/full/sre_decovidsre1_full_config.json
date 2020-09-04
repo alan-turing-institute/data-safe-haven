@@ -1,0 +1,619 @@
+{
+  "shm": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "dc": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "external_dns_resolver": "168.63.129.16",
+      "fqdn": "DC1-SHM-DECOVID.decovid.turingsafehaven.ac.uk",
+      "hostname": "DC1-SHM-DECOVID",
+      "ip": "10.0.0.4",
+      "rg": "RG_SHM_DECOVID_DC",
+      "safemodePasswordSecretName": "shm-decovid-vm-safemode-password-dc",
+      "vmName": "DC1-SHM-DECOVID",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dcb": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DC2-SHM-DECOVID.decovid.turingsafehaven.ac.uk",
+      "hostname": "DC2-SHM-DECOVID",
+      "ip": "10.0.0.5",
+      "vmName": "DC2-SHM-DECOVID",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS_DECOVID",
+      "subscriptionName": "[Prod] Safe Haven Domains"
+    },
+    "domain": {
+      "dn": "DC=decovid,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "decovid.turingsafehaven.ac.uk",
+      "netbiosName": "DECOVID",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Identity Servers",
+          "path": "OU=Safe Haven Identity Servers,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Linux Servers",
+          "path": "OU=Secure Research Environment Linux Servers,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment RDS Gateway Servers",
+          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk"
+        }
+      },
+      "securityGroups": {
+        "computerManagers": {
+          "description": "SG Safe Haven Computer Management Users",
+          "name": "SG Safe Haven Computer Management Users"
+        },
+        "serverAdmins": {
+          "description": "SG Safe Haven Server Administrators",
+          "name": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-DECOVID",
+      "routeTableName": "ROUTE-TABLE-SHM-DECOVID"
+    },
+    "id": "decovid",
+    "keyVault": {
+      "name": "kv-shm-decovid",
+      "rg": "RG_SHM_DECOVID_SECRETS",
+      "secretNames": {
+        "aadEmergencyAdminPassword": "shm-decovid-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-decovid-aad-emergency-admin-username",
+        "buildImageAdminPassword": "shm-decovid-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-decovid-buildimage-admin-username",
+        "domainAdminPassword": "shm-decovid-domain-admin-password",
+        "domainAdminUsername": "shm-decovid-domain-admin-username",
+        "vmAdminUsername": "shm-decovid-vm-admin-username",
+        "vpnCaCertificate": "shm-decovid-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-decovid-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-decovid-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-decovid-vpn-client-cert",
+        "vpnClientCertPassword": "shm-decovid-vpn-client-cert-password"
+      }
+    },
+    "location": "uksouth",
+    "logging": {
+      "rg": "RG_SHM_DECOVID_LOGGING",
+      "workspaceName": "shmdecovidloganalytics"
+    },
+    "mirrors": {
+      "cran": {
+        "tier2": {
+          "diskSize": 127,
+          "external": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-external-mirror-tier-2",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 31,
+          "external": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "tier2": {
+          "diskSize": 8191,
+          "external": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-external-mirror-tier-2",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 511,
+          "external": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "rg": "RG_SHM_DECOVID_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms"
+    },
+    "name": "DECOVID Safe Haven",
+    "network": {
+      "mirrorVnets": {
+        "tier2": {
+          "cidr": "10.20.2.0/24",
+          "name": "VNET_SHM_DECOVID_PACKAGE_MIRRORS_TIER2",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.2.0/28",
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "nsg": "externalPackageMirrorsTier2"
+            },
+            "internal": {
+              "cidr": "10.20.2.16/28",
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "nsg": "internalPackageMirrorsTier2"
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.20.3.0/24",
+          "name": "VNET_SHM_DECOVID_PACKAGE_MIRRORS_TIER3",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.3.0/28",
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "nsg": "externalPackageMirrorsTier3"
+            },
+            "internal": {
+              "cidr": "10.20.3.16/28",
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "nsg": "internalPackageMirrorsTier3"
+            }
+          }
+        }
+      },
+      "nsg": {
+        "externalPackageMirrorsTier2": {
+          "name": "NSG_SHM_DECOVID_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "externalPackageMirrorsTier3": {
+          "name": "NSG_SHM_DECOVID_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "internalPackageMirrorsTier2": {
+          "name": "NSG_SHM_DECOVID_INTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "internalPackageMirrorsTier3": {
+          "name": "NSG_SHM_DECOVID_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        }
+      },
+      "vnet": {
+        "cidr": "10.0.0.0/21",
+        "name": "VNET_SHM_DECOVID",
+        "rg": "RG_SHM_DECOVID_NETWORKING",
+        "subnets": {
+          "firewall": {
+            "cidr": "10.0.2.0/24",
+            "name": "AzureFirewallSubnet"
+          },
+          "gateway": {
+            "cidr": "10.0.7.0/24",
+            "name": "GatewaySubnet"
+          },
+          "identity": {
+            "cidr": "10.0.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "web": {
+            "cidr": "10.0.1.0/24",
+            "name": "WebSubnet"
+          }
+        }
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
+      }
+    },
+    "nps": {
+      "adminPasswordSecretName": "shm-decovid-vm-admin-password-nps",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "hostname": "NPS-SHM-DECOVID",
+      "ip": "10.0.0.6",
+      "rg": "RG_SHM_DECOVID_NPS",
+      "vmName": "NPS-SHM-DECOVID",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "nsgPrefix": "NSG_SHM_DECOVID",
+    "organisation": {
+      "countryCode": "GB",
+      "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
+      "townCity": "London"
+    },
+    "rgPrefix": "RG_SHM_DECOVID",
+    "storage": {
+      "artifacts": {
+        "accountName": "shmdecovidartifactsoceuy",
+        "rg": "RG_SHM_DECOVID_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "shmdecovidbootdiagsoceuy",
+        "rg": "RG_SHM_DECOVID_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "[Prod] DECOVID Safe Haven",
+    "users": {
+      "computerManagers": {
+        "dataServers": {
+          "name": "DECOVID Data Servers Manager",
+          "passwordSecretName": "shm-decovid-computer-manager-password-data-servers",
+          "samAccountName": "decoviddatasrvrs"
+        },
+        "identityServers": {
+          "name": "DECOVID Identity Servers Manager",
+          "passwordSecretName": "shm-decovid-computer-manager-password-identity-servers",
+          "samAccountName": "decovididentitysrvrs"
+        },
+        "linuxServers": {
+          "name": "DECOVID Linux Servers Manager",
+          "passwordSecretName": "shm-decovid-computer-manager-password-linux-servers",
+          "samAccountName": "decovidlinuxsrvrs"
+        },
+        "rdsGatewayServers": {
+          "name": "DECOVID RDS Gateway Manager",
+          "passwordSecretName": "shm-decovid-computer-manager-password-rds-gateway-servers",
+          "samAccountName": "decovidgatewaysrvrs"
+        },
+        "rdsSessionServers": {
+          "name": "DECOVID RDS Session Servers Manager",
+          "passwordSecretName": "shm-decovid-computer-manager-password-rds-session-servers",
+          "samAccountName": "decovidsessionsrvrs"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "DECOVID Local AD Sync Administrator",
+          "passwordSecretName": "shm-decovid-aad-localsync-password",
+          "samAccountName": "decovidlocaladsync",
+          "usernameSecretName": "shm-decovid-aad-localsync-username"
+        }
+      }
+    }
+  },
+  "sre": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "databases": {
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-sre1-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-sre1-db-admin-username-mssql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true,
+        "ip": "10.150.3.4",
+        "port": "1433",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "type": "MSSQL",
+        "vmName": "MSSQL-SRE1",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-sre1-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-sre1-db-admin-username-postgresql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "ip": "10.150.3.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "type": "PostgreSQL",
+        "vmName": "PSTGRS-SRE1",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_SRE1_DATABASES"
+    },
+    "dataserver": {
+      "adminPasswordSecretName": "sre-sre1-vm-admin-password-dataserver",
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DAT-SRE-SRE1.decovid.turingsafehaven.ac.uk",
+      "hostname": "DAT-SRE-SRE1",
+      "ip": "10.150.2.4",
+      "nsg": "NSG_SRE_SRE1_DATA",
+      "rg": "RG_SRE_SRE1_DATA",
+      "vmName": "DAT-SRE-SRE1",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "domain": {
+      "dn": "DC=sre1,DC=decovid,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "sre1.decovid.turingsafehaven.ac.uk",
+      "netbiosName": "SRE1",
+      "securityGroups": {
+        "dataAdministrators": {
+          "description": "SG SRE1 Data Administrators",
+          "name": "SG SRE1 Data Administrators"
+        },
+        "researchUsers": {
+          "description": "SG SRE1 Research Users",
+          "name": "SG SRE1 Research Users"
+        },
+        "systemAdministrators": {
+          "description": "SG SRE1 System Administrators",
+          "name": "SG SRE1 System Administrators"
+        }
+      }
+    },
+    "dsvm": {
+      "adminPasswordSecretName": "sre-sre1-vm-admin-password-compute",
+      "deploymentNsg": "NSG_SRE_SRE1_COMPUTE_DEPLOYMENT",
+      "disks": {
+        "home": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "default",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "nsg": "NSG_SRE_SRE1_COMPUTE",
+      "rg": "RG_SRE_SRE1_COMPUTE",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+      },
+      "vmSizeDefault": "Standard_D2s_v3"
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SRE1"
+    },
+    "id": "sre1",
+    "keyVault": {
+      "name": "kv-decovid-sre-sre1",
+      "rg": "RG_SRE_SRE1_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-sre1-vm-admin-username",
+        "letsEncryptCertificate": "sre-sre1-lets-encrypt-certificate",
+        "npsSecret": "sre-sre1-other-nps-secret"
+      }
+    },
+    "location": "uksouth",
+    "network": {
+      "nsg": {
+        "data": {},
+        "databases": {
+          "name": "NSG_SRE_SRE1_DATABASES"
+        }
+      },
+      "vnet": {
+        "cidr": "10.150.0.0/21",
+        "name": "VNET_SRE_SRE1",
+        "rg": "RG_SRE_SRE1_NETWORKING",
+        "subnets": {
+          "data": {
+            "cidr": "10.150.2.0/24",
+            "name": "SharedDataSubnet"
+          },
+          "databases": {
+            "cidr": "10.150.3.0/24",
+            "name": "DatabasesSubnet",
+            "nsg": "databases"
+          },
+          "identity": {
+            "cidr": "10.150.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "rds": {
+            "cidr": "10.150.1.0/24",
+            "name": "RDSSubnet"
+          }
+        }
+      }
+    },
+    "nsgPrefix": "NSG_SRE_SRE1",
+    "rds": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-SRE1.decovid.turingsafehaven.ac.uk",
+        "hostname": "APP-SRE-SRE1",
+        "ip": "10.150.1.5",
+        "nsg": "NSG_SRE_SRE1_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-SRE1",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "gateway": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-rds-gateway",
+        "disks": {
+          "data1": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "data2": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "RDG-SRE-SRE1.decovid.turingsafehaven.ac.uk",
+        "hostname": "RDG-SRE-SRE1",
+        "ip": "10.150.1.4",
+        "networkRules": {
+          "allowedSources": "193.60.220.253,193.60.220.240",
+          "outboundInternet": "Deny"
+        },
+        "nsg": "NSG_SRE_SRE1_RDS_SERVER",
+        "vmName": "RDG-SRE-SRE1",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_SRE1_RDS"
+    },
+    "rgPrefix": "RG_SRE_SRE1",
+    "shortName": "sre-sre1",
+    "storage": {
+      "artifacts": {
+        "accountName": "sresre1artifactstplkehgv",
+        "rg": "RG_SRE_SRE1_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "sresre1bootdiagstplkehgv",
+        "rg": "RG_SRE_SRE1_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "[Prod] DECOVID Safe Haven",
+    "tier": "3",
+    "users": {
+      "serviceAccounts": {
+        "datamount": {
+          "name": "SRE1 Data Mount Service Account",
+          "passwordSecretName": "sre-sre1-other-service-account-password-datamount",
+          "samAccountName": "sre1datamount"
+        },
+        "ldapSearch": {
+          "name": "SRE1 LDAP Search Service Account",
+          "passwordSecretName": "sre-sre1-other-service-account-password-ldap-search",
+          "samAccountName": "sre1ldapsearch"
+        },
+        "postgres": {
+          "name": "SRE1 Postgres DB Service Account",
+          "passwordSecretName": "sre-sre1-db-service-account-password-postgres",
+          "samAccountName": "sre1dbpostgres"
+        }
+      }
+    },
+    "webapps": {
+      "gitlab": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-gitlab",
+        "disks": {
+          "data": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "50",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "GITLAB-SRE-SRE1.decovid.turingsafehaven.ac.uk",
+        "hostname": "GITLAB-SRE-SRE1",
+        "ip": "10.150.2.5",
+        "rootPasswordSecretName": "sre-sre1-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-SRE1",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "hackmd": {
+        "adminPasswordSecretName": "sre-sre1-vm-admin-password-hackmd",
+        "disks": {
+          "os": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "HACKMD-SRE-SRE1.decovid.turingsafehaven.ac.uk",
+        "hostname": "HACKMD-SRE-SRE1",
+        "ip": "10.150.2.6",
+        "vmName": "HACKMD-SRE-SRE1",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "nsg": "NSG_SRE_SRE1_WEBAPPS",
+      "rg": "RG_SRE_SRE1_WEBAPPS"
+    }
+  }
+}

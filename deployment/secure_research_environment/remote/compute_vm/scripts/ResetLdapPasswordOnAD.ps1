@@ -9,6 +9,6 @@ param(
   $ldapPassword
 )
 
-Write-Host "Resetting password for '$samAccountName'..."
+Write-Output "Resetting password for '$samAccountName'..."
 Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"
 Set-ADAccountPassword -Identity $samAccountName -NewPassword (ConvertTo-SecureString -AsPlainText "$ldapPassword" -Force)

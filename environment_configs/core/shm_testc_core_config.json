@@ -1,10 +1,13 @@
 {
     "subscriptionName": "Safe Haven Management Test C",
-    "domainSubscriptionName": "Turing Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "testc.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENTESTC",
     "shmId": "testc",
     "name": "Turing Development Safe Haven C",
     "organisation": {
@@ -13,6 +16,117 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth",
-    "ipPrefix": "10.0.0"
+    "location": "centralus",
+    "overrides": {
+        "rgPrefix": "RG_SHM",
+        "domain": {
+            "netbiosName": "SAFEHAVENTESTC",
+            "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "linuxServers": {
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+                },
+                "rdsGatewayServers": {
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+                }
+            },
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "keyVault": {
+            "secretNames": {
+                "domainAdminUsername": "shm-testc-vm-admin-username",
+                "vmAdminUsername": "shm-testc-vm-admin-username"
+            }
+        },
+        "logging": {
+            "rg": "RG_SHM_TESTC_LOGGING"
+        },
+        "mirrors": {
+            "pypi": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-pypi-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-pypi-external-tier-3-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-cran-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testc-package-mirror-cran-external-tier-3-admin-password"
+                    }
+                }
+            }
+        },
+        "users": {
+            "computerManagers": {
+                "identityServers": {
+                    "samAccountName": "shmtestcadmin",
+                    "passwordSecretName": "shm-testc-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmtestcadmin",
+                    "passwordSecretName": "shm-testc-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmtestcadmin",
+                    "passwordSecretName": "shm-testc-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmtestcadmin",
+                    "passwordSecretName": "shm-testc-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmtestcadmin",
+                    "passwordSecretName": "shm-testc-domain-admin-password"
+                }
+            },
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-testc-localadsync-password"
+                }
+            }
+        },
+        "dc": {
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-testc-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-testc-nps-admin-password",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "accountName": "shmtestcartifactsnxbqspy"
+            },
+            "bootdiagnostics": {
+                "accountName": "shmtestcbootdiagsnxbqspy"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_TESTC_PKG_MIRRORS"
+        }
+    }
 }
