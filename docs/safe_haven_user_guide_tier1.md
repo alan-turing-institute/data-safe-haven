@@ -109,7 +109,7 @@ We use SSH keys to authenticate users who try to log into the SRE.
 You will need to provide us with the public part of your SSH key in order for us to register it.
 If you do not already have an SSH key, don't worry - it's easy to generate one:
 
-#### Generating an SSH on Windows
+#### Generating an SSH key on Windows
 If you are using Windows, you will need to download an SSH client.
 We recommend installing the free [PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/) program from `http://www.chiark.greenend.org.uk/~sgtatham/putty/`.
 To generate an SSH key with `PuTTYgen`, follow these steps:
@@ -140,7 +140,7 @@ To generate an SSH key with `PuTTYgen`, follow these steps:
       - Use a name that matches the public key but with the `ppk` extension
       - :information_source: Our example user Ada Lovelace might call hers `apr20_ada_lovelace_rsa.ppk`
 
-#### Generating an SSH on Linux/OSX
+#### Generating an SSH key on Linux/OSX
 On Linux or OSX you can generate a key with `ssh-keygen` with the following steps:
 
 1. Choose the name for your key.
