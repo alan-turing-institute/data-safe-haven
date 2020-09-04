@@ -215,8 +215,7 @@
                 - 443:443
               volumes:
                 - /opt/nginx/cocalc.conf:/etc/nginx/nginx.conf
-                - /opt/ssl/letsencrypt.cert:/etc/nginx/ssl/letsencrypt.cert:ro
-                - /opt/ssl/letsencrypt.key:/etc/nginx/ssl/letsencrypt.key:ro
+                - /opt/ssl/:/etc/nginx/ssl/
               restart: always
       register: output
 

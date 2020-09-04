@@ -268,7 +268,7 @@ try {
         python $(Join-Path $PSScriptRoot ".." "ansible" "scripts" "generate_qr_codes.py") `
                --totp-hashes (Join-Path $PSScriptRoot "totp_hashes.txt") `
                --qr-codes (Join-Path $HOME "qrcodes") `
-               --host-name $config.shm.dns.rg
+               --host-name $config.sre.domain.fqdn
         Add-LogMessage -Level Warning "You will need to send each of the $HOME/qrcodes/<name>.png QR codes to the appropriate user in order for them to initialise their MFA"
     }
 

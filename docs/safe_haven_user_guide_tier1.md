@@ -122,7 +122,7 @@ To generate an SSH key with `PuTTYgen`, follow these steps:
       <img src="images/user_guide/tier1_puttygen_main.png" width="80%" title="tier1_puttygen_main">
    </p>
 2. Generate a random key
-   - Move your mouse in the area below the progress bar.
+   - **Move your mouse around** in the box below the progress bar to fill up the bar
    - When the progress bar is full, `PuTTYgen` will generate your key pair.
 3. Secure your key
    - Type a passphrase in the `Key passphrase` field.
@@ -227,7 +227,7 @@ To connect over SSH with `PuTTY`, follow these steps:
 3. Setup SSH forwarding
    - Expand `Connection` and `SSH` on the left-hand sidebar and select `Tunnels`
    - In the `Source port` box put `8443`
-   - In the `Destination` box put `<SRE URL>:433` (note the `:`)
+   - In the `Destination` box put `<SRE URL>:443` (note the `:`)
    - :information_source: Our example user Ada Lovelace will use `apr20.turingsafehaven.ac.uk:443` here
    <p align="center">
       <img src="images/user_guide/tier1_putty_setup_03.png" width="80%" title="tier1_putty_setup_03">
@@ -238,6 +238,10 @@ To connect over SSH with `PuTTY`, follow these steps:
 5. Connect via SSH
    - Select the session you have saved and click `Load`
    - Now click `Open` and the SSH connection window will open
+   - :pencil2: Note that you might get a connection warning like the one below. If you do, please select `Yes`
+   <p align="center">
+      <img src="images/user_guide/tier1_putty_connection_warning.png" width="80%" title="tier1_putty_connection_warning">
+   </p>
    - You will be prompted for the passphrase for your key: enter the passphrase you set earlier
    - You will be prompted for a `One-time password (OATH) for <your username>`: enter the six digits from your authenticator app with no spaces
    <p align="center">

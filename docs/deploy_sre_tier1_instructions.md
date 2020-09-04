@@ -112,3 +112,4 @@ On your **deployment machine**.
 - Within that storage account is a file share called `ingress`.
   This share is mounted at `/data` on the Tier 1 VM.
 - You may upload data to `ingress` using the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+- If data is already in another Azure storage account, the easiest way to transfer it is using [`AzCopy`](https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/5-move-blobs-using-azcopy)

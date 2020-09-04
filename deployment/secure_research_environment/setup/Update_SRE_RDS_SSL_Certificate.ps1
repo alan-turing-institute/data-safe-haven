@@ -200,13 +200,15 @@ if ($doInstall) {
         $script = "
             sudo mkdir -p /opt/ssl
             sudo chmod 0700 /opt/ssl
-            sudo rm -f /opt/ssl/letsencrypt*
+            sudo rm -rf /opt/ssl/letsencrypt*
             sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/letsencrypt.cert
             sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/letsencrypt.key
             sudo chown -R root:root /opt/ssl/
             sudo chmod 0600 /opt/ssl/*.*
+            ls -alh /opt/ssl/
         "
         $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
+        Write-Output $result.Value
 
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
         # Add signed KeyVault certificate to the gateway VM

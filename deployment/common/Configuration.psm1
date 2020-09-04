@@ -123,7 +123,7 @@ function Add-SreConfig {
             }
             egress = [ordered]@{
                 accountName   = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
-                containerName = "ingress"
+                containerName = "egress"
             }
         }
     }
