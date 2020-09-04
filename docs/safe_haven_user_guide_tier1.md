@@ -227,8 +227,7 @@ To connect over SSH with `PuTTY`, follow these steps:
 3. Setup SSH forwarding
    - Expand `Connection` and `SSH` on the left-hand sidebar and select `Tunnels`
    - In the `Source port` box put `8443`
-   - In the `Destination` box put `<SRE URL>:443` (note the `:`)
-   - :information_source: Our example user Ada Lovelace will use `apr20.turingsafehaven.ac.uk:443` here
+   - In the `Destination` box put `127.0.0.1:443` (note the `:`)
    <p align="center">
       <img src="images/user_guide/tier1_putty_setup_03.png" width="80%" title="tier1_putty_setup_03">
    </p>
