@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "DSGSEP2020 - Greenvest",
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "sreId": "green",
+    "shmId": "turing1",
+    "tier": "1",
+    "domain": "greenvest.turingsafehaven.ac.uk",
+    "ipPrefix": "10.100.64",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.3.2020081900"
+}

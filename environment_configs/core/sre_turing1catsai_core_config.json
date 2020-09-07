@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "DSGSEP2020 - CatsAI",
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "sreId": "catsai",
+    "shmId": "turing1",
+    "tier": "1",
+    "domain": "catsai.turingsafehaven.ac.uk",
+    "ipPrefix": "10.100.48",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.3.2020081900"
+}

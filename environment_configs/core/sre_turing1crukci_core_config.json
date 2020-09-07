@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "DSGSEP2020 - CRUKCI",
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "sreId": "crukci",
+    "shmId": "turing1",
+    "tier": "1",
+    "domain": "crukci.turingsafehaven.ac.uk",
+    "ipPrefix": "10.100.56",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.3.2020081900"
+}

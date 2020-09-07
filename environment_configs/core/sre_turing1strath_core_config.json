@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "DSGSEP2020 - Strathclyde",
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "sreId": "strath",
+    "shmId": "turing1",
+    "tier": "1",
+    "domain": "strathclyde.turingsafehaven.ac.uk",
+    "ipPrefix": "10.100.40",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.3.2020081900"
+}
