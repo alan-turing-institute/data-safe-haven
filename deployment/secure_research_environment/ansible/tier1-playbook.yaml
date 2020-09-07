@@ -188,6 +188,14 @@
         name: nginx
         source: pull
 
+    - name: Create shared data directory
+      become: yes
+      file:
+        path: /scratch/shared
+        state: directory
+        owner: root
+        mode: 0777
+
     - name: Run CoCalc with docker-compose
       docker_compose:
         project_name: cocalc
