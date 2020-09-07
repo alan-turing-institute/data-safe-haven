@@ -1,5 +1,7 @@
 #cloud-config
 
+fqdn: <vm-fqdn>
+
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
@@ -70,9 +72,6 @@ write_files:
       }
 
 runcmd:
-  # Set hostname
-  - hostnamectl set-hostname <vm-fqdn>
-  - cat /etc/hostname
   # Create subdirectories on the scratch disk
   - mkdir -p /scratch/projects /scratch/shared
   - chmod -R ugo+rw /scratch/shared
