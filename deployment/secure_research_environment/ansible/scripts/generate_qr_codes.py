@@ -39,11 +39,10 @@ def main():
         print("args.host_name", args.host_name)
         print("base32_secret", base32_secret)
         print("qr_directory", qr_directory)
-        host_name = args.host_name  # needed for Python 3.6
         result = run(
             [
                 "qrencode",
-                f"otpauth://totp/{username}@{host_name}?secret={base32_secret}",
+                f"otpauth://totp/{username}@{args.host_name}?secret={base32_secret}",
                 "-o",
                 f"{qr_directory}/{username}.png",
             ],
