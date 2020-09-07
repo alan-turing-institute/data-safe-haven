@@ -1,3 +1,4 @@
+"""Generate QR codes from TOTP hashes"""
 #! /usr/bin/env python3
 from pathlib import Path
 import re
@@ -6,6 +7,7 @@ import argparse
 
 
 def main():
+    """Generate QR codes from TOTP hashes"""
     parser = argparse.ArgumentParser(description="Generate QR codes from TOTP hashes")
     parser.add_argument("--totp-hashes", type=str, help="path to the TOTP hashes")
     parser.add_argument("--qr-codes", type=str, help="path to the QR codes")
