@@ -2,7 +2,7 @@
 #! /usr/bin/env python3
 from pathlib import Path
 import re
-from subprocess import run
+from subprocess import run, PIPE
 import argparse
 
 
@@ -26,7 +26,7 @@ def main():
         # Find the base32 secret for each user
         result = run(
             ["oathtool", "--totp", "-v", totp_hash],
-            capture_output=True,
+            stdout=PIPE,
             text=True,
             check=True,
         )
