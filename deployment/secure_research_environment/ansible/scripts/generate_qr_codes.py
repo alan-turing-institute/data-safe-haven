@@ -27,7 +27,7 @@ def main():
         result = run(
             ["oathtool", "--totp", "-v", totp_hash],
             stdout=PIPE,
-            text=True,
+            universal_newlines=True,
             check=True,
         )
         base32_secret = re.search(
@@ -35,10 +35,6 @@ def main():
         ).group(1)
 
         # Generate a QR code for each user
-        print("username", username)
-        print("args.host_name", args.host_name)
-        print("base32_secret", base32_secret)
-        print("qr_directory", qr_directory)
         result = run(
             [
                 "qrencode",
