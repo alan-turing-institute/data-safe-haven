@@ -268,9 +268,9 @@ try {
         Add-LogMessage -Level Info "Generating QR codes"
         python3 $(Join-Path $PSScriptRoot ".." "ansible" "scripts" "generate_qr_codes.py") `
                 --totp-hashes (Join-Path $PSScriptRoot "totp_hashes.txt") `
-                --qr-codes (Join-Path $HOME "qrcodes") `
+                --qr-codes (Join-Path $HOME "qrcodes" $config.sre.id) `
                 --host-name $config.sre.domain.fqdn
-        Add-LogMessage -Level Warning "You will need to send each of the $HOME/qrcodes/<name>.png QR codes to the appropriate user in order for them to initialise their MFA"
+        Add-LogMessage -Level Warning "You will need to send each of the $HOME/qrcodes/<sreid>/<name>.png QR codes to the appropriate user in order for them to initialise their MFA"
     }
 
 

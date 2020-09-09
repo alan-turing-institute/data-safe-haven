@@ -20,7 +20,7 @@ def main():
 
     # Create QR code directory
     qr_directory = Path(args.qr_codes)
-    qr_directory.mkdir(exist_ok=True)
+    qr_directory.mkdir(parents=True, exist_ok=True)
 
     for username, totp_hash in totp_hashes:
         # Find the base32 secret for each user
