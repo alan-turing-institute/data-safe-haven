@@ -3,18 +3,17 @@
 ## :mailbox_with_mail: Table of contents
 
 - [:beginner: Introduction: The Turing Safe Haven](#beginner-introduction-the-turing-safe-haven)
-  - [:mag_right: Definitions](#mag_right-definitions)
+  - [:calendar: Definitions](#calendar-definitions)
 - [:rocket: Set up your account](#rocket-set-up-your-account)
   - [:seedling: Prerequisites](#seedling-prerequisites)
-  - [:closed_lock_with_key: Generating an SSH key](#closed_lock_with_key-generating-an-ssh-key)
-  - [:door: Set up multi-factor authentication](#door-set-up-multi-factor-authentication)
+  - [:key: Generate an SSH key](#key-generate-an-ssh-key)
+  - [:iphone: Set up multi-factor authentication](#iphone-set-up-multi-factor-authentication)
 - [:unlock: Access the Secure Research Environment](#unlock-access-the-secure-research-environment)
-  - [:seedling: Prerequisites](#seedling-prerequisites-1)
-  - [:penguin: Log into the research environment over SSH](#penguin-log-into-the-research-environment-over-SSH)
-  - [:house: Log into the CoCalc environment](#house-log-into-the-cocalc-environment)
+  - [:penguin: Use SSH to log into the SRE](#penguin-use-ssh-to-log-into-the-sre)
+  - [:customs: Log into the CoCalc environment](#customs-log-into-the-cocalc-environment)
 - [:computer: Using the Secure Research Environment](#computer-using-the-secure-research-environment)
-  - [:open_hands: Using CoCalc](#open_hands-using-cocalc)
-  - [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
+  - [:family: Using CoCalc](#family-using-cocalc)
+  - [:books: Accessing data in the SRE](#books-accessing-data-in-the-sre)
   - [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
 - [:bug: Report a bug](#bug-report-a-bug)
   - [:wrench: Help us to help you](#wrench-help-us-to-help-you)
@@ -39,7 +38,7 @@ You will find that many software packages are already available, and the adminis
 **Please read this user guide carefully and remember to refer back to it when you have questions.**
 In many cases the answer is already here, but if you think this resource could be clearer, please let us know so we can improve the documentation for future users.
 
-### :mag_right: Definitions
+### :calendar: Definitions
 The following definitions might be useful during the rest of this guide
 
 > **Secure Research Environment (SRE)**: the environment that you will be using to access the sensitive data.
@@ -102,12 +101,12 @@ You might receive the SRE URL in the initial email from your SRE administrator, 
 > Her **SRE URL** is `sandbox.apr20.turingsafehaven.ac.uk`.
 
 
-### :closed_lock_with_key: Generating an SSH key
+### :key: Generate an SSH key
 We use SSH keys to authenticate users who try to log into the SRE.
 You will need to provide us with the public part of your SSH key in order for us to register it.
 If you do not already have an SSH key, don't worry - it's easy to generate one:
 
-#### Generating an SSH key on Windows
+#### Generate an SSH key on Windows
 If you are using Windows, you will need to download an SSH client.
 We recommend installing the free [PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/) program from `http://www.chiark.greenend.org.uk/~sgtatham/putty/`.
 To generate an SSH key with `PuTTYgen`, follow these steps:
@@ -138,7 +137,7 @@ To generate an SSH key with `PuTTYgen`, follow these steps:
       - Use a name that matches the public key but with the `ppk` extension
       - :information_source: Our example user Ada Lovelace might call hers `apr20_ada_lovelace_rsa.ppk`
 
-#### Generating an SSH key on Linux/OSX
+#### Generate an SSH key on Linux/OSX
 On Linux or OSX you can generate a key with `ssh-keygen` with the following steps:
 
 1. Choose the name for your key.
@@ -163,7 +162,7 @@ On Linux or OSX you can generate a key with `ssh-keygen` with the following step
 > :warning: Keep the private part safe! You will need this to connect to the SRE.
 
 
-### :door: Set up multi-factor authentication
+### :iphone: Set up multi-factor authentication
 The next step in setting up your account is to authenticate your account from your phone.
 
 1. You will need to download a two-factor authentication app that is capable of generating 6-digit codes. A few examples are:
@@ -189,24 +188,22 @@ This additional security verification is to make it harder for people to imperso
 
 
 ## :unlock: Access the Secure Research Environment
-
-### :seedling: Prerequisites
-After going through the account setup procedure, you should have access to:
+After going through the account setup procedure, you should have:
 
 - Your `username`
-- The SRE URL name
+- The `SRE URL` that you will be using
 - Multifactor authentication
 
 > :point_right: If you aren't sure about any of these then please return to the [**Set up your account**](#rocket-set-up-your-account) section above.
 
-### :penguin: Log into the research environment over SSH
+### :penguin: Use SSH to log into the SRE
 Although the research environment will use the browser-based [`CoCalc`](https://www.cocalc.com), you are required to authenticate by using a secure SSH connection.
 
-- Authentication for users requires:
-   - the correct SSH private key
-   - a one-time password from your authenticator app
+Authentication for users requires:
+- the correct SSH private key
+- a one-time password from your authenticator app
 
-#### Connecting via SSH on Windows
+#### Connect via SSH on Windows
 To connect over SSH with `PuTTY`, follow these steps:
 
 1. Open `PuTTY` and create a new session
@@ -245,7 +242,7 @@ To connect over SSH with `PuTTY`, follow these steps:
          <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login">
       </p>
 
-#### Connecting via SSH on Linux/OSX
+#### Connect via SSH on Linux/OSX
 To connect over SSH simply do the following:
 
 1. Open a `Terminal` window and enter the following
@@ -258,7 +255,7 @@ To connect over SSH simply do the following:
    - At the prompt `One-time password (OATH) for <your username>`: enter the six digits from your authenticator app with no spaces
 
 
-### :house: Log into the CoCalc environment
+### :customs: Log into the CoCalc environment
 If you connected successfully you should now be able to open a web browser on your computer and go to:
 
 ```
@@ -312,7 +309,7 @@ You can invite other users to collaborate on your project and, in fact, you will
 
 ## :computer: Using the Secure Research Environment
 
-### :open_hands: Using CoCalc
+### :family: Using CoCalc
 Full [details about how to use CoCalc](https://doc.cocalc.com/contents.html) are available at: `https://doc.cocalc.com/contents.html`
 
 You have access to the following tools through `CoCalc`
@@ -321,8 +318,8 @@ You have access to the following tools through `CoCalc`
 - the ability to install python/R/Julia packages from the internet
 
 
-### :open_file_folder: Shared directories within the SRE
-There are several shared areas available through `CoCalc` that all collaborators within a research project team can see and access:
+### :books: Accessing data in the SRE
+There are several shared folders available through `CoCalc` that all collaborators within a research project team can see and access:
 You can see these interactively in a terminal by using `New > Linux terminal` from the project menu.
 
 * [input data](#input-data-data): `/data/`

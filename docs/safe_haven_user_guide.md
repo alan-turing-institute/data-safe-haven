@@ -3,7 +3,7 @@
 ## :mailbox_with_mail: Table of contents
 
 - [:beginner: Introduction: The Turing Safe Haven](#beginner-introduction-the-turing-safe-haven)
-  - [:mag_right: Definitions](#mag_right-definitions)
+  - [:calendar: Definitions](#calendar-definitions)
 - [:rocket: Set up your account](#rocket-set-up-your-account)
   - [:seedling: Prerequisites](#seedling-prerequisites)
   - [:closed_lock_with_key: Set a password](#closed_lock_with_key-set-a-password)
@@ -63,7 +63,7 @@ You will find that many software packages are already available, and the adminis
 **Please read this user guide carefully and remember to refer back to it when you have questions.**
 In many cases the answer is already here, but if you think this resource could be clearer, please let us know so we can improve the documentation for future users.
 
-### :mag_right: Definitions
+### :calendar: Definitions
 The following definitions might be useful during the rest of this guide
 
 > **Secure Research Environment (SRE)**: the environment that you will be using to access the sensitive data.
