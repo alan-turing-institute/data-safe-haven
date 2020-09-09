@@ -46,7 +46,7 @@ The following definitions might be useful during the rest of this guide
 
 > **Turing Safe Haven**: the overall project that details how to create and manage one or more SREs.
 
-> **SRE domain**: each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this full URL the `<SRE URL>` in the rest of this document, and we will call the initial part of the URL the `<SRE ID>` (i.e. `sandbox` in this example).
+> **SRE URL**: each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this full URL the `<SRE URL>` in the rest of this document, and we will call the initial part of the URL the `<SRE ID>` (i.e. `sandbox` in this example).
 
 
 ## :rocket: Set up your account
@@ -59,8 +59,8 @@ Make sure you have all of the following in front of you when connecting to the S
 * :wrench: Your [username](#username), given in an email from your SRE administrator.
 * :european_castle: The URL for the SRE, given in an email from your SRE administrator.
 * :computer: Your computer.
-* :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
-* :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
+* :satellite: [Access](#network-access) to the internet (NB. this might be specific wired or wireless network if specified in the email from your SRE administrator).
+* :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good internet connectivity.
 
 You should also know who the **designated contact** for your SRE is.
 This might be an administrator or one of the people working on the project with you.
@@ -90,12 +90,10 @@ You will be told what these requirements are for your particular environment.
 
 #### Your phone for multi-factor authentication
 Multi-factor authentication (MFA) is one of the most powerful ways of verifying user identity online.
-We therefore use MFA to protect the project data - specifically, we will use your phone number.
+MFA is one of the levels of security enforced by the Turing Safe Haven.
 
-> :point_right: Make sure to have your phone with you and that you have good signal connectivity when you are connecting to the SRE.
-
-> :pencil2: You may encounter some connectivity challenges if your phone network has poor connectivity.
-> The SRE is not set up to allow you to authenticate through other methods.
+> :point_right: Make sure to have your phone with you and that you have good internet connectivity when you are connecting to the SRE.
+> :warning: The SRE is not set up to allow you to authenticate through other methods.
 
 #### Domain names
 You might receive the SRE URL in the initial email from your SRE administrator, or you might be assigned to a particular SRE at a later point.
@@ -238,14 +236,14 @@ To connect over SSH with `PuTTY`, follow these steps:
    - Select the session you have saved and click `Load`
    - Now click `Open` and the SSH connection window will open
    - :pencil2: Note that you might get a connection warning like the one below. If you do, please select `Yes`
-   <p align="center">
-      <img src="images/user_guide/tier1_putty_connection_warning.png" width="80%" title="tier1_putty_connection_warning">
-   </p>
+      <p align="center">
+         <img src="images/user_guide/tier1_putty_connection_warning.png" width="80%" title="tier1_putty_connection_warning">
+      </p>
    - You will be prompted for the passphrase for your key: enter the passphrase you set earlier
    - You will be prompted for a `One-time password (OATH) for <your username>`: enter the six digits from your authenticator app with no spaces
-   <p align="center">
-      <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login">
-   </p>
+      <p align="center">
+         <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login">
+      </p>
 
 #### Connecting via SSH on Linux/OSX
 To connect over SSH simply do the following:
