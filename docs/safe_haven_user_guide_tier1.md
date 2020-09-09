@@ -410,4 +410,7 @@ To help us fix your issues please do the following:
 4. Send the bug report to the designated contact for your SRE.
 
 ## :pray: Acknowledgments
-This user guide is based on an initial document written in September 2020 by James Robinson
+This user guide is based on an initial document written in August 2020 by James Robinson.
+
+Updates:
+- September 2020 by Jim Madge and Maryleen Ndubuaku.
