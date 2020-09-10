@@ -233,6 +233,7 @@
           version: "2"
           services:
             cocalc:
+              runtime: nvidia
               image: sagemathinc/cocalc
               expose:
                 - 443
