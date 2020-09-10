@@ -161,12 +161,31 @@
           - docker-compose
         state: present
 
-    - name: Start and enable docker service
+    - name: Add Nvidia docker gpg key
+      become: yes
+      apt_key:
+        url: https://nvidia.github.io/nvidia-docker/gpgkey
+        state: present
+
+    - name: Add Nvidia docker apt repository
+      become: yes
+      apt_repository:
+        repo: https://nvidia.github.io/nvidia-docker/ubuntu1804/nvidia-docker.list
+        name: nvidia-docker
+        state: present
+
+    - name: Install Nvidia docker
+      become: yes
+      apt:
+        name: nvidia-docker2
+        update_cache: yes
+
+    - name: Restart and enable docker service
       become: yes
       systemd:
         name: docker.service
         enabled: yes
-        state: started
+        state: restarted
 
     - name: Add admin user to docker group
       become: yes
