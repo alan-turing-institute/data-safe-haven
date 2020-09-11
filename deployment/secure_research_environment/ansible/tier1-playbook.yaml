@@ -197,9 +197,9 @@
     - name: Reset connection so that adding admin user to docker group takes effect
       meta: reset_connection
 
-    - name: Pull CoCalc docker image
+    - name: Pull CuCalc docker image
       docker_image:
-        name: sagemathinc/cocalc
+        name: turinginst/cucalc
         source: pull
 
     - name: Pull nginx docker image
@@ -245,7 +245,7 @@
         group: "{{ ansible_user }}"
         mode: 0600
 
-    - name: Run CoCalc with docker-compose
+    - name: Run CuCalc with docker-compose
       docker_compose:
         project_name: cocalc
         definition:
@@ -253,7 +253,7 @@
           services:
             cocalc:
               runtime: nvidia
-              image: sagemathinc/cocalc
+              image: turinginst/cucalc
               expose:
                 - 443
               volumes:
@@ -278,7 +278,7 @@
     - debug:
         var: output
 
-    - name: Assert that the CoCalc container is running
+    - name: Assert that the CuCalc container is running
       assert:
         that:
           - "cocalc.cocalc_cocalc_1.state.running"
