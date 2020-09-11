@@ -170,9 +170,15 @@
     - name: Add Nvidia docker apt repository
       become: yes
       apt_repository:
-        repo: https://nvidia.github.io/nvidia-docker/ubuntu1804/nvidia-docker.list
-        filename: nvidia-docker
+        repo: "{{ item }}"
         state: present
+        filename: nvidia-docker
+      loop:
+        # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+        # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+        - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+        - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+        - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
 
     - name: Install Nvidia docker
       become: yes
