@@ -171,7 +171,7 @@
       become: yes
       apt_repository:
         repo: https://nvidia.github.io/nvidia-docker/ubuntu1804/nvidia-docker.list
-        name: nvidia-docker
+        filename: nvidia-docker
         state: present
 
     - name: Install Nvidia docker
