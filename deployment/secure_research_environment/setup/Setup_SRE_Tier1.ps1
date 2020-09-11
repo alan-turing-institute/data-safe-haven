@@ -260,7 +260,7 @@ try {
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
         --private-key "${privateKeySecretName}.key" `
-        -e "fqdn=$($config.sre.domain.fqdn)"
+        -e "ansible_python_interpreter=/usr/bin/python3 fqdn=$($config.sre.domain.fqdn)"
 
     # Generate qr codes
     # -----------------

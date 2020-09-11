@@ -153,13 +153,24 @@
           Match User "{{ ansible_user }}"
               AuthenticationMethods publickey
 
-    - name: Install docker and docker-compose
+    - name: Install docker
       become: yes
       apt:
-        name:
-          - docker.io
-          - docker-compose
+        name: docker.io
         state: present
+
+    - name: Install pip3
+      become: yes
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install docker-compose
+      become: yes
+      pip:
+        name: docker-compose>1.19.0
+        state: present
+        executable: pip3
 
     - name: Add Nvidia docker gpg key
       become: yes
@@ -255,7 +266,7 @@
       docker_compose:
         project_name: cocalc
         definition:
-          version: "2"
+          version: "2.3"
           services:
             cocalc:
               runtime: nvidia
