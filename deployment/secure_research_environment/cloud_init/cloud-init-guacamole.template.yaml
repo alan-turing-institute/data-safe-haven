@@ -166,19 +166,15 @@ write_files:
             LDAP_GROUP_BASE_DN: <ldap-group-base-dn>
             LDAP_SEARCH_BIND_DN: <ldap-search-bind-dn>
             LDAP_SEARCH_BIND_PASSWORD: <ldap-search-bind-password>
-            POSTGRES_HOSTNAME: postgres
-            POSTGRES_DATABASE: guacamole
-            POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: <postgres-password>
+            # POSTGRES_HOSTNAME: postgres
+            # POSTGRES_DATABASE: guacamole
+            # POSTGRES_USER: guacamole
+            # POSTGRES_PASSWORD: <postgres-password>
             OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/authorize
             OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/discovery/v2.0/keys
             OPENID_ISSUER: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/v2.0
             OPENID_CLIENT_ID: f0a12d2a-88ce-47f6-b3f9-df5dcf169d02
-            OPENID_REDIRECT_URI: http://guacamole:8080/guacamole/
-            #DUO_API_HOSTNAME: <duo-api-hostname>
-            #DUO_INTEGRATION_KEY: <duo-integration-key>
-            #DUO_SECRET_KEY: <duo-secret-key>
-            #DUO_APPLICATION_KEY: <duo-application-key>
+            OPENID_REDIRECT_URI: https://40.69.145.45:8443
           ports:
           - 8080/tcp
           restart: always
