@@ -11,7 +11,7 @@ Optionally include screenshots here.
 If this issue is describing a bug, include some steps to reproduce the behaviour.
 
 #### :page_facing_up: Tasks
-Include specific tasks in the order they need to be done in.
+Include specific tasks (if any) in the order in which they need to be done.
 - [ ] Task 1
 - [ ] Task 2
 - [ ] Task 3
