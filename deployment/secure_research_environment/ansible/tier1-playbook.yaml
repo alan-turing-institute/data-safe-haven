@@ -165,6 +165,12 @@
         name: python3-pip
         state: present
 
+    - name: Uninstall system docker-compose
+      become: yes
+      apt:
+        name: docker-compose
+        state: absent
+
     - name: Install docker-compose
       become: yes
       pip:
