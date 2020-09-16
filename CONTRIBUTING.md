@@ -95,15 +95,22 @@ The goal is to allow you to focus on the content rather than worry too much abou
 ### Project management through issues
 Please regularly check out the agreed upon tasks at the [issues list][safehaven-issues].
 Every issue should have labels assigned to it from the following scheme.
-At least one label from each category (`type`, `affected`, `severity` and `status`) should be assigned to each issue - these can change over time.
+At least one label from each category (`type`, `affected` and `severity`) should be assigned to each issue - these can change over time.
 
 | Category         | Labels |
 |:----------------:|:------:|
-| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20documentation%20-b9d6f3"> <img src="https://img.shields.io/badge/-type:%20question%20-b9d6f3"> |
-| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20end users-b19cd9"> <img src="https://img.shields.io/badge/-affected:%20sysadmin-b19cd9"> |
+| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20documentation%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20question%20-fbca04"> |
+| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b9d6f3"> <img src="https://img.shields.io/badge/-affected:%20end users-b9d6f3"> |
 | severity         | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
-| status           | <img src="https://img.shields.io/badge/-status:%20done-77dd77"> <img src="https://img.shields.io/badge/-status:%20in%20progress-77dd77"> <img src="https://img.shields.io/badge/-status:%20decision%20needed-ff96ca"> <img src="https://img.shields.io/badge/-status:%20on%20hold-fbca04"> <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
+
+Other labels which may or may not be relevant are meta labels (for collecting related issues) and the "good first issue" label for signalling issues that new contributors might like to tackle.
+If an issue is closed without being completed, one of the `closed` labels should be attached to it to explain why.
+
+| Category         | Labels |
+|:----------------:|:------:|
+| meta             | <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca"> |
 | other            | <img src="https://img.shields.io/badge/-good%20first%20issue-07ea97"> |
+| closed           | <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
 If you have been assigned an issue, please be ready to explain in the [project meeting](#project-meetings) what your progress has been.
