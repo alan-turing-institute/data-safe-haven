@@ -109,7 +109,7 @@ If an issue is closed without being completed, one of the `closed` labels should
 | Category         | Labels |
 |:----------------:|:------:|
 | meta             | <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca"> |
-| other            | <img src="https://img.shields.io/badge/-good%20first%20issue-07ea97"> |
+| other            | <img src="https://img.shields.io/badge/-good%20first%20issue-77dd77"> |
 | closed           | <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
