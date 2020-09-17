@@ -16,7 +16,7 @@ For all work packages classified at Tier 2 and above, you'll need to carry out y
 Before you begin, you’ll need to reset your password, and set up multi-factor authentication (MFA). To access the data safe haven environment on Azure, open a secure window, and copy and paste in https://rds-dsgX.dsgroupX.co.uk/RDWeb/webclient/, replacing the X with the number of the safe haven you’re going to be using. You can log in using your username and password, and confirmation through MFA, bringing you to the introductory screen. Welcome to the data safe haven!
 
 
-![](images/cheat_sheet_DSH_intro_screen.png)
+![](../images/cheat_sheet_DSH_intro_screen.png)
 
 
 The first time you use the safe haven, you’ll have to set up your user account on the virtual machine. To do so, run the "Shared VM (SSH)" app, authenticating with MFA, and dismiss the security alert. Next, run the "Shared VM (Desktop)" app and log in, using your details and MFA. You can use this secure environment to carry out secure data science research on data that's been imported in.
@@ -34,7 +34,7 @@ The data you’re going to be working on is stored in the R drive on a Windows V
 The Safe Haven contains a Linux VM for data analysis, with different packages installed on to it. The VM allows you to carry out data science research, completely isolated from the internet. You can access different applications from the terminal, including RStudio, Atom, jupyter notebook and Spider Integrated Development Environment. You can also access HackMD and Gitlab, using the browser in the VM.
 
 
-![](images/cheat_sheet_DSH_linux_vm.png)
+![](../images/cheat_sheet_DSH_linux_vm.png)
 
 
 The analytics environment can be accessed through the Shared VM (desktop) app, logging in with your username and password.
@@ -49,7 +49,7 @@ If you'd like to ingress additional code or data, such as for a new tool, you'll
 Gitlab can allow you and your team to write code collaboratively. GitLab is an open source code hosting platform for version control and collaboration. It lets you and others work together on projects, and version control all the code that you write. There is a local GitLab installation within the Work Resources.
 
 
-![](images/cheat_sheet_DSH_gitlab.png)
+![](../images/cheat_sheet_DSH_gitlab.png)
 
 
 You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop. Make all your repositories public so they are easy to share within your group. (Note that they are not really public as the server is only available inside your team’s virtual environment.)
@@ -62,7 +62,7 @@ HackMD is a tool that allows you to collaboratively write the data study group c
 You can find a really great markdown cheat sheet at https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet. You can access the Safe Haven installation of HackMD from the Work Resources page.
 
 
-![](images/cheat_sheet_DSH_hackmd.png)
+![](../images/cheat_sheet_DSH_hackmd.png)
 
 
 ## Finishing the project

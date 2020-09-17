@@ -22,7 +22,7 @@
 - [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
 
 ## :seedling: Prerequisites
-This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](deploy_sre_instructions.md) that are linked to it.
+This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](../deployment_instructions/deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](../deployment_instructions/deploy_sre_instructions.md) that are linked to it.
 - You will need VPN access to the SHM as described in the deployment instructions
 
 ## :beginner: Creating new users
@@ -94,7 +94,7 @@ To automatically assign licences to all local AD users that do not currently hav
 ## :running: User activation
 We need to contact the users to tell them their user ID and.
 We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
-We should also send them a copy of the [Safe Haven User Guide](safe_haven_user_guide.md) at this point.
+We should also send them a copy of the [Safe Haven User Guide](../user/safe_haven_user_guide.md) at this point.
 
 A sample email might look like the following
 
