@@ -3,7 +3,7 @@ Turing Azure Safe Haven - Implementation details for Data Providers
 
 Introduction
 ------------
-The Safe Haven is designed and deployed into Microsoft Azure utilizing Azure networking and Virtual Machine (VM) infrastructure. This document describes the architecture of the Safe Haven and the security measures in place to protect the sensitive data handled within it. 
+The Safe Haven is designed and deployed into Microsoft Azure utilizing Azure networking and Virtual Machine (VM) infrastructure. This document describes the architecture of the Safe Haven and the security measures in place to protect the sensitive data handled within it.
 
 ### Safe Haven Management segment (SHM)
 The user and machine management services for the Safe Haven are hosted on a separate subscription to any of the secure project environments.
@@ -34,14 +34,14 @@ High-level architecture
 The Management segment hosts the authentication providers for the infrastructure.
 The identity provider is Microsoft Active Directory, which is synchronised with AzureAD to provide cloud and multifactor authentication into the individual project Secure Research Environment (SRE).
 
-![High-level architecture](images/provider_azure_architecture/architecture_overview.png)
+![High-level architecture](../images/provider_azure_architecture/architecture_overview.png)
 
 The Management segment is connected to the SREs using Azure Virtual Network Peering. This connection passes authentication traffic between the servers in the SRE to AD servers within the Management subscription. While all SREs are peered with the Management segment, there is no connectivity between SREs directly.
 
 Management segment (SHM) architecture
 -------------------------------------
 
-![Safe Haven Management (SHM) segment](images/provider_azure_architecture/architecture_shm.png)
+![Safe Haven Management (SHM) segment](../images/provider_azure_architecture/architecture_shm.png)
 
 Within the Management segment all authentication services are contained within a single virtual network (VNet).
 The Windows Servers are running Active Directory and are acting as Domain Controllers.
@@ -82,7 +82,7 @@ The "internal" mirror is protected by an infrastructure level firewall that does
 
 Between them this pair of servers operate as a one-way "airlock" to allow packages to be pulled from the official package server on the internet and made available to compute VMs in project SREs, while not permitting the mirrors to be used to connect to the internet from a SRE. Even if the "internal" mirror was to be compromised, the infrastructure level firewall restricting outbound connections would prevent access to any other resources within the Safe Haven or outside of it.
 
-Researcher authentication 
+Researcher authentication
 -------------------------
 
 ![Researcher authentication](images/provider_azure_architecture/architecture_authentication.png)
@@ -134,4 +134,4 @@ The above protocol is implemented using an Azure Storage account as follows:
 - The SAS token will have permissions to upload, delete and amend files in the container, as well as list the uploaded files. However, it will not have permissions to read or download the files themselves. This provides an added layer of protection against loss of the SAS token at the Data Provider.
 - The SAS token will only be valid for a limited time period, providing sufficient time to organise the upload of the data but minimising the amount of time the token remains valid after the data is uploaded.
 
-We strongly recommend that the above process is used to securely transfer data to the Safe Haven. Where this is genuinely not possible for a particular Data Provider, we may consider transfer of data to the Turing via an alternative equally secure method. 
+We strongly recommend that the above process is used to securely transfer data to the Safe Haven. Where this is genuinely not possible for a particular Data Provider, we may consider transfer of data to the Turing via an alternative equally secure method.

@@ -1,7 +1,6 @@
 Design decisions based on physical resilience and availability
 ===================================================================
 
-
 ## Issues
 
 As per the NHS Cloud Security Principals (Principal 2, section 6), this document describes our approach and decision decisions towards the following points:

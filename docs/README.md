@@ -57,6 +57,16 @@ At security Tier 3 and above, these mirrors do not include all of the packages a
 
 - [Software package request form](software-package/software-package-request-form.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
+## Safe Haven design decisions
+
+See the `design_decisions` folder
+
+We outline a number of our design decisions when building our Safe Havens. This includes reasoning for our different choices but also highlights potential limitations for our Safe Havens and how this may affect things like cyber security.
+
+- [Safe Haven resilience](design_decisions/physical_resilence_and_availability.md) - Documentation on the physical resilience of the Safe Haven and our choices involved.
+
+- [Sensitive data handling](design_decisions/best-practice-sensitive-data-handling.md) - Guidance on our approach to handling sensitive research data and our related design decisions.
+
 
 ## Converting documentation to PDF
 
