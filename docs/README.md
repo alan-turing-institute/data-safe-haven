@@ -2,6 +2,8 @@
 
 ## Learn more about the Safe Haven
 
+See the `overview` folder
+
   - [Policy, process and design overview](provider-overview.md) - An overview of our policies, processes and security controls for supporting productive research while maintaining the security of the data we are working with.
 
   - [Azure implementation overview](provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
@@ -11,6 +13,8 @@
 
 We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
 
+See the `deployment_instructions` folder.
+
   - [Safe Haven Management (SHM) deployment guide](deploy_shm_instructions.md) - Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
 
   - [Data Science virtual machine build instructions](build_dsvm_image_instructions.md) - Build and publish our "batteries included" Data Science Compute virtual machine image.
@@ -19,6 +23,8 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
 
 
 ## Administering a Data Safe Haven
+
+See the `administration` folder
 
   - [Safe Haven Administrator guide](safe_haven_administrator_guide.md) - Instructions for administrators of a Safe Haven. Includes how create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
@@ -31,11 +37,25 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
 
 ## Using a Data Safe Haven
 
+See the `user` folder
+
 Once an SRE has been set up for a project within a Safe Haven, users need to know how to access it in order to carry out their research.
 
   - [Safe Havens User Guide](safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
 
   - [Safe Havens Cheat Sheet](safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+
+## Adding additional software Packages
+
+See the `software-package` folder
+
+Secure analysis environments include package mirrors.
+
+At security Tier 3 and above, these mirrors do not include all of the packages available from the parent repository. Instead they provide access to a subset of whitelisted packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
+
+- [Software package whitelist policy](/software-package/software-package-whitelist-policy.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
+
+- [Software package request form](/software-package/software-package-request-form.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
 
 ## Converting documentation to PDF
