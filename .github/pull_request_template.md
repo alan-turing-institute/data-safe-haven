@@ -4,6 +4,7 @@ Please review the [guidelines for contributing](../CONTRIBUTING.md) to this repo
 - Make sure that you give your pull request a meaningful title (*e.g.* `Enable foobar integration` rather than `515 foobar`)
 - If this pull request is not ready to merge yet, please add `WIP:` to the beginning of the name as well as marking it as a **draft** pull request
 - Make sure that your branch is up-to-date with the **master branch** (you probably started your branch from master but it may have changed since then)
+- There is **no need** to use GitHub labels for pull requests. The issue(s) which this pull request is closing should have the appropriate labels.
 
 ### :orange_book:  Description
 Please describe your pull request.
