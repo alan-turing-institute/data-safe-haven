@@ -4,7 +4,7 @@
 
 See the `overview` folder
 
-  - [Policy, process and design overview](provider-overview.md) - An overview of our policies, processes and security controls for supporting productive research while maintaining the security of the data we are working with.
+  - [Policy, process and design overview](overview/provider-overview.md) - An overview of our policies, processes and security controls for supporting productive research while maintaining the security of the data we are working with.
 
   - [Azure implementation overview](provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
 
