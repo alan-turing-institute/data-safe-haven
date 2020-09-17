@@ -113,3 +113,11 @@ On your **deployment machine**.
   This share is mounted at `/data` on the Tier 1 VM.
 - You may upload data to `ingress` using the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 - If data is already in another Azure storage account, the easiest way to transfer it is using [`AzCopy`](https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/5-move-blobs-using-azcopy)
+
+## :chart_with_upwards_trend: Migrating to a GPU VM
+- Stop the existing compute VM in the Azure Portal. This VM will be found in the
+  resource group `RG_SRE_<SRE ID>_COMPUTE`.
+- Change the size of the compute VM to a suitable size with a GPU, e.g. NC6.
+- Start the compute VM in the Azure Portal.
+- Ensure you have the `774-tier1-cuda` branch checked out.
+- Run `Setup_SRE_Tier1.ps1 -configId <SRE config ID> -usersYAMLPath <YAML file>` where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<YAML file>` is the path to the YAML file declaring the users.
