@@ -194,7 +194,19 @@
         path: /scratch/shared
         state: directory
         owner: root
-        mode: 0777
+        mode: u=rwx,g=rwx,o=rx
+
+    - name: Set default group and other permissions for shared data directory
+      become: yes
+      acl:
+        path: /scratch/shared
+        etype: "{{ item }}"
+        default: yes
+        permissions: rwx
+        state: present
+      loop:
+        - group
+        - other
 
     - name: Run CoCalc with docker-compose
       docker_compose:
