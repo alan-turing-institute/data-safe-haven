@@ -214,8 +214,6 @@
               restart: always
             nginx:
               image: nginx
-              links:
-                - cocalc:cocalc
               depends_on:
                 - cocalc
               ports:
