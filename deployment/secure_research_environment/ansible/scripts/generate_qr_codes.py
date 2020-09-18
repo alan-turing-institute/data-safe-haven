@@ -1,5 +1,5 @@
-"""Generate QR codes from TOTP hashes"""
 #! /usr/bin/env python3
+"""Generate QR codes from TOTP hashes"""
 from pathlib import Path
 import re
 from subprocess import run, PIPE
