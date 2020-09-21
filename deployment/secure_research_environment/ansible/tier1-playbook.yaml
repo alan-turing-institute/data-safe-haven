@@ -194,6 +194,7 @@
         path: /scratch/shared
         state: directory
         owner: root
+        group: root
         mode: u=rwx,g=rwx,o=rx
 
     - name: Set default group and other permissions for shared data directory
@@ -207,6 +208,15 @@
       loop:
         - group
         - other
+
+    - name: Create symbolic link to shared data directory
+      become: yes
+      file:
+        src: /scratch/shared
+        path: /shared
+        state: link
+        owner: root
+        group: root
 
     - name: Run CoCalc with docker-compose
       docker_compose:
