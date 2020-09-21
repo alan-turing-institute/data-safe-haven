@@ -195,7 +195,7 @@
         state: directory
         owner: root
         group: root
-        mode: u=rwx,g=rwx,o=rx
+        mode: u=rwx,g=rwx,o=rwx
 
     - name: Set default group and other permissions for shared data directory
       become: yes
