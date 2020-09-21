@@ -117,8 +117,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "azureAdminGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "images": {
-        "subscriptionName": "Name of the Azure subscription the DSVM image gallery is deployed in",
-        "location": "Location of the image gallery subscription"
+        "subscriptionName": "Name of the Azure subscription where VM images should be built.",
+        "location": "The Azure location in which VM images should be built."
     },
     "domain": "The fully qualified domain name for the management environment",
     "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
@@ -152,7 +152,8 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
     "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
     "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
-    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)"
+    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)",
+    "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
 }
 ```
 
@@ -395,7 +396,7 @@ On your **deployment machine**.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Setup_SRE_Databases.ps1 -configId <SRE config ID>`, where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>`. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox`.
-- The deployment will take around 30 minutes to complete, most of which is spent in Windows Update.
+- This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
 
 
 
