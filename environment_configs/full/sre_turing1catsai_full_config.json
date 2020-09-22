@@ -1,0 +1,584 @@
+{
+  "shm": {
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "dc": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "external_dns_resolver": "168.63.129.16",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
+      "hostname": "DC1-SHM-TURING1",
+      "ip": "10.0.0.250",
+      "rg": "RG_SHM_DC",
+      "safemodePasswordSecretName": "shm-turing1-dc-safemode-password",
+      "vmName": "DC1-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dcb": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
+      "hostname": "DC2-SHM-TURING1",
+      "ip": "10.0.0.249",
+      "vmName": "DC2-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS_PRODUCTION",
+      "subscriptionName": "[Prod] Safe Haven Domains"
+    },
+    "domain": {
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment Service Servers",
+          "path": "OU=Secure Research Environment Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
+        }
+      },
+      "securityGroups": {
+        "computerManagers": {
+          "description": "SG Safe Haven LDAP Users",
+          "name": "SG Safe Haven LDAP Users"
+        },
+        "serverAdmins": {
+          "description": "SG Safe Haven Server Administrators",
+          "name": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TURING1",
+      "routeTableName": "ROUTE-TABLE-SHM-TURING1"
+    },
+    "id": "turing1",
+    "keyVault": {
+      "name": "kv-shm-turing1",
+      "rg": "RG_SHM_SECRETS",
+      "secretNames": {
+        "aadEmergencyAdminPassword": "shm-turing1-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-turing1-aad-emergency-admin-username",
+        "buildImageAdminPassword": "shm-turing1-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-turing1-buildimage-admin-username",
+        "domainAdminPassword": "shm-turing1-domain-admin-password",
+        "domainAdminUsername": "shm-turing1-vm-admin-username",
+        "vmAdminUsername": "shm-turing1-vm-admin-username",
+        "vpnCaCertificate": "shm-turing1-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-turing1-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-turing1-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-turing1-vpn-client-cert",
+        "vpnClientCertPassword": "shm-turing1-vpn-client-cert-password"
+      }
+    },
+    "location": "uksouth",
+    "logging": {
+      "rg": "RG_SHM_TURING1_LOGGING",
+      "workspaceName": "shmturing1loganalytics"
+    },
+    "mirrors": {
+      "cran": {
+        "tier2": {
+          "diskSize": 127,
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-cran-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-cran-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 32,
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "tier2": {
+          "diskSize": 8191,
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 512,
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms"
+    },
+    "name": "Turing Safe Haven",
+    "network": {
+      "mirrorVnets": {
+        "tier2": {
+          "cidr": "10.20.2.0/24",
+          "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER2",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.2.0/28",
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "nsg": "externalPackageMirrorsTier2"
+            },
+            "internal": {
+              "cidr": "10.20.2.16/28",
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "nsg": "internalPackageMirrorsTier2"
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.20.3.0/24",
+          "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER3",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.3.0/28",
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "nsg": "externalPackageMirrorsTier3"
+            },
+            "internal": {
+              "cidr": "10.20.3.16/28",
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "nsg": "internalPackageMirrorsTier3"
+            }
+          }
+        }
+      },
+      "nsg": {
+        "externalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TURING1_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "externalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TURING1_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "internalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TURING1_INTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "internalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TURING1_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        }
+      },
+      "vnet": {
+        "cidr": "10.0.0.0/21",
+        "name": "VNET_SHM_TURING1",
+        "rg": "RG_SHM_NETWORKING",
+        "subnets": {
+          "firewall": {
+            "cidr": "10.0.2.0/24",
+            "name": "AzureFirewallSubnet"
+          },
+          "gateway": {
+            "cidr": "10.0.7.0/24",
+            "name": "GatewaySubnet"
+          },
+          "identity": {
+            "cidr": "10.0.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "web": {
+            "cidr": "10.0.1.0/24",
+            "name": "WebSubnet"
+          }
+        }
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
+      }
+    },
+    "nps": {
+      "adminPasswordSecretName": "shm-turing1-nps-admin-password",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "hostname": "NPS-SHM-TURING1",
+      "ip": "10.0.0.248",
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "nsgPrefix": "NSG_SHM_TURING1",
+    "organisation": {
+      "countryCode": "GB",
+      "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
+      "townCity": "London"
+    },
+    "rgPrefix": "RG_SHM",
+    "storage": {
+      "artifacts": {
+        "accountName": "shmturing1artifactsvkdrslu",
+        "rg": "RG_SHM_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "shmturing1bootdiagsvkdrslu",
+        "rg": "RG_SHM_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "[Prod] Safe Haven Management",
+    "users": {
+      "computerManagers": {
+        "dataServers": {
+          "name": "TURING1 Data Servers Manager",
+          "passwordSecretName": "shm-turing1-domain-admin-password",
+          "samAccountName": "shmturing1admin"
+        },
+        "identityServers": {
+          "name": "TURING1 Identity Servers Manager",
+          "passwordSecretName": "shm-turing1-domain-admin-password",
+          "samAccountName": "shmturing1admin"
+        },
+        "linuxServers": {
+          "name": "TURING1 Linux Servers Manager",
+          "passwordSecretName": "shm-turing1-domain-admin-password",
+          "samAccountName": "shmturing1admin"
+        },
+        "rdsGatewayServers": {
+          "name": "TURING1 RDS Gateway Manager",
+          "passwordSecretName": "shm-turing1-domain-admin-password",
+          "samAccountName": "shmturing1admin"
+        },
+        "rdsSessionServers": {
+          "name": "TURING1 RDS Session Servers Manager",
+          "passwordSecretName": "shm-turing1-domain-admin-password",
+          "samAccountName": "shmturing1admin"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "passwordSecretName": "shm-turing1-localadsync-password",
+          "samAccountName": "localadsync",
+          "usernameSecretName": "shm-turing1-aad-localsync-username"
+        }
+      }
+    }
+  },
+  "sre": {
+    "azureAdminGroupName": "Safe Haven Production Admins",
+    "databases": {
+      "rg": "RG_SRE_CATSAI_DATABASES"
+    },
+    "dataserver": {
+      "adminPasswordSecretName": "sre-catsai-vm-admin-password-dataserver",
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DAT-SRE-CATSAI.turingsafehaven.ac.uk",
+      "hostname": "DAT-SRE-CATSAI",
+      "ip": "10.100.50.4",
+      "nsg": "NSG_SRE_CATSAI_DATA",
+      "rg": "RG_SRE_CATSAI_DATA",
+      "vmName": "DAT-SRE-CATSAI",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "domain": {
+      "dn": "DC=catsai,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "catsai.turingsafehaven.ac.uk",
+      "netbiosName": "CATSAI",
+      "securityGroups": {
+        "dataAdministrators": {
+          "description": "SG CATSAI Data Administrators",
+          "name": "SG CATSAI Data Administrators"
+        },
+        "researchUsers": {
+          "description": "SG CATSAI Research Users",
+          "name": "SG CATSAI Research Users"
+        },
+        "systemAdministrators": {
+          "description": "SG CATSAI System Administrators",
+          "name": "SG CATSAI System Administrators"
+        }
+      }
+    },
+    "dsvm": {
+      "adminPasswordSecretName": "sre-catsai-vm-admin-password-compute",
+      "deploymentNsg": "NSG_SRE_CATSAI_COMPUTE_DEPLOYMENT",
+      "disks": {
+        "home": {
+          "sizeGb": "1024",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "default",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "1024",
+          "type": "Standard_LRS"
+        }
+      },
+      "nsg": "NSG_SRE_CATSAI_COMPUTE",
+      "rg": "RG_SRE_CATSAI_COMPUTE",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+      },
+      "vmSizeDefault": "Standard_D2s_v3"
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-CATSAI"
+    },
+    "id": "catsai",
+    "keyVault": {
+      "name": "kv-turing1-sre-catsai",
+      "rg": "RG_SRE_CATSAI_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-catsai-vm-admin-username",
+        "letsEncryptCertificate": "sre-catsai-lets-encrypt-certificate",
+        "npsSecret": "sre-catsai-other-nps-secret"
+      }
+    },
+    "location": "uksouth",
+    "network": {
+      "nsg": {
+        "data": {},
+        "databases": {
+          "name": "NSG_SRE_CATSAI_DATABASES"
+        }
+      },
+      "vnet": {
+        "cidr": "10.100.48.0/21",
+        "name": "VNET_SRE_CATSAI",
+        "rg": "RG_SRE_CATSAI_NETWORKING",
+        "subnets": {
+          "data": {
+            "cidr": "10.100.50.0/24",
+            "name": "SharedDataSubnet"
+          },
+          "databases": {
+            "cidr": "10.100.51.0/24",
+            "name": "DatabasesSubnet",
+            "nsg": "databases"
+          },
+          "identity": {
+            "cidr": "10.100.48.0/24",
+            "name": "IdentitySubnet"
+          },
+          "rds": {
+            "cidr": "10.100.49.0/24",
+            "name": "RDSSubnet"
+          }
+        }
+      }
+    },
+    "nsgPrefix": "NSG_SRE_CATSAI",
+    "rds": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-catsai-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-CATSAI.turingsafehaven.ac.uk",
+        "hostname": "APP-SRE-CATSAI",
+        "ip": "10.100.49.5",
+        "nsg": "NSG_SRE_CATSAI_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-CATSAI",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "gateway": {
+        "adminPasswordSecretName": "sre-catsai-vm-admin-password-rds-gateway",
+        "disks": {
+          "data1": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "data2": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "RDG-SRE-CATSAI.turingsafehaven.ac.uk",
+        "hostname": "RDG-SRE-CATSAI",
+        "ip": "10.100.49.4",
+        "networkRules": {
+          "allowedSources": "Internet",
+          "outboundInternet": "Allow"
+        },
+        "nsg": "NSG_SRE_CATSAI_RDS_SERVER",
+        "vmName": "RDG-SRE-CATSAI",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_CATSAI_RDS"
+    },
+    "rgPrefix": "RG_SRE_CATSAI",
+    "shortName": "sre-catsai",
+    "storage": {
+      "artifacts": {
+        "accountName": "srecatsaiartifactsvdmlzb",
+        "rg": "RG_SRE_CATSAI_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "srecatsaibootdiagsvdmlzb",
+        "rg": "RG_SRE_CATSAI_ARTIFACTS"
+      },
+      "data": {
+        "egress": {
+          "accountName": "srecatsaiegressvdmlzbpkc",
+          "containerName": "egress"
+        },
+        "ingress": {
+          "accountName": "srecatsaiingressvdmlzbpk",
+          "containerName": "ingress"
+        }
+      }
+    },
+    "subscriptionName": "DSGSEP2020 - CatsAI",
+    "tier": "1",
+    "users": {
+      "serviceAccounts": {
+        "datamount": {
+          "name": "CATSAI Data Mount Service Account",
+          "passwordSecretName": "sre-catsai-other-service-account-password-datamount",
+          "samAccountName": "catsaidatamount"
+        },
+        "ldapSearch": {
+          "name": "CATSAI LDAP Search Service Account",
+          "passwordSecretName": "sre-catsai-other-service-account-password-ldap-search",
+          "samAccountName": "catsaildapsearch"
+        },
+        "postgres": {
+          "name": "CATSAI Postgres DB Service Account",
+          "passwordSecretName": "sre-catsai-db-service-account-password-postgres",
+          "samAccountName": "catsaidbpostgres"
+        }
+      }
+    },
+    "webapps": {
+      "gitlab": {
+        "adminPasswordSecretName": "sre-catsai-vm-admin-password-gitlab",
+        "disks": {
+          "data": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "50",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "GITLAB-SRE-CATSAI.turingsafehaven.ac.uk",
+        "hostname": "GITLAB-SRE-CATSAI",
+        "ip": "10.100.50.5",
+        "rootPasswordSecretName": "sre-catsai-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-CATSAI",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "hackmd": {
+        "adminPasswordSecretName": "sre-catsai-vm-admin-password-hackmd",
+        "disks": {
+          "os": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "HACKMD-SRE-CATSAI.turingsafehaven.ac.uk",
+        "hostname": "HACKMD-SRE-CATSAI",
+        "ip": "10.100.50.6",
+        "vmName": "HACKMD-SRE-CATSAI",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "nsg": "NSG_SRE_CATSAI_WEBAPPS",
+      "rg": "RG_SRE_CATSAI_WEBAPPS"
+    }
+  }
+}

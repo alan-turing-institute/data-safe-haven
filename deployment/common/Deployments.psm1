@@ -174,6 +174,61 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
+# Add A (and optionally CNAME) DNS records
+# ----------------------------------------
+function Deploy-DNSRecords {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
+        $SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
+        $ZoneName,
+        [Parameter(Mandatory = $true, HelpMessage = "Public IP address for this record to point to")]
+        $PublicIpAddress,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
+        $RecordNameA = "@",
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'CNAME' record (if none is provided then no CNAME redirect will be set up)")]
+        $RecordNameCName,
+        [Parameter(Mandatory = $false, HelpMessage = "TTL seconds for the DNS records")]
+        $TtlSeconds = 30
+    )
+    $originalContext = Get-AzContext
+    try {
+        Add-LogMessage -Level Info "Adding DNS records..."
+        $null = Set-AzContext -Subscription $SubscriptionName
+
+        # Set the A record
+        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone ($ZoneName)"
+        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $PublicIpAddress)
+        if ($?) {
+            Add-LogMessage -Level Success "Successfully set 'A' record"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to set 'A' record!"
+        }
+        # Set the CNAME record
+        if ($RecordNameCName) {
+            Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone ($ZoneName)"
+            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+            $null = New-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName)
+            if ($?) {
+                Add-LogMessage -Level Success "Successfully set 'CNAME' record"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to set 'CNAME' record!"
+            }
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext
+    }
+    return
+}
+Export-ModuleMember -Function Deploy-DNSRecords
+
+
 # Create a firewall if it does not exist
 # --------------------------------------
 function Deploy-Firewall {
@@ -201,7 +256,7 @@ function Deploy-Firewall {
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } 
+    }
     # Ensure Firewall is running
     $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
     return $firewall
@@ -346,6 +401,17 @@ function Deploy-KeyVault {
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
     $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($null -eq $keyVault) {
+        # Purge any existing soft-deleted key vault
+        if (Get-AzKeyVault -VaultName $Name -Location $Location -InRemovedState) {
+            Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name'"
+            Remove-AzKeyVault -VaultName $Name -Location $Location -InRemovedState -Force | Out-Null
+            if ($?) {
+                Add-LogMessage -Level Success "Purged key vault '$Name'"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to purge key vault '$Name'!"
+            }
+        }
+        # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
         $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
         if ($?) {
@@ -683,6 +749,33 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
+# Create storage share if it does not exist
+# -----------------------------------------
+function Deploy-StorageShare {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        $StorageAccount
+    )
+    Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
+    $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
+        if ($?) {
+            Add-LogMessage -Level Success "Created storage share"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Storage share '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $storageShare
+}
+Export-ModuleMember -Function Deploy-StorageShare
+
+
 # Create Linux virtual machine if it does not exist
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {
@@ -695,6 +788,8 @@ function Deploy-UbuntuVirtualMachine {
         $AdminPassword,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
         $AdminUsername,
+        [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
+        $AdminPublicSshKey = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
@@ -744,6 +839,11 @@ function Deploy-UbuntuVirtualMachine {
             $lun += 1
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
         }
+        # Copy public key to VM
+        if ($AdminPublicSshKey) {
+            $vmConfig = Add-AzVMSshPublicKey -VM $vmConfig -KeyData $AdminPublicSshKey -Path "/home/$($AdminUsername)/.ssh/authorized_keys"
+        }
+        # Create VM
         Add-LogMessage -Level Info "[ ] Creating virtual machine '$Name'"
         $vm = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig
         if ($?) {
@@ -787,7 +887,7 @@ function Deploy-VirtualMachineNIC {
         Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
         $ipAddressParams = @{}
         if ($PublicIpAddressAllocation) {
-            $PublicIpAddress = New-AzPublicIpAddress -Name "$Name-PIP" -ResourceGroupName $ResourceGroupName -AllocationMethod $PublicIpAddressAllocation -Location $Location
+            $PublicIpAddress = Deploy-PublicIpAddress -Name "$Name-PIP" -ResourceGroupName $ResourceGroupName -AllocationMethod $PublicIpAddressAllocation -Location $Location
             $ipAddressParams["PublicIpAddress"] = $PublicIpAddress
         }
         if ($PrivateIpAddress) { $ipAddressParams["PrivateIpAddress"] = $PrivateIpAddress }
@@ -951,6 +1051,78 @@ function Get-AzSubnet {
     return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
+
+
+# Get image ID
+# ------------
+function Get-ImageFromGallery {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
+        $ImageVersion,
+        [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
+        $ImageDefinition,
+        [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
+        $GalleryName,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
+        $ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
+        $Subscription
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $Subscription
+        Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
+        try {
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
+            Add-LogMessage -Level Error "Image version '$ImageVersion' is invalid. Available versions are: $versions"
+            $ImageVersion = $versions | Select-Object -Last 1
+            $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$ImageVersion')"
+            if ($versions.Contains($userVersion)) {
+                $ImageVersion = $userVersion
+            }
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        }
+        if ($image) {
+            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+        } else {
+            Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext
+    }
+    return $image
+}
+Export-ModuleMember -Function Get-ImageFromGallery
+
+
+# Get image definition from the type specified in the config file
+# ---------------------------------------------------------------
+function Get-ImageDefinition {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Type of image to retrieve the definition for")]
+        [string]$Type
+    )
+    Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
+    if ($Type -eq "Ubuntu") {
+        $imageDefinition = "ComputeVM-Ubuntu1804Base"
+    } elseif ($Type -eq "UbuntuTorch") {
+        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
+    } elseif ($Type -eq "DataScience") {
+        $imageDefinition = "ComputeVM-DataScienceBase"
+    } elseif ($Type -eq "DSG") {
+        $imageDefinition = "ComputeVM-DsgBase"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
+    }
+    Add-LogMessage -Level Success "Interpreted $Type as image type $imageDefinition"
+    return $imageDefinition
+}
+Export-ModuleMember -Function Get-ImageDefinition
 
 
 # Get NS Records

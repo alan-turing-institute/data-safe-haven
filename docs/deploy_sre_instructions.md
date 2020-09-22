@@ -1,13 +1,7 @@
 # Secure Research Environment Build Instructions
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
-The following 7 virtual machines are created as a result of these instructions:
-- `APP-SRE-<SRE ID>` (Remote Desktop app server)
-- `DAT-SRE-<SRE ID>` (data server)
-- `DKP-SRE-<SRE ID>` (Remote Desktop desktop server)
-- `HACKMD-SRE-<SRE ID>` (HackMD server)
-- `GITLAB-SRE-<SRE ID>` (GitLab server)
-- `RDG-SRE-<SRE ID>` (Remote Desktop Gateway)
-- `SRE-<SRE ID>-160-DSVM-<VERSION>`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
+
+> :warning: If you are deploying a Tier 1 environment, follow [these instructions](./deploy_sre_tier1_instructions.md) instead.
 
 ## Contents
 - [:seedling: Prerequisites](#seedling-prerequisites)
@@ -49,7 +43,7 @@ The following 7 virtual machines are created as a result of these instructions:
 - An SHM environment that has already been deployed in Azure - follow the [Safe Haven Management (SHM) deployment guide](deploy_shm_instructions.md) if you have not done so already.
 - An Azure subscription with sufficient credits to build the SRE.
   - :notebook: Our convention is to name these `Turing SRE - <SRE ID> (SHM <SHM ID>)`
-  - :information_source: We recommend allow at least **$1,000** in Azure credits for getting this SRE set up
+  - :information_source: We recommend allowing at least **$1,000** in Azure credits for setting up each SRE
 - **Owner** access to the SRE and SHM Azure subscriptions
   - :information_source: We recommend using security groups to control access (eg. our subscriptions belong to `Safe Haven Test Admins` or `Safe Haven Production Admins`)
 - Access to a global administrator account on the SHM Azure Active Directory
@@ -252,7 +246,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId `<SRE config ID>` -emailAddress <email>`, where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
+- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 - **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
