@@ -1,5 +1,31 @@
 # Safe Haven Documentation
 
+
+We organise our documentation into four types. Read in accordance to what might be most helpful to you.
+
+## Tutorials
+
+**Recommended if**:
+
+abc
+[link]
+## How-to guides
+
+**Recommended if**:
+
+[link]
+
+## Explanations and design design
+
+**Recommended if**:
+
+[link]
+## Reference materials
+
+**Recommended if**:
+
+[link]
+
 ## Learn more about the Safe Haven
 
 See the `overview` folder
