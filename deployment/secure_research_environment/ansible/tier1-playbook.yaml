@@ -218,6 +218,14 @@
         owner: root
         group: root
 
+    - name: Template nginx configuration for CoCalc
+      template:
+        src: nginx_cocalc.conf.j2
+        dest: "{{ ansible_user_dir }}/nginx.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0600
+
     - name: Run CoCalc with docker-compose
       docker_compose:
         project_name: cocalc
@@ -242,7 +250,7 @@
                 - 80:80
                 - 443:443
               volumes:
-                - /opt/nginx/cocalc.conf:/etc/nginx/nginx.conf
+                - "{{ ansible_user_dir }}/nginx.conf:/etc/nginx/nginx.conf"
                 - /opt/ssl/:/etc/nginx/ssl/
               restart: always
       register: output

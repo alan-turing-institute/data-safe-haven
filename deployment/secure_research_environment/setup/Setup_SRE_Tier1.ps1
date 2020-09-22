@@ -132,8 +132,7 @@ $cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.
                                 Replace("<ingress-container-name>", $config.sre.storage.data.ingress.containerName).
                                 Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
                                 Replace("<egress-share-password>", $egressSharePassword).
-                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName).
-                                Replace("<vm-fqdn>", $config.sre.domain.fqdn)
+                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName)
 
 
 # Deploy data disk, NIC and public IP
@@ -260,7 +259,8 @@ try {
     ansible-playbook (Join-Path $PSScriptRoot ".." "ansible" "tier1-playbook.yaml" | Resolve-Path).Path `
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
-        --private-key "${privateKeySecretName}.key"
+        --private-key "${privateKeySecretName}.key" `
+        -e "fqdn=$($config.sre.domain.fqdn)"
 
     # Generate qr codes
     # -----------------
