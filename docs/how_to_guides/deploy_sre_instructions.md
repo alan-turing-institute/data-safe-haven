@@ -288,7 +288,10 @@ You can now verify the following things
   - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 - MFA must be enabled for the user.
   - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../user/safe_haven_user_guide.md).
+<<<<<<< HEAD:docs/how_to_guides/deploy_sre_instructions.md
+=======
 
+>>>>>>> efdebf5eabc9be20c2452db8e271dd482141c1da:docs/deployment_instructions/deploy_sre_instructions.md
 
 ### :mountain_bicyclist: Test the RDS using a non-privileged user account
 On your **deployment machine**.
