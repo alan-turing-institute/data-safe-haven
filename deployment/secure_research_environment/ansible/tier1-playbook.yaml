@@ -153,6 +153,36 @@
           Match User "{{ ansible_user }}"
               AuthenticationMethods publickey
 
+    - name: Create shared data directory
+      become: yes
+      file:
+        path: /scratch/shared
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=rwx,o=rwx
+
+    - name: Set default group and other permissions for shared data directory
+      become: yes
+      acl:
+        path: /scratch/shared
+        etype: "{{ item }}"
+        default: yes
+        permissions: rwx
+        state: present
+      loop:
+        - group
+        - other
+
+    - name: Create symbolic link to shared data directory
+      become: yes
+      file:
+        src: /scratch/shared
+        path: /shared
+        state: link
+        owner: root
+        group: root
+
     - name: Install docker
       become: yes
       apt:
@@ -229,36 +259,6 @@
       docker_image:
         name: nginx
         source: pull
-
-    - name: Create shared data directory
-      become: yes
-      file:
-        path: /scratch/shared
-        state: directory
-        owner: root
-        group: root
-        mode: u=rwx,g=rwx,o=rwx
-
-    - name: Set default group and other permissions for shared data directory
-      become: yes
-      acl:
-        path: /scratch/shared
-        etype: "{{ item }}"
-        default: yes
-        permissions: rwx
-        state: present
-      loop:
-        - group
-        - other
-
-    - name: Create symbolic link to shared data directory
-      become: yes
-      file:
-        src: /scratch/shared
-        path: /shared
-        state: link
-        owner: root
-        group: root
 
     - name: Template nginx configuration for CoCalc
       template:
