@@ -4,6 +4,13 @@
   vars_files:
     - ../setup/users.yaml
 
+  vars:
+    cocalc_variants:
+      cocalc:
+        repo: sagemathinc/cocalc
+      cucalc:
+        repo: turinginst/cucalc
+
   tasks:
     - name: Wait for cloud init to finish
       wait_for:
@@ -153,41 +160,6 @@
           Match User "{{ ansible_user }}"
               AuthenticationMethods publickey
 
-    - name: Install docker and docker-compose
-      become: yes
-      apt:
-        name:
-          - docker.io
-          - docker-compose
-        state: present
-
-    - name: Start and enable docker service
-      become: yes
-      systemd:
-        name: docker.service
-        enabled: yes
-        state: started
-
-    - name: Add admin user to docker group
-      become: yes
-      user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: yes
-
-    - name: Reset connection so that adding admin user to docker group takes effect
-      meta: reset_connection
-
-    - name: Pull CoCalc docker image
-      docker_image:
-        name: sagemathinc/cocalc
-        source: pull
-
-    - name: Pull nginx docker image
-      docker_image:
-        name: nginx
-        source: pull
-
     - name: Create shared data directory
       become: yes
       file:
@@ -218,6 +190,92 @@
         owner: root
         group: root
 
+    - name: Install docker
+      become: yes
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Enable docker service
+      become: yes
+      systemd:
+        name: docker.service
+        enabled: yes
+
+    - name: Add admin user to docker group
+      become: yes
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Reset connection so that adding admin user to docker group takes effect
+      meta: reset_connection
+
+    - name: Install pip3
+      become: yes
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Uninstall system docker-compose
+      become: yes
+      apt:
+        name: docker-compose
+        state: absent
+
+    - name: Install docker-compose
+      become: yes
+      pip:
+        name: docker-compose>1.19.0
+        state: present
+        executable: pip3
+
+    - name: Install Nvidia docker
+      block:
+        - name: Add Nvidia docker gpg key
+          become: yes
+          apt_key:
+            url: https://nvidia.github.io/nvidia-docker/gpgkey
+            state: present
+
+        - name: Add Nvidia docker apt repository
+          become: yes
+          apt_repository:
+            repo: "{{ item }}"
+            state: present
+            filename: nvidia-docker
+          loop:
+            # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+            # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+            - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
+
+        - name: Install Nvidia docker
+          become: yes
+          apt:
+            name: nvidia-docker2
+            update_cache: yes
+
+        - name: Restart docker service
+          become: yes
+          systemd:
+            name: docker.service
+            enabled: yes
+            state: restarted
+      when: variant == 'cucalc'
+
+    - name: Pull CoCalc/CuCalc docker image
+      docker_image:
+        name: "{{ cocalc_variants[variant].repo }}"
+        source: pull
+
+    - name: Pull nginx docker image
+      docker_image:
+        name: nginx
+        source: pull
+
     - name: Template nginx configuration for CoCalc
       template:
         src: nginx_cocalc.conf.j2
@@ -226,14 +284,15 @@
         group: "{{ ansible_user }}"
         mode: 0600
 
-    - name: Run CoCalc with docker-compose
+    - name: Run CoCalc/CuCalc with docker-compose
       docker_compose:
         project_name: cocalc
         definition:
-          version: "2"
+          version: "2.3"
           services:
             cocalc:
-              image: sagemathinc/cocalc
+              runtime: nvidia
+              image: "{{ cocalc_variants[variant].repo }}"
               expose:
                 - 443
               volumes:
