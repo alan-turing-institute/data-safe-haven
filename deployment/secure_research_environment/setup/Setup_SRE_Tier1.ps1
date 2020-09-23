@@ -3,8 +3,10 @@ param(
     [string]$configId,
     [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
-    [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM.")]
-    [string]$usersYAMLPath = ""
+    [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM")]
+    [string]$usersYAMLPath = "",
+    [Parameter(Mandatory = $false, HelpMessage = "Deploy with CUDA support")]
+    [switch]$CUDA
 )
 
 Import-Module Az
@@ -256,11 +258,16 @@ try {
 
     # Run ansible playbook and create totp_hashes.txt
     # -----------------------------------------------
+    if ($CUDA) {
+        $variant = "cucalc"
+    } else {
+        $variant = "cocalc"
+    }
     ansible-playbook (Join-Path $PSScriptRoot ".." "ansible" "tier1-playbook.yaml" | Resolve-Path).Path `
         -i "$($vmPublicIpAddress)," `
         -u $vmAdminUsername `
         --private-key "${privateKeySecretName}.key" `
-        -e "ansible_python_interpreter=/usr/bin/python3 fqdn=$($config.sre.domain.fqdn)"
+        -e "ansible_python_interpreter=/usr/bin/python3 variant=$($variant) fqdn=$($config.sre.domain.fqdn)"
 
     # Generate qr codes
     # -----------------
