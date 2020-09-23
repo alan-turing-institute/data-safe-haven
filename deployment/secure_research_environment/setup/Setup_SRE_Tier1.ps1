@@ -6,7 +6,7 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM")]
     [string]$usersYAMLPath = "",
     [Parameter(Mandatory = $false, HelpMessage = "Deploy with CUDA support")]
-    [switch]$CUDA
+    [switch]$withCUDA
 )
 
 Import-Module Az
@@ -258,7 +258,7 @@ try {
 
     # Run ansible playbook and create totp_hashes.txt
     # -----------------------------------------------
-    if ($CUDA) {
+    if ($withCUDA) {
         $variant = "cucalc"
     } else {
         $variant = "cocalc"
