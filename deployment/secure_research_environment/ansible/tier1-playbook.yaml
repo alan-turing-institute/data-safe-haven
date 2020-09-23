@@ -4,6 +4,13 @@
   vars_files:
     - ../setup/users.yaml
 
+  vars:
+    cocalc_variants:
+      cocalc:
+        repo: sagemathinc/cocalc
+      cucalc:
+        repo: turinginst/cucalc
+
   tasks:
     - name: Wait for cloud init to finish
       wait_for:
@@ -189,6 +196,22 @@
         name: docker.io
         state: present
 
+    - name: Enable docker service
+      become: yes
+      systemd:
+        name: docker.service
+        enabled: yes
+
+    - name: Add admin user to docker group
+      become: yes
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Reset connection so that adding admin user to docker group takes effect
+      meta: reset_connection
+
     - name: Install pip3
       become: yes
       apt:
@@ -208,51 +231,44 @@
         state: present
         executable: pip3
 
-    - name: Add Nvidia docker gpg key
-      become: yes
-      apt_key:
-        url: https://nvidia.github.io/nvidia-docker/gpgkey
-        state: present
-
-    - name: Add Nvidia docker apt repository
-      become: yes
-      apt_repository:
-        repo: "{{ item }}"
-        state: present
-        filename: nvidia-docker
-      loop:
-        # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
-        # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
-        - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
-        - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
-        - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
-
     - name: Install Nvidia docker
-      become: yes
-      apt:
-        name: nvidia-docker2
-        update_cache: yes
+      block:
+      - name: Add Nvidia docker gpg key
+        become: yes
+        apt_key:
+          url: https://nvidia.github.io/nvidia-docker/gpgkey
+          state: present
 
-    - name: Restart and enable docker service
-      become: yes
-      systemd:
-        name: docker.service
-        enabled: yes
-        state: restarted
+      - name: Add Nvidia docker apt repository
+        become: yes
+        apt_repository:
+          repo: "{{ item }}"
+          state: present
+          filename: nvidia-docker
+        loop:
+          # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+          # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+          - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+          - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+          - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
 
-    - name: Add admin user to docker group
-      become: yes
-      user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: yes
+      - name: Install Nvidia docker
+        become: yes
+        apt:
+          name: nvidia-docker2
+          update_cache: yes
 
-    - name: Reset connection so that adding admin user to docker group takes effect
-      meta: reset_connection
+      - name: Restart docker service
+        become: yes
+        systemd:
+          name: docker.service
+          enabled: yes
+          state: restarted
+      when: variant == 'cucalc'
 
-    - name: Pull CuCalc docker image
+    - name: Pull CoCalc/CuCalc docker image
       docker_image:
-        name: turinginst/cucalc
+        name: "{{ cocalc_variants[variant].repo }}"
         source: pull
 
     - name: Pull nginx docker image
@@ -268,7 +284,7 @@
         group: "{{ ansible_user }}"
         mode: 0600
 
-    - name: Run CuCalc with docker-compose
+    - name: Run CoCalc/CuCalc with docker-compose
       docker_compose:
         project_name: cocalc
         definition:
@@ -276,7 +292,7 @@
           services:
             cocalc:
               runtime: nvidia
-              image: turinginst/cucalc
+              image: "{{ cocalc_variants[variant].repo }}"
               expose:
                 - 443
               volumes:
@@ -301,7 +317,7 @@
     - debug:
         var: output
 
-    - name: Assert that the CuCalc container is running
+    - name: Assert that the CoCalc container is running
       assert:
         that:
           - "cocalc.cocalc_cocalc_1.state.running"
