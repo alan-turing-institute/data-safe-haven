@@ -233,37 +233,37 @@
 
     - name: Install Nvidia docker
       block:
-      - name: Add Nvidia docker gpg key
-        become: yes
-        apt_key:
-          url: https://nvidia.github.io/nvidia-docker/gpgkey
-          state: present
+        - name: Add Nvidia docker gpg key
+          become: yes
+          apt_key:
+            url: https://nvidia.github.io/nvidia-docker/gpgkey
+            state: present
 
-      - name: Add Nvidia docker apt repository
-        become: yes
-        apt_repository:
-          repo: "{{ item }}"
-          state: present
-          filename: nvidia-docker
-        loop:
-          # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
-          # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
-          - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
-          - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
-          - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
+        - name: Add Nvidia docker apt repository
+          become: yes
+          apt_repository:
+            repo: "{{ item }}"
+            state: present
+            filename: nvidia-docker
+          loop:
+            # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+            # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+            - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
 
-      - name: Install Nvidia docker
-        become: yes
-        apt:
-          name: nvidia-docker2
-          update_cache: yes
+        - name: Install Nvidia docker
+          become: yes
+          apt:
+            name: nvidia-docker2
+            update_cache: yes
 
-      - name: Restart docker service
-        become: yes
-        systemd:
-          name: docker.service
-          enabled: yes
-          state: restarted
+        - name: Restart docker service
+          become: yes
+          systemd:
+            name: docker.service
+            enabled: yes
+            state: restarted
       when: variant == 'cucalc'
 
     - name: Pull CoCalc/CuCalc docker image
