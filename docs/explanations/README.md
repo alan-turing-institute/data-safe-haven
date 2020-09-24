@@ -1,5 +1,8 @@
 ## Learn more about the Safe Haven
 
+
+We provide a high level overview of our Safe Haven.
+
 See the `overview` folder
 
   - [Policy, process and design overview](overview/provider-overview.md) - An overview of our policies, processes and security controls for supporting productive research while maintaining the security of the data we are working with.
@@ -8,20 +11,28 @@ See the `overview` folder
 
 ## Classification
 
+We visually present our classification process which determines a security tier for each data work package.
 
-## Safe Haven design decisions
+See the `classification` folder
 
-See the `design_decisions` folder
+- [Full process](classification\Full Classification Flow Diagram.pdf) - Detailed, full diagram detailing our classification process
 
-We outline a number of our design decisions when building our Safe Havens. This includes reasoning for our different choices but also highlights potential limitations for our Safe Havens and how this may affect things like cyber security.
+- [Simplified process](classification\Full-Classification-Flow-Diagram.pdf) - High level diagram detailing our classification process
 
-- [Safe Haven resilience](design_decisions/physical_resilence_and_availability.md) - Documentation on the physical resilience of the Safe Haven and our design decisions involved.
+## Security
 
-- [Sensitive data handling](design_decisions/best-practice-sensitive-data-handling.md) - Guidance on our approach to handling sensitive research data and our related design decisions.
+We detail various design decisions that impact the security of our Safe Haven implementation. This includes reasoning for our different choices but also highlights potential limitations for our Safe Havens and how this may affect things like cyber security.
+See the `security_decisions` folder
 
-- [Simple Classification diagram](design_decisions/Simple Classification Flow Diagram.pdf) - High level diagram detailing our classification process
+- [Safe Haven resilience](security_decisions/physical_resilence_and_availability.md) - Documentation on the physical resilience of the Safe Haven and our design decisions involved.
 
-- [Full Classification diagram](design_decisions/Full Classification Flow Diagram.pdf) - Detailed, full diagram detailing our classification process
+## Ingress and Egress data
+
+We detail our processes for ingressing and egressing data.
+
+  - [Data Egress guide for Investigators](ingress_and_egress/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
+
+
 
 ## Converting documentation to PDF
 

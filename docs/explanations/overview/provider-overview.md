@@ -1,7 +1,7 @@
 Sensitive Data Handling at the Turing - Overview for Data Providers
 ===================================================================
 
-Introduction
+## Introduction
 ------------
 
 Secure Environments for analysis of sensitive datasets are essential for research.
@@ -23,7 +23,7 @@ We propose choices for the security controls that should be applied in the areas
 
 We do this for each of a small set of security "Tiers" - noting that the choice of security controls depends on the sensitivity of the data.
 
-Why classify?
+### Why classify?
 -------------
 
 One of the major drivers for usability or security problems is over- or under-classification, that is, treating data as more or less sensitive than it deserves.
