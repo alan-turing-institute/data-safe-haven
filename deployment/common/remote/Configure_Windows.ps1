@@ -1,10 +1,13 @@
-# Set locale and timezone
+# Variables
+$TimeZone = "GMT Standard Time"
+$NTPServer = "ntp.kopicloud.local"
+
+# Set locale
 # -----------------------
+
 Write-Output "Setting locale and timezone..."
 Set-WinHomeLocation -GeoId 0xf2
 $success = $?
-Set-TimeZone -Name "GMT Standard Time"
-$success = $success -and $?
 Set-WinSystemLocale en-GB
 $success = $success -and $?
 Set-Culture en-GB
@@ -12,12 +15,41 @@ $success = $success -and $?
 Set-WinUserLanguageList -LanguageList en-GB -Force
 $success = $success -and $?
 Get-WinUserLanguageList
+
 if ($success) {
     Write-Output " [o] Setting locale succeeded"
 } else {
     Write-Output " [x] Setting locale failed!"
 }
 
+# Configure Time Zone and NTP server
+
+# Configure NTP and restart service
+Set-TimeZone -Name $TimeZone
+$success = $?
+$success = $success -and $?
+Push-Location
+Set-Location HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers
+$success = $success -and $?
+Set-ItemProperty . 0 $NTPServer
+$success = $success -and $?
+Set-ItemProperty . "(Default)" "0"
+$success = $success -and $?
+Set-Location HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters
+$success = $success -and $?
+Set-ItemProperty . NtpServer $NTPServer
+$success = $success -and $?
+Pop-Location
+Stop-Service w32time
+$success = $success -and $?
+Start-Service w32time
+$success = $success -and $?
+
+if ($success) {
+    Write-Output " [o] Setting timezone & ntp server succeeded"
+} else {
+    Write-Output " [x] Setting timezone & ntp server failed!"
+}
 
 # Install Windows updates
 # -----------------------
