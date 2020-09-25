@@ -1,11 +1,12 @@
-# Variables
+# Locale/timezone settings
+# ------------------------
 $TimeZone = "GMT Standard Time"
-$NTPServer = "ntp.kopicloud.local"
+$NTPServer = "pool.ntp.org"
+
 
 # Set locale
-# -----------------------
-
-Write-Output "Setting locale and timezone..."
+# ----------
+Write-Output "Setting locale..."
 Set-WinHomeLocation -GeoId 0xf2
 $success = $?
 Set-WinSystemLocale en-GB
@@ -15,41 +16,44 @@ $success = $success -and $?
 Set-WinUserLanguageList -LanguageList en-GB -Force
 $success = $success -and $?
 Get-WinUserLanguageList
-
 if ($success) {
     Write-Output " [o] Setting locale succeeded"
 } else {
     Write-Output " [x] Setting locale failed!"
 }
 
-# Configure Time Zone and NTP server
 
-# Configure NTP and restart service
+# Configure Time Zone and NTP server
+# ----------------------------------
+Write-Output "Setting timezone and NTP server..."
 Set-TimeZone -Name $TimeZone
 $success = $?
-$success = $success -and $?
 Push-Location
 Set-Location HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers
+$success = $success -and $?
+Remove-ItemProperty . -Name "*"
 $success = $success -and $?
 Set-ItemProperty . 0 $NTPServer
 $success = $success -and $?
 Set-ItemProperty . "(Default)" "0"
 $success = $success -and $?
+# Check that there are exactly two registry strings
+$success = $success -and (((Get-ItemProperty .).PSObject.Members | Where-Object { $_.MemberType -eq "NoteProperty" -and $_.Name -notlike "PS*" } | Measure-Object | Select-Object Count).Count -eq 2)
 Set-Location HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters
 $success = $success -and $?
 Set-ItemProperty . NtpServer $NTPServer
 $success = $success -and $?
 Pop-Location
-Stop-Service w32time
+Stop-Service W32Time
 $success = $success -and $?
-Start-Service w32time
+Start-Service W32Time
 $success = $success -and $?
-
 if ($success) {
-    Write-Output " [o] Setting timezone & ntp server succeeded"
+    Write-Output " [o] Setting time zone and NTP server succeeded"
 } else {
-    Write-Output " [x] Setting timezone & ntp server failed!"
+    Write-Output " [x] Setting time zone and NTP server failed!"
 }
+
 
 # Install Windows updates
 # -----------------------
