@@ -29,17 +29,53 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
     - :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
     - Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     - Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
-  - Install Nuget by running `Install-PackageProvider -Name Nuget -Force` in Powershell
+  <!--
+  NB. looks like these are available through Az.RecoveryServices so we do not need to install them
+  - Add the `Nuget` package repository
+    - **Windows:** you can run `Install-PackageProvider -Name Nuget -Force` in Powershell
+    - **OSX:** you can run `Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet -Trusted` in Powershell
   - Install [TimeZoneConverter](https://github.com/mj1856/TimeZoneConverter)
+  -->
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - `OpenSSL`
   - To install manually follow the [instructions on Github](https://github.com/openssl/openssl)
-  - To install a pre-compiled version on OSX use Homebrew: ` brew install openssl`
+  - To install a pre-compiled version on OSX use Homebrew: `brew install openssl`
   - To install a pre-compiled version on Windows use [one of these](https://wiki.openssl.org/index.php/Binaries).
     - **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
 ## 2. Safe Haven Management configuration
+
+### Create configuration file
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
+The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json` - look at `shm_testa_core_config.json` to see an example.
+
+```json
+{
+    "shmId": "A short (7 or fewer characters) ID to identify the management environment, (eg. 'testa').",
+    "name": "Name of this Safe Haven, (eg. 'Turing Production Safe Haven').",
+    "subscriptionName": "Azure subscription to deploy the management environment into.",
+    "dnsSubscriptionName": "Azure subscription holding DNS records.",
+    "dnsResourceGroupName": "Resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
+    "adminSecurityGroupName" : "Azure Security Group that admins of this Safe Haven will belong to.",
+    "images": {
+        "subscriptionName": "Azure subscription where VM images should be built.",
+        "location": "Azure location where VM images should be built (eg. 'uksouth')."
+    },
+    "domain": "The fully qualified domain name for the management environment.",
+    "organisation": {
+        "name": "Name of your organisation, used when generating SSL certificates, (eg. 'The Alan Turing Institute')",
+        "townCity": "Town where your organisation is located, used when generating SSL certificates, (eg. ('London')",
+        "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates, (eg. ('London')",
+        "countryCode": "Country where your organisation is located, used when generating SSL certificates, (eg. ('GB')",
+    },
+    "location": "Azure location to deploy the management environment into (eg. 'uksouth').",
+    "timezone": "(Optional) Timezone in IANA format (eg. 'Europe/London')."
+}
+```
+
+> :warning: The `shmId` field must have a maximum of 7 characters. Note that this is referred to as `<SHM ID>` at several later places in this guide
+
 
 ### Domain name
 Choose a domain according to the following rules:
@@ -47,41 +83,6 @@ Choose a domain according to the following rules:
   - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
   - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
-### Management environment ID `<SHM ID>`
-Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa`).
-
-### Create configuration file
-
-The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
-The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json`. The `shm_testa_core_config.json` provides an example.
-
-**NOTE:** The `netbiosName` must have a maximum length of 15 characters.
-
-```json
-{
-    "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
-    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
-    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
-    "images": {
-        "subscriptionName": "Name of the Azure subscription where VM images should be built.",
-        "location": "The Azure location in which VM images should be built."
-    },
-    "domain": "The fully qualified domain name for the management environment.",
-    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
-    "name": "Safe Haven deployment name.",
-    "organisation": {
-        "name": "Organisation name.",
-        "townCity": "Location.",
-        "stateCountyRegion": "Location.",
-        "countryCode": "e.g. GB"
-    },
-    "location": "The Azure location in which the management environment VMs are deployed.",
-    "timezone": "(Optional) Timezone in Iana format, default is 'Europe/London'."
-}
-```
-
-> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ## 3. Configure DNS for the custom domain

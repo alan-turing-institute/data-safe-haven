@@ -2,7 +2,7 @@ Import-Module $PSScriptRoot/DataStructures.psm1
 Import-Module $PSScriptRoot/Logging.psm1
 Import-Module $PSScriptRoot/Networking.psm1
 Import-Module $PSScriptRoot/Security.psm1
-Import-Module TimeZoneConverter
+Import-Module Az.RecoveryServices  # Note that this contains TimeZoneConverter
 
 
 # Add a new SRE configuration
@@ -37,6 +37,8 @@ function Add-SreConfig {
         }
     }
     $config.sre.location = $config.shm.location
+    $config.sre.timezoneWindows = $config.shm.timezoneWindows
+    $config.sre.timezoneLinux = $config.shm.timezoneLinux
 
     # Ensure that this tier is supported
     if (-not @("0", "1", "2", "3").Contains($config.sre.tier)) {
@@ -444,12 +446,6 @@ function Get-ShmFullConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
-
-
-
-
-
-
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Safe Haven management config
@@ -459,13 +455,13 @@ function Get-ShmFullConfig {
         id = $shmConfigBase.shmId
         location = $shmConfigBase.location
         timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
-        timezoneWindows = TZConvert.IanaToWindows($timezoneLinux)
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
         rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName = $shmConfigBase.subscriptionName
     }
+    $shm.timezoneWindows = [TimeZoneConverter.TZConvert]::IanaToWindows($shm.timezoneLinux)
 
     # DSVM build images
     # -----------------
