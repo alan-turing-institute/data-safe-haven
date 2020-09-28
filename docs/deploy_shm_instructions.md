@@ -29,6 +29,8 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
     - :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
     - Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     - Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
+  - Install Nuget by running `Install-PackageProvider -Name Nuget -Force` in Powershell
+  - Install [TimeZoneConverter](https://github.com/mj1856/TimeZoneConverter)
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - `OpenSSL`
@@ -74,7 +76,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed."
+    "location": "The Azure location in which the management environment VMs are deployed.",
+    "timezone": "(Optional) Timezone in Iana format, default is 'Europe/London'."
 }
 ```
 
