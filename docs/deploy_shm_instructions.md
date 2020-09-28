@@ -47,41 +47,50 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 ## 2. Safe Haven Management configuration
 
 ### Create configuration file
-The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder.
+These are also used when deploying an SRE environment.
+
+> :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer and (ideally) all lowercase.
+
 The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json` - look at `shm_testa_core_config.json` to see an example.
 
 ```json
 {
-    "shmId": "A short (7 or fewer characters) ID to identify the management environment, (eg. 'testa').",
-    "name": "Name of this Safe Haven, (eg. 'Turing Production Safe Haven').",
-    "subscriptionName": "Azure subscription to deploy the management environment into.",
-    "dnsSubscriptionName": "Azure subscription holding DNS records.",
-    "dnsResourceGroupName": "Resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
-    "adminSecurityGroupName" : "Azure Security Group that admins of this Safe Haven will belong to.",
-    "images": {
-        "subscriptionName": "Azure subscription where VM images should be built.",
-        "location": "Azure location where VM images should be built (eg. 'uksouth')."
+    "name": "Name of this Safe Haven (eg. 'Turing Production Safe Haven').",
+    "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
+    "domain": "The fully qualified domain name for the management environment (eg. 'testa.dsgroupdev.co.uk')",
+    "timezone": "[Optional] Timezone in IANA format (eg. 'Europe/London').",
+    "azure": {
+        "subscriptionName": "Azure subscription to deploy the management environment into.",
+        "adminGroupName" : "Azure Security Group that admins of this Safe Haven will belong to.",
+        "location": "Azure location to deploy the management environment into (eg. 'uksouth')."
     },
-    "domain": "The fully qualified domain name for the management environment.",
     "organisation": {
-        "name": "Name of your organisation, used when generating SSL certificates, (eg. 'The Alan Turing Institute')",
-        "townCity": "Town where your organisation is located, used when generating SSL certificates, (eg. ('London')",
-        "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates, (eg. ('London')",
-        "countryCode": "Country where your organisation is located, used when generating SSL certificates, (eg. ('GB')",
+        "name": "Name of your organisation, used when generating SSL certificates (eg. 'The Alan Turing Institute')",
+        "townCity": "Town where your organisation is located, used when generating SSL certificates (eg. 'London')",
+        "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates (eg. 'London')",
+        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')"
     },
-    "location": "Azure location to deploy the management environment into (eg. 'uksouth').",
-    "timezone": "(Optional) Timezone in IANA format (eg. 'Europe/London')."
+    "dnsRecords": {
+        "subscriptionName": "[Optional] Azure subscription which holds DNS records (if not specified then the value from the 'azure' block will be used).",
+        "resourceGroupName": "[Optional] Resource group which holds DNS records (eg. RG_SHM_DNS_TEST)."
+    },
+    "vmImages": {
+        "subscriptionName": "[Optional] Azure subscription where VM images should be built (if not specified then the value from the 'azure' block will be used).",
+        "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used)."
+    },
+    "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }
 ```
 
-> :warning: The `shmId` field must have a maximum of 7 characters. Note that this is referred to as `<SHM ID>` at several later places in this guide
+> :pencil: We recommend that you use `<SHM ID>.<some domain that you control>` as the fully qualified domain name. For example
+>  - Turing production: we use `<SHM ID>.turingsafehaven.ac.uk` as the domain
+>  - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
+>  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
 
 ### Domain name
 Choose a domain according to the following rules:
-  - Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
-  - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
-  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
 
 

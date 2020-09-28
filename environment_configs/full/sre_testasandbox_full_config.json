@@ -572,6 +572,8 @@
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "tier": "2",
+    "timezoneLinux": "Europe/London",
+    "timezoneWindows": "GMT Standard Time",
     "users": {
       "serviceAccounts": {
         "datamount": {

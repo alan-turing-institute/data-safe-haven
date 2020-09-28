@@ -27,7 +27,6 @@ function Add-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            azureAdminGroupName = $sreConfigBase.azureAdminGroupName
             id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
             rgPrefix = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SRE_$($sreConfigBase.sreId)".ToUpper()
             nsgPrefix = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SRE_$($sreConfigBase.sreId)".ToUpper()
@@ -36,6 +35,7 @@ function Add-SreConfig {
             tier = $sreConfigBase.tier
         }
     }
+    $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
     $config.sre.location = $config.shm.location
     $config.sre.timezoneWindows = $config.shm.timezoneWindows
     $config.sre.timezoneLinux = $config.shm.timezoneLinux
@@ -451,37 +451,37 @@ function Get-ShmFullConfig {
     # Safe Haven management config
     # ----------------------------
     $shm = [ordered]@{
-        azureAdminGroupName = $shmConfigBase.azureAdminGroupName
+        azureAdminGroupName = $shmConfigBase.azure.adminGroupName
         id = $shmConfigBase.shmId
-        location = $shmConfigBase.location
+        location = $shmConfigBase.azure.location
         timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
         rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
-        subscriptionName = $shmConfigBase.subscriptionName
+        subscriptionName = $shmConfigBase.azure.subscriptionName
     }
     $shm.timezoneWindows = [TimeZoneConverter.TZConvert]::IanaToWindows($shm.timezoneLinux)
 
     # DSVM build images
     # -----------------
-    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.images.subscriptionName
+    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.vmImages.subscriptionName
     # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
     $originalContext = Get-AzContext
-    $null = Set-AzContext -SubscriptionId $shmConfigBase.images.subscriptionName
+    $null = Set-AzContext -SubscriptionId $shmConfigBase.vmImages.subscriptionName
     $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
     if ($locations.Count -gt 1) {
         Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
     } elseif ($locations.Count -eq 1) {
-        if ($shmConfigBase.images.location -ne $locations) {
-            Add-LogMessage -Level Fatal "Image building location ($($shmConfigBase.images.location)) must be set to ${locations}!"
+        if ($shmConfigBase.vmImages.location -ne $locations) {
+            Add-LogMessage -Level Fatal "Image building location ($($shmConfigBase.vmImages.location)) must be set to ${locations}!"
         }
     }
     $null = Set-AzContext -Context $originalContext
     # Construct build images config
     $shm.dsvmImage = [ordered]@{
-        subscription = $shmConfigBase.images.subscriptionName
-        location = $shmConfigBase.images.location
+        subscription = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
+        location = $shmConfigBase.vmImages.location
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
@@ -783,8 +783,8 @@ function Get-ShmFullConfig {
     # DNS config
     # ----------
     $shm.dns = [ordered]@{
-        subscriptionName = $shmConfigBase.dnsSubscriptionName
-        rg = $shmConfigBase.dnsResourceGroupName
+        subscriptionName = $shmConfigBase.dnsRecords.subscriptionName ? $shmConfigBase.dnsRecords.subscriptionName : $shm.subscriptionName
+        rg = $shmConfigBase.dnsRecords.resourceGroupName ? $shmConfigBase.dnsRecords.resourceGroupName : "$($shm.rgPrefix)_DNS_RECORDS".ToUpper()
     }
 
     # Package mirror config
