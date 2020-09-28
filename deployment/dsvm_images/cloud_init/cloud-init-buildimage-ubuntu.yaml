@@ -184,6 +184,17 @@ write_files:
 packages:
   - <apt packages>
 
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.

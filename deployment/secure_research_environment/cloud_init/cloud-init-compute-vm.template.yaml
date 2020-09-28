@@ -280,6 +280,17 @@ write_files:
       [Install]
       WantedBy=timers.target
 
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"

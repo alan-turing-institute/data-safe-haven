@@ -31,3 +31,15 @@ write_files:
     content: |
       username=<egress-share-username>
       password=<egress-share-password>
+
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com

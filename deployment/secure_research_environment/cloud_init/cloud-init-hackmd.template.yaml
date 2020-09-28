@@ -102,6 +102,18 @@ write_files:
         database:
         uploads:
 
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com
+
 runcmd:
   # Configure server
   - echo "Configuring server"

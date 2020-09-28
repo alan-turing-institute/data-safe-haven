@@ -149,6 +149,18 @@ users:
     ssh_authorized_keys:
       - EXTERNAL_PUBLIC_SSH_KEY
 
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com
+
 runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive

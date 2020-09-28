@@ -231,6 +231,17 @@ packages:
   - krb5-user
   - sssd
 
+# Declare locale
+locale: en_GB.UTF-8
+
+# Declare ntp servers
+ntp:
+  pools:
+    - pool.ntp.org
+    - time.nist.gov
+    - time.windows.com
+    - time.google.com
+    - time.apple.com
 
 runcmd:
   # Join the domain
