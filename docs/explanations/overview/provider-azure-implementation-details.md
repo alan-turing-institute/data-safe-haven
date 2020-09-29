@@ -34,14 +34,14 @@ High-level architecture
 The Management segment hosts the authentication providers for the infrastructure.
 The identity provider is Microsoft Active Directory, which is synchronised with AzureAD to provide cloud and multifactor authentication into the individual project Secure Research Environment (SRE).
 
-![High-level architecture](../images/provider_azure_architecture/architecture_overview.png)
+![High-level architecture](../../images/provider_azure_architecture/architecture_overview.png)
 
 The Management segment is connected to the SREs using Azure Virtual Network Peering. This connection passes authentication traffic between the servers in the SRE to AD servers within the Management subscription. While all SREs are peered with the Management segment, there is no connectivity between SREs directly.
 
 Management segment (SHM) architecture
 -------------------------------------
 
-![Safe Haven Management (SHM) segment](../images/provider_azure_architecture/architecture_shm.png)
+![Safe Haven Management (SHM) segment](../../images/provider_azure_architecture/architecture_shm.png)
 
 Within the Management segment all authentication services are contained within a single virtual network (VNet).
 The Windows Servers are running Active Directory and are acting as Domain Controllers.
@@ -57,7 +57,7 @@ For management of the environment there is an Azure point-to-site (P2S) VPN serv
 Secure project environment (SRE) architecture
 ---------------------------------------------
 
-![Project Secure Research Environments](../images/provider_azure_architecture/architecture_sre.png)
+![Project Secure Research Environments](../../images/provider_azure_architecture/architecture_sre.png)
 
 The SREs use Windows Remote Desktop Services to provide a secure connection to the resources within the environment. Only the RDS Gateway server is accessible from outside the SRE. Connections to this are made via an SSL/TLS secured connection that requires the user to authenticate using Turing provided credentials and validated with MFA.
 
@@ -68,7 +68,7 @@ For management of the environment there is an Azure point-to-site (P2S) VPN serv
 Package mirrors
 ---------------
 
-![Package mirrors](../images/provider_azure_architecture/architecture_mirrors.png)
+![Package mirrors](../../images/provider_azure_architecture/architecture_mirrors.png)
 
 For Tier 2 and Tier 3 SREs, a selection of Python and R packages can be provided via a set of servers that mirror some or all of the PyPI or CRAN package servers.
 
@@ -85,7 +85,7 @@ Between them this pair of servers operate as a one-way "airlock" to allow packag
 Researcher authentication
 -------------------------
 
-![Researcher authentication](../images/provider_azure_architecture/architecture_authentication.png)
+![Researcher authentication](../../images/provider_azure_architecture/architecture_authentication.png)
 
 Each of the SREs has a local Active Directory that is used for management of the RDS servers and file server. This local Active Directory domain has a Trust with the Active Directory domain within the Management segment. User accounts are created in the Management Active Directory and added to security groups. These security groups are then applied to the RDS servers in the SREs. This provides a central user management experience for the support staff and permits Researchers to more easily work on multiple projects hosted within the Safe Haven. Access to individual project SREs is restricted to Researchers who have been added to the associated security group.
 

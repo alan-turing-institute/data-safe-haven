@@ -257,7 +257,7 @@ You must ensure that you have assigned a licence to this user in the Azure Activ
 On the **SHM Domain Controller**.
 
 1. **Create a new non-privileged user account for yourself**
-- Follow the user creation instructions from the [administrator guide](../administration/safe_haven_administrator_guide.md). In brief these involve:
+- Follow the user creation instructions from the [administrator guide](../administrator/administrator_guide.md). In brief these involve:
   - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
@@ -274,7 +274,7 @@ This will create a user in the local Active Directory on the SHM domain controll
 - Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
 
 3. **Ensure that your user account has MFA enabled**
-Please ensure that your account is fully set-up (including MFA) as [detailed in the user guide](../user/safe_haven_user_guide.md).
+Please ensure that your account is fully set-up (including MFA) as [detailed in the user guide](../user_guides/user_guide.md).
 In order to verify this switch to your custom Azure Active Directory in the Azure portal:
 - Go to `portal.azure.com` and click on your username in the top-right
 - Select `Switch directory` and then click on `All Directories`
@@ -287,7 +287,7 @@ You can now verify the following things
 - A licence must be assigned to the user.
   - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 - MFA must be enabled for the user.
-  - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../user/safe_haven_user_guide.md).
+  - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../user_guides/user_guide.md).
 <<<<<<< HEAD:docs/how_to_guides/deploy_sre_instructions.md
 =======
 

@@ -94,7 +94,7 @@ To automatically assign licences to all local AD users that do not currently hav
 ## :running: User activation
 We need to contact the users to tell them their user ID and.
 We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
-We should also send them a copy of the [Safe Haven User Guide](../user/safe_haven_user_guide.md) at this point.
+We should also send them a copy of the [Safe Haven User Guide](../user_guides/user_guide.md) at this point.
 
 A sample email might look like the following
 

@@ -63,7 +63,7 @@ This provides an added layer of protection in case the upload link is inadvertan
 2. Then on the left hand side click on socket image  
 
 
-![](../images/provider_data_ingress/Azurestorageexplorer1.png)
+![](../../images/provider_data_ingress/Azurestorageexplorer1.png)
 
 
 3. This will open up a prompt box asking how you want to connect. Please select “Use a shared access signature URI” click next and enter the address from the secure email
@@ -72,7 +72,7 @@ This provides an added layer of protection in case the upload link is inadvertan
 
 
 
-![](../images/provider_data_ingress/Azurestorageexplorer2.png)
+![](../../images/provider_data_ingress/Azurestorageexplorer2.png)
 
 4. Then click connect
 
