@@ -164,7 +164,7 @@ Please follow these steps carefully.
    The first time you log in you need to click **"Forgotten my password"**.
 
    <p align="center">
-      <img src="images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password">
+      <img src="../../images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password">
    </p>
 
    > :warning: If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
