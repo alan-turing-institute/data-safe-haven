@@ -1,3 +1,9 @@
+# How to guides
+
+Our how-to guides are recipes that take you through the steps involved in deploying or managing an aspect of the Safe Haven.
+
+They are more advanced than tutorials and assume some basic knowledge of how our Safe Havens work.
+
 ## Deploying a Data Safe Haven
 
 We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
@@ -18,9 +24,9 @@ See the `administration` folder
 
   - [Safe Haven Administrator guide](administration/administrator_guide.md) - Instructions for administrators of a Safe Haven. Includes how to create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
-  - [Data Classification User Guide](administration/safe_haven_data_classification_guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
+  - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
 
-  - [Data Ingress guide for Data Providers](administration/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
+  - [Data Ingress guide for Data Providers](administration/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
 
 ## Using a Data Safe Haven
@@ -29,9 +35,9 @@ See the `user` folder
 
 Once an SRE has been set up for a project within a Safe Haven, users need to know how to access it in order to carry out their research.
 
-  - [Safe Havens User Guide](user_guides/safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
+  - [Safe Havens User Guide](user_guides/user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
 
-  - [Safe Havens Cheat Sheet](user_guides/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+
 
 ## Adding additional software Packages
 

@@ -1,7 +1,7 @@
 ## Learn more about the Safe Haven
 
 
-We provide a high level overview of our Safe Haven.
+We provide a high level overview of the Data Safe Haven project.
 
 See the `overview` folder
 
@@ -11,7 +11,7 @@ See the `overview` folder
 
 ## Classification
 
-We visually present our classification process which determines a security tier for each data work package.
+We visually present our classification process for determining the security tier for a data work package.
 
 See the `classification` folder
 
