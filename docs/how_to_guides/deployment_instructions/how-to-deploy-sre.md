@@ -72,7 +72,7 @@ This is done using the VPN which should have been deployed when setting up the S
 - **Configure the VPN connection**
   - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is defined in the config file. Once there open the "Point-to-site configuration page under the `Settings` section in the left hand sidebar (see image below).
     <p align="center">
-      <img src="images/deploy_sre/vpn_client.png" width="80%" title="vpn_client">
+      <img src="../../images/deploy_sre/vpn_client.png" width="80%" title="vpn_client">
     </p>
   - Click the `Download VPN client` link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
   - :warning: **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
@@ -82,7 +82,7 @@ This is done using the VPN which should have been deployed when setting up the S
   - :pencil: **OSX** on Catalina you may have to drag the certificate into your personal KeyChain as the default is to install system-wide
   - :pencil: **OSX** on Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
     <p align="center">
-      <img src="images/deploy_sre/catalina_authentication.png" width="80%" title="catalina_authentication">
+      <img src="../../images/deploy_sre/catalina_authentication.png" width="80%" title="catalina_authentication">
     </p>
 
   - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is defined in the config file.
@@ -200,7 +200,7 @@ On your **deployment machine**.
 
   - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
     <p align="center">
-      <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record">
+      <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record">
     </p>
   - Duplicate these records to the parent DNS system as follows:
     - If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
@@ -299,7 +299,7 @@ On your **deployment machine**.
 - You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 - **NOTE:** The apps will not work until the other servers have been deployed.
     <p align="center">
-      <img src="images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop">
+      <img src="../../images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop">
     </p>
 
 <details>

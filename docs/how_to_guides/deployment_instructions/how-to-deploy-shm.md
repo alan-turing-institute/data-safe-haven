@@ -96,7 +96,7 @@ From your **deployment machine**
     - Duplicate these records to the parent DNS system as follows:
       - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
       <p align="center">
-          <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
+          <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
       </p>
       - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 
@@ -108,7 +108,7 @@ From your **deployment machine**
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
    <p align="center">
-      <img src="images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory">
+      <img src="../../images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory">
    </p>
 3. Click `Create`
 4. Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Development Safe Haven A`)
@@ -125,7 +125,7 @@ From your **deployment machine**
 2. If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 3. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
-      <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
+      <img src="../../images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
    </p>
 4. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -253,7 +253,7 @@ Click the heading that applies to you to expand the instructions for that scenar
       - ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
     - Click "Save" and close window
       <p align="center">
-          <img src="images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings">
+          <img src="../../images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings">
       </p>
 
 
@@ -361,7 +361,7 @@ From your **deployment machine**
 - This will take **around one hour** to run.
 - Once the script exits successfully you should see the following resource groups under the SHM subscription:
   <p align="center">
-      <img src="images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
+      <img src="../../images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
   </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
@@ -378,7 +378,7 @@ From your **deployment machine**
 2. Once there open the "User VPN configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
    <p align="center">
-       <img src="images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
+       <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
    </p>
 4. Read through the following notes, then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
@@ -530,7 +530,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 4. Select `On-premises integration` from the left hand side bar
     - Ensure `Write back passwords to your on-premises directory` is set to yes.
       <p align="center">
-          <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
+          <img src="../../images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
       </p>
     - If you changed this setting, click the `Save` icon
 
@@ -568,7 +568,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 3. Configure NPS to log to a local text file:
     - Select `NPS (Local) > Accounting` on the left-hand sidebar
       <p align="center">
-          <img src="images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
+          <img src="../../images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
       </p>
     - Click on `Accounting > Configure Accounting`
         - On the `Introduction` screen, click `Next`.
