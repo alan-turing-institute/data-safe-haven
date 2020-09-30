@@ -14,7 +14,7 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
   - [Data Ingress guide for Data Providers](administration/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
-    - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](../explanations/classification/Simple-Classification-Flow-Diagram.pdf) for determining the classification tier for a work package.
+  - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](../explanations/classification/Simple-Classification-Flow-Diagram.pdf) for determining the classification tier for a work package.
 
 ## How to be Principal Investigator
 
@@ -41,10 +41,10 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 
 - [Code of conduct](../../CODE_OF_CONDUCT.md) - Our code of conduct whilst on this project
 
-- [Developers guide](developers/developers-guide) PLACEHOLDER
+- [Developers guide](developers/developers-guide.md) PLACEHOLDER
 
 ## How to be a project manager
 
-- [Starting a project]() PLACEHOLDER. A guide for project managers to start new projects involving the Safe Haven
+- [Starting a project](project_management/starting-a-project.md) PLACEHOLDER. A guide for project managers to start new projects involving the Safe Haven
 
-- [How to identify the key stakeholders]() PLACEHOLDER. A guide for identifying the key stakeholders that must be involved in a Safe Haven related project.
+- [How to identify the key stakeholders](project_management/identifying_stakeholders.md) PLACEHOLDER. A guide for identifying the key stakeholders that must be involved in a Safe Haven related project.
