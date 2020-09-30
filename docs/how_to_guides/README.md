@@ -4,66 +4,47 @@ Our how-to guides are recipes that take you through the steps involved in deploy
 
 They are more advanced than tutorials and assume some basic knowledge of how our Safe Havens work.
 
-## Deploying a Data Safe Haven
-
-We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
-
-See the `deployment_instructions` folder.
-
-  - [Safe Haven Management (SHM) deployment guide](deployment_instructions/how-to-deploy-shm.md) - Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
-
-
-  - [Secure Research Environment (SRE) deployment guide](deployment_instructions/how-to-deploy-sre) - Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
-
-  - [Data Science virtual machine build instructions](deployment_instructions/how-to-customise-dsvm-image.md) - Build and publish our "batteries included" Data Science Compute virtual machine image. Customise if necessary.
-
-
-## Administering a Data Safe Haven
-
-See the `administration` folder
+## How to be a Sysadmin
 
   - [Safe Haven Administrator guide](administration/administrator_guide.md) - Instructions for administrators of a Safe Haven. Includes how to create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
-  - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
+  - [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
+
+## How to be Data Provider
 
   - [Data Ingress guide for Data Providers](administration/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
+    - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](../explanations/classification/Simple-Classification-Flow-Diagram.pdf) for determining the classification tier for a work package.
 
-## Using a Data Safe Haven
+## How to be Principal Investigator
 
-See the `user` folder
+  - [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
+
+  - [Software package request form](software-package/software-package-request-form.md) - Guidance on how to request a new package to be added to the environment.
+
+  - [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
+
+## How to be a user
 
 Once an SRE has been set up for a project within a Safe Haven, users need to know how to access it in order to carry out their research.
 
-  - [Safe Havens User Guide](user_guides/user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
+  - [Safe Havens User Guide](user_guides/user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment as a user. The guide has been written with Turing Data Study Groups in mind.
+
+  - [Safe Havens Cheat Sheet](user_tutorials/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+
+  - [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
 
 
+## How to be a developer
 
-## Adding additional software Packages
+- [Contributing guidelines](../../CONTRIBUTING.md) - Guidance on how to contribute towards this project
 
-See the `software-package` folder
+- [Code of conduct](../../CODE_OF_CONDUCT.md) - Our code of conduct whilst on this project
 
-Secure analysis environments include package mirrors.
+- [Developers guide](developers/developers-guide) PLACEHOLDER
 
-At security Tier 3 and above, these mirrors do not include all of the packages available from the parent repository. Instead they provide access to a subset of whitelisted packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
+## How to be a project manager
 
-- [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
+- [Starting a project]() PLACEHOLDER. A guide for project managers to start new projects involving the Safe Haven
 
-- [Software package request form](software-package/software-package-request-form.md) - Guidance on how to request a new package to be added to the environment.
-
-
-## Converting documentation to PDF
-
-There are several ways to make shareable PDF files from the documents above.
-The easiest way to make shareable PDF files from the Markdown documents included here is using the `markdown2pdf.sh` script.
-
-1. `npm` method [recommended]
-- Install `npm`
-- Install `pretty-markdown-pdf` with `npm install pretty-markdown-pdf` with the -g flag if you want it installed globally
-- Run `./markdown2pdf.sh <file name>.md npm`
-
-2. `LaTeX` method
-- Install [`XeLaTex`](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [`TexLive`](http://www.tug.org/texlive/) (Windows / Linux) or [`MacTex`](http://www.tug.org/mactex/) (OSX).
-- Install [`Pandoc`](https://pandoc.org/installing.html)`
-- Install the `Symbola` font (https://fontlibrary.org/en/font/symbola)
-- Run `./markdown2pdf.sh <file name>.md latex`
+- [How to identify the key stakeholders]() PLACEHOLDER. A guide for identifying the key stakeholders that must be involved in a Safe Haven related project.

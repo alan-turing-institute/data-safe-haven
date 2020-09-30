@@ -3,7 +3,6 @@
 
 We provide a high level overview of the Data Safe Haven project.
 
-See the `overview` folder
 
   - [Policy, process and design overview](overview/provider-overview.md) - An overview of our policies, processes and security controls for supporting productive research while maintaining the security of the data we are working with.
 
@@ -13,11 +12,8 @@ See the `overview` folder
 
 We visually present our classification process for determining the security tier for a data work package.
 
-See the `classification` folder
+- [Classification overview](classification/classification-overview.md) - A full overview of the classification process, including the related technical and policy decisions.
 
-- [Full process](classification\Full Classification Flow Diagram.pdf) - Detailed, full diagram detailing our classification process
-
-- [Simplified process](classification\Full-Classification-Flow-Diagram.pdf) - High level diagram detailing our classification process
 
 ## Security
 

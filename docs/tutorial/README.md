@@ -1,30 +1,30 @@
-# Tutorials
+# Tutorials and overview
 
-Our tutorials provide a very hands on guide to implementing some aspect of the Safe Haven.
+**Recommended if**: you have no prior experience using our Safe Havens and want to be guided through the basics.
 
-They require no prior knowledge and are a good place to start.
+This documentation requires no prior knowledge and is a good place to start.
 
-## User Tutorials
+# Overview
 
-See the `user-tutorials` folder
+Our overview documentation provides a quick summary of the Safe Haven project.
 
-  - [Safe Havens Cheat Sheet](user_tutorials/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+- [What is a Safe Haven](quick_overview/what-is-a-safe-haven) PLACEHOLDER.
+
+- [Why might you want to use a Safe Haven](quick_overview/why-might-you-use-a-safe-haven) PLACEHOLDER.
+
+- [Is this Safe Haven suitable for you?](is-this-safe-haven-suitable-for-you) PLACEHOLDER.
 
 
+## Deployment tutorials
+
+Step by step tutorials on how to deploy a Safe Haven.
+
+We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
 
 
-## Converting documentation to PDF
+  - [Safe Haven Management (SHM) deployment guide](deployment_instructions/how-to-deploy-shm.md) - Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
 
-There are several ways to make shareable PDF files from the documents above.
-The easiest way to make shareable PDF files from the Markdown documents included here is using the `markdown2pdf.sh` script.
 
-1. `npm` method [recommended]
-- Install `npm`
-- Install `pretty-markdown-pdf` with `npm install pretty-markdown-pdf` with the -g flag if you want it installed globally
-- Run `./markdown2pdf.sh <file name>.md npm`
+  - [Secure Research Environment (SRE) deployment guide](deployment_instructions/how-to-deploy-sre) - Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
 
-2. `LaTeX` method
-- Install [`XeLaTex`](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [`TexLive`](http://www.tug.org/texlive/) (Windows / Linux) or [`MacTex`](http://www.tug.org/mactex/) (OSX).
-- Install [`Pandoc`](https://pandoc.org/installing.html)`
-- Install the `Symbola` font (https://fontlibrary.org/en/font/symbola)
-- Run `./markdown2pdf.sh <file name>.md latex`
+  - [Data Science virtual machine build instructions](deployment_instructions/how-to-customise-dsvm-image.md) - Build and publish our "batteries included" Data Science Compute virtual machine image. Customise if necessary.

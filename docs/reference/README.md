@@ -9,6 +9,9 @@ These reference guides assume some knowledge of how our Safe Havens work.
 
 
 
+PLACEHOLDER [automatically generated documentation when it exists]
+
+
 ## Converting documentation to PDF
 
 There are several ways to make shareable PDF files from the documents above.

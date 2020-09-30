@@ -12,14 +12,16 @@ The **staging area** is the file storage location at the Turing Institute that i
 The data owner will transfer the data to this location.
 A restricted number of Turing staff will have access to the staging area and data will be deleted from the staging area as soon as it has been transferred to the Data Safe Haven.
 
-The **secure data area** is the workspace within the Azure infrastructure that contains the data and analysis environment. 
+The **secure data area** is the workspace within the Azure infrastructure that contains the data and analysis environment.
 It is in the secure data area that approved researchers will have access to the data.
 Access will be managed via the user roles.
 Note that most researchers will only have read access to this data to avoid accidental deletion.
 
-The **secure document store** is the single volume within the Azure infrastructure that contains the definitive copy of the signed data transfer agreements.
+The **secure document store** is the single volume within the Azure infrastructure that contains the definitive copy of the signed data transfer agreements. (Do we ever use this?)
 
-The **golden copy** is the exact copy of the data received from the data owner and stored in secure data area. 
+
+
+The **golden copy** is the exact copy of the data received from the data owner and stored in secure data area.
 
 ## Step 1: Categorise the data into one of the defined [Data Tiers](https://github.com/alan-turing-institute/data-safe-haven/wiki/DataTiers)
 
@@ -45,7 +47,7 @@ A likely workflow is that a Business Development Manager or Programme Manager wi
 
 The version of the documents stored in the secure document store are the definitive ones.
 There will be a COPY (labelled as such) stored in the same location as the data for user reference.
-There should be a hash to confirm that the documents are indeed the same. 
+There should be a hash to confirm that the documents are indeed the same.
 
 ## Step 4: Transfer from data owner to Turing
 
@@ -142,7 +144,7 @@ The following Turing staff members are authorised to transfer the data: Head of 
 
 At this point a copy of the signed data transfer documents - saved in the secure document store - should be made in the secure data area.
 These copies should be marked as COPIES.
-There should be a hash to confirm that the documents are indeed the same. 
+There should be a hash to confirm that the documents are indeed the same.
 
 It is the responsibility of the Turing staff member conducting this step to ensure that they are following the appropriate process for the assigned data classification tier.
 

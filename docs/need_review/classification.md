@@ -14,17 +14,19 @@ It is necessary to identify the **data owner** and make sure they have given per
 
 If the organisation providing the data owns it then they are the data owner, but they may have purchased or loaned the data in which case they are not the data owner. Under these circumstances an additional step must be taken to ensure that the organisation providing the data have permission from the data owner to share it with Turing.
 
-The **data controller** - an individual or sub-group of the organisation that owns the data - must be identified. 
+The **data controller** - an individual or sub-group of the organisation that owns the data - must be identified.
 
 The person (or persons) at the organisation providing the data who will formally approve the data classification must be identified.
 
 There will be additional people at the organisation that owns the data who should provide input in discussions around data sharing and data classification. This list of **data owner stakeholders** must be created and kept up to date.
 
-Finally a list of people at the Turing who should provide input into discussions around data sharing and data classification. This list of 
+Identify the **principal investigator**, who is in charge of the project from the research side.
+
+Finally a list of people at the Turing who should provide input into discussions around data sharing and data classification. This list of
 
 > QUESTION: WHO AT TURING:
 > * Who needs to have input? Researcher, PM/BDM, REG?
-> * Who at Turing needs to formally approve? Head of Security and IT? 
+> * Who at Turing needs to formally approve? Head of Security and IT?
 
 ### Review existing data governance arrangements
 
@@ -37,7 +39,3 @@ If there is data relating to individual people in the data set, it is necessary 
 ## Classification
 
 THE REMAINDER OF THE PROCESS IS DESCRIBED IN THE PAPER
-
-
-
-
