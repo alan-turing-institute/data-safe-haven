@@ -32,7 +32,7 @@ jobs:
     - name: Lint Markdown
       language: ruby
       install: gem install mdl
-      script: mdl --rules "~MD013" *.md docs/
+      script: mdl --style .mdlstyle.rb *.md docs/
     - name: Lint Ansible
       language: python
       python: 3.8
