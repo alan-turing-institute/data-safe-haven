@@ -4,7 +4,7 @@ Data Safe Havens are used for doing secure data research on a single 'work packa
 
 Each time you egress data from the environment, you'll have to classify the data you're taking out, as a new work package on our classification tool, so you know how to handle it correctly. At the Turing, we recommend that make two separate data egress work packages upon completing a project.
 
-## Egress Work Package 1 - Reports and outputs for report finalisation 
+## Egress Work Package 1 - Reports and outputs for report finalisation
 
 When you're finishing a project, you'll need to complete reports and any other outputs that might be pertinent to the presentation of the research you've done. In this workpackage, you'll be egressing the documents, graphs, pictures and any other data you might need to make it easier to finish the report.
 

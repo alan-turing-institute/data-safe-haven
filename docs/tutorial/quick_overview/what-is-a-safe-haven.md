@@ -1,3 +1,3 @@
-Placehold
+# What is a Safe Haven?
 
-Insert info on what a safe haven, what purposes they have etc.
+Placeholder: Insert info on what a safe haven, what purposes they have etc.

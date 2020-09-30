@@ -1,4 +1,3 @@
-PLACEHOLDER
+# Why might you use a Safe Haven?
 
-
-insert text on reasons to use safe haven
+PLACEHOLDER: insert text on reasons to use safe haven

@@ -1,8 +1,6 @@
-Sensitive Data Handling at the Turing - Overview for Data Providers
-===================================================================
+# Sensitive Data Handling at the Turing - Overview for Data Providers
 
 ## Introduction
-------------
 
 Secure Environments for analysis of sensitive datasets are essential for research.
 
@@ -13,18 +11,18 @@ It is essential that sensitive or confidential datasets are kept secure, both to
 To create and operate these Environments safely and efficiently whilst ensuring usability, requires, as with many sociotechnical systems, a complex stack of interacting business process and design choices. This document describes the approaches taken by the Alan Turing Institute when building and managing Environments for productive, secure, collaborative research projects.
 
 We propose choices for the security controls that should be applied in the areas of:
-* data classification
-* data ingress (data entering a secure Environment from an external source)
-* data egress (data leaving a secure Environment to an external recipient)
-* software ingress (software entering a secure Environment from an external source)
-* user access
-* user device management
-* analysis Environments
+
++ data classification
++ data ingress (data entering a secure Environment from an external source)
++ data egress (data leaving a secure Environment to an external recipient)
++ software ingress (software entering a secure Environment from an external source)
++ user access
++ user device management
++ analysis Environments
 
 We do this for each of a small set of security "Tiers" - noting that the choice of security controls depends on the sensitivity of the data.
 
 ### Why classify?
--------------
 
 One of the major drivers for usability or security problems is over- or under-classification, that is, treating data as more or less sensitive than it deserves.
 
@@ -36,15 +34,13 @@ Misclassification is seriously costly for research organisations and their partn
 
 The risks of under-classification include not only legal and financial sanction, but the loss of the social licence to operate of the whole community of data science researchers.
 
-Document structure
-----------------
+### Document structure
 
 This document describes our approach to handling research data. It does not cover the Turing's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre, compliant with ISO 27001 (Information Security Management System Requirements).
 
 The document is structured as follows: we begin by defining terms which are used throughout the document. We then discuss some aspects of the design, before describing our 'model' for secure research Environments. Next, we discuss the possible choices for each security control around each of the areas bullet-pointed above, while leaving open the question of which controls are appropriate at which tiers. Finally, we make specific choices assigning controls to security tiers.
 
-Definitions - a model for secure data research projects
------------------------------------------
+## Definitions - a model for secure data research projects
 
 ### Work Packages
 
@@ -104,8 +100,7 @@ While the Programme Manager should maintain responsibility for adding users to t
 
 Members of Turing staff responsible for configuration and maintenance of the Environment.
 
-Software-defined infrastructure
--------------------------------
+## Software-defined infrastructure
 
 Our approach - separately instantiating an isolated Environment for each project - is made feasible by the advent of "software-defined infrastructure".
 
@@ -117,8 +112,7 @@ We also assume that "Identification, Authorisation and Authentication" (IAA) is 
 
 A software-defined infrastructure platform on which to build, means that the definition of the Environment can be meaningfully audited - as no aspect of it is not described formally in code, it can be fully scrutinised.
 
-Secure data science
--------------------
+## Secure data science
 
 We highlight two assumptions about the research user community critical to our design:
 
@@ -126,8 +120,7 @@ Firstly, we must consider not only accidental breach and deliberate attack, but 
 
 Secondly, research institutions need to be open about the research we carry out, and hence, the datasets we hold. This is because of both the need to publish our research as part of our impact cases to funders, and because of the need to maintain the trust of society, which provides our social licence. This means we cannot rely on "security through obscurity": we must make our security decisions assuming that adversaries know what we have, what we are doing with it, and how we secure it.
 
-Environment Tiers
------------------
+## Environment Tiers
 
 Our recommendation for secure information processing tiers is based on work which has gone before. We have begun with the UK government classifications, and reconciled these to the definitions of personal data, whether or not something is 'special category' under the GDPR or relates to criminal convictions, and related them to common activities in the research community.
 
@@ -181,10 +174,10 @@ It may be used for pseudonymised or synthetic information generated from persona
 It may also be used for commercial data where commercial consequences of disclosure would be no impact or very low impact, with the agreement of all parties.
 
 #### Relationships to other classification schemes
-Pseudonymised data is considered [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
+
+Pseudonymised data is considered [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible>) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
 
 In particular, Tier 1 is not suitable for any data derived from personal data that is not otherwise suitable for processing in Tier 0. If this is not the case, then the minimum tier environment such data can be processed in is Tier 2.
-
 
 ### Tier 2
 
@@ -205,8 +198,7 @@ At Tier 2, the most significant risks are "workaround breach" and the risk of mi
 
 Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
 
-All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
-
+All pseudonymised [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible>>) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
 
 ### Tier 3
 
@@ -227,9 +219,9 @@ At Tier 3, the risk of hostile actors attempting to break into the Environment b
 
 All data at the UK government OFFICIAL-SENSITIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
 
-All pseudonymised [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
+All pseudonymised [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/>) under the GDPR is Tier 3.
 
-All non-pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 3.
+All non-pseudonymised [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/>>) is Tier 3.
 
 ### Tier 4
 
@@ -243,9 +235,7 @@ It is at Tier 4 that the risk of hostile actors penetrating the project team bec
 
 All data at the UK government SECRET classification will be Tier 4.
 
-
-Connections to and from the Environment
--------------------------------------
+## Connections to and from the Environment
 
 At lower tiers direct inbound connections to resources within the Environment may be permitted.
 At higher tiers inbound connections are only permitted via a secure access node (e.g. Microsoft Remote Desktop Services).
@@ -268,8 +258,7 @@ We therefore believe it will be possible to make secure shell access just as sec
 At lower tiers outbound connections from the Environment to the internet and other external resources are permitted.
 At higher tiers connections to resources outside the Environment's private network are not permitted.
 
-The classification process
---------------------------
+## The classification process
 
 The Dataset Provider Representative and Investigator must agree on a classification for a work package. If the classification is likely to be Tier 2 or higher, they should also involve an independent Referee. Prior to datasets being transfered to the Turing, only the Dataset Provider Representative will have access to the actual dataset(s). The Investigator (and Refereee if necessary) will need to make their classification judgements based on discussions with the Dataset Provider Representative, alongside a clear description of the dataset and associated metadata such as data dictionaries.
 
@@ -283,8 +272,7 @@ If the classification is Tier 3 or below, the dataset(s) should be ingressed int
 
 If, at any point during the project, the research team decides to analyse the data differently or for a different purpose than previously agreed, this constitutes a new work package, and should be newly classified by repeating this process. This is also the case if the team wishes to ingress another dataset in combination, which will require Representatives from all Dataset Providers to arrive at the same consensus as the Investigator and Referee (if applicable).
 
-Data egress and new classification
-----------------------------------------------------------------
+## Data egress and new classification
 
 It is a central premise of our model that any output data is classified as a new work package, separate from the work package that it is derived from.
 
@@ -298,8 +286,8 @@ In all cases, classification of a work package at the point of egress should be 
 
 The initial classification of a work package may be for the purpose of ingress into an initial high-tier environment to carry out anonymisation, pseudonymisation or synthetic data generation work, with the intention of making the data appropriate for treatment in a lower-tier Environment. In this case, the egress review should include validation that the anonymised, pseudonymised or synthetic data undergoes its own classification process for analysis that will be performed in the "downstream" work package. This should include a review of the anonymisation, pseudonymisation or synthetic data generation process, including all associated code.
 
-Data sharing agreement
-----------------------------------------------------------------
+## Data sharing agreement
+
 This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice, and should be signed after the initial classification of a work package but before a dataset is received by the Turing.
 Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must  specify the legal basis under which the Dataset Provider is permitted to share this data with the Turing.
 This agreement should include any specific commitments required from Researchers working with the dataset.
@@ -309,8 +297,7 @@ The classification tier may potentially be raised from that agreed prior to data
 The classification tier for later work packages in a project may also be higher than that for the original work package, depending on the planned analysis and any additional data required.
 We therefore recommend that the data sharing agreement is worded to permit this.
 
-User lifecycle
----------------
+## User lifecycle
 
 Users who wish to have access to the Environment first complete an online form certifying they understand the confidentiality requirements. An account is then created for them within the Turing Environment management system, and the user activates this.
 
@@ -326,9 +313,7 @@ Before joining a project or work package, Researchers, Investigators and Referee
 
 Users are removed from a project or work package promptly once their involvement with it ends.
 
-
-Data ingress (data entering a secure Environment from an external source)
-----------------------------------------------------------------
+## Data ingress (data entering a secure Environment from an external source)
 
 The policies defined here minimise the number of people who have access to restricted information before it is in the Environment.
 
@@ -342,26 +327,21 @@ Once these details have been received, the Turing will open the data ingress vol
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
 
-  - Access to the ingress volume is restricted to a limited range of IP addresses associated with the Dataset Provider and the Turing.
-
-  - The Dataset Provider receives a **write-only** upload token. This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data. This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
-
-  - The upload token expires after a time-limited upload window.
-
-  - The upload token is transferred to the Dataset Provider via a secure email system.
++ Access to the ingress volume is restricted to a limited range of IP addresses associated with the Dataset Provider and the Turing.
++ The Dataset Provider receives a **write-only** upload token. This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data. This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
++ The upload token expires after a time-limited upload window.
++ The upload token is transferred to the Dataset Provider via a secure email system.
 
 To further minimise the risk of unauthorised access to the dataset during the upload window, the Dataset Provider should take the following precautions.
 
-  - Data should always be uploaded directly into the secure volume to avoid the risk of individuals unintentionally retaining the dataset for longer than intended.
-
-  - After their dataset has been transferred, the Dataset Provider should immediately indicate that the transfer is complete. In doing so, they lose access to the data volume.
++ Data should always be uploaded directly into the secure volume to avoid the risk of individuals unintentionally retaining the dataset for longer than intended.
++ After their dataset has been transferred, the Dataset Provider should immediately indicate that the transfer is complete. In doing so, they lose access to the data volume.
 
 If consensus on data classification cannot be made from metadata, an initial conservative classification may be made to permit the data to be ingressed into a higher tier environment.
 If the final classification of a work package is lower than the initial classification, the data may be egressed from this higher tier environment Environment to a new Environment matching the final classification tier.
 The web management workflows should ensure that all parties have reached consensus on the classification tier at this stage before allowing analysis to begin.
 
-Software library distributions
-------------------------------
+## Software library distributions
 
 Maintainers of shared research computing environments face a difficult challenge in keeping research algorithm libraries and platforms up to date - and in many cases these conflict.
 While sophisticated tools to help with this exist, the use of independent virtual environments opens another possibility: downloading the software as needed from package repositories (such as PyPI for Python or CRAN for R), which automate the process of installing and configuring programs.
@@ -374,8 +354,7 @@ Use of package mirrors inside the Environment means that the set of default inst
 At the the highest tiers a subset of whitelisted packages (packages which are explicitly marked as safe) is maintained. This whitelist can be specific to the work package if required.
 At other tiers the full package list is mirrored, but with a short delato provide an opportunity for the wider community to catch any malicious code uploaded to the canonical package mirrors.
 
-Storage
--------
+## Storage
 
 Which storage volumes exist in the analysis Environment?
 
@@ -391,15 +370,14 @@ The Software volume is a read-only area which contains software used for analysi
 
 A Home volume is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
 
-User device networks
---------------------
+## User device networks
 
 Our network security model distinguishes three dedicated research networks for
 user devices.
 
-* The open internet (any network outside a partner institution)
-* An Institutional network
-* A Restricted network
++ The open internet (any network outside a partner institution)
++ An Institutional network
++ A Restricted network
 
 An Institutional network corresponds to a network managed by a partner institution.
 Guest access may be permitted on such networks (e.g. eduroam), but these guests should be known users.
@@ -418,17 +396,16 @@ Note that these restrictions on networks that can access Environments relate to 
 Separate controls determine whether outbound connections can be made from an Environment and whether inbound connections are permitted directly to resources within the Environment or must be made via a secure access node.
 In addition to these netwrok level restrictions, users must additionally authenticate to the Environment in order to access it.
 
-Physical security
------------------
+## Physical security
 
 Some data requires a physical security layer around not just the data centre,
 but the physical space users are in when they connect to it.
 
 We distinguish three levels of physical security for research spaces:
 
-* Open research spaces
-* Medium security research spaces
-* High security research spaces
++ Open research spaces
++ Medium security research spaces
++ High security research spaces
 
 Open research spaces include university libraries, cafes and common rooms.
 
@@ -443,15 +420,14 @@ Only researchers associated with a secure project have access to such a space.
 
 Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
 
-User Devices
-------------
+## User Devices
 
 What devices should researchers use to connect to the Environment?
 
 We define two types of devices:
 
-* Managed devices
-* Open devices
++ Managed devices
++ Open devices
 
 ### Managed devices
 
@@ -475,9 +451,7 @@ However, such devices should not be used to access the highest tier Environments
 
 Firewall rules for the higher tier Environments can permit access only from Restricted network IP ranges that only permit managed devices to connect.
 
-
-Software ingress (software entering a secure Environment from an external source)
-------------------------------------------------------------------------------
+## Software ingress (software entering a secure Environment from an external source)
 
 The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed.
 Package mirrors also allow access to a wide range of libraries for the programming languages for which package mirrors are provided (currently Python and R).
@@ -502,19 +476,13 @@ As higher tier Environments do not have access to the internet, any additional s
 
 Software is ingressed in a similar manner as data, using a software ingress volume:
 
-  - In **external mode** the researcher is provided temporary **write-only** access to a software ingress volume.
++ In **external mode** the researcher is provided temporary **write-only** access to a software ingress volume.
++ Once the Researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
++ Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to Researchers within the analysis Environment with **read-only** access.
++ For software that does not require administrative rights to install, the Researcher can then install the software or transfer the source to a version control repository within the Environment as appropriate.
++ For software that requires administrative rights to install, a System Manager must run the installation process.
 
-  - Once the Researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
-
-  - Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to Researchers within the analysis Environment with **read-only** access.
-
-  - For software that does not require administrative rights to install, the Researcher can then install the software or transfer the source to a version control repository within the Environment as appropriate.
-
-  - For software that requires administrative rights to install, a System Manager must run the installation process.
-
-
-The choices
-------------
+## The choices
 
 Having described the full model, processes, and lifecycles, we can now enumerate the list of choices that can be made for each Environment.
 These are all separately configurable on an environment-by-environment basis.
@@ -530,7 +498,6 @@ At Tier 2 and above, all software not available from a package mirror must be in
 
 At Tier 1 and 0, all software installation should be from the internet.
 
-
 ### Inbound connections
 
 At Tier 2 and above, analysis machines and other Environment resources are not accessible directly from client devices.
@@ -543,7 +510,6 @@ At Tier 3 and above Environment access nodes are only available from approved Re
 At Tier 2 Environment access nodes are only be accessible from approved Institutional networks.
 
 At Tier 1 and 0 Environment resources are accessible from the open internet
-
 
 ### Outbound connections
 

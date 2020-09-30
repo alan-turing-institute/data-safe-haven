@@ -1,3 +1,3 @@
-Placeholder
+# Guide for developers
 
-guide for developers to contribute in Safe Haven
+Placeholder: guide for developers to contribute in Safe Haven
