@@ -54,10 +54,11 @@ users:
     ssh_authorized_keys:
       - EXTERNAL_PUBLIC_SSH_KEY
 
-# Declare locale
+# Set locale and timezone
 locale: en_GB.UTF-8
+timezone: <timezone>
 
-# Declare ntp servers
+# Set consistent NTP servers
 ntp:
   pools:
     - pool.ntp.org
