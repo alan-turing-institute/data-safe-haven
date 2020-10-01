@@ -1,7 +1,8 @@
-# Data classification process
+# Starting a project
 
-This document details the process through which the data is classified in to one of five data tiers.
-A classification should be assigned to each work-package before any data sharing agreement can be signed.
+This document details how project managers should set up a project that needs to use a Safe Haven.
+The input data and the data analysis that will be carried out with it together form a work package.
+Each work package needs to be classified in to one of five security tiers before any data sharing agreement can be signed.
 
 ## Pre-classification stages
 
@@ -33,4 +34,4 @@ If there is data relating to individual people in the data set, it is necessary 
 
 ## Classification
 
-THE REMAINDER OF THE PROCESS IS DESCRIBED IN THE PAPER
+The data classification process follows [this flow chart](../../explanations/classification/Full-Classification-Flow-Diagram.pdf). Step-by-step instructions on how to classify a work package using our web application [are given here](../general/how-to-use-classification-web-app-guide.md).
