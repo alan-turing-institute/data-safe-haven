@@ -44,11 +44,9 @@ The project member who triggers the declassification process should explain thei
 
 It may be the case that Tier 2 or above items need to be removed from the secure compute environment and returned to a data provider. Due to the sensitivity of the data we will only ever release this data to the original data owner that sent it to us in the first place, or if it is to comply with law. In such cases, written notification should be given by the data provider. The data should be encrypted with a strong encryption and secure key or passphrase before being transferred.
 
-
 ## Management of reclassified materials pending publication
 
 Within Turing, reclassified results at Tier 1 or below may be archived using normal business information processes in preparation for publication.
-
 
 ## Egress methods
 

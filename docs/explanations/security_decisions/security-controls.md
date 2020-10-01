@@ -175,8 +175,7 @@ However, we recommend the following at each tier.
 
 ### Inbound connections
 
-+ At Tier 2 and above, analysis machines and other Environment resources are not accessible directly from client devices.
-Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments (e.g. Microsoft Remote Desktop Services).
++ At Tier 2 and above, analysis machines and other Environment resources are not accessible directly from client devices. Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments (e.g. Microsoft Remote Desktop Services).
 + At Tier 1 and 0, analysis machines and other Environment resources are directly accessible from client devices.
 + At Tier 3 and above Environment access nodes are only available from approved Restricted networks.
 + At Tier 2 Environment access nodes are only be accessible from approved Institutional networks.

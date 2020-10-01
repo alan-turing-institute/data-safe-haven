@@ -60,7 +60,6 @@ This request should then be evaluated by the development team of the Turing Safe
 
 As a general rule, code which is primarily written by researchers on any particular project should *not* be added to the default installation. Instead, such code should follow the policies for software ingress detailed below.
 
-
 ### Installation during virtual machine deployment
 
 Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software sucan be installed during deployment.
