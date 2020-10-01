@@ -4,19 +4,29 @@ Our how-to guides are recipes that take you through the steps involved in deploy
 
 They are more advanced than tutorials and assume some basic knowledge of how our Safe Havens work.
 
-## How to be a Sysadmin
+## How to be a sysadmin
 
 + [Safe Haven Administrator guide](administration/administrator_guide.md) - Instructions for administrators of a Safe Haven. Includes how to create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
 + [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
 
-## How to be Data Provider
+## How to be a project manager
 
-+ [Data Ingress guide for Data Providers](administration/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
++ [Starting a project](project_management/starting-a-project.md) PLACEHOLDER. A guide for project managers to start new projects involving the Safe Haven
+
++ [Getting started with data classification](project_management/classification.md) - A guide for identifying the key stakeholders who must be involved in classifying the data before a project starts.
+
++ [Bringing data into the environment](project_management/data-ingress.md) - A guide to
+
+for identifying the key stakeholders who must be involved in classifying the data before a project starts.
+
+## How to be a data provider
+
++ [Data ingress guide for data providers](administration/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
 + [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step-by-step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](../explanations/classification/Simple-Classification-Flow-Diagram.pdf) for determining the classification tier for a work package.
 
-## How to be Principal Investigator
+## How to be the principal investigator for a project
 
 + [Data Classification User Guide](administration/how-to-use-classification-web-app-guide.md) - Step-by-step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
 
@@ -24,7 +34,10 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
 + [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
 
-## How to be a user
++ [Data egress guide for principal investigators](principal_investigator/ingress-and-egress.md) - Instructions for principal investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
+
+
+## How to be a research user on a project
 
 Once an SRE has been set up for a project within a Safe Haven, users need to know how to access it in order to carry out their research.
 
@@ -36,16 +49,11 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 
 + [Software package whitelist policy](software-package/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
 
-## How to be a developer
+## How to be a developer of the Safe Haven project
 
 + [Contributing guidelines](../../CONTRIBUTING.md) - Guidance on how to contribute towards this project
 
 + [Code of conduct](../../CODE_OF_CONDUCT.md) - Our code of conduct whilst on this project
 
-+ [Developers guide](developers/developers-guide.md) PLACEHOLDER
++ [Developer guide](developer/developers-guide.md) PLACEHOLDER
 
-## How to be a project manager
-
-+ [Starting a project](project_management/starting-a-project.md) PLACEHOLDER. A guide for project managers to start new projects involving the Safe Haven
-
-+ [How to identify the key stakeholders](project_management/identifying_stakeholders.md) PLACEHOLDER. A guide for identifying the key stakeholders that must be involved in a Safe Haven related project.

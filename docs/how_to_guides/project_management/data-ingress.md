@@ -1,10 +1,6 @@
 # Data Ingress Process
 
-This document details the ways of importing data to the Data Safe Haven (DSH).
-It is based on the [Data ingress policy](<https://github.com/alan-turing-institute/data-safe-haven/wiki/Data-ingress:-policy>).
-By data we refer to any digital document, file, dataset in any format known and to be known. If the data comes in physical format please refer to the appendix 1.
-
-Note that **Tier 4 data will never be imported into the Turing Data Safe Haven** as described in the [Data ingress policy](<https://github.com/alan-turing-institute/data-safe-haven/wiki/Data-ingress:-policy>).
+This document details the ways of importing data to the Turing Safe Haven. By data we refer to any digital document, file, dataset in any format known and to be known.
 
 ## Definitions
 
@@ -21,16 +17,13 @@ The **secure document store** is the single volume within the Azure infrastructu
 
 The **golden copy** is the exact copy of the data received from the data owner and stored in secure data area.
 
-## Step 1: Categorise the data into one of the defined [Data Tiers](<https://github.com/alan-turing-institute/data-safe-haven/wiki/DataTiers>)
+## Step 1: Categorise the data into one of the defined tiers
 
-Remember that Tier-0 is the least sensitive data tier (public data) and Tier-4 the most sensitive (SECRET).
-
-If there are mixed data sensitivities in the complete data set then the whole data set must be assigned to the **most sensitive** data tier.
+Remember that Tier-0 is the least sensitive data tier (public data) and Tier-4 the most sensitive (SECRET). If there are mixed data sensitivities in the complete data set then the whole data set must be assigned to the **most sensitive** data tier.
 
 ## Step 2: Complete data sharing paperwork
 
-[WHO] needs to complete the appropriate legal paperwork to ensure that a data sharing agreement is in place.
-
+The appropriate legal paperwork needs to be completed to ensure that a data sharing agreement is in place.
 This step should also cover ethical considerations of sharing the data.
 The project may need to be approved by the Turing Ethics Advisory Group (EAG; more information can be found at the [Turing Institute intranet site](<https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/service?unid=cb5e35246f474d1f90abae8ea262338c)) and permission to use the data (including [unconsented patient data](https://github.com/alan-turing-institute/data-safe-haven/wiki/UnconsentedPatientData)>) should be obtained.
 
@@ -171,12 +164,6 @@ This step is to verify that the files in the secure data area are the same as th
 
 All copies of the data in the staging area must be deleted after the integrity verification has been completed.
 
-> QUESTION: Should the dropbox folders and SharePoint folders for Tier 1 data also be cleared at this step?
-
-### A couple of outstanding questions
-
-Question from Kirstie & Catherine: Is this step part of data ingress? It seems like it's a data quality control step and is out of scope for this process? Is there a better place to put it!?
-
 ## Step 8: Test the integrity of the data
 
 A member of the Turing Research Engineering team will run all the necessary tests to ensure the integrity of the dataset.
@@ -187,10 +174,3 @@ At the beginning and the end of each session a hash with the code and data shoul
 Once all tests have been complied the resultant data will be ready to go to the secure data area.
 Data in this area can be deleted except for the latest version of the data, that in the case of no longer be needed should be archived along with the code, reports, and policy checks.
 
-Question for Diego:
-
-Kirstie & Catherine were wondering why we needed the different folders? The policy says that there will never be a mix of tiers within one project, so this step may not be required.
-
-> A empty volume is created specifically for the project and will have the necessary folders to store data, the maximum number of folders is 5 with the names: `tier0`, `tier1`, `tier2`, `tier3` and `tier4`. The data is assigned to the corresponding folder. The nominated accounts will have access to the folders accordingly with their access level.
-
-Diego-here> thanks for improving the document Kirstie and Catherine. About the folders, from the last meeting James' recommendation was to use different environments (yes, environments) separated from each other for each tier, not folders as I wrote in this section (I should have updated it in the document, sorry about that).

@@ -1,8 +1,8 @@
-# Turing Azure Safe Haven - Implementation details for Data Providers
+# Implementation details for the Turing Safe Haven
 
 ## Introduction
 
-The Safe Haven is designed and deployed into Microsoft Azure utilizing Azure networking and Virtual Machine (VM) infrastructure. This document describes the architecture of the Safe Haven and the security measures in place to protect the sensitive data handled within it.
+The Safe Haven is designed to be deployed on Microsoft Azure utilizing Azure networking and Virtual Machine (VM) infrastructure. This document describes the architecture of the Safe Haven and the security measures in place to protect the sensitive data handled within it.
 
 ### Safe Haven Management segment (SHM)
 
