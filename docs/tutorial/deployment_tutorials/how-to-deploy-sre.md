@@ -2,7 +2,7 @@
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 1 environment, follow [these instructions](./deploy_sre_tier1_instructions.md) instead.
+> :warning: If you are deploying a Tier 1 environment, follow [these instructions](./how-to-deploy-sre-tier1.md) instead.
 
 ## Contents
 

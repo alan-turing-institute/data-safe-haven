@@ -1,9 +1,8 @@
-# Tier1 Secure Research Environment Build Instructions
+# Secure Research Environment Build Instructions (Tier 1)
 
-> :warning: This document provides instructions for deploying a Tier 1 environment **only**.
-> If you want to deploy any other tier, please follow [these instructions](./deploy_sre_instructions.md) instead.
->
 > :warning: This documentation is temporary pending the integration of Tier 1 environments with AD
+> :warning: This document provides instructions for deploying a Tier 1 environment **only**.
+> If you want to deploy any other tier, please follow [these instructions](./how-to-deploy-sre.md) instead.
 
 ## Contents
 
