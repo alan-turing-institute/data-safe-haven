@@ -400,6 +400,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+    Replace("<timezone>", $config.sre.timezone.linux).
     Replace("<vm-hostname>", $vmName).
     Replace("<vm-ipaddress>", $vmIpAddress)
 

@@ -37,8 +37,11 @@ function Add-SreConfig {
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
     $config.sre.location = $config.shm.location
-    $config.sre.timezoneWindows = $config.shm.timezoneWindows
-    $config.sre.timezoneLinux = $config.shm.timezoneLinux
+    # Set the default timezone to match the SHM timezone
+    $config.sre.timezone = [ordered]@{
+        linux = $config.shm.timezone.linux
+        windows = $config.shm.timezone.windows
+    }
 
     # Ensure that this tier is supported
     if (-not @("0", "1", "2", "3").Contains($config.sre.tier)) {
@@ -454,14 +457,17 @@ function Get-ShmFullConfig {
         azureAdminGroupName = $shmConfigBase.azure.adminGroupName
         id = $shmConfigBase.shmId
         location = $shmConfigBase.azure.location
-        timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
         rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName = $shmConfigBase.azure.subscriptionName
     }
-    $shm.timezoneWindows = [TimeZoneConverter.TZConvert]::IanaToWindows($shm.timezoneLinux)
+    $timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
+    $shm.timezone = [ordered]@{
+        linux = $timezoneLinux
+        windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
+    }
 
     # DSVM build images
     # -----------------

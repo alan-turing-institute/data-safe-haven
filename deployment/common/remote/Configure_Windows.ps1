@@ -2,7 +2,11 @@
 # ------------------------
 $TimeZone = "GMT Standard Time"
 $NTPServer = "pool.ntp.org"
-
+# - pool.ntp.org
+# - time.nist.gov
+# - time.windows.com
+# - time.google.com
+# - time.apple.com
 
 # Set locale
 # ----------

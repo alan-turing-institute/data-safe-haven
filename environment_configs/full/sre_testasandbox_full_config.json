@@ -294,8 +294,10 @@
       }
     },
     "subscriptionName": "Safe Haven Management Test A",
-    "timezoneLinux": "Europe/London",
-    "timezoneWindows": "GMT Standard Time",
+    "timezone": {
+      "linux": "Europe/London",
+      "windows": "GMT Standard Time"
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -572,8 +574,10 @@
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "tier": "2",
-    "timezoneLinux": "Europe/London",
-    "timezoneWindows": "GMT Standard Time",
+    "timezone": {
+      "linux": "Europe/London",
+      "windows": "GMT Standard Time"
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {
