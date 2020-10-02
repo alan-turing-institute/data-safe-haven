@@ -187,13 +187,12 @@ function Resolve-CloudInit {
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
-
-        $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
-        $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
+        $externalMirrorPublicKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
+        $cloudInitYaml = $cloudInitYaml.Replace("<external_mirror_public_key>", $externalMirrorPublicKey)
     }
 
     # Set the appropriate tier for this mirror
-    $cloudInitYaml = $cloudInitYaml.Replace("TIER=PLACEHOLDER", "TIER=$tier")
+    $cloudInitYaml = $cloudInitYaml.Replace("<tier>", "$tier").
 
     # Populate initial package whitelist file defined in cloud init YAML
     $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -206,6 +205,8 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
+    # Set the timezone
+    $cloudInitYaml.Replace("<timezone>", $config.sre.timezone.linux)
     return $cloudInitYaml
 }
 
