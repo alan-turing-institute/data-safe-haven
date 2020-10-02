@@ -191,9 +191,6 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace("<external_mirror_public_key>", $externalMirrorPublicKey)
     }
 
-    # Set the appropriate tier for this mirror
-    $cloudInitYaml = $cloudInitYaml.Replace("<tier>", "$tier").
-
     # Populate initial package whitelist file defined in cloud init YAML
     $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if (-Not $notExists) {
@@ -205,8 +202,11 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
-    # Set the timezone
-    $cloudInitYaml.Replace("<timezone>", $config.sre.timezone.linux)
+    # Set the tier, NTP server and timezone
+    $cloudInitYaml = $cloudInitYaml.
+        Replace("<ntp-server-ip-address>", $config.shm.ntp.ip).
+        Replace("<tier>", "$tier").
+        Replace("<timezone>", $config.timezone.linux)
     return $cloudInitYaml
 }
 

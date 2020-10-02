@@ -393,6 +393,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
     Replace("<mirror-url-pypi>", $addresses.pypi.url).
+    Replace("<ntp-server-ip-address>", $config.shm.ntp.ip).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).

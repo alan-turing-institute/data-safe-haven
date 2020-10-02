@@ -63,6 +63,7 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-fqdn>', $gitlabFqdn).
                                             Replace('<gitlab-root-password>', $gitlabRootPassword).
                                             Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
+                                            Replace("<ntp-server-ip-address>", $config.shm.ntp.ip).
                                             Replace("<timezone>", $config.sre.timezone.linux)
 
 # Encode as base64
@@ -85,6 +86,7 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSea
                                             Replace('<hackmd-fqdn>', $hackmdFqdn).
                                             Replace('<hackmd-ldap-url>', $hackMdLdapUrl).
                                             Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName).
+                                            Replace("<ntp-server-ip-address>", $config.shm.ntp.ip).
                                             Replace("<timezone>", $config.sre.timezone.linux)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))

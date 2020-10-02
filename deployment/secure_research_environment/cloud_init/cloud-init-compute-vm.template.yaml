@@ -284,14 +284,10 @@ write_files:
 locale: en_GB.UTF-8
 timezone: <timezone>
 
-# Set consistent NTP servers
+# Use the NTP server in the SHM
 ntp:
-  pools:
-    - pool.ntp.org
-    - time.nist.gov
-    - time.windows.com
-    - time.google.com
-    - time.apple.com
+  servers:
+    - <ntp-server-ip-address>
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
