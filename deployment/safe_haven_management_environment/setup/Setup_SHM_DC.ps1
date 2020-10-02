@@ -125,10 +125,14 @@ Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
     P2S_VPN_Certificate  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     Shm_Id               = "$($config.id)".ToLower()
+    Subnet_Firewall_CIDR = $config.network.vnet.subnets.firewall.cidr
+    Subnet_Firewall_Name = $config.network.vnet.subnets.firewall.name
     Subnet_Gateway_CIDR  = $config.network.vnet.subnets.gateway.cidr
     Subnet_Gateway_Name  = $config.network.vnet.subnets.gateway.name
     Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
     Subnet_Identity_Name = $config.network.vnet.subnets.identity.name
+    Subnet_NTP_CIDR      = $config.network.vnet.subnets.ntp.cidr
+    Subnet_NTP_Name      = $config.network.vnet.subnets.ntp.name
     Subnet_Web_CIDR      = $config.network.vnet.subnets.web.cidr
     Subnet_Web_Name      = $config.network.vnet.subnets.web.name
     Virtual_Network_Name = $config.network.vnet.name
