@@ -1235,6 +1235,8 @@ function Invoke-WindowsConfigureAndUpdate {
         [string]$VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Time zone to use")]
+        [string]$TimeZone,
         [Parameter(Mandatory = $false, HelpMessage = "Additional Powershell modules")]
         [string[]]$AdditionalPowershellModules = @()
     )
@@ -1254,7 +1256,7 @@ function Invoke-WindowsConfigureAndUpdate {
     Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
-    $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
+    $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1" -Parameter @{"TimeZone" = $TimeZone; "NTPServer" = "time.google.com"}
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
     # Reboot the VM

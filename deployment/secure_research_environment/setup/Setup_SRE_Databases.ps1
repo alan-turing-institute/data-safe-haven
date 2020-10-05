@@ -147,7 +147,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Set locale, install updates and reboot
             Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."  # NB. this takes around 20 minutes due to a large SQL server update
-            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
+            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.timezone.windows -AdditionalPowershellModules @("SqlServer")
 
             # Lockdown SQL server
             Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."

@@ -337,7 +337,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -TimeZone $config.sre.timezone.windows
 }
 
 
@@ -388,7 +388,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $params = @{}
     # The RDS Gateway needs the RDWebClientManagement Powershell module
     if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg @params
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -TimeZone $config.sre.timezone.windows @params
 }
 
 
