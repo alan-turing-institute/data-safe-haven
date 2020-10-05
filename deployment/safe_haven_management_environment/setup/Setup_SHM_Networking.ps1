@@ -18,98 +18,32 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
-# Ensure that NTP resource group exists
-# ---------------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.ntp.rg -Location $config.location
+# Create VNet resource group if it does not exist
+# -----------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
-# Ensure that NTP subnet exists
-# -----------------------------
-$virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$subnet = Deploy-Subnet -Name $config.network.vnet.subnets.ntp.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.vnet.subnets.ntp.cidr
-
-
-# Set up the NSG for external package mirrors
-# -------------------------------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.network.nsg.ntp.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-#                              -Name "IgnoreInboundRulesBelowHere" `
-#                              -Description "Deny all other inbound" `
-#                              -Priority 3000 `
-#                              -Direction Inbound `
-#                              -Access Deny `
-#                              -Protocol * `
-#                              -SourceAddressPrefix * `
-#                              -SourcePortRange * `
-#                              -DestinationAddressPrefix * `
-#                              -DestinationPortRange *
-# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-#                              -Name "UpdateFromInternet" `
-#                              -Description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" `
-#                              -Priority 300 `
-#                              -Direction Outbound `
-#                              -Access Allow `
-#                              -Protocol TCP `
-#                              -SourceAddressPrefix $subnetExternal.AddressPrefix `
-#                              -SourcePortRange * `
-#                              -DestinationAddressPrefix Internet `
-#                              -DestinationPortRange 443, 873
-# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-#                              -Name "IgnoreOutboundRulesBelowHere" `
-#                              -Description "Deny all other outbound" `
-#                              -Priority 3000 `
-#                              -Direction Outbound `
-#                              -Access Deny `
-#                              -Protocol * `
-#                              -SourceAddressPrefix * `
-#                              -SourcePortRange * `
-#                              -DestinationAddressPrefix * `
-#                              -DestinationPortRange *
-if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($config.network.nsg.ntp.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.nsg.ntp.name)' failed!"
-}
-
-# Retrieve common objects
-# -----------------------
-$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-$networkCard = Deploy-VirtualMachineNIC -Name "$($config.ntp.vmName)-NIC" -ResourceGroupName $config.ntp.rg -Subnet $subnet -PrivateIpAddress $config.ntp.ip -Location $config.location
-
-
-# Retrieve key vault secrets
-# --------------------------
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.ntp.adminPasswordSecretName -DefaultLength 20
-
-
-# Load template cloud-init file
-# -----------------------------
-$cloudInitYaml = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-ntp.yaml") -Raw
-$cloudInitYaml = $cloudInitYaml.Replace("<timezone>", $config.timezone.linux)
-
-
-# Deploy the VM
-# -------------
+# Deploy VNet gateway from template
+# ---------------------------------
+Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    Name                   = $config.ntp.vmName
-    Size                   = $config.ntp.vmSize
-    AdminPassword          = $vmAdminPassword
-    AdminUsername          = $vmAdminUsername
-    BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml          = $cloudInitYaml
-    Location               = $config.location
-    NicId                  = $networkCard.Id
-    OsDiskType             = $config.ntp.disks.os.type
-    OsDiskSize             = $config.ntp.disks.os.sizeGb
-    ResourceGroupName      = $config.ntp.rg
-    ImageSku               = "18.04-LTS"
+    P2S_VPN_Certificate  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    Shm_Id               = "$($config.id)".ToLower()
+    Subnet_Firewall_CIDR = $config.network.vnet.subnets.firewall.cidr
+    Subnet_Firewall_Name = $config.network.vnet.subnets.firewall.name
+    Subnet_Gateway_CIDR  = $config.network.vnet.subnets.gateway.cidr
+    Subnet_Gateway_Name  = $config.network.vnet.subnets.gateway.name
+    Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
+    Subnet_Identity_Name = $config.network.vnet.subnets.identity.name
+    Subnet_Web_CIDR      = $config.network.vnet.subnets.web.cidr
+    Subnet_Web_Name      = $config.network.vnet.subnets.web.name
+    Virtual_Network_Name = $config.network.vnet.name
+    VNET_CIDR            = $config.network.vnet.cidr
+    VNET_DNS_DC1         = $config.dc.ip
+    VNET_DNS_DC2         = $config.dcb.ip
+    VPN_CIDR             = $config.network.vpn.cidr
 }
-$null = Deploy-UbuntuVirtualMachine @params
-Enable-AzVM -Name $config.ntp.vmName -ResourceGroupName $config.ntp.rg
-
-
-# Set-SubnetNetworkSecurityGroup
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 
 
 # Switch back to original subscription
