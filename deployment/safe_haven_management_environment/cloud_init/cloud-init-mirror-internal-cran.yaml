@@ -58,10 +58,11 @@ users:
 locale: en_GB.UTF-8
 timezone: <timezone>
 
-# Use the NTP server in the SHM
+# Use Google's NTP servers
+# Note that these are incompatible with other servers due to leap-second smearing
 ntp:
-  servers:
-    - <ntp-server-ip-address>
+  pool:
+    - time.google.com
 
 runcmd:
   # Suppress apt prompts and warning messages

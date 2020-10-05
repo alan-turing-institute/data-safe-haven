@@ -581,10 +581,6 @@ function Get-ShmFullConfig {
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
                 }
-                web = [ordered]@{
-                    name = "WebSubnet"
-                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
-                }
                 firewall = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
                     name = "AzureFirewallSubnet"
@@ -594,6 +590,10 @@ function Get-ShmFullConfig {
                     # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
                     name = "GatewaySubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
+                }
+                web = [ordered]@{
+                    name = "WebSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
                 }
             }
         }

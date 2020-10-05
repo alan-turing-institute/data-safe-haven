@@ -26,12 +26,6 @@
         "Subnet_Gateway_CIDR": {
             "type": "string"
         },
-        "Subnet_NTP_Name": {
-            "type": "string"
-        },
-        "Subnet_NTP_CIDR": {
-            "type": "string"
-        },
         "Subnet_Web_Name": {
             "type": "string"
         },
@@ -337,6 +331,24 @@
                         }
                     },
                     {
+                        "name": "OutboundAllowGoogleNTP",
+                        "properties": {
+                            "description": "Outbound allow connections to Google NTP servers",
+                            "protocol": "Udp",
+                            "sourcePortRange": "123",
+                            "destinationPortRange": "123",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "",
+                            "access": "Allow",
+                            "priority": 215,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": ["216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12"]
+                        }
+                    },
+                    {
                         "name": "RADIUS_Authentication_RDS_to_NPS",
                         "properties": {
                             "description": "Allows RDS servers to connection to NPS server for MFA",
@@ -631,14 +643,6 @@
                         }
                     },
                     {
-                        "name": "[parameters('Subnet_NTP_Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('Subnet_NTP_CIDR')]",
-                            "serviceEndpoints": [],
-                            "delegations": []
-                        }
-                    },
-                    {
                         "name": "[parameters('Subnet_Web_Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet_Web_CIDR')]",
@@ -698,20 +702,6 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgIdentityName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_NTP_Name'))]",
-            "apiVersion": "2018-10-01",
-            "scale": null,
-            "properties": {
-                "addressPrefix": "[parameters('Subnet_NTP_CIDR')]",
-                "serviceEndpoints": [],
-                "delegations": []
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         },
         {
