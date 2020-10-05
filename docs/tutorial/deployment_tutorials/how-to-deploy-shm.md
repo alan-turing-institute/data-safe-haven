@@ -404,7 +404,7 @@ From your **deployment machine**
 
 + Open Microsoft Remote Desktop
 + Click `Add Desktop` / `Add PC`
-+ In the Azure portal, navigate to the `RG_SHM_<SHM ID>_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ In the Azure portal, navigate to the `RG_SHM_<SHM ID>_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 + Double click on the desktop that appears under `saved desktops`.
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
