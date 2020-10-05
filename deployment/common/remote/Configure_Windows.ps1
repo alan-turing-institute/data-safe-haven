@@ -31,12 +31,24 @@ if ($success) {
 }
 
 
-# Configure Time Zone and NTP server
-# ----------------------------------
-if (-not ($TimeZone -and $NTPServer)) {
+# Configure time zone
+# -------------------
+if ($TimeZone) {
     Write-Output "Setting timezone and NTP server..."
     Set-TimeZone -Name $TimeZone
-    $success = $?
+    if ($?) {
+        Write-Output " [o] Setting time zone succeeded"
+    } else {
+        Write-Output " [x] Setting time zone failed!"
+    }
+} else {
+    Write-Output " [x] Invalid time zone '$TimeZone' provided!"
+}
+
+
+# Configure NTP server
+# --------------------
+if ($NTPServer) {
     Push-Location
     Set-Location HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers
     $success = $success -and $?
@@ -46,7 +58,7 @@ if (-not ($TimeZone -and $NTPServer)) {
     $success = $success -and $?
     Set-ItemProperty . "(Default)" "0"
     $success = $success -and $?
-    # Check that there are exactly two registry strings
+    # Check that there are exactly two registry strings: default (pointing to 0th-server) and 0th-server
     $success = $success -and (((Get-ItemProperty .).PSObject.Members | Where-Object { $_.MemberType -eq "NoteProperty" -and $_.Name -notlike "PS*" } | Measure-Object | Select-Object Count).Count -eq 2)
     Set-Location HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters
     $success = $success -and $?
@@ -58,14 +70,13 @@ if (-not ($TimeZone -and $NTPServer)) {
     Start-Service W32Time
     $success = $success -and $?
     if ($success) {
-        Write-Output " [o] Setting time zone and NTP server succeeded"
+        Write-Output " [o] Setting NTP server succeeded"
     } else {
-        Write-Output " [x] Setting time zone and NTP server failed!"
+        Write-Output " [x] Setting NTP server failed!"
     }
 } else {
-    Write-Output " [x] Invalid time zone '$TimeZone' and/or NTP server '$NTPServer' provided!"
+    Write-Output " [x] Invalid NTP server '$NTPServer' provided!"
 }
-
 
 
 # Install Windows updates
