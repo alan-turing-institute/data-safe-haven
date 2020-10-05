@@ -390,7 +390,7 @@ From your **deployment machine**
 
 + **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
 + Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
-+ Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + **Windows:** do not rename the VPN client as this will break it
 + **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
 + **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
