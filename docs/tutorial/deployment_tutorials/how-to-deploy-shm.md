@@ -446,7 +446,7 @@ From your **deployment machine**
     + On the `AD forest account` pop-up:
       + Select `Use existing AD account`
       + Enter the details for the `localadsync` user.
-        + Username: use the `shm-<SHM ID>-aad-localsync-username` secret in the SHM Key Vault.
+        + Username: use the `shm-<SHM ID>-aad-localsync-username` secret in the SHM Key Vault prepended with `<domain name>\` e.g. `testa.turingsafehaven.ac.uk\testalocaladsync` if the domain is `testa.turingsafehaven.ac.uk` and the value of the secret is `testalocaladsync`.
         + Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM Key Vault.
       + Click `OK`
       + **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user in the **Domain Controller** Active Directory to the value in the secret listed above.
