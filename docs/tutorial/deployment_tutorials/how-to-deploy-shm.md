@@ -727,7 +727,7 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + For each SRE attached to the SHM, do the following:
   + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
-+ Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 
 ## Server list
 The following 3 virtual machines are created as a result of these instructions:
