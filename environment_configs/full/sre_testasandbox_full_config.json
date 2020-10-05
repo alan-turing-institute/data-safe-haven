@@ -247,6 +247,10 @@
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet"
           },
+          "ntp": {
+            "cidr": "10.0.6.0/24",
+            "name": "NetworkTimeSubnet"
+          },
           "web": {
             "cidr": "10.0.1.0/24",
             "name": "WebSubnet"
@@ -276,6 +280,20 @@
       "vmSize": "Standard_D2s_v3"
     },
     "nsgPrefix": "NSG_SHM_TESTA",
+    "ntp": {
+      "disks": {
+        "os": {
+          "sizeGb": "32",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "NTP-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "hostname": "NTP-SHM-TESTA",
+      "ip": "10.0.6.4",
+      "rg": "RG_SHM_NTP",
+      "vmName": "NTP-SHM-TESTA",
+      "vmSize": "Standard_B1LS"
+    },
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
