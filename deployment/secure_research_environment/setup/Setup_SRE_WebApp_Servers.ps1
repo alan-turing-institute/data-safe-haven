@@ -22,9 +22,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-# $gitlabLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.gitlab.passwordSecretName -DefaultLength 20
 $hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
-# $hackmdLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.hackmd.passwordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
@@ -50,7 +48,6 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 # -----------------------
 $shmDcFqdn = "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)"
 $gitlabFqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
-# $gitlabLdapUserDn = "CN=$($config.sre.users.computerManagers.gitlab.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
@@ -74,7 +71,6 @@ $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 # -----------------------
 $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(userPrincipalName={{username}}))"
-# $hackmdSearchLdapUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $hackMdLdapUrl = "ldap://$($config.shm.dc.fqdn)"
 $hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSearchUserDn).
