@@ -137,7 +137,7 @@ From your **deployment machine**
 + Add the SHM domain:
   + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
   + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-  + Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+  + Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     + :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
     + :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
     + :warning: **Windows:** If the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
