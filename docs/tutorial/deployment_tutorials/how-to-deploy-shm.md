@@ -378,7 +378,7 @@ From your **deployment machine**
 
 ### Configure a VPN connection to the Safe Haven Management VNet
 
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + Once there open the "User VPN configuration page under the "Settings" section in the left hand sidebar (see image below).
 + Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
    <p align="center">
