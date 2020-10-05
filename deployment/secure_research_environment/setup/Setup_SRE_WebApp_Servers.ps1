@@ -32,6 +32,17 @@ $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault
 # ------------------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "OutboundAllowGoogleNTP" `
+                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationPortRange 123
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
                              -Priority 4000 `

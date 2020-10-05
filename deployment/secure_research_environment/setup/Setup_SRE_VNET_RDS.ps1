@@ -141,7 +141,29 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -SourcePortRange * `
                              -DestinationAddressPrefix $config.shm.nps.ip `
                              -DestinationPortRange 1645, 1646, 1812, 1813
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
+                             -Name "OutboundAllowGoogleNTP" `
+                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationPortRange 123
 $nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
+                             -Name "OutboundAllowGoogleNTP" `
+                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `

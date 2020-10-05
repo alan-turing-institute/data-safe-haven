@@ -335,7 +335,7 @@
                         "properties": {
                             "description": "Outbound allow connections to Google NTP servers",
                             "protocol": "Udp",
-                            "sourcePortRange": "123",
+                            "sourcePortRange": "*",
                             "destinationPortRange": "123",
                             "sourceAddressPrefix": "VirtualNetwork",
                             "destinationAddressPrefix": "",

@@ -63,6 +63,17 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                  -DestinationAddressPrefix * `
                                  -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                                 -Name "OutboundAllowGoogleNTP" `
+                                 -Description "Outbound allow connections to Google NTP servers" `
+                                 -Priority 2200 `
+                                 -Direction Outbound `
+                                 -Access Allow `
+                                 -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                                 -DestinationPortRange 123
+    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "OutboundDenyInternet" `
                                  -Description "Outbound deny internet" `
                                  -Priority 4000 `

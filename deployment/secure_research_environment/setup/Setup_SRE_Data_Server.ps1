@@ -34,6 +34,17 @@ $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.s
 # ----------------------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "OutboundAllowGoogleNTP" `
+                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationPortRange 123
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `
                              -Priority 4000 `
