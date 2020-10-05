@@ -369,7 +369,7 @@ From your **deployment machine**
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
-+ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 + To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
