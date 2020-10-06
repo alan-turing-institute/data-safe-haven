@@ -37,10 +37,13 @@ function Add-SreConfig {
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
     $config.sre.location = $config.shm.location
+
     # Set the default timezone to match the SHM timezone
-    $config.sre.timezone = [ordered]@{
-        linux = $config.shm.timezone.linux
-        windows = $config.shm.timezone.windows
+    $config.sre.time = [ordered]@{
+        timezone = [ordered]@{
+            linux = $config.shm.time.timezone.linux
+            windows = $config.shm.time.timezone.windows
+        }
     }
 
     # Ensure that this tier is supported
@@ -463,10 +466,19 @@ function Get-ShmFullConfig {
         nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName = $shmConfigBase.azure.subscriptionName
     }
+
+    # Set timezone and NTP configuration
+    # ----------------------------------
     $timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
-    $shm.timezone = [ordered]@{
-        linux = $timezoneLinux
-        windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
+    $shm.time = [ordered]@{
+        timezone = [ordered]@{
+            linux = $timezoneLinux
+            windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
+        }
+        ntp = [ordered]@{
+            serverFqdn = "time.google.com"
+            serverAddresses = @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12")
+        }
     }
 
     # DSVM build images
