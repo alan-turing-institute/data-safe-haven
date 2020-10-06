@@ -235,11 +235,11 @@ packages:
 locale: en_GB.UTF-8
 timezone: <timezone>
 
-# Use Google's NTP servers
-# Note that these are incompatible with other servers due to leap-second smearing
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   pool:
-    - time.google.com
+    - <ntp-server>
 
 runcmd:
   # Join the domain

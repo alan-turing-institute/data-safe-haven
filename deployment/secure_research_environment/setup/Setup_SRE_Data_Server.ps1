@@ -87,7 +87,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating data server VM..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -TimeZone $config.sre.timezone.windows
+Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.serverFqdn
 
 
 # Configure data server

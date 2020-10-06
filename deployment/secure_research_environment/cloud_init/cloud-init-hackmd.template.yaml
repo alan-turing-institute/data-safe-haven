@@ -106,17 +106,16 @@ write_files:
 locale: en_GB.UTF-8
 timezone: <timezone>
 
-# Use Google's NTP servers
-# Note that these are incompatible with other servers due to leap-second smearing
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   pool:
-    - time.google.com
+    - <ntp-server>
 
 runcmd:
   # Configure server
   - echo "Configuring server"
   - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
-  - echo "Europe/London" > /etc/timezone
   - dpkg-reconfigure -f noninteractive tzdata
   # Checking Docker status
   - echo "Current Docker status"
