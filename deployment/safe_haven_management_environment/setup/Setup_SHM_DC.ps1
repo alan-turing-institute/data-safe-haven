@@ -67,9 +67,7 @@ foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remot
     if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
         # Expand the AD disconnection template before uploading
         $adScriptLocalFilePath = (New-TemporaryFile).FullName
-        (Get-Content $filePath -Raw).Replace('<shm-keyvault-name>', $config.keyvault.name).
-                                     Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
-                                     Replace('<shm-fqdn>', $config.domain.fqdn) | Out-File $adScriptLocalFilePath
+        (Get-Content $filePath -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $adScriptLocalFilePath
         $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
         $null = Remove-Item $adScriptLocalFilePath
     } else {

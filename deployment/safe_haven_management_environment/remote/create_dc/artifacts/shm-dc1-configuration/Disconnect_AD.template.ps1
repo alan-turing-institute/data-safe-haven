@@ -3,11 +3,12 @@
 
 # Ensure that MSOnline is installed for current user
 if (-Not (Get-Module -ListAvailable -Name MSOnline)) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Install-Module -Name MSOnline -Force
 }
 
 if (Get-Module -ListAvailable -Name MSOnline) {
-    Write-Output "Please use username admin@<shm-fqdn> and the <aad-admin-password-name> from <shm-keyvault-name>."
+    Write-Output "Please use the username and password for an Azure AD global admin. Don't forget the @<shm-fqdn> on the end of the username!"
     Connect-MsolService
     Write-Output "Is directory synchronisation currently enabled? $((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled)"
     Write-Output "Disabling directory synchronisation..."
