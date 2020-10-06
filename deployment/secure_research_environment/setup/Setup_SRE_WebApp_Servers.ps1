@@ -32,15 +32,15 @@ $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault
 # ------------------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "OutboundAllowGoogleNTP" `
-                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
                              -Priority 2200 `
                              -Direction Outbound `
                              -Access Allow `
                              -Protocol * `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
-                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "OutboundInternetAccess" `
@@ -71,7 +71,7 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-fqdn>', $gitlabFqdn).
                                             Replace('<gitlab-root-password>', $gitlabRootPassword).
                                             Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
-                                            Replace("<ntp-server>", $config.shm.time.ntp.serverFqdn).
+                                            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
                                             Replace("<timezone>", $config.sre.time.timezone.linux)
 
 # Encode as base64
@@ -93,7 +93,7 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSea
                                             Replace('<hackmd-fqdn>', $hackmdFqdn).
                                             Replace('<hackmd-ldap-url>', $hackMdLdapUrl).
                                             Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName).
-                                            Replace("<ntp-server>", $config.shm.time.ntp.serverFqdn).
+                                            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
                                             Replace("<timezone>", $config.sre.time.timezone.linux)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))

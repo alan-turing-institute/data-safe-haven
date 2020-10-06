@@ -242,15 +242,15 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # ------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundAllowGoogleNTP" `
-                             -Description "Outbound allow connections to Google NTP servers" `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
                              -Priority 2200 `
                              -Direction Outbound `
                              -Access Allow `
                              -Protocol * `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
-                             -DestinationAddressPrefix @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12") `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundInternetAccess" `
@@ -404,7 +404,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
     Replace("<mirror-url-pypi>", $addresses.pypi.url).
-    Replace("<ntp-server>", $config.shm.time.ntp.serverFqdn).
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).

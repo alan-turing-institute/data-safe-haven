@@ -18,17 +18,13 @@
     "networkRuleCollections": [],
     "applicationRuleCollections": [
         {
-            "name": "AllowGoogleNtp",
+            "name": "AllowNTP",
             "protocols": [
                 "http:123"
             ],
             "fqdnTags": [],
             "targetFqdns": [
-                "time.google.com",
-                "time1.google.com",
-                "time2.google.com",
-                "time3.google.com",
-                "time4.google.com"
+                "<ntp-server-fqdns>"
             ],
             "sourceAddresses": [
                 "*"

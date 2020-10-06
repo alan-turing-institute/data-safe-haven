@@ -135,7 +135,7 @@ $cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.
                                 Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
                                 Replace("<egress-share-password>", $egressSharePassword).
                                 Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName).
-                                Replace("<ntp-server>", $config.shm.time.ntp.serverFqdn).
+                                Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
                                 Replace("<timezone>", $config.sre.time.timezone.linux)
 
 

@@ -16,6 +16,18 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
+$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
+    Replace("<shm-firewall-private-ip>", '$firewall.IpConfigurations.PrivateIpAddress').
+    Replace("<shm-id>", $config.id).
+    Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
+    Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr).
+    Replace("<logging-workspace-id>", '$workspaceId') | ConvertFrom-Json -AsHashtable
+
+Write-Host ($rules | ConvertTo-Json -Depth 10 | Out-String)
+
+exit 1
+$($blobNames -join "|")
+
 # Ensure that firewall subnet exists
 # ----------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
@@ -53,6 +65,7 @@ $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceN
 $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
+    Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).

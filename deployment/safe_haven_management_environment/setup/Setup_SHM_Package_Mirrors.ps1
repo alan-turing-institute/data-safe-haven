@@ -204,7 +204,7 @@ function Resolve-CloudInit {
 
     # Set the tier, NTP server and timezone
     $cloudInitYaml = $cloudInitYaml.
-        Replace("<ntp-server>", $config.shm.time.ntp.serverFqdn).
+        Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
         Replace("<tier>", "$tier").
         Replace("<timezone>", $config.time.timezone.linux)
     return $cloudInitYaml

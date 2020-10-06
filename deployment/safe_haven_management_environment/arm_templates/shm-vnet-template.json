@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "IPAddresses_ExternalNTP": {
+            "type": "array"
+        },
         "P2S_VPN_Certificate": {
             "type": "string"
         },
@@ -331,9 +334,9 @@
                         }
                     },
                     {
-                        "name": "OutboundAllowGoogleNTP",
+                        "name": "OutboundAllowNTP",
                         "properties": {
-                            "description": "Outbound allow connections to Google NTP servers",
+                            "description": "Outbound allow connections to NTP servers",
                             "protocol": "Udp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "123",
@@ -345,7 +348,7 @@
                             "sourcePortRanges": [],
                             "destinationPortRanges": [],
                             "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": ["216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12"]
+                            "destinationAddressPrefixes": "[parameters('IPAddresses_ExternalNTP')]"
                         }
                     },
                     {

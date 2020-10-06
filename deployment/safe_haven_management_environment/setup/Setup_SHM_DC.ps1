@@ -248,7 +248,7 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.serverFqdn
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn
 }
 
 
