@@ -376,7 +376,7 @@ From your **deployment machine**
 + This will take **around fifteen minutes** to run.
 
 
-### Deploy the Active Directory Domain Controller
+### Deploy the Active Directory Domain Controllers and Network Policy Server
 
 From your **deployment machine**
 
