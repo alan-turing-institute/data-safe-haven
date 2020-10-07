@@ -154,7 +154,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 >
 > :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
 > It is very important that address spaces do not overlap in the environment as this will cause network faults.
-> The address spaces use a private class A range and use a 21-bit subnet mask.
+> Each SRE should use a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.21.0.0` to cleanly avoid the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.20.2.0-10.20.3.255`).
 > This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
 ### :full_moon: Generate full SRE configuration
