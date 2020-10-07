@@ -138,13 +138,25 @@
                         ]
                     },
                     {
+                        "name": "AllowMSOnlinePSModule",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "provisioningapi.microsoftonline.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AllowPowershellModuleInstallation",
                         "protocols": [
                             "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "provisioningapi.microsoftonline.com",
                             "psg-prod-eastus.azureedge.net",
                             "www.powershellgallery.com"
                         ],
