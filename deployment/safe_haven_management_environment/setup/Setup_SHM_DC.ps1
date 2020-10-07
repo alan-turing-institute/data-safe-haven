@@ -242,11 +242,11 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Remove custom per-NIC DNS settings
     $nic = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
     $nic.DnsSettings.DnsServers.Clear()
-    $nic | Set-AzNetworkInterface
+    $null = $nic | Set-AzNetworkInterface
 
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn -AdditionalPowershellModules "MSOnline"
 }
 
 

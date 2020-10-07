@@ -1258,8 +1258,8 @@ function Invoke-WindowsConfigureAndUpdate {
     Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
-    $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1" -Parameter @{"TimeZone" = $TimeZone; "NTPServer" = $NtpServer}
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
+    $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = $TimeZone; "NTPServer" = $NtpServer}
     Write-Output $result.Value
     # Reboot the VM
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
