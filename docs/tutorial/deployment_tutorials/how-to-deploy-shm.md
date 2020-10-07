@@ -1,6 +1,6 @@
 # Safe Haven Management Environment Build Instructions
 
-These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently (eg one for each Data Study Group).
+These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently, for example you may have a group of projects with the same lifecycle which share a different SHM to your other projects.
 
 ## Contents
 
@@ -18,7 +18,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
 + [Deploy package mirrors](#deploy-package-mirrors)
-+ [Tear down SHM](#tearing-down-the-shm)
++ [Tear down the SHM](#tearing-down-the-shm)
 
 ## Prerequisites
 
@@ -370,34 +370,35 @@ From your **deployment machine**
       <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups">
   </p>
 
-### Download a client VPN certificate for the Safe Haven Management VNet
+### Download a client VPN certificate for the Safe Haven Management network
 
-+ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-+ Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
-+ To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
++ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`
+  + NB. `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Once there open the `Certificates` page under the `Settings` section in the left hand sidebar.
++ Click on the certificate named `shm-<SHM ID>-vpn-client-cert` and select the `CURRENT VERSION`
++ Click the `Download in PFX/PEM format` link at the top of the page and save the `*.pfx` certificate file locally
++ To install, double click on the downloaded certificate (or on OSX you can manually drag it into the `login` keychain), leaving the password field blank.
 
 **Make sure to securely delete the local "\*.pfx" certificate file that you downloaded after you have installed it.**
 
-### Configure a VPN connection to the Safe Haven Management VNet
+### Configure a VPN connection to the Safe Haven Management network
 
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Once there open the "User VPN configuration page under the "Settings" section in the left hand sidebar (see image below).
-+ Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
++ Navigate to the Safe Haven Management (SHM) virtual network gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`
+  + NB. `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Once there open the `Point-to-site configuration` page under the `Settings` section in the left hand sidebar
++ Click the `Download VPN client` link at the top of the page to download a zip file
    <p align="center">
        <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
    </p>
-+ Read through the following notes, then follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the Windows or Mac sections as appropriate.
-
-**NOTES:**
-
-+ **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
-+ Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
-+ Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ **Windows:** do not rename the VPN client as this will break it
-+ **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
-+ **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
-+ **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
++ Unzip the zip file and identify the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
++ Follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the section appropriate to your operating system
+  + **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+  + Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
+  + Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
+  + **Windows:** do not rename the VPN client as this will break it
+  + **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
+  + **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
+  + **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
@@ -416,7 +417,7 @@ From your **deployment machine**
       <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups">
   </p>
 
-### Access the first Domain Controller (DC1) via Remote Desktop
+### Access the first domain controller (DC1) via Remote Desktop
 
 From your **deployment machine**
 
