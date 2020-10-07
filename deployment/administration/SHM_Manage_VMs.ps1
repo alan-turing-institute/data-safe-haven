@@ -86,7 +86,7 @@ switch ($Action) {
             }
         }
         if (-not $ExcludeFirewall) {
-            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -AsJob
+            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -NoWait
         }
     }
 }
