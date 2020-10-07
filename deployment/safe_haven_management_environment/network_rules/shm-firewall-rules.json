@@ -151,6 +151,20 @@
                         ]
                     },
                     {
+                        "name": "AllowPowershellModuleInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "psg-prod-eastus.azureedge.net",
+                            "www.powershellgallery.com"
+                        ],
+                        "sourceAddresses": [
+                            "<dc1-ip-address>"
+                        ]
+                    },
+                    {
                         "name": "AllowADConnectSetup",
                         "protocols": [
                             "https:443"

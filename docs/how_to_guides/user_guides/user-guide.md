@@ -203,7 +203,7 @@ Please follow these steps carefully.
    > :warning: Do not use special characters or symbols in your password.
    > The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
 
-   We recommend using a password manager (for example [BitWarden](<https://bitwarden.com)>) to store your password.
+   We recommend using a password manager (for example [BitWarden](<https://bitwarden.com>) to store your password.
    Alternatively you can write down your password on a piece of paper and keep it securely on your person, or store the password on a separate machine.
 
 + Enter your password into the `Enter new password` and `Confirm new password` fields.
@@ -1098,7 +1098,7 @@ A comparison in terms of features can be found [here](<https://usersnap.com/blog
 ### Getting started with Git
 
 If you have never used Git before, you might want to take a look at an introductory guide.
-There are multiple git cheat sheets such as [interactive](<http://ndpsoftware.com/git-cheatsheet.html#loc=stash;) and [this one](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet>).
+There are multiple git cheat sheets such as [interactive](<http://ndpsoftware.com/git-cheatsheet.html>) and [this one](<https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet>).
 
 ### Repositories
 
@@ -1141,12 +1141,10 @@ You'll need to do this only once, since you are using the `--global` option. It 
 
 In Git, when you copy a project you say you "clone" it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
 
-When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](<https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
+When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](<https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html>). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
    <p align="center">
-
       <img src="../../images/user_guide/project_clone_url.png" width="80%" title="project_clone_url">
-
    </p>
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
@@ -1319,5 +1317,6 @@ This downloaded certificate is cached by your browser, which means that the old 
 
 #### Solution
 
-Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (instructions vary by browser and operating system>).
-This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
+Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/>) of the page (instructions vary by browser and operating system>).
+You may also need to [clear your cache](<https://www.refreshyourcache.com/en/home/>) for this site.
+In either case, removing locally cached data should mean that you retrieve a copy of the new certificate.

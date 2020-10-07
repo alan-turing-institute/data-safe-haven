@@ -1510,30 +1510,30 @@ function Start-Firewall {
         [Parameter(Mandatory = $false, HelpMessage = "Force restart of Firewall")]
         [switch]$ForceRestart
     )
-    $vnet = Get-AzVirtualNetwork -Name $VirtualNetworkName
-    $publicIP = Get-AzPublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' is running..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if(-not $firewall) {
-        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
-        Exit 1
-    }
-    if ($ForceRestart) {
-        Add-LogMessage -Level Info "Restart requested. Deallocating firewall '$Name'..."
-        $firewall = Stop-Firewall -Name $Name -ResourceGroupName $ResourceGroupName
-    }
-    # At this point we either have a running firewall or a stopped firewall.
-    # A firewall is allocated if it has one or more IP configurations.
-    if($firewall.IpConfigurations) {
-        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
+    if (-not $firewall) {
+        Add-LogMessage -Level Error "Firewall '$Name' does not exist in $ResourceGroupName"
     } else {
-        try {
-            Add-LogMessage -Level Info "[ ] Starting firewall '$Name'..."
-            $firewall.Allocate($vnet, $publicIp)
-            $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-            Add-LogMessage -Level Success "Firewall '$Name' successfully started."
-        } catch {
-            Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
+        $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName
+        $publicIP = Get-AzPublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName
+        if ($ForceRestart) {
+            Add-LogMessage -Level Info "Restart requested. Deallocating firewall '$Name'..."
+            $firewall = Stop-Firewall -Name $Name -ResourceGroupName $ResourceGroupName
+        }
+        # At this point we either have a running firewall or a stopped firewall.
+        # A firewall is allocated if it has one or more IP configurations.
+        if ($firewall.IpConfigurations) {
+            Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
+        } else {
+            try {
+                Add-LogMessage -Level Info "[ ] Starting firewall '$Name'..."
+                $firewall.Allocate($virtualNetwork, $publicIp)
+                $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
+                Add-LogMessage -Level Success "Firewall '$Name' successfully started."
+            } catch {
+                Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
+            }
         }
     }
     return $firewall

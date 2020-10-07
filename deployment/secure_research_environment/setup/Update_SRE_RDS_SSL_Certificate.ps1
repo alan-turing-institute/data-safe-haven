@@ -116,7 +116,7 @@ if ($requestCertificate) {
     } else {
         Add-LogMessage -Level Fatal "DNS record creation failed!"
     }
-    Add-LogMessage -Level Info " [ ] Attempting to delete a DNS record for $testDomain..."
+    Add-LogMessage -Level Info "[ ] Attempting to delete a DNS record for $testDomain..."
     Unpublish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "DNS record deletion succeeded"

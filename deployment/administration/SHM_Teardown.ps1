@@ -5,12 +5,13 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/DataStructures.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName
 
@@ -28,8 +29,9 @@ while ($confirmation -ne "y") {
 # Remove resource groups and the resources they contain
 # If there are still resources remaining after 10 loops then throw an exception
 # -----------------------------------------------------------------------------
+$configResourceGroups = Find-AllMatchingKeys -Hashtable $config -Key "rg"
 for ($i = 0; $i -le 10; $i++) {
-    $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
+    $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $configResourceGroups })
     if (-not $shmResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($shmResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $shmResourceGroups) {
@@ -44,6 +46,14 @@ for ($i = 0; $i -le 10; $i++) {
 }
 if ($shmResourceGroups) {
     Add-LogMessage -Level Fatal "There are still $($shmResourceGroups.Length) resource(s) remaining!`n$shmResourceGroups"
+}
+
+
+# Warn if any suspicious resource groups remain
+# ---------------------------------------------
+$suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.shm.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
+if ($suspiciousResourceGroups) {
+    Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SHM`n$suspiciousResourceGroups"
 }
 
 

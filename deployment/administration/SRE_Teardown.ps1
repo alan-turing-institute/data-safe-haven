@@ -28,8 +28,9 @@ while ($confirmation -ne "y") {
 # Remove resource groups and the resources they contain
 # If there are still resources remaining after 10 loops then throw an exception
 # -----------------------------------------------------------------------------
+$configResourceGroups = Find-AllMatchingKeys -Hashtable $config -Key "rg"
 for ($i = 0; $i -le 10; $i++) {
-    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $configResourceGroups })
     if (-not $sreResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
@@ -44,6 +45,14 @@ for ($i = 0; $i -le 10; $i++) {
 }
 if ($sreResourceGroups) {
     Add-LogMessage -Level Fatal "There are still $($sreResourceGroups.Length) resource(s) remaining!`n$sreResourceGroups"
+}
+
+
+# Warn if any suspicious resource groups remain
+# ---------------------------------------------
+$suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" }
+if ($suspiciousResourceGroups) {
+    Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SRE`n$suspiciousResourceGroups"
 }
 
 
