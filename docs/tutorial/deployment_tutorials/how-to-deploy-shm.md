@@ -327,7 +327,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 ### Remove the default external user that was used to create the Azure AD
 
-:warning: Make sure you have activated your account and **successfully logged in** with the nes **internal** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
+:warning: Make sure you have activated your account and **successfully logged in** with the new **internal** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 
 + Ensure you are logged in with the new **internal** administrator account you have just created.
   + Click on your username at the top right corner of the screen, then `Sign in with a different user`.
@@ -336,8 +336,7 @@ The other administrators you have just set up can activate their accounts by fol
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Users` in the left hand sidebar
 + Select the default **external** user that was created when you created the Azure AD.
-  + The `User name` field for this user will be at qa **different domain** than the internal administrator users you have just created
-  + The `Source` field for this user will be `External Azure Active Directory`
+  + The `User name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 + Click the `Delete user` icon in the menu bar at the top of the user list panel
 
 ### Adding MFA licences to users
