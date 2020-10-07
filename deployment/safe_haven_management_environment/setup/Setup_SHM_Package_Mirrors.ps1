@@ -188,7 +188,7 @@ function Resolve-CloudInit {
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
         $externalMirrorPublicKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
-        $cloudInitYaml = $cloudInitYaml.Replace("<external_mirror_public_key>", $externalMirrorPublicKey)
+        $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
     }
 
     # Populate initial package whitelist file defined in cloud init YAML

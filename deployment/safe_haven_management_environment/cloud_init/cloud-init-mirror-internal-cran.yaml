@@ -52,7 +52,7 @@ users:
     lock_passwd: True
     sudo: False
     ssh_authorized_keys:
-      - <external_mirror_public_key>
+      - <external-mirror-public-key>
 
 # Set locale and timezone
 locale: en_GB.UTF-8
