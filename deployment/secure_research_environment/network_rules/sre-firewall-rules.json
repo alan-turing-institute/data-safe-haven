@@ -16,20 +16,6 @@
         }
     ],
     "networkRuleCollections": [],
-    "applicationRuleCollections": [
-        {
-            "name": "AllowNTP",
-            "protocols": [
-                "http:123"
-            ],
-            "fqdnTags": [],
-            "targetFqdns": [
-                "<ntp-server-fqdns>"
-            ],
-            "sourceAddresses": [
-                "*"
-            ]
-        }
-    ],
+    "applicationRuleCollections": [],
     "natRuleCollections": []
 }

@@ -32,13 +32,6 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
     + :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
     + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
-    <!--
-    NB. looks like these are available through Az.RecoveryServices so we do not need to install them
-    - Add the `Nuget` package repository
-      - **Windows:** you can run `Install-PackageProvider -Name Nuget -Force` in Powershell
-      - **OSX:** you can run `Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet -Trusted` in Powershell
-    - Install [TimeZoneConverter](https://github.com/mj1856/TimeZoneConverter)
-    -->
 + `Microsoft Remote Desktop`
   + On Mac this can be installed from the [apple store](<https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12>)
 + `OpenSSL`

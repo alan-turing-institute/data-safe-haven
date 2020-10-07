@@ -11,10 +11,10 @@ VM_HOSTNAME=$4
 VM_IPADDRESS=$5
 
 # Check timezone and NTP server
-echo ">=== Checking timezone... ===<"
+echo ">=== Current timezone... ===<"
 echo "Date:     $(date)"
 echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | xargs)"
-echo ">=== Checking NTP servers... ===<"
+echo ">=== Current NTP servers... ===<"
 grep NTP /etc/systemd/timesyncd.conf.d/cloud-init.conf
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)

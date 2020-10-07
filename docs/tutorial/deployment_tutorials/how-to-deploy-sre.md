@@ -125,7 +125,7 @@ Please [read the instructions](how-to-deploy-shm.md#create-configuration-file) t
 
 The core properties for the new SRE environment must be present in the `environment_configs/core` folder.
 
-> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer and (ideally) all lowercase.
+> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer.
 
 The following core SRE properties must be defined in a JSON file named `sre_<SRE ID>_core_config.json` .
 
@@ -138,7 +138,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "domain": "The fully qualified domain name for the SRE",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Each SRE uses a /21 CIDR range, so prefixes must differ by 8 in their third octet",
-    "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. Setting this to 'default' will use the default Turing network ranges.",
+    "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See below for suggestion on how to set this.",
     "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
     "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)",
@@ -151,6 +151,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 > - Tier 0/1 SREs: this can be set to 'Internet', allowing access from anywhere.
 > - Tier 2 SREs: this should correspond to the **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organsiation, such as `EduRoam`, `Turing Guest`, `Turing Secure` etc)
 > - Tier 3 SREs: this should correspond to the **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
+> Setting this to 'default' will use the default Turing network ranges.
 >
 > :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
 > It is very important that address spaces do not overlap in the environment as this will cause network faults.
