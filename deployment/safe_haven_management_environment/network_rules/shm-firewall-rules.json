@@ -161,7 +161,7 @@
                             "www.powershellgallery.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "<dc1-ip-address>"
                         ]
                     },
                     {

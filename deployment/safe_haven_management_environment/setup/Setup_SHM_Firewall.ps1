@@ -53,6 +53,7 @@ $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceN
 $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
+    Replace("<dc1-ip-address>", $config.dc.ip).
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
