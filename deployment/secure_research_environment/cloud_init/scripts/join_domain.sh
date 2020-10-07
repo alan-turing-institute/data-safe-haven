@@ -15,7 +15,7 @@ echo ">=== Current timezone... ===<"
 echo "Date:     $(date)"
 echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
 echo ">=== Current NTP servers... ===<"
-grep NTP /etc/systemd/timesyncd.conf.d/cloud-init.conf
+timedatectl show-timesync --all
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
 echo ">=== Setting hostname in /etc/hostname... ===<"
