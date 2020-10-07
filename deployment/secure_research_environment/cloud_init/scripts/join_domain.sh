@@ -13,7 +13,7 @@ VM_IPADDRESS=$5
 # Check timezone and NTP server
 echo ">=== Current timezone... ===<"
 echo "Date:     $(date)"
-echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | xargs)"
+echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
 echo ">=== Current NTP servers... ===<"
 grep NTP /etc/systemd/timesyncd.conf.d/cloud-init.conf
 
