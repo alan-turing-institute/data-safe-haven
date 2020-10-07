@@ -56,7 +56,7 @@ function Find-AllMatchingKeys {
     )
     $output = @()
     foreach ($entryPair in $Hashtable.GetEnumerator()) {
-        # If we hit a leaf then override the target with the source value
+        # If we hit a matching key then add its value to the output array
         if ($entryPair.Key -like "$Key") {
             $output += $entryPair.Value
         }
