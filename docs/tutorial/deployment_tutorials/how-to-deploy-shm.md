@@ -11,8 +11,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy key vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [Enable MFA and self-service password reset](#enable-mfa-and-self-service-password-reset)
 + [Configure internal administrator accounts](#configure-internal-administrator-accounts)
-+ [Deploy and configure VNET and Domain Controllers](#deploy-and-configure-vnet-and-domain-controllers)
-+ [Deploy and configure Network Policy Server (NPS)](#deploy-and-configure-network-policy-server-nps)
++ [Deploy virtual network and VPN gateway](#deploy-virtual-network-and-vpn-gateway)
++ [Deploy and configure domain controllers](#deploy-and-configure-domain-controllers)
++ [Deploy and configure network policy server](#deploy-and-configure-network-policy-server)
 + [Require MFA for all users](#require-mfa-for-all-users)
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
@@ -87,9 +88,9 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```
 
 > :pencil: We recommend that you use `<SHM ID>.<some domain that you control>` as the fully qualified domain name. For example
->  - Turing production: we use `<SHM ID>.turingsafehaven.ac.uk` as the domain
->  - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
->  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
+> - Turing production: we use `<SHM ID>.turingsafehaven.ac.uk` as the domain
+> - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
+> - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
 ## Configure DNS for the custom domain
 
@@ -354,9 +355,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 + Click `Select`
 + Click `Assign`
 
-## Deploy and configure VNET and Domain Controllers
-
-### Deploy the virtual network and NTP server
+## Deploy virtual network and VPN gateway
 
 From your **deployment machine**
 
@@ -365,23 +364,7 @@ From your **deployment machine**
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the virtual networking components for the SHM by running `./Setup_SHM_Networking.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
-+ This will take **around fifteen minutes** to run.
-
-
-### Deploy the Active Directory Domain Controllers and Network Policy Server
-
-From your **deployment machine**
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the domain controller (DC) VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ This will take **around one hour** to run.
-+ Once the script exits successfully you should see the following resource groups under the SHM subscription:
-  <p align="center">
-      <img src="../../images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
-  </p>
++ This will take **around twenty minutes** to run.
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
@@ -390,7 +373,7 @@ From your **deployment machine**
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 + To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
-**Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
+**Make sure to securely delete the local "\*.pfx" certificate file that you downloaded after you have installed it.**
 
 ### Configure a VPN connection to the Safe Haven Management VNet
 
@@ -413,6 +396,21 @@ From your **deployment machine**
 + **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
+
+## Deploy and configure domain controllers
+
+From your **deployment machine**
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Deploy and configure the domain controller (DC) VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **around one hour** to run.
++ Once the script exits successfully you should see the following resource groups under the SHM subscription:
+  <p align="center">
+      <img src="../../images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
+  </p>
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
@@ -507,7 +505,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Open Powershell (on the SHM DC) as an administrator
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
-### Validation of AD sync
+### Validate AD sync
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
@@ -567,13 +565,13 @@ Once you're certain that you're adding a new user, make sure that the following 
 + Click `Assign` to complete the process
 + Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)
 
-## Deploy and configure Network Policy Server (NPS)
+## Deploy and configure network policy server
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal (from your deployment machine) and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the NPS VM by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Deploy and configure the network policy server (NPS) by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 20 minutes** to run.
   + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
