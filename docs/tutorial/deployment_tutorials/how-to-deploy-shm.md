@@ -51,7 +51,7 @@ Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa
 The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder.
 These are also used when deploying an SRE environment.
 
-> :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer and (ideally) all lowercase.
+> :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer.
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
 
