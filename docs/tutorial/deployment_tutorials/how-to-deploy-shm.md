@@ -365,6 +365,10 @@ From your **deployment machine**
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the virtual networking components for the SHM by running `./Setup_SHM_Networking.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 + This will take **around twenty minutes** to run.
++ Once the script exits successfully you should see the following resource groups under the SHM subscription:
+  <p align="center">
+      <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups">
+  </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
@@ -409,7 +413,7 @@ From your **deployment machine**
 + This will take **around one hour** to run.
 + Once the script exits successfully you should see the following resource groups under the SHM subscription:
   <p align="center">
-      <img src="../../images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
+      <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups">
   </p>
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
