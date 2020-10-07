@@ -1548,7 +1548,9 @@ function Stop-Firewall {
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
-        $ResourceGroupName
+        $ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Submit request to stop but don't wait for completion.")]
+        [switch]$NoWait
     )
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' is deallocated..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -1564,8 +1566,12 @@ function Stop-Firewall {
     } else {
         Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
         $firewall.Deallocate()
-        $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-        Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
+        $firewall = Set-AzFirewall -AzureFirewall $firewall -AsJob:$NoWait -ErrorAction Stop
+        if ($NoWait) {
+            Add-LogMessage -Level Success "Request to deallocate firewall '$Name' accepted."
+        } else {
+            Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
+        }
         $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     }
     return $firewall
