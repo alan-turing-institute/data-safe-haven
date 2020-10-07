@@ -45,6 +45,30 @@ function Copy-HashtableOverrides {
 Export-ModuleMember -Function Copy-HashtableOverrides
 
 
+# Retrieve values of all keys matching the given pattern
+# ------------------------------------------------------
+function Find-AllMatchingKeys {
+    param(
+        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [System.Collections.IDictionary]$Hashtable,
+        [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
+        [String]$Key
+    )
+    $output = @()
+    foreach ($entryPair in $Hashtable.GetEnumerator()) {
+        # If we hit a leaf then override the target with the source value
+        if ($entryPair.Key -like "$Key") {
+            $output += $entryPair.Value
+        }
+        # If we find a hashtable then walk that hashtable too
+        elseif ($entryPair.Value -is [System.Collections.IDictionary]) {
+            $output += Find-AllMatchingKeys -Hashtable $entryPair.Value -Key $Key
+        }
+    }
+    return $output
+}
+Export-ModuleMember -Function Find-AllMatchingKeys
+
 # Truncate string at a given length
 # ---------------------------------
 function Limit-StringLength {
