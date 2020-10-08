@@ -653,6 +653,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 + Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
++ Click `Properties` in the left hand sidebar and disable security defaults as shown in the screenshot [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults)
 + Click `Security` in the left hand sidebar
 + Click `Conditional access` in the left hand sidebar
 + Click the `+New Policy` icon in the tob bar above the (empty) policy list
