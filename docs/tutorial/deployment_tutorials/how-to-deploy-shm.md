@@ -733,6 +733,6 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
 ## Server list
 The following 3 virtual machines are created as a result of these instructions:
 
-+ `DC1-SHM-TESTC` (primary domain controller)
-+ `DC2-SHM-TESTC` (secondary domain controller)
-+ `NPS-SHM-TESTC` (network policy server)
++ `DC1-SHM-<SHM ID>` (primary domain controller)
++ `DC2-SHM-<SHM ID>` (secondary domain controller)
++ `NPS-SHM-<SHM ID>` (network policy server)
