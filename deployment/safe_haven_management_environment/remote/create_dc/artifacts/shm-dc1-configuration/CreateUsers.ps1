@@ -48,5 +48,6 @@ Import-Csv $userFilePath | ForEach-Object {
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
+Write-Output "Synchronising locally Active Directory with Azure"
 Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
 Start-ADSyncSyncCycle -PolicyType Delta

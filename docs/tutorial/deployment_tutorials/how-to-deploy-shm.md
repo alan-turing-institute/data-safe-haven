@@ -417,7 +417,7 @@ From your **deployment machine**
       <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups">
   </p>
 
-### Access the first domain controller (DC1) via Remote Desktop
+### Configure the first domain controller (DC1) via Remote Desktop
 
 From your **deployment machine**
 
@@ -432,7 +432,7 @@ From your **deployment machine**
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-### Install Azure Active Directory Connect
+#### Install Azure Active Directory Connect
 
 + Navigate to `C:\Installation`
 + Run the `AzureADConnect.msi` installer
@@ -500,7 +500,7 @@ From your **deployment machine**
 
 **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
-### Additional AAD Connect Configuration
+#### Update Azure Active Directory Connect rules
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
@@ -580,6 +580,10 @@ Once you're certain that you're adding a new user, make sure that the following 
 + This will take **around 20 minutes** to run.
   + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
+### Configure the network policy server (NPS) via Remote Desktop
+
+#### Configure logging
+
 + Log in to the NPS VM using Microsoft Remote Desktop
   + the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
   + the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
@@ -602,7 +606,7 @@ Once you're certain that you're adding a new user, make sure that the following 
     + On the `Log file` tab, select `Daily` under `Create a new log file`
     + Click `Ok`
 
-### MFA Configuation
+#### Configure MFA
 
 + Configure MFA settings:
   + Open Powershell (on the SHM NPS server) as an administrator
