@@ -604,10 +604,10 @@ Once you're certain that you're adding a new user, make sure that the following 
   + Back on the `Connect to Azure AD` screen, click `Next`
   + Approve the login with MFA if required
     + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
-+ When prompted to `Provide your Tenant ID`, enter your Azure Active Directory ID. To get this:
++ When prompted to `Provide your Tenant ID`, enter your Azure Active Directory Tenant ID. To get this:
   + In the Azure portal select `Azure Active Directory` in the left hand side bar
   + Select `Properties` in the left hand side bar
-  + Copy the `Directory ID` field and enter it at the prompt on the NPS
+  + Copy the `Tenant ID` field and enter it at the prompt on the NPS
   + **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
     + Look at [the documentation here](<https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting>).
     + Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
