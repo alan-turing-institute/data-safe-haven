@@ -439,7 +439,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-+ Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId ` <SRE config ID> ` -ipLastOctet <IP last octet>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<IP last octet>` is the desired last octet of the IP address.
++ Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID> -ipLastOctet <IP last octet>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<IP last octet>` is the desired last octet of the IP address.
   + The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
   + The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
   + You can also provide a VM size by passing the optional `-vmSize` parameter.
