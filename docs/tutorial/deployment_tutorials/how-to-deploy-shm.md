@@ -565,7 +565,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   + the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
   + the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
   + To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
-  + The username is the `shm-<SHM ID>-domain-admin-username` secret plus the domain, ie `<admin username>@custom domain`.
+  + The username is the `shm-<SHM ID>-domain-admin-username` secret plus the domain, i.e. `<admin username>@custom domain`.
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 + In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 + Configure NPS to log to a local text file:
@@ -733,6 +733,6 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
 ## Server list
 The following 3 virtual machines are created as a result of these instructions:
 
-+ `DC1-SHM-TESTC` (primary domain controller)
-+ `DC2-SHM-TESTC` (secondary domain controller)
-+ `NPS-SHM-TESTC` (network policy server)
++ `DC1-SHM-<SHM ID>` (primary domain controller)
++ `DC2-SHM-<SHM ID>` (secondary domain controller)
++ `NPS-SHM-<SHM ID>` (network policy server)
