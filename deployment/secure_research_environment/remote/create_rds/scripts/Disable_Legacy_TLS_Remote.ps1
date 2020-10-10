@@ -70,13 +70,13 @@ $weakCipherSuites = @(Get-TlsCipherSuite -Name "WITH_NULL" | ForEach-Object { $_
 
 # Disable the following ciphers which are 'secure' but not 'recommended'
 # ----------------------------------------------------------------------
-# Plain RSA is potentially subject to the ROBOT attack (https://robotattack.org/)
-$weakCipherSuites += @(Get-TlsCipherSuite -Name "TLS_RSA" | ForEach-Object { $_.Name })
+# SHA1 is a deprecated hash function
+$weakCipherSuites += @(Get-TlsCipherSuite -Name "SHA" | ForEach-Object { $_.Name } | Where-Object { $_ -like "*SHA" })
 # PSK (pre-shared key) is a less secure key exchange method than DHE (Diffie-Hellman ephemeral)
 $weakCipherSuites += @(Get-TlsCipherSuite -Name "TLS_PSK" | ForEach-Object { $_.Name })
-# Disable any ciphers using SHA1
-$weakCipherSuites += @(Get-TlsCipherSuite -Name "SHA" | ForEach-Object { $_.Name } | Where-Object { $_ -like "*SHA" })
-# Disable ciphers with no key exchange/authentication
+# Plain RSA is potentially subject to the ROBOT attack (https://robotattack.org/)
+$weakCipherSuites += @(Get-TlsCipherSuite -Name "TLS_RSA" | ForEach-Object { $_.Name })
+# Plain AES without key exchange/authentication is still secure but disfavoured
 $weakCipherSuites += @(Get-TlsCipherSuite -Name "TLS_AES" | ForEach-Object { $_.Name })
 
 # Disable requested cipher suites
