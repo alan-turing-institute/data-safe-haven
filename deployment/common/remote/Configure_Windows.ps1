@@ -47,9 +47,14 @@ if ($TimeZone) {
 
 
 # Configure NTP server
-# --------------------
+# These steps follow the instructions from https://support.microsoft.com/en-gb/help/816042/how-to-configure-an-authoritative-time-server-in-windows-server
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 if ($NTPServer) {
+    # Change DateTime\Servers settings
+    # We should end up with exactly two DWORDs: 0th-server and default (pointing to 0th-server)
+    # -----------------------------------------------------------------------------------------
     Push-Location
+    $success = $success -and $?
     Set-Location HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers
     $success = $success -and $?
     Remove-ItemProperty . -Name "*"
@@ -58,13 +63,23 @@ if ($NTPServer) {
     $success = $success -and $?
     Set-ItemProperty . "(Default)" "0"
     $success = $success -and $?
-    # Check that there are exactly two registry strings: default (pointing to 0th-server) and 0th-server
     $success = $success -and (((Get-ItemProperty .).PSObject.Members | Where-Object { $_.MemberType -eq "NoteProperty" -and $_.Name -notlike "PS*" } | Measure-Object | Select-Object Count).Count -eq 2)
-    Set-Location HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters
-    $success = $success -and $?
-    Set-ItemProperty . NtpServer $NTPServer
-    $success = $success -and $?
     Pop-Location
+    $success = $success -and $?
+
+    # Change Services\W32Time settings
+    # --------------------------------
+    Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters Type NTP
+    $success = $success -and $?
+    Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters NtpServer "$NTPServer,0x1"
+    $success = $success -and $?
+    Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config AnnounceFlags 0xA
+    $success = $success -and $?
+    Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer Enabled 1
+    $success = $success -and $?
+
+    # Restart the Windows Time service
+    # --------------------------------
     Stop-Service W32Time
     $success = $success -and $?
     Start-Service W32Time
