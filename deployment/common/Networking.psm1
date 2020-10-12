@@ -121,10 +121,13 @@ function Get-NextAvailableIpInRange {
         $ipStart, $ipEnd = Convert-CidrToIpAddressRange -IpRangeCidr $IpRangeCidr -AsDecimal
 
         # Return the full range or filter as required
-        $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ }
+        $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ } | Select-Object -Skip $Offset
         if ($VirtualNetwork) {
             $ipAddresses = $ipAddresses | Where-Object { (Test-AzPrivateIPAddressAvailability -VirtualNetwork $VirtualNetwork -IPAddress $_).Available }
         }
-        return $ipAddresses | Select-Object -First (1 + $Offset) | Select-Object -Last 1
+        if (-not $ipAddresses) {
+            Add-LogMessage -Level Fatal "There are no free IP addresses in '$IpRangeCidr' after applying the offset '$Offset'!"
+        }
+        return $ipAddresses | Select-Object -First 1
 }
 Export-ModuleMember -Function Get-NextAvailableIpInRange
