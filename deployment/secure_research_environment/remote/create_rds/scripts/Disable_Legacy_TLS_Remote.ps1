@@ -56,11 +56,6 @@ Set-Protocol -Protocol "TLS 1.0" -Action Disable
 Set-Protocol -Protocol "TLS 1.1" -Action Disable
 
 
-# Explicitly enable TLS 1.2
-# -------------------------
-Set-Protocol -Protocol "TLS 1.2" -Action Enable
-
-
 # Get all 'recommended' and 'secure' ciphers from ciphersuite.info
 # Note that we need 'secure' since none of the 'recommended' ciphers are currently supported by Microsoft Remote Desktop
 # ----------------------------------------------------------------------------------------------------------------------
