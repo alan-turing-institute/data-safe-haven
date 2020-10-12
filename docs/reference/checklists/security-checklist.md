@@ -1,8 +1,4 @@
-# DSH Security checklist
-
-PR : https://github.com/alan-turing-institute/data-safe-haven/compare/checklist?expand=1
-
-![](https://i.imgur.com/oYluwet.png)
+# Security evaluation checklist
 
 In this check list we aim to do the following things.
 
@@ -11,6 +7,12 @@ In this check list we aim to do the following things.
 + How we can verify that we actually do what we say
 
 In particular for verification we will focus on user security and permissions. We will establish two types of verification **Black Box (BB)** and **White Box (WB)**. BB verification involves testing with a user account to confirm levels of user access. In contrast, WB verification involves using an admin account to check the specific configuration required to set user access permissions.
+
+An overview of our security controls is shown here
+
+<p align="center">
+    <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
+</p>
 
 ## Contents
 
