@@ -27,8 +27,8 @@ function Convert-CidrToIpAddressRange {
         return @($ipStartDecimal, $ipEndDecimal)
     }
     return @(
-        [System.Net.IPAddress]::parse($ipStartDecimal).IPAddressToString,
-        [System.Net.IPAddress]::parse($ipEndDecimal).IPAddressToString
+        (Convert-DecimalToIpAddress -IpDecimal $ipStartDecimal),
+        (Convert-DecimalToIpAddress -IpDecimal $ipEndDecimal)
     )
 }
 Export-ModuleMember -Function Convert-CidrToIpAddressRange
@@ -48,6 +48,18 @@ function Convert-CidrSuffixToDecimalMask {
     return $decimalMask
 }
 Export-ModuleMember -Function Convert-CidrToDecimalMask
+
+
+# Convert a decimal integer into an IP address
+# --------------------------------------------
+function Convert-DecimalToIpAddress {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Input decimal value")]
+        [string]$IpDecimal
+    )
+    return [System.Net.IPAddress]::parse($IpDecimal).IPAddressToString
+}
+Export-ModuleMember -Function Convert-DecimalToIpAddress
 
 
 # Convert an IP address into a decimal integer
@@ -109,7 +121,7 @@ function Get-NextAvailableIpInRange {
         $ipStart, $ipEnd = Convert-CidrToIpAddressRange -IpRangeCidr $IpRangeCidr -AsDecimal
 
         # Return the full range or filter as required
-        $ipAddresses = $ipStart..$ipEnd | ForEach-Object { [System.Net.IPAddress]::parse($_).IPAddressToString }
+        $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ }
         if ($VirtualNetwork) {
             $ipAddresses = $ipAddresses | Where-Object { (Test-AzPrivateIPAddressAvailability -VirtualNetwork $VirtualNetwork -IPAddress $_).Available }
         }
