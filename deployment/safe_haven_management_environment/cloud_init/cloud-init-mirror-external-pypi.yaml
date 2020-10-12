@@ -211,7 +211,7 @@ runcmd:
 
   # Install bandersnatch with pip
   - echo "*** Installing bandersnatch... ***"
-  - pip3 install bandersnatch
+  - pip3 install bandersnatch==4.2.0
   - echo "Using bandersnatch from '$(which bandersnatch)'"
 
   # Initialise whitelist if appropriate
