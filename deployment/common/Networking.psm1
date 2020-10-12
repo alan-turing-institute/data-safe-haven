@@ -32,3 +32,28 @@ function Get-NextAvailableIpInRange {
         return $ipAddresses | Select-Object -First (1 + $Offset) | Select-Object -Last 1
 }
 Export-ModuleMember -Function Get-NextAvailableIpInRange
+
+
+# Get virtual network index for virtual network CIDR range
+# --------------------------------------------------------
+# A virtual network's index is the zero-indexed position of its 10.x.y.z/21 CIDR range
+# within the 10.0.0.0/8 class A private address space.
+# There are 8,192 virtual network indexes, ranging from 0 to 8,191
+function Get-VirtualNetworkIndex {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Enter virtual network CIDR (must be a 10.x.y.z/21 CIDR)")]
+        [string]$CIDR
+    )
+    $cidrMask = [int](($CIDR).Split("/")[1])
+    $firstIpOctet = [int](($CIDR).Split(".")[0])
+    $secondIpOctet = [int](($CIDR).Split(".")[1])
+    $thirdIpOctet = [int](($CIDR).Split(".")[2])
+    if ($firstIpOctet -ne 10 -Or $cidrMask -ne 21) {
+        Add-LogMessage -Level Fatal "Invalid virtual network CIDR ($CIDR). Virtual network index is only defined for virtual networks with 10.x.y.z/21 CIDRs"
+    }
+    else {
+        $virtualNetworkIndex = [Math]::Floor(($secondIpOctet * 32) + (($thirdIpOctet) / 8))
+        return $virtualNetworkIndex
+    }
+}
+Export-ModuleMember -Function Get-VirtualNetworkIndex
