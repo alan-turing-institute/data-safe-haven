@@ -150,6 +150,13 @@ $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuot
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
+# Make any other cloud-init template replacements
+# -----------------------------------------------
+$cloudInitTemplate = $cloudInitTemplate.
+    Replace("<timezone>", $config.time.timezone.linux).
+    Replace("<ntp-server>", $config.time.ntp.poolFqdn)
+
+
 # Construct build VM parameters
 # -----------------------------
 $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"

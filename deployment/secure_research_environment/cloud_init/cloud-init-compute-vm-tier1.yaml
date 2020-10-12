@@ -31,3 +31,13 @@ write_files:
     content: |
       username=<egress-share-username>
       password=<egress-share-password>
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pool:
+    - <ntp-server>

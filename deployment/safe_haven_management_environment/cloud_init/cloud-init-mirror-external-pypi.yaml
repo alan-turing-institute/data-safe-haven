@@ -50,7 +50,7 @@ write_files:
       #! /usr/bin/env python3
       from collections import defaultdict
 
-      TIER=PLACEHOLDER
+      TIER=<tier>
       config_sections = defaultdict(list)
       section = "main"
 
@@ -116,7 +116,7 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER=PLACEHOLDER
+      TIER=<tier>
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
       if [ "$TIER" != "2" ]; then
@@ -194,6 +194,16 @@ users:
   - name: mirrordaemon
     lock_passwd: True
     sudo: False
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pool:
+    - <ntp-server>
 
 runcmd:
   # Suppress apt prompts and warning messages

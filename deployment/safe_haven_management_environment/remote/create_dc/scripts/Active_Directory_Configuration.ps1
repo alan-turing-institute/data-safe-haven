@@ -102,7 +102,7 @@ function New-ShmUser {
         [Parameter(Mandatory = $true, HelpMessage = "Password as secure string ")]
         [securestring]$AccountPassword
     )
-    if (Get-ADUser -Filter "Name -eq '$Name'") {
+    if (Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'") {
         Write-Output " [o] Account '$Name' ($SamAccountName) already exists"
     } else {
         New-ADUser -Name "$Name" `

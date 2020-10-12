@@ -54,6 +54,7 @@ $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
     Replace("<dc1-ip-address>", $config.dc.ip).
+    Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
@@ -75,11 +76,15 @@ foreach ($route in $rules.routes) {
 # Attach all subnets except the VPN gateway to the firewall route table
 # ---------------------------------------------------------------------
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.identity.name -AddressPrefix $config.network.vnet.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
+$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.web.name -AddressPrefix $config.network.vnet.subnets.web.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
+
 
 $ruleNameFilter = "shm-$($config.id)"
+
+
 # Application rules
 # -----------------
-foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
@@ -100,7 +105,7 @@ if (-not $rules.applicationRuleCollections) {
 
 # Network rules
 # -------------
-foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
@@ -127,7 +132,7 @@ Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 # --------------------------------------------------
 # This ensures that it establishes a new SSPR connection through the firewall in case
 # it was previously blocked due to incorrect firewall rules or a deallocated firewall
-if(Confirm-AzVMRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
+if (Confirm-AzVMRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
     Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 

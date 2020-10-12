@@ -134,7 +134,9 @@ $cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.
                                 Replace("<ingress-container-name>", $config.sre.storage.data.ingress.containerName).
                                 Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
                                 Replace("<egress-share-password>", $egressSharePassword).
-                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName)
+                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName).
+                                Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+                                Replace("<timezone>", $config.sre.time.timezone.linux)
 
 
 # Deploy data disk, NIC and public IP
