@@ -93,7 +93,7 @@ Export-ModuleMember -Function Convert-IpAddressToOctets
 
 # Convert a set of IP octets into an IP address
 # ---------------------------------------------
-function Convert-IpOctetsToAddress {
+function Convert-OctetsToIpAddress {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Input IP octets")]
         [uint32[]]$IpOctets
@@ -103,7 +103,7 @@ function Convert-IpOctetsToAddress {
     }
     return $IpOctets -Join "."
 }
-Export-ModuleMember -Function Convert-IpOctetsToAddress
+Export-ModuleMember -Function Convert-OctetsToIpAddress
 
 
 # Get next available IP address in range
