@@ -174,6 +174,61 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
+# Add A (and optionally CNAME) DNS records
+# ----------------------------------------
+function Deploy-DNSRecords {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
+        $SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
+        $ZoneName,
+        [Parameter(Mandatory = $true, HelpMessage = "Public IP address for this record to point to")]
+        $PublicIpAddress,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
+        $RecordNameA = "@",
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'CNAME' record (if none is provided then no CNAME redirect will be set up)")]
+        $RecordNameCName,
+        [Parameter(Mandatory = $false, HelpMessage = "TTL seconds for the DNS records")]
+        $TtlSeconds = 30
+    )
+    $originalContext = Get-AzContext
+    try {
+        Add-LogMessage -Level Info "Adding DNS records..."
+        $null = Set-AzContext -Subscription $SubscriptionName
+
+        # Set the A record
+        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone ($ZoneName)"
+        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $PublicIpAddress)
+        if ($?) {
+            Add-LogMessage -Level Success "Successfully set 'A' record"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to set 'A' record!"
+        }
+        # Set the CNAME record
+        if ($RecordNameCName) {
+            Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone ($ZoneName)"
+            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+            $null = New-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName)
+            if ($?) {
+                Add-LogMessage -Level Success "Successfully set 'CNAME' record"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to set 'CNAME' record!"
+            }
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext
+    }
+    return
+}
+Export-ModuleMember -Function Deploy-DNSRecords
+
+
 # Create a firewall if it does not exist
 # --------------------------------------
 function Deploy-Firewall {
@@ -185,22 +240,25 @@ function Deploy-Firewall {
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
         $VirtualNetworkName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        $Location,
+        [Parameter(Mandatory = $false, HelpMessage = "Force deallocation and reallocation of Firewall")]
+        [switch]$ForceReallocation
     )
+    # Ensure Firewall public IP address exists
+    $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
-        $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
         $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
         }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Firewall '$Name' already exists"
     }
+    # Ensure Firewall is running
+    $firewall = Start-Firewall -Name $Name -ResourceGroupName $ResourceGroupName -VirtualNetworkName $VirtualNetworkName
     return $firewall
 }
 Export-ModuleMember -Function Deploy-Firewall
@@ -232,6 +290,7 @@ function Deploy-FirewallApplicationRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
+    Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
     if ($TargetTag) {
         Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
@@ -241,7 +300,6 @@ function Deploy-FirewallApplicationRule {
     }
     try {
         $ruleCollection = $Firewall.GetApplicationRuleCollectionByName($CollectionName)
-        Add-LogMessage -Level InfoSuccess "Application rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
         if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
@@ -249,11 +307,8 @@ function Deploy-FirewallApplicationRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating application rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if ($?) {
-            Add-LogMessage -Level Success "Created application rule collection '$CollectionName'"
-        } else {
+        if (-not $?) {
             Add-LogMessage -Level Fatal "Failed to create application rule collection '$CollectionName'!"
         }
     }
@@ -311,11 +366,8 @@ function Deploy-FirewallNetworkRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveNetworkRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating network rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallNetworkRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if ($?) {
-            Add-LogMessage -Level Success "Created network rule collection '$CollectionName'"
-        } else {
+        if (-not $?) {
             Add-LogMessage -Level Fatal "Failed to create network rule collection '$CollectionName'!"
         }
     }
@@ -349,6 +401,17 @@ function Deploy-KeyVault {
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
     $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($null -eq $keyVault) {
+        # Purge any existing soft-deleted key vault
+        if (Get-AzKeyVault -VaultName $Name -Location $Location -InRemovedState) {
+            Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name'"
+            Remove-AzKeyVault -VaultName $Name -Location $Location -InRemovedState -Force | Out-Null
+            if ($?) {
+                Add-LogMessage -Level Success "Purged key vault '$Name'"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to purge key vault '$Name'!"
+            }
+        }
+        # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
         $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
         if ($?) {
@@ -547,7 +610,7 @@ function Deploy-Route {
     if (-not $routeTable) {
         Add-LogMessage -Level Fatal "No route table named '$routeTableName' was found in this subscription!"
     }
-    Add-LogMessage -Level Info "Ensuring that route '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that route '$Name' exists..."
     $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $routeTable -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating route '$Name'"
@@ -581,7 +644,7 @@ function Deploy-RouteTable {
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
-    Add-LogMessage -Level Info "Ensuring that route table '$Name' exists..."
+    Add-LogMessage -Level Info "[ ] Ensuring that route table '$Name' exists..."
     $routeTable = Get-AzRouteTable -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating route table '$Name'"
@@ -686,6 +749,33 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
+# Create storage share if it does not exist
+# -----------------------------------------
+function Deploy-StorageShare {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        $StorageAccount
+    )
+    Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
+    $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
+        if ($?) {
+            Add-LogMessage -Level Success "Created storage share"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Storage share '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $storageShare
+}
+Export-ModuleMember -Function Deploy-StorageShare
+
+
 # Create Linux virtual machine if it does not exist
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {
@@ -698,6 +788,8 @@ function Deploy-UbuntuVirtualMachine {
         $AdminPassword,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
         $AdminUsername,
+        [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
+        $AdminPublicSshKey = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
@@ -717,7 +809,9 @@ function Deploy-UbuntuVirtualMachine {
         [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
         $OsDiskSizeGb = $null,
         [Parameter(Mandatory = $false, HelpMessage = "IDs of data disks")]
-        $DataDiskIds = $null
+        $DataDiskIds = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Do not wait for deployment to finish")]
+        [switch]$NoWait = $false
     )
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
     $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -745,6 +839,11 @@ function Deploy-UbuntuVirtualMachine {
             $lun += 1
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
         }
+        # Copy public key to VM
+        if ($AdminPublicSshKey) {
+            $vmConfig = Add-AzVMSshPublicKey -VM $vmConfig -KeyData $AdminPublicSshKey -Path "/home/$($AdminUsername)/.ssh/authorized_keys"
+        }
+        # Create VM
         Add-LogMessage -Level Info "[ ] Creating virtual machine '$Name'"
         $vm = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig
         if ($?) {
@@ -752,8 +851,10 @@ function Deploy-UbuntuVirtualMachine {
         } else {
             Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
-        Start-Sleep 30  # wait for VM deployment to register
-        Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
+        if (-not $NoWait) {
+            Start-Sleep 30  # wait for VM deployment to register
+            Wait-ForAzVMCloudInit -Name $Name -ResourceGroupName $ResourceGroupName
+        }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }
@@ -786,7 +887,7 @@ function Deploy-VirtualMachineNIC {
         Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
         $ipAddressParams = @{}
         if ($PublicIpAddressAllocation) {
-            $PublicIpAddress = New-AzPublicIpAddress -Name "$Name-PIP" -ResourceGroupName $ResourceGroupName -AllocationMethod $PublicIpAddressAllocation -Location $Location
+            $PublicIpAddress = Deploy-PublicIpAddress -Name "$Name-PIP" -ResourceGroupName $ResourceGroupName -AllocationMethod $PublicIpAddressAllocation -Location $Location
             $ipAddressParams["PublicIpAddress"] = $PublicIpAddress
         }
         if ($PrivateIpAddress) { $ipAddressParams["PrivateIpAddress"] = $PrivateIpAddress }
@@ -950,6 +1051,78 @@ function Get-AzSubnet {
     return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
+
+
+# Get image ID
+# ------------
+function Get-ImageFromGallery {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
+        $ImageVersion,
+        [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
+        $ImageDefinition,
+        [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
+        $GalleryName,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
+        $ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
+        $Subscription
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $Subscription
+        Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
+        try {
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
+            Add-LogMessage -Level Error "Image version '$ImageVersion' is invalid. Available versions are: $versions"
+            $ImageVersion = $versions | Select-Object -Last 1
+            $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$ImageVersion')"
+            if ($versions.Contains($userVersion)) {
+                $ImageVersion = $userVersion
+            }
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        }
+        if ($image) {
+            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+        } else {
+            Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext
+    }
+    return $image
+}
+Export-ModuleMember -Function Get-ImageFromGallery
+
+
+# Get image definition from the type specified in the config file
+# ---------------------------------------------------------------
+function Get-ImageDefinition {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Type of image to retrieve the definition for")]
+        [string]$Type
+    )
+    Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
+    if ($Type -eq "Ubuntu") {
+        $imageDefinition = "ComputeVM-Ubuntu1804Base"
+    } elseif ($Type -eq "UbuntuTorch") {
+        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
+    } elseif ($Type -eq "DataScience") {
+        $imageDefinition = "ComputeVM-DataScienceBase"
+    } elseif ($Type -eq "DSG") {
+        $imageDefinition = "ComputeVM-DsgBase"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
+    }
+    Add-LogMessage -Level Success "Interpreted $Type as image type $imageDefinition"
+    return $imageDefinition
+}
+Export-ModuleMember -Function Get-ImageDefinition
 
 
 # Get NS Records
@@ -1247,7 +1420,7 @@ function Set-KeyVaultPermissions {
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
-    Set-AzKeyVaultAccessPolicy -VaultName $Name
+    Set-AzKeyVaultAccessPolicy -VaultName $Name `
                                -ObjectId $securityGroupId `
                                -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover `
                                -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore `
@@ -1322,6 +1495,88 @@ function Set-SubnetNetworkSecurityGroup {
     return $updatedSubnet
 }
 Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
+
+
+# Ensure Firewall is running, with option to force a restart
+# ----------------------------------------------------------
+function Start-Firewall {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
+        $VirtualNetworkName,
+        [Parameter(Mandatory = $false, HelpMessage = "Force restart of Firewall")]
+        [switch]$ForceRestart
+    )
+    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is running..."
+    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if (-not $firewall) {
+        Add-LogMessage -Level Error "Firewall '$Name' does not exist in $ResourceGroupName"
+    } else {
+        $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName
+        $publicIP = Get-AzPublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName
+        if ($ForceRestart) {
+            Add-LogMessage -Level Info "Restart requested. Deallocating firewall '$Name'..."
+            $firewall = Stop-Firewall -Name $Name -ResourceGroupName $ResourceGroupName
+        }
+        # At this point we either have a running firewall or a stopped firewall.
+        # A firewall is allocated if it has one or more IP configurations.
+        if ($firewall.IpConfigurations) {
+            Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already running."
+        } else {
+            try {
+                Add-LogMessage -Level Info "[ ] Starting firewall '$Name'..."
+                $firewall.Allocate($virtualNetwork, $publicIp)
+                $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
+                Add-LogMessage -Level Success "Firewall '$Name' successfully started."
+            } catch {
+                Add-LogMessage -Level Fatal "Failed to (re)start firewall '$Name'" -Exception $_.Exception
+            }
+        }
+    }
+    return $firewall
+}
+Export-ModuleMember -Function Start-Firewall
+
+
+# Ensure Firewall is deallocated
+# ------------------------------
+function Stop-Firewall {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Submit request to stop but don't wait for completion.")]
+        [switch]$NoWait
+    )
+    Add-LogMessage -Level Info "Ensuring that firewall '$Name' is deallocated..."
+    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if(-not $firewall) {
+        Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
+        Exit 1
+    }
+    # At this point we either have a running firewall or a stopped firewall.
+    # A firewall is allocated if it has one or more IP configurations.
+    $firewallAllocacted = ($firewall.IpConfigurations.Length -ge 1)
+    if(-not $firewallAllocacted) {
+        Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already deallocated."
+    } else {
+        Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
+        $firewall.Deallocate()
+        $firewall = Set-AzFirewall -AzureFirewall $firewall -AsJob:$NoWait -ErrorAction Stop
+        if ($NoWait) {
+            Add-LogMessage -Level Success "Request to deallocate firewall '$Name' accepted."
+        } else {
+            Add-LogMessage -Level Success "Firewall '$Name' successfully deallocated."
+        }
+        $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    }
+    return $firewall
+}
+Export-ModuleMember -Function Stop-Firewall
 
 
 # Ensure VM is started, with option to force a restart
@@ -1408,7 +1663,7 @@ function Stop-VM {
         Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
         return
     } else {
-        Add-LogMessage -Level Info " [ ] Deallocating VM '$($VM.Name)'"
+        Add-LogMessage -Level Info "[ ] Deallocating VM '$($VM.Name)'"
         $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
     }
     if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {

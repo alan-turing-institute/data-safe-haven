@@ -76,34 +76,35 @@ try {
 }
 
 
-# Retrieve passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
-# Load SRE groups
-$groups = $config.sre.domain.securityGroups
-# Load SRE service users
-$serviceUsers = $config.sre.users.serviceAccounts
-foreach ($user in $serviceUsers.Keys) {
-    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
-}
+# Tier-2 and above need to register service users with the SHM
+# ------------------------------------------------------------
+if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+    # Retrieve passwords from the keyvault
+    # ------------------------------------
+    Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
+    # Load SRE groups
+    $groups = $config.sre.domain.securityGroups
+    # Load SRE service users
+    $serviceUsers = $config.sre.users.serviceAccounts
+    foreach ($user in $serviceUsers.Keys) {
+        $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
+    }
 
-
-# Add SRE users and groups to SHM
-# -------------------------------
-Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
-$null = Set-AzContext -Subscription $config.shm.subscriptionName
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
-$params = @{
-    shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
-    groupsB64                    = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
-    serviceUsersB64              = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
-    securityOuPath               = "`"$($config.shm.domain.ous.securityGroups.path)`""
-    serviceOuPath                = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
+    # Add SRE users and groups to SHM
+    # -------------------------------
+    Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
+    $null = Set-AzContext -Subscription $config.shm.subscriptionName
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+    $params = @{
+        shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
+        groupsB64                    = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
+        serviceUsersB64              = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
+        securityOuPath               = "`"$($config.shm.domain.ous.securityGroups.path)`""
+        serviceOuPath                = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
+    }
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    Write-Output $result.Value
 }
-# shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.computerManagers.name)`""
-# computerManagersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($computerManagers | ConvertTo-Json)))
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
 
 
 # Switch back to original subscription

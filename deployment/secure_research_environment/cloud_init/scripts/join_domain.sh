@@ -14,6 +14,7 @@ VM_IPADDRESS=$5
 echo ">=== Setting timezone... ===<"
 timedatectl set-timezone Europe/London
 echo "Timezone is $(date +%Z)"
+date
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
 echo ">=== Setting hostname in /etc/hostname... ===<"
@@ -25,12 +26,13 @@ echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
 rm /etc/resolv.conf
 sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
 ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-grep -v "^#" /etc/resolv.conf | grep -v "^$"
 # Restart systemd-resolved to ensure that these settings get propagated
 systemctl enable systemd-resolved
 systemctl restart systemd-resolved
 sleep 10
 systemctl status systemd-resolved
+# Output current settings to check that they are correct
+grep -v "^#" /etc/resolv.conf | grep -v "^$"
 
 # Add localhost information to /etc/hosts
 echo ">=== Adding ${VM_HOSTNAME} [${VM_IPADDRESS}] to /etc/hosts... ===<"

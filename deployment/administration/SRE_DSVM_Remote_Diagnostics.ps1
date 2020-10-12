@@ -32,13 +32,13 @@ if ($?) {
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $($vm.Name)"
 
 
 # Get LDAP secret from the KeyVault
 # ---------------------------------
 Add-LogMessage -Level Info "[ ] Loading LDAP secret from key vault '$($config.sre.keyVault.name)'"
-$ldapSearchPassword = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.dsvmLdapPassword).SecretValueText;
+$ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 if ($ldapSearchPassword) {
     Add-LogMessage -Level Success "Found LDAP secret in the key vault"
 } else {
@@ -68,7 +68,7 @@ if ($success) {
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
-    samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.name)`""
+    samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)`""
     ldapPassword   = "`"$ldapSearchPassword`""
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"

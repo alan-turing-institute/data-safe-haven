@@ -6,7 +6,9 @@ param(
     [string]$Action,
     [Parameter(Mandatory = $true, HelpMessage = "Enter VM group (Identity, Mirrors or All)")]
     [ValidateSet("Identity", "Mirrors", "All")]
-    [string]$Group
+    [string]$Group,
+    [Parameter(Mandatory = $false, HelpMessage = "Exclude Firewall (only has an effect if Action is 'EnsureStopped'")]
+    [switch]$ExcludeFirewall
 )
 
 Import-Module Az
@@ -37,7 +39,9 @@ if ($Group -eq "Identity") {
 switch ($Action) {
     "EnsureStarted" {
         if (($Group -eq "Identity") -or ($Group -eq "All")) {
-            # Ensure Identity VMs are started before anything else
+            # Ensure Firewall is started
+            $null = Start-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -VirtualNetworkName $config.network.vnet.name
+            # Ensure Identity VMs are started before any other VMs
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.dc.rg)' are started..."
             # Primary DC must be started before Secondary DC
             $primaryDCAlreadyRunning = Confirm-AzVmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
@@ -72,6 +76,7 @@ switch ($Action) {
         }
     }
     "EnsureStopped" {
+        # Stop VMs
         foreach ($key in $vmsByRg.Keys) {
             $rgVms = $vmsByRg[$key]
             $rgName = $rgVms[0].ResourceGroupName
@@ -79,6 +84,9 @@ switch ($Action) {
             foreach ($vm in $rgVms) {
                 Stop-VM -VM $vm -NoWait
             }
+        }
+        if (-not $ExcludeFirewall) {
+            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -NoWait
         }
     }
 }

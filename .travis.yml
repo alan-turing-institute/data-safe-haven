@@ -29,3 +29,12 @@ jobs:
         - sudo snap install powershell --classic
         - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
       script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
+    - name: Lint Markdown
+      language: ruby
+      install: gem install mdl
+      script: mdl --style .mdlstyle.rb *.md docs/
+    - name: Lint Ansible
+      language: python
+      python: 3.8
+      before_script: pip install ansible-lint
+      script: ansible-lint

@@ -28,8 +28,9 @@ while ($confirmation -ne "y") {
 # Remove resource groups and the resources they contain
 # If there are still resources remaining after 10 loops then throw an exception
 # -----------------------------------------------------------------------------
+$configResourceGroups = Find-AllMatchingKeys -Hashtable $config -Key "rg"
 for ($i = 0; $i -le 10; $i++) {
-    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $configResourceGroups })
     if (-not $sreResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
@@ -47,10 +48,20 @@ if ($sreResourceGroups) {
 }
 
 
+# Warn if any suspicious resource groups remain
+# ---------------------------------------------
+$suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" }
+if ($suspiciousResourceGroups) {
+    Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SRE`n$suspiciousResourceGroups"
+}
+
+
 # Remove residual SRE data from the SHM
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
-Invoke-Expression -Command "$scriptPath -configId $configId"
+if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+    $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
+    Invoke-Expression -Command "$scriptPath -configId $configId"
+}
 
 
 # Switch back to original subscription

@@ -25,7 +25,8 @@ $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.
 # Load the SHM firewall
 # ---------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$firewall = Get-AzFirewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg
+# Ensure Firewall is started (it can be deallocated to save costs or if credit has run out)
+$firewall = Start-Firewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg -VirtualNetworkName $config.shm.network.vnet.name
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
@@ -77,13 +78,12 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $ruleNameFilter = "sre-$($config.sre.id)*"
 # Application rules
 # -----------------
-Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
-Add-LogMessage -Level Info "Setting firewall application rules..."
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
+    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -92,24 +92,30 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
-Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
-$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-Add-LogMessage -Level Success "Updated remote firewall with rule changes."
+if (-not $rules.applicationRuleCollections) {
+    Add-LogMessage -Level Warning "No application rules specified."
+}
 
 
 # Network rules
 # -------------
-Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
-    Add-LogMessage -Level Info "Removing existing '$ruleCollectionName' rule collection."
+    Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
-Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
+    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
 }
+if (-not $rules.networkRuleCollections) {
+    Add-LogMessage -Level Warning "No network rules specified."
+}
+
+
+# Update remote firewall with rule changes
+# ----------------------------------------
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
 $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."

@@ -9,7 +9,7 @@
     "inboundAccessFrom": "Internet",
     "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.2.2020050300",
+    "computeVmImageVersion": "0.3.2020081900",
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "sre": {
@@ -49,25 +49,25 @@
             "rds": {
                 "gateway": {
                     "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
-                    "ip": "10.150.1.250"
+                    "ip": "10.151.1.250"
                 },
                 "appSessionHost": {
                     "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
-                    "ip": "10.150.1.249"
+                    "ip": "10.151.1.249"
                 }
             },
             "dataserver": {
                 "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
-                "ip": "10.150.2.250"
+                "ip": "10.151.2.250"
             },
             "webapps": {
                 "gitlab": {
                     "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
-                    "ip": "10.150.2.151"
+                    "ip": "10.151.2.151"
                 },
                 "hackmd": {
                     "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
-                    "ip": "10.150.2.152"
+                    "ip": "10.151.2.152"
                 }
             },
             "databases": {
