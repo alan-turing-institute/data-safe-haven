@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier3": {
-          "diskSize": 31,
+          "diskSize": 32,
           "external": {
             "adminPasswordSecretName": "shm-testa-vm-admin-password-cran-external-mirror-tier-3",
             "ipAddress": "10.20.3.5",
@@ -138,7 +138,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier3": {
-          "diskSize": 511,
+          "diskSize": 512,
           "external": {
             "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-external-mirror-tier-3",
             "ipAddress": "10.20.3.4",
@@ -248,19 +248,18 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
-    "rgPrefix": "RG_SHM",
     "repository": {
       "diskType": "Standard_LRS",
       "nexus": {
         "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
-        "diskSize": 127,
         "ipAddress": "10.30.1.10",
         "nexusAppAdminPasswordSecretName": "shm-testa-repository-nexus-app-admin-password",
         "vmName": "NEXUS-REPOSITORY"
       },
-      "rg": "RG_SHM_TESTA_REPOSITORY",
+      "rg": "RG_SHM_REPOSITORY",
       "vmSize": "Standard_B2ms"
     },
+    "rgPrefix": "RG_SHM",
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactsvkdrslu",
@@ -408,7 +407,7 @@
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
-          "sizeGb": "128",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         },
         "os": {
@@ -416,7 +415,7 @@
           "type": "Standard_LRS"
         },
         "scratch": {
-          "sizeGb": "512",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         }
       },
@@ -478,6 +477,7 @@
         }
       }
     },
+    "nsgPrefix": "NSG_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
@@ -533,6 +533,16 @@
       "bootdiagnostics": {
         "accountName": "srebootdiagszvmwtqkigrld",
         "rg": "RG_SRE_ARTIFACTS"
+      },
+      "data": {
+        "egress": {
+          "accountName": "sresandboxegressalnpdsmr",
+          "containerName": "egress"
+        },
+        "ingress": {
+          "accountName": "sresandboxingressalnpdsm",
+          "containerName": "ingress"
+        }
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",

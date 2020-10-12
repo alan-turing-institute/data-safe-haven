@@ -120,7 +120,6 @@ try {
     # Deploy NIC and data disks
     # -------------------------
     $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository.rg -Subnet $subnetRepository -PrivateIpAddress $privateIpAddress -Location $config.location
-    $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.repository.nexus.diskSize -Type $config.repository.diskType -ResourceGroupName $config.repository.rg -Location $config.location
 
     # Construct cloud-init YAML file
     # ------------------------------
@@ -149,7 +148,6 @@ try {
         OsDiskType             = $config.repository.diskType
         ResourceGroupName      = $config.repository.rg
         ImageSku               = "18.04-LTS"
-        DataDiskIds            = @($dataDisk.Id)
     }
     $null = Deploy-UbuntuVirtualMachine @params
 
