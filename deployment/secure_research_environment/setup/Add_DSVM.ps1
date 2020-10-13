@@ -242,6 +242,17 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # ------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
+                             -DestinationPortRange 123
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
@@ -419,6 +430,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<mirror-index-url-pypi>", $addresses.pypi.indexUrl).
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
@@ -426,6 +438,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+    Replace("<timezone>", $config.sre.time.timezone.linux).
     Replace("<vm-hostname>", $vmName).
     Replace("<vm-ipaddress>", $vmIpAddress)
 

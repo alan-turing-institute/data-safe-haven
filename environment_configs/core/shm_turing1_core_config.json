@@ -1,22 +1,27 @@
 {
-    "subscriptionName": "[Prod] Safe Haven Management",
-    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
-    "dnsResourceGroupName": "RG_SHM_DNS_PRODUCTION",
-    "azureAdminGroupName": "Safe Haven Production Admins",
-    "images": {
-        "subscriptionName": "[Prod] Safe Haven VM Images",
+    "name": "Turing Safe Haven",
+    "shmId": "turing1",
+    "domain": "turingsafehaven.ac.uk",
+    "timezone": "Europe/London",
+    "azure": {
+        "subscriptionName": "[Prod] Safe Haven Management",
+        "adminGroupName" : "Safe Haven Production Admins",
         "location": "uksouth"
     },
-    "domain": "turingsafehaven.ac.uk",
-    "shmId": "turing1",
-    "name": "Turing Safe Haven",
     "organisation": {
         "name": "The Alan Turing Institute",
         "townCity": "London",
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth",
+    "dnsRecords": {
+        "subscriptionName": "[Prod] Safe Haven Domains",
+        "resourceGroupName": "RG_SHM_DNS_PRODUCTION",
+    },
+    "vmImages": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "overrides": {
         "rgPrefix": "RG_SHM",
         "domain": {

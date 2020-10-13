@@ -67,11 +67,20 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
 
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pool:
+    - <ntp-server>
+
 runcmd:
   # Configure server
   - echo ">=== Configuring server... ===<"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
-  - timedatectl set-timezone Europe/London
   - dpkg-reconfigure -f noninteractive tzdata
   - echo "Timezone is $(date +%Z)"
   # Set up the data disk

@@ -115,7 +115,7 @@ Write-Output $result.Value
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
+Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn
 
 
 # Switch back to original subscription

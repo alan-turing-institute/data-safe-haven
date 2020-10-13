@@ -34,6 +34,17 @@ $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.s
 # ----------------------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
+                             -DestinationPortRange 123
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `
                              -Priority 4000 `
@@ -76,7 +87,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating data server VM..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
+Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn
 
 
 # Configure data server

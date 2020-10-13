@@ -30,7 +30,7 @@ while ($confirmation -ne "y") {
 # If there are still resources remaining after 10 loops then throw an exception
 # -----------------------------------------------------------------------------
 $configResourceGroups = Find-AllMatchingKeys -Hashtable $config -Key "rg"
-for ($i = 0; $i -le 10; $i++) {
+for ($i = 0; $i -lt 10; $i++) {
     $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $configResourceGroups })
     if (-not $shmResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($shmResourceGroups.Length) resource group(s) to remove..."

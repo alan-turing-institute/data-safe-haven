@@ -402,13 +402,19 @@ function Deploy-KeyVault {
     $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($null -eq $keyVault) {
         # Purge any existing soft-deleted key vault
-        if (Get-AzKeyVault -VaultName $Name -Location $Location -InRemovedState) {
-            Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name'"
-            Remove-AzKeyVault -VaultName $Name -Location $Location -InRemovedState -Force | Out-Null
-            if ($?) {
-                Add-LogMessage -Level Success "Purged key vault '$Name'"
-            } else {
-                Add-LogMessage -Level Fatal "Failed to purge key vault '$Name'!"
+        foreach ($existingLocation in (Get-AzLocation | ForEach-Object { $_.Location })) {
+            try {
+                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop) {
+                    Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name' in $existingLocation"
+                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force | Out-Null
+                    if ($?) {
+                        Add-LogMessage -Level Success "Purged key vault '$Name'"
+                    } else {
+                        Add-LogMessage -Level Fatal "Failed to purge key vault '$Name'!"
+                    }
+                }
+            } catch [Microsoft.Rest.Azure.CloudException] {
+                continue  # Running Get-AzKeyVault on a location which does not support soft-deleted key vaults causes an error which we catch here
             }
         }
         # Create a new key vault
@@ -1235,6 +1241,10 @@ function Invoke-WindowsConfigureAndUpdate {
         [string]$VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Time zone to use")]
+        [string]$TimeZone,
+        [Parameter(Mandatory = $true, HelpMessage = "NTP server to use")]
+        [string]$NtpServer,
         [Parameter(Mandatory = $false, HelpMessage = "Additional Powershell modules")]
         [string[]]$AdditionalPowershellModules = @()
     )
@@ -1255,7 +1265,7 @@ function Invoke-WindowsConfigureAndUpdate {
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = $TimeZone; "NTPServer" = $NtpServer}
     Write-Output $result.Value
     # Reboot the VM
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName

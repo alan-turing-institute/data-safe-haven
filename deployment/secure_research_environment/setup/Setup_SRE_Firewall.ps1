@@ -39,6 +39,7 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 # Load all traffic rules from template
 # ------------------------------------
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
+    Replace("<ntp-server-fqdns>", $($config.shm.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<priority-allow>", (5000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
     Replace("<priority-deny>", (6000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
     Replace("<sre-id>", $config.sre.id).

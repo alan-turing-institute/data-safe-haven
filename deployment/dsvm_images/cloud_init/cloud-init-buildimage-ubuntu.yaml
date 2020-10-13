@@ -184,6 +184,17 @@ write_files:
 packages:
   - <apt packages>
 
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pool:
+    - <ntp-server>
+
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.

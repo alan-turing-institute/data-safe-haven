@@ -1,6 +1,6 @@
 # Safe Haven Management Environment Build Instructions
 
-These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently (eg one for each Data Study Group).
+These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently, for example you may have a group of projects with the same lifecycle which share a different SHM to your other projects.
 
 ## Contents
 
@@ -11,13 +11,14 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy key vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [Enable MFA and self-service password reset](#enable-mfa-and-self-service-password-reset)
 + [Configure internal administrator accounts](#configure-internal-administrator-accounts)
-+ [Deploy and configure VNET and Domain Controllers](#deploy-and-configure-vnet-and-domain-controllers)
-+ [Deploy and configure Network Policy Server (NPS)](#deploy-and-configure-network-policy-server-nps)
++ [Deploy virtual network and VPN gateway](#deploy-virtual-network-and-vpn-gateway)
++ [Deploy and configure domain controllers](#deploy-and-configure-domain-controllers)
++ [Deploy and configure network policy server](#deploy-and-configure-network-policy-server)
 + [Require MFA for all users](#require-mfa-for-all-users)
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
 + [Deploy package mirrors](#deploy-package-mirrors)
-+ [Tear down SHM](#tearing-down-the-shm)
++ [Tear down the SHM](#tearing-down-the-shm)
 
 ## Prerequisites
 
@@ -36,19 +37,11 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + On Mac this can be installed from the [apple store](<https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12>)
 + `OpenSSL`
   + To install manually follow the [instructions on Github](<https://github.com/openssl/openssl>)
-  + To install a pre-compiled version on OSX use Homebrew: ` brew install openssl`
+  + To install a pre-compiled version on OSX use Homebrew: `brew install openssl`
   + To install a pre-compiled version on Windows use [one of these](<https://wiki.openssl.org/index.php/Binaries>).
     + **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
 ## Safe Haven Management configuration
-
-### Domain name
-
-Choose a domain according to the following rules:
-
-+ Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
-+ Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
-+ Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
 ### Management environment ID
 
@@ -56,35 +49,48 @@ Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa
 
 ### Create configuration file
 
-The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
-The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json`. The `shm_testa_core_config.json` provides an example.
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder.
+These are also used when deploying an SRE environment.
+
+> :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer.
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
 
+The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json` - look at `shm_testa_core_config.json` to see an example.
+
 ```json
 {
-    "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
-    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
-    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
-    "images": {
-        "subscriptionName": "Name of the Azure subscription where VM images should be built.",
-        "location": "The Azure location in which VM images should be built."
+    "name": "Name of this Safe Haven (eg. 'Turing Production Safe Haven').",
+    "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
+    "domain": "The fully qualified domain name for the management environment (eg. 'testa.dsgroupdev.co.uk')",
+    "timezone": "[Optional] Timezone in IANA format (eg. 'Europe/London').",
+    "azure": {
+        "subscriptionName": "Azure subscription to deploy the management environment into.",
+        "adminGroupName" : "Azure Security Group that admins of this Safe Haven will belong to.",
+        "location": "Azure location to deploy the management environment into (eg. 'uksouth')."
+     },
+     "organisation": {
+        "name": "Name of your organisation, used when generating SSL certificates (eg. 'The Alan Turing Institute')",
+        "townCity": "Town where your organisation is located, used when generating SSL certificates (eg. 'London')",
+        "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates (eg. 'London')",
+        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')"
     },
-    "domain": "The fully qualified domain name for the management environment.",
-    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
-    "name": "Safe Haven deployment name.",
-    "organisation": {
-        "name": "Organisation name.",
-        "townCity": "Location.",
-        "stateCountyRegion": "Location.",
-        "countryCode": "e.g. GB"
+    "dnsRecords": {
+        "subscriptionName": "[Optional] Azure subscription which holds DNS records (if not specified then the value from the 'azure' block will be used).",
+        "resourceGroupName": "[Optional] Resource group which holds DNS records (eg. RG_SHM_DNS_TEST)."
     },
-    "location": "The Azure location in which the management environment VMs are deployed."
+    "vmImages": {
+        "subscriptionName": "[Optional] Azure subscription where VM images should be built (if not specified then the value from the 'azure' block will be used).",
+        "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used)."
+     },
+    "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }
 ```
 
-> :warning: The `shmId` field must have a maximum of 7 characters.
+> :pencil: We recommend that you use `<SHM ID>.<some domain that you control>` as the fully qualified domain name. For example
+> - Turing production: we use `<SHM ID>.turingsafehaven.ac.uk` as the domain
+> - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
+> - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
 ## Configure DNS for the custom domain
 
@@ -322,7 +328,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 ### Remove the default external user that was used to create the Azure AD
 
-:warning: Make sure you have activated your account and **successfully logged in** with the nes **internal** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
+:warning: Make sure you have activated your account and **successfully logged in** with the new **internal** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 
 + Ensure you are logged in with the new **internal** administrator account you have just created.
   + Click on your username at the top right corner of the screen, then `Sign in with a different user`.
@@ -331,8 +337,7 @@ The other administrators you have just set up can activate their accounts by fol
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Users` in the left hand sidebar
 + Select the default **external** user that was created when you created the Azure AD.
-  + The `User name` field for this user will be at qa **different domain** than the internal administrator users you have just created
-  + The `Source` field for this user will be `External Azure Active Directory`
+  + The `User name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 + Click the `Delete user` icon in the menu bar at the top of the user list panel
 
 ### Adding MFA licences to users
@@ -350,9 +355,54 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 + Click `Select`
 + Click `Assign`
 
-## Deploy and configure VNET and Domain Controllers
+## Deploy virtual network and VPN gateway
 
-### Deploy the Virtual Network and Active Directory Domain Controller
+From your **deployment machine**
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Deploy and configure the virtual networking components for the SHM by running `./Setup_SHM_Networking.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
++ This will take **around twenty minutes** to run.
++ Once the script exits successfully you should see the following resource groups under the SHM subscription:
+  <p align="center">
+      <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups">
+  </p>
+
+### Download a client VPN certificate for the Safe Haven Management network
+
++ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`
+  + NB. `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Once there open the `Certificates` page under the `Settings` section in the left hand sidebar.
++ Click on the certificate named `shm-<SHM ID>-vpn-client-cert` and select the `CURRENT VERSION`
++ Click the `Download in PFX/PEM format` link at the top of the page and save the `*.pfx` certificate file locally
++ To install, double click on the downloaded certificate (or on OSX you can manually drag it into the `login` keychain), leaving the password field blank.
+
+**Make sure to securely delete the local "\*.pfx" certificate file that you downloaded after you have installed it.**
+
+### Configure a VPN connection to the Safe Haven Management network
+
++ Navigate to the Safe Haven Management (SHM) virtual network gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`
+  + NB. `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Once there open the `Point-to-site configuration` page under the `Settings` section in the left hand sidebar
++ Click the `Download VPN client` link at the top of the page to download a zip file
+   <p align="center">
+       <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
+   </p>
++ Unzip the zip file and identify the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
++ Follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the section appropriate to your operating system
+  + **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+  + Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
+  + Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
+  + **Windows:** do not rename the VPN client as this will break it
+  + **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
+  + **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
+  + **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
+
+You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
+
+## Deploy and configure domain controllers
 
 From your **deployment machine**
 
@@ -364,41 +414,10 @@ From your **deployment machine**
 + This will take **around one hour** to run.
 + Once the script exits successfully you should see the following resource groups under the SHM subscription:
   <p align="center">
-      <img src="../../images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
+      <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups">
   </p>
 
-### Download a client VPN certificate for the Safe Haven Management VNet
-
-+ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-+ Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
-+ To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
-
-**Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
-
-### Configure a VPN connection to the Safe Haven Management VNet
-
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Once there open the "User VPN configuration page under the "Settings" section in the left hand sidebar (see image below).
-+ Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
-   <p align="center">
-       <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
-   </p>
-+ Read through the following notes, then follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the Windows or Mac sections as appropriate.
-
-**NOTES:**
-
-+ **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
-+ Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
-+ Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ **Windows:** do not rename the VPN client as this will break it
-+ **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
-+ **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
-+ **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
-
-You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
-
-### Access the first Domain Controller (DC1) via Remote Desktop
+### Configure the first domain controller (DC1) via Remote Desktop
 
 From your **deployment machine**
 
@@ -413,7 +432,7 @@ From your **deployment machine**
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-### Install Azure Active Directory Connect
+#### Install Azure Active Directory Connect
 
 + Navigate to `C:\Installation`
 + Run the `AzureADConnect.msi` installer
@@ -481,7 +500,7 @@ From your **deployment machine**
 
 **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
-### Additional AAD Connect Configuration
+#### Update Azure Active Directory Connect rules
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
@@ -491,7 +510,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Open Powershell (on the SHM DC) as an administrator
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
-### Validation of AD sync
+### Validate AD sync
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
@@ -551,15 +570,19 @@ Once you're certain that you're adding a new user, make sure that the following 
 + Click `Assign` to complete the process
 + Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)
 
-## Deploy and configure Network Policy Server (NPS)
+## Deploy and configure network policy server
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal (from your deployment machine) and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the NPS VM by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Deploy and configure the network policy server (NPS) by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 20 minutes** to run.
   + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
+
+### Configure the network policy server (NPS) via Remote Desktop
+
+#### Configure logging
 
 + Log in to the NPS VM using Microsoft Remote Desktop
   + the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
@@ -583,7 +606,7 @@ Once you're certain that you're adding a new user, make sure that the following 
     + On the `Log file` tab, select `Daily` under `Create a new log file`
     + Click `Ok`
 
-### MFA Configuation
+#### Configure MFA
 
 + Configure MFA settings:
   + Open Powershell (on the SHM NPS server) as an administrator
@@ -692,7 +715,7 @@ From your **deployment machine**
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the package mirrors by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where `<SHM ID>` is the [managment environment ID](#management-environment-id) specified in the configuration file.
++ Deploy and configure the package mirrors by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 30 minutes** to run.
 
 ### [Optional] Tearing down package mirrors
@@ -702,7 +725,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
 
 ## Tearing down the SHM

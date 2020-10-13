@@ -31,14 +31,15 @@ function Get-NpsServerAddresses ($remoteServerGroup) {
 $sreResearchUserSecurityGroupWithDomain = "${sreResearchUserSecurityGroup}@${shmNetbiosName}"
 foreach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
     $success = $true
+
     # NOTE: Need to add SRE Researcher user group / ensure it exists prior to removing existing
     #       user groups as there must always be at least one user group assigned for each RAP
     # Ensure SRE Researcher user group is assigned to RAP
-
     if ( -Not (Get-Item RDS:\GatewayServer\RAP\$rapName\UserGroups\ | Get-ChildItem | Where-Object { $_.Name -eq $sreResearchUserSecurityGroupWithDomain })) {
         $null = New-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") -Name "$sreResearchUserSecurityGroupWithDomain" -ErrorAction SilentlyContinue
-        $success = ($success -And $?)
+        $success = $success -and $?
     }
+
     # Remove all other user groups from RAP
     # If the SRE Researcher group is not in the RAP User Group list (e.g. if the `New-Item` command above failed)
     # this command to remove all other groups will fail, as there must always be at least one User Group.
@@ -64,17 +65,16 @@ $null = netsh nps add remoteserver remoteServerGroup = "`"$remoteNpsServerGroup`
 # Check that the change has actually been made (the netsh nps command always returns "ok")
 $success = $true
 [array]$npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)
-$numNpsServers = $npsServerAddresses.Length
-if ($numNpsServers -ne 1) {
+if ($npsServerAddresses.Length -ne 1) {
     $success = $false
 } else {
     $firstNpsServerAddress = $npsServerAddresses[0]
-    $success = ($success -And ($firstNpsServerAddress -eq $shmNpsIp))
+    $success = $success -and ($firstNpsServerAddress -eq $shmNpsIp)
 }
 if ($success) {
     Write-Output " [o] Successfully configured '$firstNpsServerAddress' as the only remote NPS server."
 } else {
-    Write-Output " [x] Failed to configure '$firstNpsServerAddress' as the only remote NPS server!"
+    Write-Output " [x] Failed to configure remote NPS server. Found $($npsServerAddresses.Length) candidates!"
 }
 
 # Set RDS Gateway to use remote NPS server

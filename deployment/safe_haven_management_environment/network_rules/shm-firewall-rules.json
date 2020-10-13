@@ -70,6 +70,19 @@
                         ]
                     },
                     {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "http:123"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<ntp-server-fqdns>"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowLogAnalytics",
                         "protocols": [
                             "https:443"
