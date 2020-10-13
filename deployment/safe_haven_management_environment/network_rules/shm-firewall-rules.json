@@ -99,6 +99,20 @@
                         ]
                     },
                     {
+                        "name": "AllowPyPiPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "files.pythonhosted.org",
+                            "pypi.org/simple"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowAzureADLogin",
                         "protocols": [
                             "https:443"
