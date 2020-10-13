@@ -52,7 +52,7 @@ if (-not $dsvmIpLastOctet) {
     Add-LogMessage -Level Warning "Test DSVM not specified by providing last octet of its IP address. Attempting to test on DSVM with last octet of '$defaultDsvmIpLastOctet'."
     $dsvmIpLastOctet = $defaultDsvmIpLastOctet
 }
-$vmIpAddress = Get-IpAddressFromRangeAndOffset -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset $dsvmIpLastOctet
+$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset $dsvmIpLastOctet
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
 if (-not $existingNic) {
     Add-LogMessage -Level Fatal "No network card found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
