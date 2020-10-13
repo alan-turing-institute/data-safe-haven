@@ -8,7 +8,7 @@ function Get-PatchedJsonFromTemplate {
         $TemplateJsonFilePath,
         [Parameter(Mandatory = $true, HelpMessage = "Multi-level hashtable with parameter key-value pairs.")]
         $Parameters,
-        [Parameter(Mandatory = $false, HelpMessage = "Retrun patched JSON as hashtable.")]
+        [Parameter(Mandatory = $false, HelpMessage = "Return patched JSON as hashtable.")]
         [switch]$AsHashtable
     )
     
