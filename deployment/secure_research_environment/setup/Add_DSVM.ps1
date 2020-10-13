@@ -357,7 +357,7 @@ if ($config.sre.tier -in @(2,3)) {
         $pypiIp = $config.shm.repository.nexus.ipAddress
         $cranIp = $config.shm.repository.nexus.ipAddress
         $useNexus = $True
-    } else if ($config.sre.tier == 3) {
+    } elseif ($config.sre.tier == 3) {
         $pypiIp = $config.shm.mirrors.pypi.tier3.internal.ipAddress
         $cranIp = $config.shm.mirrors.cran.tier3.internal.ipAddress
         $useNexus = $False
