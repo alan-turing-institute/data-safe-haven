@@ -113,6 +113,19 @@
                         ]
                     },
                     {
+                        "name": "AllowCRANPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "cran.r-project.org"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowAzureADLogin",
                         "protocols": [
                             "https:443"
