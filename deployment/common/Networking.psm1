@@ -191,21 +191,9 @@ function Set-NetworkSecurityGroupRules {
     $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
     $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
     foreach ($updatedRule in $updatedRules) {
-        if ($updatedRule.SourceAddressPrefix -eq "*") {
-            $sourceAddressText = "any source"
-        } else {
-            $sourceAddressText = "'$($updatedRule.SourceAddressPrefix)"
-        }
-        if ($updatedRule.DestinationAddressPrefix -eq "*") {
-            $destinationAddressText = "any destination"
-        } else {
-            $destinationAddressText = "'$($updatedRule.DestinationAddressPrefix)'"
-        }
-        if ($updatedRule.DestinationPortRange -eq "*") {
-            $destinationPortText = "any port"
-        } else {
-            $destinationPortText = "ports $($updatedRule.DestinationPortRange)"
-        }
+        $sourceAddressText = ($updatedRule.SourceAddressPrefix -eq "*") ? "any source" : $updatedRule.SourceAddressPrefix
+        $destinationAddressText = ($updatedRule.DestinationAddressPrefix -eq "*") ? "any destination" : $updatedRule.DestinationAddressPrefix
+        $destinationPortText = ($updatedRule.DestinationPortRange -eq "*") ? "any port" : "ports $($updatedRule.DestinationPortRange)"
         Add-LogMessage -Level Success "Set $($updatedRule.Name) rule to $($updatedRule.Access) connections from $sourceAddressText to $destinationPortText on $destinationAddressText."
     }
     return $NetworkSecurityGroup
