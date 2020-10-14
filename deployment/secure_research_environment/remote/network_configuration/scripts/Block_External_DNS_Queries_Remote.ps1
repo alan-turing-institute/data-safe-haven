@@ -13,8 +13,6 @@ param(
     $exceptionCidrsList
 )
 
-# Set name prefix for DNS Client Subnets and DNS Resocultion Policies
-$srePrefix = "sre-$sreId"
 
 # Generate DNS Client Subnet name from CIDR
 # -----------------------------------------
@@ -27,6 +25,34 @@ function Get-DnsClientSubnetNameFromCidr {
     )
     return "$srePrefix-$($cidr.Replace('/','_'))"
 }
+
+# Ensure DNS client subnets exist
+# -------------------------------
+function Set-DnsClientSubnets {
+    param(
+        [Parameter(HelpMessage = "CIDR")]
+        $cidr,
+        [Parameter(HelpMessage = "Subnet name")]
+        $subnetName
+    )
+    Write-Host " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+    $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
+    if ($subnet) {
+        Write-Host " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
+    } else {
+        try {
+            $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
+            Write-Host " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+        } catch {
+            Write-Host " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            Write-Host $_.Exception
+        }
+    }
+}
+
+# Set name prefix for DNS Client Subnets and DNS Resocultion Policies
+$srePrefix = "sre-$sreId"
+
 
 # Create configurations containing CIDR and corresponding Name stem
 # -----------------------------------------------------------------
@@ -86,23 +112,7 @@ if ($existingSubnets) {
 # ---------------------------------------------------------
 Write-Output "`nCreating DNS client subnets for exception CIDR ranges (these will not be blocked)..."
 if ($exceptionConfigs) {
-    foreach ($config in $exceptionConfigs) {
-        $cidr = $config.cidr
-        $subnetName = $config.Name
-        Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-        $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
-        if ($subnet) {
-            Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
-        } else {
-            try {
-                $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
-                Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-            } catch {
-                Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-                Write-Output $_.Exception
-            }
-        }
-    }
+    $exceptionConfigs | ForEach-Object { Set-DnsClientSubnets -cidr $_.cidr -subnetName $_.Name }
 } else {
     Write-Output " [o] No exception CIDR ranges specifed."
 }
@@ -112,23 +122,7 @@ if ($exceptionConfigs) {
 # -------------------------------------------------------
 Write-Output "`nCreating DNS client subnets for blocked CIDR ranges..."
 if ($blockedConfigs) {
-    foreach ($config in $blockedConfigs) {
-        $cidr = $config.cidr
-        $subnetName = $config.Name
-        Write-Output " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-        $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
-        if ($subnet) {
-            Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
-        } else {
-            try {
-                $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
-                Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-            } catch {
-                Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-                Write-Output $_.Exception
-            }
-        }
-    }
+    $blockedConfigs | ForEach-Object { Set-DnsClientSubnets -cidr $_.cidr -subnetName $_.Name }
 } else {
     Write-Output " [o] No blocked CIDR ranges specifed."
 }
