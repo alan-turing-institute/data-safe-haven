@@ -353,11 +353,11 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 # ---------------
 if ($config.sre.tier -in @(2,3)) {
     Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-    if ($config.sre.tier == 2) {
+    if ($config.sre.tier -eq 2) {
         $pypiIp = $config.shm.repository.nexus.ipAddress
         $cranIp = $config.shm.repository.nexus.ipAddress
         $useNexus = $True
-    } elseif ($config.sre.tier == 3) {
+    } elseif ($config.sre.tier -eq 3) {
         $pypiIp = $config.shm.mirrors.pypi.tier3.internal.ipAddress
         $cranIp = $config.shm.mirrors.cran.tier3.internal.ipAddress
         $useNexus = $False
