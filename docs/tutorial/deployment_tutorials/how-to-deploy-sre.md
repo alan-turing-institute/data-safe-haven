@@ -286,7 +286,7 @@ On the **SHM Domain Controller**.
 
 #### Create a new non-privileged user account for yourself
 
-+ Follow the user creation instructions from the [administrator guide](../administrator/administrator_guide.md). In brief these involve:
++ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-ad-sync) from the [SHM deployment guide](./how-to-deploy-shm.md). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 
