@@ -117,6 +117,7 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
         Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
     } else {
         New-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.repositoryVnet.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+    }
 }
 
 
@@ -128,7 +129,7 @@ if ($config.sre.tier -in @(2,3)) {
         $pypiIp = $config.shm.repository.nexus.ipAddress
         $cranIp = $config.shm.repository.nexus.ipAddress
         $useNexus = $True
-    } else if ($config.sre.tier == 3) {
+    } elseif ($config.sre.tier == 3) {
         $pypiIp = $config.shm.mirrors.pypi.tier3.internal.ipAddress
         $cranIp = $config.shm.mirrors.cran.tier3.internal.ipAddress
         $useNexus = $False
