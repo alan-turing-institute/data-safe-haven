@@ -23,7 +23,7 @@ function Expand-MustacheTemplate {
     foreach ($tag in $tags) {
         $tagKey = $tag.Replace($StartDelimeter, "").Replace($EndDelimiter, "").Trim()
         $value = Find-MultilevelKey -Hashtable $Parameters -Key $tagKey
-        if (-not $value) {
+        if ($null -eq $value) {
             Add-LogMessage -Level Fatal "No value for '$tagKey' found in Parameters hashtable."
         } else {
             $Template = $Template.Replace($tag, $value)
