@@ -88,7 +88,7 @@ function Find-MultilevelKey {
             return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
         }
     }
-    return ""
+    return $null
 }
 Export-ModuleMember -Function Find-MultilevelKey
 
