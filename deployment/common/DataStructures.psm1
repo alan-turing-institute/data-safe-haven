@@ -84,7 +84,7 @@ function Find-MultilevelKey {
     } elseif ($Key.Contains(".")) {
         $keyPrefix = $Key.Split(".")[0]
         if ($Hashtable.ContainsKey($keyPrefix)) {
-            $keySuffix = $Key.Replace("${keyPrefix}.", "")
+            $keySuffix = $Key.Split(".") | Select-Object -Skip 1 | Join-String -Separator "."
             return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
         }
     }
