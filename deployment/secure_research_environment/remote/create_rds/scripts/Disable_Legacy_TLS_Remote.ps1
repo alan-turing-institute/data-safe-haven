@@ -69,7 +69,7 @@ $recommended = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.
 $response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
 # Note that we overwrite gnutls_name in the Values hashtable with the `Name` property for later use
 $secure = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Value.gnutls_name = $_.PSObject.Properties.Name; $_.PSObject.Properties.Value } `
-                                 | Where-Object { $_.kex_algorithm -ne "DHE" } `
+                                 | Where-Object { $_.kex_algorithm -eq "ECDHE" } `
                                  | Where-Object { $_.auth_algorithm -eq "RSA" } `
                                  | Where-Object { $_.enc_algorithm -like "AES * CBC" } `
                                  | Where-Object { $_.hash_algorithm -eq "SHA256" } `
@@ -110,6 +110,7 @@ foreach ($allowedCipher in $allowedCiphers) {
             # If it is not [ie. it has no CipherSuite entry] then immediately disable it.
             if ($((Get-TlsCipherSuite -Name $allowedCipher).CipherSuite) -eq 0) {
                 Disable-TlsCipherSuite -Name $allowedCipher
+                Write-Output " [x] Windows does not support the '$allowedCipher' suite."
             } else {
                 Write-Output " [o] Enabled '$allowedCipher' suite."
             }
