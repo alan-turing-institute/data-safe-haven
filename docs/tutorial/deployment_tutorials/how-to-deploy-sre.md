@@ -68,7 +68,7 @@ This is done using the VPN which should have been deployed when setting up the S
 
 #### Download a client VPN certificate
 
-+ Navigate to the key vault in the SHM subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>` .
++ Navigate to the key vault in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>` .
 + Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert` , click on the "current version" and click the "Download in PFX/PEM format" link.
 + To install, double click on the downloaded certificate, leaving the password field blank.
@@ -77,7 +77,7 @@ This is done using the VPN which should have been deployed when setting up the S
 
 #### Configure the VPN connection
 
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW` , where `<SHM ID>` is defined in the config file.
++ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW` , where `<SHM ID>` is defined in the config file.
 + Once there open the "Point-to-site configuration page under the `Settings` section in the left hand sidebar (see image below).
 
 <p align="center">
@@ -246,7 +246,7 @@ On your **deployment machine**.
 + Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
   + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for OSX.
 + The IP address can be found using the Azure portal by navigating to the Virtual Machine ( `Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>` )
-+ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets` . as follows:
++ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets` . as follows:
   + The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
