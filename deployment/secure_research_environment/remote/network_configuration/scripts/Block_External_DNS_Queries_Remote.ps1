@@ -20,6 +20,9 @@ $srePrefix = "sre-$sreId"
 # -----------------------------------------
 function Get-DnsClientSubnetNameFromCidr {
     param(
+        [Parameter(HelpMessage = "SRE prefix")]
+        $srePrefix,
+        [Parameter(HelpMessage = "CIDR")]
         $cidr
     )
     return "$srePrefix-$($cidr.Replace('/','_'))"
@@ -28,12 +31,12 @@ function Get-DnsClientSubnetNameFromCidr {
 # Create configurations containing CIDR and corresponding Name stem
 # -----------------------------------------------------------------
 if ($blockedCidrsList) {
-    $blockedConfigs = @($blockedCidrsList.Split(",") | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+    $blockedConfigs = @($blockedCidrsList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
 } else {
     $blockedConfigs = @()
 }
 if ($exceptionCidrsList) {
-    $exceptionConfigs = @($exceptionCidrsList.Split(",") | ForEach-Object { @{ Cidr=$_; Name=Get-DnsClientSubnetNameFromCidr -cidr $_} })
+    $exceptionConfigs = @($exceptionCidrsList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
 } else {
     $exceptionConfigs = @()
 }
@@ -134,7 +137,7 @@ if ($blockedConfigs) {
 # Create DNS resolution policies for exception IP ranges
 # ------------------------------------------------------
 # Assign all queries for exception CIDRs subnets to default ('.') recursion scope.
-# We must set policies for exception CIDR subnets first to ensure they take precedence as we 
+# We must set policies for exception CIDR subnets first to ensure they take precedence as we
 # cannot set processing order to be greater than the total number of resolution policies.
 $defaultRecursionScopeName = "."
 Write-Output "`nCreating DNS resolution policies for exception CIDR ranges (these will not be blocked)..."
@@ -144,7 +147,7 @@ if ($exceptionConfigs) {
         $policyName = "$subnetName-default-recursion"
         $recursionScopeName = $defaultRecursionScopeName
         try {
-            $policy = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
+            $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
             Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
         } catch {
             Write-Output " [x] Failed to create policy to '$policyName' apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
@@ -190,7 +193,7 @@ if ($blockedConfigs) {
 
 # Clear DNS cache to avoid midleading tests
 # -----------------------------------------
-# If a domain has previously been queried and is in the cache, it will be 
+# If a domain has previously been queried and is in the cache, it will be
 # returned without recursion to external DNS servers
 Write-Output "`nClearing DNS cache..."
 try {
