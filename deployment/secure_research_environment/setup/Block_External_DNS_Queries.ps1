@@ -24,24 +24,25 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # -------------------------------------------------------------
 Add-LogMessage -Level Info "Blocking direct DNS from DSVMs via Azure Platform DNS..."
 $computeNsg = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
-$rules = Get-PatchedJsonFromTemplate -TemplateJsonFilePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
 
 
 # Block external DNS resolution for DSVMs via SHM DNS servers
 # -----------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId                  = "`"$($config.sre.id)`""
     blockedCidrsList       = "`"$($config.sre.network.vnet.subnets.data.cidr)`""
     exceptionCidrsList     = "`"$($config.sre.dataserver.ip)/32`""
 }
-Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via $($config.shm.dc.vmName)..."
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
-Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via$($config.shm.dcb.vmName)..."
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dcb.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
+foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
+    Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via $($dnsServerName)..."
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    Write-Output $result.Value
+}
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Validate external DNS resolution is blocked from DSVMs

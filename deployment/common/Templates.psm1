@@ -7,8 +7,10 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 # -------------------------------------------------------------------
 function Expand-MustacheTemplate {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Mustache template to be expanded.")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFile", HelpMessage = "Mustache template to be expanded.")]
         [string]$Template,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to mustache template to be expanded.")]
+        [string]$TemplatePath,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable (can be multi-level) with parameter key-value pairs.")]
         [System.Collections.IDictionary]$Parameters,
         [Parameter(Mandatory = $false, HelpMessage = "Start delimiter.")]
@@ -16,6 +18,9 @@ function Expand-MustacheTemplate {
         [Parameter(Mandatory = $false, HelpMessage = "End delimiter.")]
         [string]$EndDelimiter = "}}"
     )
+    # If we are given a path then we need to extract the content
+    if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
+
     # Get all unique mustache tags
     $tags = ($Template | Select-String -Pattern "$StartDelimeter(.*)$EndDelimiter" -AllMatches).Matches.Value | Get-Unique
 
@@ -35,16 +40,23 @@ Export-ModuleMember -Function Expand-MustacheTemplate
 
 
 # Get patched JSON from template
-function Get-PatchedJsonFromTemplate {
+# ------------------------------
+function Get-JsonFromMustacheTemplate {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Path to JSON template file to be patched and returned.")]
-        $TemplateJsonFilePath,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFile", HelpMessage = "Mustache template to be expanded.")]
+        [string]$Template,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to mustache template to be expanded.")]
+        [string]$TemplatePath,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable (can be multi-level) with parameter key-value pairs.")]
-        $Parameters,
+        [System.Collections.IDictionary]$Parameters,
         [Parameter(Mandatory = $false, HelpMessage = "Return patched JSON as hashtable.")]
         [switch]$AsHashtable
     )
-    $templateJson = Expand-MustacheTemplate -Template (Get-Content $TemplateJsonFilePath -Raw) -Parameters $Parameters
+    if ($Template) {
+        $templateJson = Expand-MustacheTemplate -Template $Template -Parameters $Parameters
+    } else {
+        $templateJson = Expand-MustacheTemplate -TemplatePath $TemplatePath -Parameters $Parameters
+    }
     return ($templateJson | ConvertFrom-Json -AsHashtable:$AsHashtable)
 }
-Export-ModuleMember -Function Get-PatchedJsonFromTemplate
+Export-ModuleMember -Function Get-JsonFromMustacheTemplate
