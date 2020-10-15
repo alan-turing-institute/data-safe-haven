@@ -106,7 +106,7 @@
                         "fqdnTags": [],
                         "targetFqdns": [
                             "files.pythonhosted.org",
-                            "pypi.org/simple"
+                            "pypi.org"
                         ],
                         "sourceAddresses": [
                             "*"
