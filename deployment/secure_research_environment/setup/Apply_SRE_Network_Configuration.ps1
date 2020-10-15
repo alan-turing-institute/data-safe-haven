@@ -126,10 +126,12 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 if ($config.sre.nexus) {
     $pypiIp = $config.shm.repository.nexus.ipAddress
+    $cranIp = $config.shm.repository.nexus.ipAddress
 } else {
     $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+    $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
 }
-$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $pypiIp -nexus $config.sre.nexus
+$addresses = Get-MirrorAddresses -cranIp $cranIp -pypiIp $pypiIp -nexus $config.sre.nexus
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 
