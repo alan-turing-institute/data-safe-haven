@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier2": {
-          "diskSize": 128,
+          "diskSize": 127,
           "external": {
             "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password",
             "ipAddress": "10.20.2.5",
@@ -151,7 +151,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier2": {
-          "diskSize": 8192,
+          "diskSize": 8191,
           "external": {
             "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password",
             "ipAddress": "10.20.2.4",
@@ -302,7 +302,7 @@
         "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
         "ipAddress": "10.30.1.10",
         "nexusAppAdminPasswordSecretName": "shm-testa-repository-nexus-app-admin-password",
-        "vmName": "NEXUS-REPOSITORY"
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
       },
       "rg": "RG_SHM_REPOSITORY",
       "vmSize": "Standard_B2ms"
@@ -321,13 +321,20 @@
     "subscriptionName": "Safe Haven Management Test A",
     "time": {
       "ntp": {
+        "poolFqdn": "time.google.com",
         "serverAddresses": [
           "216.239.35.0",
           "216.239.35.4",
           "216.239.35.8",
           "216.239.35.12"
         ],
-        "serverFqdn": "time.google.com"
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
       },
       "timezone": {
         "linux": "Europe/London",
@@ -540,8 +547,8 @@
         }
       }
     },
-    "nsgPrefix": "NSG_SRE_SANDBOX",
     "nexus": true,
+    "nsgPrefix": "NSG_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
