@@ -96,27 +96,27 @@ foreach ($nsgName in $nsgs.Keys) {
 
 # Ensure SRE is peered to correct mirror set
 # ------------------------------------------
+# Unpeer any existing networks before (re-)establishing correct peering for SRE
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -configId $configId"
+
 if (@(2, 3).Contains([int]$config.sre.tier)) {
     Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
 
-# Unpeer any existing networks before (re-)establishing correct peering for SRE
-    Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -configId $configId"
-
-# Re-peer to the correct network for this SRE
-    Add-LogMessage -Level Info "Peering to the correct mirror network..."
-    if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
-        Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
+    # Re-peer to the correct network for this SRE
+    if ($config.sre.nexus) {
+        Add-LogMessage -Level Info "Peering to the repository network..."
+        if (-not $config.shm.network.repositoryVnet.name) {
+            Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
+        } else {
+            New-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.repositoryVnet.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+        }
     } else {
-        New-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
-    }
-
-# Ensure SRE is peered to the Nexus repository
-# --------------------------------------------
-    Add-LogMessage -Level Info "Peering to the repository network..."
-    if (-not $config.shm.network.repositoryVnet.name) {
-        Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
-    } else {
-        New-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.repositoryVnet.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+        Add-LogMessage -Level Info "Peering to the correct mirror network..."
+        if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
+            Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
+        } else {
+            New-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+        }
     }
 }
 
@@ -124,14 +124,8 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
 # Update SRE mirror lookup
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-if ($config.sre.nexus) {
-    $pypiIp = $config.shm.repository.nexus.ipAddress
-    $cranIp = $config.shm.repository.nexus.ipAddress
-} else {
-    $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
-    $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
-}
-$addresses = Get-MirrorAddresses -cranIp $cranIp -pypiIp $pypiIp -nexus $config.sre.nexus
+$IPs = Get-MirrorIPs $config
+$addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 
@@ -149,7 +143,6 @@ foreach ($vmName in $computeVmNames) {
     $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
     Write-Output $result.Value
 }
-
 
 # Switch back to original subscription
 # ------------------------------------

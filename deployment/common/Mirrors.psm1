@@ -1,3 +1,30 @@
+function Get-MirrorIPs {
+    param(
+    [Parameter(Position = 0,HelpMessage = "SRE configuration")]
+    $config
+    )
+    if (@(2, 3).Contains([int]$config.sre.tier)){
+        # Nexus is not (currently) supported for tier 3
+        if (([int]$config.sre.tier -eq 3) -or -not $config.sre.nexus) {
+            $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+            $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
+        } else {
+            $pypiIp = $config.shm.repository.nexus.ipAddress
+            $cranIp = $config.shm.repository.nexus.ipAddress
+        }
+    } else {
+        $pypiIp = $null
+        $cranIp = $null
+    }
+
+    $IPs = [ordered]@{
+        pypi = $pypiIp
+        cran = $cranIp
+    }
+    return $IPs
+}
+Export-ModuleMember -Function Get-MirrorIPs
+
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-MirrorAddresses {
