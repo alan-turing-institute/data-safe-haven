@@ -31,8 +31,13 @@ jobs:
       script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
     - name: Lint Markdown
       language: ruby
-      install: gem install mdl
+      before_script: gem install mdl
       script: mdl --style .mdlstyle.rb *.md docs/
+    - name: Check for dead links in Markdown
+      language: node_js
+      node_js: node
+      before_script: npm install -g markdown-link-check
+      script: find . -name "*.md" -exec markdown-link-check -p {} \;
     - name: Lint Ansible
       language: python
       python: 3.8
