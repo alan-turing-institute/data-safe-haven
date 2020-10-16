@@ -103,7 +103,7 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
     Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
 
     # Re-peer to the correct network for this SRE
-    if ($config.sre.nexus) {
+    if ($config.sre.nexus -and ([int]$config.sre.tier -eq 2)) {
         Add-LogMessage -Level Info "Peering to the repository network..."
         if (-not $config.shm.network.repositoryVnet.name) {
             Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
