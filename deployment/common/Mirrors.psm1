@@ -3,18 +3,22 @@ function Get-MirrorIPs {
     [Parameter(Position = 0,HelpMessage = "SRE configuration")]
     $config
     )
-    if (@(2, 3).Contains([int]$config.sre.tier)){
-        # Nexus is not (currently) supported for tier 3
-        if (([int]$config.sre.tier -eq 3) -or -not $config.sre.nexus) {
-            $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
-            $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
-        } else {
-            $pypiIp = $config.shm.repository.nexus.ipAddress
-            $cranIp = $config.shm.repository.nexus.ipAddress
-        }
-    } else {
+    if (@(0, 1).Contains([int]$config.sre.tier)){
+        # For tiers 0 and 1, return null. Get-MirrorAddresses will then return
+        # the appropriate settings to use pypi.org and cran.r-project.org
+        # directly.
         $pypiIp = $null
         $cranIp = $null
+    } else {
+        # Nexus is not (currently) supported for tier 3, so fall back to tier 3
+        # mirror if tier=3 and nexus=true
+        if ($config.sre.nexus -and ([int]$config.sre.tier -eq 2)) {
+            $pypiIp = $config.shm.repository.nexus.ipAddress
+            $cranIp = $config.shm.repository.nexus.ipAddress
+        } else {
+            $pypiIp = $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
+            $cranIp = $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress
+        }
     }
 
     $IPs = [ordered]@{
