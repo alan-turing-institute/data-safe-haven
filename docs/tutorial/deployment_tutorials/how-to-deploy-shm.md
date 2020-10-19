@@ -728,31 +728,6 @@ During normal usage, you should not need to tear down the package mirrors, but i
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
 
-## Tearing down the SHM
-In order to tear down the SHM, use the following procedure:
-
-### Disconnect from the Azure Active Directory
-
-Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
-
-+ Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
-+ If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
-+ Open Powershell as an administrator
-  + Navigate to `C:\Installation`
-  + Run `.\Disconnect_AD.ps1`
-  + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
-+ Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
-
-### Tear down any attached SREs then the SHM
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ For each SRE attached to the SHM, do the following:
-  + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
-+ Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-
 ## Server list
 The following 3 virtual machines are created as a result of these instructions:
 
