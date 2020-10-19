@@ -15,22 +15,22 @@
 
 ## :seedling: Prerequisites
 
-:warning: As the deployment process depends on [`Ansible`](<https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, OSX, BSD, Solaris>).
+:warning: As the deployment process depends on [`Ansible`](https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, OSX, BSD, Solaris).
 
 The following packages are required
 
 + `PowerShell` with support for Azure
-  + Install [PowerShell v6.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure Powershell module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>)
+  + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+  + Install the [Azure Powershell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 + `Ansible` (not currently supported on Windows)
-  + Install [Ansible](<https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html>)
+  + Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 + `Python`
   + Install a version `> 3.6`
 + `qrencode`
-  + :apple: Install using [Homebrew](<https://formulae.brew.sh/formula/qrencode>) on OSX
+  + :apple: Install using [Homebrew](https://formulae.brew.sh/formula/qrencode) on OSX
   + :penguin: Install through your package manager on Linux
 + `oathtool`
-  + :apple: Install `oath-toolkit` using [Homebrew](<https://formulae.brew.sh/formula/oath-toolkit>) on OSX
+  + :apple: Install `oath-toolkit` using [Homebrew](https://formulae.brew.sh/formula/oath-toolkit) on OSX
   + :penguin: Install through your package manager on Linux
 + `ssh-keygen`
   + Should be available out-of-the-box for all systems supported by Ansible
@@ -62,7 +62,7 @@ This step is optional at deploy time - if no users are declared, none will be cr
 
 On your **deployment machine**.
 
-+ The users file is a [YAML](<https://yaml.org>) file. There is one top-level key `users` which contains a list of users.
++ The users file is a [YAML](https://yaml.org) file. There is one top-level key `users` which contains a list of users.
 + Each users has
   + Real name
   + Username
@@ -116,8 +116,8 @@ On your **deployment machine**.
 
 + `./Setup_SRE_Tier1.ps1` creates a storage account named `sre<SRE id>ingress<random string>` where `<SRE id>` is the SRE ID in lower case and `<random string>` is a random set of lower case characters unique to the SRE.
 + Within that storage account is a file share called `ingress`. This share is mounted at `/data` on the Tier 1 VM.
-+ You may upload data to `ingress` using the [Azure Storage Explorer](<https://azure.microsoft.com/en-us/features/storage-explorer/>).
-+ If data is already in another Azure storage account, the easiest way to transfer it is using [`AzCopy`](<https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/5-move-blobs-using-azcopy>)
++ You may upload data to `ingress` using the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
++ If data is already in another Azure storage account, the easiest way to transfer it is using [`AzCopy`](https://docs.microsoft.com/en-us/learn/modules/copy-blobs-from-command-line-and-code/5-move-blobs-using-azcopy)
 
 ## :chart_with_upwards_trend: Migrating to a GPU VM
 
