@@ -3,11 +3,11 @@ param(
     [string]$shmId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/DataStructures.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/DataStructures.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------

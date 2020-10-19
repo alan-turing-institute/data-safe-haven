@@ -1,8 +1,8 @@
-Import-Module $PSScriptRoot/DataStructures.psm1
-Import-Module $PSScriptRoot/Logging.psm1
-Import-Module $PSScriptRoot/Networking.psm1
-Import-Module $PSScriptRoot/Security.psm1
-Import-Module Az.RecoveryServices  # Note that this contains TimeZoneConverter
+Import-Module Az.RecoveryServices -ErrorAction Stop # Note that this contains TimeZoneConverter
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+Import-Module $PSScriptRoot/Networking -ErrorAction Stop
+Import-Module $PSScriptRoot/Security -ErrorAction Stop
 
 
 # Add a new SRE configuration

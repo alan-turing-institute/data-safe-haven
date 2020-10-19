@@ -6,7 +6,7 @@ param(
     [string]$ApiKey
 )
 
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
 # Get normalised name for a package

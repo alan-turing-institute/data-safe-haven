@@ -1,5 +1,5 @@
-Import-Module Az
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Create network security group rule if it does not exist
@@ -1449,7 +1449,7 @@ function Set-KeyVaultPermissions {
 Export-ModuleMember -Function Set-KeyVaultPermissions
 
 
-# Add NS Record Set to DNS Zone if it doesnot already exist
+# Add NS Record Set to DNS Zone if it doesn't already exist
 # ---------------------------------------------------------
 function Set-NSRecords {
     param(
