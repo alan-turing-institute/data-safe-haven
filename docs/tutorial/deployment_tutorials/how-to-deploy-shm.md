@@ -34,10 +34,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
     + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
 + `Microsoft Remote Desktop`
+  + On OSX this can be installed from the [apple store](https://apps.apple.com)
 + `OpenSSL`
   + To install manually follow the [instructions on Github](https://github.com/openssl/openssl)
   + To install a pre-compiled version on OSX use Homebrew: `brew install openssl`
-    + Alternatively it can be installed from the [apple store](https://apps.apple.com)
   + To install a pre-compiled version on Windows use [one of these](https://wiki.openssl.org/index.php/Binaries).
     + **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
