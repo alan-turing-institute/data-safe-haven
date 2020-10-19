@@ -11,8 +11,8 @@ param(
 
 # Remove records for domain-joined SRE VMs
 # ----------------------------------------
+Write-Output "Removing SRE DNS records..."
 foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where-Object { $_.HostName -like "*$sreId" })) {
-    Write-Output " [ ] Removing '$($dnsRecord.HostName)' DNS record"
     $dnsRecord | Remove-DnsServerResourceRecord -ZoneName "$shmFqdn" -Force
     if ($?) {
         Write-Output " [o] Successfully removed DNS record '$($dnsRecord.HostName)'"
