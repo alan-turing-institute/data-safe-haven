@@ -20,14 +20,14 @@ Under no circumstance should sensitive data be sent via email, including encrypt
 
 ## Azure
 
-The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the [Azure Storage Explorer](<https://azure.microsoft.com/en-us/features/storage-explorer/>).
+The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 You do not require log in credentials to upload data via the Azure Storage Explorer.
 Instead we will provide a temporary secure access link to allow you to upload data.
 
 ### Before we can begin…
 
 You will need to confirm that you are able to receive a secure email.
-We use the [Egress secure email](<https://www.egress.com/>) service, which is free to setup for receiving secure emails.
+We use the [Egress secure email](https://www.egress.com/) service, which is free to setup for receiving secure emails.
 
 You will need to send us the public IP address (or range of IP addresses) that are used by the people in your organisation with permission to upload the data.
 The data ingress volumes are by default not accessible outside of the Turing, and we will provide temporary access to the upload volume from your IP addresses during the upload period.
@@ -53,6 +53,7 @@ This provides an added layer of protection in case the upload link is inadvertan
    <p align="center">
       <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
    </p>
+<!-- markdown-link-check-disable-next-line -->
 + This will open up a prompt box asking how you want to connect. Please select "Use a shared access signature URI" click next and enter the address from the secure email (eg: https://shmdatastorage.blob.core.windows.net/YOURDATA.........)
    <p align="center">
       <img src="../../images/provider_data_ingress/Azurestorageexplorer2.png" width="80%" title="Azurestorageexplorer2">

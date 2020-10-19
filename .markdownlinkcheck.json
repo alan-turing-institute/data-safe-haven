@@ -3,6 +3,10 @@
         {
             "_comment": "As the repository is private, without authentication these paths will return 404",
             "pattern": "^https://github.com/alan-turing-institute/data-safe-haven"
+        },
+        {
+            "_comment": "Returns permanent direct code",
+            "pattern": "^https://www.egress.com"
         }
     ],
     "retryOn429": true,
