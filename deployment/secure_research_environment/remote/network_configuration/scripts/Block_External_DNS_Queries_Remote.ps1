@@ -36,7 +36,6 @@ function Set-DnsClientSubnets {
         [Parameter(HelpMessage = "Subnet name")]
         $subnetName
     )
-    Write-Host " [ ] Creating '$subnetName' DNS Client Subnet for CIDR '$cidr'"
     $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
     if ($subnet) {
         Write-Host " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
@@ -99,7 +98,6 @@ $existingPolicies = Get-DnsServerQueryResolutionPolicy | Where-Object { $_.Name 
 if ($existingPolicies) {
     foreach ($existingPolicy in $existingPolicies) {
         try {
-            Write-Output " [ ] Deleting policy '$($existingPolicy.Name)'"
             Remove-DnsServerQueryResolutionPolicy -Name $existingPolicy.Name -Force
             Write-Output " [o] Successfully deleted policy '$($existingPolicy.Name)'"
         } catch {
@@ -119,7 +117,6 @@ $existingSubnets = Get-DnsServerClientSubnet | Where-Object { $_.Name -like "$sr
 if ($existingSubnets) {
     foreach ($existingSubnet in $existingSubnets) {
         try {
-            Write-Output " [ ] Deleting subnet '$($existingSubnet.Name)'"
             Remove-DnsServerClientSubnet -Name $existingSubnet.Name -Force
             Write-Output " [o] Successfully deleted subnet '$($existingSubnet.Name)'"
         } catch {
