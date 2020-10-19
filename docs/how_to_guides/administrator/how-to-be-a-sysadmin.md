@@ -21,7 +21,7 @@
   + [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
 + [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
 + [:fire: Tearing down the SHM](#fire-tearing-down-the-SHM)
-  + [:anger: [Optional] Tearing down package mirrors](#anger-[optional]-tearing-down-package-mirrors)
+  + [:anger: [Optional] Tearing down package mirrors](#anger-optional-tearing-down-package-mirrors)
   + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
   + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 
