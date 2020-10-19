@@ -37,7 +37,7 @@ jobs:
       language: node_js
       node_js: node
       before_script: npm install -g markdown-link-check
-      script: find . -name "*.md" | xargs -n 1 markdown-link-check -p
+      script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
     - name: Lint Ansible
       language: python
       python: 3.8

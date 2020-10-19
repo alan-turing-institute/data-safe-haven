@@ -1,0 +1,9 @@
+{
+    "ignorePatterns": [
+        {
+            "_comment": "As the repository is private, without authentication these paths will return 404",
+            "pattern": "^https://github.com/alan-turing-institute/data-safe-haven"
+        }
+    ],
+    "retryOn429": true
+}
