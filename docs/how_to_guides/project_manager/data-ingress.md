@@ -25,7 +25,7 @@ Remember that Tier-0 is the least sensitive data tier (public data) and Tier-4 t
 
 The appropriate legal paperwork needs to be completed to ensure that a data sharing agreement is in place.
 This step should also cover ethical considerations of sharing the data.
-The project may need to be approved by the Turing Ethics Advisory Group (EAG; more information can be found at the [Turing Institute intranet site](<https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/service?unid=cb5e35246f474d1f90abae8ea262338c)) and permission to use the data (including [unconsented patient data](https://github.com/alan-turing-institute/data-safe-haven/wiki/UnconsentedPatientData)>) should be obtained.
+The project may need to be approved by the Turing Ethics Advisory Group (EAG; more information can be found at the [Turing Institute intranet site](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/service?unid=cb5e35246f474d1f90abae8ea262338c)) and permission to use the data (including [unconsented patient data](../../explanations/classification/unconsented-data.md)) should be obtained.
 
 The data sharing paperwork must make very clear the tier to which the dataset has been assigned.
 
@@ -42,14 +42,14 @@ There should be a hash to confirm that the documents are indeed the same.
 
 ## Step 4: Transfer from data owner to Turing
 
-Different processes should be followed depending on the tier to which the data has been assigned (as described in the [data classification process](<https://github.com/alan-turing-institute/data-safe-haven/wiki/DataClassificationProcess>).
+Different processes should be followed depending on the tier to which the data has been assigned (as described in the [data classification process](../..//explanations/classification/classification-overview.md).
 
 It is the responsibility of the Turing staff member conducting this step to ensure that they are following the appropriate process for the assigned data classification tier.
 
 ### Tier 3: Sensitive
 
 The [preferred secure transfer process](#preferred-secure-transfer-process) should be followed by default.
-If it is not possible to use [secure copy protocol (SCP) transfer](<https://en.wikipedia.org/wiki/Secure_copy) then the [alternate secure transfer process](#alternate-secure-transfer-process>) should be followed.
+If it is not possible to use [secure copy protocol (SCP) transfer](https://en.wikipedia.org/wiki/Secure_copy) then the [alternate secure transfer process](#alternate-secure-transfer-process) should be followed.
 
 If the data are too large to transfer over the internet then the [encrypted transfer for large data process](#encrypted-transfer-for-large-data-process) should be followed.
 
@@ -58,9 +58,9 @@ It is the responsibility of the data owner to digitise the files.
 
 #### Preferred secure transfer process
 
-The data should be transferred to the staging area via [SCP transfer](<https://en.wikipedia.org/wiki/Secure_copy) (not [SFTP](https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol)>) from the data owner to the Turing Institute.
+The data should be transferred to the staging area via [SCP transfer](https://en.wikipedia.org/wiki/Secure_copy) (not [SFTP](https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol)) from the data owner to the Turing Institute.
 
-In order to set up the transfer, a secure email (via [Egress](<https://www.egress.com/what-we-offer/email-and-file-protection) which is [certified](https://www.ncsc.gov.uk/scheme/commercial-product-assurance-cpa) by the UK National Cyber Security Centre (NCSC)>) should be sent to the Data Owner by Turing to provide the access details and instructions for how they can load their data to the staging area in order for Turing to receive it.
+In order to set up the transfer, a secure email (via [Egress](https://www.egress.com/what-we-offer/email-and-file-protection) which is [certified](https://www.ncsc.gov.uk/scheme/commercial-product-assurance-cpa) by the UK National Cyber Security Centre (NCSC)) should be sent to the Data Owner by Turing to provide the access details and instructions for how they can load their data to the staging area in order for Turing to receive it.
 The following Turing staff members are authorised to send this email: Head of IT and Security, IT team member, Programme Manager, REG team member.
 
 On receipt of this email the data owner will need to provide Turing with a public IP address for a member of the Turing to whitelist in order for the files to be transferred.
@@ -73,7 +73,7 @@ The following Turing staff members are authorised to whitelist the IP address: H
 
 If the SCP transfer process described above is not possible, for example if the data owner has restrictions about what tools they are able to use or download on their devices, the following process may be used.
 
-The data owner must first encrypt the data, using a strong encryption method to be agreed by REG team - for example using [VeraCrypt](<https://www.veracrypt.fr/en/Home.html>) - with a strong password.
+The data owner must first encrypt the data, using a strong encryption method to be agreed by REG team - for example using [VeraCrypt](https://www.veracrypt.fr/en/Home.html) - with a strong password.
 The data owner will then send the encrypted data over normal email or via a website upload. The encryption key must be communicated from the data owner to a Turing staff member verbally over the phone or in person.
 **The key must not be communicated over the same channel through which the encrypted data was sent**.
 The following Turing staff members are authorised to receive the encryption key: Head of IT and Security, IT team member, Programme Manager, REG team member.
@@ -85,7 +85,7 @@ If the data was encrypted when it was received it should **remain encrypted unti
 
 If the data is so large that it cannot be sent over the internet, the following process may be used.
 
-The data owner must first encrypt the data, using a strong encryption method to be agreed by REG team - for example using [VeraCrypt](<https://www.veracrypt.fr/en/Home.html>) - with a strong password. Turing will accept delivery of the data via an encrypted hard drive.
+The data owner must first encrypt the data, using a strong encryption method to be agreed by REG team - for example using [VeraCrypt](https://www.veracrypt.fr/en/Home.html) - with a strong password. Turing will accept delivery of the data via an encrypted hard drive.
 The encryption key must be communicated from the data owner to a Turing staff member verbally over the phone or in person.
 **The key must not be delivered in the same physical package as the encrypted hard drive**.
 The following Turing staff members are authorised to receive the encrypted hard drive: Head of IT and Security, IT team member, Programme Manager, REG team member.
@@ -149,12 +149,12 @@ The Turing staff member who is transferring the data can log in and move dataset
 
 ### Command line via secure copy protocol
 
-Using the [SCP](<https://en.wikipedia.org/wiki/Secure_copy>) protocol the data can be uploaded by using the IP of the secure data area.
+Using the [SCP](https://en.wikipedia.org/wiki/Secure_copy) protocol the data can be uploaded by using the IP of the secure data area.
 The Turing staff member who is transferring the data can connect to the server using a secure shell (`ssh` protocol).
 
 ## Step 6: Confirm that the data in the secure data area is the same as that transferred from the Data Owner
 
-A Turing staff member must sent an [integrity verification](<https://en.wikipedia.org/wiki/File_verification>) proof for each file uploaded to the data owner.
+A Turing staff member must sent an [integrity verification](https://en.wikipedia.org/wiki/File_verification) proof for each file uploaded to the data owner.
 This will include decrypting the data where necessary.
 This step is to verify that the files in the secure data area are the same as the original data that is stored with the Data Owner.
 
