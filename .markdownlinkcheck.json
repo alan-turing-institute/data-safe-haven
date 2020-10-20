@@ -7,6 +7,10 @@
         {
             "_comment": "Returns permanent direct code",
             "pattern": "^https://www.egress.com"
+        },
+        {
+            "_comment": "Seems to return redirect codes in curl, 200 in browser. markdown-link-check does not return the http code",
+            "pattern": "^https://www.turing.ac.uk/"
         }
     ],
     "retryOn429": true,
