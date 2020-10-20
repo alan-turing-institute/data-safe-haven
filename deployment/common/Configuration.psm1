@@ -467,6 +467,14 @@ function Get-ShmFullConfig {
         subscriptionName = $shmConfigBase.azure.subscriptionName
     }
 
+    # Ensure that vmImages field specified
+    if ([string]::IsNullOrEmpty($shmConfigBase.vmImages.subscriptionName)) {
+        Add-LogMessage -Level Fatal "vmImages.subscriptionName not specified: must be provided as a string in the core SHM config."
+    }
+    if ([string]::IsNullOrEmpty($shmConfigBase.vmImages.location)) {
+        Add-LogMessage -Level Fatal "vmImages.location not specified: must be provided as a string in the core SHM config."
+    }
+
     # Set timezone and NTP configuration
     # NB. Very few NTP services provide an exhaustive, stable list of IP addresses. The Google NTP servers are incompatible with others due to leap-second smearing
     # -------------------------------------------------------------------------------------------------------------------------------------------------------------
