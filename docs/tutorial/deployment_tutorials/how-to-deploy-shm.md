@@ -125,6 +125,7 @@ From your **deployment machine**
    </p>
 + Click `Create`
 + Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Development Safe Haven A`)
+  + Note: be careful not to confuse this with the `<name>` under `<organisation>` used in the config file
 + Set the `Initial Domain Name` to the `Organisation Name` all lower case with spaces removed (e.g. `turingdevelopmentsafehavena`)
 + Set the `Country or Region` to whatever region is appropriate for your deployment (e.g. `United Kingdom`)
 + Click `Create`
