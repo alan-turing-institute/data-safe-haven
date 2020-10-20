@@ -5,9 +5,9 @@ param(
   [string]$licenceSku = "AAD_PREMIUM"
 )
 
-Import-Module AzureAD.Standard.Preview
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module AzureAD.Standard.Preview -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 $config = Get-ShmFullConfig $shmId
 $shmDomain = $config.domain.fqdn

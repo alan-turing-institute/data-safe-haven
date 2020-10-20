@@ -13,7 +13,7 @@ if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
     $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
     $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
 }
-Import-Module AzureAD.Standard.Preview
+Import-Module AzureAD.Standard.Preview -ErrorAction Stop
 Write-Output "Connecting to Azure AD '$tenantId'..."
 try {
     $null = Connect-AzureAD -TenantId $tenantId
@@ -23,10 +23,10 @@ try {
 }
 
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription

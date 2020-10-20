@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 # Generate a random alphanumeric password
 # This gives a verifiably flat distribution across the characters in question
