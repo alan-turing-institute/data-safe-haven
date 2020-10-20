@@ -1,6 +1,10 @@
 Import-Module $PSScriptRoot/../../deployment/common/DataStructures -Force -ErrorAction Stop
 
 
+# Redefine Write-Host to suppress output from log message functions
+function global:Write-Host() {}
+
+
 # Test ConvertTo-SortedHashtable
 Describe "Test ConvertTo-SortedHashtable" {
     It "Returns True if ordered hashtable is correctly sorted" {
