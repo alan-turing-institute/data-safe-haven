@@ -53,8 +53,7 @@ This provides an added layer of protection in case the upload link is inadvertan
    <p align="center">
       <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
    </p>
-<!-- markdown-link-check-disable-next-line -->
-+ This will open up a prompt box asking how you want to connect. Please select "Use a shared access signature URI" click next and enter the address from the secure email (eg: https://shmdatastorage.blob.core.windows.net/YOURDATA.........)
++ <!-- markdown-link-check-disable-line -->This will open up a prompt box asking how you want to connect. Please select "Use a shared access signature URI" click next and enter the address from the secure email (eg: https://shmdatastorage.blob.core.windows.net/YOURDATA.........)
    <p align="center">
       <img src="../../images/provider_data_ingress/Azurestorageexplorer2.png" width="80%" title="Azurestorageexplorer2">
    </p>
