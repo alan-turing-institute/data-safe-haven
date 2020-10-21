@@ -109,7 +109,7 @@
                             "pypi.org"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
@@ -122,7 +122,7 @@
                             "cran.r-project.org"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
