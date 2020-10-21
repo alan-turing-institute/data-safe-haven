@@ -44,6 +44,18 @@ $vnetRepository = Deploy-VirtualNetwork -Name $config.network.repositoryVnet.nam
 $subnetRepository = Deploy-Subnet -Name $config.network.repositoryVnet.subnets.repository.name -VirtualNetwork $vnetRepository -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr
 
 
+# Attach repository subnet to SHM firewall route table
+# ----------------------------------------------------
+Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM firewall route table"
+$routeTable = Get-AzRouteTable | Where-Object { $_.Name -eq $config.firewall.routeTableName }
+$vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $config.network.repositoryVnet.subnets.repository.name -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Route table attached"
+} else {
+    Add-LogMessage -Level Fatal "Attaching route table failed!"
+}
+
+
 # Set up the NSG for Nexus repository
 # -----------------------------------
 $nsgName = $config.network.nsg.repository.name
@@ -99,9 +111,6 @@ if ($?) {
     Add-LogMessage -Level Fatal "Configuring NSG '$nsgName' failed!"
 }
 
-# $null = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
-# if ($notExists) {
-# }
 
 try {
     # Temporarily allow outbound internet during deployment
