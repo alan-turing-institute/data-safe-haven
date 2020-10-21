@@ -56,6 +56,12 @@ if ($?) {
 }
 
 
+# Peer repository vnet to SHM vnet
+# --------------------------------
+Add-LogMessage -Level Info "Peering repository vnet to shm vnet"
+New-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
+
+
 # Set up the NSG for Nexus repository
 # -----------------------------------
 $nsgName = $config.network.nsg.repository.name
