@@ -68,7 +68,7 @@ This is done using the VPN which should have been deployed when setting up the S
 
 #### Download a client VPN certificate
 
-+ Navigate to the key vault in the SHM subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>` .
++ Navigate to the key vault in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>` .
 + Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert` , click on the "current version" and click the "Download in PFX/PEM format" link.
 + To install, double click on the downloaded certificate, leaving the password field blank.
@@ -77,7 +77,7 @@ This is done using the VPN which should have been deployed when setting up the S
 
 #### Configure the VPN connection
 
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW` , where `<SHM ID>` is defined in the config file.
++ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW` , where `<SHM ID>` is defined in the config file.
 + Once there open the "Point-to-site configuration page under the `Settings` section in the left hand sidebar (see image below).
 
 <p align="center">
@@ -165,7 +165,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 + Generate a new full configuration file for the new SRE using the following commands.
-  + `Import-Module ./deployment/common/Configuration.psm1 -Force`
+  + `Import-Module ./deployment/common/Configuration -Force`
   + `Add-SreConfig -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json` . This file is used by the subsequent steps in the SRE deployment.
 + You may want to commit this new full configuration file to the Safe Haven repository
@@ -193,7 +193,7 @@ On your **deployment machine**.
 On your **deployment machine**.
 
 + Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
-+ This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
++ This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_<SRE ID>_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :fishing_pole_and_fish: Deploy virtual network and remote desktop
 
@@ -245,8 +245,8 @@ On your **deployment machine**.
 
 + Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
   + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for OSX.
-+ The IP address can be found using the Azure portal by navigating to the Virtual Machine ( `Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>` )
-+ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets` . as follows:
++ The IP address can be found using the Azure portal by navigating to the Virtual Machine ( `Resource Groups -> RG_SRE_<SRE ID>_RDS -> RDG-SRE-<SRE ID>` )
++ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets` . as follows:
   + The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
@@ -286,7 +286,7 @@ On the **SHM Domain Controller**.
 
 #### Create a new non-privileged user account for yourself
 
-+ Follow the user creation instructions from the [administrator guide](../administrator/administrator_guide.md). In brief these involve:
++ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-ad-sync) from the [SHM deployment guide](./how-to-deploy-shm.md). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 
@@ -306,7 +306,7 @@ This will create a user in the local Active Directory on the SHM domain controll
 
 #### Ensure that your user account has MFA enabled
 
-Please ensure that your account is fully set-up (including MFA) as [detailed in the user guide](../user_guides/user_guide.md).
+Please ensure that your account is fully set-up (including MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)).
 In order to verify this switch to your custom Azure Active Directory in the Azure portal:
 
 + Go to `portal.azure.com` and click on your username in the top-right
@@ -321,7 +321,7 @@ You can now verify the following things
 + A licence must be assigned to the user.
   + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 + MFA must be enabled for the user.
-  + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../user_guides/user_guide.md).
+  + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication).
 
 ### :mountain_bicyclist: Test the RDS using a non-privileged user account
 

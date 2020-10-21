@@ -69,6 +69,30 @@ function Find-AllMatchingKeys {
 }
 Export-ModuleMember -Function Find-AllMatchingKeys
 
+
+# Retrieve value for a (possibly) multilevel key
+# ----------------------------------------------
+function Find-MultilevelKey {
+    param(
+        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [System.Collections.IDictionary]$Hashtable,
+        [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
+        [String]$Key
+    )
+    if ($Hashtable.ContainsKey($Key)) {
+        return $Hashtable[$Key]
+    } elseif ($Key.Contains(".")) {
+        $keyPrefix = $Key.Split(".")[0]
+        if ($Hashtable.ContainsKey($keyPrefix)) {
+            $keySuffix = $Key.Split(".") | Select-Object -Skip 1 | Join-String -Separator "."
+            return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
+        }
+    }
+    return $null
+}
+Export-ModuleMember -Function Find-MultilevelKey
+
+
 # Truncate string at a given length
 # ---------------------------------
 function Limit-StringLength {

@@ -11,13 +11,13 @@ param(
     [switch]$forceUpgrade
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -238,9 +238,11 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Ensure that runtime NSG exists
-# ------------------------------
+# Ensure that runtime NSG exists and required rules are set
+# ---------------------------------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundAllowNTP" `
                              -Description "Outbound allow connections to NTP servers" `
@@ -279,8 +281,8 @@ if ($config.sre.nexus) {
 }
 
 
-# Ensure that deployment NSG exists
-# ---------------------------------
+# Ensure that deployment NSG exists and required rules are set
+# ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
