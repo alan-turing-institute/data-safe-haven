@@ -68,6 +68,6 @@ Describe "Test Limit-StringLength MaximumLength" {
 }
 Describe "Test Limit-StringLength FailureIsFatal" {
     It "Should throw an exception since the string is too long" {
-        { "abcdefghijklm" | Limit-StringLength -FailureIsFatal -MaximumLength 6 } | Should -Throw "'abcdefghijklm' has length 13 but must not exceed 6!"
+        { "abcdefghijklm" | Limit-StringLength -FailureIsFatal -MaximumLength 6 } | Should -Throw "'Xabcdefghijklm' has length 13 but must not exceed 6!"
     }
 }

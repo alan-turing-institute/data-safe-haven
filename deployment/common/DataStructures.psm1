@@ -1,3 +1,6 @@
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+
+
 # Convert a nested, sortable object into a sorted hashtable
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
