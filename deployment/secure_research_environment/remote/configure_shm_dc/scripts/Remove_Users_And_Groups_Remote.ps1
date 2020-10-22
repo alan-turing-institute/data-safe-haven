@@ -5,20 +5,23 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE groups")]
     [string]$groupNamesJoined,
+    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE users")]
     [string]$userNamesJoined,
+    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE computers")]
     [string]$computerNamePatternsJoined
 )
 
 # Remove users
+Write-Output "Removing SRE users..."
 foreach ($samAccountName in $userNamesJoined.Split("|")) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
-        Write-Output " [ ] Removing user '$samAccountName'"
-        Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
+        Remove-ADUser (Get-ADUser $samAccountName) -Confirm:$False
         if ($?) {
-            Write-Output " [o] Succeeded"
+            Write-Output " [o] Successfully removed user '$samAccountName'"
         } else {
-            Write-Output " [x] Failed"
+            Write-Output " [x] Failed to remove user '$samAccountName'!"
             exit 1
         }
     } else {
@@ -27,28 +30,28 @@ foreach ($samAccountName in $userNamesJoined.Split("|")) {
 }
 
 # Remove computers
+Write-Output "Removing SRE computers..."
 foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
     foreach ($computer in $(Get-ADComputer -Filter "Name -like '$computerNamePattern'")) {
-        Write-Output " [ ] Removing computer '$($computer.Name)'"
         $computer | Remove-ADObject -Recursive -Confirm:$False
         if ($?) {
-            Write-Output " [o] Succeeded"
+            Write-Output " [o] Successfully removed computer '$($computer.Name)'"
         } else {
-            Write-Output " [x] Failed"
+            Write-Output " [x] Failed to remove computer '$($computer.Name)'!"
             exit 1
         }
     }
 }
 
 # Remove groups
+Write-Output "Removing SRE groups..."
 foreach ($groupName in $groupNamesJoined.Split("|")) {
     if (Get-ADGroup -Filter "Name -eq '$groupName'") {
-        Write-Output " [ ] Removing group '$groupName'"
         Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
         if ($?) {
-            Write-Output " [o] Succeeded"
+            Write-Output " [o] Successfully removed group '$groupName'"
         } else {
-            Write-Output " [x] Failed"
+            Write-Output " [x] Failed to remove group '$groupName'!"
             exit 1
         }
     } else {
