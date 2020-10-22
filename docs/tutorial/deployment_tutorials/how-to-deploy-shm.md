@@ -80,8 +80,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "resourceGroupName": "[Optional] Resource group which holds DNS records (eg. RG_SHM_DNS_TEST)."
     },
     "vmImages": {
-        "subscriptionName": "Azure subscription where VM images should be built.",
-        "location": "Azure location where VM images should be built (this should be the same location specified under `azure`)"
+        "subscriptionName": "Azure subscription where VM images should be built (can be the same as in the 'azure' block above).",
+        "location": "Azure location where VM images should be built (can be the same as in the 'azure' block above). If you have already built images in this subscription for another Safe Haven deployment, use the same location as you specified previously."
      },
     "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }
