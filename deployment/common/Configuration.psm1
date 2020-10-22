@@ -458,7 +458,7 @@ function Get-ShmFullConfig {
     # ----------------------------
     $shm = [ordered]@{
         azureAdminGroupName = $shmConfigBase.azure.adminGroupName
-        id = $shmConfigBase.shmId
+        id = $shmConfigBase.shmId | Limit-StringLength 7 -FailureIsFatal
         location = $shmConfigBase.azure.location
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
