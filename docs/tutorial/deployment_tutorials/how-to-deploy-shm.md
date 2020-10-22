@@ -201,7 +201,7 @@ Click the heading that applies to you to expand the instructions for that scenar
 + Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
   + Expand the `Free trial` arrow under `Azure AD Premium P2`
   + Click the `Activate` button
-  + Wait for around 20 minutes until the `Azure AD Premium P2` licences appear on the list of `All Products`
+  + Wait for the `Azure Active Directory Premium P2` licence to appear on the list of `All Products` (this could take several minutes)
 
 </details>
 
