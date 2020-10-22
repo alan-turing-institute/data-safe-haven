@@ -447,7 +447,7 @@ function Get-ConfigFile {
 # ---------------------
 function Get-ShmFullConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
