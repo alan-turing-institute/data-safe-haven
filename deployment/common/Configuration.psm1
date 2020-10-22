@@ -470,6 +470,12 @@ function Get-ShmFullConfig {
         Add-LogMessage -Level Fatal "dnsRecords.resourceGroupName not specified: must be provided as a string in the core SHM config."
     }
 
+    # Ensure the name in the config is < 27 characters excluding spaces
+    $nameMinusSpaces = $shmConfigBase.name -replace '\s',''
+    if($nameMinusSpaces.length -gt 27) {
+      Add-LogMessage -Level Fatal "<name> string in the core SHM config must be less than 27 characters excluding spaces."
+    }
+
     # Safe Haven management config
     # ----------------------------
     $shm = [ordered]@{

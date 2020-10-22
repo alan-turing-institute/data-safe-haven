@@ -60,7 +60,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 ```json
 {
-    "name": "Name of this Safe Haven (eg. 'Turing Production Safe Haven'). NOTE: this must not exceed 27 characters excluding spaces",
+    "name": "Name of this Safe Haven (eg. 'Turing Production Safe Haven').",
     "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
     "domain": "The fully qualified domain name for the management environment (eg. 'testa.dsgroupdev.co.uk')",
     "timezone": "[Optional] Timezone in IANA format (eg. 'Europe/London').",
