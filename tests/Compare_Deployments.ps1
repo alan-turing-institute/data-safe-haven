@@ -15,9 +15,9 @@ if (-Not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force}
 if (-Not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force}
 
 # Import modules
-Import-Module Az
-Import-Module Communary.PASM
-Import-Module $PSScriptRoot/../deployment/common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module Communary.PASM -ErrorAction Stop
+Import-Module $PSScriptRoot/../deployment/common/Logging -Force -ErrorAction Stop
 
 function Select-ClosestMatch {
     param (

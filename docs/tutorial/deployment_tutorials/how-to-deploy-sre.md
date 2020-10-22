@@ -165,7 +165,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 + Generate a new full configuration file for the new SRE using the following commands.
-  + `Import-Module ./deployment/common/Configuration.psm1 -Force`
+  + `Import-Module ./deployment/common/Configuration -Force`
   + `Add-SreConfig -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json` . This file is used by the subsequent steps in the SRE deployment.
 + You may want to commit this new full configuration file to the Safe Haven repository

@@ -1,4 +1,4 @@
-Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -Force
+Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -Force -ErrorAction Stop
 
 # Create a new rule that is a copy of the default rule
 $defaultRule = Get-ADSyncRule | Where-Object { $_.Name -eq "Out to AAD - User Join" }

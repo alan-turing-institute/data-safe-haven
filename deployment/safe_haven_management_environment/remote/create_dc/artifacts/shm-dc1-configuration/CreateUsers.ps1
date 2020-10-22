@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
 Import-Csv $userFilePath | ForEach-Object {
-    $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
+    $UserPrincipalName = "$($_.SamAccountName)@${domain}"
     $DisplayName = "$($_.GivenName) $($_.Surname)"
     $password = [System.Web.Security.Membership]::GeneratePassword(12, 3)
     $props = @{
@@ -49,5 +49,5 @@ Import-Csv $userFilePath | ForEach-Object {
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
 Write-Output "Synchronising locally Active Directory with Azure"
-Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
 Start-ADSyncSyncCycle -PolicyType Delta

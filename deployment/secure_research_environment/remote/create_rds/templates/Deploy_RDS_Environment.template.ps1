@@ -2,8 +2,8 @@
 $null = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
 
 # Note that RemoteDesktopServices is installed by `Add-WindowsFeature -Name RDS-Gateway`
-Import-Module RemoteDesktop
-Import-Module RemoteDesktopServices
+Import-Module RemoteDesktop -ErrorAction Stop
+Import-Module RemoteDesktopServices -ErrorAction Stop
 
 # Initialise the data drives
 # --------------------------

@@ -1,5 +1,5 @@
-Import-Module Az
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Convert an IP address into a decimal integer
@@ -131,3 +131,41 @@ function Get-NextAvailableIpInRange {
         return $ipAddresses | Select-Object -First 1
 }
 Export-ModuleMember -Function Get-NextAvailableIpInRange
+
+
+# Set Network Security Group Rules
+# --------------------------------
+function Set-NetworkSecurityGroupRules {
+    param(
+        [parameter(Mandatory = $true, HelpMessage = "Network Security Group to set rules for")]
+        [Microsoft.Azure.Commands.Network.Models.PSNetworkSecurityGroup]$NetworkSecurityGroup,
+        [parameter(Mandatory = $true, HelpMessage = "Rules to set for Network Security Group")]
+        [Object[]]$Rules
+    )
+    Add-LogMessage -Level Info "[ ] Setting $($Rules.Count) rules for Network Security Group '$($NetworkSecurityGroup.Name)'"
+    try {
+        $existingRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
+        foreach ($existingRule in $existingRules) {
+            $NetworkSecurityGroup = Remove-AzNetworkSecurityRuleConfig -Name $existingRule.Name -NetworkSecurityGroup $NetworkSecurityGroup
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Error removing existing rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
+    }
+    try {
+        foreach ($rule in $Rules) {
+            $NetworkSecurityGroup = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup @rule
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Error adding provided rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
+    }
+    $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
+    $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
+    foreach ($updatedRule in $updatedRules) {
+        $sourceAddressText = ($updatedRule.SourceAddressPrefix -eq "*") ? "any source" : $updatedRule.SourceAddressPrefix
+        $destinationAddressText = ($updatedRule.DestinationAddressPrefix -eq "*") ? "any destination" : $updatedRule.DestinationAddressPrefix
+        $destinationPortText = ($updatedRule.DestinationPortRange -eq "*") ? "any port" : "ports $($updatedRule.DestinationPortRange)"
+        Add-LogMessage -Level Success "Set $($updatedRule.Name) rule to $($updatedRule.Access) connections from $sourceAddressText to $destinationPortText on $destinationAddressText."
+    }
+    return $NetworkSecurityGroup
+}
+Export-ModuleMember -Function Set-NetworkSecurityGroupRules

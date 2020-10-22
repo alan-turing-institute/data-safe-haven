@@ -31,7 +31,7 @@ param(
     [string]$userAccountsB64
 )
 
-Import-Module ActiveDirectory
+Import-Module ActiveDirectory -ErrorAction Stop
 
 
 function Add-ShmUserToGroup {

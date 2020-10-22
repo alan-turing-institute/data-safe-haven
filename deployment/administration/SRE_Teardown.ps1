@@ -3,7 +3,6 @@ param(
     [string]$configId
 )
 
-
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/DataStructures -Force -ErrorAction Stop
