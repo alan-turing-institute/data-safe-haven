@@ -454,19 +454,6 @@ function Get-ShmFullConfig {
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
-    # Safe Haven management config
-    # ----------------------------
-    $shm = [ordered]@{
-        azureAdminGroupName = $shmConfigBase.azure.adminGroupName
-        id = $shmConfigBase.shmId | Limit-StringLength 7 -FailureIsFatal
-        location = $shmConfigBase.azure.location
-        name = $shmConfigBase.name
-        organisation = $shmConfigBase.organisation
-        rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
-        nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
-        subscriptionName = $shmConfigBase.azure.subscriptionName
-    }
-
     # Ensure that vmImages field specified
     if ([string]::IsNullOrEmpty($shmConfigBase.vmImages.subscriptionName)) {
         Add-LogMessage -Level Fatal "vmImages.subscriptionName not specified: must be provided as a string in the core SHM config."
@@ -481,6 +468,19 @@ function Get-ShmFullConfig {
     }
     if ([string]::IsNullOrEmpty($shmConfigBase.dnsRecords.resourceGroupName)) {
         Add-LogMessage -Level Fatal "dnsRecords.resourceGroupName not specified: must be provided as a string in the core SHM config."
+    }
+
+    # Safe Haven management config
+    # ----------------------------
+    $shm = [ordered]@{
+        azureAdminGroupName = $shmConfigBase.azure.adminGroupName
+        id = $shmConfigBase.shmId | Limit-StringLength 7 -FailureIsFatal
+        location = $shmConfigBase.azure.location
+        name = $shmConfigBase.name
+        organisation = $shmConfigBase.organisation
+        rgPrefix = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
+        nsgPrefix = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
+        subscriptionName = $shmConfigBase.azure.subscriptionName
     }
 
     # Set timezone and NTP configuration
