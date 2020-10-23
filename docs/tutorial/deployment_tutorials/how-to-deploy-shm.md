@@ -339,7 +339,7 @@ The other administrators you have just set up can activate their accounts by fol
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Users` in the left hand sidebar
 + Select the default **external** user that was created when you created the Azure AD.
-  + The `User principle name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
+  + The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 + Click the `Delete user` icon in the menu bar at the top of the user list panel
 
 ### Adding MFA licences to users
