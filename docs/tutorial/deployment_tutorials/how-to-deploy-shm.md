@@ -346,7 +346,8 @@ The other administrators you have just set up can activate their accounts by fol
 
 It appears that administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if a user is unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so.
 
-+ Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
++ Ensure you are logged in to the Azure Portal in with the **internal** administrator account you created.
++ Ensure your  session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Licences` in the left hand sidebar
 + Click `All products` in the left hand sidebar
