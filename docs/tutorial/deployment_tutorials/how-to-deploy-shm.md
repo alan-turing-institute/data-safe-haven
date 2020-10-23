@@ -324,11 +324,9 @@ The other administrators you have just set up can activate their accounts by fol
 + Enter the code that was texted to your phone
 + Enter a new password
 + Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
-+ Enter their username and new password
-+ Click `Next` at the `More information required` prompt
-+ Verify their phone number (or phone number and email if they are an admin)
-+ On the MFA setup page, select the `Mobile app` or `Call my phone` option (for trial licences only the `Mobile app` option is available)
-+ Follow the instructions to configure their chosen MFA option
++ Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)and the new password
++ Click `Next` at the `Help us to protect your account` prompt
++ Follow the instructions to configure Microsoft Authenticator
 
 ### Remove the default external user that was used to create the Azure AD
 
