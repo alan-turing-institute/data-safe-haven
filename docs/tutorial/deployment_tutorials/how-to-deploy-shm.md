@@ -373,7 +373,9 @@ From your **deployment machine**
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the virtual networking components for the SHM by running `./Setup_SHM_Networking.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 + This will take **around twenty minutes** to run.
-+ Once the script exits successfully you should see the following resource groups under the SHM subscription:
++ Once the script exits successfully, ensure your Azure Portal session is logged in using account that you are building the environment with (not an AAD admin account).
++ Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
++ Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Resource groups". You should see the following resource groups under your SHM subscription (where `TESTC` here is the `<SHM ID>`):
   <p align="center">
       <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups">
   </p>
