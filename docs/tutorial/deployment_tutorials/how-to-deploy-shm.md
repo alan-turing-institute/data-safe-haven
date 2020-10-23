@@ -277,7 +277,7 @@ The emergency access admin account should not be used except in a genuine emerge
 
 A default external administrator account was automatically created for the user you were logged in as when you initially created the Azure AD. This user should also not be used for administering the Azure AD, as it is not controlled by this AD. You will delete this user after creating a new **internal** administrator account for yourself and the other administrators of the Safe Haven.
 
-:warning: In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourseld.
+:warning: In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
 
 ### Add internal administrator accounts for yourself and others
 
