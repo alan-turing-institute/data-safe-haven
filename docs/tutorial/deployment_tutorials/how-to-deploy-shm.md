@@ -321,6 +321,7 @@ The other administrators you have just set up can activate their accounts by fol
 + Click the `Forgotten my password` link
 + Enter the captcha text and press next
 + Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
++ Enter the code that was texted to your phone
 + Enter a new password
 + Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
 + Enter their username and new password
