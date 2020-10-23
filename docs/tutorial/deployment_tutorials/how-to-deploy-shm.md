@@ -342,9 +342,11 @@ The other administrators you have just set up can activate their accounts by fol
   + The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 + Click the `Delete user` icon in the menu bar at the top of the user list panel
 
-### Adding MFA licences to users
+### Adding MFA licences to any non-admin users
 
-It appears that administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if a user is unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so.
+Administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if any non-admin users are set up and are unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so:
+
+<details><summary>How to add MFA licenses</summary>
 
 + Ensure you are logged in to the Azure Portal in with the **internal** administrator account you created.
 + Ensure your  session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -353,10 +355,12 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 + Click `All products` in the left hand sidebar
 + Click the relevant licence product
 + Click the `+Assign` icon in the top bar above the list of user licence assignments
-+ Click `Users and groups`
++ Click `Users`
 + Click on the user or group you want to assign a licence to
 + Click `Select`
 + Click `Assign`
+
+</details>
 
 ## Deploy virtual network and VPN gateway
 
