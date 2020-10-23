@@ -471,9 +471,8 @@ function Get-ShmFullConfig {
     }
 
     # Ensure the name in the config is < 27 characters excluding spaces
-    $nameMinusSpaces = $shmConfigBase.name -replace '\s',''
-    if($nameMinusSpaces.length -gt 27) {
-      Add-LogMessage -Level Fatal "<name> string in the core SHM config must be less than 27 characters excluding spaces."
+    if ($shmConfigBase.name.Replace(" ", "").Length -gt 27) {
+      Add-LogMessage -Level Fatal "The 'name' entry in the core SHM config must have fewer than 27 characters (excluding spaces)."
     }
 
     # Safe Haven management config
