@@ -3,10 +3,9 @@ Import-Module PSScriptAnalyzer
 
 # Formatter settings
 # ------------------
-$FileExtensions = @("*.ps1", "*.psm1")
-$ExcludePaths = @("*/CreateADPDC/*", "*/CreateADBDC/*") # do not reformat the Windows DSC files as they are fragile
+$FileExtensions = @("*.ps1", "*.psm1", "*.psd1")
 $CodeRootPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent.Parent -ChildPath "deployment"
-$FileDetails = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | Where-Object { $(foreach ($ExcludePath in $ExcludePaths) { $_.FullName -notlike $ExcludePath }) -notcontains $false } | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name } })
+$FileDetails = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name } })
 
 
 # Run Invoke-Formatter on all files
