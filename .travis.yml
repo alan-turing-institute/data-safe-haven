@@ -41,5 +41,5 @@ jobs:
     - name: Test Powershell
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name Pester -Force"
+        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force"
       script: pwsh -c './tests/Run_Pester_Tests.ps1'
