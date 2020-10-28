@@ -3,10 +3,10 @@ param(
     [string]$configId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -39,6 +39,7 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 # Load all traffic rules from template
 # ------------------------------------
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
+    Replace("<ntp-server-fqdns>", $($config.shm.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<priority-allow>", (5000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
     Replace("<priority-deny>", (6000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
     Replace("<sre-id>", $config.sre.id).

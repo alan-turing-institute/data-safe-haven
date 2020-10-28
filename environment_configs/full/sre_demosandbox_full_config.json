@@ -403,7 +403,7 @@
       },
       "fqdn": "DAT-SRE-SANDBOX.demo.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.150.2.250",
+      "ip": "10.151.2.250",
       "nsg": "NSG_SRE_SANDBOX_DATA",
       "rg": "RG_SRE_DATA",
       "vmName": "DAT-SRE-SANDBOX",
@@ -515,7 +515,7 @@
         },
         "fqdn": "APP-SRE-SANDBOX.demo.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.150.1.249",
+        "ip": "10.151.1.249",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
@@ -538,7 +538,7 @@
         },
         "fqdn": "RDG-SRE-SANDBOX.demo.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-SANDBOX",
-        "ip": "10.150.1.250",
+        "ip": "10.151.1.250",
         "networkRules": {
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
@@ -597,7 +597,7 @@
         },
         "fqdn": "GITLAB-SRE-SANDBOX.demo.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.150.2.151",
+        "ip": "10.151.2.151",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
@@ -612,7 +612,7 @@
         },
         "fqdn": "HACKMD-SRE-SANDBOX.demo.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.150.2.152",
+        "ip": "10.151.2.152",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },

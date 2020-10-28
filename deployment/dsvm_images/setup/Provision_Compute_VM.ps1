@@ -9,11 +9,11 @@ param(
     [string]$vmSize = "default"
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -148,6 +148,13 @@ $bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "pa
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
              "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
+
+
+# Make any other cloud-init template replacements
+# -----------------------------------------------
+$cloudInitTemplate = $cloudInitTemplate.
+    Replace("<timezone>", $config.time.timezone.linux).
+    Replace("<ntp-server>", $config.time.ntp.poolFqdn)
 
 
 # Construct build VM parameters

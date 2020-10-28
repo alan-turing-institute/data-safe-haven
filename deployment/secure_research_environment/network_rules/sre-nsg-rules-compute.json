@@ -1,0 +1,26 @@
+[
+    {
+        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
+        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
+        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4000,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatfromDnsOutbound",
+        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
+        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+        "destinationAddressPrefix": "AzurePlatformDNS",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4001,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

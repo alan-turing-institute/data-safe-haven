@@ -13,7 +13,7 @@ if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
     $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
     $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
 }
-Import-Module AzureAD.Standard.Preview
+Import-Module AzureAD.Standard.Preview -ErrorAction Stop
 Write-Output "Connecting to Azure AD '$tenantId'..."
 try {
     $null = Connect-AzureAD -TenantId $tenantId
@@ -22,11 +22,11 @@ try {
     throw
 }
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -62,7 +62,7 @@ if ($?) {
 }
 
 # :: AAD Emergency Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20
+$null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "AAD emergency administrator account password exists"
 } else {
@@ -161,9 +161,9 @@ Line |
  149 |      $null = Add-AzureADDirectoryRoleMember -ObjectId $role.ObjectId - …
      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      | Error occurred while executing AddDirectoryRoleMember  Code: Request_BadRequest Message: The URI
-     | 'https://graph.windows.net//e45911ba-db21-4782-8a2e-4dcdfda486a5/directoryObjects/c15e5037-8d93-4ed4-bd2b-17deb1e1e958' 
-     |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'. 
-     |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT 
+     | 'https://graph.windows.net//e45911ba-db21-4782-8a2e-4dcdfda486a5/directoryObjects/c15e5037-8d93-4ed4-bd2b-17deb1e1e958'
+     |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'.
+     |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT
      | HttpStatusCode: BadRequest HttpStatusDescription: Bad Request HttpResponseStatus: Completed
 # Ensure emergency admin account has full administrator rights
 $roleName = "Company Administrator" # 'Company Administrator' is the role name for the AAD 'Global administrator' role

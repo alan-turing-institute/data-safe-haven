@@ -3,11 +3,11 @@ param(
     [string]$configId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -62,6 +62,17 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                  -SourcePortRange * `
                                  -DestinationAddressPrefix * `
                                  -DestinationPortRange *
+    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                                 -Name "OutboundAllowNTP" `
+                                 -Description "Outbound allow connections to NTP servers" `
+                                 -Priority 2200 `
+                                 -Direction Outbound `
+                                 -Access Allow `
+                                 -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
+                                 -DestinationPortRange 123
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "OutboundDenyInternet" `
                                  -Description "Outbound deny internet" `
@@ -136,7 +147,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Set locale, install updates and reboot
             Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."  # NB. this takes around 20 minutes due to a large SQL server update
-            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
+            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn -AdditionalPowershellModules @("SqlServer")
 
             # Lockdown SQL server
             Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
@@ -219,11 +230,13 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Replace("<ldap-search-user-password>", $ldapSearchPassword).
                 Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
                 Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+                Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
                 Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
                 Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                 Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                 Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
                 Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+                Replace("<timezone>", $config.sre.time.timezone.linux).
                 Replace("<vm-hostname>", $databaseCfg.vmName).
                 Replace("<vm-ipaddress>", $databaseCfg.ip)
 

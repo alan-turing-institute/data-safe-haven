@@ -10,11 +10,12 @@ DOMAIN_JOIN_USER=$3
 VM_HOSTNAME=$4
 VM_IPADDRESS=$5
 
-# Set timezone
-echo ">=== Setting timezone... ===<"
-timedatectl set-timezone Europe/London
-echo "Timezone is $(date +%Z)"
-date
+# Check timezone and NTP server
+echo ">=== Current timezone... ===<"
+echo "Date:     $(date)"
+echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+echo ">=== Current NTP servers... ===<"
+timedatectl show-timesync --all
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
 echo ">=== Setting hostname in /etc/hostname... ===<"

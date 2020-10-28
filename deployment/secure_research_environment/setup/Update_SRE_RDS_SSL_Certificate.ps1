@@ -19,10 +19,10 @@ if (-not (Get-Module -ListAvailable -Name Posh-ACME)) {
 }
 
 # Import modules
-Import-Module Posh-ACME
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Posh-ACME -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context
@@ -115,7 +115,7 @@ if ($requestCertificate) {
     } else {
         Add-LogMessage -Level Fatal "DNS record creation failed!"
     }
-    Add-LogMessage -Level Info " [ ] Attempting to delete a DNS record for $testDomain..."
+    Add-LogMessage -Level Info "[ ] Attempting to delete a DNS record for $testDomain..."
     Unpublish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "DNS record deletion succeeded"
@@ -179,31 +179,61 @@ if ($dryRun) {
 
 
 if ($doInstall) {
-    # Add signed KeyVault certificate to the gateway VM
-    # -------------------------------------------------
-    Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
     $vaultId = (Get-AzKeyVault -VaultName $keyVaultName -ResourceGroupName $config.sre.keyVault.rg).ResourceId
     $secretURL = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $certificateName).Id
-    $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
-    $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-    $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
-    if ($?) {
-        Add-LogMessage -Level Success "Adding certificate succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Adding certificate failed!"
-    }
 
-    # Configure RDS Gateway VM to use signed certificate
-    # --------------------------------------------------
-    Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
-    $params = @{
-        rdsFqdn         = "`"$rdsFqdn`""
-        certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
-        remoteDirectory = "`"$remoteDirectory`""
+    if (1 -eq [int]$config.sre.tier) {
+        # Add signed KeyVault certificate to the compute VM
+        # -------------------------------------------------
+        Add-LogMessage -Level Info "Adding SSL certificate to compute VM"
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
+        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
+        $null = Update-AzVM -ResourceGroupName $config.sre.dsvm.rg -VM $targetVM
+        if ($?) {
+            Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
+        }
+        # Link the certificate and private key to /opt/ssl
+        # ------------------------------------------------
+        $script = "
+            sudo mkdir -p /opt/ssl
+            sudo chmod 0700 /opt/ssl
+            sudo rm -rf /opt/ssl/letsencrypt*
+            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/letsencrypt.cert
+            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/letsencrypt.key
+            sudo chown -R root:root /opt/ssl/
+            sudo chmod 0600 /opt/ssl/*.*
+            ls -alh /opt/ssl/
+        "
+        $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
+        Write-Output $result.Value
+
+    } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+        # Add signed KeyVault certificate to the gateway VM
+        # -------------------------------------------------
+        Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
+        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
+        $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $targetVM
+        if ($?) {
+            Add-LogMessage -Level Success "Adding certificate succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding certificate failed!"
+        }
+
+        # Configure RDS Gateway VM to use signed certificate
+        # --------------------------------------------------
+        Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
+        $params = @{
+            rdsFqdn         = "`"$rdsFqdn`""
+            certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
+            remoteDirectory = "`"$remoteDirectory`""
+        }
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+        Write-Output $result.Value
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-    Write-Output $result.Value
 }
 
 

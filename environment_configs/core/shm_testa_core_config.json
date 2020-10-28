@@ -1,22 +1,27 @@
 {
-    "subscriptionName": "Safe Haven Management Test A",
-    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
-    "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "azureAdminGroupName": "Safe Haven Test Admins",
-    "images": {
-        "subscriptionName": "[Prod] Safe Haven VM Images",
-        "location": "uksouth"
-    },
-    "domain": "testa.dsgroupdev.co.uk",
-    "shmId": "testa",
     "name": "Turing Development Safe Haven A",
+    "shmId": "testa",
+    "domain": "testa.dsgroupdev.co.uk",
+    "timezone": "Europe/London",
+    "azure": {
+        "subscriptionName": "Safe Haven Management Test A",
+        "adminGroupName" : "Safe Haven Test Admins",
+        "location": "centralus"
+    },
     "organisation": {
         "name": "The Alan Turing Institute",
         "townCity": "London",
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "centralus",
+    "dnsRecords": {
+        "subscriptionName": "[Prod] Safe Haven Domains",
+        "resourceGroupName": "RG_SHM_DNS_TEST"
+    },
+    "vmImages": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "overrides": {
         "rgPrefix": "RG_SHM",
         "domain": {

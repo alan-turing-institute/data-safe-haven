@@ -3,11 +3,11 @@ param(
     [string]$configId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -22,9 +22,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-# $gitlabLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.gitlab.passwordSecretName -DefaultLength 20
 $hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
-# $hackmdLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.hackmd.passwordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
@@ -33,6 +31,17 @@ $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault
 # Set up the NSG for the webapps
 # ------------------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
+                             -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
@@ -50,7 +59,6 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 # -----------------------
 $shmDcFqdn = "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)"
 $gitlabFqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
-# $gitlabLdapUserDn = "CN=$($config.sre.users.computerManagers.gitlab.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
@@ -62,7 +70,10 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
                                             Replace('<gitlab-fqdn>', $gitlabFqdn).
                                             Replace('<gitlab-root-password>', $gitlabRootPassword).
-                                            Replace('<gitlab-login-domain>', $config.shm.domain.fqdn)
+                                            Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
+                                            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+                                            Replace("<timezone>", $config.sre.time.timezone.linux)
+
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 
@@ -71,7 +82,6 @@ $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 # -----------------------
 $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(userPrincipalName={{username}}))"
-# $hackmdSearchLdapUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $hackMdLdapUrl = "ldap://$($config.shm.dc.fqdn)"
 $hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSearchUserDn).
@@ -82,7 +92,9 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSea
                                             Replace('<hackmd-hostname>', $config.sre.webapps.hackmd.hostname).
                                             Replace('<hackmd-fqdn>', $hackmdFqdn).
                                             Replace('<hackmd-ldap-url>', $hackMdLdapUrl).
-                                            Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName)
+                                            Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName).
+                                            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+                                            Replace("<timezone>", $config.sre.time.timezone.linux)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
 

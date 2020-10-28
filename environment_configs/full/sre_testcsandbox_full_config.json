@@ -15,9 +15,9 @@
       "external_dns_resolver": "168.63.129.16",
       "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
       "hostname": "DC1-SHM-TESTC",
-      "ip": "10.0.0.250",
-      "rg": "RG_SHM_DC",
-      "safemodePasswordSecretName": "shm-testc-dc-safemode-password",
+      "ip": "10.0.0.4",
+      "rg": "RG_SHM_TESTC_DC",
+      "safemodePasswordSecretName": "shm-testc-vm-safemode-password-dc",
       "vmName": "DC1-SHM-TESTC",
       "vmSize": "Standard_D2s_v3"
     },
@@ -34,7 +34,7 @@
       },
       "fqdn": "DC2-SHM-TESTC.testc.dsgroupdev.co.uk",
       "hostname": "DC2-SHM-TESTC",
-      "ip": "10.0.0.249",
+      "ip": "10.0.0.5",
       "vmName": "DC2-SHM-TESTC",
       "vmSize": "Standard_D2s_v3"
     },
@@ -45,23 +45,23 @@
     "domain": {
       "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "testc.dsgroupdev.co.uk",
-      "netbiosName": "SAFEHAVENTESTC",
+      "netbiosName": "TESTC",
       "ous": {
         "dataServers": {
           "name": "Secure Research Environment Data Servers",
           "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "identityServers": {
-          "name": "Safe Haven Service Servers",
-          "path": "OU=Safe Haven Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Safe Haven Identity Servers",
+          "path": "OU=Safe Haven Identity Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "linuxServers": {
-          "name": "Secure Research Environment Data Servers",
-          "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Secure Research Environment Linux Servers",
+          "path": "OU=Secure Research Environment Linux Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsGatewayServers": {
-          "name": "Secure Research Environment Service Servers",
-          "path": "OU=Secure Research Environment Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Secure Research Environment RDS Gateway Servers",
+          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsSessionServers": {
           "name": "Secure Research Environment RDS Session Servers",
@@ -82,8 +82,8 @@
       },
       "securityGroups": {
         "computerManagers": {
-          "description": "SG Safe Haven LDAP Users",
-          "name": "SG Safe Haven LDAP Users"
+          "description": "SG Safe Haven Computer Management Users",
+          "name": "SG Safe Haven Computer Management Users"
         },
         "serverAdmins": {
           "description": "SG Safe Haven Server Administrators",
@@ -98,14 +98,14 @@
     "id": "testc",
     "keyVault": {
       "name": "kv-shm-testc",
-      "rg": "RG_SHM_SECRETS",
+      "rg": "RG_SHM_TESTC_SECRETS",
       "secretNames": {
         "aadEmergencyAdminPassword": "shm-testc-aad-emergency-admin-password",
         "aadEmergencyAdminUsername": "shm-testc-aad-emergency-admin-username",
         "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
         "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
         "domainAdminPassword": "shm-testc-domain-admin-password",
-        "domainAdminUsername": "shm-testc-vm-admin-username",
+        "domainAdminUsername": "shm-testc-domain-admin-username",
         "vmAdminUsername": "shm-testc-vm-admin-username",
         "vpnCaCertificate": "shm-testc-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
@@ -114,7 +114,7 @@
         "vpnClientCertPassword": "shm-testc-vpn-client-cert-password"
       }
     },
-    "location": "centralus",
+    "location": "uksouth",
     "logging": {
       "rg": "RG_SHM_TESTC_LOGGING",
       "workspaceName": "shmtestcloganalytics"
@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier2": {
-          "diskSize": 127,
+          "diskSize": 128,
           "external": {
             "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-2",
             "ipAddress": "10.20.2.5",
@@ -135,7 +135,7 @@
           }
         },
         "tier3": {
-          "diskSize": 31,
+          "diskSize": 32,
           "external": {
             "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-3",
             "ipAddress": "10.20.3.5",
@@ -151,7 +151,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier2": {
-          "diskSize": 8191,
+          "diskSize": 8192,
           "external": {
             "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-2",
             "ipAddress": "10.20.2.4",
@@ -164,7 +164,7 @@
           }
         },
         "tier3": {
-          "diskSize": 511,
+          "diskSize": 512,
           "external": {
             "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
             "ipAddress": "10.20.3.4",
@@ -233,7 +233,7 @@
       "vnet": {
         "cidr": "10.0.0.0/21",
         "name": "VNET_SHM_TESTC",
-        "rg": "RG_SHM_NETWORKING",
+        "rg": "RG_SHM_TESTC_NETWORKING",
         "subnets": {
           "firewall": {
             "cidr": "10.0.2.0/24",
@@ -258,7 +258,7 @@
       }
     },
     "nps": {
-      "adminPasswordSecretName": "shm-testc-nps-admin-password",
+      "adminPasswordSecretName": "shm-testc-vm-admin-password-nps",
       "disks": {
         "data": {
           "sizeGb": "20",
@@ -270,8 +270,8 @@
         }
       },
       "hostname": "NPS-SHM-TESTC",
-      "ip": "10.0.0.248",
-      "rg": "RG_SHM_NPS",
+      "ip": "10.0.0.6",
+      "rg": "RG_SHM_TESTC_NPS",
       "vmName": "NPS-SHM-TESTC",
       "vmSize": "Standard_D2s_v3"
     },
@@ -282,51 +282,73 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
-    "rgPrefix": "RG_SHM",
+    "rgPrefix": "RG_SHM_TESTC",
     "storage": {
       "artifacts": {
-        "accountName": "shmtestcartifactsnxbqspy",
-        "rg": "RG_SHM_ARTIFACTS"
+        "accountName": "shmtestcartifactsepbotfi",
+        "rg": "RG_SHM_TESTC_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "shmtestcbootdiagsnxbqspy",
-        "rg": "RG_SHM_ARTIFACTS"
+        "accountName": "shmtestcbootdiagsepbotfi",
+        "rg": "RG_SHM_TESTC_ARTIFACTS"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
           "name": "TESTC Data Servers Manager",
-          "passwordSecretName": "shm-testc-domain-admin-password",
-          "samAccountName": "shmtestcadmin"
+          "passwordSecretName": "shm-testc-computer-manager-password-data-servers",
+          "samAccountName": "testcdatasrvrs"
         },
         "identityServers": {
           "name": "TESTC Identity Servers Manager",
-          "passwordSecretName": "shm-testc-domain-admin-password",
-          "samAccountName": "shmtestcadmin"
+          "passwordSecretName": "shm-testc-computer-manager-password-identity-servers",
+          "samAccountName": "testcidentitysrvrs"
         },
         "linuxServers": {
           "name": "TESTC Linux Servers Manager",
-          "passwordSecretName": "shm-testc-domain-admin-password",
-          "samAccountName": "shmtestcadmin"
+          "passwordSecretName": "shm-testc-computer-manager-password-linux-servers",
+          "samAccountName": "testclinuxsrvrs"
         },
         "rdsGatewayServers": {
           "name": "TESTC RDS Gateway Manager",
-          "passwordSecretName": "shm-testc-domain-admin-password",
-          "samAccountName": "shmtestcadmin"
+          "passwordSecretName": "shm-testc-computer-manager-password-rds-gateway-servers",
+          "samAccountName": "testcgatewaysrvrs"
         },
         "rdsSessionServers": {
           "name": "TESTC RDS Session Servers Manager",
-          "passwordSecretName": "shm-testc-domain-admin-password",
-          "samAccountName": "shmtestcadmin"
+          "passwordSecretName": "shm-testc-computer-manager-password-rds-session-servers",
+          "samAccountName": "testcsessionsrvrs"
         }
       },
       "serviceAccounts": {
         "aadLocalSync": {
-          "name": "Local AD Sync Administrator",
-          "passwordSecretName": "shm-testc-localadsync-password",
-          "samAccountName": "localadsync",
+          "name": "TESTC Local AD Sync Administrator",
+          "passwordSecretName": "shm-testc-aad-localsync-password",
+          "samAccountName": "testclocaladsync",
           "usernameSecretName": "shm-testc-aad-localsync-username"
         }
       }
@@ -430,7 +452,7 @@
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
-          "sizeGb": "128",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         },
         "os": {
@@ -438,7 +460,7 @@
           "type": "Standard_LRS"
         },
         "scratch": {
-          "sizeGb": "512",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         }
       },
@@ -466,7 +488,7 @@
         "npsSecret": "sre-sandbox-other-nps-secret"
       }
     },
-    "location": "centralus",
+    "location": "uksouth",
     "network": {
       "nsg": {
         "data": {},
@@ -536,7 +558,7 @@
         "hostname": "RDG-SRE-SANDBOX",
         "ip": "10.151.1.4",
         "networkRules": {
-          "allowedSources": "Internet",
+          "allowedSources": "193.60.220.253,193.60.220.240",
           "outboundInternet": "Deny"
         },
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
@@ -563,6 +585,16 @@
         "accountName": "testcsandboxbootdiagsake",
         "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
+      "data": {
+        "egress": {
+          "accountName": "testcsandboxegressakeqzb",
+          "containerName": "egress"
+        },
+        "ingress": {
+          "accountName": "testcsandboxingressakeqz",
+          "containerName": "ingress"
+        }
+      },
       "datastorage": {
         "accountName": "testcsandboxdataakeqzbwg",
         "containers": {
@@ -576,7 +608,13 @@
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-    "tier": "2",
+    "tier": "3",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {

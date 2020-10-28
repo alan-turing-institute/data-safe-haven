@@ -70,6 +70,19 @@
                         ]
                     },
                     {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "http:123"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<ntp-server-fqdns>"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowLogAnalytics",
                         "protocols": [
                             "https:443"
@@ -148,6 +161,20 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowPowershellModuleInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "psg-prod-eastus.azureedge.net",
+                            "www.powershellgallery.com"
+                        ],
+                        "sourceAddresses": [
+                            "<dc1-ip-address>"
                         ]
                     },
                     {

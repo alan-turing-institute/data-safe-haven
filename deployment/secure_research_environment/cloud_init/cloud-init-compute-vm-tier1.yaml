@@ -1,0 +1,43 @@
+#cloud-config
+
+fqdn: <vm-fqdn>
+
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    filesystem: ext4
+    parition: 1
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /scratch, ext4, "defaults"]
+  - [//<ingress-share-username>.file.core.windows.net/<ingress-container-name>, /data, cifs, "_netdev,credentials=/etc/ingresssmbcredentials.secret,vers=3.0,dir_mode=0755,file_mode=0744,serverino"]
+  - [//<egress-share-username>.file.core.windows.net/<egress-container-name>, /output, cifs, "_netdev,credentials=/etc/egresssmbcredentials.secret,vers=3.0,dir_mode=0777,file_mode=0777,serverino"]
+
+write_files:
+  - path: "/etc/ingresssmbcredentials.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      username=<ingress-share-username>
+      password=<ingress-share-password>
+  - path: "/etc/egresssmbcredentials.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      username=<egress-share-username>
+      password=<egress-share-password>
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pool:
+    - <ntp-server>

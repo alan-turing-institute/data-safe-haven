@@ -1,3 +1,6 @@
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+
+
 # Convert a nested, sortable object into a sorted hashtable
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
@@ -6,7 +9,7 @@ function ConvertTo-SortedHashtable {
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )
-    $hasKeysValues = [bool](($Sortable.PSobject.Properties.name -match "Keys") -and ($Sortable.PSobject.Properties.name -match "Values"))
+    $hasKeysValues = [bool](($Sortable.PSObject.Properties.name -match "Keys") -and ($Sortable.PSObject.Properties.name -match "Values"))
     if ($hasKeysValues) {
         $OutputHashtable = [ordered]@{}
         $Sortable.GetEnumerator() | Sort-Object -Property "Name" | ForEach-Object { $OutputHashtable.Add($_.Key, $(ConvertTo-SortedHashtable -Sortable $_.Value)) }
@@ -29,7 +32,7 @@ function Copy-HashtableOverrides {
     )
     foreach ($sourcePair in $Source.GetEnumerator()) {
         # If we hit a leaf then override the target with the source value
-        if ($sourcePair.Value -isnot [Hashtable]) {
+        if ($sourcePair.Value -isnot [System.Collections.IDictionary]) {
             $Target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
@@ -45,13 +48,61 @@ function Copy-HashtableOverrides {
 Export-ModuleMember -Function Copy-HashtableOverrides
 
 
+# Retrieve values of all keys matching the given pattern
+# ------------------------------------------------------
+function Find-AllMatchingKeys {
+    param(
+        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [System.Collections.IDictionary]$Hashtable,
+        [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
+        [String]$Key
+    )
+    $output = @()
+    foreach ($entryPair in $Hashtable.GetEnumerator()) {
+        # If we hit a matching key then add its value to the output array
+        if ($entryPair.Key -like "$Key") {
+            $output += $entryPair.Value
+        }
+        # If we find a hashtable then walk that hashtable too
+        elseif ($entryPair.Value -is [System.Collections.IDictionary]) {
+            $output += Find-AllMatchingKeys -Hashtable $entryPair.Value -Key $Key
+        }
+    }
+    return $output
+}
+Export-ModuleMember -Function Find-AllMatchingKeys
+
+
+# Retrieve value for a (possibly) multilevel key
+# ----------------------------------------------
+function Find-MultilevelKey {
+    param(
+        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [System.Collections.IDictionary]$Hashtable,
+        [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
+        [String]$Key
+    )
+    if ($Hashtable.ContainsKey($Key)) {
+        return $Hashtable[$Key]
+    } elseif ($Key.Contains(".")) {
+        $keyPrefix = $Key.Split(".")[0]
+        if ($Hashtable.ContainsKey($keyPrefix)) {
+            $keySuffix = $Key.Split(".") | Select-Object -Skip 1 | Join-String -Separator "."
+            return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
+        }
+    }
+    return $null
+}
+Export-ModuleMember -Function Find-MultilevelKey
+
+
 # Truncate string at a given length
 # ---------------------------------
 function Limit-StringLength {
     param(
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string]$InputString,
-        [Parameter(Position = 0, Mandatory = $True)]
+        [Parameter(Mandatory = $True)]
         [int]$MaximumLength,
         [Parameter(Mandatory=$false)]
         [Switch]$FailureIsFatal,

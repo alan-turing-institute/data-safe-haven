@@ -3,11 +3,11 @@ param(
     [string]$configId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -109,7 +109,7 @@ if ($sreResources -or $sreResourceGroups) {
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
-    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
     } else {

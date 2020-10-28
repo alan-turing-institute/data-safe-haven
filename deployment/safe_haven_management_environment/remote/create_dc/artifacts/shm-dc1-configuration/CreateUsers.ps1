@@ -11,11 +11,8 @@ Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
 Import-Csv $userFilePath | ForEach-Object {
-    Write-Output $_
-
-    $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
+    $UserPrincipalName = "$($_.SamAccountName)@${domain}"
     $DisplayName = "$($_.GivenName) $($_.Surname)"
-    Write-Output "UserPrincipalName = " $UserPrincipalName
     $password = [System.Web.Security.Membership]::GeneratePassword(12, 3)
     $props = @{
         SamAccountName       = $_.SamAccountName
@@ -35,18 +32,22 @@ Import-Csv $userFilePath | ForEach-Object {
         Country              = "GB"
     }
 
-    Write-Output @props
-
-    New-ADUser @props -PassThru
-
-    if ($_.GroupName) {
-        foreach ($group in $($_.GroupName.Split("|"))) {
-            Write-Output "Adding user to group '$group'"
-            Add-ADGroupMember "$group" $props.SamAccountName
+    # Create user and add them to the group if requested
+    try {
+        New-ADUser @props -PassThru
+        if ($_.GroupName) {
+            foreach ($group in $($_.GroupName.Split("|"))) {
+                Write-Output "Adding user to group '$group'"
+                Add-ADGroupMember "$group" $props.SamAccountName
+            }
         }
+        Write-Output "Created a user with UserPrincipalName '$UserPrincipalName'"
+    } catch [Microsoft.ActiveDirectory.Management.ADIdentityAlreadyExistsException] {
+        Write-Output "User with UserPrincipalName '$UserPrincipalName' already exists"
     }
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+Write-Output "Synchronising locally Active Directory with Azure"
+Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
 Start-ADSyncSyncCycle -PolicyType Delta

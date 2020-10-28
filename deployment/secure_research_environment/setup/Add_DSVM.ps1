@@ -11,13 +11,13 @@ param(
     [switch]$forceUpgrade
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -37,8 +37,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
 # -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
-$imageVersion = $config.sre.dsvm.vmImage.version
-$vmName = "$vmNamePrefix-${imageVersion}".Replace(".", "-")
+$vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
 # Check whether this IP address has been used.
@@ -130,7 +129,7 @@ if ($upgrade) {
             # Snapshot disk
             Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
             $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshotName = $vmNamePrefix + "-" + "$name" + "-DISK-SNAPSHOT"
+            $snapshotName = "${vmNamePrefix}-${name}-DISK-SNAPSHOT"
             $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
             if ($snapshot) {
                 Add-LogMessage -Level Success "Snapshot succeeded"
@@ -149,7 +148,6 @@ if ($upgrade) {
                     Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
                 }
                 Add-LogMessage -Level Success "Snapshot found"
-
                 $snapshots += $snapshot
                 $snapshotNames += $snapshot.Name
             } else {
@@ -206,42 +204,10 @@ if ($upgrade) {
 }
 
 
-# Get list of image versions
-# --------------------------
-Add-LogMessage -Level Info "Getting image type from gallery..."
-if ($config.sre.dsvm.vmImage.type -eq "Ubuntu") {
-    $imageDefinition = "ComputeVM-Ubuntu1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "UbuntuTorch") {
-    $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DataScience") {
-    $imageDefinition = "ComputeVM-DataScienceBase"
-} elseif ($config.sre.dsvm.vmImage.type -eq "DSG") {
-    $imageDefinition = "ComputeVM-DsgBase"
-} else {
-    Add-LogMessage -Level Fatal "Could not interpret $($config.sre.dsvm.vmImage.type) as an image type!"
-}
-Add-LogMessage -Level Success "Using image type $imageDefinition"
-
-
-# Check that this is a valid version and then get the image ID
-# ------------------------------------------------------------
-$null = Set-AzContext -Subscription $config.sre.dsvm.vmImage.subscription
-Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
-try {
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
-    Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
-    $imageVersion = $versions | Select-Object -Last 1
-    $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$imageVersion')"
-    if ($versions.Contains($userVersion)) {
-        $imageVersion = $userVersion
-    }
-    $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImage.rg -GalleryName $config.sre.dsvm.vmImage.gallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-}
-$imageVersion = $image.Name
-Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
+# Check that this is a valid image version and get its ID
+# -------------------------------------------------------
+$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
+$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
 
 
 # Set the OS disk size for this image
@@ -249,7 +215,7 @@ $null = Set-AzContext -Subscription $config.sre.subscriptionName
 $osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
 if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
 if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
-    Add-LogMessage -Level Fatal "Image $imageVersion needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
+    Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
 
 
@@ -272,9 +238,22 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Ensure that runtime NSG exists
-# ------------------------------
+# Ensure that runtime NSG exists and required rules are set
+# ---------------------------------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                             -Name "OutboundAllowNTP" `
+                             -Description "Outbound allow connections to NTP servers" `
+                             -Priority 2200 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
+                             -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
@@ -288,8 +267,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -DestinationPortRange *
 
 
-# Ensure that deployment NSG exists
-# ---------------------------------
+# Ensure that deployment NSG exists and required rules are set
+# ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
@@ -427,6 +406,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
     Replace("<mirror-url-pypi>", $addresses.pypi.url).
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
@@ -436,6 +416,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+    Replace("<timezone>", $config.sre.time.timezone.linux).
     Replace("<vm-hostname>", $vmName).
     Replace("<vm-ipaddress>", $vmIpAddress)
 
