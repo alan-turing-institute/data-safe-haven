@@ -471,8 +471,12 @@ From your **deployment machine**
     + If you receive an error box `We can't sign you in. Javascript is required to sign you in....` and then in the Script Error: ` Do you want to continue running scripts on this page`
       + Click `Yes`
       + Close the dialog by clicking `X`
-    + Enter the global administrator password if prompted
     + Back on the `Connect to Azure AD` screen, click `Next`
+    + If you receive another Internet Explorer pop-up dialog:
+      + Click `Add`
+      + Click `Add`
+      + Click `Close`
+    + Enter the global administrator password if prompted
     + Approve the login with MFA if required
       + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   + On the `Connect your directories` screen:
