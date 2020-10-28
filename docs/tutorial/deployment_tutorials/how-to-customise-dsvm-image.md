@@ -1,6 +1,6 @@
 # Safe Haven VM Image Build Instructions
 
-These instructions will create a new VM image full analysis environment.
+These instructions will create a new VM image for use in the secure research environment.
 
 ## Contents
 
