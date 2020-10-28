@@ -462,6 +462,7 @@ From your **deployment machine**
     + Click `Next`
   + On the `Connect to Azure AD` screen:
     + On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
+      + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
     + If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
       + Click `Add`
       + Click `Add`
