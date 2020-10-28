@@ -1,4 +1,4 @@
-[ClassVersion("1.0.0.0"), FriendlyName("xADObjectPermissionEntry")] 
+[ClassVersion("1.0.0.0"), FriendlyName("xADObjectPermissionEntry")]
 class MSFT_xADObjectPermissionEntry : OMI_BaseResource
 {
     [Write, Description("Indicates if the access will be added (Present) or will be removed (Absent). Default is 'Present'."), ValueMap{"Present", "Absent"}, Values{"Present", "Absent"}] String Ensure;

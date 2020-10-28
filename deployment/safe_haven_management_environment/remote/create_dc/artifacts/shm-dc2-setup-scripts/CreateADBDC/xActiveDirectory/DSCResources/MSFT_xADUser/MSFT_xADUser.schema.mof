@@ -1,3 +1,4 @@
+## Import the common AD functions
 [ClassVersion("1.0.0.0"), FriendlyName("xADUser")]
 class MSFT_xADUser : OMI_BaseResource
 {

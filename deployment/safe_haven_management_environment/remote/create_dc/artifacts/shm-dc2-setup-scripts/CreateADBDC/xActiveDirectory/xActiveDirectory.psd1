@@ -1,4 +1,5 @@
-﻿@{
+﻿## Import the common AD functions
+@{
 # Version number of this module.
 moduleVersion = '2.24.0.0'
 

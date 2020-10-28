@@ -1,4 +1,5 @@
-﻿$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+﻿## Import the common AD functions
+$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 #region LocalizedData
 $culture = 'en-us'
 if (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath $PSUICulture))

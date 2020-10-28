@@ -1,4 +1,5 @@
-﻿configuration Sample_xDnsServerAddress
+﻿## Import the common AD functions
+configuration Sample_xDnsServerAddress
 {
     param
     (

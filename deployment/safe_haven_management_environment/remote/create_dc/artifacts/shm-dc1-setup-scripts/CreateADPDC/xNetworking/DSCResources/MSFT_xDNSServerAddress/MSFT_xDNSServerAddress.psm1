@@ -2,7 +2,7 @@
  #  xDNSServerAddress : DSC Resource that will set/test/get the current DNS Server
  #  Address, by accepting values among those given in xDNSServerAddress.schema.mof
  #######################################################################################>
- 
+
 
 
 ######################################################################################
@@ -12,7 +12,7 @@
 function Get-TargetResource
 {
 	param
-	(		
+	(
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
 		[String[]]$Address,
@@ -24,8 +24,8 @@ function Get-TargetResource
         [ValidateSet("IPv4", "IPv6")]
         [String]$AddressFamily = "IPv4"
 	)
-	
-    
+
+
     $returnValue = @{
         Address = (Get-DnsClientServerAddress -InterfaceAlias $InterfaceAlias -AddressFamily $AddressFamily).ServerAddresses
         AddressFamily = $AddressFamily
@@ -42,8 +42,8 @@ function Get-TargetResource
 function Set-TargetResource
 {
 	param
-	(	
-        #IP Address that has to be set	
+	(
+        #IP Address that has to be set
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
 		[String[]]$Address,
@@ -66,7 +66,7 @@ function Set-TargetResource
 function Test-TargetResource
 {
 	param
-	(		
+	(
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
 		[String[]]$Address,
@@ -126,7 +126,7 @@ function ValidateProperties
              }
          }
     try
-    {        
+    {
         Write-Verbose -Message "Checking the DNS Server Address ..."
         #Get the current IP Address based on the parameters given.
         $currentAddress = (Get-DnsClientServerAddress -InterfaceAlias $InterfaceAlias -AddressFamily $AddressFamily -ErrorAction Stop).ServerAddresses
@@ -141,13 +141,13 @@ function ValidateProperties
                 Set-DnsClientServerAddress -InterfaceAlias $InterfaceAlias -ServerAddresses $Address
                 Write-Verbose -Message "DNS Servers have been set correctly."
             }
-            else 
+            else
             {
                 return $false
             }
         }
-        else 
-        { 
+        else
+        {
             #Test will return true in this case
             Write-Verbose -Message "DNS Servers are set correctly."
             return $true
@@ -162,6 +162,6 @@ function ValidateProperties
 
 
 
-#  FUNCTIONS TO BE EXPORTED 
+#  FUNCTIONS TO BE EXPORTED
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
 

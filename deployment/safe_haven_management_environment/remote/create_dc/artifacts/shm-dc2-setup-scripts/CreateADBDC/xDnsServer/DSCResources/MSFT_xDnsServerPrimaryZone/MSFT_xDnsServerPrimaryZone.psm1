@@ -1,4 +1,5 @@
-﻿Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
+﻿## Import the common AD functions
+Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
 
 # Localized messages
 data LocalizedData
@@ -30,7 +31,7 @@ function Get-TargetResource
 
         [ValidateSet('None','NonsecureAndSecure')]
         [System.String]$DynamicUpdate = 'None',
-        
+
         [ValidateSet('Present','Absent')]
         [System.String]$Ensure = 'Present'
     )
@@ -65,7 +66,7 @@ function Test-TargetResource
 
         [ValidateSet('None','NonsecureAndSecure')]
         [System.String]$DynamicUpdate = 'None',
-        
+
         [ValidateSet('Present','Absent')]
         [System.String]$Ensure = 'Present'
     )
@@ -123,7 +124,7 @@ function Set-TargetResource
 
         [ValidateSet('None','NonsecureAndSecure')]
         [System.String]$DynamicUpdate = 'None',
-        
+
         [ValidateSet('Present','Absent')]
         [System.String]$Ensure = 'Present'
     )

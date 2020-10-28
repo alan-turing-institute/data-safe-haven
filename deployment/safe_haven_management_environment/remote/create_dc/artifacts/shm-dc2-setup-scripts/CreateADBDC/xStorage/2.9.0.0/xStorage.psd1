@@ -1,4 +1,5 @@
-﻿#
+﻿## Import the common AD functions
+#
 # Module manifest for module 'xStorage'
 #
 # Generated on: 6/14/2015

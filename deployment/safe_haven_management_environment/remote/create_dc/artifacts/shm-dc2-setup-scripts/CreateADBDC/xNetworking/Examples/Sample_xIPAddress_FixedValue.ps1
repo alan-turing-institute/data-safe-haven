@@ -1,4 +1,5 @@
-﻿configuration Sample_xIPAddress_FixedValue
+﻿## Import the common AD functions
+configuration Sample_xIPAddress_FixedValue
 {
     param
     (

@@ -7,7 +7,7 @@ Param(
 
     [parameter(Mandatory = $true)]
     [System.Management.Automation.PSCredential]
-    $EACredential 
+    $EACredential
 )
 
     Import-DscResource -Module xActiveDirectory

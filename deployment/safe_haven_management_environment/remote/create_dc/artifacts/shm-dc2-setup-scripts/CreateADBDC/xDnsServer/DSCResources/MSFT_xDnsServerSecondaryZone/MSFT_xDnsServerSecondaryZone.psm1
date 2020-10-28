@@ -1,4 +1,5 @@
-﻿Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
+﻿## Import the common AD functions
+Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
 
 # Localized messages
 data LocalizedData
@@ -6,7 +7,7 @@ data LocalizedData
     # culture="en-US"
     ConvertFrom-StringData @'
 CheckingZoneMessage          = Checking DNS server zone with name {0} ...
-TestZoneMessage              = Named DNS server zone is {0} and it should be {1} 
+TestZoneMessage              = Named DNS server zone is {0} and it should be {1}
 RemovingZoneMessage          = Removing DNS server zone ...
 DeleteZoneMessage            = DNS server zone {0} is now absent
 
@@ -79,7 +80,7 @@ function Set-TargetResource
 
     if($PSBoundParameters.ContainsKey('Debug')){$null = $PSBoundParameters.Remove('Debug')}
     Validate-ResourceProperties @PSBoundParameters -Apply
-    
+
     # Restart the DNS service
     Restart-Service DNS
 }
@@ -209,7 +210,7 @@ function Validate-ResourceProperties
             } # end zone is not secondary
 
         }# end ensure -eq present
-            
+
         # If zone should be absent
         else
         {
@@ -230,7 +231,7 @@ function Validate-ResourceProperties
         } # end ensure -eq absent
 
     } # end found dns zone
-    
+
     # Not found DNS Zone
     else
     {
@@ -247,7 +248,7 @@ function Validate-ResourceProperties
                 # Add the zone and start the transfer
                 Add-DnsServerSecondaryZone -Name $Name -MasterServers $MasterServers -ZoneFile $Name
                 Start-DnsServerZoneTransfer -Name $Name -FullTransfer
-                
+
                 $newSecondaryZoneMessage = $($LocalizedData.NewSecondaryZoneMessage) -f $Name
                 Write-Verbose -Message $newSecondaryZoneMessage
             }

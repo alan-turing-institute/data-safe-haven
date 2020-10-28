@@ -1,4 +1,5 @@
-﻿# Localized messages
+﻿## Import the common AD functions
+# Localized messages
 data LocalizedData
 {
     # culture="en-US"
@@ -43,8 +44,8 @@ function Get-TargetResource
 
     Write-Verbose -Message ($LocalizedData.GettingDnsRecordMessage -f $Name, $Type, $Zone)
     $record = Get-DnsServerResourceRecord -ZoneName $Zone -Name $Name -ErrorAction SilentlyContinue
-    
-    if ($record -eq $null) 
+
+    if ($record -eq $null)
     {
         return @{
             Name = $Name.HostName;
@@ -53,11 +54,11 @@ function Get-TargetResource
             Ensure = 'Absent';
         }
     }
-    if ($Type -eq "CName") 
+    if ($Type -eq "CName")
     {
         $recordData = ($record.RecordData.hostnamealias).TrimEnd('.')
     }
-    if ($Type -eq "ARecord") 
+    if ($Type -eq "ARecord")
     {
         $recordData = $record.RecordData.IPv4address.IPAddressToString
     }
@@ -97,7 +98,7 @@ function Set-TargetResource
         $Ensure = 'Present'
     )
 
-    $DNSParameters = @{ Name = $Name; ZoneName = $Zone; } 
+    $DNSParameters = @{ Name = $Name; ZoneName = $Zone; }
 
     if ($Ensure -eq 'Present')
     {
@@ -116,7 +117,7 @@ function Set-TargetResource
     }
     elseif ($Ensure -eq 'Absent')
     {
-        
+
         $DNSParameters.Add('Computername','localhost')
         $DNSParameters.Add('Force',$true)
 

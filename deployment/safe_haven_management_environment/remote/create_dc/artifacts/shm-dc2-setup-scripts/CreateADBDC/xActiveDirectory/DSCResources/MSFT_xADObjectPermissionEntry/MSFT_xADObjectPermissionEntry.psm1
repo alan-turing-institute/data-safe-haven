@@ -1,4 +1,5 @@
-﻿
+﻿## Import the common AD functions
+
 <#
     .SYNOPSIS
         Get the current state of the object access entry.

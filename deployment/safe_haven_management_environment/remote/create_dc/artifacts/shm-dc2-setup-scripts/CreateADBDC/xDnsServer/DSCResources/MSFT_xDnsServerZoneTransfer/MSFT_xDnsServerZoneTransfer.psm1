@@ -1,4 +1,5 @@
-﻿Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
+﻿## Import the common AD functions
+Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
 
 # Allow transfer to any server use 0, to one in name tab 1, specific one 2, no transfer 3
 $XferId2Name= @('Any','Named','Specific','None')
@@ -129,7 +130,7 @@ function Validate-ResourceProperties
     $checkZoneMessage = $($LocalizedData.CheckingZoneMessage) `
         -f $Name
     Write-Verbose -Message $checkZoneMessage
- 
+
     # Get the current value of transfer zone
     $currentZone = Get-CimInstance `
         -ClassName MicrosoftDNS_Zone `
@@ -182,7 +183,7 @@ function Validate-ResourceProperties
                 $settingPropertyMessage = ($LocalizedData.SettingPropertyMessage) `
                     -f ($SecondaryServer -join ',')
                 Write-Verbose -Message $settingPropertyMessage
-                
+
                 $null = Invoke-CimMethod `
                     -InputObject $currentZone `
                     -MethodName ResetSecondaries `

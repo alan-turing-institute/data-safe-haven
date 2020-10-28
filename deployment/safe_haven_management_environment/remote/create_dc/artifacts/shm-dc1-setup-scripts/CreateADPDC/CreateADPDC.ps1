@@ -4,7 +4,7 @@
    (
         [Parameter(Mandatory)]
         [String]$DomainName,
-        
+
         [Parameter(Mandatory)]
         [String]$DomainNetBIOSName,
 
