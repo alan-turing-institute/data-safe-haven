@@ -449,7 +449,7 @@ From your **deployment machine**
 #### Install Azure Active Directory Connect
 
 + Navigate to `C:\Installation`
-+ Run the `AzureADConnect.msi` installer
++ Run the `AzureADConnect` Windows Installer Package
   + On the `Welcome to Azure AD Connect` screen:
     + Tick the `I agree to the license terms` box
     + Click `Continue`
