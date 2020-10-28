@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 #
 # Module manifest for module 'xStorage'
 #
@@ -137,7 +138,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
-
-
-
