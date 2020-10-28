@@ -468,7 +468,7 @@ From your **deployment machine**
       + Click `Add`
       + Click `Close`
       + Repeat for the same dialog with `https://aadcdn.msftauth.net`
-    + If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
+    + If you receive an error box `We can't sign you in. Javascript is required to sign you in....` and then in the Script Error: ` Do you want to continue running scripts on this page`
       + Click `Yes`
       + Close the dialog by clicking `X`
     + Enter the global administrator password if prompted
