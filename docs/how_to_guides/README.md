@@ -42,7 +42,7 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 
 + [Safe Havens User Guide (Tier 1)](user_guides/user-guide-tier1.md) - Step-by-step instructions on how to get set up on a Tier 1 Safe Haven environment as a user. The guide has been written with Turing Data Study Groups in mind.
 
-+ [Safe Havens Cheat Sheet]( user_guides/user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
++ [Safe Havens Cheat Sheet](user_guides/user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
 + [Software package whitelist policy](general/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
 
