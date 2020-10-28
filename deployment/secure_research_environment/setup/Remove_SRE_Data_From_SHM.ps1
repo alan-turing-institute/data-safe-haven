@@ -105,8 +105,8 @@ if ($sreResources -or $sreResourceGroups) {
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
-    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue 
-    if($notExists) {
+    $null = Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
         Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
     } else {
         # RDS @ record

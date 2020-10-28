@@ -43,3 +43,8 @@ jobs:
       python: 3.8
       before_script: pip install ansible-lint
       script: ansible-lint
+    - name: Test Powershell
+      before_script:
+        - sudo snap install powershell --classic
+        - pwsh -c "Install-Module -Name Pester -Force"
+      script: pwsh -c './tests/Run_Pester_Tests.ps1'
