@@ -629,7 +629,7 @@ function Get-ShmFullConfig {
         mirrorVnets = [ordered]@{}
         nsg = [ordered]@{
             repository = [ordered]@{
-                name = "NSG_SHM_$($shm.id)_REPOSITORY".ToUpper()
+                name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
             }
             externalPackageMirrorsTier2 = [ordered]@{
                 name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
