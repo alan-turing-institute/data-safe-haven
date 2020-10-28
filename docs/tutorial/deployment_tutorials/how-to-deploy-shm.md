@@ -400,15 +400,17 @@ From your **deployment machine**
    <p align="center">
        <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
    </p>
-+ Unzip the zip file and identify the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
++ Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
 + Follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the section appropriate to your operating system
-  + **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+  + **You do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
   + Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
   + Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
   + **Windows:** do not rename the VPN client as this will break it
   + **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
   + **Windows:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
+  + **OSX:** start from step 3.
   + **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
+  + **OSX:** Enter your computer password when prompted
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
