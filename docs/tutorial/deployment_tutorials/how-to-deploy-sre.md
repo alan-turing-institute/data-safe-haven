@@ -84,7 +84,7 @@ This is done using the VPN which should have been deployed when setting up the S
   <img src="../../images/deploy_sre/vpn_client.png" width="80%" title="vpn_client">
 </p>
 
-+ Click the `Download VPN client` link at the top of the page to get the root certificate ( `VpnServerRoot.cer` ) and VPN configuration file ( `VpnSettings.xml` ), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
++ Click the `Download VPN client` link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 + :warning: **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
 + :warning: **Windows:** do not rename the VPN client as this will break it
 + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. This is not true for OSX.
