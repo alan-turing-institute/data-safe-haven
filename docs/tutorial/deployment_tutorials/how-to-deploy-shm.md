@@ -424,7 +424,7 @@ From your **deployment machine**
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the domain controller (DC) VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around one hour** to run.
-+ Once the script exits successfully you should see the following resource groups under the SHM subscription:
++ Once the script exits successfully you should see the following resource groups under the SHM subscription, but with the `<SHM ID>` included in the name for all except the top one in the screenshot below e.g. `RG_SHM_<SHM ID>_NETWORKING`:
   <p align="center">
       <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups">
   </p>
