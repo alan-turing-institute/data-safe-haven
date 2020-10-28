@@ -1,11 +1,22 @@
+param(
+    [Parameter(Mandatory = $false, HelpMessage = "Restrict to only run over files in the given path")]
+    [string]$TargetPath,
+    [Parameter(Mandatory = $false, HelpMessage = "Only alter line endings and file encodings")]
+    [switch]$EncodingOnly
+)
+
 Import-Module PSScriptAnalyzer -ErrorAction Stop
 Import-Module $PSScriptRoot/../deployment/common/Logging -ErrorAction Stop
+
+
+# Set the root path which we will format
+# --------------------------------------
+$CodeRootPath = $TargetPath ? $TargetPath : (Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "deployment")
 
 
 # Formatter settings
 # ------------------
 $FileExtensions = @("*.ps1", "*.psm1", "*.psd1")
-$CodeRootPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "deployment"
 $SettingsPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath ".PSScriptFormatterSettings.psd1"
 $PowershellFilePaths = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | Select-Object -ExpandProperty FullName)
 
@@ -24,7 +35,9 @@ foreach ($PowershellFilePath in $PowershellFilePaths) {
 
     # Call formatter
     # --------------
-    $Formatted = Invoke-Formatter -ScriptDefinition $Formatted -Settings $SettingsPath
+    if (-not $EncodingOnly) {
+        $Formatted = Invoke-Formatter -ScriptDefinition $Formatted -Settings $SettingsPath
+    }
 
 
     # Set correct line endings and correct encoding.
