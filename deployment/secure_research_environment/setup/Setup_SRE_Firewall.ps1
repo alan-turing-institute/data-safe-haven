@@ -46,7 +46,6 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewal
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<sre-rdg-public-ip-cidr>", "${rdsGatewayPublicIp}/32").
     Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr).
-    Replace("<subnet-data-cidr>", $config.sre.network.vnet.subnets.data.cidr).
     Replace("<subnet-databases-cidr>", $config.sre.network.vnet.subnets.databases.cidr).
     Replace("<subnet-identity-cidr>", $config.sre.network.vnet.subnets.identity.cidr).
     Replace("<subnet-rds-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
@@ -66,7 +65,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the RDG subnet to the firewall route table
 # --------------------------------------------------------------------
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.data.name -AddressPrefix $config.sre.network.vnet.subnets.data.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.compute.name -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.databases.name -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.identity.name -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 

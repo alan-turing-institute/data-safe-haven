@@ -39,7 +39,7 @@ $vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".T
 # -----------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 $sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
-$subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
+$subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
 
 
 # Ensure that NSG exists

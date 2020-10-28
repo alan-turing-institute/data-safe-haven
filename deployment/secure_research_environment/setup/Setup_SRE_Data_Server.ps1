@@ -79,7 +79,7 @@ $params = @{
     OU_Path                          = $config.shm.domain.ous.dataServers.path
     Virtual_Network_Name             = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group   = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet           = $config.sre.network.vnet.subnets.data.name
+    Virtual_Network_Subnet           = $config.sre.network.vnet.subnets.compute.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
 

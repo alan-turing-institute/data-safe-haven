@@ -97,6 +97,10 @@ function Add-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
                     nsg  = "databases"
                 }
+                compute   = [ordered]@{
+                    name = "ComputeSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
+                }
             }
         }
         nsg  = [ordered]@{
@@ -278,7 +282,7 @@ function Add-SreConfig {
         vmSize                  = "Standard_D2s_v3"
         hostname                = $hostname
         fqdn                    = "${hostname}.$($config.shm.domain.fqdn)"
-        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 4
+        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 4
         disks                   = [ordered]@{
             egress  = [ordered]@{
                 sizeGb = "512"
@@ -304,7 +308,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 5
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
             disks                   = [ordered]@{
                 data = [ordered]@{
@@ -321,7 +325,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 6
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 6
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "750"
