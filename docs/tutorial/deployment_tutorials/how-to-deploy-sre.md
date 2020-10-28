@@ -57,7 +57,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
   + Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 + `Microsoft Remote Desktop`
-  + On OSX this can be installed from the [apple store](https://apps.apple.com)
+  + On OSX this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
   + Install using your package manager of choice
 
