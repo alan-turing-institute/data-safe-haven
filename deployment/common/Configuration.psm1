@@ -825,7 +825,7 @@ function Get-ShmFullConfig {
     # Nexus repository VM config
     # --------------------------
     $shm.repository = [ordered]@{
-        rg = "$($shm.rgPrefix)_REPOSITORY".ToUpper()
+        rg = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         nexus = [ordered]@{
