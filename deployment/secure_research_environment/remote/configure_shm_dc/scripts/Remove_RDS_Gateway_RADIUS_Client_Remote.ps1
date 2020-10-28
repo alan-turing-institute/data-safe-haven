@@ -5,8 +5,10 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(Mandatory = $false, HelpMessage = "FQDN of RDS gateway")]
     [String]$rdsGatewayFqdn
 )
+
 if (Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}) {
     Write-Output " [ ] Removing RADIUS Client '$rdsGatewayFqdn'"
     Remove-NpsRadiusClient -Name "$rdsGatewayFqdn"
