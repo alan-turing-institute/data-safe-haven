@@ -42,7 +42,7 @@ There should be a hash to confirm that the documents are indeed the same.
 
 ## Step 4: Transfer from data owner to Turing
 
-Different processes should be followed depending on the tier to which the data has been assigned (as described in the [data classification process](../..//explanations/classification/classification-overview.md).
+Different processes should be followed depending on the tier to which the data has been assigned (as described in the [data classification process](../../explanations/classification/classification-overview.md).
 
 It is the responsibility of the Turing staff member conducting this step to ensure that they are following the appropriate process for the assigned data classification tier.
 
@@ -173,4 +173,3 @@ All the transformation and exploration process should be versioned.
 At the beginning and the end of each session a hash with the code and data should be generated to verify authenticity of the work on the data.
 Once all tests have been complied the resultant data will be ready to go to the secure data area.
 Data in this area can be deleted except for the latest version of the data, that in the case of no longer be needed should be archived along with the code, reports, and policy checks.
-
