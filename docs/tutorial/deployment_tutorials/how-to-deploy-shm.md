@@ -438,7 +438,8 @@ From your **deployment machine**
   + On Mac, first click the `+`
 + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
-+ Double click on the desktop that appears under `saved desktops`.
++ Double click on the desktop that appears under `saved desktops` or `PCs`.
+  + Ensure you are connected the virtual network you set up via the VPN, or this will not work
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
   + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
   + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
