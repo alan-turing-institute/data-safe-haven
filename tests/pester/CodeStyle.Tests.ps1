@@ -14,7 +14,7 @@ Describe "Powershell formatting" {
     BeforeAll {
         $SettingsPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent.Parent -ChildPath ".PSScriptFormatterSettings.psd1"
     }
-    It "Checks that '<FilePath>' is correctly formatted" -TestCases $FileDetails {
+    It "Checks that '<FilePath>' is correctly formatted" -TestCases $FileDetails -Skip {
         param ($FileName, $FilePath)
         $Unformatted = Get-Content -Path $FilePath -Raw
         $Formatted = Invoke-Formatter -ScriptDefinition $Unformatted -Settings $SettingsPath
