@@ -1,4 +1,4 @@
-ConvertFrom-StringData @'
+﻿ConvertFrom-StringData @'
     GettingWaitForDiskStatusMessage = Getting Wait for Disk status for disk '{0}'.
 
     SettingWaitForDiskStatusMessage = Waiting for disk status on disk '{0}'.

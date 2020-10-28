@@ -1,4 +1,4 @@
-# Localized messages
+﻿# Localized messages
 data LocalizedData
 {
     # culture="en-US"

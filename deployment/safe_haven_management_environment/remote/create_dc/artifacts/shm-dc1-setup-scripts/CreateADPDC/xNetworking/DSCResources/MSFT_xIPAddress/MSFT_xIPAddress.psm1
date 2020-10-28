@@ -1,4 +1,4 @@
-<#######################################################################################
+﻿<#######################################################################################
  #  MSDSCPack_IPAddress : DSC Resource that will set/test/get the current IP 
  #  Address, by accepting values among those given in MSDSCPack_IPAddress.schema.mof
  #######################################################################################>
@@ -178,3 +178,4 @@ function ValidateProperties
 
 #  FUNCTIONS TO BE EXPORTED 
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
+

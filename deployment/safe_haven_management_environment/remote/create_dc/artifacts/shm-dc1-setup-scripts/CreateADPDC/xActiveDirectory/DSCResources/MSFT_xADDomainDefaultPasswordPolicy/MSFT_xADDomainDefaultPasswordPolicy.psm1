@@ -226,3 +226,4 @@ function Set-TargetResource
 } #end Set-TargetResource
 
 Export-ModuleMember -Function *-TargetResource;
+

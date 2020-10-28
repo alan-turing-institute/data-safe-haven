@@ -1,4 +1,4 @@
-# Localized messages
+﻿# Localized messages
 data LocalizedData
 {
     # culture="en-US"
@@ -396,3 +396,4 @@ function New-TerminatingError
 #endregion
 
 Export-ModuleMember -Function *-TargetResource
+

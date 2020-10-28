@@ -32,3 +32,4 @@ configuration Sample_xFirewall_AddFirewallRuleToExistingGroup
         }
     }
  }
+

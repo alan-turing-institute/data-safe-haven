@@ -133,3 +133,4 @@ Function Test-TargetResource
 Export-ModuleMember -Function *-TargetResource
 
 $regRebootLocations = $null
+

@@ -1,4 +1,4 @@
-Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot) -ChildPath CommonResourceHelper.psm1)
+﻿Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot) -ChildPath CommonResourceHelper.psm1)
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADReplicationSiteLink'
 
 <#
@@ -326,3 +326,4 @@ function Resolve-SiteLinkName
 }
 
 Export-ModuleMember -Function *-TargetResource
+

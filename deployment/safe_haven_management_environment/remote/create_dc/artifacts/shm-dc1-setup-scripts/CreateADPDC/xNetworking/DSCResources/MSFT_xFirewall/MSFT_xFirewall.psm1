@@ -1,4 +1,4 @@
-# Default Display Group for the Firewall cmdlets
+﻿# Default Display Group for the Firewall cmdlets
 $DefaultDisplayGroup = "DSC_FirewallRule"
 
 # DSC uses the Get-TargetResource cmdlet to fetch the status of the resource instance specified in the parameters for the target machine
@@ -664,3 +664,4 @@ function Get-FirewallRuleProperty
 #endregion
 
 Export-ModuleMember -Function *-TargetResource
+

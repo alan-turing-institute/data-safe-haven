@@ -1,4 +1,4 @@
-$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+﻿$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 #region LocalizedData
 $culture = 'en-us'
 if (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath $PSUICulture))

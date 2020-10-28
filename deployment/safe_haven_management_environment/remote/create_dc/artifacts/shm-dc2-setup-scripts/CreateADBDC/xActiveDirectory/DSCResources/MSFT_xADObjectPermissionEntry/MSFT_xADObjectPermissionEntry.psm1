@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Get the current state of the object access entry.

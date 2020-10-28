@@ -1,4 +1,4 @@
-#
+﻿#
 # Module manifest for module 'xStorage'
 #
 # Generated on: 6/14/2015
@@ -137,7 +137,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
-
-
-

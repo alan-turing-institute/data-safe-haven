@@ -19,3 +19,4 @@ configuration Sample_xFirewall_AddFirewallRuleToNewGroup
         }
     }
  }
+

@@ -1,4 +1,4 @@
-# culture="en-US"
+﻿# culture="en-US"
 ConvertFrom-StringData @'
     RoleNotFoundError                 = Please ensure that the PowerShell module for role '{0}' is installed.
     RetrievingADComputerError         = Error looking up Active Directory computer '{0}'.
@@ -24,3 +24,4 @@ ConvertFrom-StringData @'
     ODJRequestCompleteMessage=The ODJ request file '{2}' for computer '{1}' in Domain '{0}' has been provisioned successfully.
     ODJRequestError=Error {0} occured provisioning the computer using ODJ- {1}.
 '@
+

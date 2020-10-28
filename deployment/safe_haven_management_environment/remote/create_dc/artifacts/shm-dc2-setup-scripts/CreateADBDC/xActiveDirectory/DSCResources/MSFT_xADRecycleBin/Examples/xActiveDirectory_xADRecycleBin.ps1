@@ -1,4 +1,4 @@
-Configuration Example_xADRecycleBin
+﻿Configuration Example_xADRecycleBin
 {
 Param(
     [parameter(Mandatory = $true)]
@@ -36,4 +36,3 @@ Example_xADRecycleBin -EACredential (Get-Credential contoso\administrator) -Fore
 Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose -WhatIf
 
 Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose
-

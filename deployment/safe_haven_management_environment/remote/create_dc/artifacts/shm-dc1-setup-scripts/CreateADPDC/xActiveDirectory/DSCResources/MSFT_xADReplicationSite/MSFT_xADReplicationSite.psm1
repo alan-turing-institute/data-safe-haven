@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
         Returns the current state of the AD replication site.
 
@@ -144,3 +144,4 @@ function Test-TargetResource
 
     return $currentConfiguration.Ensure -eq $Ensure
 }
+

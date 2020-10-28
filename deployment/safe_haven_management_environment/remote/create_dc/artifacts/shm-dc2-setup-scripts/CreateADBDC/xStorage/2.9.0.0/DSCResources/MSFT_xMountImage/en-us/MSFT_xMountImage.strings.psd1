@@ -1,4 +1,4 @@
-ConvertFrom-StringData @'
+﻿ConvertFrom-StringData @'
     GettingMountedImageMessage = Getting Mounted Drive for image file '{0}'.
 
     SettingMountedImageMessage = Setting Mounted Drive for image file '{0}'.

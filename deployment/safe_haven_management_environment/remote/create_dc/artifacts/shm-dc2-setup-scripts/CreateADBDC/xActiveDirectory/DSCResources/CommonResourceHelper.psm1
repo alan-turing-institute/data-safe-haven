@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
         Retrieves the localized string data based on the machine's culture.
         Falls back to en-US strings if the machine's culture is not supported.

@@ -1,4 +1,4 @@
-# Suppressed as per PSSA Rule Severity guidelines for unit/integration tests:
+﻿# Suppressed as per PSSA Rule Severity guidelines for unit/integration tests:
 # https://github.com/PowerShell/DscResources/blob/master/PSSARuleSeverities.md
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
 param ()

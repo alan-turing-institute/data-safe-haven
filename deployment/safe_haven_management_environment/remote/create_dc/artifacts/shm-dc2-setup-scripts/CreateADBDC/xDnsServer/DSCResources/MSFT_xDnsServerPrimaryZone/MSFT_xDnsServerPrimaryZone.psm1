@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
+﻿Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
 
 # Localized messages
 data LocalizedData

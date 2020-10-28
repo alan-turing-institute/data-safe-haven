@@ -1,4 +1,4 @@
-Configuration Example_xADRecycleBin
+﻿Configuration Example_xADRecycleBin
 {
 Param(
     [parameter(Mandatory = $true)]

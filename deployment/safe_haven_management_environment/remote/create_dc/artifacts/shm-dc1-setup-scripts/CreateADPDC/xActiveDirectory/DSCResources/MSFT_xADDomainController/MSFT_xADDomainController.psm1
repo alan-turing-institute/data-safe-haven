@@ -1,4 +1,4 @@
-#
+﻿#
 # xADDomainController: DSC resource to install a domain controller in Active
 # Directory.
 #
@@ -356,3 +356,4 @@ function Test-TargetResource
 }
 
 Export-ModuleMember -Function *-TargetResource
+

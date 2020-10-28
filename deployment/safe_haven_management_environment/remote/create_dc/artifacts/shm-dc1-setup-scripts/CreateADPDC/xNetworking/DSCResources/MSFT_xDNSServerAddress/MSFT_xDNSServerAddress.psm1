@@ -1,4 +1,4 @@
-<#######################################################################################
+﻿<#######################################################################################
  #  xDNSServerAddress : DSC Resource that will set/test/get the current DNS Server
  #  Address, by accepting values among those given in xDNSServerAddress.schema.mof
  #######################################################################################>
@@ -164,3 +164,4 @@ function ValidateProperties
 
 #  FUNCTIONS TO BE EXPORTED 
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
+

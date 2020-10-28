@@ -1,4 +1,4 @@
-data localizedString
+﻿data localizedString
 {
     # culture="en-US"
     ConvertFrom-StringData @'
@@ -891,3 +891,4 @@ function Add-ADCommonGroupMember
         Add-ADGroupMember @Parameters -Members $Members
     }
 }
+

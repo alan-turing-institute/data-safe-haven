@@ -28,3 +28,4 @@
     DiskAlreadyInitializedError = Disk number '{0}' is already initialized with {1}.
     NewParitionIsReadOnlyError = New partition '{1}' on disk '{0}' did not become writable in the expected time.
 '@
+

@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
+﻿Import-Module $PSScriptRoot\..\Helper.psm1 -Verbose:$false
 
 # Allow transfer to any server use 0, to one in name tab 1, specific one 2, no transfer 3
 $XferId2Name= @('Any','Named','Specific','None')

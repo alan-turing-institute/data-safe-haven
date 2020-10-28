@@ -33,3 +33,4 @@ configuration Sample_xFirewall_AddFirewallRule
 
 Sample_xFirewall_AddFirewallRule
 Start-DscConfiguration -Path Sample_xFirewall_AddFirewallRule -Wait -Verbose -Force
+

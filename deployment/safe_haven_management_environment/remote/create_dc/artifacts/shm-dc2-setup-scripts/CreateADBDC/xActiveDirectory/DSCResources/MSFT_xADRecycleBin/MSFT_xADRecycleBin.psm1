@@ -1,4 +1,4 @@
-function Get-TargetResource
+﻿function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
@@ -184,6 +184,3 @@ Get-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cr
 Test-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
 Set-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred -WhatIf
 #>
-
-
-
