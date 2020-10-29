@@ -33,6 +33,7 @@ jobs:
     - name: Lint shell
       before_script: sudo apt-get install -y shellcheck
       script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
+    - name: Lint YAML
       language: python
       python: 3.8
       before_script: pip install yamllint
