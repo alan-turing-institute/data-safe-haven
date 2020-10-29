@@ -122,12 +122,14 @@ function Add-SreConfig {
     $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
     $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
+    # Storage configuration entries
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
             readOnly = [ordered]@{
-                nameSuffix    = "readonly"
                 permissions   = "rl"
-                sasSecretName = "sre-$($config.sre.id)-storage-ingress-sas-readonly"
+            }
+            readWrite = [ordered]@{
+                permissions   = "rwl"
             }
         }
         artifacts       = [ordered]@{
@@ -138,28 +140,28 @@ function Add-SreConfig {
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
-        datastorage     = [ordered]@{
-            accountName = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-            rg          = "RG_SHM_$($config.shm.id)_DATA_PERSISTENT".ToUpper()
-            storageType = "BlobStorage"
+        data            = [ordered]@{
+            account  = [ordered]@{
+                name = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                accessTier  = "hot"
+            }
             containers  = [ordered]@{
                 ingress = [ordered]@{
-                    name             = "ingress"
+                    containerName    = "ingress"
                     accessPolicyName = "readOnly"
+                }
+                egress  = [ordered]@{
+                    containerName    = "egress"
+                    accessPolicyName = "readWrite"
                 }
             }
         }
-        data            = [ordered]@{
-            ingress = [ordered]@{
-                accountName   = "${sreStoragePrefix}ingress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                containerName = "ingress"
-            }
-            egress  = [ordered]@{
-                accountName   = "${sreStoragePrefix}egress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                containerName = "egress"
-            }
-        }
     }
+    foreach ($containerName in $config.sre.storage.data.containers.Keys) {
+        $config.sre.storage.data.containers[$containerName].sasSecretName = "sre-$($config.sre.id)-data-${containerName}-sas-$($config.sre.storage.data.containers[$containerName].accessPolicyName)".ToLower()
+    }
+
 
     # Secrets config
     # --------------
@@ -822,7 +824,9 @@ function Get-ShmFullConfig {
             rg          = $storageRg
             accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
-
+        data = [ordered]@{
+            rg = "$($shm.rgPrefix)_PERSISTENT_DATA".ToUpper()
+        }
     }
 
     # DNS config

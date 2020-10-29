@@ -712,14 +712,18 @@ function Deploy-StorageAccount {
         [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
         $SkuName = "Standard_LRS",
         [Parameter(Mandatory = $false, HelpMessage = "Kind of storage account to deploy")]
-        [ValidateSet("Storage", "StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
-        $Kind = "StorageV2"
+        [ValidateSet("StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
+        $Kind = "StorageV2",
+        [Parameter(Mandatory = $false, HelpMessage = "Access tier of the Storage account. Only used if 'Kind' is set to 'BlobStorage'")]
+        $AccessTier = "Hot"
     )
     Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
     $storageAccount = Get-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
-        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind
+        $params = @{}
+        if ($Kind -eq "BlobStorage") { $params["AccessTier"] = $AccessTier }
+        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params
         if ($?) {
             Add-LogMessage -Level Success "Created storage account '$Name'"
         } else {
@@ -743,17 +747,30 @@ function Deploy-StorageAccountEndpoint {
         $ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy the endpoint into")]
         $Subnet,
-        [Parameter(Mandatory = $true, HelpMessage = "Type of storage to connect to (Blob or File)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Type of storage to connect to (Blob, File or Default)")]
+        [ValidateSet("Blob", "File", "Default")]
         $StorageType,
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint into")]
         $Location
     )
+    # Allow a default if we're using a storage account that is only compatible with one storage type
+    if ($StorageType -eq "Default") {
+        if ($StorageAccount.Kind -eq "BlobStorage") { $StorageType == "Blob" }
+        if ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType == "Blob" }
+        if ($StorageAccount.Kind -eq "FileStorage") { $StorageType == "File" }
+    }
+    # Validate that the storage type is compatible with this storage account
+    if ((($StorageAccount.Kind -eq "BlobStorage") -and ($StorageType -ne "Blob")) -or
+        (($StorageAccount.Kind -eq "BlockBlobStorage") -and ($StorageType -ne "Blob")) -or
+        (($StorageAccount.Kind -eq "FileStorage") -and ($StorageType -ne "File"))) {
+            Add-LogMessage -Level Fatal "Storage type '$StorageType' is not compatible with '$($StorageAccount.StorageAccountName)' which uses '$($StorageAccount.Kind)'"
+    }
     $privateEndpointName = "$($StorageAccount.StorageAccountName)-endpoint"
     Add-LogMessage -Level Info "Ensuring that private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)' exists..."
     $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id #-GroupId $StorageType
+        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId @($StorageAccount.StorageAccountName)
         $success = $?
         $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
         $success = $success -and $?

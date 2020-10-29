@@ -35,6 +35,8 @@ function New-AccountSasToken {
 Export-ModuleMember -Function New-AccountSasToken
 
 
+
+
 # Generate a new read-only SAS token
 # ----------------------------------
 function New-ReadOnlyAccountSasToken {
@@ -56,6 +58,37 @@ function New-ReadOnlyAccountSasToken {
 Export-ModuleMember -Function New-ReadOnlyAccountSasToken
 
 
+# Generate a new SAS policy
+# -------------------------
+function New-StorageReceptacleSasToken {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
+        [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
+        [string]$Policy,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByContainerName", HelpMessage = "Container name")]
+        [string]$ContainerName,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
+        [string]$ShareName
+    )
+    $identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
+    Add-LogMessage -Level Info "Generating new SAS token for $identifier in '$($StorageAccount.StorageAccountName)..."
+    if ($ContainerName) {
+        $SasToken = New-AzStorageContainerSASToken -Name $ContainerName -Policy $Policy -Context $StorageAccount.Context
+    } elseif ($ShareName) {
+        $SasToken = New-AzStorageShareSASToken -ShareName $ShareName -Policy $Policy -Context $StorageAccount.Context
+    }
+    if ($?) {
+        Add-LogMessage -Level Success "Created new SAS token for $identifier in '$($StorageAccount.StorageAccountName)"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to create new SAS token for $identifier in '$($StorageAccount.StorageAccountName)!"
+    }
+    return $SasToken
+}
+Export-ModuleMember -Function New-StorageReceptacleSasToken
+
+
+
 
 # Generate a new SAS policy
 # -------------------------
@@ -66,30 +99,47 @@ function Deploy-SasAccessPolicy {
         [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
         [string]$Permission,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
-        [string]$StorageAccount,
-        [Parameter(Mandatory = $true, HelpMessage = "Container name")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByContainerName", HelpMessage = "Container name")]
         [string]$ContainerName,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
+        [string]$ShareName,
         [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
         [int]$ValidityYears = 1
 
     )
-    Add-LogMessage -Level Info "Ensuring that SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)..."
-    $existingPolicy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Context $StorageAccount.Context | Where-Object { $_.policy -like "*$Name" } | Select-Object -First 1
+    $identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
+    Add-LogMessage -Level Info "Ensuring that SAS policy '$Name' exists for $identifier in '$($StorageAccount.StorageAccountName)..."
+    if ($ContainerName) {
+        $policies = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Context $StorageAccount.Context | Where-Object { $_.policy -like "*$Name" } | Select-Object -First 1
+    } elseif ($ShareName) {
+        $policies = Get-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Context $StorageAccount.Context
+    }
+    $existingPolicy = $policies | Where-Object { $_.policy -like "*$Name" } | Select-Object -First 1
     if ($existingPolicy) {
-        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$Name' for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
+        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
         $policy = $existingPolicy.Policy
     } else {
-        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
-        $policy = New-AzStorageContainerStoredAccessPolicy -Container $containerName `
+        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
+        if ($ContainerName) {
+            $policy = New-AzStorageContainerStoredAccessPolicy -Container $ContainerName `
+                                                               -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${AccessType}" `
+                                                               -Context $StorageAccount.Context `
+                                                               -Permission $Permission `
+                                                               -StartTime (Get-Date).DateTime `
+                                                               -ExpiryTime (Get-Date).AddYears($ValidityYears).DateTime
+        } elseif ($ShareName) {
+            $policy = New-AzStorageShareStoredAccessPolicy -ShareName $ShareName `
                                                            -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${AccessType}" `
                                                            -Context $StorageAccount.Context `
                                                            -Permission $Permission `
                                                            -StartTime (Get-Date).DateTime `
-                                                           -ExpiryTime (Get-Date).AddYears(1).DateTime
+                                                           -ExpiryTime (Get-Date).AddYears($ValidityYears).DateTime
+        }
         if ($?) {
-            Add-LogMessage -Level Success "Created new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)"
+            Add-LogMessage -Level Success "Created new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$Name' exists for container '$ContainerName' in '$($StorageAccount.StorageAccountName)!"
+            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)!"
         }
     }
     return $policy
