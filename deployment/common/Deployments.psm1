@@ -694,7 +694,7 @@ function Deploy-Subnet {
     } else {
         Add-LogMessage -Level InfoSuccess "Subnet '$Name' already exists"
     }
-    return Get-AzSubnet -Name $Name -VirtualNetwork $VirtualNetwork
+    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
 }
 Export-ModuleMember -Function Deploy-Subnet
 
@@ -1554,7 +1554,7 @@ function Set-SubnetNetworkSecurityGroup {
     $success = $?
     $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
     $success = $success -and $?
-    $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
+    $updatedSubnet = Get-Subnet -Name $Subnet.Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
     $success = $success -and $?
     if ($success) {
         Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
