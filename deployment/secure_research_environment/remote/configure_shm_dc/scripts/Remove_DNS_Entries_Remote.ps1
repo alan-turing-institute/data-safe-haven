@@ -27,14 +27,16 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
 
 # Remove private endpoint DNS Zone
 # --------------------------------
-Write-Output " [ ] Ensuring that '$privateDnsZoneName' DNS zone is removed"
-if (Get-DnsServerZone -Name $privateDnsZoneName -ErrorAction SilentlyContinue) {
-    try {
-      Remove-DnsServerZone $privateDnsZoneName -force
-      Write-Output " [o] Successfully removed '$privateDnsZoneName' DNS zone"
-    } catch [System.ArgumentException] {
-      Write-Output " [x] Failed to remove '$privateDnsZoneName' DNS zone!"
+if ($privateDnsZoneName) {
+    Write-Output " [ ] Ensuring that '$privateDnsZoneName' DNS zone is removed"
+    if (Get-DnsServerZone -Name $privateDnsZoneName -ErrorAction SilentlyContinue) {
+        try {
+            Remove-DnsServerZone $privateDnsZoneName -force
+            Write-Output " [o] Successfully removed '$privateDnsZoneName' DNS zone"
+        } catch [System.ArgumentException] {
+            Write-Output " [x] Failed to remove '$privateDnsZoneName' DNS zone!"
+        }
+    } else {
+        Write-Output " [o] '$privateDnsZoneName' DNS zone does not exist"
     }
-} else {
-    Write-Output " [o] '$privateDnsZoneName' DNS zone does not exist"
 }
