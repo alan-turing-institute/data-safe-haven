@@ -512,6 +512,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 ### Validate AD sync
+This step is optional and is intended for bulk-adding users once a TRE has been deployed.  
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
@@ -528,6 +529,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
       They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
     + `SecondaryEmail`: An existing organisational email address for the user.
       Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
+    + `GroupName`: TRE group that the user will be added to. This group is created during the TRE deployment.
 + Create and synchronise user
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
