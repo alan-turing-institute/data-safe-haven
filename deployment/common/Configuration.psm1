@@ -53,9 +53,10 @@ function Add-SreConfig {
 
     # Domain config
     # -------------
+    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)"
     $config.sre.domain = [ordered]@{
-        dn = "DC=$($sreConfigBase.domain.Replace('.',',DC='))"
-        fqdn = $sreConfigBase.domain
+        dn = "DC=$($sreDomain.Replace('.',',DC='))"
+        fqdn = $sreDomain
         netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
     }
     $config.sre.domain.securityGroups = [ordered]@{
@@ -369,8 +370,8 @@ function Add-SreConfig {
             subscription = $config.shm.dsvmImage.subscription
             rg = $config.shm.dsvmImage.gallery.rg
             gallery = $config.shm.dsvmImage.gallery.sig
-            type = $sreConfigBase.computeVmImageType
-            version = $sreConfigBase.computeVmImageVersion
+            type = $sreConfigBase.computeVmImage.type
+            version = $sreConfigBase.computeVmImage.version
         }
         vmSizeDefault = "Standard_D2s_v3"
         disks = [ordered]@{
