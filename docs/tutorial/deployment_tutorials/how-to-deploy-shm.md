@@ -511,7 +511,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Open Powershell (on the SHM DC) as an administrator
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
-### Validate AD sync
+### Validate Active Directory synchronisation
+This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory. Note that you can use the same script after deploying an SRE to add users in bulk.
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
@@ -528,6 +529,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
       They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
     + `SecondaryEmail`: An existing organisational email address for the user.
       Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
+    + [Optional] `GroupName`: SRE group that the user will be added to. As these groups are created during the SRE deployment you can leave this empty for this initial validation of the synchronisation process.
 + Create and synchronise user
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
