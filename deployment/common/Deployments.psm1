@@ -1083,6 +1083,18 @@ function Get-Subnet {
 Export-ModuleMember -Function Get-Subnet
 
 
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetworkFromSubnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
+        $Subnet
+    )
+    return Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $dataSubnet.Id}).Count -gt 0) }
+}
+Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
+
+
 # Get all VMs for an SHM or SRE
 # -----------------------------
 function Get-VMsByResourceGroupPrefix {

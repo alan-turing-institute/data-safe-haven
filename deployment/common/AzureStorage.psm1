@@ -1,4 +1,5 @@
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -68,6 +69,21 @@ function Deploy-StorageAccountEndpoint {
         (($StorageAccount.Kind -eq "FileStorage") -and ($StorageType -ne "File"))) {
             Add-LogMessage -Level Fatal "Storage type '$StorageType' is not compatible with '$($StorageAccount.StorageAccountName)' which uses '$($StorageAccount.Kind)'"
     }
+    # Disable private endpoint network policies on the subnet
+    # See here for further information: https://docs.microsoft.com/en-us/azure/private-link/disable-private-endpoint-network-policy
+    # Note that this means that NSG rules will *not* apply to the private endpoint
+    if ($Subnet.PrivateEndpointNetworkPolicies -ne "Disabled") {
+        Add-LogMessage -Level Info "[ ] Disabling private endpoint network policies on '$($Subnet.Name)'..."
+        $virtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $Subnet
+        ($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq $Subnet.Name }).PrivateEndpointNetworkPolicies = "Disabled"
+        $virtualNetwork | Set-AzVirtualNetwork
+        if ($?) {
+            Add-LogMessage -Level Success "Disabled private endpoint network policies on '$($Subnet.Name)'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to disable private endpoint network policies on '$($Subnet.Name)'!"
+        }
+    }
+    # Ensure that the private endpoint exists
     $privateEndpointName = "$($StorageAccount.StorageAccountName)-endpoint"
     Add-LogMessage -Level Info "Ensuring that private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)' exists..."
     $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
