@@ -1,3 +1,4 @@
+## Import the common AD functions
 [ClassVersion("1.0.0.0"), FriendlyName("xADServicePrincipalName")]
 class MSFT_xADServicePrincipalName : OMI_BaseResource
 {

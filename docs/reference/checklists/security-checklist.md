@@ -44,7 +44,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 ### Verify by (BB):
 
 + Create a new user without MFA and check that the user cannot access the environment regardless of other credentials.
-  + a) Follow the [SRE deployment guide](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/deploy_sre_instructions.md#bicyclist-set-up-a-non-privileged-user-account) for setting up a non privileged user account
+  + a) Follow the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-set-up-a-non-privileged-user-account) for setting up a non privileged user account
   + b) Attempt to sign in to the remote desktop web client using the user account.
   + c) **Verify:** access fails
 + Check that the user is able to successfully set up MFA with the right credentials

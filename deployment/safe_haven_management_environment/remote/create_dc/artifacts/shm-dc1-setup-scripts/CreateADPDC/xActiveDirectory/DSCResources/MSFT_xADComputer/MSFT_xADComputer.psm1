@@ -1,4 +1,4 @@
-$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+﻿$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 
 # Import the common AD functions
 $adCommonFunctions = Join-Path `
@@ -547,3 +547,4 @@ function Set-TargetResource
 } #end function Set-TargetResource
 
 Export-ModuleMember -Function *-TargetResource
+

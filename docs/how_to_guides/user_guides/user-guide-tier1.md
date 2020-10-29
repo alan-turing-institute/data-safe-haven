@@ -30,7 +30,7 @@ Our goal is to ensure that you are able to implement the most cutting edge data 
 
 The data you are working on will have been classified into one of five sensitivity tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4.
 The tiers are defined by the most sensitive data in your project, and may be increased if the combination of data is deemed to be require additional levels of security.
-You can read more about this process in our policy paper: *Arenas et al, 2019*, [`arXiv:1908.08737`](<https://arxiv.org/abs/1908.08737>).
+You can read more about this process in our policy paper: *Arenas et al, 2019*, [`arXiv:1908.08737`](https://arxiv.org/abs/1908.08737).
 
 The level of sensitivity of your data determines whether you have access to the internet within the SRE and whether you are allowed to copy and paste between the secure research environment and other windows on your computer.
 This means you may be limited in which data science tools you are allowed to install.
@@ -115,7 +115,7 @@ If you do not already have an SSH key, don't worry - it's easy to generate one:
 #### Generate an SSH key on Windows
 
 If you are using Windows, you will need to download an SSH client.
-We recommend installing the free [PuTTY](<http://www.chiark.greenend.org.uk/~sgtatham/putty/>) program from `http://www.chiark.greenend.org.uk/~sgtatham/putty/` .
+We recommend installing the free [PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/) program from `http://www.chiark.greenend.org.uk/~sgtatham/putty/` .
 To generate an SSH key with `PuTTYgen` , follow these steps:
 
 + Open the PuTTYgen program.
@@ -183,10 +183,10 @@ On Linux or OSX you can generate a key with `ssh-keygen` with the following step
 The next step in setting up your account is to authenticate your account from your phone.
 
 + You will need to download a two-factor authentication app that is capable of generating 6-digit codes. A few examples are:
-  + `Google Authenticator` (available for [iOS](<https://apps.apple.com/us/app/google-authenticator/id388497605) and [Android](<https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2)>>)
-  + `Microsoft Authenticator` (available for [iOS](<https://apps.apple.com/us/app/microsoft-authenticator/id983156458) and [Android](<https://play.google.com/store/apps/details?id=com.azure.authenticator)>>)
-  + `Authy` (available for [iOS](<https://apps.apple.com/us/app/twilio-authy/id494168017) and [Android](<https://play.google.com/store/apps/details?id=com.authy.authy)>>)
-  + `2FA Authenticator` (available for [iOS](<https://apps.apple.com/us/app/2fa-authenticator-2fas/id1217793794) and [Android](<https://play.google.com/store/apps/details?id=com.twofasapp)>>)
+  + `Google Authenticator` (available for [iOS](https://apps.apple.com/us/app/google-authenticator/id388497605) and [Android](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2))
+  + `Microsoft Authenticator` (available for [iOS](https://apps.apple.com/us/app/microsoft-authenticator/id983156458) and [Android](https://play.google.com/store/apps/details?id=com.azure.authenticator))
+  + `Authy` (available for [iOS](https://apps.apple.com/us/app/twilio-authy/id494168017) and [Android](https://play.google.com/store/apps/details?id=com.authy.authy))
+  + `2FA Authenticator` (available for [iOS](https://apps.apple.com/us/app/2fa-authenticator-2fas/id1217793794) and [Android](https://play.google.com/store/apps/details?id=com.twofasapp))
 
 This additional security verification is to make it harder for people to impersonate you and connect to the environment without permission.
 
@@ -213,7 +213,7 @@ After going through the account setup procedure, you should have:
 
 ### :penguin: Use SSH to log into the SRE
 
-Although the research environment will use the browser-based [`CoCalc`](<https://www.cocalc.com>), you are required to authenticate by using a secure SSH connection.
+Although the research environment will use the browser-based [`CoCalc`](https://www.cocalc.com), you are required to authenticate by using a secure SSH connection.
 
 Authentication for users requires:
 
@@ -340,7 +340,7 @@ You can invite other users to collaborate on your project and, in fact, you will
 
 ### :family: Using CoCalc
 
-Full [details about how to use CoCalc](<https://doc.cocalc.com/contents.html>) are available at: `https://doc.cocalc.com/contents.html`
+Full [details about how to use CoCalc](https://doc.cocalc.com/contents.html) are available at: `https://doc.cocalc.com/contents.html`
 You have access to the following tools through `CoCalc`
 
 + collaborative `Jupyter` notebooks

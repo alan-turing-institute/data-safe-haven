@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 # Localized messages
 data LocalizedData
 {
@@ -15,15 +16,15 @@ function New-TerminatingError
     (
         [Parameter(Mandatory)]
         [String]$errorId,
-        
+
         [Parameter(Mandatory)]
         [String]$errorMessage,
 
         [Parameter(Mandatory)]
         [System.Management.Automation.ErrorCategory]$errorCategory
     )
-    
-    $exception = New-Object System.InvalidOperationException $errorMessage 
+
+    $exception = New-Object System.InvalidOperationException $errorMessage
     $errorRecord = New-Object System.Management.Automation.ErrorRecord $exception, $errorId, $errorCategory, $null
     throw $errorRecord
 }

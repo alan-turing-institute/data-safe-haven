@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 ConvertFrom-StringData @'
     GettingMountedImageMessage = Getting Mounted Drive for image file '{0}'.
 

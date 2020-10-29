@@ -45,7 +45,7 @@
             Name                 = $features
             Ensure               = "Present"
             IncludeAllSubFeature = $true
-        } 
+        }
 
         xDnsServerAddress DnsServerAddress {
             Address        = $DNSServer
@@ -63,7 +63,7 @@
         }
 
         xADDomainController BDC {
-            DomainName                    = $DomainName         
+            DomainName                    = $DomainName
             DomainAdministratorCredential = $DomainCreds
             SafemodeAdministratorPassword = $SafeModeAdminCreds
             DatabasePath                  = "F:\NTDS"

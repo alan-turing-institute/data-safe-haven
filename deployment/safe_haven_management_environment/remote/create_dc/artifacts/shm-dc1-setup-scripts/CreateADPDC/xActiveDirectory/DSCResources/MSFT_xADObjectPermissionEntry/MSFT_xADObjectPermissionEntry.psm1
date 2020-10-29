@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Get the current state of the object access entry.
@@ -335,3 +335,4 @@ function Test-TargetResource
 
     return $returnValue
 }
+
