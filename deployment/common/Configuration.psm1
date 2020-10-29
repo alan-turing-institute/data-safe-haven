@@ -27,7 +27,7 @@ function Add-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
+            id = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
             rgPrefix = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
             nsgPrefix = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
@@ -57,7 +57,7 @@ function Add-SreConfig {
     $config.sre.domain = [ordered]@{
         dn = "DC=$($sreDomain.Replace('.',',DC='))"
         fqdn = $sreDomain
-        netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
+        netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
     }
     $config.sre.domain.securityGroups = [ordered]@{
         dataAdministrators = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Data Administrators" }
@@ -119,20 +119,20 @@ function Add-SreConfig {
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
-            accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg = $storageRg
         }
         bootdiagnostics = [ordered]@{
-            accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg = $storageRg
         }
         data = [ordered]@{
             ingress = [ordered]@{
-                accountName   = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+                accountName   = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 containerName = "ingress"
             }
             egress = [ordered]@{
-                accountName   = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+                accountName   = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 containerName = "egress"
             }
         }
@@ -141,7 +141,7 @@ function Add-SreConfig {
     # Secrets config
     # --------------
     $config.sre.keyVault = [ordered]@{
-        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | Limit-StringLength 24
+        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | Limit-StringLength -MaximumLength 24
         rg = "$($config.sre.rgPrefix)_SECRETS".ToUpper()
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
@@ -156,17 +156,17 @@ function Add-SreConfig {
         serviceAccounts = [ordered]@{
             ldapSearch = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) LDAP Search Service Account"
-                samAccountName = "$($config.sre.id)ldapsearch".ToLower() | Limit-StringLength 20
+                samAccountName = "$($config.sre.id)ldapsearch".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "$($config.sre.shortName)-other-service-account-password-ldap-search"
             }
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
-                samAccountName = "$($config.sre.id)dbpostgres".ToLower() | Limit-StringLength 20
+                samAccountName = "$($config.sre.id)dbpostgres".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "$($config.sre.shortName)-db-service-account-password-postgres"
             }
             datamount = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
-                samAccountName = "$($config.sre.id)datamount".ToLower() | Limit-StringLength 20
+                samAccountName = "$($config.sre.id)datamount".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "$($config.sre.shortName)-other-service-account-password-datamount"
             }
         }
@@ -178,7 +178,7 @@ function Add-SreConfig {
         rg = "$($config.sre.rgPrefix)_RDS".ToUpper()
         gateway = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
-            vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+            vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
             nsg = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
@@ -200,7 +200,7 @@ function Add-SreConfig {
         }
         appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
-            vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+            vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
             nsg = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
@@ -250,7 +250,7 @@ function Add-SreConfig {
 
     # Data server
     # -----------
-    $hostname = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+    $hostname = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
     $config.sre.dataserver = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-dataserver"
         rg = "$($config.sre.rgPrefix)_DATA".ToUpper()
@@ -337,7 +337,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
             dbAdminUsernameSecretName = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
             dbAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
-            vmName = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+            vmName = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             type = $databaseType
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset
             port = $dbConfig[$databaseType].port
@@ -505,7 +505,7 @@ function Get-ShmFullConfig {
         location = $shmConfigBase.vmImages.location
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
-            accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
@@ -536,7 +536,7 @@ function Get-ShmFullConfig {
         }
         keyVault = [ordered]@{
             rg = "RG_SH_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength 24
+            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network = [ordered]@{
             rg = "RG_SH_NETWORKING"
@@ -547,7 +547,7 @@ function Get-ShmFullConfig {
     # -------------
     $shm.domain = [ordered]@{
         fqdn = $shmConfigBase.domain
-        netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
+        netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous = [ordered]@{
             dataServers = [ordered]@{ name = "Secure Research Environment Data Servers" }
@@ -662,7 +662,7 @@ function Get-ShmFullConfig {
     # --------------
     $shm.keyVault = [ordered]@{
         rg = "$($shm.rgPrefix)_SECRETS".ToUpper()
-        name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
+        name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength -MaximumLength 24
         secretNames = [ordered]@{
             aadEmergencyAdminUsername = "shm-$($shm.id)-aad-emergency-admin-username".ToLower()
             aadEmergencyAdminPassword = "shm-$($shm.id)-aad-emergency-admin-password".ToLower()
@@ -685,34 +685,34 @@ function Get-ShmFullConfig {
         computerManagers = [ordered]@{
             identityServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Identity Servers Manager"
-                samAccountName = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
             dataServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Data Servers Manager"
-                samAccountName = "$($shm.id)datasrvrs".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)datasrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-data-servers".ToLower()
             }
             linuxServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Linux Servers Manager"
-                samAccountName = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
             }
             rdsGatewayServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) RDS Gateway Manager"
-                samAccountName = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
             }
             rdsSessionServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) RDS Session Servers Manager"
-                samAccountName = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
         serviceAccounts = [ordered]@{
             aadLocalSync = [ordered]@{
                 name = "$($shm.domain.netbiosName) Local AD Sync Administrator"
-                samAccountName = "$($shm.id)localadsync".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)localadsync".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-aad-localsync-password".ToLower()
                 usernameSecretName =  "shm-$($shm.id)-aad-localsync-username".ToLower()
             }
@@ -721,7 +721,7 @@ function Get-ShmFullConfig {
 
     # Domain controller config
     # ------------------------
-    $hostname = "DC1-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
+    $hostname = "DC1-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
     $shm.dc = [ordered]@{
         rg = "$($shm.rgPrefix)_DC".ToUpper()
         vmName = $hostname
@@ -745,7 +745,7 @@ function Get-ShmFullConfig {
 
     # Backup domain controller config
     # -------------------------------
-    $hostname = "DC2-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
+    $hostname = "DC2-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
     $shm.dcb = [ordered]@{
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
@@ -766,7 +766,7 @@ function Get-ShmFullConfig {
 
     # NPS config
     # ----------
-    $hostname = "NPS-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
+    $hostname = "NPS-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
     $shm.nps = [ordered]@{
         adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-nps".ToLower()
         rg = "$($shm.rgPrefix)_NPS".ToUpper()
@@ -793,11 +793,11 @@ function Get-ShmFullConfig {
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "shm$($shm.id)artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
     }
 
