@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 Import-Module $PSScriptRoot\Helper.psm1 -Verbose:$false
 
 # Localized messages

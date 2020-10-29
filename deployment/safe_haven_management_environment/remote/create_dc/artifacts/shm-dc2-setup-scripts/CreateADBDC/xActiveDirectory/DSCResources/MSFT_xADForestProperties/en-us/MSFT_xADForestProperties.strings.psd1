@@ -1,4 +1,4 @@
-# culture="en-US"
+﻿# culture="en-US"
 ConvertFrom-StringData @'
     GetForest = Getting forest suffix information from {0}.
     ForestUpnSuffixNotInDesiredState = User Principal Name Suffix for forest '{0}' not in the desired state.

@@ -1,4 +1,5 @@
-﻿Function Get-TargetResource
+﻿## Import the common AD functions
+Function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([Hashtable])]
@@ -6,7 +7,7 @@
     (
     [Parameter(Mandatory=$true)]
     [string]$Name,
-    
+
     [Parameter()]
     [bool]$SkipCcmClientSDK
     )
@@ -36,7 +37,7 @@
     $PendingComputerName = (Get-ItemProperty 'hklm:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName').ComputerName
     $PendingComputerRename = $ActiveComputerName -ne $PendingComputerName
 
-    
+
 
     if (-not $SkipCcmClientSDK)
     {
@@ -46,7 +47,7 @@
             Name='DetermineIfRebootPending'
             ErrorAction='Stop'
         }
-        
+
         Try {
             $CCMClientSDK = Invoke-WmiMethod @CCMSplat
         }

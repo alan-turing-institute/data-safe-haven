@@ -1,3 +1,6 @@
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+
+
 # Convert a nested, sortable object into a sorted hashtable
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
@@ -6,7 +9,7 @@ function ConvertTo-SortedHashtable {
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )
-    $hasKeysValues = [bool](($Sortable.PSobject.Properties.name -match "Keys") -and ($Sortable.PSobject.Properties.name -match "Values"))
+    $hasKeysValues = [bool](($Sortable.PSObject.Properties.name -match "Keys") -and ($Sortable.PSObject.Properties.name -match "Values"))
     if ($hasKeysValues) {
         $OutputHashtable = [ordered]@{}
         $Sortable.GetEnumerator() | Sort-Object -Property "Name" | ForEach-Object { $OutputHashtable.Add($_.Key, $(ConvertTo-SortedHashtable -Sortable $_.Value)) }
@@ -29,7 +32,7 @@ function Copy-HashtableOverrides {
     )
     foreach ($sourcePair in $Source.GetEnumerator()) {
         # If we hit a leaf then override the target with the source value
-        if ($sourcePair.Value -isnot [Hashtable]) {
+        if ($sourcePair.Value -isnot [System.Collections.IDictionary]) {
             $Target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
@@ -99,7 +102,7 @@ function Limit-StringLength {
     param(
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string]$InputString,
-        [Parameter(Position = 0, Mandatory = $True)]
+        [Parameter(Mandatory = $True)]
         [int]$MaximumLength,
         [Parameter(Mandatory=$false)]
         [Switch]$FailureIsFatal,
