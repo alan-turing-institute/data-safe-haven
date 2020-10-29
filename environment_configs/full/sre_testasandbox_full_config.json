@@ -291,18 +291,28 @@
       "bootdiagnostics": {
         "accountName": "shmtestabootdiagsvkdrslu",
         "rg": "RG_SHM_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "Safe Haven Management Test A",
     "time": {
       "ntp": {
+        "poolFqdn": "time.google.com",
         "serverAddresses": [
           "216.239.35.0",
           "216.239.35.4",
           "216.239.35.8",
           "216.239.35.12"
         ],
-        "serverFqdn": "time.google.com"
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
       },
       "timezone": {
         "linux": "Europe/London",
@@ -495,6 +505,10 @@
         "name": "VNET_SRE_SANDBOX",
         "rg": "RG_SRE_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.150.4.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.150.2.0/24",
             "name": "SharedDataSubnet"
@@ -564,6 +578,14 @@
     "rgPrefix": "RG_SRE",
     "shortName": "sre-sandbox",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
+        }
+      },
       "artifacts": {
         "accountName": "sreartifactszvmwtqkigrld",
         "rg": "RG_SRE_ARTIFACTS"
@@ -573,13 +595,22 @@
         "rg": "RG_SRE_ARTIFACTS"
       },
       "data": {
-        "egress": {
-          "accountName": "sresandboxegressalnpdsmr",
-          "containerName": "egress"
+        "account": {
+          "accessTier": "hot",
+          "name": "testasandboxdataalnpdsmr",
+          "storageKind": "BlobStorage"
         },
-        "ingress": {
-          "accountName": "sresandboxingressalnpdsm",
-          "containerName": "ingress"
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-sandbox-data-egress-sas-readwrite"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "containerName": "ingress",
+            "sasSecretName": "sre-sandbox-data-ingress-sas-readonly"
+          }
         }
       }
     },
