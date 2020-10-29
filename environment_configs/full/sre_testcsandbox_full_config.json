@@ -291,6 +291,9 @@
       "bootdiagnostics": {
         "accountName": "shmtestcbootdiagsepbotfi",
         "rg": "RG_SHM_TESTC_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
@@ -422,7 +425,7 @@
       },
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.151.2.4",
+      "ip": "10.151.4.4",
       "nsg": "NSG_SRE_SANDBOX_DATA",
       "rg": "RG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
@@ -501,6 +504,10 @@
         "name": "VNET_SRE_SANDBOX",
         "rg": "RG_SRE_SANDBOX_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.151.4.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.151.2.0/24",
             "name": "SharedDataSubnet"
@@ -572,9 +579,10 @@
     "storage": {
       "accessPolicies": {
         "readOnly": {
-          "nameSuffix": "readonly",
-          "permissions": "rl",
-          "sasSecretName": "sre-sandbox-storage-ingress-sas-readonly"
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
         }
       },
       "artifacts": {
@@ -586,25 +594,23 @@
         "rg": "RG_SRE_SANDBOX_ARTIFACTS"
       },
       "data": {
-        "egress": {
-          "accountName": "testcsandboxegressakeqzb",
-          "containerName": "egress"
+        "account": {
+          "accessTier": "hot",
+          "name": "testcsandboxdataakeqzbwg",
+          "storageKind": "BlobStorage"
         },
-        "ingress": {
-          "accountName": "testcsandboxingressakeqz",
-          "containerName": "ingress"
-        }
-      },
-      "datastorage": {
-        "accountName": "testcsandboxdataakeqzbwg",
         "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-sandbox-data-egress-sas-readwrite"
+          },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "name": "ingress"
+            "containerName": "ingress",
+            "sasSecretName": "sre-sandbox-data-ingress-sas-readonly"
           }
-        },
-        "rg": "RG_SHM_TESTC_DATA_PERSISTENT",
-        "storageType": "BlobStorage"
+        }
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
@@ -649,7 +655,7 @@
         },
         "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.2.5",
+        "ip": "10.151.4.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
@@ -664,7 +670,7 @@
         },
         "fqdn": "HACKMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.151.2.6",
+        "ip": "10.151.4.6",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
