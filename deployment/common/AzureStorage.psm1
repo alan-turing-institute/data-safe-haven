@@ -59,9 +59,9 @@ function Deploy-StorageAccountEndpoint {
     )
     # Allow a default if we're using a storage account that is only compatible with one storage type
     if ($StorageType -eq "Default") {
-        if ($StorageAccount.Kind -eq "BlobStorage") { $StorageType == "Blob" }
-        if ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType == "Blob" }
-        if ($StorageAccount.Kind -eq "FileStorage") { $StorageType == "File" }
+        if ($StorageAccount.Kind -eq "BlobStorage") { $StorageType = "Blob" }
+        if ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType = "Blob" }
+        if ($StorageAccount.Kind -eq "FileStorage") { $StorageType = "File" }
     }
     # Validate that the storage type is compatible with this storage account
     if ((($StorageAccount.Kind -eq "BlobStorage") -and ($StorageType -ne "Blob")) -or
@@ -75,7 +75,7 @@ function Deploy-StorageAccountEndpoint {
     if ($Subnet.PrivateEndpointNetworkPolicies -ne "Disabled") {
         Add-LogMessage -Level Info "[ ] Disabling private endpoint network policies on '$($Subnet.Name)'..."
         $virtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $Subnet
-        ($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object  {$_.Name -eq $Subnet.Name }).PrivateEndpointNetworkPolicies = "Disabled"
+        ($virtualNetwork | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq $Subnet.Name }).PrivateEndpointNetworkPolicies = "Disabled"
         $virtualNetwork | Set-AzVirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Disabled private endpoint network policies on '$($Subnet.Name)'"

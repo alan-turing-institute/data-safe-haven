@@ -125,11 +125,11 @@ function Add-SreConfig {
     # Storage configuration entries
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
-            readOnly = [ordered]@{
-                permissions   = "rl"
+            readOnly  = [ordered]@{
+                permissions = "rl"
             }
             readWrite = [ordered]@{
-                permissions   = "rwl"
+                permissions = "rwl"
             }
         }
         artifacts       = [ordered]@{
@@ -141,12 +141,12 @@ function Add-SreConfig {
             rg          = $storageRg
         }
         data            = [ordered]@{
-            account  = [ordered]@{
-                name = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            account    = [ordered]@{
+                name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
                 accessTier  = "hot"
             }
-            containers  = [ordered]@{
+            containers = [ordered]@{
                 ingress = [ordered]@{
                     containerName    = "ingress"
                     accessPolicyName = "readOnly"
@@ -824,7 +824,7 @@ function Get-ShmFullConfig {
             rg          = $storageRg
             accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
-        data = [ordered]@{
+        data            = [ordered]@{
             rg = "$($shm.rgPrefix)_PERSISTENT_DATA".ToUpper()
         }
     }
@@ -842,11 +842,11 @@ function Get-ShmFullConfig {
         rg       = "$($shm.rgPrefix)_PKG_MIRRORS".ToUpper()
         vmSize   = "Standard_B2ms"
         diskType = "Standard_LRS"
-        pypi = [ordered]@{
+        pypi     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8192 }
             tier3 = [ordered]@{ diskSize = 512 }
         }
-        cran = [ordered]@{
+        cran     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 128 }
             tier3 = [ordered]@{ diskSize = 32 }
         }

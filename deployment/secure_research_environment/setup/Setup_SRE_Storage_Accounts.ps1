@@ -67,7 +67,7 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $privateDnsZoneName = "$($storageAccount.StorageAccountName).blob.core.windows.net".ToLower()
 Add-LogMessage -Level Info "Setting up DNS Zone for '$privateDnsZoneName'"
 $params = @{
-    Name = $privateDnsZoneName
+    Name      = $privateDnsZoneName
     IpAddress = $privateEndpointIp
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "Set_DNS_Zone.ps1"
