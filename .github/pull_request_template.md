@@ -5,6 +5,7 @@ Please review the [guidelines for contributing](../CONTRIBUTING.md) to this repo
 - If this pull request is not ready to merge yet, please add `WIP:` to the beginning of the name as well as marking it as a **draft** pull request
 - Make sure that your branch is up-to-date with the **master branch** (you probably started your branch from master but it may have changed since then)
 - There is **no need** to use GitHub labels for pull requests. The issue(s) which this pull request is closing should have the appropriate labels.
+- Make sure that you have checked the formatting of any Powershell that you've added. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
 
 ### :orange_book:  Description
 Please describe your pull request.

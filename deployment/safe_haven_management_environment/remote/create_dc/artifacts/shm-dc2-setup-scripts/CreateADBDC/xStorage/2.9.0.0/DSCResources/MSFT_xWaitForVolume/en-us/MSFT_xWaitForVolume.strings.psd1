@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 ConvertFrom-StringData @'
     GettingWaitForVolumeStatusMessage = Getting Wait for Volume status for volume '{0}'.
 

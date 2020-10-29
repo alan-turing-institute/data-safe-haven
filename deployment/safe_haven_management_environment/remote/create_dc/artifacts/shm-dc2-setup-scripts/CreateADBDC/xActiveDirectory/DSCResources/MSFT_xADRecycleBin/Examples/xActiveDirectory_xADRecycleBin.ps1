@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 Configuration Example_xADRecycleBin
 {
 Param(
@@ -7,7 +8,7 @@ Param(
 
     [parameter(Mandatory = $true)]
     [System.Management.Automation.PSCredential]
-    $EACredential 
+    $EACredential
 )
 
     Import-DscResource -Module xActiveDirectory
@@ -36,4 +37,3 @@ Example_xADRecycleBin -EACredential (Get-Credential contoso\administrator) -Fore
 Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose -WhatIf
 
 Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose
-

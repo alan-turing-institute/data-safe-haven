@@ -1,4 +1,4 @@
-
+﻿
 <#
     .SYNOPSIS
         Returns the current state of the specified service principal name.
@@ -167,3 +167,4 @@ function Test-TargetResource
 
     return $desiredConfigurationMatch
 }
+
