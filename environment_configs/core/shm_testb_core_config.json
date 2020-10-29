@@ -6,7 +6,7 @@
     "azure": {
         "subscriptionName": "Safe Haven Management Test B",
         "adminGroupName" : "Safe Haven Test Admins",
-        "location": "location": "uksouth"
+        "location": "uksouth"
     },
     "organisation": {
         "name": "The Alan Turing Institute",

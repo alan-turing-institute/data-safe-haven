@@ -47,7 +47,7 @@ Specific risks which this policy aims to mitigate include:
 
 + If approved, a requested package will be added to the Tier 3 package whitelist making it available to all future SRE deployments via the package mirror (as long as it remains on the whitelist).
 
-+ New additions to the whitelist will be judged against the [criteria](Criteria-for-inclusion-in-the-DSVM-image) for inclusion in the DSVM image and, where appropriate, also added to that list.
++ New additions to the whitelist will be judged against the [criteria](#Criteria-for-inclusion-in-the-DSVM-image) for inclusion in the DSVM image and, where appropriate, also added to that list.
 
 + The DSVM image will be updated every month to ensure that changes to the image package list are propagated to new safe haven deployments.
 

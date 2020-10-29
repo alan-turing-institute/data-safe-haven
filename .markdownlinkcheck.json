@@ -1,0 +1,18 @@
+{
+    "ignorePatterns": [
+        {
+            "_comment": "As the repository is private, without authentication these paths will return 404",
+            "pattern": "^https://github.com/alan-turing-institute/data-safe-haven"
+        },
+        {
+            "_comment": "Returns permanent direct code",
+            "pattern": "^https://www.egress.com"
+        },
+        {
+            "_comment": "Seems to return redirect codes in curl, 200 in browser. markdown-link-check does not return the http code",
+            "pattern": "^https://www.turing.ac.uk/"
+        }
+    ],
+    "retryOn429": true,
+    "aliveStatusCodes":[200, 302, 304]
+}
