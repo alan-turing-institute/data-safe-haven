@@ -511,8 +511,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Open Powershell (on the SHM DC) as an administrator
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
-### Validate AD sync
-This step is optional and is intended for bulk-adding users once a TRE has been deployed.  
+### Validate Active Directory synchronisation
+This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory. Note that you can use the same script after deploying an SRE to add users in bulk.
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
