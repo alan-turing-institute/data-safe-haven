@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/GenerateSasToken -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
@@ -367,7 +367,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     $containerName = $blobfiles[$vmName] | ForEach-Object { $_.Keys } | Select-Object -First 1
     $fileNames = $blobfiles[$vmName] | ForEach-Object { $_.Values }
-    $sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
+    $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
         storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""

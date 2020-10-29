@@ -10,6 +10,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force

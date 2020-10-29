@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/GenerateSasToken -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
@@ -128,7 +128,7 @@ $safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 # Deploy SHM DC from template
 # ---------------------------
 Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+$artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
     Administrator_Password         = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
     Administrator_User             = $domainAdminUsername
@@ -169,7 +169,7 @@ Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.dc.
 # Get list of blobs in the storage account
 $storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+$artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
