@@ -1,13 +1,25 @@
 {
-    "subscriptionName": "DSGSEP2020 - Greenvest",
-    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "green",
-    "shmId": "turing1",
     "tier": "1",
+    "shmId": "turing1",
+    "subscriptionName": "DSGSEP2020 - Greenvest",
     "domain": "greenvest.turingsafehaven.ac.uk",
     "ipPrefix": "10.100.64",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900"
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_GREEN",
+            "rgPrefix": "RG_SRE_GREEN",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_GREEN"
+                }
+            }
+        }
+    }
 }

@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier2": {
-          "diskSize": 127,
+          "diskSize": 128,
           "external": {
             "adminPasswordSecretName": "shm-mortest-vm-admin-password-cran-external-mirror-tier-2",
             "ipAddress": "10.20.2.5",
@@ -135,7 +135,7 @@
           }
         },
         "tier3": {
-          "diskSize": 31,
+          "diskSize": 32,
           "external": {
             "adminPasswordSecretName": "shm-mortest-vm-admin-password-cran-external-mirror-tier-3",
             "ipAddress": "10.20.3.5",
@@ -151,7 +151,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier2": {
-          "diskSize": 8191,
+          "diskSize": 8192,
           "external": {
             "adminPasswordSecretName": "shm-mortest-vm-admin-password-pypi-external-mirror-tier-2",
             "ipAddress": "10.20.2.4",
@@ -164,7 +164,7 @@
           }
         },
         "tier3": {
-          "diskSize": 511,
+          "diskSize": 512,
           "external": {
             "adminPasswordSecretName": "shm-mortest-vm-admin-password-pypi-external-mirror-tier-3",
             "ipAddress": "10.20.3.4",
@@ -294,6 +294,28 @@
       }
     },
     "subscriptionName": "Martin OReilly",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -430,7 +452,7 @@
       "deploymentNsg": "NSG_SRE_SRE1_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
-          "sizeGb": "128",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         },
         "os": {
@@ -438,7 +460,7 @@
           "type": "Standard_LRS"
         },
         "scratch": {
-          "sizeGb": "512",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         }
       },
@@ -555,10 +577,26 @@
       "bootdiagnostics": {
         "accountName": "sresre1bootdiagsupbqzniv",
         "rg": "RG_SRE_SRE1_ARTIFACTS"
+      },
+      "data": {
+        "egress": {
+          "accountName": "sresre1egressupbqznivdtr",
+          "containerName": "egress"
+        },
+        "ingress": {
+          "accountName": "sresre1ingressupbqznivdt",
+          "containerName": "ingress"
+        }
       }
     },
     "subscriptionName": "Martin OReilly",
     "tier": "2",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {

@@ -1,14 +1,25 @@
 {
-    "subscriptionName": "Martin OReilly",
-    "azureAdminGroupName": "Safe Haven Test Admins",
     "sreId": "sre2",
-    "shmId": "mortest",
     "tier": "3",
-    "domain": "sre2.mortest.dsgroupdev.co.uk",
+    "shmId": "mortest",
+    "subscriptionName": "Martin OReilly",
     "ipPrefix": "10.150.8",
     "inboundAccessFrom": "Internet",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900",
-    "databases": ["MSSQL", "PostgreSQL"]
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
+    "databases": ["MSSQL", "PostgreSQL"],
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_SRE2",
+            "rgPrefix": "RG_SRE_SRE2",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_SRE2"
+                }
+            }
+        }
+    }
 }
