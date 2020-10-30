@@ -1,25 +1,31 @@
 {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
-    "azureAdminGroupName": "Safe Haven Test Admins",
-    "shmId": "demo",
     "sreId": "sandbox",
     "tier": "3",
-    "domain": "sandbox.demo.dsgroupdev.co.uk",
+    "shmId": "demo",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
     "ipPrefix": "10.151.0",
     "inboundAccessFrom": "Internet",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "sre": {
             "rgPrefix": "RG_SRE",
+            "nsgPrefix": "NSG_SRE_SANDBOX",
             "storage": {
                 "artifacts": {
                     "accountName": "sreartifactsmzgcboxwifps"
                 },
                 "bootdiagnostics": {
                     "accountName": "srebootdiagsmzgcboxwifps"
+                }
+            },
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_SANDBOX"
                 }
             },
             "keyVault": {
