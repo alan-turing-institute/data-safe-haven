@@ -291,9 +291,34 @@
       "bootdiagnostics": {
         "accountName": "shmturing1bootdiagsvkdrslu",
         "rg": "RG_SHM_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "[Prod] Safe Haven Management",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -355,7 +380,7 @@
       },
       "fqdn": "DAT-SRE-CATSAI.turingsafehaven.ac.uk",
       "hostname": "DAT-SRE-CATSAI",
-      "ip": "10.100.50.4",
+      "ip": "10.100.52.4",
       "nsg": "NSG_SRE_CATSAI_DATA",
       "rg": "RG_SRE_CATSAI_DATA",
       "vmName": "DAT-SRE-CATSAI",
@@ -434,6 +459,10 @@
         "name": "VNET_SRE_CATSAI",
         "rg": "RG_SRE_CATSAI_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.100.52.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.100.50.0/24",
             "name": "SharedDataSubnet"
@@ -503,27 +532,50 @@
     "rgPrefix": "RG_SRE_CATSAI",
     "shortName": "sre-catsai",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
+        }
+      },
       "artifacts": {
-        "accountName": "srecatsaiartifactsvdmlzb",
+        "accountName": "turing1catsaiartifactsvd",
         "rg": "RG_SRE_CATSAI_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "srecatsaibootdiagsvdmlzb",
+        "accountName": "turing1catsaibootdiagsvd",
         "rg": "RG_SRE_CATSAI_ARTIFACTS"
       },
       "data": {
-        "egress": {
-          "accountName": "srecatsaiegressvdmlzbpkc",
-          "containerName": "egress"
+        "account": {
+          "accessTier": "hot",
+          "name": "turing1catsaidatavdmlzbp",
+          "storageKind": "FileStorage"
         },
-        "ingress": {
-          "accountName": "srecatsaiingressvdmlzbpk",
-          "containerName": "ingress"
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-catsai-data-egress-sas-readwrite"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "containerName": "ingress",
+            "sasSecretName": "sre-catsai-data-ingress-sas-readonly"
+          }
         }
       }
     },
     "subscriptionName": "DSGSEP2020 - CatsAI",
     "tier": "1",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {
@@ -558,7 +610,7 @@
         },
         "fqdn": "GITLAB-SRE-CATSAI.turingsafehaven.ac.uk",
         "hostname": "GITLAB-SRE-CATSAI",
-        "ip": "10.100.50.5",
+        "ip": "10.100.52.5",
         "rootPasswordSecretName": "sre-catsai-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-CATSAI",
         "vmSize": "Standard_D2s_v3"
@@ -573,7 +625,7 @@
         },
         "fqdn": "HACKMD-SRE-CATSAI.turingsafehaven.ac.uk",
         "hostname": "HACKMD-SRE-CATSAI",
-        "ip": "10.100.50.6",
+        "ip": "10.100.52.6",
         "vmName": "HACKMD-SRE-CATSAI",
         "vmSize": "Standard_D2s_v3"
       },

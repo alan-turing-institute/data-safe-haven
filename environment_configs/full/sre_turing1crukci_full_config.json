@@ -291,9 +291,34 @@
       "bootdiagnostics": {
         "accountName": "shmturing1bootdiagsvkdrslu",
         "rg": "RG_SHM_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "[Prod] Safe Haven Management",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -355,7 +380,7 @@
       },
       "fqdn": "DAT-SRE-CRUKCI.turingsafehaven.ac.uk",
       "hostname": "DAT-SRE-CRUKCI",
-      "ip": "10.100.58.4",
+      "ip": "10.100.60.4",
       "nsg": "NSG_SRE_CRUKCI_DATA",
       "rg": "RG_SRE_CRUKCI_DATA",
       "vmName": "DAT-SRE-CRUKCI",
@@ -434,6 +459,10 @@
         "name": "VNET_SRE_CRUKCI",
         "rg": "RG_SRE_CRUKCI_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.100.60.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.100.58.0/24",
             "name": "SharedDataSubnet"
@@ -503,27 +532,50 @@
     "rgPrefix": "RG_SRE_CRUKCI",
     "shortName": "sre-crukci",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
+        }
+      },
       "artifacts": {
-        "accountName": "srecrukciartifactsfmxckn",
+        "accountName": "turing1crukciartifactsfm",
         "rg": "RG_SRE_CRUKCI_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "srecrukcibootdiagsfmxckn",
+        "accountName": "turing1crukcibootdiagsfm",
         "rg": "RG_SRE_CRUKCI_ARTIFACTS"
       },
       "data": {
-        "egress": {
-          "accountName": "srecrukciegressfmxckneby",
-          "containerName": "egress"
+        "account": {
+          "accessTier": "hot",
+          "name": "turing1crukcidatafmxckne",
+          "storageKind": "FileStorage"
         },
-        "ingress": {
-          "accountName": "srecrukciingressfmxckneb",
-          "containerName": "ingress"
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-crukci-data-egress-sas-readwrite"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "containerName": "ingress",
+            "sasSecretName": "sre-crukci-data-ingress-sas-readonly"
+          }
         }
       }
     },
     "subscriptionName": "DSGSEP2020 - CRUKCI",
     "tier": "1",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {
@@ -558,7 +610,7 @@
         },
         "fqdn": "GITLAB-SRE-CRUKCI.turingsafehaven.ac.uk",
         "hostname": "GITLAB-SRE-CRUKCI",
-        "ip": "10.100.58.5",
+        "ip": "10.100.60.5",
         "rootPasswordSecretName": "sre-crukci-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-CRUKCI",
         "vmSize": "Standard_D2s_v3"
@@ -573,7 +625,7 @@
         },
         "fqdn": "HACKMD-SRE-CRUKCI.turingsafehaven.ac.uk",
         "hostname": "HACKMD-SRE-CRUKCI",
-        "ip": "10.100.58.6",
+        "ip": "10.100.60.6",
         "vmName": "HACKMD-SRE-CRUKCI",
         "vmSize": "Standard_D2s_v3"
       },

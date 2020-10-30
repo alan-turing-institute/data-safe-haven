@@ -29,8 +29,8 @@ function Add-SreConfig {
         sre = [ordered]@{
             azureAdminGroupName = $sreConfigBase.azureAdminGroupName
             id                  = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
-            rgPrefix            = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SRE_$($sreConfigBase.sreId)".ToUpper()
-            nsgPrefix           = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SRE_$($sreConfigBase.sreId)".ToUpper()
+            rgPrefix            = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            nsgPrefix           = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
             shortName           = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName    = $sreConfigBase.subscriptionName
             tier                = $sreConfigBase.tier
@@ -54,9 +54,10 @@ function Add-SreConfig {
 
     # Domain config
     # -------------
+    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)"
     $config.sre.domain = [ordered]@{
-        dn          = "DC=$($sreConfigBase.domain.Replace('.',',DC='))"
-        fqdn        = $sreConfigBase.domain
+        dn          = "DC=$($sreDomain.Replace('.',',DC='))"
+        fqdn        = $sreDomain
         netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
     }
     $config.sre.domain.securityGroups = [ordered]@{
@@ -77,7 +78,7 @@ function Add-SreConfig {
     $config.sre.network = [ordered]@{
         vnet = [ordered]@{
             rg      = "$($config.sre.rgPrefix)_NETWORKING".ToUpper()
-            name    = "VNET_SRE_$($config.sre.id)".ToUpper()
+            name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
                 identity  = [ordered]@{
@@ -395,8 +396,8 @@ function Add-SreConfig {
             subscription = $config.shm.dsvmImage.subscription
             rg           = $config.shm.dsvmImage.gallery.rg
             gallery      = $config.shm.dsvmImage.gallery.sig
-            type         = $sreConfigBase.computeVmImageType
-            version      = $sreConfigBase.computeVmImageVersion
+            type         = $sreConfigBase.computeVmImage.type
+            version      = $sreConfigBase.computeVmImage.version
         }
         vmSizeDefault           = "Standard_D2s_v3"
         disks                   = [ordered]@{

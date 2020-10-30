@@ -1,13 +1,24 @@
 {
-    "subscriptionName": "DSGSEP2020 - CatsAI",
-    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "catsai",
-    "shmId": "turing1",
     "tier": "1",
-    "domain": "catsai.turingsafehaven.ac.uk",
+    "shmId": "turing1",
+    "subscriptionName": "DSGSEP2020 - CatsAI",
     "ipPrefix": "10.100.48",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900"
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_CATSAI",
+            "rgPrefix": "RG_SRE_CATSAI",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_CATSAI"
+                }
+            }
+        }
+    }
 }

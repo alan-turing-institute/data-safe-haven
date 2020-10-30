@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier2": {
-          "diskSize": 127,
+          "diskSize": 128,
           "external": {
             "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-external-mirror-tier-2",
             "ipAddress": "10.20.2.5",
@@ -135,7 +135,7 @@
           }
         },
         "tier3": {
-          "diskSize": 31,
+          "diskSize": 32,
           "external": {
             "adminPasswordSecretName": "shm-decovid-vm-admin-password-cran-external-mirror-tier-3",
             "ipAddress": "10.20.3.5",
@@ -151,7 +151,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier2": {
-          "diskSize": 8191,
+          "diskSize": 8192,
           "external": {
             "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-external-mirror-tier-2",
             "ipAddress": "10.20.2.4",
@@ -164,7 +164,7 @@
           }
         },
         "tier3": {
-          "diskSize": 511,
+          "diskSize": 512,
           "external": {
             "adminPasswordSecretName": "shm-decovid-vm-admin-password-pypi-external-mirror-tier-3",
             "ipAddress": "10.20.3.4",
@@ -291,9 +291,34 @@
       "bootdiagnostics": {
         "accountName": "shmdecovidbootdiagsoceuy",
         "rg": "RG_SHM_DECOVID_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_DECOVID_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "[Prod] DECOVID Safe Haven",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -400,7 +425,7 @@
       },
       "fqdn": "DAT-SRE-SRE2.decovid.turingsafehaven.ac.uk",
       "hostname": "DAT-SRE-SRE2",
-      "ip": "10.151.2.4",
+      "ip": "10.151.4.4",
       "nsg": "NSG_SRE_SRE2_DATA",
       "rg": "RG_SRE_SRE2_DATA",
       "vmName": "DAT-SRE-SRE2",
@@ -430,7 +455,7 @@
       "deploymentNsg": "NSG_SRE_SRE2_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
-          "sizeGb": "128",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         },
         "os": {
@@ -438,7 +463,7 @@
           "type": "Standard_LRS"
         },
         "scratch": {
-          "sizeGb": "512",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         }
       },
@@ -479,6 +504,10 @@
         "name": "VNET_SRE_SRE2",
         "rg": "RG_SRE_SRE2_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.151.4.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.151.2.0/24",
             "name": "SharedDataSubnet"
@@ -548,17 +577,50 @@
     "rgPrefix": "RG_SRE_SRE2",
     "shortName": "sre-sre2",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
+        }
+      },
       "artifacts": {
-        "accountName": "sresre2artifactsqiclwyxn",
+        "accountName": "decovidsre2artifactsqicl",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "sresre2bootdiagsqiclwyxn",
+        "accountName": "decovidsre2bootdiagsqicl",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
+      },
+      "data": {
+        "account": {
+          "accessTier": "hot",
+          "name": "decovidsre2dataqiclwyxns",
+          "storageKind": "BlobStorage"
+        },
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-sre2-data-egress-sas-readwrite"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "containerName": "ingress",
+            "sasSecretName": "sre-sre2-data-ingress-sas-readonly"
+          }
+        }
       }
     },
     "subscriptionName": "[Prod] DECOVID Safe Haven",
     "tier": "3",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {
@@ -593,7 +655,7 @@
         },
         "fqdn": "GITLAB-SRE-SRE2.decovid.turingsafehaven.ac.uk",
         "hostname": "GITLAB-SRE-SRE2",
-        "ip": "10.151.2.5",
+        "ip": "10.151.4.5",
         "rootPasswordSecretName": "sre-sre2-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
@@ -608,7 +670,7 @@
         },
         "fqdn": "HACKMD-SRE-SRE2.decovid.turingsafehaven.ac.uk",
         "hostname": "HACKMD-SRE-SRE2",
-        "ip": "10.151.2.6",
+        "ip": "10.151.4.6",
         "vmName": "HACKMD-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
       },

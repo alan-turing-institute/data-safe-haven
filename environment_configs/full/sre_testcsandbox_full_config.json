@@ -375,7 +375,7 @@
           }
         },
         "enableSSIS": true,
-        "ip": "10.151.3.4",
+        "ip": "10.152.3.4",
         "port": "1433",
         "sku": "sqldev",
         "subnet": "databases",
@@ -397,7 +397,7 @@
             "type": "Standard_LRS"
           }
         },
-        "ip": "10.151.3.5",
+        "ip": "10.152.3.5",
         "port": "5432",
         "sku": "18.04-LTS",
         "subnet": "databases",
@@ -405,7 +405,7 @@
         "vmName": "PSTGRS-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_SANDBOX_DATABASES"
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_DATABASES"
     },
     "dataserver": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
@@ -425,9 +425,9 @@
       },
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.151.4.4",
-      "nsg": "NSG_SRE_SANDBOX_DATA",
-      "rg": "RG_SRE_SANDBOX_DATA",
+      "ip": "10.152.4.4",
+      "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_DATA",
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3"
     },
@@ -452,7 +452,7 @@
     },
     "dsvm": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
-      "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
+      "deploymentNsg": "NSG_SHM_TESTC_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
           "sizeGb": "1024",
@@ -467,8 +467,8 @@
           "type": "Standard_LRS"
         }
       },
-      "nsg": "NSG_SRE_SANDBOX_COMPUTE",
-      "rg": "RG_SRE_SANDBOX_COMPUTE",
+      "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_COMPUTE",
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
         "rg": "RG_SH_IMAGE_GALLERY",
@@ -484,7 +484,7 @@
     "id": "sandbox",
     "keyVault": {
       "name": "kv-testc-sre-sandbox",
-      "rg": "RG_SRE_SANDBOX_SECRETS",
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
@@ -496,39 +496,39 @@
       "nsg": {
         "data": {},
         "databases": {
-          "name": "NSG_SRE_SANDBOX_DATABASES"
+          "name": "NSG_SHM_TESTC_SRE_SANDBOX_DATABASES"
         }
       },
       "vnet": {
-        "cidr": "10.151.0.0/21",
-        "name": "VNET_SRE_SANDBOX",
-        "rg": "RG_SRE_SANDBOX_NETWORKING",
+        "cidr": "10.152.0.0/21",
+        "name": "VNET_SHM_TESTC_SRE_SANDBOX",
+        "rg": "RG_SHM_TESTC_SRE_SANDBOX_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.151.4.0/24",
+            "cidr": "10.152.4.0/24",
             "name": "ComputeSubnet"
           },
           "data": {
-            "cidr": "10.151.2.0/24",
+            "cidr": "10.152.2.0/24",
             "name": "SharedDataSubnet"
           },
           "databases": {
-            "cidr": "10.151.3.0/24",
+            "cidr": "10.152.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": "databases"
           },
           "identity": {
-            "cidr": "10.151.0.0/24",
+            "cidr": "10.152.0.0/24",
             "name": "IdentitySubnet"
           },
           "rds": {
-            "cidr": "10.151.1.0/24",
+            "cidr": "10.152.1.0/24",
             "name": "RDSSubnet"
           }
         }
       }
     },
-    "nsgPrefix": "NSG_SRE_SANDBOX",
+    "nsgPrefix": "NSG_SHM_TESTC_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
@@ -540,8 +540,8 @@
         },
         "fqdn": "APP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.151.1.5",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "ip": "10.152.1.5",
+        "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
@@ -563,18 +563,18 @@
         },
         "fqdn": "RDG-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-SANDBOX",
-        "ip": "10.151.1.4",
+        "ip": "10.152.1.4",
         "networkRules": {
           "allowedSources": "193.60.220.253,193.60.220.240",
           "outboundInternet": "Deny"
         },
-        "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
+        "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_RDS_SERVER",
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SRE_SANDBOX_RDS"
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_RDS"
     },
-    "rgPrefix": "RG_SRE_SANDBOX",
+    "rgPrefix": "RG_SHM_TESTC_SRE_SANDBOX",
     "shortName": "sre-sandbox",
     "storage": {
       "accessPolicies": {
@@ -587,11 +587,11 @@
       },
       "artifacts": {
         "accountName": "testcsandboxartifactsake",
-        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
         "accountName": "testcsandboxbootdiagsake",
-        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
       },
       "data": {
         "account": {
@@ -655,7 +655,7 @@
         },
         "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.4.5",
+        "ip": "10.152.4.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
@@ -670,12 +670,12 @@
         },
         "fqdn": "HACKMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.151.4.6",
+        "ip": "10.152.4.6",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
-      "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
-      "rg": "RG_SRE_SANDBOX_WEBAPPS"
+      "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_WEBAPPS",
+      "rg": "RG_SHM_TESTC_SRE_SANDBOX_WEBAPPS"
     }
   }
 }

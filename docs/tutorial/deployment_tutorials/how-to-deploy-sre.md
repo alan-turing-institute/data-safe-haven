@@ -132,16 +132,18 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 ``` json
 {
     "sreId": "The <SRE ID> that you decided on above (eg. 'sandbox').",
+    "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
     "subscriptionName": "Azure subscription that the SRE will be deployed into.",
-    "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
-    "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
-    "domain": "The fully qualified domain name for the SRE",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Each SRE uses a /21 CIDR range, so prefixes must differ by 8 in their third octet",
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
     "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See below for suggestion on how to set this.",
     "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
-    "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
-    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)",
+    "computeVmImage": {
+        "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
+        "version": "The version of the Compute VM image (e.g. 0.1.2019082900)",
+    },
+    "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
+    "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
     "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the name of the key vault secret containing the MSSQL admin password, you could use something like: 'sre: { databases: { dbmssql: { adminPasswordSecretName: my-password-name } } }'"
 }
@@ -154,8 +156,8 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 > Setting this to 'default' will use the default Turing network ranges.
 >
 > :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
-> It is very important that address spaces do not overlap in the environment as this will cause network faults.
 > Each SRE should use a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.21.0.0` to cleanly avoid the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.20.2.0-10.20.3.255`).
+> It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
 > This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
 ### :full_moon: Generate full SRE configuration

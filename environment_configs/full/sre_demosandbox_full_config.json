@@ -122,7 +122,7 @@
     "mirrors": {
       "cran": {
         "tier2": {
-          "diskSize": 127,
+          "diskSize": 128,
           "external": {
             "adminPasswordSecretName": "shm-demo-vm-admin-password-cran-external-mirror-tier-2",
             "ipAddress": "10.20.2.5",
@@ -151,7 +151,7 @@
       "diskType": "Standard_LRS",
       "pypi": {
         "tier2": {
-          "diskSize": 8191,
+          "diskSize": 8192,
           "external": {
             "adminPasswordSecretName": "shm-demo-vm-admin-password-pypi-external-mirror-tier-2",
             "ipAddress": "10.20.2.4",
@@ -291,9 +291,34 @@
       "bootdiagnostics": {
         "accountName": "shmdemobootdiagsnhavsfry",
         "rg": "RG_SHM_ARTIFACTS"
+      },
+      "data": {
+        "rg": "RG_SHM_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "Safe Haven Management Test B",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "computerManagers": {
         "dataServers": {
@@ -433,7 +458,7 @@
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
-          "sizeGb": "128",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         },
         "os": {
@@ -441,7 +466,7 @@
           "type": "Standard_LRS"
         },
         "scratch": {
-          "sizeGb": "512",
+          "sizeGb": "1024",
           "type": "Standard_LRS"
         }
       },
@@ -483,6 +508,10 @@
         "name": "VNET_SRE_SANDBOX",
         "rg": "RG_SRE_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.151.4.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.151.2.0/24",
             "name": "SharedDataSubnet"
@@ -552,6 +581,14 @@
     "rgPrefix": "RG_SRE",
     "shortName": "sre-sandbox",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "rwl"
+        }
+      },
       "artifacts": {
         "accountName": "sreartifactsmzgcboxwifps",
         "rg": "RG_SRE_ARTIFACTS"
@@ -559,10 +596,35 @@
       "bootdiagnostics": {
         "accountName": "srebootdiagsmzgcboxwifps",
         "rg": "RG_SRE_ARTIFACTS"
+      },
+      "data": {
+        "account": {
+          "accessTier": "hot",
+          "name": "demosandboxdataopmkqvuiw",
+          "storageKind": "BlobStorage"
+        },
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "containerName": "egress",
+            "sasSecretName": "sre-sandbox-data-egress-sas-readwrite"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "containerName": "ingress",
+            "sasSecretName": "sre-sandbox-data-ingress-sas-readonly"
+          }
+        }
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
     "tier": "3",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
     "users": {
       "serviceAccounts": {
         "datamount": {
