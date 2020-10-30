@@ -35,7 +35,7 @@ else:
     NEXUS_DATA_DIR = args.path
 
 NEXUS_PATH = "http://localhost"
-NEXUS_PORT = "8081"
+NEXUS_PORT = "80"
 NEXUS_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}"
 NEXUS_API_ROOT = f"{NEXUS_PATH}:{NEXUS_PORT}/service/rest"
 

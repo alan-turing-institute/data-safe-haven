@@ -74,7 +74,7 @@ $nsgName = $config.network.nsg.repository.name
 $nsgRepository = Deploy-NetworkSecurityGroup -Name $nsgName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
                              -Name "AllowRepositoryAccessFromDSVMs" `
-                             -Description "Allow port 8081 (nexus) so that DSVM users can get packages" `
+                             -Description "Allow port 80 (nexus) so that DSVM users can get packages" `
                              -Priority 300 `
                              -Direction Inbound `
                              -Access Allow `
@@ -82,7 +82,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
                              -DestinationAddressPrefix $subnetRepository.AddressPrefix `
-                             -DestinationPortRange 8081
+                             -DestinationPortRange 80
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `

@@ -41,7 +41,7 @@ function Get-MirrorAddresses {
         [bool]$nexus = $false
     )
 
-    $nexus_port = 8081
+    $nexus_port = 80
 
     if ($cranIp) {
         $cranUrl = "http://$($cranIp)"
