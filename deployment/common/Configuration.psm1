@@ -24,6 +24,8 @@ function Add-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
+    # Set default Nexus usage
+    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
@@ -33,7 +35,7 @@ function Add-SreConfig {
             shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier             = $sreConfigBase.tier
-            nexus            = $sreConfigBase.nexus
+            nexus            = $sreConfigBase.nexus ? [bool]$sreConfigBase.nexus : $nexusDefault
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
