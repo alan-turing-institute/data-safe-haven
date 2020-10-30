@@ -547,6 +547,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
       They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
     + `SecondaryEmail`: An existing organisational email address for the user.
       Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
+    + `GroupName`: leave blank
 + Create and synchronise user
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
