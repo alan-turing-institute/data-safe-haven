@@ -24,6 +24,8 @@ function Add-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
+    # Set default Nexus usage
+    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
@@ -33,6 +35,7 @@ function Add-SreConfig {
             shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier             = $sreConfigBase.tier
+            nexus            = $sreConfigBase.nexus ? [bool]$sreConfigBase.nexus : $nexusDefault
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -615,8 +618,22 @@ function Get-ShmFullConfig {
         vpn         = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
+        repositoryVnet = [ordered]@{
+            name = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+            cidr = "10.30.1.0/24"
+            subnets = [ordered]@{
+                repository = [ordered]@{
+                    name = "RepositorySubnet"
+                    cidr = "10.30.1.0/24"
+                    nsg = "repository"
+                }
+            }
+        }
         mirrorVnets = [ordered]@{}
         nsg         = [ordered]@{
+            repository = [ordered]@{
+                name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+            }
             externalPackageMirrorsTier2 = [ordered]@{
                 name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
             }
@@ -806,6 +823,20 @@ function Get-ShmFullConfig {
     $shm.dns = [ordered]@{
         subscriptionName = $shmConfigBase.dnsRecords.subscriptionName ? $shmConfigBase.dnsRecords.subscriptionName : $shm.subscriptionName
         rg               = $shmConfigBase.dnsRecords.resourceGroupName ? $shmConfigBase.dnsRecords.resourceGroupName : "$($shm.rgPrefix)_DNS_RECORDS".ToUpper()
+    }
+
+    # Nexus repository VM config
+    # --------------------------
+    $shm.repository = [ordered]@{
+        rg = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
+        vmSize = "Standard_B2ms"
+        diskType = "Standard_LRS"
+        nexus = [ordered]@{
+            adminPasswordSecretName = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
+            nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-nexus-app-admin-password".ToLower()
+            ipAddress = "10.30.1.10"
+            vmName = "NEXUS-REPOSITORY-TIER-2"
+        }
     }
 
     # Package mirror config

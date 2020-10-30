@@ -228,6 +228,20 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "repository": {
+          "name": "NSG_SHM_TESTA_REPOSITORY"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_TESTA_REPOSITORY",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": "repository"
+          }
         }
       },
       "vnet": {
@@ -281,6 +295,17 @@
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
       "townCity": "London"
+    },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-testa-repository-nexus-app-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_REPOSITORY",
+      "vmSize": "Standard_B2ms"
     },
     "rgPrefix": "RG_SHM",
     "storage": {
@@ -521,6 +546,7 @@
         }
       }
     },
+    "nexus": true,
     "nsgPrefix": "NSG_SHM_TESTA_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {

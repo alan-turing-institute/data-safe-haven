@@ -9,8 +9,8 @@
 echo "Updating PyPI mirror to point at '$PYPI_MIRROR_HOST'"
 echo "" > /etc/pip.conf
 echo "[global]" >> /etc/pip.conf
-echo "index = ${PYPI_MIRROR_IP}" >> /etc/pip.conf
-echo "index-url = ${PYPI_MIRROR_IP}/simple" >> /etc/pip.conf
+echo "index = ${PYPI_MIRROR_INDEX}" >> /etc/pip.conf
+echo "index-url = ${PYPI_MIRROR_INDEX_URL}" >> /etc/pip.conf
 echo "trusted-host = ${PYPI_MIRROR_HOST}" >> /etc/pip.conf
 
 echo "Updating CRAN mirror to point at '$CRAN_MIRROR_IP'"

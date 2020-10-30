@@ -142,8 +142,8 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = <mirror-url-pypi>
-      index-url = <mirror-url-pypi>/simple
+      index = <mirror-index-pypi>
+      index-url = <mirror-index-url-pypi>
       trusted-host = <mirror-host-pypi>
   - path: "/etc/R/Rprofile.site"
     owner: root:root
