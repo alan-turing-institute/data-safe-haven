@@ -589,7 +589,21 @@ Once you're certain that you're adding a new user, make sure that the following 
 + Click `Users and groups`
 + Select the users you have recently created and click `Select`
 + Click `Assign` to complete the process
-+ Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)
++ <details><summary>Activate your researcher account in the same way as for your admin account (via https://aka.ms/mfasetup)</summary>
+
+  + Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+  + Enter the researcher username (`firstname.lastname@<SHM domain>`)
+  + Click the `Forgotten my password` link
+  + Enter the captcha text and press next
+  + Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>`e.g. `+44 7700900000`).
+  + Enter the code that was texted to your phone
+  + Enter a new password
+  + Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
+  + Enter the username (`firstname.lastname@<SHM domain>>`)and the new password
+  + Click `Next` at the `Help us to protect your account` prompt
+  + Follow the instructions to configure Microsoft Authenticator
+
+</details>
 
 ## Deploy and configure network policy server
 
