@@ -99,6 +99,33 @@
                         ]
                     },
                     {
+                        "name": "AllowPyPiPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "files.pythonhosted.org",
+                            "pypi.org"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowCRANPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "cran.r-project.org"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AllowAzureADLogin",
                         "protocols": [
                             "https:443"

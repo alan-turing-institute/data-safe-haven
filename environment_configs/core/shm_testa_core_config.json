@@ -107,6 +107,7 @@
             }
         },
         "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS",
             "pypi": {
                 "tier2": {
                     "diskSize": 8191,

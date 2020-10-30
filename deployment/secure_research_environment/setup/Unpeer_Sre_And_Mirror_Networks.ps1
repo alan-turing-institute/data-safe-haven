@@ -20,10 +20,10 @@ Add-LogMessage -Level Info "Removing all existing mirror peerings..."
 $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 
 
-# Remove SHM side of mirror peerings involving this SRE
-# -----------------------------------------------------
+# Remove SHM side of mirror and repository peerings involving this SRE
+# --------------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$mirrorVnets = Get-AzVirtualNetwork | Where-Object { $_.Name -like "*MIRROR*" }
+$mirrorVnets = Get-AzVirtualNetwork | Where-Object { $_.Name -like "*MIRROR*" -or $_.Name -like "*REPOSITORY" }
 foreach ($mirrorVnet in $mirrorVnets) {
     $mirrorPeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $mirrorVnet.Name -ResourceGroupName $mirrorVnet.ResourceGroupName
     foreach ($mirrorPeering in $mirrorPeerings) {
@@ -41,8 +41,8 @@ foreach ($mirrorVnet in $mirrorVnets) {
 }
 
 
-# Remove peering to this SRE from each SHM mirror network
-# -------------------------------------------------------
+# Remove peering to this SRE from each SHM mirror or repository network
+# ---------------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $srePeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $sreVnet.Name -ResourceGroupName $sreVnet.ResourceGroupName
 foreach ($srePeering in $srePeerings) {
