@@ -1,10 +1,5 @@
 Import-Module $PSScriptRoot/../../deployment/common/DataStructures -Force -ErrorAction Stop
 
-
-# Redefine Write-Host to suppress output from log message functions
-function global:Write-Host() {}
-
-
 # Test ConvertTo-SortedHashtable
 Describe "Test ConvertTo-SortedHashtable" {
     It "Returns True if ordered hashtable is correctly sorted" {
@@ -68,6 +63,8 @@ Describe "Test Limit-StringLength MaximumLength" {
 }
 Describe "Test Limit-StringLength FailureIsFatal" {
     It "Should throw an exception since the string is too long" {
+        Mock Write-Host {} # we mock Write-Host here as we expect output from the exception
         { "abcdefghijklm" | Limit-StringLength -FailureIsFatal -MaximumLength 6 } | Should -Throw "'abcdefghijklm' has length 13 but must not exceed 6!"
+        Assert-MockCalled Write-Host -Exactly 1 -Scope It
     }
 }
