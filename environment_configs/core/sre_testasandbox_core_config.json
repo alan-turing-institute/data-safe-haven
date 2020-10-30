@@ -91,7 +91,7 @@
                 }
             },
             "dsvm": {
-                "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
+                "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password"
             }
         }
     }

@@ -12,6 +12,7 @@ While working in a data safe haven secure environment, you won’t be able to us
 
 For all work packages classified at Tier 2 and above, you'll need to carry out your data science research in a Data Safe Haven environment. When getting set up to use the safe haven, you should have been provided with a username in the format: firstname.lastname@turingsafehaven.ac.uk.
 
+<!-- markdown-link-check-disable-next-line -->
 Before you begin, you’ll need to reset your password, and set up multi-factor authentication (MFA). To access the data safe haven environment on Azure, open a secure window, and copy and paste in https://rds-dsgX.dsgroupX.co.uk/RDWeb/webclient/, replacing the X with the number of the safe haven you’re going to be using. You can log in using your username and password, and confirmation through MFA, bringing you to the introductory screen. Welcome to the data safe haven!
 
 <p align="center">

@@ -15,7 +15,7 @@ jobs:
       language: node_js
       node_js: node
       before_script: npm install -g jsonlint
-      script: find . -name "*.json" -exec jsonlint --quiet --compact {} \;
+      script: find . -name "*.json" | xargs -n 1 jsonlint --quiet --compact
     - name: Lint Markdown
       language: ruby
       install: gem install mdl
@@ -32,7 +32,7 @@ jobs:
       script: flake8 . --statistics --count
     - name: Lint shell
       before_script: sudo apt-get install -y shellcheck
-      script: find . -name "*.sh" -exec shellcheck --format gcc --severity error {} \+
+      script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
     - name: Lint YAML
       language: python
       python: 3.8
@@ -43,3 +43,8 @@ jobs:
         - sudo snap install powershell --classic
         - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force"
       script: pwsh -c './tests/Run_Pester_Tests.ps1'
+    - name: Check for dead links in Markdown
+      language: node_js
+      node_js: node
+      before_script: npm install -g markdown-link-check
+      script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
