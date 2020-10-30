@@ -1816,29 +1816,32 @@ function Set-VnetPeering{
     # Create peer in the direction vnet1 -> vnet2
     $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
     $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet2.Id }
-    if (-not $existingPeering) {
-        $peeringName = "PEER_$($Vnet2Name)"
-        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet1Name)."
-        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id
-        if ($?) {
-            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
-        }
+    if ($existingPeering) {
+        $existingPeering | Remove-AzVirtualNetworkPeering -Force
+    }
+
+    $peeringName = "PEER_$($Vnet2Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet1Name)."
+    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id
+    if ($?) {
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
     }
 
     # Create peer in the direction vnet2 -> vnet1
     $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
     $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet1.Id }
-    if (-not $existingPeering) {
-        $peeringName = "PEER_$($Vnet1Name)"
-        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet2Name)."
-        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id
-        if ($?) {
-            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
-        }
+    if ($existingPeering) {
+        $existingPeering | Remove-AzVirtualNetworkPeering -Force
+    }
+    $peeringName = "PEER_$($Vnet1Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet2Name)."
+    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id
+    if ($?) {
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
     }
 
     $null = Set-AzContext -Context $originalContext
