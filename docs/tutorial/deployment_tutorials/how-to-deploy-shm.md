@@ -17,7 +17,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Require MFA for all users](#require-mfa-for-all-users)
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
-+ [Deploy package mirrors](#deploy-package-mirrors)
++ [Deploy Python/R package repositories](#deploy-PythonR-package-repositories)
 + [Tear down the SHM](#tearing-down-the-shm)
 
 ## Prerequisites
@@ -652,6 +652,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 + At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 ## Require MFA for all users
+
 :warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement :warning:
 
 + Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -706,11 +707,29 @@ The API call that installs the logging extesnions to the VMs times out after a f
 If so, try re-running the logging set up script.
 In most cases the extensions have actually been successfully installed.
 
-## Deploy package mirrors
-### When to deploy mirrors
-A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
+## Deploy Python/R package repositories
+We currently support two different types of package repositories:
 
-### Deploying package mirrors
++ Nexus proxy (Tier-2 only)
++ Local mirror (Tier-2 and Tier-3)
+
+Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
+
+:warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+
+### How to deploy a Nexus package repository
+
+From your **deployment machine**
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Deploy and configure the package mirrors by running `./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **around 30 minutes** to run.
+
+
+### How to deploy a local package mirror
 
 From your **deployment machine**
 
@@ -720,10 +739,3 @@ From your **deployment machine**
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the package mirrors by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 30 minutes** to run.
-
-## Server list
-The following 3 virtual machines are created as a result of these instructions:
-
-+ `DC1-SHM-<SHM ID>` (primary domain controller)
-+ `DC2-SHM-<SHM ID>` (secondary domain controller)
-+ `NPS-SHM-<SHM ID>` (network policy server)

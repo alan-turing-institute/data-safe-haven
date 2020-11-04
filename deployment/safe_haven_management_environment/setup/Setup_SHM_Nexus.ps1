@@ -27,7 +27,6 @@ $nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-
 $vmName = $config.repository.nexus.vmName
 $privateIpAddress = $config.repository.nexus.ipAddress
 
