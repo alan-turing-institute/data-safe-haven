@@ -82,7 +82,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Direction Inbound `
                              -Priority 1000 `
                              -Protocol TCP `
-                             -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
+                             -SourceAddressPrefix @($config.dsvmImage.build.nsg.allowedIpAddresses) `
                              -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Deny `
