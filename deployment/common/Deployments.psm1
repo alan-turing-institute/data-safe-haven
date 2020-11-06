@@ -1090,7 +1090,11 @@ function Get-VirtualNetworkFromSubnet {
         [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
         $Subnet
     )
-    return Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $dataSubnet.Id}).Count -gt 0) }
+    $originalContext = Get-AzContext
+    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2]
+    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id}).Count -gt 0) }
+    $null = Set-AzContext -Context $originalContext
+    return $virtualNetwork
 }
 Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
 
