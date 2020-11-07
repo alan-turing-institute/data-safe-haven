@@ -160,6 +160,16 @@ function Add-SreConfig {
                 accessTier  = "hot"
                 rg          = $storageRg
             }
+            containers = [ordered]@{
+                shared = [ordered]@{
+                    accessPolicyName = "readWrite"
+                    mountType = "NFS"
+                }
+                home  = [ordered]@{
+                    accessPolicyName = "readWrite"
+                    mountType = "NFS"
+                }
+            }
         }
         persistentdata  = [ordered]@{
             account    = [ordered]@{

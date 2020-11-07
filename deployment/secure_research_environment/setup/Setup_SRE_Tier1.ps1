@@ -135,6 +135,7 @@ $cloudInitYaml = $cloudInitYaml.
     Replace("<storage-account-data-ingress-name>", $dataStorageAccount.StorageAccountName).
     Replace("<storage-account-data-egress-key>", $dataStorageAccountKey).
     Replace("<storage-account-data-ingress-key>", $dataStorageAccountKey).
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 
 
