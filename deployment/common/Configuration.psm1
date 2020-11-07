@@ -143,26 +143,36 @@ function Add-SreConfig {
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
-        data            = [ordered]@{
+        userdata = [ordered]@{
+            account    = [ordered]@{
+                name = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind = "FileStorage"
+                performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier  = "hot"
+                rg          = $storageRg
+            }
+        }
+        persistentdata = [ordered]@{
             account    = [ordered]@{
                 name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "hot"
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
-                    containerName    = "ingress"
                     accessPolicyName = "readOnly"
+                    mountType = ($config.sre.tier -eq "1") ? "NFS" : "SMB"
                 }
                 egress  = [ordered]@{
-                    containerName    = "egress"
                     accessPolicyName = "readWrite"
+                    mountType = ($config.sre.tier -eq "1") ? "NFS" : "SMB"
                 }
             }
         }
     }
-    foreach ($containerName in $config.sre.storage.data.containers.Keys) {
-        $config.sre.storage.data.containers[$containerName].sasSecretName = "sre-$($config.sre.id)-data-${containerName}-sas-$($config.sre.storage.data.containers[$containerName].accessPolicyName)".ToLower()
+    foreach ($containerName in $config.sre.storage.persistentdata.containers.Keys) {
+        $config.sre.storage.persistentdata.containers[$containerName].sasSecretName = "sre-$($config.sre.id)-data-${containerName}-sas-$($config.sre.storage.persistentdata.containers[$containerName].accessPolicyName)".ToLower()
     }
 
 
@@ -841,7 +851,7 @@ function Get-ShmFullConfig {
             rg          = $storageRg
             accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
-        data            = [ordered]@{
+        persistentdata  = [ordered]@{
             rg = "$($shm.rgPrefix)_PERSISTENT_DATA".ToUpper()
         }
     }
