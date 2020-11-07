@@ -67,7 +67,7 @@ if ($?) {
 
 # Peer repository vnet to SHM vnet
 # --------------------------------
-Add-LogMessage -Level Info "Peering repository vnet to shm vnet"
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
 
 
