@@ -8,18 +8,20 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 function Deploy-StorageAccount {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy into")]
-        $Location,
+        [string]$Location,
         [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
-        $SkuName = "Standard_LRS",
+        [string]$SkuName = "Standard_LRS",
         [Parameter(Mandatory = $false, HelpMessage = "Kind of storage account to deploy")]
         [ValidateSet("StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
-        $Kind = "StorageV2",
+        [string]$Kind = "StorageV2",
         [Parameter(Mandatory = $false, HelpMessage = "Access tier of the Storage account. Only used if 'Kind' is set to 'BlobStorage'")]
-        $AccessTier = "Hot"
+        [string]$AccessTier = "Hot",
+        [Parameter(Mandatory = $false, HelpMessage = "Allow traffic over http as well as https (required for NFS file shares)")]
+        [switch]$AllowHttpTraffic
     )
     Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
     $storageAccount = Get-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -27,6 +29,10 @@ function Deploy-StorageAccount {
         Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
         $params = @{}
         if ($Kind -eq "BlobStorage") { $params["AccessTier"] = $AccessTier }
+        if ($AllowHttpTraffic) {
+            $params["EnableHttpsTrafficOnly"] = $false
+            Add-LogMessage -Level Warning "Storage account '$Name' will be deployed with EnableHttpsTrafficOnly disabled. Note that this can take around 15 minutes to complete."
+        }
         $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params
         if ($?) {
             Add-LogMessage -Level Success "Created storage account '$Name'"
@@ -67,7 +73,7 @@ function Deploy-StorageAccountEndpoint {
     if ((($StorageAccount.Kind -eq "BlobStorage") -and ($StorageType -ne "Blob")) -or
         (($StorageAccount.Kind -eq "BlockBlobStorage") -and ($StorageType -ne "Blob")) -or
         (($StorageAccount.Kind -eq "FileStorage") -and ($StorageType -ne "File"))) {
-            Add-LogMessage -Level Fatal "Storage type '$StorageType' is not compatible with '$($StorageAccount.StorageAccountName)' which uses '$($StorageAccount.Kind)'"
+        Add-LogMessage -Level Fatal "Storage type '$StorageType' is not compatible with '$($StorageAccount.StorageAccountName)' which uses '$($StorageAccount.Kind)'"
     }
     # Disable private endpoint network policies on the subnet
     # See here for further information: https://docs.microsoft.com/en-us/azure/private-link/disable-private-endpoint-network-policy
@@ -89,7 +95,7 @@ function Deploy-StorageAccountEndpoint {
     $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId @($StorageAccount.StorageAccountName)
+        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType
         $success = $?
         $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
         $success = $success -and $?
@@ -112,7 +118,7 @@ function Deploy-StorageContainer {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Storage account to create container inside")]
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
         $StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
@@ -121,7 +127,7 @@ function Deploy-StorageContainer {
         Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context
         if ($?) {
-            Add-LogMessage -Level Success "Created storage container"
+            Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
         } else {
             Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
@@ -139,7 +145,7 @@ function Deploy-StorageShare {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
         $StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
@@ -148,7 +154,7 @@ function Deploy-StorageShare {
         Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
         if ($?) {
-            Add-LogMessage -Level Success "Created storage share"
+            Add-LogMessage -Level Success "Created storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)"
         } else {
             Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
@@ -158,6 +164,47 @@ function Deploy-StorageShare {
     return $storageShare
 }
 Export-ModuleMember -Function Deploy-StorageShare
+
+
+# Ensure that storage receptable (either container or share) exists
+# -----------------------------------------------------------------
+function Deploy-StorageReceptacle {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage receptacle to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        $StorageAccount,
+        [Parameter(Mandatory = $true, HelpMessage = "Type of storage receptacle to create (Share or Container)")]
+        [ValidateSet("Share", "Container")]
+        $StorageType
+    )
+    if ($StorageType -eq "Share") {
+        return Deploy-StorageShare -Name $Name -StorageAccount $StorageAccount
+    } elseif ($StorageType -eq "Container") {
+        return Deploy-StorageContainer -Name $Name -StorageAccount $StorageAccount
+    }
+    Add-LogMessage -Level Fatal "Unable to create a storage receptacle of type '$MountStorageTypeType'!"
+}
+Export-ModuleMember -Function Deploy-StorageReceptacle
+
+
+# Get all available endpoints for a given storage account
+# -------------------------------------------------------
+function Get-StorageAccountEndpoints {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        $StorageAccount
+    )
+    return @(
+        @($StorageAccount.PrimaryEndpoints.Blob,
+          $StorageAccount.PrimaryEndpoints.Queue,
+          $StorageAccount.PrimaryEndpoints.Table,
+          $StorageAccount.PrimaryEndpoints.File,
+          $StorageAccount.PrimaryEndpoints.Web,
+          $StorageAccount.PrimaryEndpoints.Dfs) | Where-Object { $_ }
+    )
+}
+Export-ModuleMember -Function Get-StorageAccountEndpoints
 
 
 # Generate a new SAS token
@@ -248,10 +295,9 @@ function New-StorageReceptacleSasToken {
 Export-ModuleMember -Function New-StorageReceptacleSasToken
 
 
-
-
 # Generate a new SAS policy
-# -------------------------
+# Note that there is a limit of 5 policies for a given storage account/container
+# ------------------------------------------------------------------------------
 function Deploy-SasAccessPolicy {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Policy name")]
@@ -266,42 +312,37 @@ function Deploy-SasAccessPolicy {
         [string]$ShareName,
         [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
         [int]$ValidityYears = 1
-
     )
-    $identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
-    Add-LogMessage -Level Info "Ensuring that SAS policy '$Name' exists for $identifier in '$($StorageAccount.StorageAccountName)..."
+    $Identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
+    $PolicyName = "${identifier}${Name}".Replace(" ", "").Replace("'", "").ToLower()
+    Add-LogMessage -Level Info "Ensuring that SAS policy '$PolicyName' exists for $Identifier in '$($StorageAccount.StorageAccountName)..."
     if ($ContainerName) {
-        $policies = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Context $StorageAccount.Context | Where-Object { $_.policy -like "*$Name" } | Select-Object -First 1
+        $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     } elseif ($ShareName) {
-        $policies = Get-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Context $StorageAccount.Context
+        $policy = Get-AzStorageShareStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     }
-    $existingPolicy = $policies | Where-Object { $_.Policy -like "*$Name" } | Select-Object -First 1
-    if ($existingPolicy) {
-        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
-        $policy = $existingPolicy.Policy
+    if ($policy) {
+        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
     } else {
-        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
+        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+        $StartTime = (Get-Date).AddMinutes(-15)
+        $ExpiryTime = $StartTime.AddYears($ValidityYears)
+        $success = $false
         if ($ContainerName) {
-            $policy = New-AzStorageContainerStoredAccessPolicy -Container $ContainerName `
-                                                               -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${AccessType}" `
-                                                               -Context $StorageAccount.Context `
-                                                               -Permission $Permission `
-                                                               -StartTime (Get-Date).DateTime `
-                                                               -ExpiryTime (Get-Date).AddYears($ValidityYears).DateTime
+            $null = New-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
+            $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context
+            $success = $?
         } elseif ($ShareName) {
-            $policy = New-AzStorageShareStoredAccessPolicy -ShareName $ShareName `
-                                                           -Policy "$(Get-Date -Format "yyyyMMddHHmmss")${AccessType}" `
-                                                           -Context $StorageAccount.Context `
-                                                           -Permission $Permission `
-                                                           -StartTime (Get-Date).DateTime `
-                                                           -ExpiryTime (Get-Date).AddYears($ValidityYears).DateTime
+            $null = New-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
+            $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context
+            $success = $?
         }
-        if ($?) {
-            Add-LogMessage -Level Success "Created new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)"
+        if ($success) {
+            Add-LogMessage -Level Success "Created new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$Name' for $identifier in '$($StorageAccount.StorageAccountName)!"
+            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)!"
         }
     }
-    return $policy.Policy
+    return $policy
 }
 Export-ModuleMember -Function Deploy-SasAccessPolicy
