@@ -9,8 +9,8 @@ param(
     [string]$shmFqdn,
     [Parameter(HelpMessage = "SRE ID", Mandatory = $false)]
     [string]$sreId,
-    [Parameter(HelpMessage = "Name of the private DNS zone", Mandatory = $false)]
-    [string]$privateDnsZoneName
+    [Parameter(HelpMessage = "Fragment to match any private DNS zones", Mandatory = $false)]
+    [string]$privateEndpointMatch
 )
 
 # Remove records for domain-joined SRE VMs
@@ -27,16 +27,14 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
 
 # Remove private endpoint DNS Zone
 # --------------------------------
-if ($privateDnsZoneName) {
-    Write-Output " [ ] Ensuring that '$privateDnsZoneName' DNS zone is removed"
-    if (Get-DnsServerZone -Name $privateDnsZoneName -ErrorAction SilentlyContinue) {
+if ($privateEndpointMatch) {
+    Write-Output " [ ] Ensuring that DNS zones matching '$privateEndpointMatch' are removed"
+    foreach ($DnsZone in (Get-DnsServerZone | Where-Object { $_.ZoneName -like "$privateEndpointMatch*.core.windows.net" })) {
         try {
-            Remove-DnsServerZone $privateDnsZoneName -force
-            Write-Output " [o] Successfully removed '$privateDnsZoneName' DNS zone"
+            $DnsZone | Remove-DnsServerZone -Force
+            Write-Output " [o] Successfully removed '$($DnsZone.ZoneName)' DNS zone"
         } catch [System.ArgumentException] {
-            Write-Output " [x] Failed to remove '$privateDnsZoneName' DNS zone!"
+            Write-Output " [x] Failed to remove '$($DnsZone.ZoneName)' DNS zone!"
         }
-    } else {
-        Write-Output " [o] '$privateDnsZoneName' DNS zone does not exist"
     }
 }
