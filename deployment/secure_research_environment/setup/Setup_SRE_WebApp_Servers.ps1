@@ -42,12 +42,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
                              -Direction Outbound `
-                             -Access Deny `
+                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
