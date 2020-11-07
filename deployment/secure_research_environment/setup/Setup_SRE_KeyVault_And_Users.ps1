@@ -104,6 +104,7 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 }
 
 
