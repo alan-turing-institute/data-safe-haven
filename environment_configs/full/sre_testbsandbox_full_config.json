@@ -650,6 +650,16 @@
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS",
           "storageKind": "FileStorage"
+        },
+        "containers": {
+          "home": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS"
+          },
+          "shared": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS"
+          }
         }
       }
     },
