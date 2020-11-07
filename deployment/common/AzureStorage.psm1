@@ -171,6 +171,53 @@ function Deploy-StorageShare {
 Export-ModuleMember -Function Deploy-StorageShare
 
 
+# Create storage share if it does not exist
+# -----------------------------------------
+function Deploy-StorageNfsShare {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        $StorageAccount
+    )
+    Add-LogMessage -Level Info "Ensuring that NFS storage share '$Name' exists..."
+    $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        # As this step needs Az.Storage == 2.5.2-preview we run it in a subjob
+        $success = Start-Job -ArgumentList @($StorageAccount.ResourceGroupName, $StorageAccount.StorageAccountName, $Name) -ScriptBlock {
+            param(
+                [string]$ResourceGroupName,
+                [string]$StorageAccountName,
+                [string]$ShareName
+            )
+            if (-not (Get-Module -ListAvailable -Name Az.Storage | Where-Object { $_.Version -eq "2.5.2" })) {
+                Install-Module -Name Az.Storage -RequiredVersion 2.5.2-preview -AllowPrerelease -Repository PSGallery
+            }
+            Import-Module Az.Storage -RequiredVersion 2.5.2 -Force -ErrorAction Stop
+            New-AzRmStorageShare -ResourceGroupName $ResourceGroupName `
+                                 -StorageAccountName $StorageAccountName `
+                                 -Name $ShareName `
+                                 -EnabledProtocol NFS `
+                                 -RootSquash "RootSquash"
+            return $?
+        } | Receive-Job -Wait -AutoRemoveJob
+        if ($success) {
+            $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+            Add-LogMessage -Level Success "Created NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "NFS storage share '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $storageShare
+}
+Export-ModuleMember -Function Deploy-StorageNfsShare
+
+
+
+
 # Ensure that storage receptable (either container or share) exists
 # -----------------------------------------------------------------
 function Deploy-StorageReceptacle {
@@ -179,14 +226,16 @@ function Deploy-StorageReceptacle {
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
         $StorageAccount,
-        [Parameter(Mandatory = $true, HelpMessage = "Type of storage receptacle to create (Share or Container)")]
-        [ValidateSet("Share", "Container")]
+        [Parameter(Mandatory = $true, HelpMessage = "Type of storage receptacle to create (Share, Container or NfsShare)")]
+        [ValidateSet("Share", "Container", "NfsShare")]
         $StorageType
     )
     if ($StorageType -eq "Share") {
         return Deploy-StorageShare -Name $Name -StorageAccount $StorageAccount
     } elseif ($StorageType -eq "Container") {
         return Deploy-StorageContainer -Name $Name -StorageAccount $StorageAccount
+    } elseif ($StorageType -eq "NfsShare") {
+        return Deploy-StorageNfsShare -Name $Name -StorageAccount $StorageAccount
     }
     Add-LogMessage -Level Fatal "Unable to create a storage receptacle of type '$MountStorageTypeType'!"
 }
