@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop -Force
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 

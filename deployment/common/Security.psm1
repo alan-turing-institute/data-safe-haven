@@ -78,15 +78,15 @@ function Resolve-KeyVaultSecret {
     # Create a new secret if one does not exist in the key vault
     if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
         # If no default is provided then we cannot generate a secret
-        if ((-Not $DefaultValue) -And (-Not $DefaultLength)) {
+        if ((-not $DefaultValue) -and (-not $DefaultLength)) {
             Add-LogMessage -Level Fatal "Secret '$SecretName does not exist and no default value or length was provided!"
         }
         # If both defaults are provided then we do not know which to use
-        if ($DefaultValue -And $DefaultLength) {
+        if ($DefaultValue -and $DefaultLength) {
             Add-LogMessage -Level Fatal "Both a default value and a default length were provided. Please only use one of these options!"
         }
         # Generate a new password if there is no default value
-        if (-Not $DefaultValue) {
+        if (-not $DefaultValue) {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
