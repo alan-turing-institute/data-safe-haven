@@ -19,6 +19,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -255,31 +256,32 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundInternetAccess" `
+                             -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
                              -Direction Outbound `
-                             -Access Deny `
+                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
                              -DestinationAddressPrefix Internet `
                              -DestinationPortRange *
-# Outbound: allow Nexus repository
-if ($config.sre.nexus) {
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                                 -Name "OutboundAllowNexus" `
-                                 -Description "Outbound allow Nexus" `
-                                 -Priority 2100 `
-                                 -Direction Outbound `
-                                 -Access Allow `
-                                 -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
-                                 -DestinationPortRange 8081
-}
+# # Outbound: allow Nexus repository
+# if ($config.sre.nexus) {
+#     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+#                                  -Name "OutboundAllowNexus" `
+#                                  -Description "Outbound allow Nexus" `
+#                                  -Priority 2100 `
+#                                  -Direction Outbound `
+#                                  -Access Allow `
+#                                  -Protocol * `
+#                                  -SourceAddressPrefix VirtualNetwork `
+#                                  -SourcePortRange * `
+#                                  -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
+#                                  -DestinationPortRange 8081
+# }
 
 
 # Ensure that deployment NSG exists and required rules are set
@@ -372,7 +374,8 @@ if ($success) {
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
-$dsvmIngressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.accessPolicies.researcher.sasSecretName
+$dsvmIngressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.sasSecretName
+$dsvmEgressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.sasSecretName
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
@@ -426,8 +429,10 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
-    Replace("<storageaccount-ingress-name>", $config.sre.storage.datastorage.accountName).
-    Replace("<storageaccount-ingress-sastoken>", $dsvmIngressSasToken).
+    Replace("<storage-account-persistentdata-name>", $config.sre.storage.persistentdata.account.name).
+    Replace("<storage-account-persistentdata-ingress-sastoken>", $dsvmIngressSasToken).
+    Replace("<storage-account-persistentdata-egress-sastoken>", $dsvmEgressSasToken).
+    Replace("<storage-account-userdata-name>", $config.sre.storage.userdata.account.name).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

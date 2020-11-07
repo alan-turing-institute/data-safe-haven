@@ -1,6 +1,10 @@
 #cloud-config
 package_upgrade: false
 
+mounts:
+  - [/installation/ingressmount.sh, /data, fuse, "_netdev"]
+  - [/installation/egressmount.sh, /output, fuse, "_netdev,file_mode=0777,dir_mode=0777"]
+
 write_files:
   - path: "/etc/xrdp/startwm.sh"
     owner: root:root
@@ -34,16 +38,26 @@ write_files:
     content: |
       username=<datamount-username>
       password=<datamount-password>
-  - path: "/installation/SASingress"
+  - path: "/installation/ingress-sas.config"
     permissions: "0400"
     content: |
-      accountName <storageaccount-ingress-name>
-      sasToken <storageaccount-ingress-sastoken>
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-ingress-sastoken>
       authType SAS
       containerName ingress
+  - path: "/installation/egress-sas.config"
+    permissions: "0400"
+    content: |
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-egress-sastoken>
+      authType SAS
+      containerName egress
   - path: "/installation/ingressmount.sh"
     permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/SASingress -o allow_other
+    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-sas.config -o allow_other
+  - path: "/installation/egressmount.sh"
+    permissions: "0500"
+    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/tmp/egress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-sas.config -o allow_other
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -357,39 +371,28 @@ runcmd:
   - systemctl restart xrdp
   - sleep 10
   - systemctl status xrdp
-  # Configure disks
-  - echo ">=== Mount and configure disks... ===<"
-  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+  # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
   - /opt/configuration/setup_disk.sh 1 /home
   - /opt/configuration/setup_disk.sh 2 /scratch
-  # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount data folder using SMB... ===<"
-  - mkdir -p /data
-  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/etc/smbcredentials.secret\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /data  # NB. this initial mount might fail if the dataserver cannot be resolved yet
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount output folder using SMB... ===<"
+  - echo ">=== Mount shared folder using SMB... ===<"
   - mkdir -p /shared
   - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Mount egress data folder with full local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount output folder using SMB... ===<"
-  - mkdir -p /output
-  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /output  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Mount ingress blob folder with read only local access
+  # Mount ingress and egress blob folders with appropriate local access
+  - echo ">=== Create ingress and egress staging folders ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
   - echo "user_allow_other" >> /tmp/allow.txt
   - mv /tmp/allow.txt /etc/fuse.conf
-  - echo ">=== Mount ingress blob folder ... ===<"
-  - mkdir -p /ingress /tmp/ingress
+  - mkdir -p /tmp/ingress /tmp/egress
   - mount -t tmpfs -o size=16g tmpfs /tmp/ingress
-  - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
-  - tail -n 1 /etc/fstab
+  - mount -t tmpfs -o size=16g tmpfs /tmp/egress
+  # Print fstab
+  - echo ">=== /etc/fstab ===<"
+  - cat /etc/fstab
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
+  - echo ">=== Update ClamAV... ===<"
   - systemctl stop clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
   - freshclam

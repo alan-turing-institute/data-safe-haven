@@ -162,11 +162,11 @@ function Add-SreConfig {
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType = ($config.sre.tier -eq "1") ? "NFS" : "SMB"
+                    mountType = ($config.sre.tier -eq "1") ? "File" : "SMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType = ($config.sre.tier -eq "1") ? "NFS" : "SMB"
+                    mountType = ($config.sre.tier -eq "1") ? "File" : "SMB"
                 }
             }
         }
