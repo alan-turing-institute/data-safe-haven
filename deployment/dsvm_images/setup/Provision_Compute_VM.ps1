@@ -74,16 +74,23 @@ $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwor
 # --------------------
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
+# Get list of IP addresses which are allowed to connect to the VM candidates
+$allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
+$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Priority -eq 1000 }
+if ($existingRule) {
+    $allowedIpAddresses += $existingRule.SourceAddressPrefix
+}
+# Add the necessary rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Allow `
-                             -Name "AllowTuringSSH" `
+                             -Name "AllowBuildAdminSSH" `
                              -Description "Allow port 22 for management over ssh" `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange 22 `
                              -Direction Inbound `
                              -Priority 1000 `
                              -Protocol TCP `
-                             -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
+                             -SourceAddressPrefix $allowedIpAddresses `
                              -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Deny `

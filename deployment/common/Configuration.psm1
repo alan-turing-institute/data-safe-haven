@@ -547,7 +547,10 @@ function Get-ShmFullConfig {
         }
         build           = [ordered]@{
             rg     = "RG_SH_BUILD_CANDIDATES"
-            nsg    = [ordered]@{ name = "NSG_IMAGE_BUILD" }
+            nsg    = [ordered]@{
+                name = "NSG_IMAGE_BUILD"
+                allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @(193.60.220.240, 193.60.220.253)
+            }
             vnet   = [ordered]@{
                 name = "VNET_IMAGE_BUILD"
                 cidr = "10.48.0.0/16"
