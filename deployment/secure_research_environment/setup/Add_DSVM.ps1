@@ -6,9 +6,9 @@ param(
     [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
-    [switch]$upgrade,
+    [switch]$Upgrade,
     [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
-    [switch]$forceUpgrade
+    [switch]$Force
 )
 
 Import-Module Az -ErrorAction Stop
@@ -31,12 +31,26 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 
 # Set VM name and size
-# We need to ensure that the start of the name is unique as LDAP will truncate after 15 characters
-# ------------------------------------------------------------------------------------------------
+# We need to define a unique hostname of no more than 15 characters
+# -----------------------------------------------------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
 $vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
+
+
+# Retrieve VNET and subnets
+# -------------------------
+Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
+$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+
+
+# Get deployment and final IP addresses
+# -------------------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
 
 
 # Check whether this IP address has been used.
@@ -44,11 +58,9 @@ $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
 if ($existingNic) {
     Add-LogMessage -Level Info "Found an existing network card with IP address '$finalIpAddress'"
-    if ($upgrade) {
-        Add-LogMessage -Level Info "This NIC will be removed in the upgrade process"
-    } else {
+    if (-not $Upgrade) {
         if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. No further action will be taken"
+            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
             $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         } else {
@@ -65,7 +77,7 @@ if ($existingNic) {
 }
 
 
-if ($upgrade) {
+if ($Upgrade) {
     # Attempt to find an existing virtual machine
     # -------------------------------------------
     $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }
@@ -87,8 +99,8 @@ if ($upgrade) {
     # Ensure that an upgrade will occur
     # ---------------------------------
     if ($existingVm) {
-        if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
-            Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
+        if ($existingVm.Name -eq $vmName -and -not $Force) {
+            Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade is needed. Use -Force to upgrade anyway."
             $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         }
@@ -108,49 +120,46 @@ if ($upgrade) {
 
     # Find and snapshot the existing data disks
     # -----------------------------------------
-    $dataDiskNames = @("SCRATCH", "HOME")
-    $snapshots = @()
+    $dataDiskTypes = @("SCRATCH", "HOME")
+    $snapshots = @{}
     $snapshotNames = @()
-    foreach ($name in $dataDiskNames) {
+    foreach ($dataDiskType in $dataDiskTypes) {
         # First attempt to find a disk
-        Add-LogMessage -Level Info "[ ] Locating '$name' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$name-DISK" }
+        Add-LogMessage -Level Info "[ ] Locating '$dataDiskType' disk"
+        $disk = Get-AzDisk | Where-Object { $_.Name -match "${vmNamePrefix}-\d-\d-\d{10}-${dataDiskType}-DISK" }
+        $snapshotName = "${vmNamePrefix}-${dataDiskType}-DISK-SNAPSHOT"
 
         # If there is a disk, take a snapshot
         if ($disk) {
             if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Fatal "Multiple candidate '$name' disks found, aborting upgrade"
+                Add-LogMessage -Level Fatal "Multiple candidate '$dataDiskType' disks found, aborting upgrade"
             }
-
-            Add-LogMessage -Level Success "Data disk found"
-            $diskName = $disk.Name
-
+            Add-LogMessage -Level Success "Found '$dataDiskType' disk"
             # Snapshot disk
-            Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
+            Add-LogMessage -Level Info "[ ] Snapshotting disk '$($disk.Name)'."
             $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshotName = "${vmNamePrefix}-${name}-DISK-SNAPSHOT"
             $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
             if ($snapshot) {
                 Add-LogMessage -Level Success "Snapshot succeeded"
+                $snapshots[$dataDiskType] = $snapshot
+                $snapshotNames += $snapshotName
             } else {
                 Add-LogMessage -Level Fatal "Snapshot failed!"
             }
-            $snapshots += $snapshot
-            $snapshotNames += $snapshotName
 
         # If there is no disk, look for an existing snapshot
         } else {
-            Add-LogMessage -Level Info "'$name' disk not found, attempting to find existing snapshot"
-            $snapshot = Get-AzSnapshot | Where-Object { $_.Name -match "$vmNamePrefix-$name-DISK-SNAPSHOT" }
+            Add-LogMessage -Level Info "'$dataDiskType' disk not found, attempting to find existing snapshot"
+            $snapshot = Get-AzSnapshot | Where-Object { $_.Name -match "$snapshotName" }
             if ($snapshot) {
                 if ($snapshot.Length -ne 1) {
-                    Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
+                    Add-LogMessage -Level Fatal "Multiple candidate '$dataDiskType' snapshots found, aborting upgrade"
                 }
                 Add-LogMessage -Level Success "Snapshot found"
-                $snapshots += $snapshot
+                $snapshots[$dataDiskType] += $snapshot
                 $snapshotNames += $snapshot.Name
             } else {
-                Add-LogMessage -Level Fatal "No disk or snapshot for '$name' found, aborting upgrade"
+                Add-LogMessage -Level Fatal "No disk or snapshot for '$dataDiskType' found, aborting upgrade"
             }
         }
     }
@@ -181,13 +190,13 @@ if ($upgrade) {
 
     # Remove the existing disks
     # -------------------------
-    $diskNames = @("OS", "SCRATCH", "HOME")
-    foreach ($diskName in $diskNames) {
-        Add-LogMessage -Level Info "[ ] Removing '$diskName' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskName-DISK" }
+    $diskTypes = $dataDiskTypes + @("OS")
+    foreach ($diskType in $diskTypes) {
+        Add-LogMessage -Level Info "[ ] Removing '$diskType' disk"
+        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskType-DISK" }
         if ($disk) {
             if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Warning "Multiple candidate '$diskName' disks found, not removing any"
+                Add-LogMessage -Level Warning "Multiple candidate '$diskType' disks found, not removing any"
             } else {
                 $null = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
                 if ($?) {
@@ -237,14 +246,6 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Retrieve VNET and subnets
-# -------------------------
-Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
-$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-
-
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
@@ -269,12 +270,6 @@ $ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVau
 $egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName -AsPlaintext
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
-
-
-# Get deployment and final IP addresses
-# -------------------------------------
-$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
-$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
 
 
 # Construct the cloud-init YAML file for the target subscription
@@ -337,12 +332,12 @@ $cloudInitTemplate = $cloudInitTemplate.
 
 # Deploy data disks
 # -----------------
-if ($upgrade) {
-    $dataDisks = @()
-    for ($i = 0; $i -lt $dataDiskNames.Length; $i++) {
+$dataDisks = @()
+if ($Upgrade) {
+    foreach ($dataDiskType in $dataDiskTypes) {
         # Create disk from snapshot
-        $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
-        $diskName = "${vmName}-$($dataDiskNames[$i])-DISK"
+        $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$dataDiskType].Id -CreateOption Copy
+        $diskName = "${vmName}-${dataDiskType}-DISK"
         Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
         $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
         if ($disk) {
@@ -352,12 +347,10 @@ if ($upgrade) {
         }
         $dataDisks += $disk
     }
-    $scratchDisk = $dataDisks[0]
-    $homeDisk = $dataDisks[1]
 } else {
     # Create empty disks
-    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    $dataDisks += Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    $dataDisks += Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 }
 
 # Deploy the VM
@@ -376,7 +369,7 @@ $params = @{
     OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
-    DataDiskIds            = @($homeDisk.Id, $scratchDisk.Id)
+    DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
@@ -397,7 +390,7 @@ Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 # Remove snapshots
 # ----------------
-if ($upgrade) {
+if ($Upgrade) {
     foreach ($snapshotName in $snapshotNames) {
         Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
         $null = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force

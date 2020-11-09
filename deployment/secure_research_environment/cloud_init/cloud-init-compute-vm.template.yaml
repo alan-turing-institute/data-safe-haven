@@ -5,7 +5,7 @@ package_upgrade: false
 mounts:
   #- ["//<dataserver-hostname>/Shared", /shared, cifs, "_netdev,credentials=/opt/configuration/credentials-data-server.secret,file_mode=0777,dir_mode=0777"]
   - [//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared, /shared, nfs, "_netdev,sec=sys"]
-  - [//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home, /hometest, nfs, "_netdev,sec=sys"]
+  # - [//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home, /hometest, nfs, "_netdev,sec=sys"]
 
 write_files:
   - path: "/etc/bash.bashrc"
@@ -515,7 +515,7 @@ runcmd:
   - systemctl enable xrdp-sesman
   # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
   - /opt/configuration/setup_disk.sh 1 /home
-  # - /opt/configuration/setup_disk.sh 2 /scratch
+  - /opt/configuration/setup_disk.sh 2 /scratch
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
   - echo ">=== Configure ingress and egress mounts ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
