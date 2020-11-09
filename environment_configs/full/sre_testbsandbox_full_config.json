@@ -654,11 +654,13 @@
         "containers": {
           "home": {
             "accessPolicyName": "readWrite",
-            "mountType": "NFS"
+            "mountType": "NFS",
+            "sizeGb": "1024"
           },
           "shared": {
             "accessPolicyName": "readWrite",
-            "mountType": "NFS"
+            "mountType": "NFS",
+            "sizeGb": "1024"
           }
         }
       }

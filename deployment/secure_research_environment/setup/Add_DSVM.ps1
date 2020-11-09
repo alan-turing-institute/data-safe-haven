@@ -120,7 +120,8 @@ if ($Upgrade) {
 
     # Find and snapshot the existing data disks
     # -----------------------------------------
-    $dataDiskTypes = @("SCRATCH", "HOME")
+    # $dataDiskTypes = @("SCRATCH", "HOME")
+    $dataDiskTypes = @("SCRATCH")
     $snapshots = @{}
     $snapshotNames = @()
     foreach ($dataDiskType in $dataDiskTypes) {
@@ -350,7 +351,7 @@ if ($Upgrade) {
 } else {
     # Create empty disks
     $dataDisks += Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    $dataDisks += Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    # $dataDisks += Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 }
 
 # Deploy the VM

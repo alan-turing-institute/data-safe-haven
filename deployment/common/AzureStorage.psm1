@@ -199,7 +199,7 @@ function Deploy-StorageNfsShare {
                                  -StorageAccountName $StorageAccountName `
                                  -Name $ShareName `
                                  -EnabledProtocol NFS `
-                                 -RootSquash "RootSquash"
+                                 -RootSquash "NoRootSquash"
             return $?
         } | Receive-Job -Wait -AutoRemoveJob
         if ($success) {

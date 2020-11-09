@@ -163,11 +163,13 @@ function Add-SreConfig {
             containers = [ordered]@{
                 shared = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType = "NFS"
+                    mountType        = "NFS"
+                    sizeGb           = "1024"
                 }
                 home  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType = "NFS"
+                    mountType        = "NFS"
+                    sizeGb           = "1024"
                 }
             }
         }
