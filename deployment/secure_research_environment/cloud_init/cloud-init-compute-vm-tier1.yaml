@@ -11,7 +11,7 @@ disk_setup:
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     filesystem: ext4
-    parition: 1
+    partition: 1
 
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /scratch, ext4, "defaults"]
