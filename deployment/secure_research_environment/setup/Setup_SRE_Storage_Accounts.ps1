@@ -52,28 +52,22 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
                                             -ContainerName $receptacleName `
                                             -ValidityYears 1
 
-        # If there is no SAS token in the SRE keyvault then create one and store it there
-        if (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName) {
-            Add-LogMessage -Level InfoSuccess "Found existing SAS token '$($config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName)' for container '$receptacleName' in '$($persistentStorageAccount.StorageAccountName)"
-        } else {
-            $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
-            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken
-        }
+        # As we want to ensure that the SAS token is valid for 1 year from *now* we do not want to re-use old tokens
+        # We therefore always generate a new token and store it in the keyvault (note that old tokens will still be valid and will still be stored as old versions of the secret)
+        # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the key vault
+        $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -ForceOverwrite
 
     # When using a file share we need to mount using the storage key
     } elseif ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "ShareSMB") {
         # Deploy the share
         $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Share"
 
-        # If there is no storage key in the SRE keyvault then obtain one and store it there
-        if (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName) {
-            Add-LogMessage -Level InfoSuccess "Found existing storage key '$($config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName)' for container '$receptacleName' in '$($persistentStorageAccount.StorageAccountName)"
-        } else {
-            $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-            $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
-            $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey
-        }
+        # Ensure that the appropriate storage key is stored in the SRE keyvault
+        $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
+        $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -ForceOverwrite
     }
 }
 
