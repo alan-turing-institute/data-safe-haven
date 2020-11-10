@@ -20,6 +20,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Get common parameters
 # ---------------------
 $allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 $nsgs = @{}
 
 
@@ -37,7 +38,7 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
     $null = Update-NetworkSecurityGroupRule -Name "InboundSSHAccess" -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -SourceAddressPrefix $allowedSources
 
     Add-LogMessage -Level Info "Setting outbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
 
 
 # Tier-2 and above have several NSGs
@@ -81,8 +82,8 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
 
     # Update user-facing NSGs
     Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
-    $null = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
-    $null = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgs[$config.sre.webapps.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.webapps.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
 }
 
 

@@ -18,6 +18,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -243,6 +244,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundAllowNTP" `
                              -Description "Outbound allow connections to NTP servers" `
@@ -255,11 +257,11 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundInternetAccess" `
+                             -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
                              -Direction Outbound `
-                             -Access Deny `
+                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix VirtualNetwork `
                              -SourcePortRange * `
