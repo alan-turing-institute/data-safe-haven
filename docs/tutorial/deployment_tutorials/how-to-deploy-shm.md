@@ -703,7 +703,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 + Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
-+ Click `Properties` in the left hand sidebar and **disable** security defaults as shown in the screenshot [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults) - selecting `NO` from Enable Security defaults 
++ Click `Properties` in the left hand sidebar and **disable** security defaults as shown in the screenshot [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults) - selecting `NO` from Enable Security defaults
   + Select `My organization is using Conditional Access` and hit the `Save` button
 + Click `Security` in the left hand sidebar
 + Click `Conditional access` in the left hand sidebar
@@ -773,7 +773,7 @@ From your **deployment machine**
 + This will take **around 30 minutes** to run.
 
 ## Server list
-The following 3 virtual machines are created as a result of these instructions:
+The following 3 virtual machines are created as a result of these instructions (you can check they exist by navigating to `Vitual machines` from the Azure portal Home and searching with the name filter):
 
 + `DC1-SHM-<SHM ID>` (primary domain controller)
 + `DC2-SHM-<SHM ID>` (secondary domain controller)
