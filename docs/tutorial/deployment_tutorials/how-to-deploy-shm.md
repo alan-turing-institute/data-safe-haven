@@ -672,7 +672,8 @@ Once you're certain that you're adding a new user, make sure that the following 
   + If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
     + Click `Yes`
     + Close the dialog by clicking `X`
-  + Enter the global administrator password if prompted
+  + On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
+    + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
   + Back on the `Connect to Azure AD` screen, click `Next`
   + Approve the login with MFA if required
     + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
