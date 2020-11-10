@@ -155,7 +155,7 @@ function Add-SreConfig {
         persistentdata = [ordered]@{
             account    = [ordered]@{
                 name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "StorageV2"
+                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
                 performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "hot"
             }
@@ -166,7 +166,7 @@ function Add-SreConfig {
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = "ShareSMB"
+                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
                 }
             }
         }

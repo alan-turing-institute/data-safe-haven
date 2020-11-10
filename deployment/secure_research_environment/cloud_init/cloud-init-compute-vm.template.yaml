@@ -2,8 +2,8 @@
 package_upgrade: false
 
 mounts:
-  - [/installation/ingress-mount.sh, /data, fuse, "_netdev"]
-  - [//<storage-account-persistentdata-name>.file.core.windows.net/egress, /output, cifs, "_netdev,credentials=/installation/egress-credentials.secret,rw,setuids,vers=3.0,serverino"] #,dir_mode=0777,file_mode=0777
+  - [/installation/ingress-mount.sh, /data, fuse, "_netdev,ro,dir_mode=0555,file_mode=0444"]
+  - [/installation/egress-mount.sh, /output, fuse, "_netdev,rw,dir_mode=0777,file_mode=0666"]
 
 write_files:
   - path: "/etc/xrdp/startwm.sh"
@@ -34,7 +34,7 @@ write_files:
       <join_domain.sh>
   - path: "/installation/data-server-credentials.secret"
     owner: root:root
-    permissions: "0600"
+    permissions: "0400"
     content: |
       username=<datamount-username>
       password=<datamount-password>
@@ -49,11 +49,16 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      username=<storage-account-persistentdata-name>
-      password=<storage-account-persistentdata-key>
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-egress-sastoken>
+      authType SAS
+      containerName egress
   - path: "/installation/ingress-mount.sh"
     permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
+    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
+  - path: "/installation/egress-mount.sh"
+    permissions: "0500"
+    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/tmp/egress --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-credentials.secret -o allow_other
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
