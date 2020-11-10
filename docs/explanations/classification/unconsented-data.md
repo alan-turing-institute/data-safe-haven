@@ -4,13 +4,13 @@ This document summarises some considerations that must be taken into account whe
 
 ## Data ingress
 
-From May 2018, GDPR has introduced strict regulations regarding the use of personal data. In particular, [Art 9](<https://gdpr-info.eu/art-9-gdpr/>) states that:
+From May 2018, GDPR has introduced strict regulations regarding the use of personal data. In particular, [Art 9](https://gdpr-info.eu/art-9-gdpr/) states that:
 
 > Processing of personal data revealing racial or ethnic origin, political opinions, religious or philosophical beliefs, or trade union membership, and the processing of genetic data, biometric data for the purpose of uniquely identifying a natural person, data concerning health or data concerning a natural person’s sex life or sexual orientation shall be prohibited.
 
-Despite this, lawful processing of such information is allowed when *explicit consent* has been given by the individual. When using EHRs, however, explicit consent is typically not practical - particularly when dealing with large patient cohorts. As such, prior to data ingress, it is important to establish that the study satisfies one of the conditions required for lawful processing of personal information [see Art 9.2](<https://gdpr-info.eu/art-9-gdpr/). In the case of medical data, the Health Research Authority has issued [guidelines](https://www.hra.nhs.uk/hra-guidance-general-data-protection-regulation/>) for the lawful use of unconsented data. In particular, it states that *the legal basis is determined by the type of organisation that is the data controller for the processing*:
+Despite this, lawful processing of such information is allowed when *explicit consent* has been given by the individual. When using EHRs, however, explicit consent is typically not practical - particularly when dealing with large patient cohorts. As such, prior to data ingress, it is important to establish that the study satisfies one of the conditions required for lawful processing of personal information [see Art 9.2](https://gdpr-info.eu/art-9-gdpr/). In the case of medical data, the Health Research Authority has issued [guidelines](https://www.hra.nhs.uk/hra-guidance-general-data-protection-regulation/) for the lawful use of unconsented data. In particular, it states that *the legal basis is determined by the type of organisation that is the data controller for the processing*:
 
-+ *For universities, NHS organisations, Research Council institutes or [other public authority](<http://www.legislation.gov.uk/ukpga/2000/36/schedule/1>) the processing of personal data for research should be a ‘task in the public interest’*.
++ *For universities, NHS organisations, Research Council institutes or [other public authority](http://www.legislation.gov.uk/ukpga/2000/36/schedule/1) the processing of personal data for research should be a ‘task in the public interest’*.
 + *For commercial companies and charitable research organisations the processing of personal data for research should be undertaken within ‘legitimate interests’*.
 
 As such, prior to data ingress, it is important that researchers (or commercial partners) provide valid evidence regarding these conditions being satisfied. The source of this information **must** be external to the research group, and depends on who is the data provider.
@@ -21,7 +21,7 @@ As such, prior to data ingress, it is important that researchers (or commercial 
 
 + For data provided by multiple NHS Trusts/Boards (England): approval from NHS Digital
 
-In addition to this, the data provider must provide evidence to certify that the data does not include personal information for patients who have explicitly requested to [opt-out](<https://digital.nhs.uk/about-nhs-digital/our-work/keeping-patient-data-safe/how-we-look-after-your-health-and-care-information/your-information-choices/opting-out-of-sharing-your-confidential-patient-information>) from their data being used for purposes that are not directly related to their own care.
+In addition to this, the data provider must provide evidence to certify that the data does not include personal information for patients who have explicitly requested to [opt-out](https://digital.nhs.uk/about-nhs-digital/our-work/keeping-patient-data-safe/how-we-look-after-your-health-and-care-information/your-information-choices/opting-out-of-sharing-your-confidential-patient-information) from their data being used for purposes that are not directly related to their own care.
 
 Finally, whenever possible, the amount of identifiable personal information must be minimised prior to data ingress. This includes, but it is not restricted to: name, postcode, NHS number (England) and CHI number (Scotland). Moreover, a formal data transfer agreement between the data provider and the Institute must be in place.
 
@@ -47,7 +47,7 @@ An electronic certificate will be retained by the Institute as a proof of traini
 
 During the data access period, the following conditions must be satisfied:
 
-+ At all times, researchers must abide to the [Data Protection Act 2018](<http://www.legislation.gov.uk/ukpga/2018/12/contents/enacted>).
++ At all times, researchers must abide to the [Data Protection Act 2018](http://www.legislation.gov.uk/ukpga/2018/12/contents/enacted).
 
 + The data can **only** be used for purposes that are approved by the data controller (Caldicott Guardian, PBPP or NHS digital depending on the data source; see data ingress conditions), as specified in the data access agreement.
 

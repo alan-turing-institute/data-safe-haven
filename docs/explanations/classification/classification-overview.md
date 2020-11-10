@@ -115,7 +115,7 @@ Derived information may be of higher security tier than the information in the i
 If it becomes apparent during the project that intended analysis will produce this effect then the inputs should be treated as a new work package with this extra information, and classified afresh, following the full classification process below.
 In the below, "personal data" follows the GDPR definition: information from which a living individual is identified or identifiable. It excludes information about individuals who are dead.
 
-A [high level diagram](classification\Simple-Classification-Flow-Diagram.pdf) of how we classify work packages can be found here.
+A [high level diagram](./Simple-Classification-Flow-Diagram.pdf) of how we classify work packages can be found here.
 
 The detailed diagram can be found [here](Full-Classification-Flow-Diagram.pdf).
 
@@ -153,7 +153,7 @@ It may also be used for commercial data where commercial consequences of disclos
 
 #### Relationships to other classification schemes
 
-Pseudonymised data is considered [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible>) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
+Pseudonymised data is considered [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
 
 In particular, Tier 1 is not suitable for any data derived from personal data that is not otherwise suitable for processing in Tier 0. If this is not the case, then the minimum tier environment such data can be processed in is Tier 2.
 
@@ -176,7 +176,7 @@ At Tier 2, the most significant risks are "workaround breach" and the risk of mi
 
 Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
 
-All pseudonymised [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible>>) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
+All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
 
 ### Tier 3
 
@@ -197,9 +197,9 @@ At Tier 3, the risk of hostile actors attempting to break into the Environment b
 
 All data at the UK government OFFICIAL-SENSITIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
 
-All pseudonymised [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/>) under the GDPR is Tier 3.
+All pseudonymised [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
 
-All non-pseudonymised [Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/>>) is Tier 3.
+All non-pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 3.
 
 ### Tier 4
 

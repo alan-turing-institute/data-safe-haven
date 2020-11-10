@@ -1,14 +1,14 @@
 {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-    "azureAdminGroupName": "Safe Haven Test Admins",
     "sreId": "sandbox",
-    "shmId": "testc",
     "tier": "3",
-    "domain": "sandbox.testc.dsgroupdev.co.uk",
-    "ipPrefix": "10.151.0",
+    "shmId": "testc",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+    "ipPrefix": "10.152.0",
     "inboundAccessFrom": "193.60.220.253,193.60.220.240",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
     "databases": ["MSSQL", "PostgreSQL"]
 }

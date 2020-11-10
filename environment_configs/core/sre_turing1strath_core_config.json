@@ -1,13 +1,25 @@
 {
-    "subscriptionName": "DSGSEP2020 - Strathclyde",
-    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "strath",
-    "shmId": "turing1",
     "tier": "1",
+    "shmId": "turing1",
+    "subscriptionName": "DSGSEP2020 - Strathclyde",
     "domain": "strathclyde.turingsafehaven.ac.uk",
     "ipPrefix": "10.100.40",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900"
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_STRATH",
+            "rgPrefix": "RG_SRE_STRATH",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_STRATH"
+                }
+            }
+        }
+    }
 }

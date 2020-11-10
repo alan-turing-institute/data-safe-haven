@@ -588,3 +588,4 @@ function Test-TargetResource
 } # Test-TargetResource
 
 Export-ModuleMember -Function *-TargetResource
+

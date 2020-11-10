@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 ConvertFrom-StringData @'
     GettingWaitForDiskStatusMessage = Getting Wait for Disk status for disk '{0}'.
 

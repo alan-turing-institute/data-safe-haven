@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 ## Import the common AD functions
 $adCommonFunctions = Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `

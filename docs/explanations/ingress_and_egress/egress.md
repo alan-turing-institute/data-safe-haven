@@ -1,6 +1,6 @@
 # Taking data and software out of the Turing Safe Haven
 
-Prior to publishing reports/papers, code or data that is currently being stored within the Turing Safe Haven a reclassification process must be followed. This is to ensure that any material that is to be made public is free of any confidential material. If commercially sensitive information is published this could lead to reputational or financial repercussions. If personal or personal sensitive information is leaked then it could lead to legal repercussions (See the [ICO Website](<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) for more information on this>).
+Prior to publishing reports/papers, code or data that is currently being stored within the Turing Safe Haven a reclassification process must be followed. This is to ensure that any material that is to be made public is free of any confidential material. If commercially sensitive information is published this could lead to reputational or financial repercussions. If personal or personal sensitive information is leaked then it could lead to legal repercussions (See the [ICO Website](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) for more information on this).
 
 The process is divided into two stages: reclassification and then egress.
 

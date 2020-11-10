@@ -58,6 +58,7 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewal
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
+    Replace("<subnet-repository-cidr>", $config.network.repositoryVnet.subnets.repository.cidr).
     Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr).
     Replace("<logging-workspace-id>", $workspaceId) | ConvertFrom-Json -AsHashtable
 

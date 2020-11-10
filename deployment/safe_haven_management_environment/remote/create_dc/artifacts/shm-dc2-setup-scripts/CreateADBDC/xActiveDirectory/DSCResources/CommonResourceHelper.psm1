@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 <#
     .SYNOPSIS
         Retrieves the localized string data based on the machine's culture.

@@ -1,4 +1,4 @@
-#
+﻿#
 # xADDomainController: DSC resource to install a domain controller in Active
 # Directory.
 #

@@ -1,3 +1,4 @@
+## Import the common AD functions
 
 [ClassVersion("1.0.0.0"), FriendlyName("xWaitForVolume")]
 class MSFT_xWaitForVolume : OMI_BaseResource

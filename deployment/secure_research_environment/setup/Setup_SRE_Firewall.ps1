@@ -39,18 +39,8 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 # Load all traffic rules from template
 # ------------------------------------
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
-    Replace("<ntp-server-fqdns>", $($config.shm.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
-    Replace("<priority-allow>", (5000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
-    Replace("<priority-deny>", (6000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
-    Replace("<sre-id>", $config.sre.id).
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-    Replace("<sre-rdg-public-ip-cidr>", "${rdsGatewayPublicIp}/32").
-    Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr).
-    Replace("<subnet-data-cidr>", $config.sre.network.vnet.subnets.data.cidr).
-    Replace("<subnet-databases-cidr>", $config.sre.network.vnet.subnets.databases.cidr).
-    Replace("<subnet-identity-cidr>", $config.sre.network.vnet.subnets.identity.cidr).
-    Replace("<subnet-rds-cidr>", $config.sre.network.vnet.subnets.rds.cidr).
-    Replace("<vnet-shm-cidr>", $config.shm.network.vnet.cidr) | ConvertFrom-Json -AsHashtable
+    Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
 
 
 # Add routes to the route table

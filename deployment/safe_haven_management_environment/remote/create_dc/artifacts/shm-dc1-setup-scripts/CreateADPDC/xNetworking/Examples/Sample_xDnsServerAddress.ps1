@@ -1,4 +1,4 @@
-configuration Sample_xDnsServerAddress
+﻿configuration Sample_xDnsServerAddress
 {
     param
     (
@@ -26,3 +26,4 @@ configuration Sample_xDnsServerAddress
         }
     }
 }
+

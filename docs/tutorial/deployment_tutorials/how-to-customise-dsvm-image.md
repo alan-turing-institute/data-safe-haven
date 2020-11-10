@@ -1,6 +1,6 @@
 # Safe Haven VM Image Build Instructions
 
-These instructions will create a new VM image full analysis environment as detailed in the [analysis environment design](design/overview.md).
+These instructions will create a new VM image for use in the secure research environment.
 
 ## Contents
 
@@ -15,15 +15,15 @@ These instructions will create a new VM image full analysis environment as detai
 
 + An Azure subscription with sufficient credits to build the environment in
 + PowerShell for Azure
-  + Install [PowerShell v6.0 or above](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0>)
-  + Install the Azure [PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0>)
+  + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
+  + Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
 + SSH or OpenSSH (not tested on Windows)
 + SHM configuration file
-  + The core properties for the environment must be present in the `environment_configs/core` folder as described in [the Safe Haven Management deployment instructions](deploy_shm_instructions.md).
+  + The core properties for the environment must be present in the `environment_configs/core` folder as described in [the Safe Haven Management deployment instructions](how-to-deploy-shm.md).
 
 ## :gift: Provision a VM with all configured software
 
-Provisioning a VM with all the Safe Haven software is done using [cloud-init](<https://cloudinit.readthedocs.io/en/latest/>).
+Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/).
 This takes a basic Ubuntu image and installs and configures all the necessary software packages.
 The cloud-init file used here is in the `deployment/dsvm_images/cloud-init` folder.
 
@@ -76,7 +76,7 @@ If you want to update the version of one of the packages we install from a `.deb
 
 ### :running: Running the image build
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 + Begin the provisioning and configuration of a new compute VM image using `./Provision_Compute_VM.ps1 -shmId <SHM ID>` , where the SHM ID is the one specified in the config
@@ -90,7 +90,7 @@ Note that the VM will automatically shutdown at the end of the cloud-init proces
 
 Once you are happy with a particular candidate, you can convert it into an image using `./Convert_VM_To_Image.ps1` .
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 + Begin the provisioning and configuration of a new compute VM image using `./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM Name>` , where the SHM ID is the one specified in the config and the VM name is the name of the virtual machine created during the provisioning step
@@ -102,7 +102,7 @@ Once you have created an image, it can be registered in the image gallery using 
 This must be provided with the name of the image created during the conversion step and will register this in the shared gallery as a new version of the Ubuntu-based compute machine images.
 This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 + Begin the provisioning and configuration of a new compute VM image using `./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -imageName <Image Name>` , where the SHM ID is the one specified in the config and the image name is the name of the VM image created during the conversion step

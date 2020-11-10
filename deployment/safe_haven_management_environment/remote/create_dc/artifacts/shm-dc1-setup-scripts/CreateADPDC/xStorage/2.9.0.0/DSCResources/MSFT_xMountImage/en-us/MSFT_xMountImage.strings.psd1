@@ -1,4 +1,4 @@
-ConvertFrom-StringData @'
+﻿ConvertFrom-StringData @'
     GettingMountedImageMessage = Getting Mounted Drive for image file '{0}'.
 
     SettingMountedImageMessage = Setting Mounted Drive for image file '{0}'.
@@ -20,3 +20,4 @@ ConvertFrom-StringData @'
     MountingImageMessage = The image file '{0}' is being mounted as drive '{1}'.
     ChangingISODriveLetterMessage = ISO image file '{0}' mounted as drive '{1}' but is being changed to '{2}'.
 '@
+

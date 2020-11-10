@@ -1,13 +1,24 @@
 {
-    "subscriptionName": "DSGSEP2020 - CRUKCI",
-    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "crukci",
-    "shmId": "turing1",
     "tier": "1",
-    "domain": "crukci.turingsafehaven.ac.uk",
+    "shmId": "turing1",
+    "subscriptionName": "DSGSEP2020 - CRUKCI",
     "ipPrefix": "10.100.56",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
-    "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.3.2020081900"
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2020081900"
+    },
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_CRUKCI",
+            "rgPrefix": "RG_SRE_CRUKCI",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_CRUKCI"
+                }
+            }
+        }
+    }
 }

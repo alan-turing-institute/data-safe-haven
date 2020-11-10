@@ -1,0 +1,48 @@
+#cloud-config
+timezone: Europe/London
+
+apt:
+  update: true
+
+packages:
+  - docker.io
+  - docker-compose
+  - python3-requests
+
+write_files:
+  - path: "/docker-compose.yaml"
+    content: |
+      ---
+      version: "3"
+
+      services:
+        nexus:
+          image: sonatype/nexus3
+          ports:
+            - 80:8081
+          volumes:
+            - /nexus-data:/nexus-data
+          restart: always
+  - path: "/configure-nexus.py"
+    content: |
+      <configure_nexus.py>
+
+runcmd:
+  # Create directory for nexus data with correct ownership
+  - echo "Creating Nexus data directory"
+  - mkdir /nexus-data
+  - chown -R 200:200 /nexus-data
+  - echo "Creating Nexus container"
+  - docker-compose -f /docker-compose.yaml up -d
+  # Give Nexus some time to initialise
+  - echo "Waiting for Nexus to initialise (3 minutes)"
+  - sleep 3m
+  # Configure Nexus
+  - echo "Configuring Nexus"
+  - python3 /configure-nexus.py --path /nexus-data --admin_password <nexus-admin-password> --tier 2
+
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

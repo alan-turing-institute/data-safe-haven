@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 $moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 #region LocalizedData
 $culture = 'en-us'

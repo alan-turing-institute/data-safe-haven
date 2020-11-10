@@ -27,18 +27,18 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
   + You will need to be a member of the relevant security group.
 + `PowerShell` with support for Azure and Azure Active Directory
-  + Install [PowerShell v6.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>)
+  + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+  + Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
   + Install the **cross-platform** AzureAD Powershell module:
     + :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
     + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
 + `Microsoft Remote Desktop`
-  + On Mac this can be installed from the [apple store](<https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12>)
+  + On OSX this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
-  + To install manually follow the [instructions on Github](<https://github.com/openssl/openssl>)
+  + To install manually follow the [instructions on Github](https://github.com/openssl/openssl)
   + To install a pre-compiled version on OSX use Homebrew: `brew install openssl`
-  + To install a pre-compiled version on Windows use [one of these](<https://wiki.openssl.org/index.php/Binaries>).
+  + To install a pre-compiled version on Windows use [one of these](https://wiki.openssl.org/index.php/Binaries).
     + **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
 ## Safe Haven Management configuration
@@ -81,7 +81,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     },
     "vmImages": {
         "subscriptionName": "Azure subscription where VM images should be built (can be the same as in the 'azure' block above).",
-        "location": "Azure location where VM images should be built (can be the same as in the 'azure' block above). If you have already built images in this subscription for another Safe Haven deployment, use the same location as you specified previously."
+        "location": "Azure location where VM images should be built (can be the same as in the 'azure' block above). If you have already built images in this subscription for another Safe Haven deployment, use the same location as you specified previously.",
+        "buildIpAddresses": "[Optional] One or more IP addresses which admins will be running the VM build scripts from (if not specified then Turing IP addresses will be used)."
      },
     "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }
@@ -96,7 +97,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 From your **deployment machine**
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser, enter the code and log in to your account on Azure
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -119,7 +120,7 @@ From your **deployment machine**
 
 ### Create a new AAD
 
-+ Login to the [Azure Portal](<https://azure.microsoft.com/en-gb/features/azure-portal/>)
++ Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 + Click `Create a Resource`  and search for `Azure Active Directory`
    <p align="center">
       <img src="../../images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory">
@@ -143,7 +144,7 @@ From your **deployment machine**
       <img src="../../images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
    </p>
 + Add the SHM domain:
-  + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
+  + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
   + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
   + Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     + :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
@@ -157,7 +158,7 @@ From your **deployment machine**
 
 From your **deployment machine**
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -214,7 +215,7 @@ Click the heading that applies to you to expand the instructions for that scenar
 + Switch to the the **emergency administrator** account:
   + Click on your username at the top right corner of the screen, then click "Sign in with a different account"
   + Enter `aad.admin.emergency.access@<SHM domain>` as the username
-  + Open a new browser tab and go to the [Azure Portal](<https://azure.microsoft.com/en-gb/features/azure-portal/>)
+  + Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
   + Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD). Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Subscriptions"
   + Click on the Safe Haven SHM subscription
@@ -368,7 +369,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 From your **deployment machine**
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -403,7 +404,7 @@ From your **deployment machine**
        <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
    </p>
 + Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
-+ Follow the [VPN set up instructions](<https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert>) using the section appropriate to your operating system
++ Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system
   + **You do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
   + Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
   + Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
@@ -420,7 +421,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 From your **deployment machine**
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -533,7 +534,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
   + Open Powershell (on the SHM DC) as an administrator
   + Run `C:\Installation\UpdateAADSyncRule.ps1`
 
-### Validate AD sync
+### Validate Active Directory synchronisation
+This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory. Note that you can use the same script after deploying an SRE to add users in bulk.
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
@@ -550,7 +552,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
       They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
     + `SecondaryEmail`: An existing organisational email address for the user.
       Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
-    + `GroupName`: leave blank
+    + [Optional] `GroupName`: SRE group that the user will be added to. As these groups are created during the SRE deployment you can leave this empty for this initial validation of the synchronisation process.
 + Create and synchronise user
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
@@ -610,7 +612,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ## Deploy and configure network policy server
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal (from your deployment machine) and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -671,7 +673,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   + Select `Properties` in the left hand side bar
   + Copy the `Tenant ID` field and enter it at the prompt on the NPS
   + **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
-    + Look at [the documentation here](<https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting>).
+    + Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
     + Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
       + Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
       + Click `Licenses`in the left hand side bar then `Manage > All products`
@@ -721,7 +723,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 ## Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -731,7 +733,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ## Deploy logging
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + Pick the Azure account that you are building the environment with when asked to log in
@@ -752,7 +754,7 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 
 From your **deployment machine**
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + Pick the Azure account that you are building the environment with when asked to log in

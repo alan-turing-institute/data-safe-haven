@@ -83,6 +83,7 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.adminPasswordSecretName -DefaultLength 20
     foreach ($mirrorType in $config.mirrors.Keys) {
         foreach ($mirrorTier in $config.mirrors[$mirrorType].Keys) {
             foreach ($mirrorDirection in $config.mirrors[$mirrorType][$mirrorTier].Keys) {

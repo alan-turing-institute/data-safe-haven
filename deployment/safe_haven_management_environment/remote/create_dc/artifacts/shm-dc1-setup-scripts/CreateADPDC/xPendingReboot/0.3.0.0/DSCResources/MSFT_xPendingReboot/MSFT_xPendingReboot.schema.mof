@@ -1,4 +1,4 @@
-[ClassVersion("0.1.0.0"), FriendlyName("xPendingReboot")] 
+[ClassVersion("0.1.0.0"), FriendlyName("xPendingReboot")]
 class MSFT_xPendingReboot : OMI_BaseResource
 {
   [key, Description("Name of this pending reboot check")] string Name;

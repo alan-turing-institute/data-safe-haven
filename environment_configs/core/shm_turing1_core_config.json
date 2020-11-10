@@ -16,7 +16,7 @@
     },
     "dnsRecords": {
         "subscriptionName": "[Prod] Safe Haven Domains",
-        "resourceGroupName": "RG_SHM_DNS_PRODUCTION",
+        "resourceGroupName": "RG_SHM_DNS_PRODUCTION"
     },
     "vmImages": {
         "subscriptionName": "[Prod] Safe Haven VM Images",

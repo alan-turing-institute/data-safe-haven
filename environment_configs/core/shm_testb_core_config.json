@@ -6,7 +6,7 @@
     "azure": {
         "subscriptionName": "Safe Haven Management Test B",
         "adminGroupName" : "Safe Haven Test Admins",
-        "location": "location": "uksouth"
+        "location": "uksouth"
     },
     "organisation": {
         "name": "The Alan Turing Institute",
@@ -20,6 +20,7 @@
     },
     "vmImages": {
         "subscriptionName": "[Prod] Safe Haven VM Images",
-        "location": "uksouth"
+        "location": "uksouth",
+        "buildIpAddresses": ["188.214.11.75", "86.133.150.218", "86.1.240.134", "188.155.244.29", "193.60.220.240", "193.60.220.253"]
     }
 }

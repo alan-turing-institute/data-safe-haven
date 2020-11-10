@@ -25,7 +25,7 @@ To get a good overview of the Safe Haven, see the resources below.
 
 ## Documentation
 
-For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](/docs/README.md).
+For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](docs/README.md).
 
 ## Releases
 

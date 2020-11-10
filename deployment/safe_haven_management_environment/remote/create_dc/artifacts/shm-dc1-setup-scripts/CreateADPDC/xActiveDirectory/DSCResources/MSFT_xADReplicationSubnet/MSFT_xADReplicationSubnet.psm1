@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
         Returns the current state of the replication subnet.
 
@@ -211,3 +211,4 @@ function Test-TargetResource
 
     return $desiredConfigurationMatch
 }
+

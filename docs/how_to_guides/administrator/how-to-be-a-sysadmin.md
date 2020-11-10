@@ -27,7 +27,7 @@
 
 ## :seedling: Prerequisites
 
-This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](../deployment_instructions/deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](../deployment_instructions/deploy_sre_instructions.md) that are linked to it.
+This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](../../tutorial/deployment_tutorials/how-to-deploy-shm.md) and one or more [Secure Research Environments (SRE)](../../tutorial/deployment_tutorials/how-to-deploy-sre.md) that are linked to it.
 
 + You will need VPN access to the SHM as described in the deployment instructions
 
@@ -118,7 +118,7 @@ To automatically assign licences to all local AD users that do not currently hav
 
 We need to contact the users to tell them their user ID and.
 We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
-We should also send them a copy of the [Safe Haven User Guide](../user_guides/user_guide.md) at this point.
+We should also send them a copy of the [Safe Haven User Guide](../../how_to_guides/user_guides/user-guide.md) at this point.
 
 A sample email might look like the following
 

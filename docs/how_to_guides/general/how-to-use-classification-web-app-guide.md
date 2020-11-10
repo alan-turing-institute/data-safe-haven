@@ -39,59 +39,31 @@ Now you can log into your account. During this process, you will need to provide
 
 To access the web-app, open a new incognito window on your browser, and go to the following address: https://turingsafehaven.azurewebsites.net
 
-![screen1](<https://user-images.githubusercontent.com/54804128/68021687-0f197300-fc9a-11e9-87d8-9a6dabe09ee5.png>)
-
-Format:
-
-![Alt Text](url)
+![screen1](https://user-images.githubusercontent.com/54804128/68021687-0f197300-fc9a-11e9-87d8-9a6dabe09ee5.png)
 
 Welcome to the safe haven web app. Press the button to log in to the application.
 
-![screen2](<https://user-images.githubusercontent.com/54804128/68021690-117bcd00-fc9a-11e9-9d4d-3f19a8ea4cec.png>)
-
-Format:
-
-![Alt Text](url)
+![screen2](https://user-images.githubusercontent.com/54804128/68021690-117bcd00-fc9a-11e9-9d4d-3f19a8ea4cec.png)
 
 At the login prompt enter username@turingsafehaven.ac.uk and confirm/proceed. (Remember that your username will be in the format firstname.lastname).
 
-![screen3](<https://user-images.githubusercontent.com/54804128/68021694-13de2700-fc9a-11e9-97bd-e4afa68e0540.png>)
-
-Format:
-
-![Alt Text](url)
+![screen3](https://user-images.githubusercontent.com/54804128/68021694-13de2700-fc9a-11e9-97bd-e4afa68e0540.png)
 
 The first time you log in, you'll need to reset your password - click “Forgotten my password”. Complete the requested information (a captcha and the phone number you provided on registration). Make sure you add your number as +44 7XXX, rather than 0 7XXX.ben
 
-![screen3b](<https://user-images.githubusercontent.com/54804128/68022787-3aea2800-fc9d-11e9-9d10-52c8829318df.png>)
+![screen3b](https://user-images.githubusercontent.com/54804128/68022787-3aea2800-fc9d-11e9-9d10-52c8829318df.png)
 
-Format:
-
-![Alt Text](url)
-
-![screen3c](<https://user-images.githubusercontent.com/54804128/68023096-32462180-fc9e-11e9-8690-df48eca313ef.png>)
-
-Format:
-
-![Alt Text](url)
+![screen3c](https://user-images.githubusercontent.com/54804128/68023096-32462180-fc9e-11e9-8690-df48eca313ef.png)
 
 Once you've finished resetting your password, you'll be taken to the front page (if this doesn't happen, reload the web-app on a new incognito browser, and enter in your username and new password).
 
 ## Welcome to the web-app
 
-![screen4](<https://user-images.githubusercontent.com/54804128/68021696-1476bd80-fc9a-11e9-9ec9-be9c39f1b452.png>)
-
-Format:
-
-![Alt Text](url)
+![screen4](https://user-images.githubusercontent.com/54804128/68021696-1476bd80-fc9a-11e9-9ec9-be9c39f1b452.png)
 
 From the front page, you'll be able to see all of the projects to which you've been assigned a role. Click on the project you want to classify data for to see the details.
 
-![screen5](<https://user-images.githubusercontent.com/54804128/68021702-15a7ea80-fc9a-11e9-868e-781eb5477ed7.png>)
-
-Format:
-
-![Alt Text](url)
+![screen5](https://user-images.githubusercontent.com/54804128/68021702-15a7ea80-fc9a-11e9-868e-781eb5477ed7.png)
 
 On the project page, you can see the different datasets to be used throughout the project, the role to which you've been assigned. You can see that the different datasets are each clustered within work packages.
 
@@ -105,34 +77,18 @@ In our model, projects are divided into work packages, which we use here to refe
 
 Now that you're all set up on the web-app, you can begin classifying the work package to be used over the project, containing the different datasets. Click on the work package you'd like to classify to see its details.
 
-![screen6](<https://user-images.githubusercontent.com/54804128/68021708-180a4480-fc9a-11e9-9b16-2c3746126f1e.png>)
-
-Format:
-
-![Alt Text](url)
+![screen6](https://user-images.githubusercontent.com/54804128/68021708-180a4480-fc9a-11e9-9b16-2c3746126f1e.png)
 
 This page shows you which of the available datasets this work package contains. You can now begin classifying the data - click to classify the work package.
 
-![screen7](<https://user-images.githubusercontent.com/54804128/68021717-1f315280-fc9a-11e9-836b-a4ec10bab008.png>)
-
-Format:
-
-![Alt Text](url)
+![screen7](https://user-images.githubusercontent.com/54804128/68021717-1f315280-fc9a-11e9-836b-a4ec10bab008.png)
 
 The web-app will now guide you through a series of 'yes or no' questions to classify the work package. After each choice, you can see the question it will bring you to, so you don't accidentally get onto the wrong track. Additional guidance on how to understand and answer each question is given below. If you've made a mistake, or want to cancel your classification at any time - you can click on the grey button and start again later. Work your way through the questions for this work package, answering yes or no for each.
 
-![screen8](<https://user-images.githubusercontent.com/54804128/68021720-20fb1600-fc9a-11e9-92ef-d9498e939812.png>)
-
-Format:
-
-![Alt Text](url)
+![screen8](https://user-images.githubusercontent.com/54804128/68021720-20fb1600-fc9a-11e9-92ef-d9498e939812.png)
 
 Before you classify the data as a particular tier of sensitivity, the web-app will warn you of the classification you're about to make. You can click previous question to go back, or cancel classification to restart from scratch.
 
-![screen9](<https://user-images.githubusercontent.com/54804128/68021726-235d7000-fc9a-11e9-8221-5d0b8eeb35d9.png>)
-
-Format:
-
-![Alt Text](url)
+![screen9](https://user-images.githubusercontent.com/54804128/68021726-235d7000-fc9a-11e9-8221-5d0b8eeb35d9.png)
 
 Congratulations, you've classified the work package! This page gives you an overview of the choices you made to arrive at this classification. If you're not happy with any of these choices, you can click on the question to return to this step, or delete the classification to start again. The classification of the dataset will remain pending, until all relevant role representatives have completed their classification, and a consensus has been reached.

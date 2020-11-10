@@ -1,3 +1,4 @@
+## Import the common AD functions
 [ClassVersion("1.0.1.0"), FriendlyName("xADGroup")]
 class MSFT_xADGroup : OMI_BaseResource
 {

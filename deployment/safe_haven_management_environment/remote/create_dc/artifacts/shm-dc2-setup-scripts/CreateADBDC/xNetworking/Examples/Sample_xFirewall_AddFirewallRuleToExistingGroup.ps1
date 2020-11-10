@@ -1,9 +1,10 @@
-﻿# DSC configuration for Firewall
-# 
+﻿## Import the common AD functions
+# DSC configuration for Firewall
+#
 
 configuration Sample_xFirewall_AddFirewallRuleToExistingGroup
 {
-    param 
+    param
     (
         [string[]]$NodeName = 'localhost'
     )
