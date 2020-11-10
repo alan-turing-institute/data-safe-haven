@@ -1382,9 +1382,9 @@ function Set-KeyVaultPermissions {
     }
     Set-AzKeyVaultAccessPolicy -VaultName $Name `
                                -ObjectId $securityGroupId `
-                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover `
-                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore `
-                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover, Purge `
+                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore, Purge `
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge
     $success = $?
     foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
         Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
