@@ -625,27 +625,35 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 #### Configure logging
 
-+ Log in to the NPS VM using Microsoft Remote Desktop
-  + the private IP address for the SHM NPS VM can be found through the Azure portal, by going to the `RG_SHM_<SHM ID>_NPS` resource group; selecting the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
-  + the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
-  + To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
-  + The username is the `shm-<SHM ID>-domain-admin-username` secret plus the domain, i.e. `<admin username>@custom domain`.
-  + The password in the `shm-<SHM ID>-domain-admin-password` secret.
-+ In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
-+ Configure NPS to log to a local text file:
-  + Select `NPS (Local) > Accounting` on the left-hand sidebar
-      <p align="center">
-          <img src="../../images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
-      </p>
-  + Click on `Accounting > Configure Accounting`
-    + On the `Introduction` screen, click `Next`.
-    + On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
-    + On the `Configure Local File Logging` screen, click `Next`.
-    + On the `Summary` screen, click `Next`.
-    + On the `Conclusion` screen, click `Close`.
-  + Click on `Log file properties > Change log file properties`
-    + On the `Log file` tab, select `Daily` under `Create a new log file`
-    + Click `Ok`
+  Log in to the NPS VM using Microsoft Remote Desktop:
+
+  + Open Microsoft Remote Desktop
+  + Click `Add Desktop` / `Add PC`
+    + On Mac, first click the `+`
+  + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_NPS` resource group and then to the `NPS-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
+  + Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
+  + Double click on the desktop that appears under `saved desktops` or `PCs`.
+    + Ensure you are connected the virtual network you set up via the VPN, or this will not work
+  + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
+    + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+    + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
+    + The password in the `shm-<SHM ID>-domain-admin-password` secret.
+  + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
+  + Once the Windows Remote Desktop has opened Server Manager, select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
+  + Configure NPS to log to a local text file:
+    + Select `NPS (Local) > Accounting` on the left-hand sidebar
+        <p align="center">
+            <img src="../../images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
+        </p>
+    + Click on `Accounting > Configure Accounting`
+      + On the `Introduction` screen, click `Next`.
+      + On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
+      + On the `Configure Local File Logging` screen, click `Next`.
+      + On the `Summary` screen, click `Next`.
+      + On the `Conclusion` screen, click `Close`.
+    + Click on `Log file properties > Change log file properties`
+      + On the `Log file` tab, select `Daily` under `Create a new log file`
+      + Click `Ok`
 
 #### Configure MFA
 
