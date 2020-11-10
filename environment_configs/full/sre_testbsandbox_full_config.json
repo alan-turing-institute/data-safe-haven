@@ -624,18 +624,18 @@
           "accessTier": "hot",
           "name": "testbsandboxdataopmkqvui",
           "performance": "Standard_LRS",
-          "storageKind": "BlobStorage"
+          "storageKind": "StorageV2"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "mountType": "SMB",
-            "sasSecretName": "sre-sandbox-data-egress-sas-readwrite"
+            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
+            "mountType": "ShareSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "mountType": "SMB",
-            "sasSecretName": "sre-sandbox-data-ingress-sas-readonly"
+            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
           }
         }
       },

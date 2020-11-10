@@ -155,24 +155,24 @@ function Add-SreConfig {
         persistentdata = [ordered]@{
             account    = [ordered]@{
                 name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "StorageV2"
                 performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "hot"
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType = ($config.sre.tier -eq "1") ? "File" : "SMB"
+                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType = ($config.sre.tier -eq "1") ? "File" : "SMB"
+                    mountType        = "ShareSMB"
                 }
             }
         }
     }
     foreach ($containerName in $config.sre.storage.persistentdata.containers.Keys) {
-        $config.sre.storage.persistentdata.containers[$containerName].sasSecretName = "sre-$($config.sre.id)-data-${containerName}-sas-$($config.sre.storage.persistentdata.containers[$containerName].accessPolicyName)".ToLower()
+        $config.sre.storage.persistentdata.containers[$containerName].connectionSecretName = "sre-$($config.sre.id)-data-${containerName}-connection-$($config.sre.storage.persistentdata.containers[$containerName].accessPolicyName)".ToLower()
     }
 
 

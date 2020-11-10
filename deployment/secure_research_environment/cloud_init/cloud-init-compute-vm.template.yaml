@@ -2,8 +2,8 @@
 package_upgrade: false
 
 mounts:
-  - [/installation/ingressmount.sh, /data, fuse, "_netdev"]
-  - [/installation/egressmount.sh, /output, fuse, "_netdev,file_mode=0777,dir_mode=0777"]
+  - [/installation/ingress-mount.sh, /data, fuse, "_netdev"]
+  - [//<storage-account-persistentdata-name>.file.core.windows.net/egress, /output, cifs, "_netdev,credentials=/installation/egress-credentials.secret,rw,setuids,vers=3.0,serverino"] #,dir_mode=0777,file_mode=0777
 
 write_files:
   - path: "/etc/xrdp/startwm.sh"
@@ -32,32 +32,28 @@ write_files:
     permissions: "0500"
     content: |
       <join_domain.sh>
-  - path: "/etc/smbcredentials.secret"
+  - path: "/installation/data-server-credentials.secret"
     owner: root:root
     permissions: "0600"
     content: |
       username=<datamount-username>
       password=<datamount-password>
-  - path: "/installation/ingress-sas.config"
+  - path: "/installation/ingress-credentials.secret"
     permissions: "0400"
     content: |
       accountName <storage-account-persistentdata-name>
       sasToken <storage-account-persistentdata-ingress-sastoken>
       authType SAS
       containerName ingress
-  - path: "/installation/egress-sas.config"
+  - path: "/installation/egress-credentials.secret"
+    owner: root:root
     permissions: "0400"
     content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-egress-sastoken>
-      authType SAS
-      containerName egress
-  - path: "/installation/ingressmount.sh"
+      username=<storage-account-persistentdata-name>
+      password=<storage-account-persistentdata-key>
+  - path: "/installation/ingress-mount.sh"
     permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-sas.config -o allow_other
-  - path: "/installation/egressmount.sh"
-    permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/tmp/egress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-sas.config -o allow_other
+    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -377,7 +373,7 @@ runcmd:
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount shared folder using SMB... ===<"
   - mkdir -p /shared
-  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/installation/data-server-credentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
   # Mount ingress and egress blob folders with appropriate local access
@@ -388,6 +384,8 @@ runcmd:
   - mkdir -p /tmp/ingress /tmp/egress
   - mount -t tmpfs -o size=16g tmpfs /tmp/ingress
   - mount -t tmpfs -o size=16g tmpfs /tmp/egress
+  - mount /data
+  - mount /output
   # Print fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab

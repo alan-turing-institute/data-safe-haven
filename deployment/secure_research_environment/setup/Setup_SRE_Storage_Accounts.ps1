@@ -38,29 +38,42 @@ if (-not $persistentStorageAccount.PrimaryEndpoints.Blob) {
     Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.persistentdata.account.name)' does not support blob storage!"
 }
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
-    # Ensure that we are using SMB
-    if ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -ne "SMB") {
-        Add-LogMessage -Level Fatal "Currently only blob-storage mounted over SMB is supported for the persistent '$receptacleName' container!"
-    }
+    # When using blob storage we need to mount using a SAS token
+    if ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "BlobSMB") {
+        # Deploy the container
+        $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Container"
 
-    # Deploy the container
-    $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Container"
+        # As this is a blob container, we need to access it using a SAS token and a private endpoint
+        # Ensure that the appropriate SAS policy exists
+        $accessPolicyName = $config.sre.storage.persistentdata.containers[$receptacleName].accessPolicyName
+        $sasPolicy = Deploy-SasAccessPolicy -Name $accessPolicyName `
+                                            -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
+                                            -StorageAccount $persistentStorageAccount `
+                                            -ContainerName $receptacleName `
+                                            -ValidityYears 1
 
-    # As this is a blob container, we need to access it using a SAS token and a private endpoint
-    # Ensure that the appropriate SAS policy exists
-    $accessPolicyName = $config.sre.storage.persistentdata.containers[$receptacleName].accessPolicyName
-    $sasPolicy = Deploy-SasAccessPolicy -Name $accessPolicyName `
-                                        -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
-                                        -StorageAccount $persistentStorageAccount `
-                                        -ContainerName $receptacleName `
-                                        -ValidityYears 1
+        # If there is no SAS token in the SRE keyvault then create one and store it there
+        if (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName) {
+            Add-LogMessage -Level InfoSuccess "Found existing SAS token '$($config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName)' for container '$receptacleName' in '$($persistentStorageAccount.StorageAccountName)"
+        } else {
+            $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
+            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken
+        }
 
-    # If there is no SAS token in the SRE keyvault then create one and store it there
-    if (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $config.sre.storage.persistentdata.containers[$receptacleName].sasSecretName) {
-        Add-LogMessage -Level InfoSuccess "Found existing SAS token '$($config.sre.storage.persistentdata.containers[$receptacleName].sasSecretName)' for container '$receptacleName' in '$($persistentStorageAccount.StorageAccountName)"
-    } else {
-        $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].sasSecretName -DefaultValue $sasToken
+    # When using a file share we need to mount using the storage key
+    } elseif ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "ShareSMB") {
+        # Deploy the share
+        $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Share"
+
+        # If there is no storage key in the SRE keyvault then obtain one and store it there
+        if (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName) {
+            Add-LogMessage -Level InfoSuccess "Found existing storage key '$($config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName)' for container '$receptacleName' in '$($persistentStorageAccount.StorageAccountName)"
+        } else {
+            $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+            $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
+            $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey
+        }
     }
 }
 
