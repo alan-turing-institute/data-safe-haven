@@ -98,6 +98,7 @@ function Resolve-KeyVaultSecret {
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName
-    return $secret.SecretValueText
+    return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
