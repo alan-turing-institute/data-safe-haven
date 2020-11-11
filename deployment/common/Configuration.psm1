@@ -92,7 +92,7 @@ function Add-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
                 data      = [ordered]@{
-                    name = "SharedDataSubnet"
+                    name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
                 databases = [ordered]@{

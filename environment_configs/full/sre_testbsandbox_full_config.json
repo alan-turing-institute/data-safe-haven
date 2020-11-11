@@ -535,7 +535,7 @@
           },
           "data": {
             "cidr": "10.151.2.0/24",
-            "name": "SharedDataSubnet"
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.151.3.0/24",

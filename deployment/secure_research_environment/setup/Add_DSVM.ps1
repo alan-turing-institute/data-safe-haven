@@ -288,6 +288,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
 # ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
+$srePrivateDataSubnetIpRange = $config.sre.network.vnet.subnets.data.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "InboundAllowLDAP" `
@@ -311,7 +312,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange *
-# Outbound: allow LDAP then deny all Virtual Network
+# Outbound: allow LDAP and private endpoints then deny all Virtual Network
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "OutboundAllowLDAP" `
                              -Description "Outbound allow LDAP" `
@@ -324,9 +325,20 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -DestinationAddressPrefix $shmIdentitySubnetIpRange `
                              -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
+                             -Name "OutboundAllowPrivateDataEndpoints" `
+                             -Description "Outbound allow private data endpoints" `
+                             -Priority 3000 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $srePrivateDataSubnetIpRange `
+                             -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "OutboundDenyVNet" `
                              -Description "Outbound deny virtual network" `
-                             -Priority 3000 `
+                             -Priority 4000 `
                              -Direction Outbound `
                              -Access Deny `
                              -Protocol * `
