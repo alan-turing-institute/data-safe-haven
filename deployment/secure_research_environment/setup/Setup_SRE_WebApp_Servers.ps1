@@ -44,7 +44,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -DestinationPortRange 123
 $outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "OutboundInternetAccess" `
+                             -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
                              -Direction Outbound `
