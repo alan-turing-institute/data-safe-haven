@@ -608,7 +608,7 @@
           "permissions": "rl"
         },
         "readWrite": {
-          "permissions": "rwl"
+          "permissions": "racwdl"
         }
       },
       "artifacts": {

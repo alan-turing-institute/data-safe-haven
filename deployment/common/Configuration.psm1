@@ -132,7 +132,7 @@ function Add-SreConfig {
                 permissions = "rl"
             }
             readWrite = [ordered]@{
-                permissions = "rwl"
+                permissions = "racwdl"
             }
         }
         artifacts       = [ordered]@{
