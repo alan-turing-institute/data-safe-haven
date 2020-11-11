@@ -1169,6 +1169,8 @@ function Invoke-RemoteScript {
     }
     # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
+    # Wait 20s to allow the run command extension to register as completed
+    Start-Sleep 20
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
@@ -1176,8 +1178,6 @@ function Invoke-RemoteScript {
         Add-LogMessage -Level Info "Script output:`n$($result | Out-String)"
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
-    # Wait 10s to allow the run command extension to register as completed
-    Start-Sleep 10
     return $result
 }
 Export-ModuleMember -Function Invoke-RemoteScript
