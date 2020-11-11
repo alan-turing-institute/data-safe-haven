@@ -2,8 +2,8 @@
 package_upgrade: false
 
 mounts:
-  - [/installation/ingress-mount.sh, /data, fuse, "_netdev,ro,dir_mode=0555,file_mode=0444"]
-  - [/installation/egress-mount.sh, /output, fuse, "_netdev,rw,dir_mode=0777,file_mode=0666"]
+  - [/installation/ingress-mount.sh, /data, fuse, "_netdev,x-systemd.requires-mounts-for=/mnt"]
+  - [/installation/egress-mount.sh, /output, fuse, "_netdev,x-systemd.requires-mounts-for=/mnt"]
 
 write_files:
   - path: "/etc/xrdp/startwm.sh"
@@ -39,6 +39,7 @@ write_files:
       username=<datamount-username>
       password=<datamount-password>
   - path: "/installation/ingress-credentials.secret"
+    owner: root:root
     permissions: "0400"
     content: |
       accountName <storage-account-persistentdata-name>
@@ -53,12 +54,29 @@ write_files:
       sasToken <storage-account-persistentdata-egress-sastoken>
       authType SAS
       containerName egress
+  - path: "/installation/ensure-cache-directories.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      umount /data /output /mnt 2> /dev/null
+      if [ "$(mountpoint /mnt | grep 'is not a mountpoint')" ]; then
+          rm -rf /mnt/* 2> /dev/null
+      fi
+      mount /mnt
+      if [ "$(mountpoint /mnt | grep 'is a mountpoint')" ]; then
+          rm -rf /mnt/resource/blobfuse-* 2> /dev/null
+          mkdir -p /mnt/resource/blobfuse-cache-data /mnt/resource/blobfuse-cache-output
+      fi
+      mount /data
+      mount /output
   - path: "/installation/ingress-mount.sh"
+    owner: root:root
     permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/tmp/ingress --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
+    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/mnt/resource/blobfuse-cache-data --cache-size-mb=8000 --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
   - path: "/installation/egress-mount.sh"
+    owner: root:root
     permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/tmp/egress --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-credentials.secret -o allow_other
+    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/mnt/resource/blobfuse-cache-output --cache-size-mb=8000 --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-credentials.secret -o allow_other
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -381,16 +399,13 @@ runcmd:
   - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/installation/data-server-credentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Mount ingress and egress blob folders with appropriate local access
-  - echo ">=== Create ingress and egress staging folders ... ===<"
+  # Set up cache folders for ingress and egress blob mounts
+  - echo ">=== Create ingress and egress cache folders ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
   - echo "user_allow_other" >> /tmp/allow.txt
   - mv /tmp/allow.txt /etc/fuse.conf
-  - mkdir -p /tmp/ingress /tmp/egress
-  - mount -t tmpfs -o size=16g tmpfs /tmp/ingress
-  - mount -t tmpfs -o size=16g tmpfs /tmp/egress
-  - mount /data
-  - mount /output
+  - /installation/ensure-cache-directories.sh
+  - echo "@reboot root /installation/ensure-cache-directories.sh" >> /etc/crontab
   # Print fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
