@@ -81,8 +81,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     },
     "vmImages": {
         "subscriptionName": "[Optional] Azure subscription where VM images should be built (if not specified then the value from the 'azure' block will be used).",
-        "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used)."
-        "buildIpAddresses": "[Optional] One or more IP addresses which admins will be running the VM build scripts from (if not specified then Turing IP addresses will be used)."
+        "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used).",
+        "buildIpAddresses": "[Optional] A list of one or more IP addresses which admins will be running the VM build scripts from (if not specified then Turing IP addresses will be used)."
      },
     "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }

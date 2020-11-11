@@ -622,6 +622,7 @@
       "persistentdata": {
         "account": {
           "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
           "name": "testbsandboxdataopmkqvui",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"

@@ -28,6 +28,8 @@ $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.pers
                                                   -Location $config.shm.location `
                                                   -ResourceGroupName $config.shm.storage.persistentdata.rg `
                                                   -SkuName $config.sre.storage.persistentdata.account.performance
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Allow
+Start-Sleep 10
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
@@ -72,13 +74,24 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
 }
 
 
-# Ensure that the storage accounts can only be accessed through private endpoints
-# -------------------------------------------------------------------------------
+# Add a private endpoint for the storage account
+# ----------------------------------------------
 $dataSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 Add-LogMessage -Level Info "Setting up private endpoint for '$($persistentStorageAccount.StorageAccountName)'"
 $privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $persistentStorageAccount -StorageType "Default" -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $privateEndpointIp = (Get-AzNetworkInterface -ResourceId $privateEndpoint.NetworkInterfaces.Id).IpConfigurations[0].PrivateIpAddress
 $privateDnsZoneName = "$($persistentStorageAccount.StorageAccountName).blob.core.windows.net".ToLower()
+
+
+# Ensure that public access to the storage account is only allowed from approved locations
+# ----------------------------------------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Deny
+# $null = Add-AzStorageAccountNetworkRule -ResourceGroupName $config.shm.storage.persistentdata.rg -AccountName $config.sre.storage.persistentdata.account.name -VirtualNetworkResourceId $dataSubnet.Id
+foreach ($IpAddress in $config.sre.storage.persistentdata.account.allowedIpAddresses) {
+    $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -IPAddressOrRange $IpAddress
+}
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Set up a DNS zone on the SHM DC

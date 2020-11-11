@@ -133,7 +133,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 {
     "sreId": "The <SRE ID> that you decided on above (eg. 'sandbox').",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
-    "nexus": "[Optional, Bool] Whether to use a Nexus repository as a proxy to PyPi and CRAN. Defaults to true if tier is 2 and false otherwise."
+    "nexus": "[Optional, Bool] Whether to use a Nexus repository as a proxy to PyPi and CRAN. Defaults to true if tier is 2 and false otherwise.",
     "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
     "subscriptionName": "Azure subscription that the SRE will be deployed into.",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
@@ -143,6 +143,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
         "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
         "version": "The version of the Compute VM image (e.g. 0.1.2019082900)",
     },
+    "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
