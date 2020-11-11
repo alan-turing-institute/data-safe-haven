@@ -480,7 +480,7 @@ From your **deployment machine**
       + Click `Add`
       + Click `Add`
       + Click `Close`
-    + Enter the global administrator password if prompted
+    + Enter the password for the global administrator account you set up earlier (`aad.admin.<first name>.<last name>`) when prompted
     + Approve the login with MFA if required
       + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   + On the `Connect your directories` screen:
