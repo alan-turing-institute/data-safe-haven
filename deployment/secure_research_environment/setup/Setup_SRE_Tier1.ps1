@@ -10,6 +10,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
@@ -39,18 +40,19 @@ $vmName = "SRE-$($config.sre.id)-$($config.sre.dsvm.vmImage.version)-TIER1-VM".T
 # -----------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 $sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
-$subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
+$subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
 
 
 # Ensure that NSG exists
 # ----------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "OutboundInternetAccess" `
+                             -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 2000 `
                              -Direction Outbound `
-                             -Access Allow `
+                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange * `
@@ -102,24 +104,23 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
-# Ensure that the storage resource group exists
-# ---------------------------------------------
+# Ensure that the persistent data storage account exists
+# ------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$dataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistentdata.account.name `
+                                            -AccessTier $config.sre.storage.persistentdata.account.accessTier `
+                                            -ResourceGroupName $config.sre.dataserver.rg `
+                                            -Kind $config.sre.storage.persistentdata.account.storageKind `
+                                            -SkuName $config.sre.storage.persistentdata.account.performance `
+                                            -Location $config.sre.location
+$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object {$_.KeyName -eq "key1"}).Value
 
 
-# Deploy a storage account for data ingress
-# -----------------------------------------
-$ingressdataStorage = Deploy-StorageAccount -Name $config.sre.storage.data.ingress.accountName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$null = Deploy-StorageShare -Name $config.sre.storage.data.ingress.containerName -StorageAccount $ingressdataStorage
-$ingressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.storage.data.ingress.accountName | Where-Object {$_.KeyName -eq "key1"}).Value
-
-
-# Deploy a storage account for data egress
-# ----------------------------------------
-$egressdataStorage = Deploy-StorageAccount -Name $config.sre.storage.data.egress.accountName -ResourceGroupName $config.sre.dataserver.rg -Location $config.sre.location
-$null = Deploy-StorageShare -Name $config.sre.storage.data.egress.containerName -StorageAccount $egressdataStorage
-$egressSharePassword = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.storage.data.egress.accountName | Where-Object {$_.KeyName -eq "key1"}).Value
-
+# Deploy storage shares for data ingress and egress
+# -------------------------------------------------
+foreach ($containerName in $config.sre.storage.persistentdata.containers.Keys) {
+    $null = Deploy-StorageShare -Name $containerName -StorageAccount $dataStorageAccount
+}
 
 # Ensure that the DSVM resource group exists
 # ------------------------------------------
@@ -129,14 +130,13 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
-$cloudInitYaml = $cloudInitYaml.Replace("<ingress-share-username>", $config.sre.storage.data.ingress.accountName).
-                                Replace("<ingress-share-password>", $ingressSharePassword).
-                                Replace("<ingress-container-name>", $config.sre.storage.data.ingress.containerName).
-                                Replace("<egress-share-username>", $config.sre.storage.data.egress.accountName).
-                                Replace("<egress-share-password>", $egressSharePassword).
-                                Replace("<egress-container-name>", $config.sre.storage.data.egress.containerName).
-                                Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-                                Replace("<timezone>", $config.sre.time.timezone.linux)
+$cloudInitYaml = $cloudInitYaml.
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+    Replace("<storage-account-data-egress-name>", $dataStorageAccount.StorageAccountName).
+    Replace("<storage-account-data-ingress-name>", $dataStorageAccount.StorageAccountName).
+    Replace("<storage-account-data-egress-key>", $dataStorageAccountKey).
+    Replace("<storage-account-data-ingress-key>", $dataStorageAccountKey).
+    Replace("<timezone>", $config.sre.time.timezone.linux)
 
 
 # Deploy data disk, NIC and public IP

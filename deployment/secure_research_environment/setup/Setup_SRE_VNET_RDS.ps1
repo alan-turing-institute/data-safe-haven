@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/GenerateSasToken -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
@@ -27,53 +27,22 @@ $null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config
 # Create VNet and subnets
 # -----------------------
 $sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
+$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
 
 
-# Remove existing peerings
-# ------------------------
-$shmPeeringName = "PEER_$($config.sre.network.vnet.name)"
-$srePeeringName = "PEER_$($config.shm.network.vnet.name)"
-try {
-    # From SHM VNet
-    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-    $shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
-    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop) {
-        Add-LogMessage -Level Info "[ ] Removing existing peering from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-        Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force -ErrorAction Stop
-    }
-    # From SRE VNet
-    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop) {
-        Add-LogMessage -Level Info "[ ] Removing existing peering from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-        Remove-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -Force -ErrorAction Stop
-    }
-    # Success log message
-    Add-LogMessage -Level Success "Peering removal succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "Peering removal failed!"
-}
-
-
-# Add new peerings between SHM and SRE VNets
-# ------------------------------------------
-try {
-    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-    Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-    $null = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit -ErrorAction Stop
-    # Add peering to SRE VNet
-    # -----------------------
-    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-    Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-    $null = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways -ErrorAction Stop
-    # Success log message
-    Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' failed!"
-}
+# Peer repository vnet to SHM vnet
+# --------------------------------
+Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
+                -Vnet1ResourceGroup $config.sre.network.vnet.rg `
+                -Vnet1SubscriptionName $config.sre.subscriptionName `
+                -Vnet2Name $config.shm.network.vnet.name `
+                -Vnet2ResourceGroup $config.shm.network.vnet.rg `
+                -Vnet2SubscriptionName $config.shm.subscriptionName `
+                -AllowRemoteGatewayFromVNet 2
 
 
 # Set constants used in this script
@@ -85,13 +54,20 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
                  ("RDS Session Host (App server)", $config.sre.rds.appSessionHost.vmName))
 
 
-# Set variables used in template expansion, retrieving from the key vault where appropriate
-# -----------------------------------------------------------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+# Retrieve variables from SHM key vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername
 $domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20
 $domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20
-$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 160
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
+# Retrieve variables from SRE key vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
@@ -345,8 +321,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 # -----------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
-
-# Set correct list of package from blob storage for each session host
+# Set correct list of packages from blob storage for each session host
 $blobfiles = @{}
 $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
@@ -366,7 +341,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     $containerName = $blobfiles[$vmName] | ForEach-Object { $_.Keys } | Select-Object -First 1
     $fileNames = $blobfiles[$vmName] | ForEach-Object { $_.Values }
-    $sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
+    $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
         storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""

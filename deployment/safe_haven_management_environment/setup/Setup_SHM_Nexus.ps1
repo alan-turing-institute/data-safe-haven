@@ -1,6 +1,9 @@
 param(
     [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-    [string]$shmId
+    [string]$shmId,
+    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [ValidateSet("2", "3")]
+    [string]$tier
 )
 
 Import-Module Az
@@ -8,6 +11,13 @@ Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+
+
+# Check requested tier
+# --------------------
+if ($tier -ne "2") {
+    Add-LogMessage -Level Fatal "Currently Nexus only supports tier-2 repositories!"
+}
 
 
 # Get config and original context before changing subscription
@@ -27,7 +37,6 @@ $nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-
 $vmName = $config.repository.nexus.vmName
 $privateIpAddress = $config.repository.nexus.ipAddress
 
@@ -58,7 +67,7 @@ if ($?) {
 
 # Peer repository vnet to SHM vnet
 # --------------------------------
-Add-LogMessage -Level Info "Peering repository vnet to shm vnet"
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
 
 

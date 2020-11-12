@@ -228,6 +228,20 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "repository": {
+          "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": "repository"
+          }
         }
       },
       "vnet": {
@@ -282,6 +296,17 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testc-nexus-repository-vm-admin-password",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-nexus-app-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    },
     "rgPrefix": "RG_SHM_TESTC",
     "storage": {
       "artifacts": {
@@ -291,6 +316,9 @@
       "bootdiagnostics": {
         "accountName": "shmtestcbootdiagsepbotfi",
         "rg": "RG_SHM_TESTC_ARTIFACTS"
+      },
+      "persistentdata": {
+        "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
@@ -422,7 +450,7 @@
       },
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.152.2.4",
+      "ip": "10.152.4.4",
       "nsg": "NSG_SHM_TESTC_SRE_SANDBOX_DATA",
       "rg": "RG_SHM_TESTC_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
@@ -501,9 +529,13 @@
         "name": "VNET_SHM_TESTC_SRE_SANDBOX",
         "rg": "RG_SHM_TESTC_SRE_SANDBOX_NETWORKING",
         "subnets": {
+          "compute": {
+            "cidr": "10.152.4.0/24",
+            "name": "ComputeSubnet"
+          },
           "data": {
             "cidr": "10.152.2.0/24",
-            "name": "SharedDataSubnet"
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.152.3.0/24",
@@ -521,6 +553,7 @@
         }
       }
     },
+    "nexus": false,
     "nsgPrefix": "NSG_SHM_TESTC_SRE_SANDBOX",
     "rds": {
       "appSessionHost": {
@@ -570,22 +603,50 @@
     "rgPrefix": "RG_SHM_TESTC_SRE_SANDBOX",
     "shortName": "sre-sandbox",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "racwdl"
+        }
+      },
       "artifacts": {
-        "accountName": "sresandboxartifactsakeqz",
+        "accountName": "testcsandboxartifactsake",
         "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "sresandboxbootdiagsakeqz",
+        "accountName": "testcsandboxbootdiagsake",
         "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
       },
-      "data": {
-        "egress": {
-          "accountName": "sresandboxegressakeqzbwg",
-          "containerName": "egress"
+      "persistentdata": {
+        "account": {
+          "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
+          "name": "testcsandboxdataakeqzbwg",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
         },
-        "ingress": {
-          "accountName": "sresandboxingressakeqzbw",
-          "containerName": "ingress"
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
+          }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "hot",
+          "name": "testcsandboxuserdataakeq",
+          "performance": "Premium_LRS",
+          "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS",
+          "storageKind": "FileStorage"
         }
       }
     },
@@ -631,7 +692,7 @@
         },
         "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.152.2.5",
+        "ip": "10.152.4.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
@@ -646,7 +707,7 @@
         },
         "fqdn": "HACKMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.152.2.6",
+        "ip": "10.152.4.6",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },

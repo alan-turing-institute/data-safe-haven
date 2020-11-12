@@ -33,20 +33,20 @@ Export-ModuleMember -Function Get-MirrorIPs
 # ------------------------------------------
 function Get-MirrorAddresses {
     param(
-        [Parameter(Position = 0,HelpMessage = "CRAN IP address")]
+        [Parameter(HelpMessage = "CRAN IP address")]
         [string]$cranIp = $null,
-        [Parameter(Position = 1,HelpMessage = "PyPi IP address")]
+        [Parameter(HelpMessage = "PyPi IP address")]
         [string]$pypiIp = $null,
-        [Parameter(Position = 2,HelpMessage = "PyPi is a Nexus proxy")]
+        [Parameter(HelpMessage = "PyPi is a Nexus proxy")]
         [bool]$nexus = $false
     )
 
     $nexus_port = 80
 
     if ($cranIp) {
-        $cranUrl = "http://$($cranIp)"
+        $cranUrl = "http://${cranIp}"
         if ($nexus) {
-            $cranUrl = $cranUrl + ":" + $nexus_port + "/repository/cran-proxy"
+            $cranUrl = "${cranUrl}:${nexus_port}/repository/cran-proxy"
         }
 
     } else {
@@ -54,13 +54,7 @@ function Get-MirrorAddresses {
     }
 
     if ($pypiIp) {
-        $pypiUrl = "http://$($pypiIp)"
-        if ($nexus) {
-            $port = $nexus_port
-        } else{
-            $port = 3128
-        }
-        $pypiUrl = $pypiUrl + ":" + $port
+        $pypiUrl = "http://${pypiIp}:$($nexus ? $nexus_port : 3128)"
     } else {
         $pypiUrl = "https://pypi.org"
     }

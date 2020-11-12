@@ -34,7 +34,7 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId                  = "`"$($config.sre.id)`""
-    blockedCidrsList       = "`"$($config.sre.network.vnet.subnets.data.cidr)`""
+    blockedCidrsList       = "`"$($config.sre.network.vnet.subnets.compute.cidr)`""
     exceptionCidrsList     = "`"$($config.sre.dataserver.ip)/32`""
 }
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
@@ -53,7 +53,7 @@ if (-not $dsvmIpLastOctet) {
     Add-LogMessage -Level Warning "Test DSVM not specified by providing last octet of its IP address. Attempting to test on DSVM with last octet of '$defaultDsvmIpLastOctet'."
     $dsvmIpLastOctet = $defaultDsvmIpLastOctet
 }
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset $dsvmIpLastOctet
+$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $dsvmIpLastOctet
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
 if (-not $existingNic) {
     Add-LogMessage -Level Fatal "No network card found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."

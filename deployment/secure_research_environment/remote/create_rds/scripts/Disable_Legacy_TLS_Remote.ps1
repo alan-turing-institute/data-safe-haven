@@ -110,7 +110,6 @@ foreach ($allowedCipher in $allowedCiphers) {
             # If it is not [ie. it has no CipherSuite entry] then immediately disable it.
             if ($((Get-TlsCipherSuite -Name $allowedCipher).CipherSuite) -eq 0) {
                 Disable-TlsCipherSuite -Name $allowedCipher
-                Write-Output " [x] Windows does not support the '$allowedCipher' suite."
             } else {
                 Write-Output " [o] Enabled '$allowedCipher' suite."
             }

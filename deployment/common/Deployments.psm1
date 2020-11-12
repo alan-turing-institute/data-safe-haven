@@ -694,92 +694,9 @@ function Deploy-Subnet {
     } else {
         Add-LogMessage -Level InfoSuccess "Subnet '$Name' already exists"
     }
-    return Get-AzSubnet -Name $Name -VirtualNetwork $VirtualNetwork
+    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
 }
 Export-ModuleMember -Function Deploy-Subnet
-
-
-# Create storage account if it does not exist
-# ------------------------------------------
-function Deploy-StorageAccount {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
-    $storageAccount = Get-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
-        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName "Standard_LRS" -Kind "StorageV2"
-        if ($?) {
-            Add-LogMessage -Level Success "Created storage account '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Storage account '$Name' already exists"
-    }
-    return $storageAccount
-}
-Export-ModuleMember -Function Deploy-StorageAccount
-
-
-# Create storage container if it does not exist
-# ------------------------------------------
-function Deploy-StorageContainer {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
-        $StorageAccount
-    )
-    Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
-    $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context
-        if ($?) {
-            Add-LogMessage -Level Success "Created storage container"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
-    }
-    return $storageContainer
-}
-Export-ModuleMember -Function Deploy-StorageContainer
-
-
-# Create storage share if it does not exist
-# -----------------------------------------
-function Deploy-StorageShare {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
-        $StorageAccount
-    )
-    Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
-    $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
-        if ($?) {
-            Add-LogMessage -Level Success "Created storage share"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Storage share '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
-    }
-    return $storageShare
-}
-Export-ModuleMember -Function Deploy-StorageShare
 
 
 # Create Linux virtual machine if it does not exist
@@ -1044,8 +961,8 @@ function Enable-AzVM {
 Export-ModuleMember -Function Enable-AzVM
 
 
-# Create subnet if it does not exist
-# ----------------------------------
+# Get subnet
+# ----------
 function Get-AzSubnet {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
@@ -1053,8 +970,8 @@ function Get-AzSubnet {
         [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
         $VirtualNetwork
     )
-    $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
-    return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
+    Add-LogMessage -Level Info "Get-AzSubnet is deprecated - consider switching to Get-Subnet"
+    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
 }
 Export-ModuleMember -Function Get-AzSubnet
 
@@ -1149,6 +1066,39 @@ function Get-NSRecords {
 Export-ModuleMember -Function Get-NSRecords
 
 
+# Get subnet
+# ----------
+function Get-Subnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network that this subnet belongs to")]
+        $VirtualNetworkName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that this subnet belongs to")]
+        $ResourceGroupName
+    )
+    $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName
+    return ($virtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+}
+Export-ModuleMember -Function Get-Subnet
+
+
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetworkFromSubnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
+        $Subnet
+    )
+    $originalContext = Get-AzContext
+    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2]
+    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id}).Count -gt 0) }
+    $null = Set-AzContext -Context $originalContext
+    return $virtualNetwork
+}
+Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
+
+
 # Get all VMs for an SHM or SRE
 # -----------------------------
 function Get-VMsByResourceGroupPrefix {
@@ -1219,6 +1169,8 @@ function Invoke-RemoteScript {
     }
     # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
+    # Wait 20s to allow the run command extension to register as completed
+    Start-Sleep 20
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
@@ -1226,8 +1178,6 @@ function Invoke-RemoteScript {
         Add-LogMessage -Level Info "Script output:`n$($result | Out-String)"
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
-    # Wait 10s to allow the run command extension to register as completed
-    Start-Sleep 10
     return $result
 }
 Export-ModuleMember -Function Invoke-RemoteScript
@@ -1432,9 +1382,9 @@ function Set-KeyVaultPermissions {
     }
     Set-AzKeyVaultAccessPolicy -VaultName $Name `
                                -ObjectId $securityGroupId `
-                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover `
-                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore `
-                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover, Purge `
+                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore, Purge `
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge
     $success = $?
     foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
         Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
@@ -1495,7 +1445,7 @@ function Set-SubnetNetworkSecurityGroup {
     $success = $?
     $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
     $success = $success -and $?
-    $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
+    $updatedSubnet = Get-Subnet -Name $Subnet.Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
     $success = $success -and $?
     if ($success) {
         Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
@@ -1744,16 +1694,16 @@ function Update-NetworkSecurityGroupRule {
         }
         # Update rule and NSG (both are required)
         $null = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority "$Priority" `
-                                             -Direction "$Direction" `
-                                             -Access "$Access" `
-                                             -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix `
-                                             -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix `
-                                             -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                                -Name "$Name" `
+                                                -Description "$Description" `
+                                                -Priority "$Priority" `
+                                                -Direction "$Direction" `
+                                                -Access "$Access" `
+                                                -Protocol "$Protocol" `
+                                                -SourceAddressPrefix $SourceAddressPrefix `
+                                                -SourcePortRange $SourcePortRange `
+                                                -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
         # Apply the rule and validate whether it succeeded
         $ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
         if (($ruleAfter.Name -eq $Name) -and
@@ -1791,60 +1741,82 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 # --------------
 function Set-VnetPeering{
     param(
-    [Parameter(mandatory = $true, HelpMessage = "Name of the first of two vnets to peer")]
-    $Vnet1Name,
-    [Parameter(mandatory = $true, HelpMessage = "Resource group of the first vnet")]
-    $Vnet1ResourceGroup,
-    [Parameter(mandatory = $true, HelpMessage = "Subscription name of the first vnet")]
-    $Vnet1SubscriptionName,
-    [Parameter(mandatory = $true, HelpMessage = "Name of the second of two vnets to peer")]
-    $Vnet2Name,
-    [Parameter(mandatory = $true, HelpMessage = "Resource group of the second vnet")]
-    $Vnet2ResourceGroup,
-    [Parameter(mandatory = $true, HelpMessage = "Subscription name of the second vnet")]
-    $Vnet2SubscriptionName
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the first of two VNets to peer")]
+        $Vnet1Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group of the first VNet")]
+        $Vnet1ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the first VNet")]
+        $Vnet1SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the second of two VNets to peer")]
+        $Vnet2Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group of the second VNet")]
+        $Vnet2ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the second VNet")]
+        $Vnet2SubscriptionName,
+        [Parameter(Mandatory = $false, HelpMessage = "Enable use of remote gateway from one of the two VNets")]
+        [ValidateSet(1, 2)]
+        $AllowRemoteGatewayFromVNet
     )
-    $originalContext = Get-AzContext
-    Add-LogMessage -Level Info "Peering $($Vnet1Name) and $($Vnet2Name)..."
+    try {
+        # Get original subscription
+        $originalContext = Get-AzContext
+        Add-LogMessage -Level Info "Peering virtual networks ${Vnet1Name} and ${Vnet2Name}."
 
-    # Get virtual networks
-    $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
-    $vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup -ErrorAction Stop
-    $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
-    $vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup -ErrorAction Stop
+        # Get virtual networks
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup -ErrorAction Stop
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup -ErrorAction Stop
 
-    # Create peer in the direction vnet1 -> vnet2
-    $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
-    $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet2.Id }
-    if ($existingPeering) {
-        $existingPeering | Remove-AzVirtualNetworkPeering -Force
+        # Remove any existing peerings
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet2.Id }
+        if ($existingPeering) {
+            $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
+        }
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet1.Id }
+        if ($existingPeering) {
+            $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
+        }
+
+        # Set remote gateway parameters if requested
+        $paramsVnet1 = @{}
+        $paramsVnet2 = @{}
+        if ($AllowRemoteGatewayFromVNet) {
+            if ($AllowRemoteGatewayFromVNet -eq 1) {
+                $paramsVnet1["AllowGatewayTransit"] = $true
+                $paramsVnet2["UseRemoteGateways"] = $true
+            } elseif ($AllowRemoteGatewayFromVNet -eq 2) {
+                $paramsVnet1["UseRemoteGateways"] = $true
+                $paramsVnet2["AllowGatewayTransit"] = $true
+            }
+        }
+
+        # Create peering in the direction VNet1 -> VNet2
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $peeringName = "PEER_${Vnet2Name}"
+        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet1Name}."
+        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id @paramsVnet1 -ErrorAction Stop
+        if ($?) {
+            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+        }
+        # Create peering in the direction VNet2 -> VNet1
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $peeringName = "PEER_${Vnet1Name}"
+        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet2Name}."
+        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id @paramsVnet2 -ErrorAction Stop
+        if ($?) {
+            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+        }
+    } finally {
+        # Switch back to original subscription
+        $null = Set-AzContext -Context $originalContext
     }
-
-    $peeringName = "PEER_$($Vnet2Name)"
-    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet1Name)."
-    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id
-    if ($?) {
-        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
-    }
-
-    # Create peer in the direction vnet2 -> vnet1
-    $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
-    $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet1.Id }
-    if ($existingPeering) {
-        $existingPeering | Remove-AzVirtualNetworkPeering -Force
-    }
-    $peeringName = "PEER_$($Vnet1Name)"
-    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to vnet $($Vnet2Name)."
-    $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id
-    if ($?) {
-        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
-    }
-
-    $null = Set-AzContext -Context $originalContext
 }
 Export-ModuleMember -Function Set-VnetPeering
 

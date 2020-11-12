@@ -54,8 +54,8 @@ These instructions will walk you through deploying a Secure Research Environment
 ### :beginner: Software
 
 + `PowerShell` with support for Azure
-  + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
-  + Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+  + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
+  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>)
 + `Microsoft Remote Desktop`
   + On OSX this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
@@ -133,7 +133,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 {
     "sreId": "The <SRE ID> that you decided on above (eg. 'sandbox').",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
-    "nexus": "[Optional, Bool] Whether to use a Nexus repository as a proxy to PyPi and CRAN. Defaults to true if tier is 2 and false otherwise."
+    "nexus": "[Optional, Bool] Whether to use a Nexus repository as a proxy to PyPi and CRAN. Defaults to true if tier is 2 and false otherwise.",
     "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
     "subscriptionName": "Azure subscription that the SRE will be deployed into.",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
@@ -143,6 +143,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
         "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
         "version": "The version of the Compute VM image (e.g. 0.1.2019082900)",
     },
+    "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
@@ -416,10 +417,23 @@ On your **deployment machine**.
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Run the `./Setup_SRE_Data_Server.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + The deployment will take around 20 minutes to complete
+
+## :computer: Deploy SRE Storage Accounts
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Deploy an SRE storage account using `./Setup_SRE_Storage_Accounts.ps1 -configId <SRE CONFIG ID>`
+  + Where the `<SRE CONFIG ID>` is the name specified in the full config file, equal to `<shmid><sreid>`. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE CONFIG ID>` equal to `testcsandbox`.
+  + This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
++ The deployment will take around 5 minutes to complete
 
 ## :baseball: Deploy databases
 

@@ -103,18 +103,17 @@ Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Netw
 if (@(2, 3).Contains([int]$config.sre.tier)) {
     Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
 
-    # Re-peer to the correct network for this SRE
+    # Peer this SRE to the repository network
     if ($config.sre.nexus -and ([int]$config.sre.tier -eq 2)) {
-        Add-LogMessage -Level Info "Peering to the repository network..."
         if (-not $config.shm.network.repositoryVnet.name) {
-            Add-LogMessage -Level Info "No repository VNet is configured for SRE $($config.sre.id). Nothing to do."
+            Add-LogMessage -Level Warning "No repository VNet is configured for SRE $($config.sre.id) [tier $($config.sre.tier)]. Nothing to do."
         } else {
             Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.repositoryVnet.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
         }
+    # Peer this SRE to the correct mirror network
     } else {
-        Add-LogMessage -Level Info "Peering to the correct mirror network..."
         if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
-            Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
+            Add-LogMessage -Level Warning "No mirror VNet is configured for SRE $($config.sre.id) [tier $($config.sre.tier)]. Nothing to do."
         } else {
             Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
         }

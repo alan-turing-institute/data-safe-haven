@@ -12,6 +12,7 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -30,7 +31,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset $ipLastOctet
+$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
@@ -256,6 +257,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
                              -DestinationPortRange 123
+$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
@@ -267,26 +269,27 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix Internet `
                              -DestinationPortRange *
-# Outbound: allow Nexus repository
-if ($config.sre.nexus) {
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                                 -Name "OutboundAllowNexus" `
-                                 -Description "Outbound allow Nexus" `
-                                 -Priority 2100 `
-                                 -Direction Outbound `
-                                 -Access Allow `
-                                 -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
-                                 -DestinationPortRange 8081
-}
+# # Outbound: allow Nexus repository
+# if ($config.sre.nexus) {
+#     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+#                                  -Name "OutboundAllowNexus" `
+#                                  -Description "Outbound allow Nexus" `
+#                                  -Priority 2100 `
+#                                  -Direction Outbound `
+#                                  -Access Allow `
+#                                  -Protocol * `
+#                                  -SourceAddressPrefix VirtualNetwork `
+#                                  -SourcePortRange * `
+#                                  -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
+#                                  -DestinationPortRange 8081
+# }
 
 
 # Ensure that deployment NSG exists and required rules are set
 # ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
+$srePrivateDataSubnetIpRange = $config.sre.network.vnet.subnets.data.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "InboundAllowLDAP" `
@@ -310,7 +313,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -SourcePortRange * `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange *
-# Outbound: allow LDAP then deny all Virtual Network
+# Outbound: allow LDAP and private endpoints then deny all Virtual Network
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "OutboundAllowLDAP" `
                              -Description "Outbound allow LDAP" `
@@ -323,9 +326,20 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -DestinationAddressPrefix $shmIdentitySubnetIpRange `
                              -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
+                             -Name "OutboundAllowPrivateDataEndpoints" `
+                             -Description "Outbound allow private data endpoints" `
+                             -Priority 3000 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $srePrivateDataSubnetIpRange `
+                             -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "OutboundDenyVNet" `
                              -Description "Outbound deny virtual network" `
-                             -Priority 3000 `
+                             -Priority 4000 `
                              -Direction Outbound `
                              -Access Deny `
                              -Protocol * `
@@ -345,10 +359,10 @@ try {
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.data.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.data.name }
+Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.compute.name)'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.compute.name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.data.name)' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.compute.name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
@@ -373,10 +387,11 @@ if ($success) {
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
+$ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName
+$egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-
 
 # Construct the cloud-init YAML file for the target subscription
 # --------------------------------------------------------------
@@ -427,6 +442,10 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
+    Replace("<storage-account-persistentdata-name>", $config.sre.storage.persistentdata.account.name).
+    Replace("<storage-account-persistentdata-ingress-sastoken>", $ingressContainerSasToken).
+    Replace("<storage-account-persistentdata-egress-sastoken>", $egressContainerSasToken).
+    Replace("<storage-account-userdata-name>", $config.sre.storage.userdata.account.name).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

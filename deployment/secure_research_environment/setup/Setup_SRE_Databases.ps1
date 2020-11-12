@@ -4,6 +4,7 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -215,7 +216,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Expand placeholders in the cloud-init file
             $cloudInitTemplate = $cloudInitTemplate.
-                Replace("<client-cidr>", $config.sre.network.vnet.subnets.data.cidr).
+                Replace("<client-cidr>", $config.sre.network.vnet.subnets.compute.cidr).
                 Replace("<db-admin-password>", $dbAdminPassword).
                 Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                 Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).

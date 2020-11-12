@@ -2,17 +2,6 @@
 package_update: true
 package_upgrade: true
 
-# Install LDAP tools for debugging LDAP issues
-packages:
-  - apt-transport-https
-  - ca-certificates
-  - curl
-  - gitlab-ce
-  - gnupg
-  - ldap-utils
-  - openssh-server
-  - postfix
-
 apt:
   # Preserves the existing /etc/apt/sources.list
   preserve_sources_list: true
@@ -76,6 +65,17 @@ timezone: <timezone>
 ntp:
   pool:
     - <ntp-server>
+
+# Install LDAP tools for debugging LDAP issues
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gitlab-ce
+  - gnupg
+  - ldap-utils
+  - openssh-server
+  - postfix
 
 runcmd:
   # Configure server

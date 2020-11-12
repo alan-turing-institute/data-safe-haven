@@ -92,13 +92,17 @@ function Add-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
                 data      = [ordered]@{
-                    name = "SharedDataSubnet"
+                    name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
                 databases = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
                     nsg  = "databases"
+                }
+                compute   = [ordered]@{
+                    name = "ComputeSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
                 }
             }
         }
@@ -119,27 +123,59 @@ function Add-SreConfig {
     # Storage config
     # --------------
     $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
+    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
+    # Storage configuration entries
     $config.sre.storage = [ordered]@{
+        accessPolicies  = [ordered]@{
+            readOnly  = [ordered]@{
+                permissions = "rl"
+            }
+            readWrite = [ordered]@{
+                permissions = "racwdl"
+            }
+        }
         artifacts       = [ordered]@{
-            accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
         bootdiagnostics = [ordered]@{
-            accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
-        data            = [ordered]@{
-            ingress = [ordered]@{
-                accountName   = "sre$($config.sre.id)ingress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                containerName = "ingress"
+        userdata = [ordered]@{
+            account    = [ordered]@{
+                name = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind = "FileStorage"
+                performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier  = "hot"
+                rg          = $storageRg
             }
-            egress  = [ordered]@{
-                accountName   = "sre$($config.sre.id)egress${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                containerName = "egress"
+        }
+        persistentdata = [ordered]@{
+            account    = [ordered]@{
+                name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier  = "hot"
+                allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
+            }
+            containers = [ordered]@{
+                ingress = [ordered]@{
+                    accessPolicyName = "readOnly"
+                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                }
+                egress  = [ordered]@{
+                    accessPolicyName = "readWrite"
+                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                }
             }
         }
     }
+    foreach ($containerName in $config.sre.storage.persistentdata.containers.Keys) {
+        $config.sre.storage.persistentdata.containers[$containerName].connectionSecretName = "sre-$($config.sre.id)-data-${containerName}-connection-$($config.sre.storage.persistentdata.containers[$containerName].accessPolicyName)".ToLower()
+    }
+
 
     # Secrets config
     # --------------
@@ -262,7 +298,7 @@ function Add-SreConfig {
         vmSize                  = "Standard_D2s_v3"
         hostname                = $hostname
         fqdn                    = "${hostname}.$($config.shm.domain.fqdn)"
-        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 4
+        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 4
         disks                   = [ordered]@{
             egress  = [ordered]@{
                 sizeGb = "512"
@@ -288,7 +324,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 5
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
             disks                   = [ordered]@{
                 data = [ordered]@{
@@ -305,7 +341,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 6
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 6
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "750"
@@ -460,7 +496,7 @@ function Get-ShmFullConfig {
 
     # Ensure the name in the config is < 27 characters excluding spaces
     if ($shmConfigBase.name.Replace(" ", "").Length -gt 27) {
-      Add-LogMessage -Level Fatal "The 'name' entry in the core SHM config must have fewer than 27 characters (excluding spaces)."
+        Add-LogMessage -Level Fatal "The 'name' entry in the core SHM config must have fewer than 27 characters (excluding spaces)."
     }
 
     # Safe Haven management config
@@ -825,6 +861,9 @@ function Get-ShmFullConfig {
         bootdiagnostics = [ordered]@{
             rg          = $storageRg
             accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        }
+        persistentdata  = [ordered]@{
+            rg = "$($shm.rgPrefix)_PERSISTENT_DATA".ToUpper()
         }
     }
 

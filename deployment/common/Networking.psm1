@@ -1,4 +1,4 @@
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 

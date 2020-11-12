@@ -228,6 +228,20 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_DECOVID_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "repository": {
+          "name": "NSG_SHM_DECOVID_NEXUS_REPOSITORY_TIER_2"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_DECOVID_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": "repository"
+          }
         }
       },
       "vnet": {
@@ -282,6 +296,17 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-decovid-nexus-repository-vm-admin-password",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-decovid-nexus-repository-nexus-app-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_DECOVID_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    },
     "rgPrefix": "RG_SHM_DECOVID",
     "storage": {
       "artifacts": {
@@ -291,6 +316,9 @@
       "bootdiagnostics": {
         "accountName": "shmdecovidbootdiagsoceuy",
         "rg": "RG_SHM_DECOVID_ARTIFACTS"
+      },
+      "persistentdata": {
+        "rg": "RG_SHM_DECOVID_PERSISTENT_DATA"
       }
     },
     "subscriptionName": "[Prod] DECOVID Safe Haven",
@@ -501,9 +529,13 @@
         "name": "VNET_SRE_SRE1",
         "rg": "RG_SRE_SRE1_NETWORKING",
         "subnets": {
-          "data": {
+          "compute": {
             "cidr": "10.150.2.0/24",
             "name": "SharedDataSubnet"
+          },
+          "data": {
+            "cidr": "10.150.4.0/24",
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.150.3.0/24",
@@ -521,6 +553,7 @@
         }
       }
     },
+    "nexus": false,
     "nsgPrefix": "NSG_SRE_SRE1",
     "rds": {
       "appSessionHost": {
@@ -570,6 +603,14 @@
     "rgPrefix": "RG_SRE_SRE1",
     "shortName": "sre-sre1",
     "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "racwdl"
+        }
+      },
       "artifacts": {
         "accountName": "sresre1artifactstplkehgv",
         "rg": "RG_SRE_SRE1_ARTIFACTS"
@@ -578,14 +619,34 @@
         "accountName": "sresre1bootdiagstplkehgv",
         "rg": "RG_SRE_SRE1_ARTIFACTS"
       },
-      "data": {
-        "egress": {
-          "accountName": "sresre1egresstplkehgvciq",
-          "containerName": "egress"
+      "persistentdata": {
+        "account": {
+          "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
+          "name": "decovidsre1datatplkehgvc",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
         },
-        "ingress": {
-          "accountName": "sresre1ingresstplkehgvci",
-          "containerName": "ingress"
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "connectionSecretName": "sre-sre1-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "connectionSecretName": "sre-sre1-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
+          }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "hot",
+          "name": "decovidsre1userdatatplke",
+          "performance": "Premium_LRS",
+          "rg": "RG_SRE_SRE1_ARTIFACTS",
+          "storageKind": "FileStorage"
         }
       }
     },

@@ -5,8 +5,12 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(HelpMessage = "FQDN for the SHM", Mandatory = $false)]
     [string]$shmFqdn,
-    [string]$sreId
+    [Parameter(HelpMessage = "SRE ID", Mandatory = $false)]
+    [string]$sreId,
+    [Parameter(HelpMessage = "Fragment to match any private DNS zones", Mandatory = $false)]
+    [string]$privateEndpointMatch
 )
 
 # Remove records for domain-joined SRE VMs
@@ -18,5 +22,19 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
         Write-Output " [o] Successfully removed DNS record '$($dnsRecord.HostName)'"
     } else {
         Write-Output " [x] Failed to remove DNS record '$($dnsRecord.HostName)'!"
+    }
+}
+
+# Remove private endpoint DNS Zone
+# --------------------------------
+if ($privateEndpointMatch) {
+    Write-Output " [ ] Ensuring that DNS zones matching '$privateEndpointMatch' are removed"
+    foreach ($DnsZone in (Get-DnsServerZone | Where-Object { $_.ZoneName -like "$privateEndpointMatch*.core.windows.net" })) {
+        try {
+            $DnsZone | Remove-DnsServerZone -Force
+            Write-Output " [o] Successfully removed '$($DnsZone.ZoneName)' DNS zone"
+        } catch [System.ArgumentException] {
+            Write-Output " [x] Failed to remove '$($DnsZone.ZoneName)' DNS zone!"
+        }
     }
 }
