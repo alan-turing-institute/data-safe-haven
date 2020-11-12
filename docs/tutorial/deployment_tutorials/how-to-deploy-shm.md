@@ -772,7 +772,7 @@ From your **deployment machine**
 + This will take **around 30 minutes** to run.
 
 ## Server list
-The following 3 virtual machines are created as a result of these instructions (you can check they exist by navigating to `Vitual machines` from the Azure portal Home and searching with the name filter):
+The following three virtual machines are created as a result of these instructions (you can check they exist using the Azure Portal by navigating to `Virtual machines`, applying a filter on the subscription that you used and then searching with the name filter):
 
 + `DC1-SHM-<SHM ID>` (primary domain controller)
 + `DC2-SHM-<SHM ID>` (secondary domain controller)
