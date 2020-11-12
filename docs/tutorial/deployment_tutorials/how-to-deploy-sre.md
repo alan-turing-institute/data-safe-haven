@@ -128,7 +128,9 @@ The core properties for the new SRE environment must be present in the `environm
 
 > :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer.
 
-The following core SRE properties must be defined in a JSON file named `sre_<SRE ID>_core_config.json` .
+> :pencil: This also gives you the `<SRE config ID>` - which is the combination: `<SHM ID><SRE ID>`
+
+The following core SRE properties must be defined in a JSON file named `sre_<SRE config ID>_core_config.json`.
 
 ``` json
 {
@@ -171,8 +173,8 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 + Generate a new full configuration file for the new SRE using the following commands.
   + `Import-Module ./deployment/common/Configuration -Force`
-  + `Add-SreConfig -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
-+ A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json` . This file is used by the subsequent steps in the SRE deployment.
+  + `Add-SreConfig -configId <SRE config ID>`
++ A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE config ID>_full_config.json` . This file is used by the subsequent steps in the SRE deployment.
 + You may want to commit this new full configuration file to the Safe Haven repository
 
 ## :cop: Prepare SHM environment
