@@ -35,7 +35,7 @@ function Add-SreConfig {
             shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier             = $sreConfigBase.tier
-            nexus            = $sreConfigBase.nexus ? [bool]$sreConfigBase.nexus : $nexusDefault
+            nexus            = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
