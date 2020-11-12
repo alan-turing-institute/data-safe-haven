@@ -458,22 +458,6 @@ function Get-ShmFullConfig {
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
-    # Ensure that vmImages field specified
-    if ([string]::IsNullOrEmpty($shmConfigBase.vmImages.subscriptionName)) {
-        Add-LogMessage -Level Fatal "vmImages.subscriptionName not specified: must be provided as a string in the core SHM config."
-    }
-    if ([string]::IsNullOrEmpty($shmConfigBase.vmImages.location)) {
-        Add-LogMessage -Level Fatal "vmImages.location not specified: must be provided as a string in the core SHM config."
-    }
-
-    # Ensure that dnsRecords field specified
-    if ([string]::IsNullOrEmpty($shmConfigBase.dnsRecords.subscriptionName)) {
-        Add-LogMessage -Level Fatal "dnsRecords.subscriptionName not specified: must be provided as a string in the core SHM config."
-    }
-    if ([string]::IsNullOrEmpty($shmConfigBase.dnsRecords.resourceGroupName)) {
-        Add-LogMessage -Level Fatal "dnsRecords.resourceGroupName not specified: must be provided as a string in the core SHM config."
-    }
-
     # Ensure the name in the config is < 27 characters excluding spaces
     if ($shmConfigBase.name.Replace(" ", "").Length -gt 27) {
       Add-LogMessage -Level Fatal "The 'name' entry in the core SHM config must have fewer than 27 characters (excluding spaces)."
@@ -510,23 +494,25 @@ function Get-ShmFullConfig {
 
     # DSVM build images
     # -----------------
-    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.vmImages.subscriptionName
     # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
     $originalContext = Get-AzContext
-    $null = Set-AzContext -SubscriptionId $shmConfigBase.vmImages.subscriptionName
+    $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
+    $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
+    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName
     $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
     if ($locations.Count -gt 1) {
         Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
     } elseif ($locations.Count -eq 1) {
-        if ($shmConfigBase.vmImages.location -ne $locations) {
-            Add-LogMessage -Level Fatal "Image building location ($($shmConfigBase.vmImages.location)) must be set to ${locations}!"
+        if ($vmImagesLocation -ne $locations) {
+            Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
         }
     }
     $null = Set-AzContext -Context $originalContext
     # Construct build images config
+    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
     $shm.dsvmImage = [ordered]@{
-        subscription    = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
-        location        = $shmConfigBase.vmImages.location
+        subscription    = $vmImagesSubscriptionName
+        location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
             rg          = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
