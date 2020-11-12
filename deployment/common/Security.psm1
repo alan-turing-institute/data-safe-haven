@@ -105,3 +105,4 @@ function Resolve-KeyVaultSecret {
     return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
