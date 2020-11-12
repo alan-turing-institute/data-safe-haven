@@ -106,7 +106,6 @@ write_files:
       case "$TERM" in
           xterm-color|*-256color) color_prompt=yes;;
       esac
-
       # set prompt
       if [ "$color_prompt" = yes ]; then
           PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
@@ -114,7 +113,6 @@ write_files:
           PS1='\u:\W\$ '
       fi
       unset color_prompt
-
       # enable color support for ls and grep
       if [ -x /usr/bin/dircolors ]; then
           test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -143,15 +141,17 @@ write_files:
     permissions: "0644"
     content: |
       [Unit]
-      Description=Clamav on access scanning daemon
+      Description=ClamAV on access scanning daemon
       Requires=clamav-daemon.service
       After=clamav-daemon.service
+
       [Service]
       Type=simple
       User=root
       ExecStart=/usr/bin/clamonacc --foreground=true
       Restart=on-failure
       RestartSec=30
+
       [Install]
       WantedBy=multi-user.target
   - path: "/etc/systemd/system/clamav-clamdscan.service"
@@ -159,9 +159,10 @@ write_files:
     permissions: "0644"
     content: |
       [Unit]
-      Description=Clamav full system scan
+      Description=ClamAV full system scan
       Requires=clamav-daemon.service
       After=clamav-daemon.service
+
       [Service]
       Type=oneshot
       User=root
@@ -171,13 +172,15 @@ write_files:
     permissions: "0644"
     content: |
       [Unit]
-      Description=Run clamdscan every week
+      Description=Run ClamAV scan every week
+
       [Timer]
       # Will run on every Monday at 00:00:00
       OnCalendar=weekly
       AccuracySec=1h
       # Will run if a job was missed (e.g. due to system being powered down)
       Persistent=true
+
       [Install]
       WantedBy=timers.target
   - path: "/etc/systemd/system/data.mount"
@@ -278,12 +281,10 @@ write_files:
     owner: root:root
     permissions: "0500"
     content: |
-      # Edit LDAP config
       echo "Checking LDAP config"
       echo ">=== /etc/ldap.conf ===<"
       grep -v "^#" /etc/ldap.conf
       echo ">=== end of /etc/ldap.conf ===<"
-      # Edit Kerberos config
       echo "Checking Kerberos config"
       echo ">=== /etc/krb5.conf ===<"
       cat /etc/krb5.conf
