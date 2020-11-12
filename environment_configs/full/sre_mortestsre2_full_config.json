@@ -180,7 +180,7 @@
       "rg": "RG_SHM_MORTEST_PKG_MIRRORS",
       "vmSize": "Standard_B2ms"
     },
-    "name": "Turing Development Safe Haven MORTEST",
+    "name": "Turing Dev Safe Haven MORTEST",
     "network": {
       "mirrorVnets": {
         "tier2": {
@@ -228,6 +228,20 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_MORTEST_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "repository": {
+          "name": "NSG_SHM_MORTEST_NEXUS_REPOSITORY_TIER_2"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_MORTEST_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": "repository"
+          }
         }
       },
       "vnet": {
@@ -282,6 +296,17 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-mortest-nexus-repository-vm-admin-password",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-mortest-nexus-repository-nexus-app-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_MORTEST_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    },
     "rgPrefix": "RG_SHM_MORTEST",
     "storage": {
       "artifacts": {
@@ -292,7 +317,7 @@
         "accountName": "shmmortestbootdiagsmivbg",
         "rg": "RG_SHM_MORTEST_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "rg": "RG_SHM_MORTEST_PERSISTENT_DATA"
       }
     },
@@ -425,7 +450,7 @@
       },
       "fqdn": "DAT-SRE-SRE2.mortest.dsgroupdev.co.uk",
       "hostname": "DAT-SRE-SRE2",
-      "ip": "10.150.12.4",
+      "ip": "10.150.10.4",
       "nsg": "NSG_SRE_SRE2_DATA",
       "rg": "RG_SRE_SRE2_DATA",
       "vmName": "DAT-SRE-SRE2",
@@ -505,12 +530,12 @@
         "rg": "RG_SRE_SRE2_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.150.12.0/24",
-            "name": "ComputeSubnet"
+            "cidr": "10.150.10.0/24",
+            "name": "SharedDataSubnet"
           },
           "data": {
             "cidr": "10.150.10.0/24",
-            "name": "SharedDataSubnet"
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.150.11.0/24",
@@ -528,6 +553,7 @@
         }
       }
     },
+    "nexus": false,
     "nsgPrefix": "NSG_SRE_SRE2",
     "rds": {
       "appSessionHost": {
@@ -582,34 +608,45 @@
           "permissions": "rl"
         },
         "readWrite": {
-          "permissions": "rwl"
+          "permissions": "racwdl"
         }
       },
       "artifacts": {
-        "accountName": "mortestsre2artifactsbuvc",
+        "accountName": "sresre2artifactsbuvcgyjk",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "mortestsre2bootdiagsbuvc",
+        "accountName": "sresre2bootdiagsbuvcgyjk",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "account": {
           "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
           "name": "mortestsre2databuvcgyjkl",
+          "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "containerName": "egress",
-            "sasSecretName": "sre-sre2-data-egress-sas-readwrite"
+            "connectionSecretName": "sre-sre2-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "containerName": "ingress",
-            "sasSecretName": "sre-sre2-data-ingress-sas-readonly"
+            "connectionSecretName": "sre-sre2-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
           }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "hot",
+          "name": "mortestsre2userdatabuvcg",
+          "performance": "Premium_LRS",
+          "rg": "RG_SRE_SRE2_ARTIFACTS",
+          "storageKind": "FileStorage"
         }
       }
     },
@@ -655,7 +692,7 @@
         },
         "fqdn": "GITLAB-SRE-SRE2.mortest.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SRE2",
-        "ip": "10.150.12.5",
+        "ip": "10.150.10.5",
         "rootPasswordSecretName": "sre-sre2-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
@@ -670,7 +707,7 @@
         },
         "fqdn": "HACKMD-SRE-SRE2.mortest.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SRE2",
-        "ip": "10.150.12.6",
+        "ip": "10.150.10.6",
         "vmName": "HACKMD-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
       },

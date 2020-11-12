@@ -228,6 +228,20 @@
         },
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_DECOVID_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "repository": {
+          "name": "NSG_SHM_DECOVID_NEXUS_REPOSITORY_TIER_2"
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_DECOVID_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": "repository"
+          }
         }
       },
       "vnet": {
@@ -282,6 +296,17 @@
       "stateCountyRegion": "London",
       "townCity": "London"
     },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-decovid-nexus-repository-vm-admin-password",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-decovid-nexus-repository-nexus-app-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_DECOVID_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    },
     "rgPrefix": "RG_SHM_DECOVID",
     "storage": {
       "artifacts": {
@@ -292,7 +317,7 @@
         "accountName": "shmdecovidbootdiagsoceuy",
         "rg": "RG_SHM_DECOVID_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "rg": "RG_SHM_DECOVID_PERSISTENT_DATA"
       }
     },
@@ -425,7 +450,7 @@
       },
       "fqdn": "DAT-SRE-SRE2.decovid.turingsafehaven.ac.uk",
       "hostname": "DAT-SRE-SRE2",
-      "ip": "10.151.4.4",
+      "ip": "10.151.2.4",
       "nsg": "NSG_SRE_SRE2_DATA",
       "rg": "RG_SRE_SRE2_DATA",
       "vmName": "DAT-SRE-SRE2",
@@ -505,12 +530,12 @@
         "rg": "RG_SRE_SRE2_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.151.4.0/24",
-            "name": "ComputeSubnet"
-          },
-          "data": {
             "cidr": "10.151.2.0/24",
             "name": "SharedDataSubnet"
+          },
+          "data": {
+            "cidr": "10.151.4.0/24",
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.151.3.0/24",
@@ -528,6 +553,7 @@
         }
       }
     },
+    "nexus": false,
     "nsgPrefix": "NSG_SRE_SRE2",
     "rds": {
       "appSessionHost": {
@@ -582,34 +608,45 @@
           "permissions": "rl"
         },
         "readWrite": {
-          "permissions": "rwl"
+          "permissions": "racwdl"
         }
       },
       "artifacts": {
-        "accountName": "decovidsre2artifactsqicl",
+        "accountName": "sresre2artifactsqiclwyxn",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "decovidsre2bootdiagsqicl",
+        "accountName": "sresre2bootdiagsqiclwyxn",
         "rg": "RG_SRE_SRE2_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "account": {
           "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
           "name": "decovidsre2dataqiclwyxns",
+          "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "containerName": "egress",
-            "sasSecretName": "sre-sre2-data-egress-sas-readwrite"
+            "connectionSecretName": "sre-sre2-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "containerName": "ingress",
-            "sasSecretName": "sre-sre2-data-ingress-sas-readonly"
+            "connectionSecretName": "sre-sre2-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
           }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "hot",
+          "name": "decovidsre2userdataqiclw",
+          "performance": "Premium_LRS",
+          "rg": "RG_SRE_SRE2_ARTIFACTS",
+          "storageKind": "FileStorage"
         }
       }
     },
@@ -655,7 +692,7 @@
         },
         "fqdn": "GITLAB-SRE-SRE2.decovid.turingsafehaven.ac.uk",
         "hostname": "GITLAB-SRE-SRE2",
-        "ip": "10.151.4.5",
+        "ip": "10.151.2.5",
         "rootPasswordSecretName": "sre-sre2-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
@@ -670,7 +707,7 @@
         },
         "fqdn": "HACKMD-SRE-SRE2.decovid.turingsafehaven.ac.uk",
         "hostname": "HACKMD-SRE-SRE2",
-        "ip": "10.151.4.6",
+        "ip": "10.151.2.6",
         "vmName": "HACKMD-SRE-SRE2",
         "vmSize": "Standard_D2s_v3"
       },

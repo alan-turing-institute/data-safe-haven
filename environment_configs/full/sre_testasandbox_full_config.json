@@ -230,12 +230,12 @@
           "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
         },
         "repository": {
-          "name": "NSG_SHM_TESTA_REPOSITORY"
+          "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_2"
         }
       },
       "repositoryVnet": {
         "cidr": "10.30.1.0/24",
-        "name": "VNET_SHM_TESTA_REPOSITORY",
+        "name": "VNET_SHM_TESTA_NEXUS_REPOSITORY_TIER_2",
         "subnets": {
           "repository": {
             "cidr": "10.30.1.0/24",
@@ -299,12 +299,12 @@
     "repository": {
       "diskType": "Standard_LRS",
       "nexus": {
-        "adminPasswordSecretName": "shm-testa-repository-vm-admin-password",
+        "adminPasswordSecretName": "shm-testa-nexus-repository-vm-admin-password",
         "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testa-repository-nexus-app-admin-password",
+        "nexusAppAdminPasswordSecretName": "shm-testa-nexus-repository-nexus-app-admin-password",
         "vmName": "NEXUS-REPOSITORY-TIER-2"
       },
-      "rg": "RG_SHM_REPOSITORY",
+      "rg": "RG_SHM_NEXUS_REPOSITORIES",
       "vmSize": "Standard_B2ms"
     },
     "rgPrefix": "RG_SHM",
@@ -317,7 +317,7 @@
         "accountName": "shmtestabootdiagsvkdrslu",
         "rg": "RG_SHM_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "rg": "RG_SHM_PERSISTENT_DATA"
       }
     },
@@ -535,7 +535,7 @@
           },
           "data": {
             "cidr": "10.150.2.0/24",
-            "name": "SharedDataSubnet"
+            "name": "PrivateDataSubnet"
           },
           "databases": {
             "cidr": "10.150.3.0/24",
@@ -608,7 +608,7 @@
           "permissions": "rl"
         },
         "readWrite": {
-          "permissions": "rwl"
+          "permissions": "racwdl"
         }
       },
       "artifacts": {
@@ -619,23 +619,34 @@
         "accountName": "testasandboxbootdiagsaln",
         "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS"
       },
-      "data": {
+      "persistentdata": {
         "account": {
           "accessTier": "hot",
+          "allowedIpAddresses": "193.60.220.253",
           "name": "testasandboxdataalnpdsmr",
+          "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "containerName": "egress",
-            "sasSecretName": "sre-sandbox-data-egress-sas-readwrite"
+            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "containerName": "ingress",
-            "sasSecretName": "sre-sandbox-data-ingress-sas-readonly"
+            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
           }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "hot",
+          "name": "testasandboxuserdataalnp",
+          "performance": "Premium_LRS",
+          "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS",
+          "storageKind": "FileStorage"
         }
       }
     },
