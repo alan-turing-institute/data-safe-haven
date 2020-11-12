@@ -87,7 +87,6 @@ $privateDnsZoneName = "$($persistentStorageAccount.StorageAccountName).blob.core
 # ----------------------------------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Deny
-# $null = Add-AzStorageAccountNetworkRule -ResourceGroupName $config.shm.storage.persistentdata.rg -AccountName $config.sre.storage.persistentdata.account.name -VirtualNetworkResourceId $dataSubnet.Id
 foreach ($IpAddress in $config.sre.storage.persistentdata.account.allowedIpAddresses) {
     $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -IPAddressOrRange $IpAddress
 }

@@ -1,82 +1,58 @@
 #cloud-config
 package_upgrade: false
 
+# Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
-  - [/installation/ingress-mount.sh, /data, fuse, "_netdev,x-systemd.requires-mounts-for=/mnt"]
-  - [/installation/egress-mount.sh, /output, fuse, "_netdev,x-systemd.requires-mounts-for=/mnt"]
+  - ["//<dataserver-hostname>/Shared", /shared, cifs, "_netdev,credentials=/opt/configuration/credentials-data-server.secret,file_mode=0777,dir_mode=0777"]
 
 write_files:
-  - path: "/etc/xrdp/startwm.sh"
+  - path: "/etc/bash.bashrc"
     owner: root:root
-    permissions: "0755"
+    permissions: "0644"
+    append: true
     content: |
-      #!/bin/sh
-      if [ -r /etc/default/locale ]; then
-          . /etc/default/locale
-          export LANG LANGUAGE
+      # enable bash completion in interactive shells
+      if [ ! $(shopt -oq posix) ]; then
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+              . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+              . /etc/bash_completion
+          fi
       fi
-      # Start xfce4
-      startxfce4
+  - path: "/etc/clamav/clamd.conf"
+    owner: root:root
+    permissions: "0644"
+    append: true
+    content: |
+      # Scan on access settings
+      # Scan on access for locally mounted disks
+      OnAccessIncludePath /home
+      OnAccessIncludePath /scratch
+      OnAccessIncludePath /mnt
+      # Scan on access for samba shares
+      OnAccessIncludePath /shared
+      OnAccessIncludePath /data
+      OnAccessIncludePath /output
+      # Prevent access to infected files
+      OnAccessPrevention yes
+      OnAccessExcludeUname clamav
+      OnAccessExcludeRootUID yes
   - path: "/etc/domain-join.secret"
     owner: root:root
     permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/etc/ldap.secret"
+  - path: "/etc/jaas.conf"
     owner: root:root
-    permissions: "0400"
+    permissions: "0444"
     content: |
-      <ldap-search-user-password>
-  - path: "/opt/configuration/join_domain.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      <join_domain.sh>
-  - path: "/installation/data-server-credentials.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      username=<datamount-username>
-      password=<datamount-password>
-  - path: "/installation/ingress-credentials.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-ingress-sastoken>
-      authType SAS
-      containerName ingress
-  - path: "/installation/egress-credentials.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-egress-sastoken>
-      authType SAS
-      containerName egress
-  - path: "/installation/ensure-cache-directories.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      umount /data /output /mnt 2> /dev/null
-      if [ "$(mountpoint /mnt | grep 'is not a mountpoint')" ]; then
-          rm -rf /mnt/* 2> /dev/null
-      fi
-      mount /mnt
-      if [ "$(mountpoint /mnt | grep 'is a mountpoint')" ]; then
-          rm -rf /mnt/resource/blobfuse-* 2> /dev/null
-          mkdir -p /mnt/resource/blobfuse-cache-data /mnt/resource/blobfuse-cache-output
-      fi
-      mount /data
-      mount /output
-  - path: "/installation/ingress-mount.sh"
-    owner: root:root
-    permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o ro --tmp-path=/mnt/resource/blobfuse-cache-data --cache-size-mb=8000 --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/ingress-credentials.secret -o allow_other
-  - path: "/installation/egress-mount.sh"
-    owner: root:root
-    permissions: "0500"
-    content: /usr/bin/blobfuse $1 -o rw --tmp-path=/mnt/resource/blobfuse-cache-output --cache-size-mb=8000 --no-symlinks=true -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/egress-credentials.secret -o allow_other
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -93,11 +69,211 @@ write_files:
       rootbinddn <ldap-search-user-dn>
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
+  - path: "/etc/ldap.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <ldap-search-user-password>
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
       <krb5.conf>
+  - path: "/etc/pip.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      # Add the PyPI mirror to our global settings
+      [global]
+      index = <mirror-index-pypi>
+      index-url = <mirror-index-url-pypi>
+      trusted-host = <mirror-host-pypi>
+  - path: "/etc/R/Rprofile.site"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      ## Set Rprofile.site to the appropriate CRAN mirror
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "<mirror-url-cran>"
+          options(repos = r)
+      })
+  - path: "/etc/skel/.bashrc"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      # determine if terminal has color support
+      case "$TERM" in
+          xterm-color|*-256color) color_prompt=yes;;
+      esac
+
+      # set prompt
+      if [ "$color_prompt" = yes ]; then
+          PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
+      else
+          PS1='\u:\W\$ '
+      fi
+      unset color_prompt
+
+      # enable color support for ls and grep
+      if [ -x /usr/bin/dircolors ]; then
+          test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+          alias ls='ls --color=auto'
+          alias grep='grep --color=auto'
+          alias fgrep='fgrep --color=auto'
+          alias egrep='egrep --color=auto'
+      fi
+  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <project.default.xml>
+  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <jdk.table.xml>
+  - path: "/etc/skel/.xsession"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      xfce4-session
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav on access scanning daemon
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+      [Service]
+      Type=simple
+      User=root
+      ExecStart=/usr/bin/clamonacc --foreground=true
+      Restart=on-failure
+      RestartSec=30
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav full system scan
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+      [Service]
+      Type=oneshot
+      User=root
+      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run clamdscan every week
+      [Timer]
+      # Will run on every Monday at 00:00:00
+      OnCalendar=weekly
+      AccuracySec=1h
+      # Will run if a job was missed (e.g. due to system being powered down)
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+  - path: "/etc/systemd/system/data.mount"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for ingress volume (via blobfuse)
+      Requires=network-online.target mnt.mount
+      Wants=network-online.target mnt.mount
+
+      [Mount]
+      What=/opt/configuration/mount-ingress.sh
+      Where=/data
+      Type=fuse
+      Options=_netdev
+  - path: "/etc/systemd/system/data.automount"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/data
+
+      [Automount]
+      Where=/data
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/output.mount"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for egress volume (via blobfuse)
+      Requires=network-online.target mnt.mount
+      Wants=network-online.target mnt.mount
+
+      [Mount]
+      What=/opt/configuration/mount-egress.sh
+      Where=/output
+      Type=fuse
+      Options=_netdev
+  - path: "/etc/systemd/system/output.automount"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/output
+
+      [Automount]
+      Where=/output
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/xrdp/startwm.sh"
+    owner: root:root
+    permissions: "0755"
+    content: |
+      #!/bin/sh
+      if [ -r /etc/default/locale ]; then
+          . /etc/default/locale
+          export LANG LANGUAGE
+      fi
+      # Start xfce4
+      startxfce4
+  - path: "/opt/configuration/credentials-data-server.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      username=<datamount-username>
+      password=<datamount-password>
+  - path: "/opt/configuration/credentials-ingress.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-ingress-sastoken>
+      authType SAS
+      containerName ingress
+  - path: "/opt/configuration/credentials-egress.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-egress-sastoken>
+      authType SAS
+      containerName egress
+  - path: "/opt/configuration/join_domain.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <join_domain.sh>
   - path: "/opt/configuration/kerberos_configuration.sh"
     owner: root:root
     permissions: "0500"
@@ -112,6 +288,28 @@ write_files:
       echo ">=== /etc/krb5.conf ===<"
       cat /etc/krb5.conf
       echo ">=== end of /etc/krb5.conf ===<"
+  - path: "/opt/configuration/mount-ingress.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/mnt/blobfuse-cache-ingress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # each mount uses half of the total available space
+        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+  - path: "/opt/configuration/mount-egress.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/mnt/blobfuse-cache-egress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # each mount uses half of the total available space
+        /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
   - path: "/opt/configuration/user_login_configuration.sh"
     owner: root:root
     permissions: "0500"
@@ -165,158 +363,15 @@ write_files:
       # Ensure that there is exactly one fstab entry for the primary partition
       cp /etc/fstab /tmp/fstab
       grep -v "${FOLDER_PATH}" /tmp/fstab > /etc/fstab
-      echo "${DISK_PATH}-part1\t${FOLDER_PATH}\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      echo "${DISK_PATH}-part1\t${FOLDER_PATH}\text4\tdefaults\t0\t2" >> /etc/fstab
       rm /tmp/fstab 2> /dev/null
       tail -n 1 /etc/fstab
-  - path: "/etc/jaas.conf"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      pgjdbc {
-      com.sun.security.auth.module.Krb5LoginModule required
-          useTicketCache=true
-          debug=true
-          renewTGT=true
-          doNotPrompt=true;
-      };
-  - path: "/etc/pip.conf"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      # Add the PyPI mirror to our global settings
-      [global]
-      index = <mirror-index-pypi>
-      index-url = <mirror-index-url-pypi>
-      trusted-host = <mirror-host-pypi>
-  - path: "/etc/R/Rprofile.site"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      ## Set Rprofile.site to the appropriate CRAN mirror
-      local({
-          r <- getOption("repos")
-          r["CRAN"] <- "<mirror-url-cran>"
-          options(repos = r)
-      })
-  - path: "/etc/skel/.xsession"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      xfce4-session
   - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
     owner: root:root
     encoding: gz+b64
     permissions: "0644"
     content: |
       <xrdpCustomLogoEncoded>
-  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <project.default.xml>
-  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <jdk.table.xml>
-  - path: "/etc/skel/.bashrc"
-    owner: root:root
-    permissions: "0644"
-    content: |
-      # determine if terminal has color support
-      case "$TERM" in
-          xterm-color|*-256color) color_prompt=yes;;
-      esac
-
-      # set prompt
-      if [ "$color_prompt" = yes ]; then
-          PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
-      else
-          PS1='\u:\W\$ '
-      fi
-      unset color_prompt
-
-      # enable color support for ls and grep
-      if [ -x /usr/bin/dircolors ]; then
-          test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-          alias ls='ls --color=auto'
-          alias grep='grep --color=auto'
-          alias fgrep='fgrep --color=auto'
-          alias egrep='egrep --color=auto'
-      fi
-  - path: "/etc/bash.bashrc"
-    owner: root:root
-    permissions: "0644"
-    append: true
-    content: |
-      # enable bash completion in interactive shells
-      if [ ! $(shopt -oq posix) ]; then
-          if [ -f /usr/share/bash-completion/bash_completion ]; then
-              . /usr/share/bash-completion/bash_completion
-          elif [ -f /etc/bash_completion ]; then
-              . /etc/bash_completion
-          fi
-      fi
-  - path: "/etc/clamav/clamd.conf"
-    owner: root:root
-    permissions: "0644"
-    append: true
-    content: |
-      # Scan on access settings
-      # Scan on access for locally mounted disks
-      OnAccessIncludePath /home
-      OnAccessIncludePath /scratch
-      OnAccessIncludePath /mnt
-      # Scan on access for samba shares
-      OnAccessIncludePath /shared
-      OnAccessIncludePath /data
-      OnAccessIncludePath /output
-      # Prevent access to infected files
-      OnAccessPrevention yes
-      OnAccessExcludeUname clamav
-      OnAccessExcludeRootUID yes
-  - path: "/lib/systemd/system/clamav-clamonacc.service"
-    owner: root:root
-    permissions: "0644"
-    content: |
-      [Unit]
-      Description=Clamav on access scanning daemon
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service
-      [Service]
-      Type=simple
-      User=root
-      ExecStart=/usr/bin/clamonacc --foreground=true
-      Restart=on-failure
-      RestartSec=30
-      [Install]
-      WantedBy=multi-user.target
-  - path: "/lib/systemd/system/clamav-clamdscan.service"
-    owner: root:root
-    permissions: "0644"
-    content: |
-      [Unit]
-      Description=Clamav full system scan
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service
-      [Service]
-      Type=oneshot
-      User=root
-      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
-  - path: "/lib/systemd/system/clamav-clamdscan.timer"
-    owner: root:root
-    permissions: "0644"
-    content: |
-      [Unit]
-      Description=Run clamdscan every week
-      [Timer]
-      # Will run on every Monday at 00:00:00
-      OnCalendar=weekly
-      AccuracySec=1h
-      # Will run if a job was missed (e.g. due to system being powered down)
-      Persistent=true
-      [Install]
-      WantedBy=timers.target
 
 # Set locale and timezone
 locale: en_GB.UTF-8
@@ -393,22 +448,19 @@ runcmd:
   # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
   - /opt/configuration/setup_disk.sh 1 /home
   - /opt/configuration/setup_disk.sh 2 /scratch
-  # Mount shared folder with full local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount shared folder using SMB... ===<"
-  - mkdir -p /shared
-  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/installation/data-server-credentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Set up cache folders for ingress and egress blob mounts
-  - echo ">=== Create ingress and egress cache folders ... ===<"
+  # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
+  - echo ">=== Configure ingress and egress mounts ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
   - echo "user_allow_other" >> /tmp/allow.txt
   - mv /tmp/allow.txt /etc/fuse.conf
-  - /installation/ensure-cache-directories.sh
-  - echo "@reboot root /installation/ensure-cache-directories.sh" >> /etc/crontab
-  # Print fstab
+  - systemctl start data.mount
+  - systemctl enable data.automount
+  - systemctl start output.mount
+  - systemctl enable output.automount
+  # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
+  - mount -fav
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
   - echo ">=== Update ClamAV... ===<"
   - systemctl stop clamav-freshclam
