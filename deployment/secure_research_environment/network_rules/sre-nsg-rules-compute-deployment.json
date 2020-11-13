@@ -48,9 +48,9 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowPrivateDataEndpointsOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to private endpoints in the VNet",
+        "name": "DenyPrivateDataEndpointsOutbound",
+        "access": "Deny",
+        "description": "Deny outbound connections to private endpoints in the VNet",
         "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
         "destinationPortRange": "*",
         "direction": "Outbound",
