@@ -155,8 +155,11 @@ try {
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_nexus.py"
     $raw_script = Get-Content $scriptPath -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitYaml = $cloudInitYaml.Replace("${indent}<configure_nexus.py>", $indented_script)
-    $cloudInitYaml = $cloudInitYaml.Replace("<nexus-admin-password>", $nexusAppAdminPassword)
+    $cloudInitYaml = $cloudInitYaml.
+        Replace("${indent}<configure_nexus.py>", $indented_script).
+        Replace("<nexus-admin-password>", $nexusAppAdminPassword).
+        Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+        Replace("<timezone>", $config.time.timezone.linux)
 
     $adminPasswordSecretName = $config.repository.nexus.adminPasswordSecretName
     # Deploy the VM

@@ -39,5 +39,5 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
-  pool:
+  pools:
     - <ntp-server>
