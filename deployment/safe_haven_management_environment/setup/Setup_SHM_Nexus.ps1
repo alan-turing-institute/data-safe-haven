@@ -152,7 +152,7 @@ try {
     $cloudInitYaml = Get-Content $cloudInitFilePath -Raw
     # Insert Nexus configuration script into cloud-init
     $indent = "      "
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_nexus.py"
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nexus" "configure_nexus.py"
     $raw_script = Get-Content $scriptPath -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitYaml = $cloudInitYaml.
