@@ -22,6 +22,35 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
+# Function to set DNS resolution rules on the SHM DC
+# --------------------------------------------------
+function Set-DnsResolutionRules {
+    param(
+        [Parameter(HelpMessage = "SRE ID")]
+        $sreId,
+        [Parameter(HelpMessage = "Blocked CIDRs")]
+        $blockedCidrs,
+        [Parameter(HelpMessage = "CIDRs to exempt")]
+        $exceptionCidrs,
+        [Parameter(HelpMessage = "DNS server names")]
+        $dnsServerNames,
+        [Parameter(HelpMessage = "DNS servers resource group")]
+        $dnsServerResourceGroup
+    )
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
+    $params = @{
+        sreId                  = "$sreId"
+        blockedCidrsList       = "$($blockedCidrs -join ',')"
+        exceptionCidrsList     = "$($exceptionCidrs -join ',')"
+    }
+    foreach ($dnsServerName in $dnsServerNames) {
+        Add-LogMessage -Level Info "Setting external DNS resolution for '$blockedCidrs' via ${dnsServerName}..."
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $dnsServerResourceGroup -Parameter $params
+        Write-Output $result.Value
+    }
+}
+
+
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
@@ -298,6 +327,7 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
+
 # Construct the cloud-init YAML file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -393,6 +423,17 @@ if ($upgrade) {
 }
 
 
+# Temporarily allow external DNS resolution for this DSVM via SHM DNS servers
+# ---------------------------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Set-DnsResolutionRules -sreId $config.sre.id `
+                       -blockedCidrs @($config.sre.network.vnet.subnets.compute.cidr) `
+                       -exceptionCidrs @("$($config.sre.dataserver.ip)/32", "${vmIpAddress}/32") `
+                       -dnsServerNames @($config.shm.dc.vmName, $config.shm.dcb.vmName) `
+                       -dnsServerResourceGroup $config.shm.dc.rg
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
 # Deploy the VM
 # -------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
@@ -412,6 +453,17 @@ $params = @{
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
+
+
+# Block external DNS resolution for DSVMs via SHM DNS servers
+# -----------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Set-DnsResolutionRules -sreId $config.sre.id `
+                       -blockedCidrs @($config.sre.network.vnet.subnets.compute.cidr) `
+                       -exceptionCidrs @("$($config.sre.dataserver.ip)/32") `
+                       -dnsServerNames @($config.shm.dc.vmName, $config.shm.dcb.vmName) `
+                       -dnsServerResourceGroup $config.shm.dc.rg
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Remove snapshots

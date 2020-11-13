@@ -38,7 +38,7 @@ $params = @{
     exceptionCidrsList     = "`"$($config.sre.dataserver.ip)/32`""
 }
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
-    Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via $($dnsServerName)..."
+    Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
 }
