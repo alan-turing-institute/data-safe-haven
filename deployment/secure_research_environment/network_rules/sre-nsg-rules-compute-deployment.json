@@ -1,5 +1,29 @@
 [
     {
+        "name": "AllowLDAPInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from the SHM LDAP server",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": [88, 389, 636]
+    },
+    {
+        "name": "IgnoreRulesBelowHereInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
@@ -36,9 +60,9 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowVirtualNetworkOutbound",
-        "access": "Allow",
-        "description": "Allow other outbound traffic to the virtual network.",
+        "name": "DenyVirtualNetworkOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic to the virtual network.",
         "destinationAddressPrefix": "VirtualNetwork",
         "destinationPortRange": "*",
         "direction": "Outbound",
@@ -46,27 +70,15 @@
         "protocol": "*",
         "sourceAddressPrefix": "VirtualNetwork",
         "sourcePortRange": "*"
-    },
+    }
     {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "name": "AllowInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 4000,
-        "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatfromDnsOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
-        "destinationAddressPrefix": "AzurePlatformDNS",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 4001,
         "protocol": "*",
         "sourceAddressPrefix": "VirtualNetwork",
         "sourcePortRange": "*"

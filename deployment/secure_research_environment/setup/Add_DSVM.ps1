@@ -245,108 +245,13 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name $outboundInternetAccessRuleName `
-                             -Description "Outbound internet access" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange *
-# # Outbound: allow Nexus repository
-# if ($config.sre.nexus) {
-#     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-#                                  -Name "OutboundAllowNexus" `
-#                                  -Description "Outbound allow Nexus" `
-#                                  -Priority 2100 `
-#                                  -Direction Outbound `
-#                                  -Access Allow `
-#                                  -Protocol * `
-#                                  -SourceAddressPrefix VirtualNetwork `
-#                                  -SourcePortRange * `
-#                                  -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
-#                                  -DestinationPortRange 8081
-# }
 
 
 # Ensure that deployment NSG exists and required rules are set
 # ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
-$srePrivateDataSubnetIpRange = $config.sre.network.vnet.subnets.data.cidr
-# Inbound: allow LDAP then deny all
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundAllowLDAP" `
-                             -Description "Inbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix $shmIdentitySubnetIpRange `
-                             -SourcePortRange 88, 389, 636 `
-                             -DestinationAddressPrefix VirtualNetwork `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundDenyAll" `
-                             -Description "Inbound deny all" `
-                             -Priority 3000 `
-                             -Direction Inbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-# Outbound: allow LDAP and private endpoints then deny all Virtual Network
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundAllowLDAP" `
-                             -Description "Outbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $shmIdentitySubnetIpRange `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundAllowPrivateDataEndpoints" `
-                             -Description "Outbound allow private data endpoints" `
-                             -Priority 3000 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $srePrivateDataSubnetIpRange `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundDenyVNet" `
-                             -Description "Outbound deny virtual network" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork `
-                             -DestinationPortRange *
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute-deployment.json") -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
 
 
 # Check that VNET and subnet exist
