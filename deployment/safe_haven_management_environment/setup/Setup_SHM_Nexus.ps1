@@ -53,24 +53,6 @@ $vnetRepository = Deploy-VirtualNetwork -Name $config.network.repositoryVnet.nam
 $subnetRepository = Deploy-Subnet -Name $config.network.repositoryVnet.subnets.repository.name -VirtualNetwork $vnetRepository -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr
 
 
-# Attach repository subnet to SHM firewall route table
-# ----------------------------------------------------
-Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM firewall route table"
-$routeTable = Get-AzRouteTable | Where-Object { $_.Name -eq $config.firewall.routeTableName }
-$vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $config.network.repositoryVnet.subnets.repository.name -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
-if ($?) {
-    Add-LogMessage -Level Success "Route table attached"
-} else {
-    Add-LogMessage -Level Fatal "Attaching route table failed!"
-}
-
-
-# Peer repository vnet to SHM vnet
-# --------------------------------
-Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
-Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
-
-
 # Set up the NSG for Nexus repository
 # -----------------------------------
 $nsgName = $config.network.nsg.repository.name
@@ -181,6 +163,25 @@ try {
     $null = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsgRepository
     $null = $nsgRepository | Set-AzNetworkSecurityGroup
 }
+
+
+# Attach repository subnet to SHM firewall route table
+# ----------------------------------------------------
+Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM firewall route table"
+$routeTable = Get-AzRouteTable | Where-Object { $_.Name -eq $config.firewall.routeTableName }
+$vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $config.network.repositoryVnet.subnets.repository.name -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Route table attached"
+} else {
+    Add-LogMessage -Level Fatal "Attaching route table failed!"
+}
+
+
+# Peer repository vnet to SHM vnet
+# --------------------------------
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
+Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
+
 
 Enable-AzVM -Name $vmName -ResourceGroupName $config.repository.rg
 
