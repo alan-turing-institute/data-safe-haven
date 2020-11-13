@@ -54,6 +54,28 @@
                         ]
                     },
                     {
+                        "name": "AllowUbuntuUpdate",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "database.clamav.net",
+                            "packages.microsoft.com",
+                            "download.mono-project.com",
+                            "developer.download.nvidia.com",
+                            "packagecloud.io",
+                            "apt.postgresql.org",
+                            "cloud.r-project.org",
+                            "security.ubuntu.com",
+                            "archive.ubuntu.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowCertificateStatusCheck",
                         "protocols": [
                             "http:80"
