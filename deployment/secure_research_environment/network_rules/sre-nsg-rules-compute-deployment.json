@@ -27,7 +27,7 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": "{{shm.time.ntp.serverAddresses}}",
+        "destinationAddressPrefix": [{{shm.time.ntp.serverAddresses}}],
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 1000,
@@ -68,9 +68,9 @@
         "direction": "Outbound",
         "priority": 3500,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
-    }
+    },
     {
         "name": "AllowInternetOutbound",
         "access": "Allow",
@@ -80,7 +80,7 @@
         "direction": "Outbound",
         "priority": 4000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     },
     {

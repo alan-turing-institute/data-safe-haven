@@ -31,6 +31,7 @@ function Expand-MustacheTemplate {
         if ($null -eq $value) {
             Add-LogMessage -Level Fatal "No value for '$tagKey' found in Parameters hashtable."
         } else {
+            if ($value -is [array]) { $value = "'" + ($value -join "', '") + "'" }
             $Template = $Template.Replace($tag, $value)
         }
     }

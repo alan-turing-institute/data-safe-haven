@@ -3,7 +3,7 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": "{{shm.time.ntp.serverAddresses}}",
+        "destinationAddressPrefix": [{{shm.time.ntp.serverAddresses}}],
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 1000,
@@ -56,11 +56,11 @@
         "direction": "Outbound",
         "priority": 4000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     },
     {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatfromDnsOutbound",
+        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatformDnsOutbound",
         "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
         "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
         "destinationAddressPrefix": "AzurePlatformDNS",
@@ -68,7 +68,7 @@
         "direction": "Outbound",
         "priority": 4001,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     },
     {

@@ -251,7 +251,7 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $r
 # ------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute-deployment.json") -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
 
 
 # Check that VNET and subnet exist
