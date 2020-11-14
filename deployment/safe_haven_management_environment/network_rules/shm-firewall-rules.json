@@ -69,10 +69,26 @@
                             "apt.postgresql.org",
                             "cloud.r-project.org",
                             "security.ubuntu.com",
-                            "archive.ubuntu.com"
+                            "archive.ubuntu.com",
+                            "azure.archive.ubuntu.com",
+                            "changelogs.ubuntu.com"
                         ],
                         "sourceAddresses": [
                             "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowDocker",
+                        "protocols": [
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.docker.com",
+                            "*.docker.io"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
