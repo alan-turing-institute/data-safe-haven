@@ -81,6 +81,8 @@ function Grant-ComputerRegistrationPermissions {
     $success = $success -and $?
     $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;servicePrincipalName;computer"
     $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;userPrincipalName;computer"
+    $success = $success -and $?
     if ($success) {
         Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to '${UserPrincipalName}'"
     } else {
