@@ -291,13 +291,10 @@ function Deploy-FirewallApplicationRule {
         [switch]$LocalChangeOnly
     )
     Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
-    if ($TargetTag) {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
-        $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
-    } else {
-        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetFqdn' is set on $($Firewall.Name)..."
-        $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
-    }
+    $params = @{}
+    if ($TargetTag) { $params["FqdnTag"] = $TargetTag }
+    if ($TargetFqdn) { $params["TargetFqdn"] = $TargetFqdn }
+    $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol @params
     try {
         $ruleCollection = $Firewall.GetApplicationRuleCollectionByName($CollectionName)
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
@@ -315,7 +312,7 @@ function Deploy-FirewallApplicationRule {
     try {
         $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
         if ($LocalChangeOnly) {
-            Add-LogMessage -Level InfoSuccess "Ensured that application rule '$Name' exists on local firewall object only."
+            Add-LogMessage -Level InfoSuccess "Added application rule '$Name' to set of rules to update on remote firewall."
         } else {
             $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
             Add-LogMessage -Level Success "Ensured that application rule '$Name' exists and updated remote firewall."
@@ -355,7 +352,7 @@ function Deploy-FirewallNetworkRule {
         [switch]$LocalChangeOnly
     )
     $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
-    Add-LogMessage -Level Info "Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
+    Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
     try {
         $ruleCollection = $Firewall.GetNetworkRuleCollectionByName($CollectionName)
         Add-LogMessage -Level InfoSuccess "Network rule collection '$CollectionName' already exists"
@@ -374,7 +371,7 @@ function Deploy-FirewallNetworkRule {
     try {
         $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
         if ($LocalChangeOnly) {
-            Add-LogMessage -Level InfoSuccess "Ensured that network rule '$Name' exists on local firewall object only."
+            Add-LogMessage -Level InfoSuccess "Added network rule '$Name' to set of rules to update on remote firewall."
         } else {
             $Firewall = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
             Add-LogMessage -Level Success "Ensured that network rule '$Name' exists and updated remote firewall."
