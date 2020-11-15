@@ -55,6 +55,7 @@ Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
     Replace("<dc1-ip-address>", $config.dc.ip).
     Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
+    Replace("<ntp-server-ip-addresses>", $($config.time.ntp.serverAddresses -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
@@ -114,7 +115,13 @@ Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
-        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
+        $params = @{}
+        if ($rule.protocols) {
+            $params["Protocol"] = @($rule.protocols | ForEach-Object { $_.Split(":")[0] })
+            $params["DestinationPort"] = @($rule.protocols | ForEach-Object { $_.Split(":")[1] })
+        }
+        if ($rule.targetAddresses) { $params["DestinationAddress"] = $rule.targetAddresses }
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
 if (-not $rules.networkRuleCollections) {

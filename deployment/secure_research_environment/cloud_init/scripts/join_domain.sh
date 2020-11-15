@@ -14,8 +14,8 @@ VM_IPADDRESS=$5
 echo ">=== Current timezone... ===<"
 echo "Date:     $(date)"
 echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
-echo ">=== Current NTP servers... ===<"
-timedatectl show-timesync --all
+echo ">=== Current time synchronisation status... ===<"
+systemctl status systemd-timesyncd
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
 echo ">=== Setting hostname in /etc/hostname... ===<"

@@ -15,7 +15,31 @@
             }
         }
     ],
-    "networkRuleCollections": [],
+    "networkRuleCollections": [
+        {
+            "name": "shm-<shm-id>-allow",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "UDP:123"
+                        ],
+                        "targetAddresses": [
+                            "<ntp-server-ip-addresses>"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
     "applicationRuleCollections": [
         {
             "name": "shm-<shm-id>-allow",
@@ -30,7 +54,7 @@
                         "protocols": [
                             "http:80",
                             "https:443"
-                       ],
+                        ],
                         "fqdnTags": [],
                         "targetFqdns": [
                             "windowsupdate.microsoft.com",
