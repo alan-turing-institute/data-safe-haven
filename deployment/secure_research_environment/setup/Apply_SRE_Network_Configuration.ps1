@@ -135,7 +135,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scr
 foreach ($vmName in $computeVmNames) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
     $params = @{
-        CRAN_MIRROR_IP = "`"$($addresses.cran.url)`""
+        CRAN_MIRROR_INDEX_URL = "`"$($addresses.cran.url)`""
         PYPI_MIRROR_INDEX = "`"$($addresses.pypi.index)`""
         PYPI_MIRROR_INDEX_URL = "`"$($addresses.pypi.indexUrl)`""
         PYPI_MIRROR_HOST = "`"$($addresses.pypi.host)`""

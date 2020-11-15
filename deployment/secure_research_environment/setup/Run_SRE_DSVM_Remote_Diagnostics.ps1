@@ -23,6 +23,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
 $params = @{
     DOMAIN_CONTROLLER = $config.shm.dc.fqdn
+    DOMAIN_JOIN_OU    = "`"$($config.shm.domain.ous.linuxServers.path)`""
     DOMAIN_JOIN_USER  = $config.shm.users.computerManagers.linuxServers.samAccountName
     DOMAIN_LOWER      = $config.shm.domain.fqdn
     LDAP_SEARCH_USER  = $config.sre.users.serviceAccounts.ldapSearch.samAccountName

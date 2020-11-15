@@ -522,6 +522,9 @@
         "data": {},
         "databases": {
           "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES"
+        },
+        "deployment": {
+          "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT"
         }
       },
       "vnet": {
@@ -541,6 +544,11 @@
             "cidr": "10.151.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": "databases"
+          },
+          "deployment": {
+            "cidr": "10.151.5.0/24",
+            "name": "DeploymentSubnet",
+            "nsg": "deployment"
           },
           "identity": {
             "cidr": "10.151.0.0/24",

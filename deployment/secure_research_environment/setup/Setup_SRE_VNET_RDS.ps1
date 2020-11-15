@@ -30,6 +30,7 @@ $sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
+$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
 

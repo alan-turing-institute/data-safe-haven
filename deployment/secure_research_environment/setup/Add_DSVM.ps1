@@ -22,35 +22,6 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
-# Function to set DNS resolution rules on the SHM DC
-# --------------------------------------------------
-function Set-DnsResolutionRules {
-    param(
-        [Parameter(HelpMessage = "SRE ID")]
-        $sreId,
-        [Parameter(HelpMessage = "Blocked CIDRs")]
-        $blockedCidrs,
-        [Parameter(HelpMessage = "CIDRs to exempt")]
-        $exceptionCidrs,
-        [Parameter(HelpMessage = "DNS server names")]
-        $dnsServerNames,
-        [Parameter(HelpMessage = "DNS servers resource group")]
-        $dnsServerResourceGroup
-    )
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
-    $params = @{
-        sreId                  = "$sreId"
-        blockedCidrsList       = "$($blockedCidrs -join ',')"
-        exceptionCidrsList     = "$($exceptionCidrs -join ',')"
-    }
-    foreach ($dnsServerName in $dnsServerNames) {
-        Add-LogMessage -Level Info "Setting external DNS resolution for '$blockedCidrs' via ${dnsServerName}..."
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $dnsServerResourceGroup -Parameter $params
-        Write-Output $result.Value
-    }
-}
-
-
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
@@ -58,29 +29,24 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Set common variables
-# --------------------
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+# Set VM name and size
+# We need to ensure that the start of the name is unique as LDAP will truncate after 15 characters
+# ------------------------------------------------------------------------------------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
-
-
-# Set VM name including the image version.
-# As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
-# -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
 # Check whether this IP address has been used.
 # --------------------------------------------
-$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
+$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
 if ($existingNic) {
-    Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+    Add-LogMessage -Level Info "Found an existing network card with IP address '$finalIpAddress'"
     if ($upgrade) {
         Add-LogMessage -Level Info "This NIC will be removed in the upgrade process"
     } else {
         if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
+            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. No further action will be taken"
             $null = Set-AzContext -Context $originalContext
             exit 0
         } else {
@@ -269,11 +235,31 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Ensure that runtime NSG exists and required rules are set
+# Check that VNET and subnets exist
+# ---------------------------------
+Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
+try {
+    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
+    Add-LogMessage -Level InfoSuccess "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
+} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
+}
+$computeSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
+$deploymentSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
+
+
+# Get deployment and final IP addresses
+# -------------------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+
+
+# Ensure that compute NSG exists and required rules are set
 # ---------------------------------------------------------
-$secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$computeNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
+$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg -VirtualNetwork $vnet
 
 
 # Ensure that deployment NSG exists and required rules are set
@@ -281,24 +267,7 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $r
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute-deployment.json") -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
-
-
-# Check that VNET and subnet exist
-# --------------------------------
-Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-try {
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
-}
-Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.compute.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.compute.name }
-if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.compute.name)' could not be found in virtual network '$($vnet.Name)'!"
-}
-Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
+$deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg -VirtualNetwork $vnet
 
 
 # Set mirror URLs
@@ -387,14 +356,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
     Replace("<timezone>", $config.sre.time.timezone.linux).
     Replace("<vm-hostname>", $vmName).
-    Replace("<vm-ipaddress>", $vmIpAddress)
-
-
-# Deploy NIC and attach it to the deployment NSG
-# ----------------------------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-$vmNic.NetworkSecurityGroup = $deploymentNsg
-$null = $vmNic | Set-AzNetworkInterface
+    Replace("<vm-ipaddress>", $finalIpAddress)
 
 
 # Deploy data disks
@@ -423,19 +385,9 @@ if ($upgrade) {
 }
 
 
-# Temporarily allow external DNS resolution for this DSVM via SHM DNS servers
-# ---------------------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-Set-DnsResolutionRules -sreId $config.sre.id `
-                       -blockedCidrs @($config.sre.network.vnet.subnets.compute.cidr) `
-                       -exceptionCidrs @("$($config.sre.dataserver.ip)/32", "${vmIpAddress}/32") `
-                       -dnsServerNames @($config.shm.dc.vmName, $config.shm.dcb.vmName) `
-                       -dnsServerResourceGroup $config.shm.dc.rg
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-
 # Deploy the VM
 # -------------
+$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     Name                   = $vmName
@@ -445,7 +397,7 @@ $params = @{
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.sre.location
-    NicId                  = $vmNic.Id
+    NicId                  = $networkCard.Id
     OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
@@ -455,15 +407,16 @@ $params = @{
 $null = Deploy-UbuntuVirtualMachine @params
 
 
-# Block external DNS resolution for DSVMs via SHM DNS servers
-# -----------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-Set-DnsResolutionRules -sreId $config.sre.id `
-                       -blockedCidrs @($config.sre.network.vnet.subnets.compute.cidr) `
-                       -exceptionCidrs @("$($config.sre.dataserver.ip)/32") `
-                       -dnsServerNames @($config.shm.dc.vmName, $config.shm.dcb.vmName) `
-                       -dnsServerResourceGroup $config.shm.dc.rg
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+# Change subnets and IP address while the VM is off
+# -------------------------------------------------
+$networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
+$networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
+$null = $networkCard | Set-AzNetworkInterface
+
+
+# Restart after the networking switch
+# -----------------------------------
+Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Remove snapshots
@@ -479,17 +432,6 @@ if ($upgrade) {
         }
     }
 }
-
-
-# VM must be off for us to switch NSG
-# -----------------------------------
-Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
-Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.dsvm.rg -NSGName $secureNsg.Name -NsgResourceGroupName $config.sre.network.vnet.rg
-
-
-# Restart after the NSG switch
-# ----------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Create local zip file
@@ -534,6 +476,21 @@ Write-Output $result.Value
 # Run remote diagnostic scripts
 # -----------------------------
 Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
+
+
+# Update DNS record on the SHM for this VM
+# ----------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$vmName'..."
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
+$params = @{
+    Fqdn = $config.shm.domain.fqdn
+    HostName = $vmName
+    IpAddress = $finalIpAddress
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Get private IP address for this machine

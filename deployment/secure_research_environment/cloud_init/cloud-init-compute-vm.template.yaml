@@ -454,9 +454,7 @@ runcmd:
   - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
   - echo "user_allow_other" >> /tmp/allow.txt
   - mv /tmp/allow.txt /etc/fuse.conf
-  - systemctl start data.mount
   - systemctl enable data.automount
-  - systemctl start output.mount
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
   - echo ">=== /etc/fstab ===<"

@@ -22,6 +22,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # ----------------------------------------------------------------
 Add-LogMessage -Level Info "Finding compute VM with last IP octet: $ipLastOctet"
 $vmId = Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
+$vmIpAddress = (Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }).IpConfigurations.PrivateIpAddress
 $vm = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Where-Object { $_.Id -eq $vmId }
 if ($?) {
     Add-LogMessage -Level Success "Found compute VM '$($vm.Name)'"
@@ -80,6 +81,23 @@ if ($success) {
 } else {
     Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
 }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
+# Update DNS record on the SHM for this VM
+# ----------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$($vm.Name)'..."
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
+$params = @{
+    Fqdn = $config.shm.domain.fqdn
+    HostName = $vm.Name
+    IpAddress = $vmIpAddress
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
 
 
 # Switch back to original subscription

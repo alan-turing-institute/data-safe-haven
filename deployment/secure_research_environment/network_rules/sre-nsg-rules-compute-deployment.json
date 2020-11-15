@@ -24,15 +24,15 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowNTPOutbound",
+        "name": "AllowInternetOutbound",
         "access": "Allow",
-        "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": [{{shm.time.ntp.serverAddresses}}],
+        "description": "Allow outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 1000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     },
     {
@@ -48,37 +48,13 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "DenyPrivateDataEndpointsOutbound",
-        "access": "Deny",
-        "description": "Deny outbound connections to private endpoints in the VNet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 3000,
-        "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
         "name": "DenyVirtualNetworkOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic to the virtual network.",
         "destinationAddressPrefix": "VirtualNetwork",
         "destinationPortRange": "*",
         "direction": "Outbound",
-        "priority": 3500,
-        "protocol": "*",
-        "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowInternetOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to internet",
-        "destinationAddressPrefix": "Internet",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 4000,
+        "priority": 3000,
         "protocol": "*",
         "sourceAddressPrefix": "*",
         "sourcePortRange": "*"

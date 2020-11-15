@@ -12,7 +12,7 @@ param(
 )
 
 # Check whether the zone exists otherwise create it
-if (Get-DnsServerZone -name $Name -ErrorAction SilentlyContinue | Where-Object { $_.ZoneType -eq "Primary" }) {
+if (Get-DnsServerZone -Name $Name -ErrorAction SilentlyContinue | Where-Object { $_.ZoneType -eq "Primary" }) {
     Write-Output "DNS zone $Name already exists"
 } else {
     Write-Output " [ ] Creating DNS zone $Name..."

@@ -104,12 +104,20 @@ function Add-SreConfig {
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
                 }
+                deployment   = [ordered]@{
+                    name = "DeploymentSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
+                    nsg  = "deployment"
+                }
             }
         }
         nsg  = [ordered]@{
             data      = [ordered]@{}
             databases = [ordered]@{
                 name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+            }
+            deployment = [ordered]@{
+                name = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
             }
         }
     }

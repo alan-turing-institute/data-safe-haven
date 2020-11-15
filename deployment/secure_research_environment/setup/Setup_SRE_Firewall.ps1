@@ -58,6 +58,7 @@ foreach ($route in $rules.routes) {
 # --------------------------------------------------------------------
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.compute.name -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.databases.name -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.deployment.name -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.identity.name -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 
 
