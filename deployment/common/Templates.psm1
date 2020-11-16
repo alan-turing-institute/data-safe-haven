@@ -16,7 +16,9 @@ function Expand-MustacheTemplate {
         [Parameter(Mandatory = $false, HelpMessage = "Start delimiter.")]
         [string]$StartDelimeter = "{{",
         [Parameter(Mandatory = $false, HelpMessage = "End delimiter.")]
-        [string]$EndDelimiter = "}}"
+        [string]$EndDelimiter = "}}",
+        [Parameter(Mandatory = $false, HelpMessage = "Delimiter to wrap around each element of an array")]
+        [string]$ArrayJoiner = $null
     )
     # If we are given a path then we need to extract the content
     if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
@@ -31,7 +33,7 @@ function Expand-MustacheTemplate {
         if ($null -eq $value) {
             Add-LogMessage -Level Fatal "No value for '$tagKey' found in Parameters hashtable."
         } else {
-            if ($value -is [array]) { $value = "'" + ($value -join "', '") + "'" }
+            if (($value -is [array]) -and $ArrayJoiner) { $value = $value -join "${ArrayJoiner}, ${ArrayJoiner}" }
             $Template = $Template.Replace($tag, $value)
         }
     }
@@ -51,12 +53,14 @@ function Get-JsonFromMustacheTemplate {
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable (can be multi-level) with parameter key-value pairs.")]
         [System.Collections.IDictionary]$Parameters,
         [Parameter(Mandatory = $false, HelpMessage = "Return patched JSON as hashtable.")]
-        [switch]$AsHashtable
+        [switch]$AsHashtable,
+        [Parameter(Mandatory = $false, HelpMessage = "Delimiter to wrap around each element of an array")]
+        [string]$ArrayJoiner = $null
     )
     if ($Template) {
-        $templateJson = Expand-MustacheTemplate -Template $Template -Parameters $Parameters
+        $templateJson = Expand-MustacheTemplate -Template $Template -ArrayJoiner $ArrayJoiner -Parameters $Parameters
     } else {
-        $templateJson = Expand-MustacheTemplate -TemplatePath $TemplatePath -Parameters $Parameters
+        $templateJson = Expand-MustacheTemplate -TemplatePath $TemplatePath -ArrayJoiner $ArrayJoiner -Parameters $Parameters
     }
     return ($templateJson | ConvertFrom-Json -AsHashtable:$AsHashtable)
 }

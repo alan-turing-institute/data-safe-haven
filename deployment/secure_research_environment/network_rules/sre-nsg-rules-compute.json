@@ -3,7 +3,7 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": [{{shm.time.ntp.serverAddresses}}],
+        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 1000,
