@@ -323,11 +323,18 @@ On your **deployment machine**.
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
 
-On the **SHM Domain Controller**.
+Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you set this up when setting up the SHM):
++ Double click on the desktop named with the Private IP address from the `DC1-SHM-<SHM ID>` VM
+  + You can remind yourself of this by finding the VM in the Azure Portal under the `RG_SHM_<SHM ID>_DC` resource group
++ Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
+  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+  + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
+  + The password in the `shm-<SHM ID>-domain-admin-password` secret.
++ If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 #### Create a new non-privileged user account for yourself
 
-+ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-ad-sync) from the [SHM deployment guide](./how-to-deploy-shm.md). In brief these involve:
++ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 
