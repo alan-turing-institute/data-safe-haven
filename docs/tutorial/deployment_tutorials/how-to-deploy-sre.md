@@ -332,25 +332,16 @@ Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Rem
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-#### Create a new non-privileged user account for yourself
+If you already set up a non-privileged user account when setting up the SHM, then skip the following step, but verify you have done this first as below:
+
+<details>
+<summary><strong>Set up a non-privileged user account</strong></summary>
 
 + Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 
 This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
-
-#### Ensure that your user account is in the correct Security Group
-
-+ Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
-+ Right click the `SG <SRE ID> Research Users` security group and select `Properties`
-+ Click on the `Members` tab.
-+ If your user is not already listed here you must add them to the group
-  + Click the `Add` button
-  + Enter the start of your username and click `Check names`
-  + Select your username and click `Ok`
-  + Click `Ok` again to exit the `Add users` dialogue
-+ Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
 
 #### Ensure that your user account has MFA enabled
 
@@ -362,7 +353,10 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 + Select your custom Azure Active Directory in the list of directories
 + This should cause the portal to reload
 
-You can now verify the following things
+</details>
+
+<details>
+<summary><strong>Verify non-privileged user account is set up</strong></summary>
 
 + The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
   + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account), and ensure that `Settings` -> `Usage Location` is set.
@@ -370,6 +364,20 @@ You can now verify the following things
   + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 + MFA must be enabled for the user.
   + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication).
+
+</details>
+
+### Ensure that your non-privileged user account is in the correct Security Group
+
++ Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
++ Right click the `SG <SRE ID> Research Users` security group and select `Properties`
++ Click on the `Members` tab.
++ If your user is not already listed here you must add them to the group
+  + Click the `Add` button
+  + Enter the start of your username and click `Check names`
+  + Select your username and click `Ok`
+  + Click `Ok` again to exit the `Add users` dialogue
++ Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
 
 ### :mountain_bicyclist: Test the RDS using a non-privileged user account
 
