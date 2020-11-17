@@ -367,9 +367,10 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 </details>
 
-### Ensure that your non-privileged user account is in the correct Security Group
+#### Ensure that your non-privileged user account is in the correct Security Group
 
-+ Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
++ In Server Manager click `Tools > Active Directory Users and Computers`
++ In `Active Directory Users and Computers`, expand the domain in the left hand panel click `Safe Haven Security Groups`
 + Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 + Click on the `Members` tab.
 + If your user is not already listed here you must add them to the group
