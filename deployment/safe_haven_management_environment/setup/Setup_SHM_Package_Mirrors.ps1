@@ -29,15 +29,15 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 
 # Set up the VNet with subnets for internal and external package mirrors
 # ----------------------------------------------------------------------
-$vnetPkgMirrors = Deploy-VirtualNetwork -Name $config.network.mirrorVnets["tier${tier}"].name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $config.network.mirrorVnets["tier${tier}"].cidr -Location $config.location
-$subnetExternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.external.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.external.cidr
-$subnetInternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.internal.cidr
+$mirrorConfig = $config.network.mirrorVnets["tier${tier}"]
+$vnetPkgMirrors = Deploy-VirtualNetwork -Name $mirrorConfig.name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $mirrorConfig.cidr -Location $config.location
+$subnetExternal = Deploy-Subnet -Name $mirrorConfig.subnets.external.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.external.cidr
+$subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.internal.cidr
 
 
 # Set up the NSG for external package mirrors
 # -------------------------------------------
-$nsgExternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.external.nsg].name
-$nsgExternal = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$nsgExternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.external.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `
@@ -90,16 +90,15 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging 
                              -DestinationPortRange 22, 873
 $subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$nsgExternalName' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' failed!"
 }
 
 
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
-$nsgInternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.internal.nsg].name
-$nsgInternal = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$nsgInternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.internal.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "RsyncFromExternal" `
                              -Description "Allow ports 22 and 873 for rsync" `
@@ -146,9 +145,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -DestinationPortRange *
 $subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$nsgInternalName' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' failed!"
 }
 
 

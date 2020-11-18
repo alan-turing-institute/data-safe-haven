@@ -641,9 +641,8 @@ function Get-ShmFullConfig {
     $shmPrefixOctets = $shmIpPrefix.Split(".")
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
-    $shmMirrorPrefixes = @{2 = "10.20.2"; 3 = "10.20.3" }
     $shm.network = [ordered]@{
-        vnet        = [ordered]@{
+        vnet          = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -664,7 +663,7 @@ function Get-ShmFullConfig {
                 }
             }
         }
-        vpn         = [ordered]@{
+        vpn            = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         repositoryVnet = [ordered]@{
@@ -674,48 +673,39 @@ function Get-ShmFullConfig {
                 repository = [ordered]@{
                     name = "RepositorySubnet"
                     cidr = "10.30.1.0/24"
-                    nsg = "repository"
+                    nsg = [ordered]@{
+                        name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+                    }
                 }
             }
         }
         mirrorVnets = [ordered]@{}
-        nsg         = [ordered]@{
-            repository = [ordered]@{
-                name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            }
-            externalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
-            }
-            externalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
-            }
-            internalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
-            }
-            internalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
-            }
-        }
     }
     # Set package mirror networking information
     foreach ($tier in @(2, 3)) {
+        $shmMirrorPrefix = "10.20.${tier}"
         $shm.network.mirrorVnets["tier${tier}"] = [ordered]@{
             name    = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-            cidr    = "$($shmMirrorPrefixes[$tier]).0/24"
+            cidr    = "${shmMirrorPrefix}.0/24"
             subnets = [ordered]@{
                 external = [ordered]@{
                     name = "ExternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).0/28"
-                    nsg  = "externalPackageMirrorsTier${tier}"
+                    cidr = "${shmMirrorPrefix}.0/28"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                    }
                 }
                 internal = [ordered]@{
                     name = "InternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).16/28"
-                    nsg  = "internalPackageMirrorsTier${tier}"
+                    cidr = "${shmMirrorPrefix}.16/28"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                    }
                 }
             }
         }
     }
+
 
     # Firewall config
     # ---------------

@@ -73,8 +73,7 @@ Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGro
 
 # Set up the NSG for Nexus repository
 # -----------------------------------
-$nsgName = $config.network.nsg.repository.name
-$nsgRepository = Deploy-NetworkSecurityGroup -Name $nsgName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$nsgRepository = Deploy-NetworkSecurityGroup -Name $config.network.repositoryVnet.subnets.repository.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
                              -Name "AllowRepositoryAccessFromDSVMs" `
                              -Description "Allow port 80 (nexus) so that DSVM users can get packages" `
@@ -121,9 +120,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
                              -DestinationPortRange *
 $subnetRepository = Set-SubnetNetworkSecurityGroup -Subnet $subnetRepository -NetworkSecurityGroup $nsgRepository -VirtualNetwork $vnetRepository
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$nsgName' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($config.network.repositoryVnet.subnets.repository.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$nsgName' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.repositoryVnet.subnets.repository.name)' failed!"
 }
 
 
