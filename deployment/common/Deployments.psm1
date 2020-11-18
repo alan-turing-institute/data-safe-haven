@@ -1434,9 +1434,12 @@ function Set-SubnetNetworkSecurityGroup {
         $Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
         $NetworkSecurityGroup,
-        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that the subnet belongs to")]
+        [Parameter(Mandatory = $false, HelpMessage = "Virtual network that the subnet belongs to")]
         $VirtualNetwork
     )
+    if (-not $VirtualNetwork) {
+        $VirtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $Subnet
+    }
     Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
     $null = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
     $success = $?
