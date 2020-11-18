@@ -98,26 +98,27 @@ function Add-SreConfig {
                 databases = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
-                    nsg  = "databases"
+                    nsg  = [ordered]@{
+                        name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+                        rules = "sre-nsg-rules-databases.json"
+                    }
                 }
                 compute   = [ordered]@{
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
+                        rules = "sre-nsg-rules-compute.json"
+                    }
                 }
                 deployment   = [ordered]@{
                     name = "DeploymentSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
-                    nsg  = "deployment"
+                    nsg  = [ordered]@{
+                        name = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
+                        rules = "sre-nsg-rules-compute-deployment.json"
+                    }
                 }
-            }
-        }
-        nsg  = [ordered]@{
-            data      = [ordered]@{}
-            databases = [ordered]@{
-                name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
-            }
-            deployment = [ordered]@{
-                name = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
             }
         }
     }
@@ -411,8 +412,6 @@ function Add-SreConfig {
     $config.sre.dsvm = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
-        nsg                     = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
-        deploymentNsg           = "$($config.sre.nsgPrefix)_COMPUTE_DEPLOYMENT".ToUpper()
         vmImage                 = [ordered]@{
             subscription = $config.shm.dsvmImage.subscription
             rg           = $config.shm.dsvmImage.gallery.rg

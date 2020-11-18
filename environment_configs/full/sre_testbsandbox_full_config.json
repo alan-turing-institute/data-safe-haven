@@ -260,10 +260,6 @@
           "identity": {
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet"
-          },
-          "web": {
-            "cidr": "10.0.1.0/24",
-            "name": "WebSubnet"
           }
         }
       },
@@ -518,15 +514,6 @@
     },
     "location": "uksouth",
     "network": {
-      "nsg": {
-        "data": {},
-        "databases": {
-          "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES"
-        },
-        "deployment": {
-          "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT"
-        }
-      },
       "vnet": {
         "cidr": "10.151.0.0/21",
         "name": "VNET_SHM_TESTB_SRE_SANDBOX",
@@ -534,7 +521,11 @@
         "subnets": {
           "compute": {
             "cidr": "10.151.4.0/24",
-            "name": "ComputeSubnet"
+            "name": "ComputeSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
+              "rules": "sre-nsg-rules-compute.json"
+            }
           },
           "data": {
             "cidr": "10.151.2.0/24",
@@ -543,12 +534,18 @@
           "databases": {
             "cidr": "10.151.3.0/24",
             "name": "DatabasesSubnet",
-            "nsg": "databases"
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES",
+              "rules": "sre-nsg-rules-databases.json"
+            }
           },
           "deployment": {
             "cidr": "10.151.5.0/24",
             "name": "DeploymentSubnet",
-            "nsg": "deployment"
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT",
+              "rules": "sre-nsg-rules-compute-deployment.json"
+            }
           },
           "identity": {
             "cidr": "10.151.0.0/24",

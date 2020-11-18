@@ -33,62 +33,17 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
     $databaseCfg = $config.sre.databases[$dbConfigName]
     $subnetCfg = $config.sre.network.vnet.subnets[$databaseCfg.subnet]
-    $nsgCfg = $config.sre.network.nsg[$subnetCfg.nsg]
 
-    # Ensure that subnet exists
-    # -------------------------
+    # Ensure that the NSG for this subnet exists and required rules are set
+    # ---------------------------------------------------------------------
+    $nsg = Deploy-NetworkSecurityGroup -Name $subnetCfg.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $subnetCfg.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $nsg -Rules $rules
+
+    # Ensure that subnet exists and that the NSG is attached
+    # ------------------------------------------------------
     $subnet = Deploy-Subnet -Name $subnetCfg.name -VirtualNetwork $virtualNetwork -AddressPrefix $subnetCfg.cidr
-
-
-    # Set up the NSG for this subnet
-    # ------------------------------
-    $nsg = Deploy-NetworkSecurityGroup -Name $nsgCfg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                 -Name "InboundAllowVNet" `
-                                 -Description "Inbound allow SRE VNet" `
-                                 -Priority 3000 `
-                                 -Direction Inbound `
-                                 -Access Allow -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix $subnetCfg.cidr `
-                                 -DestinationPortRange *
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                 -Name "InboundDenyAll" `
-                                 -Description "Inbound deny all" `
-                                 -Priority 4000 `
-                                 -Direction Inbound `
-                                 -Access Deny -Protocol * `
-                                 -SourceAddressPrefix * `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix * `
-                                 -DestinationPortRange *
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                 -Name "OutboundAllowNTP" `
-                                 -Description "Outbound allow connections to NTP servers" `
-                                 -Priority 2200 `
-                                 -Direction Outbound `
-                                 -Access Allow `
-                                 -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                                 -DestinationPortRange 123
-    Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                 -Name "OutboundDenyInternet" `
-                                 -Description "Outbound deny internet" `
-                                 -Priority 4000 `
-                                 -Direction Outbound `
-                                 -Access Deny -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork `
-                                 -SourcePortRange * `
-                                 -DestinationAddressPrefix Internet `
-                                 -DestinationPortRange *
-
-    # Attach the NSG to the appropriate subnet
-    # ----------------------------------------
-    $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
-
+    $subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
 
     try {
         # Temporarily allow outbound internet during deployment
@@ -263,7 +218,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
     } finally {
         # Remove temporary NSG rules
-        Add-LogMessage -Level Info "Removing temporary outbound internet access from $($databaseCfg.ip)..."
+        Add-LogMessage -Level Warning "Removing temporary outbound internet access from $($databaseCfg.ip)..."
         $null = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
         $null = $nsg | Set-AzNetworkSecurityGroup
     }

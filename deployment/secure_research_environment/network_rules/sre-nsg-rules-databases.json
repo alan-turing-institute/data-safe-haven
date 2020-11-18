@@ -1,0 +1,50 @@
+[
+    {
+        "name": "AllowVNetInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from Safe Haven virtual network",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 3000,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllInbound",
+        "access": "Deny",
+        "description": "Deny inbound connections from anywhere",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyInternetOutbound",
+        "access": "Deny",
+        "description": "Deny outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]
