@@ -20,14 +20,6 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Block direct DNS resolution from DSVMs via Azure Platform DNS
-# -------------------------------------------------------------
-Add-LogMessage -Level Info "Blocking direct DNS from DSVMs via Azure Platform DNS..."
-$computeNsg = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
-
-
 # Block external DNS resolution for DSVMs via SHM DNS servers
 # -----------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName

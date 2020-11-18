@@ -83,27 +83,27 @@ function Add-SreConfig {
             name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
-                identity  = [ordered]@{
+                identity   = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${sreBasePrefix}.${sreThirdOctet}.0/24"
                 }
-                rds       = [ordered]@{
+                rds        = [ordered]@{
                     name = "RDSSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
-                data      = [ordered]@{
+                data       = [ordered]@{
                     name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
-                databases = [ordered]@{
+                databases  = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
                     nsg  = [ordered]@{
-                        name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+                        name  = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
                         rules = "sre-nsg-rules-databases.json"
                     }
                 }
-                compute   = [ordered]@{
+                compute    = [ordered]@{
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
                     nsg  = [ordered]@{
@@ -111,11 +111,11 @@ function Add-SreConfig {
                         rules = "sre-nsg-rules-compute.json"
                     }
                 }
-                deployment   = [ordered]@{
+                deployment = [ordered]@{
                     name = "DeploymentSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
                     nsg  = [ordered]@{
-                        name = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
+                        name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
                         rules = "sre-nsg-rules-compute-deployment.json"
                     }
                 }
@@ -152,21 +152,21 @@ function Add-SreConfig {
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
-        userdata = [ordered]@{
-            account    = [ordered]@{
-                name = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        userdata        = [ordered]@{
+            account = [ordered]@{
+                name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
                 performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "hot"
                 rg          = $storageRg
             }
         }
-        persistentdata = [ordered]@{
+        persistentdata  = [ordered]@{
             account    = [ordered]@{
-                name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
-                performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier  = "hot"
+                name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind        = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                performance        = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier         = "hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
@@ -229,7 +229,10 @@ function Add-SreConfig {
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
-            nsg                     = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
+            nsg                     = [ordered]@{
+                name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
+                rules = "sre-nsg-rules-gateway.json"
+            }
             networkRules            = [ordered]@{}
             disks                   = [ordered]@{
                 data1 = [ordered]@{
@@ -251,7 +254,10 @@ function Add-SreConfig {
             vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
-            nsg                     = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+            nsg                     = [ordered]@{
+                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+                rules = "sre-nsg-rules-session-hosts.json"
+            }
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
@@ -563,7 +569,7 @@ function Get-ShmFullConfig {
         build           = [ordered]@{
             rg     = "RG_SH_BUILD_CANDIDATES"
             nsg    = [ordered]@{
-                name = "NSG_IMAGE_BUILD"
+                name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @(193.60.220.240, 193.60.220.253)
             }
             vnet   = [ordered]@{
@@ -642,7 +648,7 @@ function Get-ShmFullConfig {
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{
-        vnet          = [ordered]@{
+        vnet           = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -667,19 +673,19 @@ function Get-ShmFullConfig {
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         repositoryVnet = [ordered]@{
-            name = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            cidr = "10.30.1.0/24"
+            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+            cidr    = "10.30.1.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
                     name = "RepositorySubnet"
                     cidr = "10.30.1.0/24"
-                    nsg = [ordered]@{
+                    nsg  = [ordered]@{
                         name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
                     }
                 }
             }
         }
-        mirrorVnets = [ordered]@{}
+        mirrorVnets    = [ordered]@{}
     }
     # Set package mirror networking information
     foreach ($tier in @(2, 3)) {
@@ -870,14 +876,14 @@ function Get-ShmFullConfig {
     # Nexus repository VM config
     # --------------------------
     $shm.repository = [ordered]@{
-        rg = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
-        vmSize = "Standard_B2ms"
+        rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
+        vmSize   = "Standard_B2ms"
         diskType = "Standard_LRS"
-        nexus = [ordered]@{
-            adminPasswordSecretName = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
+        nexus    = [ordered]@{
+            adminPasswordSecretName         = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
             nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-nexus-app-admin-password".ToLower()
-            ipAddress = "10.30.1.10"
-            vmName = "NEXUS-REPOSITORY-TIER-2"
+            ipAddress                       = "10.30.1.10"
+            vmName                          = "NEXUS-REPOSITORY-TIER-2"
         }
     }
 

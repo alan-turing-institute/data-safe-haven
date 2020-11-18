@@ -1,0 +1,38 @@
+[
+    {
+        "name": "AllowHttpsInbound",
+        "access": "Allow",
+        "description": "Allow inbound HTTPS connections to RDS server",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "443",
+        "direction": "Inbound",
+        "priority": 100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.rds.gateway.networkRules.allowedSources}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowRadiusAuthenticationRdsToNpsOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to SHM RADIUS server",
+        "destinationAddressPrefix": "{{shm.nps.ip}}",
+        "destinationPortRange": [1645, 1646, 1812, 1813],
+        "direction": "Outbound",
+        "priority": 300,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 2200,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    }
+]

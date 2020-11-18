@@ -32,13 +32,13 @@ Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sr
 # Tier-1 and below have single NSG
 # --------------------------------
 if (@(0, 1).Contains([int]$config.sre.tier)) {
-    $nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
 
     Add-LogMessage -Level Info "Setting inbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "InboundSSHAccess" -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -SourceAddressPrefix $allowedSources
+    $null = Update-NetworkSecurityGroupRule -Name "InboundSSHAccess" -NetworkSecurityGroup $nsgs["compute"] -SourceAddressPrefix $allowedSources
 
     Add-LogMessage -Level Info "Setting outbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
 
 
 # Tier-2 and above have several NSGs
@@ -46,44 +46,47 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
 } else {
     # RDS gateway
     Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs[$config.sre.rds.gateway.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
 
     # RDS sesssion hosts
     Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs[$config.sre.rds.appSessionHost.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
 
     # Data server
     Add-LogMessage -Level Info "Ensure data server is bound to correct NSG..."
     Add-VmToNSG -VMName $config.sre.dataserver.vmName -VmResourceGroupName $config.sre.dataserver.rg -NSGName $config.sre.dataserver.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs[$config.sre.dataserver.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["dataserver"] = Get-AzNetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg
+
+    # Database servers
+    Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
+    $databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
+    $databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"]
 
     # Webapp servers
     Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
     Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
     Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs[$config.sre.webapps.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
     # Compute VMs
     Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
-    $computeVmNames = $(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name })
-    foreach ($vmName in $computeVmNames) {
-        Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.dsvm.rg -NSGName $config.sre.dsvm.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-    }
-    $nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
+    $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"]
 
     # Update NSG rules
     # ----------------
-
     # Update RDS Gateway NSG
     Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "HttpsIn" -NetworkSecurityGroup $nsgs[$config.sre.rds.gateway.nsg] -SourceAddressPrefix $allowedSources
+    $null = Update-NetworkSecurityGroupRule -Name "AllowHttpsInbound" -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
 
     # Update user-facing NSGs
     Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs[$config.sre.webapps.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
 }
 
 
@@ -92,6 +95,10 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
 foreach ($nsgName in $nsgs.Keys) {
     Add-LogMessage -Level Info "NICs associated with $($nsgs[$nsgName].Name):"
     @($nsgs[$nsgName].NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+    foreach ($linkedSubnet in $nsgs[$nsgName].Subnets) {
+        $subnet = Get-Subnet -Name $linkedSubnet.Id.Split("/")[-1] -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+        $null = $subnet.IpConfigurations.Id | Where-Object { $_ } | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Split('/')[-3])" }
+    }
 }
 
 

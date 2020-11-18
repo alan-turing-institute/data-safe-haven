@@ -19,33 +19,6 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Create VNet resource group if it does not exist
-# -----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
-
-
-# Create VNet and subnets
-# -----------------------
-$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
-
-
-# Peer repository vnet to SHM vnet
-# --------------------------------
-Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
-                -Vnet1ResourceGroup $config.sre.network.vnet.rg `
-                -Vnet1SubscriptionName $config.sre.subscriptionName `
-                -Vnet2Name $config.shm.network.vnet.name `
-                -Vnet2ResourceGroup $config.shm.network.vnet.rg `
-                -Vnet2SubscriptionName $config.shm.subscriptionName `
-                -AllowRemoteGatewayFromVNet 2
-
-
 # Set constants used in this script
 # ---------------------------------
 $remoteUploadDir = "C:\Installation"
@@ -91,67 +64,6 @@ $sreStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.a
 $null = Set-AzContext -Subscription $config.shm.subscriptionName
 $shmStorageAccount = Deploy-StorageAccount -Name $config.shm.storage.artifacts.accountName -ResourceGroupName $config.shm.storage.artifacts.rg -Location $config.shm.location
 $null = Set-AzContext -Subscription $config.sre.subscriptionName
-
-
-# Set up the NSGs for the gateway and session hosts
-# -------------------------------------------------
-$nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "HttpsIn" `
-                             -Description "Allow HTTPS inbound to RDS server" `
-                             -Priority 100 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix Internet `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 443
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "RadiusAuthenticationRdsToNps" `
-                             -Description "Authenticate to SHM RADIUS server" `
-                             -Priority 300 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.nps.ip `
-                             -DestinationPortRange 1645, 1646, 1812, 1813
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-$nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
-                             -Name "Deny_Internet" `
-                             -Description "Deny Outbound Internet Access" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange *
 
 
 # Create RDS resource group if it does not exist

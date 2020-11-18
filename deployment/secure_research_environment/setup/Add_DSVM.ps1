@@ -235,33 +235,17 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Check that VNET and subnets exist
-# ---------------------------------
+# Retrieve VNET and subnets
+# -------------------------
 Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
 try {
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
+    $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
     Add-LogMessage -Level InfoSuccess "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
     Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
 }
-$computeSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
-$deploymentSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
-
-
-# Ensure that compute NSG exists and required rules are set
-# ---------------------------------------------------------
-$computeNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.compute.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
-$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg -VirtualNetwork $vnet
-
-
-# Ensure that deployment NSG exists and required rules are set
-# ------------------------------------------------------------
-$deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.deployment.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.deployment.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
-$deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg -VirtualNetwork $vnet
+$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Set mirror URLs
