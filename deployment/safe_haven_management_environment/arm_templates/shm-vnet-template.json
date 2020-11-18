@@ -5,6 +5,9 @@
         "IPAddresses_ExternalNTP": {
             "type": "array"
         },
+        "NSG_Identity_Name": {
+            "type": "string"
+        },
         "P2S_VPN_Certificate": {
             "type": "string"
         },
@@ -29,12 +32,6 @@
         "Subnet_Gateway_CIDR": {
             "type": "string"
         },
-        "Subnet_Web_Name": {
-            "type": "string"
-        },
-        "Subnet_Web_CIDR": {
-            "type": "string"
-        },
         "Virtual_Network_Name": {
             "type": "string"
         },
@@ -51,13 +48,10 @@
             "type": "string"
         }
     },
-    "variables": {
-        "nsgIdentityName": "[concat('NSG_SHM_', toUpper(parameters('Shm_Id')), '_SUBNET_IDENTITY')]"
-    },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[variables('nsgIdentityName')]",
+            "name": "[parameters('NSG_Identity_Name')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -639,16 +633,8 @@
                         "properties": {
                             "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgIdentityName'))]"
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_Identity_Name'))]"
                             },
-                            "serviceEndpoints": [],
-                            "delegations": []
-                        }
-                    },
-                    {
-                        "name": "[parameters('Subnet_Web_Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('Subnet_Web_CIDR')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
@@ -658,7 +644,7 @@
                 "enableVmProtection": false
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgIdentityName'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_Identity_Name'))]"
             ]
         },
         {
@@ -697,28 +683,14 @@
             "properties": {
                 "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgIdentityName'))]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_Identity_Name'))]"
                 },
                 "serviceEndpoints": [],
                 "delegations": []
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgIdentityName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Web_Name'))]",
-            "apiVersion": "2018-10-01",
-            "scale": null,
-            "properties": {
-                "addressPrefix": "[parameters('Subnet_Web_CIDR')]",
-                "serviceEndpoints": [],
-                "delegations": []
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_Identity_Name'))]"
             ]
         }
     ]

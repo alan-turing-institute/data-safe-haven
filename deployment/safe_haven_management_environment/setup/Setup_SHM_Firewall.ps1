@@ -78,7 +78,6 @@ foreach ($route in $rules.routes) {
 # Attach all subnets except the VPN gateway to the firewall route table
 # ---------------------------------------------------------------------
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.identity.name -AddressPrefix $config.network.vnet.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.web.name -AddressPrefix $config.network.vnet.subnets.web.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
 
 
 $ruleNameFilter = "shm-$($config.id)"

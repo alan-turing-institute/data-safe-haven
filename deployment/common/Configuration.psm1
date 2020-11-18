@@ -663,10 +663,6 @@ function Get-ShmFullConfig {
                     name = "GatewaySubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
                 }
-                web      = [ordered]@{
-                    name = "WebSubnet"
-                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
-                }
             }
         }
         vpn         = [ordered]@{
