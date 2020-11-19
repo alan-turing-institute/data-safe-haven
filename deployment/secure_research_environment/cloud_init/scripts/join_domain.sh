@@ -15,7 +15,7 @@ echo ">=== Current timezone... ===<"
 echo "Date:     $(date)"
 echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
 echo ">=== Current time synchronisation status... ===<"
-systemctl status systemd-timesyncd
+systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
 echo ">=== Setting hostname in /etc/hostname... ===<"
