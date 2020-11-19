@@ -98,7 +98,9 @@
                             "changelogs.ubuntu.com"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "<subnet-mirror-tier2-cidr>",
+                            "<subnet-mirror-tier3-cidr>",
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
