@@ -384,7 +384,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 On your **deployment machine**.
 
-+ Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/` ) and log in.
++ Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`, where the first part  of the `<safe haven domain>` is the `<SHM ID>`) and log in with the user name and password you set up for the non-privileged user account.
 + You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 + **NOTE:** The apps will not work until the other servers have been deployed.
 
