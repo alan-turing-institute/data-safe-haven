@@ -92,13 +92,7 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      [users]
-      default-home = /home/%u
-      [active-directory]
-      os-name = Ubuntu Linux
-      os-version = 18.04
-      [<shm-fqdn-lower>]
-      fully-qualified-names = no
+      <realmd.conf>
   - path: "/etc/R/Rprofile.site"
     owner: root:root
     permissions: "0444"
@@ -392,6 +386,8 @@ runcmd:
   - update-locale LANG=en_GB.UTF-8
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
+  - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
+  - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
   - /opt/configuration/configure-dns.sh
   - /opt/configuration/configure-hostname.sh
   - /opt/configuration/configure-pam.sh
@@ -458,9 +454,9 @@ runcmd:
   - /opt/configuration/setup_disk.sh 2 /scratch
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
   - echo ">=== Configure ingress and egress mounts ... ===<"
-  - grep -v "user_allow_other" /etc/fuse.conf > /tmp/allow.txt
-  - echo "user_allow_other" >> /tmp/allow.txt
-  - mv /tmp/allow.txt /etc/fuse.conf
+  - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
+  - echo "user_allow_other" >> /etc/fuse.conf.tmp
+  - mv /etc/fuse.conf.tmp /etc/fuse.conf
   - systemctl enable data.automount
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab

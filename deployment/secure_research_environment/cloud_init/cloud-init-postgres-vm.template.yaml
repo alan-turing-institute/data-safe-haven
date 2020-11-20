@@ -66,6 +66,12 @@ write_files:
     content: |
       <ldap-postgres-service-account-password>
 
+  - path: "/etc/realmd.conf"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <realmd.conf>
+
   - path: "/opt/configuration/configure-dns.sh"
     owner: root:root
     permissions: "0500"
@@ -261,6 +267,8 @@ ntp:
 
 runcmd:
   # Join the domain
+  - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
+  - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
   - /opt/configuration/configure-dns.sh
   - /opt/configuration/configure-hostname.sh
   - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
