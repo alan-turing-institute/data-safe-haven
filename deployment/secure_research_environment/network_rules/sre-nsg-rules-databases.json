@@ -8,7 +8,7 @@
         "direction": "Inbound",
         "priority": 3000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": ["{{shm.network.vpn.cidr}}", "{{sre.network.vnet.subnets.compute.cidr}}"],
         "sourcePortRange": "*"
     },
     {
