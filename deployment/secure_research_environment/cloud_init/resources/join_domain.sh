@@ -1,52 +1,46 @@
-#!/bin/sh
+#! /bin/sh
 
 # Get command line arguments
-if [ $# -ne 5 ]; then
-    echo "$(basename $0) requires five arguments!";
+if [ $# -ne 4 ]; then
+    echo "$(basename $0) requires four arguments!";
 fi
 DOMAIN_FQDN_LOWER=$1
 DOMAIN_JOIN_OU=$2
 DOMAIN_JOIN_USER=$3
 VM_HOSTNAME=$4
-VM_IPADDRESS=$5
 
-# Check timezone and NTP server
-echo ">=== Current timezone... ===<"
-echo "Date:     $(date)"
-echo "Timezone: $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
-echo ">=== Current time synchronisation status... ===<"
-systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
+# Check that hostname is correct
+echo "Ensuring that hostname is correct..."
+if [ "$(hostnamectl --static)" != "${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}" ] | [ ! "$(grep $VM_HOSTNAME /etc/hosts)" ]; then
+    /opt/configuration/configure-hostname.sh
+fi
 
-# Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
-echo ">=== Setting hostname in /etc/hostname... ===<"
-hostnamectl set-hostname ${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}
-cat /etc/hostname
+# Check the NTP service
+echo "Ensuring that NTP service is running..."
+if [ "$(systemctl is-active systemd-timesyncd)" != "active" ]; then
+    systemctl restart systemd-timesyncd
+    sleep 10
+fi
 
-# Update DNS settings
-echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
-rm /etc/resolv.conf
-sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
-ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-# Restart systemd-resolved to ensure that these settings get propagated
-systemctl enable systemd-resolved
-systemctl restart systemd-resolved
-sleep 10
-systemctl status systemd-resolved
-# Output current settings to check that they are correct
-grep -v "^#" /etc/resolv.conf | grep -v "^$"
+# Check the DNS service
+echo "Ensuring that DNS service is running..."
+if [ "$(systemctl is-active systemd-resolved)" != "active" ]; then
+    systemctl restart systemd-resolved
+    sleep 10
+fi
 
-# Add localhost information to /etc/hosts
-echo ">=== Adding ${VM_HOSTNAME} [${VM_IPADDRESS}] to /etc/hosts... ===<"
-HOST_INFORMATION="${VM_IPADDRESS} ${VM_HOSTNAME} ${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}"
-sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
-cat /etc/hosts
+# Check the SSSD service
+echo "Ensuring that SSSD service is running..."
+if [ "$(systemctl is-active sssd)" != "active" ]; then
+    systemctl restart sssd
+    sleep 10
+fi
 
-# Initialise sssd
-echo ">=== Setting up basic sssd configuration... ===<"
-cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
-chmod 0600 /etc/sssd/sssd.conf
-systemctl enable sssd
-
-# Join realm
-echo ">=== Joining realm... ===<"
+# Join realm - creating the SSSD config if it does not exist
+echo "Joining realm '${DOMAIN_FQDN_LOWER}'..."
 cat /etc/domain-join.secret | realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/
+
+# Update SSSD settings
+echo "Updating SSSD settings..."
+sed -i -E 's|(access_provider = ).*|\1simple|' /etc/sssd/sssd.conf
+systemctl restart sssd

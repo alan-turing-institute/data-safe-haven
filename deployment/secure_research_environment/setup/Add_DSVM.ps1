@@ -275,6 +275,12 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
+# Get deployment and final IP addresses
+# -------------------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+
+
 # Construct the cloud-init YAML file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -361,12 +367,6 @@ if ($upgrade) {
 }
 
 
-# Get deployment and final IP addresses
-# -------------------------------------
-$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
-$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
-
-
 # Deploy the VM
 # -------------
 $networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
@@ -395,10 +395,10 @@ $networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
 $networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
 $null = $networkCard | Set-AzNetworkInterface
 
-
 # Restart after the networking switch
 # -----------------------------------
 Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+# Start-Sleep 60 # we need to allow time for the domain join to run on reboot
 
 
 # Remove snapshots

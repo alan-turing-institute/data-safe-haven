@@ -7,8 +7,6 @@ mounts:
 
 write_files:
   - path: "/etc/bash.bashrc"
-    owner: root:root
-    permissions: "0644"
     append: true
     content: |
       # enable bash completion in interactive shells
@@ -20,8 +18,6 @@ write_files:
           fi
       fi
   - path: "/etc/clamav/clamd.conf"
-    owner: root:root
-    permissions: "0644"
     append: true
     content: |
       # Scan on access settings
@@ -37,6 +33,10 @@ write_files:
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
+  - path: /etc/crontab
+    append: true
+    content: |
+      @reboot root /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" | logger -t SafeHaven
   - path: "/etc/domain-join.secret"
     owner: root:root
     permissions: "0400"
@@ -88,6 +88,17 @@ write_files:
       index = <mirror-index-pypi>
       index-url = <mirror-index-url-pypi>
       trusted-host = <mirror-host-pypi>
+  - path: "/etc/realmd.conf"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      [users]
+      default-home = /home/%u
+      [active-directory]
+      os-name = Ubuntu Linux
+      os-version = 18.04
+      [<shm-fqdn-lower>]
+      fully-qualified-names = no
   - path: "/etc/R/Rprofile.site"
     owner: root:root
     permissions: "0444"
@@ -250,6 +261,44 @@ write_files:
       fi
       # Start xfce4
       startxfce4
+  - path: "/opt/configuration/configure-dns.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
+      rm /etc/resolv.conf
+      sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
+      ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+      # Output current settings to check that they are correct
+      echo ">=== /etc/resolv.conf ===<"
+      grep -v "^#" /etc/resolv.conf | grep -v "^$"
+      echo ">=== end of /etc/resolv.conf ===<"
+      # Add systemd-resolved to list of services to start on boot
+      systemctl enable systemd-resolved
+  - path: "/opt/configuration/configure-hostname.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      echo ">=== Setting hostname in /etc/hostname... ===<"
+      # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
+      hostnamectl set-hostname <vm-hostname>.<shm-fqdn-lower>
+      # Add localhost information to /etc/hosts
+      echo ">=== Adding <vm-hostname> [<vm-ipaddress>] to /etc/hosts... ===<"
+      echo "<vm-ipaddress> <vm-hostname> $(cat /etc/hostname)" > /etc/hosts.tmp
+      grep -v "<vm-hostname>" /etc/hosts >> /etc/hosts.tmp
+      mv /etc/hosts.tmp /etc/hosts
+  - path: "/opt/configuration/configure-pam.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      # Edit the PAM session configuration file
+      echo "Updating PAM configuration..."
+      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
+      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /etc/pam.d/common-session.tmp
+      mv /etc/pam.d/common-session.tmp /etc/pam.d/common-session
+      echo ">=== /etc/pam.d/common-session ===<"
+      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
+      echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/opt/configuration/credentials-data-server.secret"
     owner: root:root
     permissions: "0400"
@@ -277,18 +326,6 @@ write_files:
     permissions: "0500"
     content: |
       <join_domain.sh>
-  - path: "/opt/configuration/kerberos_configuration.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      echo "Checking LDAP config"
-      echo ">=== /etc/ldap.conf ===<"
-      grep -v "^#" /etc/ldap.conf
-      echo ">=== end of /etc/ldap.conf ===<"
-      echo "Checking Kerberos config"
-      echo ">=== /etc/krb5.conf ===<"
-      cat /etc/krb5.conf
-      echo ">=== end of /etc/krb5.conf ===<"
   - path: "/opt/configuration/mount-ingress.sh"
     owner: root:root
     permissions: "0500"
@@ -311,30 +348,6 @@ write_files:
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # each mount uses half of the total available space
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
-  - path: "/opt/configuration/user_login_configuration.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      # Configure sssd logins
-      echo "Configuring sssd..."
-      sed -i -E 's|(use_fully_qualified_names = ).*|\1False|' /etc/sssd/sssd.conf
-      sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
-      sed -i -E 's|(access_provider = ).*|\1simple|' /etc/sssd/sssd.conf
-      echo ">=== /etc/sssd/sssd.conf ===<"
-      grep -v "^[#;]" /etc/sssd/sssd.conf | grep -v "^$"
-      echo ">=== end of /etc/sssd/sssd.conf ===<"
-      # Restart sssd to ensure that these settings get propagated
-      systemctl restart sssd
-      sleep 10
-      systemctl status sssd
-      # Edit the pam session configuration file
-      echo "Updating PAM configuration..."
-      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
-      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
-      mv /tmp/common-session /etc/pam.d/common-session
-      echo ">=== /etc/pam.d/common-session ===<"
-      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
-      echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/opt/configuration/setup_disk.sh"
     owner: root:root
     permissions: "0500"
@@ -390,15 +403,32 @@ packages:
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
-  # Join this VM to the domain and allow domain users to log in
-  - /opt/configuration/kerberos_configuration.sh
-  - echo 'Running /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"'
-  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
-  - /opt/configuration/user_login_configuration.sh
   # Set locale
   - locale-gen en_GB.UTF-8
   - update-locale LANG=en_GB.UTF-8
+  # Configure services for realm joining
+  - echo ">=== Configuring domain joining settings... ===<"
+  - /opt/configuration/configure-dns.sh
+  - /opt/configuration/configure-hostname.sh
+  - /opt/configuration/configure-pam.sh
+  - systemctl enable sssd
+  # Check Kerberos settings
+  - echo "Checking LDAP config"
+  - echo ">=== /etc/ldap.conf ===<"
+  - grep -v "^#" /etc/ldap.conf | grep -v "^$"
+  - echo ">=== end of /etc/ldap.conf ===<"
+  - echo "Checking Kerberos config"
+  - echo ">=== /etc/krb5.conf ===<"
+  - cat /etc/krb5.conf | grep -v "^$"
+  - echo ">=== end of /etc/krb5.conf ===<"
+  # Check timezone and NTP server
+  - echo ">=== Current timezone... ===<"
+  - echo "Date     $(date)"
+  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+  - echo ">=== Current time synchronisation status... ===<"
+  - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # PyCharm configuration
+  - echo ">=== Configuring PyCharm... ===<"
   - PY27_VERSION=$(/opt/pyenv/versions/2.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
   - PY36_VERSION=$(/opt/pyenv/versions/3.6.*/bin/python --version 2>&1 | cut -d ' ' -f2)
   - PY37_VERSION=$(/opt/pyenv/versions/3.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
@@ -412,26 +442,22 @@ runcmd:
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
   - grep -v "^[# ]" /etc/default/keyboard
   # Disable light-locker which can cause irritating error messages
-  - echo "Disabling screen lock..."
+  - echo ">=== Disabling screen lock... ===<"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default terminal and panel for xfce
-  - echo "Setting xfce default terminal and panel..."
+  - echo ">=== Setting xfce default terminal and panel... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
-  # Set xrdp defaults
-  - echo "Setting xrdp defaults..."
-  # Change colours
-  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                       # title bar (unselected)
-  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                 # title bar (selected)
-  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini # teal background
-  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                       # grey box
-  # Change window title
-  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini
-  # Change logo
-  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini
-  # Centre buttons
-  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini
-  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini
+  # Configure xrdp login window
+  - echo ">=== Setting xrdp defaults... ===<"
+  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                         # title bar colour (unselected)
+  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                                   # title bar colour (selected)
+  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini                   # teal background colour
+  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                                         # grey box colour
+  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini                                                 # window title
+  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini # logo
+  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini                                     # centre OK button
+  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini                            # centre cancel button
   # Remove all sessions except Xorg
   - sed -i '/\[X11rdp\]/,/^$/d' /etc/xrdp/xrdp.ini           # delete lines from [X11rdp] until next empty line
   - sed -i '/\[Xvnc\]/,/^$/d' /etc/xrdp/xrdp.ini             # delete lines from [Xvnc] until next empty line
@@ -440,12 +466,9 @@ runcmd:
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
   # Ensure that xrdp is running and enabled at startup
-  - echo ">=== Restart xrdp service... ===<"
+  - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
   - systemctl enable xrdp-sesman
-  - systemctl restart xrdp
-  - sleep 10
-  - systemctl status xrdp
   # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
   - /opt/configuration/setup_disk.sh 1 /home
   - /opt/configuration/setup_disk.sh 2 /scratch
@@ -459,21 +482,19 @@ runcmd:
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
+  - echo ">=== end of /etc/fstab ===<"
   - mount -fav
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
   - echo ">=== Update ClamAV... ===<"
   - systemctl stop clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
   - freshclam
   # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
-  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
   - systemctl enable clamav-daemon
-  - systemctl status clamav-daemon
   - systemctl enable clamav-clamonacc
-  - systemctl status clamav-clamonacc
   - systemctl enable clamav-clamdscan.timer
-  - systemctl status clamav-clamdscan.timer
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
