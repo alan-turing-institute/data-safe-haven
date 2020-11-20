@@ -290,7 +290,7 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 
 # Insert scripts into the cloud-init template
-$resourcePaths = @("jdk.table.xml", "join_domain.sh", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+$resourcePaths = @("configure-dns.sh", "configure-hostname.sh", "jdk.table.xml", "join_domain.sh", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
 foreach ($resourcePath in $resourcePaths) {
     $resourceFileName = $resourcePath | Split-Path -Leaf
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<${resourceFileName}>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1

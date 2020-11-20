@@ -41,31 +41,49 @@ write_files:
     permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/etc/ldap.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <ldap-search-user-password>
-  - path: "/etc/postgres-user.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <db-admin-password>
-  - path: "/etc/postgres-service-account.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <ldap-postgres-service-account-password>
+
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
       <krb5.conf>
+
+  - path: "/etc/ldap.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <ldap-search-user-password>
+
+  - path: "/etc/postgres-user.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <db-admin-password>
+
+  - path: "/etc/postgres-service-account.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <ldap-postgres-service-account-password>
+
+  - path: "/opt/configuration/configure-dns.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <configure-dns.sh>
+
+  - path: "/opt/configuration/configure-hostname.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <configure-hostname.sh>
+
   - path: "/opt/configuration/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <join_domain.sh>
+
   - path: "/opt/configuration/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
@@ -243,7 +261,9 @@ ntp:
 
 runcmd:
   # Join the domain
-  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
+  - /opt/configuration/configure-dns.sh
+  - /opt/configuration/configure-hostname.sh
+  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
