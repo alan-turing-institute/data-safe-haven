@@ -459,22 +459,7 @@ Write-Output $result.Value
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
-
-
-# Update DNS record on the SHM for this VM
-# ----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$vmName'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
-$params = @{
-    Fqdn = $config.shm.domain.fqdn
-    HostName = $vmName
-    IpAddress = $finalIpAddress
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
 
 
 # Get private IP address for this machine

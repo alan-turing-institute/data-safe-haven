@@ -1,8 +1,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
     [string]$configId,
-    [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run diagnostics on.")]
-    [string]$vmName
+    [Parameter(Mandatory = $true, ParameterSetName = "ByIPAddress", HelpMessage = "Last octet of IP address eg. '160'")]
+    [string]$ipLastOctet
 )
 
 Import-Module Az -ErrorAction Stop
@@ -15,6 +15,37 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
+# Use the IP last octet to get the VM name
+# ----------------------------------------
+$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
+$vmName = (Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }).Name
+$ipAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+if (-not $vmName) {
+    Add-LogMessage -Level Fatal "Could not find a VM with last IP octet equal to '$ipLastOctet'"
+}
+
+
+# Update DNS record on the SHM for this VM
+# ----------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Add-LogMessage -Level Info "[ ] Resetting DNS record for DSVM '$vmName'..."
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "ResetDNSRecord.ps1"
+$params = @{
+    Fqdn = $config.shm.domain.fqdn
+    HostName = $vmName
+    IpAddress = $ipAddress
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+$success = $?
+Write-Output $result.Value
+if ($success) {
+    Add-LogMessage -Level Success "Resetting DNS record for DSVM '$vmName' was successful"
+} else {
+    Add-LogMessage -Level Failure "Resetting DNS record for DSVM '$vmName' failed!"
+}
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
