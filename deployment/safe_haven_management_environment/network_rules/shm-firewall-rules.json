@@ -92,10 +92,10 @@
                             "packagecloud.io",
                             "apt.postgresql.org",
                             "cloud.r-project.org",
-                            "security.ubuntu.com",
                             "archive.ubuntu.com",
                             "azure.archive.ubuntu.com",
-                            "changelogs.ubuntu.com"
+                            "changelogs.ubuntu.com",
+                            "security.ubuntu.com"
                         ],
                         "sourceAddresses": [
                             "<subnet-mirror-tier2-cidr>",

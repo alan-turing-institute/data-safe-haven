@@ -13,7 +13,7 @@ END="\033[0m"
 echo -e "${BLUE}Checking realm membership${END}"
 REALM_LIST_CMD="sudo realm list"
 STATUS_CMD="sudo realm list --name-only | grep $DOMAIN_LOWER"
-REJOIN_CMD="sudo cat /etc/domain-join.secret | realm join --verbose --computer-ou='${DOMAIN_JOIN_OU}' -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/"
+REJOIN_CMD="sudo cat /etc/domain-join.secret | sudo realm join --verbose --computer-ou='${DOMAIN_JOIN_OU}' -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/"
 
 echo -e "Testing current realms..."
 STATUS=$(${STATUS_CMD})

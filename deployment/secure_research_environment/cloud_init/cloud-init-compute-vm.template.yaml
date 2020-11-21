@@ -148,11 +148,12 @@ write_files:
       [Unit]
       Description=ClamAV on access scanning daemon
       Requires=clamav-daemon.service
-      After=clamav-daemon.service
+      After=clamav-daemon.service syslog.target network.target
 
       [Service]
       Type=simple
       User=root
+      ExecStartPre=/bin/bash -c "while [ ! -S /var/run/clamav/clamd.ctl ]; do sleep 1; done"
       ExecStart=/usr/bin/clamonacc --foreground=true
       Restart=on-failure
       RestartSec=30
@@ -195,13 +196,16 @@ write_files:
       [Unit]
       Description=Mount unit for ingress volume (via blobfuse)
       Requires=network-online.target mnt.mount
-      Wants=network-online.target mnt.mount
+      After=network-online.target mnt.mount
 
       [Mount]
       What=/opt/configuration/mount-ingress.sh
       Where=/data
       Type=fuse
       Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
   - path: "/etc/systemd/system/data.automount"
     owner: root:root
     permissions: "0644"
@@ -223,13 +227,16 @@ write_files:
       [Unit]
       Description=Mount unit for egress volume (via blobfuse)
       Requires=network-online.target mnt.mount
-      Wants=network-online.target mnt.mount
+      After=network-online.target mnt.mount
 
       [Mount]
       What=/opt/configuration/mount-egress.sh
       Where=/output
       Type=fuse
       Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
   - path: "/etc/systemd/system/output.automount"
     owner: root:root
     permissions: "0644"
@@ -457,6 +464,8 @@ runcmd:
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
   - echo "user_allow_other" >> /etc/fuse.conf.tmp
   - mv /etc/fuse.conf.tmp /etc/fuse.conf
+  - systemctl enable data.mount
+  - systemctl enable output.mount
   - systemctl enable data.automount
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
