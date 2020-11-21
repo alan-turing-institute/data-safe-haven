@@ -163,7 +163,7 @@
                         ]
                     },
                     {
-                        "name": "AllowPyPiPackageInstallation",
+                        "name": "AllowPyPIPackageInstallation",
                         "protocols": [
                             "https:443"
                         ],

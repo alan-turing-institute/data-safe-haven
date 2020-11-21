@@ -7,6 +7,8 @@ mounts:
 
 write_files:
   - path: "/etc/bash.bashrc"
+    owner: root:root
+    permissions: "0644"
     append: true
     content: |
       # enable bash completion in interactive shells
@@ -18,6 +20,8 @@ write_files:
           fi
       fi
   - path: "/etc/clamav/clamd.conf"
+    owner: root:root
+    permissions: "0644"
     append: true
     content: |
       # Scan on access settings

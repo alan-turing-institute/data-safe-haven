@@ -36,6 +36,11 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
+  - path: /etc/crontab
+    append: true
+    content: |
+      @reboot root /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" | logger -t SafeHaven
+
   - path: "/etc/domain-join.secret"
     owner: root:root
     permissions: "0400"
@@ -266,12 +271,13 @@ ntp:
     - <ntp-server>
 
 runcmd:
-  # Join the domain
+  # Configure services for realm joining
+  - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
   - /opt/configuration/configure-dns.sh
   - /opt/configuration/configure-hostname.sh
-  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
+  # - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
