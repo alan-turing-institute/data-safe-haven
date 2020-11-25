@@ -196,7 +196,7 @@ function Deploy-DNSRecords {
     $originalContext = Get-AzContext
     try {
         Add-LogMessage -Level Info "Adding DNS records..."
-        $null = Set-AzContext -Subscription $SubscriptionName
+        $null = Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop
 
         # Set the A record
         Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone ($ZoneName)"
@@ -219,10 +219,10 @@ function Deploy-DNSRecords {
             }
         }
     } catch {
-        $null = Set-AzContext -Context $originalContext
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         throw
     } finally {
-        $null = Set-AzContext -Context $originalContext
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
     return
 }
@@ -990,7 +990,7 @@ function Get-ImageFromGallery {
     )
     $originalContext = Get-AzContext
     try {
-        $null = Set-AzContext -Subscription $Subscription
+        $null = Set-AzContext -Subscription $Subscription -ErrorAction Stop
         Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
         try {
             $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
@@ -1010,10 +1010,10 @@ function Get-ImageFromGallery {
             Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
         }
     } catch {
-        $null = Set-AzContext -Context $originalContext
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         throw
     } finally {
-        $null = Set-AzContext -Context $originalContext
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
     return $image
 }
@@ -1088,9 +1088,9 @@ function Get-VirtualNetworkFromSubnet {
         $Subnet
     )
     $originalContext = Get-AzContext
-    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2]
+    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2] -ErrorAction Stop
     $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id}).Count -gt 0) }
-    $null = Set-AzContext -Context $originalContext
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     return $virtualNetwork
 }
 Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
@@ -1166,8 +1166,8 @@ function Invoke-RemoteScript {
     }
     # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
-    # Wait 20s to allow the run command extension to register as completed
-    Start-Sleep 20
+    # Wait 30s to allow the run command extension to register as completed
+    Start-Sleep 30
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
@@ -1212,7 +1212,7 @@ function Invoke-WindowsConfigureAndUpdate {
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = $TimeZone; "NTPServer" = $NtpServer}
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"}
     Write-Output $result.Value
     # Reboot the VM
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
@@ -1556,7 +1556,7 @@ function Start-VM {
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name  $Name -ResourceGroup $ResourceGroupName
+        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName
     }
     # Ensure VM is started but don't restart if already running
     if (Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
@@ -1763,18 +1763,18 @@ function Set-VnetPeering{
         Add-LogMessage -Level Info "Peering virtual networks ${Vnet1Name} and ${Vnet2Name}."
 
         # Get virtual networks
-        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
         $vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup -ErrorAction Stop
-        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
         $vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup -ErrorAction Stop
 
         # Remove any existing peerings
-        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
         $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet2.Id }
         if ($existingPeering) {
             $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
         }
-        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
         $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet1.Id }
         if ($existingPeering) {
             $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
@@ -1794,7 +1794,7 @@ function Set-VnetPeering{
         }
 
         # Create peering in the direction VNet1 -> VNet2
-        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
         $peeringName = "PEER_${Vnet2Name}"
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet1Name}."
         $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id @paramsVnet1 -ErrorAction Stop
@@ -1804,7 +1804,7 @@ function Set-VnetPeering{
             Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
         }
         # Create peering in the direction VNet2 -> VNet1
-        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName
+        $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
         $peeringName = "PEER_${Vnet1Name}"
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet2Name}."
         $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id @paramsVnet2 -ErrorAction Stop
@@ -1815,7 +1815,7 @@ function Set-VnetPeering{
         }
     } finally {
         # Switch back to original subscription
-        $null = Set-AzContext -Context $originalContext
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 }
 Export-ModuleMember -Function Set-VnetPeering

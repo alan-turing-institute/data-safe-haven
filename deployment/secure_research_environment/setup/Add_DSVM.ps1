@@ -237,13 +237,8 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 
 # Retrieve VNET and subnets
 # -------------------------
-Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-try {
-    $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    Add-LogMessage -Level InfoSuccess "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
-}
+Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
+$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 $deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 

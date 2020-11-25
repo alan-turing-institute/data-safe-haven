@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Create VNet resource group if it does not exist
@@ -50,7 +50,7 @@ Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
 $computeNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.compute.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
-$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg -VirtualNetwork $vnet
+$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg
 
 
 # Ensure that database NSG exists with correct rules and attach it to the deployment subnet
@@ -58,7 +58,7 @@ $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkS
 $databasesNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.databases.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $databasesNsg -Rules $rules
-$databasesSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databasesSubnet -NetworkSecurityGroup $databasesNsg -VirtualNetwork $vnet
+$databasesSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databasesSubnet -NetworkSecurityGroup $databasesNsg
 
 
 # Ensure that deployment NSG exists with correct rules and attach it to the deployment subnet
@@ -66,7 +66,7 @@ $databasesSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databasesSubnet -Netw
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.deployment.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.deployment.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
-$deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg -VirtualNetwork $vnet
+$deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg
 
 
 # Ensure that gateway NSG exists with correct rules
@@ -85,4 +85,4 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rul
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop
