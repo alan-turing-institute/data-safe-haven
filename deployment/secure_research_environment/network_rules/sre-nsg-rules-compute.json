@@ -14,13 +14,49 @@
     {
         "name": "AllowLDAPOutbound",
         "access": "Allow",
-        "description": "Allow outbound connections to the SHM LDAP server",
+        "description": "Allow outbound LDAP connections to the SHM DC",
         "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
-        "destinationPortRange": [386, 636],
+        "destinationPortRange": [389, 636, 3268, 3269],
         "direction": "Outbound",
         "priority": 2000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDNSOutbound",
+        "access": "Allow",
+        "description": "Allow outbound DNS connections to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": 53,
+        "direction": "Outbound",
+        "priority": 2100,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowKerberosOutbound",
+        "access": "Allow",
+        "description": "Allow outbound Kerberos connections to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": [88, 464],
+        "direction": "Outbound",
+        "priority": 2200,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainJoinOutbound",
+        "access": "Allow",
+        "description": "Allow outbound RPC/NetBIOS/NetLogon/SMB connections for domain joining to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["135", "445", "49152-65535"],
+        "direction": "Outbound",
+        "priority": 2300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -33,6 +69,18 @@
         "priority": 3000,
         "protocol": "*",
         "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDatabasesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the database subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3100,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
         "sourcePortRange": "*"
     },
     {
