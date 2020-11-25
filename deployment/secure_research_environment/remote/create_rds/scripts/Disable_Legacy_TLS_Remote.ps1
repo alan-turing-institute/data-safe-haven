@@ -123,4 +123,4 @@ foreach ($allowedCipher in $allowedCiphers) {
 # List all cipher suites that are still allowed
 # ---------------------------------------------
 Write-Output "There are $(((Get-TlsCipherSuite) | Measure-Object).Count) allowed cipher suites:"
-(Get-TlsCipherSuite) | ForEach-Object { Write-Host "... $($_.Name)" }
+(Get-TlsCipherSuite) | ForEach-Object { Write-Output "... $($_.Name)" }
