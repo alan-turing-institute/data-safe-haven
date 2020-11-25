@@ -21,7 +21,7 @@ The following packages are required
 
 + `PowerShell` with support for Azure
   + Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
-  + Install the [Azure Powershell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+  + Install the [Azure Powershell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 + `Ansible` (not currently supported on Windows)
   + Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 + `Python`

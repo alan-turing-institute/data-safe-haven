@@ -56,7 +56,7 @@ These instructions will walk you through deploying a Secure Research Environment
 
 + `PowerShell` with support for Azure
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>)
+  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 + `Microsoft Remote Desktop`
   + On OSX this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
