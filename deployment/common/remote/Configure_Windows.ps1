@@ -8,7 +8,9 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Time zone to use")]
     [string]$TimeZone = "",
     [Parameter(Mandatory = $false, HelpMessage = "NTP server to use")]
-    [string]$NTPServer = ""
+    [string]$NTPServer = "",
+    [Parameter(Mandatory = $false, HelpMessage = "Locale to use")]
+    [string]$Locale = "en-GB"
 )
 
 
@@ -17,17 +19,17 @@ param(
 Write-Output "Setting locale..."
 Set-WinHomeLocation -GeoId 0xf2
 $success = $?
-Set-WinSystemLocale en-GB
+Set-WinSystemLocale $Locale
 $success = $success -and $?
-Set-Culture en-GB
+Set-Culture $Locale
 $success = $success -and $?
-Set-WinUserLanguageList -LanguageList en-GB -Force
+Set-WinUserLanguageList -LanguageList $Locale -Force
 $success = $success -and $?
 Get-WinUserLanguageList
 if ($success) {
-    Write-Output " [o] Setting locale succeeded"
+    Write-Output " [o] Setting locale to '$Locale' succeeded"
 } else {
-    Write-Output " [x] Setting locale failed!"
+    Write-Output " [x] Setting locale to '$Locale' failed!"
 }
 
 
