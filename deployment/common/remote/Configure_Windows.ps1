@@ -97,30 +97,30 @@ if ($NTPServer) {
 
 
 # Install Windows updates
-# Iterate five times to ensure that we catch dependencies
-# -------------------------------------------------------
-$existingUpdateTitles = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") } | ForEach-Object { $_.Title }
-for ($i = 0; $i -lt 5; $i++) {
-    $updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
-    if ($updatesToInstall.Count) {
-        Write-Output "`nInstalling $($updatesToInstall.Count) Windows updates:"
-        foreach ($update in $updatesToInstall) {
-            Write-Output " ... $($update.Title)"
-        }
-        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
-        if ($?) {
-            Write-Output " [o] Installing Windows updates succeeded."
-        } else {
-            Write-Output " [x] Installing Windows updates failed!"
-        }
-    }
+# -----------------------
+$null = Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false # Register Microsoft Update servers
+$installedUpdateTitles = @(Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title })
+$updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
+if ($updatesToInstall.Count) {
+    Write-Output "`nFound $($updatesToInstall.Count) Windows updates to install:"
+    $updatesToInstall | ForEach-Object { Write-Output " ... $($_.Title)" }
+    Write-Output "**Note that installing updates is currently causing installation to hang so we are disabling this option**"
+    # Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
+    # if ($?) {
+    #     Write-Output " [o] Installing Windows updates succeeded."
+    # } else {
+    #     Write-Output " [x] Installing Windows updates failed!"
+    # }
 }
-
 
 # Report any updates that were installed
 # --------------------------------------
 Write-Output "`nNewly installed Windows updates:"
-$installedUpdates = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") -And ($_.Title -NotIn $existingUpdateTitles) }
-foreach ($update in $installedUpdates) {
-    Write-Output " ... $($update.Title)"
-}
+$installedUpdateTitles = @()
+Write-Output "Method 1"
+Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title } | Where-Object { $_ -and ($_ -notin $installedUpdateTitles) } | ForEach-Object { Write-Output " ... $_" }
+Write-Output "Method 2"
+$newlyInstalledUpdateTitles = Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title } | Where-Object { $_ -and ($_ -notin $installedUpdateTitles) }
+foreach ($update in $newlyInstalledUpdateTitles) { Write-Output " ... $_" }
+Write-Output "Method 3"
+$newlyInstalledUpdateTitles | ForEach-Object { Write-Output " ... $_" }
