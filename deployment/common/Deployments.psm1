@@ -705,7 +705,7 @@ function Deploy-UbuntuVirtualMachine {
         [Parameter(Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
         $Size,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator password")]
-        $AdminPassword,
+        [System.Security.SecureString]$AdminPassword,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
         $AdminUsername,
         [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
@@ -736,7 +736,7 @@ function Deploy-UbuntuVirtualMachine {
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
     $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        $adminCredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AdminUsername, (ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force)
+        $adminCredentials = New-Object System.Management.Automation.PSCredential("$AdminUsername", $AdminPassword)
         # Build VM configuration
         $vmConfig = New-AzVMConfig -VMName $Name -VMSize $Size
         # Set source image to a custom image or to latest Ubuntu (default)

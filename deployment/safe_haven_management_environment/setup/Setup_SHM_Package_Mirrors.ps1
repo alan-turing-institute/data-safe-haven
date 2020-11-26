@@ -280,7 +280,7 @@ function Deploy-PackageMirror {
             $params = @{
                 Name                   = $vmName
                 Size                   = $config.mirrors.vmSize
-                AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20 -AsPlaintext)
+                AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20)
                 AdminUsername          = $vmAdminUsername
                 BootDiagnosticsAccount = $bootDiagnosticsAccount
                 CloudInitYaml          = $cloudInitYaml

@@ -100,7 +100,6 @@ $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet 
 # Retrieve credentials from the keyvault
 # --------------------------------------
 $keyVault = $config.sre.keyVault.name
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
@@ -223,7 +222,7 @@ $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdi
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
-    AdminPassword          = $vmAdminPassword
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     AdminPublicSshKey      = $sshPublicKey
     BootDiagnosticsAccount = $bootDiagnosticsAccount

@@ -56,7 +56,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsernameSecretName -AsPlaintext
     $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
-    $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $vmAdminPasswordSecure = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20
 
     # Deploy an SQL server
     # --------------------
@@ -64,7 +64,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         # Create SQL server from template
         Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
         $params = @{
-            Administrator_Password       = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+            Administrator_Password       = $vmAdminPasswordSecure
             Administrator_User           = $vmAdminUsername
             BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
             Data_Disk_Size               = $databaseCfg.disks.data.sizeGb
@@ -187,7 +187,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
         # Deploy the VM
         $params = @{
-            AdminPassword          = $vmAdminPassword
+            AdminPassword          = $vmAdminPasswordSecure
             AdminUsername          = $vmAdminUsername
             BootDiagnosticsAccount = $bootDiagnosticsAccount
             CloudInitYaml          = $cloudInitTemplate
