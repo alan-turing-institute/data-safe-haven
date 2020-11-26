@@ -75,7 +75,9 @@ function Resolve-KeyVaultSecret {
         [Parameter(Mandatory = $false, HelpMessage = "Default number of random characters to be used when initialising this secret")]
         [string]$DefaultLength,
         [Parameter(Mandatory = $false, HelpMessage = "Overwrite any existing secret with this name")]
-        [switch]$ForceOverwrite
+        [switch]$ForceOverwrite,
+        [Parameter(Mandatory = $false, HelpMessage = "Retrieve secret as plaintext instead of as a secure string")]
+        [switch]$AsPlaintext
     )
     # Create a new secret if one does not exist in the key vault or if we are forcing an overwrite
     if ($ForceOverwrite -or (-not (Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName))) {
@@ -102,7 +104,7 @@ function Resolve-KeyVaultSecret {
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName
-    return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText
+    if ($AsPlaintext) { return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText }
+    return $secret.SecretValue
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"

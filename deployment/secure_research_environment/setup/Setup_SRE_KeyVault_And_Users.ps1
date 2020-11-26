@@ -35,19 +35,19 @@ Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupNa
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
 # :: Admin usernames
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE admin usernames exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!"
 }
 # :: VM admin passwords
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dataserver.adminPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dataserver.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE VM admin passwords exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!"
@@ -58,9 +58,9 @@ try {
         if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
         $dbAdminUsername = "sre$($config.sre.id)dbadmin".ToLower()
         if ($dbConfigName -eq "dbpostgresql") { $dbAdminUsername = "postgres" } # This is recorded for auditing purposes - changing it will not change the username of the admin account
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].adminPasswordSecretName -DefaultLength 20
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminUsernameSecretName $dbAdminUsername
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminPasswordSecretName -DefaultLength 20
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].adminPasswordSecretName -DefaultLength 20 -AsPlaintext -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminUsernameSecretName $dbAdminUsername -AsPlaintext -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext -AsPlaintext
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
@@ -68,8 +68,8 @@ try {
 }
 # :: Other secrets
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that other SRE secrets exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!"
@@ -87,7 +87,7 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     # Load SRE service users
     $serviceUsers = $config.sre.users.serviceAccounts
     foreach ($user in $serviceUsers.Keys) {
-        $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
+        $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
     }
 
     # Add SRE users and groups to SHM

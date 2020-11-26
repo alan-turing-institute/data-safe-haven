@@ -21,7 +21,7 @@ $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
 
 
 # Setup image resource group if it does not already exist

@@ -100,8 +100,8 @@ $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet 
 # Retrieve credentials from the keyvault
 # --------------------------------------
 $keyVault = $config.sre.keyVault.name
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
 # Ensure that the persistent data storage account exists
@@ -181,9 +181,9 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
             Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
         # Upload keys to key vault
-        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw)
+        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw) -AsPlaintext
         $success = $?
-        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw)
+        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw) -AsPlaintext
         $success = $success -and $?
         if ($success) {
             Add-LogMessage -Level Success "Uploaded Ansible SSH keys to '$keyVault'"
@@ -197,8 +197,8 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
 }
 # Fetch SSH keys from key vault
 Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
-$sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault
-$sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault
+$sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -AsPlaintext
+$sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -AsPlaintext
 
 
 # Get list of image definitions

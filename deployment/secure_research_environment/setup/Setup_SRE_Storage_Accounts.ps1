@@ -58,7 +58,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         # We therefore always generate a new token and store it in the keyvault (note that old tokens will still be valid and will still be stored as old versions of the secret)
         # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the key vault
         $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -ForceOverwrite
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
 
     # When using a file share we need to mount using the storage key
     } elseif ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "ShareSMB") {
@@ -69,7 +69,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
         $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
         $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -ForceOverwrite
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -AsPlaintext -ForceOverwrite
     }
 }
 

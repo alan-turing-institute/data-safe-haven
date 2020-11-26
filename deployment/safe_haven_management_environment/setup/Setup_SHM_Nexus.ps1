@@ -30,13 +30,13 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName
 # Retrieve passwords from the key vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.nexusAppAdminPasswordSecretName -DefaultLength 20
+$nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.nexusAppAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
 
 
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 $vmName = $config.repository.nexus.vmName
 $privateIpAddress = $config.repository.nexus.ipAddress
 
@@ -155,7 +155,7 @@ $adminPasswordSecretName = $config.repository.nexus.adminPasswordSecretName
 $params = @{
     Name                   = $vmName
     Size                   = $config.repository.vmSize
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20 -AsPlaintext)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitYaml
