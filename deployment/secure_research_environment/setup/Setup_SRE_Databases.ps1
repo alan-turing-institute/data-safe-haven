@@ -130,7 +130,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
         # Create an AD service principal
         Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
-        $null = Set-AzContext -Subscription $config.shm.subscriptionName
+        $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
         $params = @{
             Hostname       = "`"$($databaseCfg.vmName)`""
             Name           = "`"$($dbServiceAccountName)`""
@@ -140,7 +140,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
         $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
         Write-Output $result.Value
-        $null = Set-AzContext -Subscription $config.sre.subscriptionName
+        $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
         # Deploy NIC and data disk
         $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
@@ -204,7 +204,6 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
-        Start-VM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
     }
 }
 
