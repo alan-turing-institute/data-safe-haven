@@ -19,6 +19,7 @@ write_files:
               . /etc/bash_completion
           fi
       fi
+
   - path: "/etc/clamav/clamd.conf"
     owner: root:root
     permissions: "0644"
@@ -37,15 +38,18 @@ write_files:
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
+
   - path: /etc/crontab
     append: true
     content: |
-      @reboot root /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" | logger -t SafeHaven
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+
   - path: "/etc/domain-join.secret"
     owner: root:root
     permissions: "0400"
     content: |
       <domain-join-password>
+
   - path: "/etc/jaas.conf"
     owner: root:root
     permissions: "0444"
@@ -57,6 +61,7 @@ write_files:
           renewTGT=true
           doNotPrompt=true;
       };
+
   - path: "/etc/ldap.conf"
     owner: root:root
     permissions: "0444"
@@ -73,16 +78,28 @@ write_files:
       rootbinddn <ldap-search-user-dn>
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
+
   - path: "/etc/ldap.secret"
     owner: root:root
     permissions: "0400"
     content: |
       <ldap-search-user-password>
+
+  - path: "/etc/local/runonce.d/00-join-domain.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'
+      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
+
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
       <krb5.conf>
+
   - path: "/etc/pip.conf"
     owner: root:root
     permissions: "0444"
@@ -92,11 +109,13 @@ write_files:
       index = <mirror-index-pypi>
       index-url = <mirror-index-url-pypi>
       trusted-host = <mirror-host-pypi>
+
   - path: "/etc/realmd.conf"
     owner: root:root
     permissions: "0400"
     content: |
       <realmd.conf>
+
   - path: "/etc/R/Rprofile.site"
     owner: root:root
     permissions: "0444"
@@ -107,6 +126,7 @@ write_files:
           r["CRAN"] <- "<mirror-url-cran>"
           options(repos = r)
       })
+
   - path: "/etc/skel/.bashrc"
     owner: root:root
     permissions: "0644"
@@ -130,21 +150,25 @@ write_files:
           alias fgrep='fgrep --color=auto'
           alias egrep='egrep --color=auto'
       fi
+
   - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
     owner: root:root
     permissions: "0400"
     content: |
       <project.default.xml>
+
   - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
     owner: root:root
     permissions: "0400"
     content: |
       <jdk.table.xml>
+
   - path: "/etc/skel/.xsession"
     owner: root:root
     permissions: "0444"
     content: |
       xfce4-session
+
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     owner: root:root
     permissions: "0644"
@@ -164,6 +188,7 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
   - path: "/etc/systemd/system/clamav-clamdscan.service"
     owner: root:root
     permissions: "0644"
@@ -177,6 +202,7 @@ write_files:
       Type=oneshot
       User=root
       ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
+
   - path: "/etc/systemd/system/clamav-clamdscan.timer"
     owner: root:root
     permissions: "0644"
@@ -193,6 +219,7 @@ write_files:
 
       [Install]
       WantedBy=timers.target
+
   - path: "/etc/systemd/system/data.mount"
     owner: root:root
     permissions: "0644"
@@ -210,6 +237,7 @@ write_files:
 
       [Install]
       WantedBy=network-online.target
+
   - path: "/etc/systemd/system/data.automount"
     owner: root:root
     permissions: "0644"
@@ -224,6 +252,7 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
   - path: "/etc/systemd/system/output.mount"
     owner: root:root
     permissions: "0644"
@@ -241,6 +270,7 @@ write_files:
 
       [Install]
       WantedBy=network-online.target
+
   - path: "/etc/systemd/system/output.automount"
     owner: root:root
     permissions: "0644"
@@ -255,6 +285,7 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
   - path: "/etc/xrdp/startwm.sh"
     owner: root:root
     permissions: "0755"
@@ -266,16 +297,19 @@ write_files:
       fi
       # Start xfce4
       startxfce4
+
   - path: "/opt/configuration/configure-dns.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <configure-dns.sh>
+
   - path: "/opt/configuration/configure-hostname.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <configure-hostname.sh>
+
   - path: "/opt/configuration/configure-pam.sh"
     owner: root:root
     permissions: "0500"
@@ -288,12 +322,14 @@ write_files:
       echo ">=== /etc/pam.d/common-session ===<"
       grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
       echo ">=== end of /etc/pam.d/common-session ===<"
+
   - path: "/opt/configuration/credentials-data-server.secret"
     owner: root:root
     permissions: "0400"
     content: |
       username=<datamount-username>
       password=<datamount-password>
+
   - path: "/opt/configuration/credentials-ingress.secret"
     owner: root:root
     permissions: "0400"
@@ -302,6 +338,7 @@ write_files:
       sasToken <storage-account-persistentdata-ingress-sastoken>
       authType SAS
       containerName ingress
+
   - path: "/opt/configuration/credentials-egress.secret"
     owner: root:root
     permissions: "0400"
@@ -310,11 +347,13 @@ write_files:
       sasToken <storage-account-persistentdata-egress-sastoken>
       authType SAS
       containerName egress
+
   - path: "/opt/configuration/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <join_domain.sh>
+
   - path: "/opt/configuration/mount-ingress.sh"
     owner: root:root
     permissions: "0500"
@@ -326,6 +365,7 @@ write_files:
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # each mount uses half of the total available space
         /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
+
   - path: "/opt/configuration/mount-egress.sh"
     owner: root:root
     permissions: "0500"
@@ -337,6 +377,7 @@ write_files:
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # each mount uses half of the total available space
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
+
   - path: "/opt/configuration/setup_disk.sh"
     owner: root:root
     permissions: "0500"
@@ -369,6 +410,13 @@ write_files:
       echo "${DISK_PATH}-part1\t${FOLDER_PATH}\text4\tdefaults\t0\t2" >> /etc/fstab
       rm /tmp/fstab 2> /dev/null
       tail -n 1 /etc/fstab
+
+  - path: "/usr/local/bin/runonce"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <runonce.sh>
+
   - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
     owner: root:root
     encoding: gz+b64
