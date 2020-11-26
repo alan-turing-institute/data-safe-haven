@@ -55,9 +55,8 @@ $params = @{
     npsSecret      = "$npsSecret"
     sreId          = "`"$($config.sre.id)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-Write-Output $result.Value
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Restart SHM NPS server

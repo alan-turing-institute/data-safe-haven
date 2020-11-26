@@ -185,7 +185,7 @@ function Resolve-CloudInit {
         cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
         "
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
-        $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+        $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
         $externalMirrorPublicKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
@@ -317,8 +317,7 @@ function Deploy-PackageMirror {
             #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            Write-Output $result.Value
+            $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
@@ -342,8 +341,7 @@ function Deploy-PackageMirror {
             cat ~mirrordaemon/internal_mirror_ip_addresses.txt
             ls -alh ~mirrordaemon
             "
-            $result = Invoke-RemoteScript -VMName $externalVmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            Write-Output $result.Value
+            $null = Invoke-RemoteScript -VMName $externalVmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$vmName' already exists"

@@ -264,8 +264,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
         pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
         downloadDir = "$remoteUploadDir"
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 }
 
 # Set locale, install updates and reboot

@@ -246,8 +246,7 @@ if ($doInstall) {
             sudo chmod 0600 /opt/ssl/*.*
             ls -alh /opt/ssl/
         "
-        $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
 
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
@@ -272,8 +271,7 @@ if ($doInstall) {
             certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
             remoteDirectory = "`"$remoteDirectory`""
         }
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
     }
 }
 

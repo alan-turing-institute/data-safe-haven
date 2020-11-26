@@ -91,8 +91,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prep
 $params = @{
     remoteDir = "`"C:\Installation`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Import conditional-access-policy settings
@@ -108,8 +107,7 @@ $params = @{
     storageContainerName   = "`"$storageContainerName`""
     sasToken               = "`"$artifactSasToken`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Set locale, install updates and reboot

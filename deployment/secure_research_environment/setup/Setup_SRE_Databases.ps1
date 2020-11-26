@@ -112,8 +112,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             VmAdminUsername          = $vmAdminUsername
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
 
     # Deploy a PostgreSQL server
     # --------------------------
@@ -138,8 +137,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             ShmFqdn        = "`"$($config.shm.domain.fqdn)`""
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
         $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
         # Deploy NIC and data disk

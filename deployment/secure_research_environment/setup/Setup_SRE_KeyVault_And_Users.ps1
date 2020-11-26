@@ -102,9 +102,8 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
         securityOuPath               = "`"$($config.shm.domain.ous.securityGroups.path)`""
         serviceOuPath                = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
-    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 }
 
 

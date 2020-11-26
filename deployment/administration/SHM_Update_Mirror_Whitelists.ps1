@@ -52,8 +52,7 @@ foreach ($mirrorType in $mirrorTypes) {
         # Run the script on the mirror VM
         $vmName = "$MirrorType-EXTERNAL-MIRROR-TIER-$tier".ToUpper()
         Add-LogMessage -Level Info "Updating whitelist on $vmName"
-        $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
 
         # Restart the mirror to trigger a pull-then-push
         Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg

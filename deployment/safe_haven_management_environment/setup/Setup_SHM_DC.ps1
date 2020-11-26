@@ -180,8 +180,7 @@ $params = @{
     storageContainerName   = "`"$storageContainerName`""
     sasToken               = "`"$artifactSasToken`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure Active Directory remotely
@@ -212,8 +211,7 @@ $params = @{
     userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
     securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure group policies
@@ -224,8 +222,7 @@ $params = @{
     shmFqdn           = "`"$($config.domain.fqdn)`""
     serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure the domain controllers and set their DNS resolution
@@ -236,8 +233,7 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
         externalDnsResolver = "`"$($config.dc.external_dns_resolver)`""
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
     # Remove custom per-NIC DNS settings
     $nic = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"

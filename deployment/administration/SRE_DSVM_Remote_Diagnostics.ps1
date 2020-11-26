@@ -54,10 +54,8 @@ $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote
 $params = @{
     ldapPassword = "`"$ldapSearchPassword`""
 }
-$result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-$success = $?
-Write-Output $result.Value
-if ($success) {
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+if ($?) {
     Add-LogMessage -Level Success "Setting LDAP secret on compute VM $($vm.Name) was successful"
 } else {
     Add-LogMessage -Level Fatal "Setting LDAP secret on compute VM $($vm.Name) failed!"
@@ -73,10 +71,8 @@ $params = @{
     ldapPassword   = "`"$ldapSearchPassword`""
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$success = $?
-Write-Output $result.Value
-if ($success) {
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+if ($?) {
     Add-LogMessage -Level Success "Setting LDAP secret on SHM DC was successful"
 } else {
     Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
@@ -94,8 +90,7 @@ $params = @{
     HostName = $vm.Name
     IpAddress = $vmIpAddress
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 

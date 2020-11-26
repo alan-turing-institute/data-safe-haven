@@ -147,8 +147,7 @@ foreach ($vmName in $computeVmNames) {
         PYPI_MIRROR_INDEX_URL = "`"$($addresses.pypi.indexUrl)`""
         PYPI_MIRROR_HOST = "`"$($addresses.pypi.host)`""
     }
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 }
 
 

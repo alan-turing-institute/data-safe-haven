@@ -31,8 +31,7 @@ $params = @{
 }
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
     Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 

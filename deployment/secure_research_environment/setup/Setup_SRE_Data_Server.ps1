@@ -101,8 +101,7 @@ $params = @{
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     serverAdminSgName    = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
 
 
 # Switch back to original subscription

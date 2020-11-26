@@ -442,8 +442,7 @@ $params = @{
     PAYLOAD = $zipFileEncoded
 }
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
-$result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 
 
 # Run remote diagnostic scripts

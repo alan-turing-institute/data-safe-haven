@@ -1118,6 +1118,8 @@ function Invoke-RemoteScript {
         [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
         [ValidateSet("PowerShell", "UnixShell")]
         [string]$Shell = "PowerShell",
+        [Parameter(Mandatory = $false, HelpMessage = "Suppress script output on success")]
+        [switch]$SuppressOutput,
         [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
         $Parameter = $null
     )
@@ -1154,6 +1156,7 @@ function Invoke-RemoteScript {
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
+        if (-not $SuppressOutput) { Write-Output $result.Value }
     } else {
         Add-LogMessage -Level Info "Script output:"
         Write-Output ($result | Out-String)
@@ -1182,22 +1185,19 @@ function Invoke-WindowsConfigureAndUpdate {
     # Install core Powershell modules
     Add-LogMessage -Level Info "[ ] Installing core Powershell modules on '$VMName'"
     $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Install additional Powershell modules
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
     }
     Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"}
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"}
     # Reboot the VM
     Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
 }

@@ -38,10 +38,8 @@ $params = @{
     HostName = $vmName
     IpAddress = $ipAddress
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$success = $?
-Write-Output $result.Value
-if ($success) {
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+if ($?) {
     Add-LogMessage -Level Success "Resetting DNS record for DSVM '$vmName' was successful"
 } else {
     Add-LogMessage -Level Failure "Resetting DNS record for DSVM '$vmName' failed!"
@@ -70,10 +68,8 @@ foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
     $name, $diagnostic_script = $scriptNamePair
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
     Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$vmName'"
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-    $success = $?
-    Write-Output $result.Value
-    if ($success) {
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    if ($?) {
         Add-LogMessage -Level Success "Configuring $name on $vmName was successful"
     } else {
         Add-LogMessage -Level Failure "Configuring $name on $vmName failed!"

@@ -71,8 +71,7 @@ if ($sreResources -or $sreResourceGroups) {
         userNamesJoined            = "`"$($userNames -Join '|')`""
         computerNamePatternsJoined = "`"$($computerNamePatterns -Join '|')`""
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
     # Remove SRE DNS records and private endpoint DNS Zones from SHM DC
@@ -86,8 +85,7 @@ if ($sreResources -or $sreResourceGroups) {
             sreId                = "`"$($config.sre.id)`""
             privateEndpointMatch = $storageAccount ? $storageAccount.Context.Name : ""
         }
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     }
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
@@ -97,8 +95,7 @@ if ($sreResources -or $sreResourceGroups) {
     $params = @{
         rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 
 
     # Remove RDS entries from SRE DNS Zone
