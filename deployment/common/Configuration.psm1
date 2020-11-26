@@ -7,7 +7,7 @@ Import-Module $PSScriptRoot/Security -ErrorAction Stop
 
 # Add a new SRE configuration
 # ---------------------------
-function Add-SreConfig {
+function Get-SreConfig {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
         [string]$configId
@@ -449,14 +449,9 @@ function Add-SreConfig {
         Copy-HashtableOverrides -Source $sreConfigBase.overrides -Target $config
     }
 
-    # Write output to file
-    # --------------------
-    $jsonOut = (ConvertTo-SortedHashtable -Sortable $config | ConvertTo-Json -Depth 10)
-    $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${configId}_full_config.json"
-    Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
-    Add-LogMessage -Level Info "Wrote config file to '$sreFullConfigPath'"
+    return (ConvertTo-SortedHashtable -Sortable $config)
 }
-Export-ModuleMember -Function Add-SreConfig
+Export-ModuleMember -Function Get-SreConfig
 
 
 # Get root directory for configuration files
@@ -926,15 +921,23 @@ function Get-ShmFullConfig {
 }
 Export-ModuleMember -Function Get-ShmFullConfig
 
-
-# Get SRE configuration
+# Show SRE or SHM full config
 # ---------------------
-function Get-SreConfig {
+function Show-FullConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-        [string]$configId
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter either sre or shm")]
+        [string]$configType,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+        [string]$configId,
+        [Parameter(Position = 0, Mandatory = $false, HelpMessage = "Enter SHM ID")]
+        $shmId
     )
-    # Read full SRE config from file
-    return Get-ConfigFile -configType "sre" -configLevel "full" -configName $configId
+    # Generate and return the full config for the SHM or SRE
+    if ($configType -eq 'shm') {
+        $config = Get-ShmFullConfig -shmId $shmId
+    } elseif ($configType -eq 'sre') {
+        $config = Get-SreConfig -configId $configId
+    }
+    Write-Output $config
 }
-Export-ModuleMember -Function Get-SreConfig
+Export-ModuleMember -Function Show-FullConfig
