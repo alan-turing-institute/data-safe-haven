@@ -65,39 +65,7 @@ These instructions will walk you through deploying a Secure Research Environment
 ### :key: VPN connection to the SHM VNet
 
 For some operations, you will need to log on to some of the VMs that you deploy and make manual changes.
-This is done using the VPN which should have been deployed when setting up the SHM environment.
-
-#### Download a client VPN certificate
-
-+ Navigate to the key vault in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>` .
-+ Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-+ Click on the certificate named `shm-<SHM ID>-vpn-client-cert` , click on the "current version" and click the "Download in PFX/PEM format" link.
-+ To install, double click on the downloaded certificate, leaving the password field blank.
-+ **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
-+ This certificate will also allow you to connect via VPN to the SRE VNets once deployed.
-
-#### Configure the VPN connection
-
-+ Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_<SHM ID>_NETWORKING -> VNET_SHM_<SHM ID>_GW` , where `<SHM ID>` is defined in the config file.
-+ Once there open the "Point-to-site configuration page under the `Settings` section in the left hand sidebar (see image below).
-
-<p align="center">
-  <img src="../../images/deploy_sre/vpn_client.png" width="80%" title="vpn_client">
-</p>
-
-+ Click the `Download VPN client` link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
-+ :warning: **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
-+ :warning: **Windows:** do not rename the VPN client as this will break it
-+ :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. This is not true for OSX.
-+ :pencil: **OSX** double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
-+ :pencil: **OSX** on Catalina you may have to drag the certificate into your personal KeyChain as the default is to install system-wide
-+ :pencil: **OSX** on Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
-
-<p align="center">
-  <img src="../../images/deploy_sre/catalina_authentication.png" width="80%" title="catalina_authentication">
-</p>
-
-+ Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway ( `<SHM ID>` )", where `<SHM ID>` is defined in the config file.
+This is done using the VPN which should have been deployed [when setting up the SHM environment](how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network).
 
 ### :name_badge: SRE domain name
 
