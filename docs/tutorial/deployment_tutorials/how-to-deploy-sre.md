@@ -14,7 +14,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:clipboard: Define SRE configuration](#clipboard-define-sre-configuration)
   + [:apple: SHM configuration properties](#apple-shm-configuration-properties)
   + [:green_apple: SRE configuration properties](#green_apple-sre-configuration-properties)
-  + [:full_moon: Generate full SRE configuration](#full_moon-generate-full-sre-configuration)
+  + [:full_moon: View full SRE configuration](#full_moon-view-full-sre-configuration)
 + [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
@@ -133,17 +133,18 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 > It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
 > This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
-### :full_moon: Generate full SRE configuration
+### :full_moon: View full SRE configuration
+
+In subsequent steps that require the configuration file you just created, the config actually used is the full config that is generated automatically. Should you wish to, you can view a nested printout of the full SRE (or full SHM) config by doing the following:
 
 On your **deployment machine**.
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
-+ Generate a new full configuration file for the new SRE using the following commands.
++ Show the full configuration for the new SRE or the SHM using the following commands.
   + `Import-Module ./deployment/common/Configuration -Force`
-  + `Add-SreConfig -configId <SRE config ID>`
-+ A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE config ID>_full_config.json` . This file is used by the subsequent steps in the SRE deployment.
-+ You may want to commit this new full configuration file to the Safe Haven repository
+  + SRE: `Show-FullConfig -configType sre -configId <SRE config ID> | ConvertTo-JSON`
+  + SHM: `Show-FullConfig -configType shm -shmId edtest2 | ConvertTo-JSON`
 
 ## :cop: Prepare SHM environment
 
