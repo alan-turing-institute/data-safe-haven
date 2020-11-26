@@ -7,19 +7,19 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 function Add-NetworkSecurityGroupRule {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
         $NetworkSecurityGroup,
         [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
-        $Description,
+        [string]$Description,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
         $Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
         $Direction,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
-        $Access,
+        [string]$Access,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
-        $Protocol,
+        [string]$Protocol,
         [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
         $SourceAddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
@@ -107,47 +107,47 @@ Export-ModuleMember -Function Add-VmToNSG
 
 # Confirm VM is deallocated
 # -------------------------
-function Confirm-AzVmDeallocated {
+function Confirm-VmDeallocated {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
     return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
 }
-Export-ModuleMember -Function Confirm-AzVmDeallocated
+Export-ModuleMember -Function Confirm-VmDeallocated
 
 
 # Confirm VM is running
 # ---------------------
-function Confirm-AzVmRunning {
+function Confirm-VmRunning {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
     return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
 }
-Export-ModuleMember -Function Confirm-AzVmRunning
+Export-ModuleMember -Function Confirm-VmRunning
 
 
 # Confirm VM is stopped
 # ---------------------
-function Confirm-AzVmStopped {
+function Confirm-VmStopped {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
     return (($vmStatuses -contains "PowerState/stopped") -and ($vmStatuses -contains "ProvisioningState/succeeded") )
 }
-Export-ModuleMember -Function Confirm-AzVmStopped
+Export-ModuleMember -Function Confirm-VmStopped
 
 
 # Deploy an ARM template and log the output
@@ -715,7 +715,7 @@ function Deploy-UbuntuVirtualMachine {
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
         $CloudInitYaml,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location,
+        [string]$Location,
         [Parameter(Mandatory = $true, HelpMessage = "ID of network card to attach to this VM")]
         $NicId,
         [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
@@ -788,18 +788,18 @@ Export-ModuleMember -Function Deploy-UbuntuVirtualMachine
 function Deploy-VirtualMachineNIC {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
         $Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location,
+        [string]$Location,
         [Parameter(Mandatory = $false, HelpMessage = "Public IP address for this NIC")]
         [ValidateSet("Dynamic", "Static")]
-        $PublicIpAddressAllocation = $null,
+        [string]$PublicIpAddressAllocation = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Private IP address for this NIC")]
-        $PrivateIpAddress = $null
+        [string]$PrivateIpAddress = $null
     )
     Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
     $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -832,9 +832,9 @@ function Deploy-VirtualMachineMonitoringExtension {
         [Parameter(Mandatory = $true, HelpMessage = "VM object")]
         $VM,
         [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
-        $workspaceId,
+        [string]$workspaceId,
         [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
-        $workspaceKey
+        [string]$workspaceKey
     )
 
     $PublicSettings = @{ "workspaceId" = $workspaceId }
@@ -845,11 +845,11 @@ function Deploy-VirtualMachineMonitoringExtension {
             [Parameter(Mandatory = $true, HelpMessage = "VM object")]
             $VM,
             [Parameter(Mandatory = $true, HelpMessage = "Extension publisher")]
-            $Publisher,
+            [string]$Publisher,
             [Parameter(Mandatory = $true, HelpMessage = "Extension type")]
-            $Type,
+            [string]$Type,
             [Parameter(Mandatory = $true, HelpMessage = "Extension version")]
-            $Version
+            [string]$Version
         )
         Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
         $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
@@ -930,9 +930,9 @@ Export-ModuleMember -Function Deploy-VirtualNetwork
 function Enable-AzVM {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to enable")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
@@ -963,7 +963,7 @@ Export-ModuleMember -Function Enable-AzVM
 function Get-AzSubnet {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
         $VirtualNetwork
     )
@@ -978,15 +978,15 @@ Export-ModuleMember -Function Get-AzSubnet
 function Get-ImageFromGallery {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
-        $ImageVersion,
+        [string]$ImageVersion,
         [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
-        $ImageDefinition,
+        [string]$ImageDefinition,
         [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
-        $GalleryName,
+        [string]$GalleryName,
         [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
-        $ResourceGroup,
+        [string]$ResourceGroup,
         [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
-        $Subscription
+        [string]$Subscription
     )
     $originalContext = Get-AzContext
     try {
@@ -1050,11 +1050,11 @@ Export-ModuleMember -Function Get-ImageDefinition
 function Get-NSRecords {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
-        $RecordSetName,
+        [string]$RecordSetName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
-        $DnsZoneName,
+        [string]$DnsZoneName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
     $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
@@ -1068,11 +1068,11 @@ Export-ModuleMember -Function Get-NSRecords
 function Get-Subnet {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network that this subnet belongs to")]
-        $VirtualNetworkName,
+        [string]$VirtualNetworkName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that this subnet belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName
     return ($virtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
@@ -1101,7 +1101,7 @@ Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
 function Get-VMsByResourceGroupPrefix {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
-        $ResourceGroupPrefix
+        [string]$ResourceGroupPrefix
     )
     $matchingResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "${ResourceGroupPrefix}_*" }
     $matchingVMs = [ordered]@{}
@@ -1121,16 +1121,16 @@ Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 function Invoke-RemoteScript {
     param(
         [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to local script that will be run remotely")]
-        $ScriptPath,
+        [string]$ScriptPath,
         [Parameter(Mandatory = $true, ParameterSetName = "ByString", HelpMessage = "Contents of script that will be run remotely")]
-        $Script,
+        [string]$Script,
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
-        $VMName,
+        [string]$VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
         [ValidateSet("PowerShell", "UnixShell")]
-        $Shell = "PowerShell",
+        [string]$Shell = "PowerShell",
         [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
         $Parameter = $null
     )
@@ -1225,9 +1225,9 @@ Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 function New-DNSZone {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
     $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -1251,9 +1251,9 @@ Export-ModuleMember -Function New-DNSZone
 function Remove-VirtualMachine {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the VM to remove")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
 
     $null = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -1277,9 +1277,9 @@ Export-ModuleMember -Function Remove-VirtualMachine
 function Remove-VirtualMachineDisk {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the disk to remove")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the disk")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
 
     $null = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -1303,9 +1303,9 @@ Export-ModuleMember -Function Remove-VirtualMachineDisk
 function Remove-VirtualMachineNIC {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM NIC to remove")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     $null = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
@@ -1328,11 +1328,11 @@ Export-ModuleMember -Function Remove-VirtualMachineNIC
 function Set-DnsZoneAndParentNSRecords {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to create")]
-        $DnsZoneName,
+        [string]$DnsZoneName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group holding DNS zones")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
-
+    # Get subdomain and parent domain
     $subdomain = $DnsZoneName.Split('.')[0]
     $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
 
@@ -1367,9 +1367,9 @@ Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords
 function Set-KeyVaultPermissions {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
-        $GroupName
+        [string]$GroupName
     )
     Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
@@ -1401,11 +1401,11 @@ Export-ModuleMember -Function Set-KeyVaultPermissions
 function Set-NSRecords {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
-        $RecordSetName,
+        [string]$RecordSetName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
-        $DnsZoneName,
+        [string]$DnsZoneName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "NS records to add")]
         $NsRecords
     )
@@ -1462,11 +1462,11 @@ Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
 function Start-Firewall {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
-        $VirtualNetworkName,
+        [string]$VirtualNetworkName,
         [Parameter(Mandatory = $false, HelpMessage = "Force restart of Firewall")]
         [switch]$ForceRestart
     )
@@ -1506,9 +1506,9 @@ Export-ModuleMember -Function Start-Firewall
 function Stop-Firewall {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of Firewall resource group")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $false, HelpMessage = "Submit request to stop but don't wait for completion.")]
         [switch]$NoWait
     )
@@ -1544,11 +1544,11 @@ Export-ModuleMember -Function Stop-Firewall
 function Start-VM {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
-        $VM,
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart,
         [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
@@ -1678,14 +1678,14 @@ function Update-NetworkSecurityGroupRule {
     try {
         $ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
         $Description = $ruleBefore.Description
-        if ($Priority -eq $null) { $Priority = $ruleBefore.Priority }
-        if ($Direction -eq $null) { $Direction = $ruleBefore.Direction }
-        if ($Access -eq $null) { $Access = $ruleBefore.Access }
-        if ($Protocol -eq $null) { $Protocol = $ruleBefore.Protocol }
-        if ($SourceAddressPrefix -eq $null) { $SourceAddressPrefix = $ruleBefore.SourceAddressPrefix }
-        if ($SourcePortRange -eq $null) { $SourcePortRange = $ruleBefore.SourcePortRange }
-        if ($DestinationAddressPrefix -eq $null) { $DestinationAddressPrefix = $ruleBefore.DestinationAddressPrefix }
-        if ($DestinationPortRange -eq $null) { $DestinationPortRange = $ruleBefore.DestinationPortRange }
+        if ($null -eq $Priority) { $Priority = $ruleBefore.Priority }
+        if ($null -eq $Direction) { $Direction = $ruleBefore.Direction }
+        if ($null -eq $Access) { $Access = $ruleBefore.Access }
+        if ($null -eq $Protocol) { $Protocol = $ruleBefore.Protocol }
+        if ($null -eq $SourceAddressPrefix) { $SourceAddressPrefix = $ruleBefore.SourceAddressPrefix }
+        if ($null -eq $SourcePortRange) { $SourcePortRange = $ruleBefore.SourcePortRange }
+        if ($null -eq $DestinationAddressPrefix) { $DestinationAddressPrefix = $ruleBefore.DestinationAddressPrefix }
+        if ($null -eq $DestinationPortRange) { $DestinationPortRange = $ruleBefore.DestinationPortRange }
         # Print the update we're about to make
         if ($Direction -eq "Inbound") {
             Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access from '$SourceAddressPrefix'"
@@ -1826,9 +1826,9 @@ Export-ModuleMember -Function Set-VnetPeering
 function Wait-ForAzVMCloudInit {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to wait for")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
     # Poll VM to see whether it has finished running
     Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish for $Name..."

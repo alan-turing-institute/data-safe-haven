@@ -21,7 +21,7 @@ function Add-WindowsVMtoDomain {
         [Parameter(Mandatory=$false, HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart
     )
-    Add-LogMessage -Level Info "Attempting to join VM '$Name' to domain '$DomainName'"
+    Add-LogMessage -Level Info "[ ] Attempting to join VM '$Name' to domain '$DomainName'"
     $domainJoinCredentials = New-Object System.Management.Automation.PSCredential("${DomainName}\${DomainJoinUsername}", $DomainJoinPassword)
     $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
     if ($?) {
@@ -209,7 +209,7 @@ Export-ModuleMember -Function Set-NetworkSecurityGroupRules
 function Update-VMIpAddress {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
-        $VM,
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "VM name", ParameterSetName = "ByName")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "VM resource group", ParameterSetName = "ByName")]
