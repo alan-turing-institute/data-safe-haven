@@ -49,7 +49,7 @@ Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa
 
 ### Create configuration file
 
-The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder.
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs` folder.
 These are also used when deploying an SRE environment.
 
 > :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer.
