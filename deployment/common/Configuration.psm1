@@ -15,7 +15,7 @@ function Get-SreConfig {
     Add-LogMessage -Level Info "Generating/updating config file for '$configId'"
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $configId
+    $sreConfigBase = Get-ConfigFile -configType "sre" -configName $configId
 
     # Ensure that naming structure is being adhered to
     if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
@@ -472,15 +472,12 @@ function Get-ConfigFile {
         [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
         [ValidateSet("sre", "shm")]
         $configType,
-        [Parameter(Mandatory = $true, HelpMessage = "Config level ('core' or 'full')")]
-        [ValidateSet("core", "full")]
-        $configLevel,
         [Parameter(Mandatory = $true, HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
         $configName
     )
-    $configFilename = "${configType}_${configName}_${configLevel}_config.json"
+    $configFilename = "${configType}_${configName}_core_config.json"
     try {
-        $configPath = Join-Path $(Get-ConfigRootDir) $configLevel $configFilename -Resolve -ErrorAction Stop
+        $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
         $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
     } catch [System.Management.Automation.ItemNotFoundException] {
         Add-LogMessage -Level Fatal "Could not find a config file named '$configFilename'..."
@@ -499,7 +496,7 @@ function Get-ShmFullConfig {
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
+    $shmConfigBase = Get-ConfigFile -configType "shm" -configName $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
