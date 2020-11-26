@@ -934,25 +934,12 @@ function Enable-AzVM {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
+    Add-LogMessage -Level Info "Enable-AzVM is deprecated - consider switching to Start-VM"
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
-    Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
     if ($powerState -eq "PowerState/running") {
-        $null = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
-        $success = $?
+        return Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
     } else {
-        $null = Start-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
-        $success = $?
-    }
-    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
-    while ($powerState -ne "PowerState/running") {
-        $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
-        Start-Sleep 5
-    }
-    $success = $success -And $?
-    if ($success) {
-        Add-LogMessage -Level Success "Successfully (re)started '$Name' [$powerState]"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to (re)start '$Name' [$powerState]!"
+        return Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName
     }
 }
 Export-ModuleMember -Function Enable-AzVM
@@ -1215,7 +1202,7 @@ function Invoke-WindowsConfigureAndUpdate {
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"}
     Write-Output $result.Value
     # Reboot the VM
-    Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
+    Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 
@@ -1337,24 +1324,20 @@ function Set-DnsZoneAndParentNSRecords {
     $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
 
     # Create DNS Zone
-    # ---------------
     Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
     New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
 
     # Get NS records from the new DNS Zone
-    # ------------------------------------
     Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
     $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName
 
     # Check if parent DNS Zone exists in same subscription and resource group
-    # -----------------------------------------------------------------------
     $null = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
         Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
     } else {
         # Add NS records to the parent DNS Zone
-        # -------------------------------------
         Add-LogMessage -Level Info "Add NS records to the parent DNS Zone..."
         Set-NSRecords -RecordSetName $subdomain -DnsZoneName $parentDnsZoneName -ResourceGroupName $ResourceGroupName -NsRecords $nsRecords
     }
