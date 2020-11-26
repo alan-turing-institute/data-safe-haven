@@ -98,29 +98,17 @@ if ($NTPServer) {
 
 # Install Windows updates
 # -----------------------
+$LogFilePath = "C:\Windows\Logs\Powershell\WindowsUpdate.$((Get-Date -Format FileDateTime).Substring(0, 13)).log"
+$null = New-Item (Split-Path -Path $LogFilePath) -ItemType Directory -Force
 $null = Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false # Register Microsoft Update servers
-$installedUpdateTitles = @(Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title })
 $updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
 if ($updatesToInstall.Count) {
-    Write-Output "`nFound $($updatesToInstall.Count) Windows updates to install:"
-    $updatesToInstall | ForEach-Object { Write-Output " ... $($_.Title)" }
-    Write-Output "**Note that installing updates is currently causing installation to hang so we are disabling this option**"
-    # Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
-    # if ($?) {
-    #     Write-Output " [o] Installing Windows updates succeeded."
-    # } else {
-    #     Write-Output " [x] Installing Windows updates failed!"
-    # }
+    Write-Output "`nFound $($updatesToInstall.Count) Windows updates to install:" | Tee-Object -FilePath $LogFilePath -Append
+    $updatesToInstall | ForEach-Object { Write-Output " ... $($_.Title)" | Tee-Object -FilePath $LogFilePath -Append }
+    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-File $LogFilePath -Append
+    if ($?) {
+        Write-Output " [o] Installing Windows updates succeeded." | Tee-Object -FilePath $LogFilePath -Append
+    } else {
+        Write-Output " [x] Installing Windows updates failed!" | Tee-Object -FilePath $LogFilePath -Append
+    }
 }
-
-# Report any updates that were installed
-# --------------------------------------
-Write-Output "`nNewly installed Windows updates:"
-$installedUpdateTitles = @()
-Write-Output "Method 1"
-Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title } | Where-Object { $_ -and ($_ -notin $installedUpdateTitles) } | ForEach-Object { Write-Output " ... $_" }
-Write-Output "Method 2"
-$newlyInstalledUpdateTitles = Get-WindowsUpdate -MicrosoftUpdate -IsInstalled | ForEach-Object { $_.Title } | Where-Object { $_ -and ($_ -notin $installedUpdateTitles) }
-foreach ($update in $newlyInstalledUpdateTitles) { Write-Output " ... $_" }
-Write-Output "Method 3"
-$newlyInstalledUpdateTitles | ForEach-Object { Write-Output " ... $_" }
