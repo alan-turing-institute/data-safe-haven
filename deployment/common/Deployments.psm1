@@ -1128,19 +1128,15 @@ function Invoke-RemoteScript {
         $Script | Out-File -FilePath $tmpScriptFile.FullName
         $ScriptPath = $tmpScriptFile.FullName
     }
-    # Setup the remote command
-    if ($Shell -eq "PowerShell") {
-        $commandId = "RunPowerShellScript"
-    } else {
-        $commandId = "RunShellScript"
-    }
     # Run the remote command
-    if ($Parameter) {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
+    $params = @{}
+    if ($Parameter) { $params["Parameter"] = $Parameter }
+    $params["CommandId"] = ($Shell -eq "PowerShell") ? "RunPowerShellScript" : "RunShellScript"
+    try {
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -ScriptPath $ScriptPath @params -ErrorAction Stop
         $success = $?
-    } else {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
-        $success = $?
+    } catch {
+        Add-LogMessage -Level Fatal "Running '$ScriptPath' on remote VM '$VMName' failed." -Exception $_.Exception
     }
     $success = $success -and ($result.Status -eq "Succeeded")
     foreach ($outputStream in $result.Value) {
@@ -1159,7 +1155,8 @@ function Invoke-RemoteScript {
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
-        Add-LogMessage -Level Info "Script output:`n$($result | Out-String)"
+        Add-LogMessage -Level Info "Script output:"
+        Write-Output ($result | Out-String)
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     return $result
@@ -1539,21 +1536,20 @@ function Start-VM {
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName
+        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
     }
     # Ensure VM is started but don't restart if already running
-    if (Confirm-AzVmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+    $operation = "start"
+    if (Confirm-VmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
         if ($ForceRestart) {
+            $operation = "restart"
             Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
             $result = Restart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
         } else {
             Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
             return
         }
-    } elseif (Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
-        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
-    } elseif (Confirm-AzVmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+    } elseif ((Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) -or (Confirm-VmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName)) {
         Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
         $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
     } else {
@@ -1561,25 +1557,24 @@ function Start-VM {
         Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
         return
     }
-    if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {
+    if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
         # Synchronous operation requested
         if ($result.Status -eq "Succeeded") {
-            Add-LogMessage -Level Success "VM '$($VM.Name)' successfully (re)started."
+            Add-LogMessage -Level Success "VM '$($VM.Name)' successfully ${operation}ed."
         } else {
             # If (re)start failed, log error with failure reason
-            Add-LogMessage -Level Fatal "Failed to (re)start VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
+            Add-LogMessage -Level Fatal "Failed to ${operation} VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
         }
-    } elseif ($result.GetType().Name -eq "PSAzureOperationResponse") {
+    } elseif ($result -is [Microsoft.Azure.Commands.Compute.Models.PSAzureOperationResponse]) {
         # Asynchronous operation requested
         if (-not $result.IsSuccessStatusCode) {
-            Add-LogMessage -Level Fatal "Request to (re)start VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+            Add-LogMessage -Level Fatal "Request to ${operation} VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
         } else {
-            Add-LogMessage -Level Success "Request to (re)start VM '$($VM.Name)' accepted."
+            Add-LogMessage -Level Success "Request to ${operation} VM '$($VM.Name)' accepted."
         }
     } else {
         Add-LogMessage -Level Fatal "Unrecognised return type from operation: '$($result.GetType().Name)'."
     }
-    return
 }
 Export-ModuleMember -Function Start-VM
 
@@ -1589,44 +1584,43 @@ Export-ModuleMember -Function Start-VM
 function Stop-VM {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
-        $VM,
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
         [switch]$NoWait
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name  $Name -ResourceGroup $ResourceGroupName
+        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
     }
     # Ensure VM is deallocated
-    if (Confirm-AzVmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
-        Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already deallocated."
+    if (Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+        Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already stopped."
         return
     } else {
-        Add-LogMessage -Level Info "[ ] Deallocating VM '$($VM.Name)'"
+        Add-LogMessage -Level Info "[ ] Stopping VM '$($VM.Name)'"
         $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
     }
-    if ($result.GetType().Name -eq "PSComputeLongRunningOperation") {
+    if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
         # Synchronous operation requested
         if ($result.Status -eq "Succeeded") {
-            Add-LogMessage -Level Success "VM '$($VM.Name)' deallocated.'"
+            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped.'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to deallocate VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
+            Add-LogMessage -Level Fatal "Failed to stop VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
         }
-    } elseif ($result.GetType().Name -eq "PSAzureOperationResponse") {
+    } elseif ($result -is [Microsoft.Azure.Commands.Compute.Models.PSAzureOperationResponse]) {
         # Asynchronous operation requested
         if (-not $result.IsSuccessStatusCode) {
-            Add-LogMessage -Level Fatal "Request to deallocate VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+            Add-LogMessage -Level Fatal "Request to stop VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
         } else {
-            Add-LogMessage -Level Success "Request to deallocate VM '$($VM.Name)' accepted."
+            Add-LogMessage -Level Success "Request to stop VM '$($VM.Name)' accepted."
         }
     } else {
         Add-LogMessage -Level Fatal "Unrecognised return type from operation: '$($result.GetType().Name)'."
     }
-    return
 }
 Export-ModuleMember -Function Stop-VM
 
