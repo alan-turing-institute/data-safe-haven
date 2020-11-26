@@ -17,12 +17,12 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Block external DNS resolution for DSVMs via SHM DNS servers
 # -----------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId                  = "`"$($config.sre.id)`""
@@ -33,7 +33,7 @@ foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
     Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Validate external DNS resolution is blocked from DSVMs
@@ -59,11 +59,10 @@ if (-not $existingNic) {
         SHM_DC2_FQDN    = "`"$($config.shm.dcb.fqdn)`""
     }
     Add-LogMessage -Level Info "Testing external DNS resolution fails on VM '$vmName'..."
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

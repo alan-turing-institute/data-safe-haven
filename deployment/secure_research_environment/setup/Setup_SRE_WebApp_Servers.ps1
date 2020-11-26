@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Retrieve passwords from the keyvault
@@ -177,4 +177,4 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

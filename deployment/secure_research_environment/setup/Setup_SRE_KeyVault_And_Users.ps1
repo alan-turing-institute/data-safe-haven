@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Create secrets resource group if it does not exist
@@ -93,7 +93,7 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     # Add SRE users and groups to SHM
     # -------------------------------
     Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
-    $null = Set-AzContext -Subscription $config.shm.subscriptionName
+    $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
     $params = @{
         shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
@@ -109,4 +109,4 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

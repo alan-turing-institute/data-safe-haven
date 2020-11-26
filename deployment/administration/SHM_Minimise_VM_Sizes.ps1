@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Set VM size
 if ($Size -eq "Tiny") {
@@ -55,4 +55,4 @@ foreach ($key in $vmsByRg.Keys) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

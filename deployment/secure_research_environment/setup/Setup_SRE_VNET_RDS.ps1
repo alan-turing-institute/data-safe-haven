@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set constants used in this script
@@ -31,11 +31,11 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # Retrieve variables from SHM key vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -AsPlaintext
 $domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 $domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20 -AsPlaintext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Retrieve variables from SRE key vault
@@ -61,9 +61,9 @@ $sreStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.a
 
 # Get SHM storage account
 # -----------------------
-$null = Set-AzContext -Subscription $config.shm.subscriptionName
+$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
 $shmStorageAccount = Deploy-StorageAccount -Name $config.shm.storage.artifacts.accountName -ResourceGroupName $config.shm.storage.artifacts.rg -Location $config.shm.location
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Create RDS resource group if it does not exist
@@ -74,7 +74,6 @@ $null = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.loca
 # Deploy RDS from template
 # ------------------------
 Add-LogMessage -Level Info "Deploying RDS from template..."
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
 $params = @{
     Administrator_User                       = $sreAdminUsername
     BootDiagnostics_Account_Name             = $config.sre.storage.bootdiagnostics.accountName
@@ -182,43 +181,41 @@ if ($success) {
 }
 
 
-# Add DNS records for RDS Gateway
-# -------------------------------
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
-Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
-
 # Get public IP address of RDS gateway
+# ------------------------------------
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
 $rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
-# Add DNS records to SRE DNS Zone
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-$dnsTtlSeconds = 30
 
+# Add DNS records for RDS Gateway
+# -------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
+# Add DNS records to SRE DNS Zone
+Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
+$dnsTtlSeconds = 30
 # Set the A record
 $recordName = "@"
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
 Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+$null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
     Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
 }
-
 # Set the CNAME record
 $recordName = "$($config.sre.rds.gateway.hostname)".ToLower()
 Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
 Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+$null = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
     Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set locale, install updates and reboot
@@ -232,7 +229,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 
 # Import files to RDS VMs
 # -----------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 # Set correct list of packages from blob storage for each session host
 $blobfiles = @{}
@@ -246,7 +243,7 @@ foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Conte
 foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
     $blobfiles[$config.sre.rds.gateway.vmName] += @{$containerNameGateway = $blob.Name}
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 # Copy software and/or scripts to RDS VMs
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
@@ -295,4 +292,4 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

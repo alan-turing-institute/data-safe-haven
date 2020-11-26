@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Disable legacy TLS protocols on RDS Gateway
@@ -30,4 +30,4 @@ Enable-AzVM -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

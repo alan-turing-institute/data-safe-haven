@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -Subscription $config.dns.subscriptionName
+$null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction Stop
 
 
 # Ensure that DNS resource group exists
@@ -28,4 +28,4 @@ Set-DnsZoneAndParentNSRecords -DnsZoneName $config.domain.fqdn -ResourceGroupNam
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

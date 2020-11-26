@@ -33,7 +33,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -Subscription $config.dns.subscriptionName
+$null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction Stop
 
 
 # Add the SHM domain record to the Azure AD
@@ -129,4 +129,4 @@ if ($aadDomain.IsVerified) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

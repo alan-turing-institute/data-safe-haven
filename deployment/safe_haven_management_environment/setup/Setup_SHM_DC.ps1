@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Setup boot diagnostics resource group and storage account
@@ -236,9 +236,9 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
     # Remove custom per-NIC DNS settings
-    $nic = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
-    $nic.DnsSettings.DnsServers.Clear()
-    $null = $nic | Set-AzNetworkInterface
+    $networkCard = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
+    $networkCard.DnsSettings.DnsServers.Clear()
+    $null = $networkCard | Set-AzNetworkInterface
 
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
@@ -248,4 +248,4 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

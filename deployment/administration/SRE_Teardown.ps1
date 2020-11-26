@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Make user confirm before beginning deletion
@@ -67,4 +67,4 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

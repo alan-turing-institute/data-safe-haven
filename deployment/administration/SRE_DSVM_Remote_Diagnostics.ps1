@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Find VM with private IP address matching the provided last octet
@@ -64,7 +64,7 @@ if ($?) {
 
 # Set LDAP secret in local Active Directory on the SHM DC
 # -------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
     samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)`""
@@ -77,12 +77,12 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Update DNS record on the SHM for this VM
 # ----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm. -ErrorAction Stop
 Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$($vm.Name)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
 $params = @{
@@ -91,10 +91,10 @@ $params = @{
     IpAddress = $vmIpAddress
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

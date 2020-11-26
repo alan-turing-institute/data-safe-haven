@@ -26,7 +26,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set VM name and size
@@ -47,7 +47,7 @@ if ($existingNic) {
     } else {
         if ($existingNic.VirtualMachine.Id) {
             Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. No further action will be taken"
-            $null = Set-AzContext -Context $originalContext
+            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         } else {
             Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
@@ -87,7 +87,7 @@ if ($upgrade) {
     if ($existingVm) {
         if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
             Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
-            $null = Set-AzContext -Context $originalContext
+            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         }
     }
@@ -458,4 +458,4 @@ Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed fro
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Configure CAP and RAP settings
@@ -39,13 +39,12 @@ $params = @{
     remoteNpsAcctSharedSecret    = "$npsSecret"
     remoteNpsServerGroup         = "`"TS GATEWAY SERVER GROUP`"" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 
 
 # Configure SHM NPS for SRE RDS RADIUS client
 # -------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
@@ -68,15 +67,16 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # 2. Restart the NPS server
 # We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
 # -------------------------------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Restarting NPS Server..."
 # Restart SHM NPS
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
 # Wait 2 minutes for NPS to complete post-restart boot and start NPS services
 Add-LogMessage -Level Info "Waiting 2 minutes for NPS services to start..."
 Start-Sleep 120
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

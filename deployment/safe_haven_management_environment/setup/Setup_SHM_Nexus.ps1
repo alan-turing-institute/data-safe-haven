@@ -24,7 +24,7 @@ if ($tier -ne "2") {
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Retrieve passwords from the key vault
@@ -171,4 +171,4 @@ Enable-AzVM -Name $vmName -ResourceGroupName $config.repository.rg
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Use the IP last octet to get the VM name
@@ -30,7 +30,7 @@ if (-not $vmName) {
 
 # Update DNS record on the SHM for this VM
 # ----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "[ ] Resetting DNS record for DSVM '$vmName'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "ResetDNSRecord.ps1"
 $params = @{
@@ -44,7 +44,7 @@ if ($?) {
 } else {
     Add-LogMessage -Level Failure "Resetting DNS record for DSVM '$vmName' failed!"
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Run remote diagnostic scripts
@@ -78,4 +78,4 @@ foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

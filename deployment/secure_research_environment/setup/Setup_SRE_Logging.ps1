@@ -13,18 +13,19 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # -------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get Log Analytics Workspace details
 # -----------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $rgFilter = "RG_SRE_$($config.sre.id)*"
 $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
 foreach ($sreResourceGroup in $sreResourceGroups) {
@@ -36,4 +37,4 @@ foreach ($sreResourceGroup in $sreResourceGroups) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

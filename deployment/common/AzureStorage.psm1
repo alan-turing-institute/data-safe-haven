@@ -234,7 +234,7 @@ function New-StorageAccountSasToken {
 
     # Temporarily switch to storage account subscription
     $originalContext = Get-AzContext
-    $null = Set-AzContext -Subscription $SubscriptionName
+    $null = Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop
 
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $ResourceGroup -AccountName $AccountName).Value[0]
@@ -243,7 +243,7 @@ function New-StorageAccountSasToken {
     $sasToken = (New-AzStorageAccountSASToken -Service $Service -ResourceType $ResourceType -Permission $Permission -ExpiryTime $expiryTime -Context $accountContext)
 
     # Switch back to previous subscription
-    $null = Set-AzContext -Context $originalContext
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     return $sasToken
 }
 Export-ModuleMember -Function New-StorageAccountSasToken

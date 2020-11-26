@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get common parameters
@@ -137,7 +137,7 @@ Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
 
 # Set PyPI and CRAN locations on the compute VM
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
 foreach ($vmName in $computeVmNames) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
@@ -149,6 +149,7 @@ foreach ($vmName in $computeVmNames) {
     }
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Block external DNS queries
@@ -158,4 +159,4 @@ Invoke-Expression -Command "$(Join-Path $PSScriptRoot Block_External_DNS_Queries
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

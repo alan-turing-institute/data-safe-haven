@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Look for resources in this subscription
@@ -38,7 +38,7 @@ if ($sreResources -or $sreResourceGroups) {
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
-    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
@@ -100,7 +100,7 @@ if ($sreResources -or $sreResourceGroups) {
 
     # Remove RDS entries from SRE DNS Zone
     # ------------------------------------
-    $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
+    $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
@@ -135,4 +135,4 @@ if ($sreResources -or $sreResourceGroups) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

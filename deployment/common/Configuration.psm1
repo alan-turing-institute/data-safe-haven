@@ -547,7 +547,7 @@ function Get-ShmFullConfig {
     $originalContext = Get-AzContext
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
-    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName
+    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
     $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
     if ($locations.Count -gt 1) {
         Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
@@ -556,7 +556,7 @@ function Get-ShmFullConfig {
             Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
         }
     }
-    $null = Set-AzContext -Context $originalContext
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     # Construct build images config
     $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
     $shm.dsvmImage = [ordered]@{
