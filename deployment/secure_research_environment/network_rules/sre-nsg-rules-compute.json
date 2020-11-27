@@ -8,7 +8,19 @@
         "direction": "Outbound",
         "priority": 1000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowClamAVOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external ClamAV servers",
+        "destinationAddressPrefix": "104.16.219.84",
+        "destinationPortRange": [53, 443],
+        "direction": "Outbound",
+        "priority": 1100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -68,19 +80,19 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
         "name": "AllowDatabasesOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to the database subnet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 3100,
         "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -92,7 +104,7 @@
         "direction": "Outbound",
         "priority": 3500,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -104,7 +116,7 @@
         "direction": "Outbound",
         "priority": 4000,
         "protocol": "*",
-        "sourceAddressPrefix": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
