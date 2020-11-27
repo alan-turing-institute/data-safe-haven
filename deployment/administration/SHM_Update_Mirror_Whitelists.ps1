@@ -55,7 +55,7 @@ foreach ($mirrorType in $mirrorTypes) {
         $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
 
         # Restart the mirror to trigger a pull-then-push
-        Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        Start-VM -Name $vmName -ResourceGroupName $config.mirrors.rg -ForceRestart
     }
 }
 

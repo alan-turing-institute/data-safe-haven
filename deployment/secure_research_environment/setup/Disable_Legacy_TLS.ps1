@@ -25,7 +25,7 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $ScriptPath -VMName 
 
 # Reboot RDS Gateway
 # ------------------
-Enable-AzVM -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
+Start-VM -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -ForceRestart
 
 
 # Switch back to original subscription

@@ -388,8 +388,8 @@ $null = $networkCard | Set-AzNetworkInterface
 
 # Restart after the networking switch
 # -----------------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-# Start-Sleep 60 # we need to allow time for the domain join to run on reboot
+Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 0.6); Start-Sleep 1 }
 
 
 # Remove snapshots

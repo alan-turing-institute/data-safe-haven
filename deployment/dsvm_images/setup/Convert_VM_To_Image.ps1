@@ -45,7 +45,7 @@ $vmTags = @{"Commit hash" = $vm.Tags["Commit hash"]}
 
 # Ensure that the VM is running
 # -----------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
+Start-VM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
 Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 
 

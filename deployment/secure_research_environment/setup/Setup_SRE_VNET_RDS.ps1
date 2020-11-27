@@ -285,8 +285,8 @@ Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $
 # Reboot all the RDS VMs
 # ----------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
-    $name, $vmName = $nameVMNameParamsPair
-    Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
+    $null, $vmName = $nameVMNameParamsPair
+    Start-VM -Name $vmName -ResourceGroupName $config.sre.rds.rg -ForceRestart
 }
 
 

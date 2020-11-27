@@ -937,9 +937,9 @@ function Enable-AzVM {
     Add-LogMessage -Level Info "Enable-AzVM is deprecated - consider switching to Start-VM"
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     if ($powerState -eq "PowerState/running") {
-        return Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
+        return Start-VM -Name $Name -ResourceGroupName $ResourceGroupName -ForceRestart
     } else {
-        return Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName
+        return Start-VM -Name $Name -ResourceGroupName $ResourceGroupName
     }
 }
 Export-ModuleMember -Function Enable-AzVM

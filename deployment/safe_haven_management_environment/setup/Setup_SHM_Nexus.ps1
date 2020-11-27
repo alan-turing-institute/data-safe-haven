@@ -166,7 +166,7 @@ $params = @{
     ImageSku               = "18.04-LTS"
 }
 $null = Deploy-UbuntuVirtualMachine @params
-Enable-AzVM -Name $vmName -ResourceGroupName $config.repository.rg
+Start-VM -Name $vmName -ResourceGroupName $config.repository.rg
 
 
 # Switch back to original subscription

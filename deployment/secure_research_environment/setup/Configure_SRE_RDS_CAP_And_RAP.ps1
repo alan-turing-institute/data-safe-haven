@@ -70,7 +70,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Restarting NPS Server..."
 # Restart SHM NPS
-Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
+Start-VM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -ForceRestart
 # Wait 2 minutes for NPS to complete post-restart boot and start NPS services
 Add-LogMessage -Level Info "Waiting 2 minutes for NPS services to start..."
 Start-Sleep 120
