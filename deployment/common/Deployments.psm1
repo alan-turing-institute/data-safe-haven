@@ -79,28 +79,31 @@ Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 function Add-VmToNSG {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine")]
-        $VMName,
+        [string]$VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group")]
-        $NSGName,
+        [string]$NSGName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        $VmResourceGroupName,
+        [string]$VmResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the NSG belongs to")]
-        $NsgResourceGroupName
+        [string]$NsgResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Allow failures, printing a warning message instead of throwing an exception")]
+        [switch]$WarnOnFailure
     )
+    $LogLevel = $WarnOnFailure ? "Warning" : "Fatal"
     Add-LogMessage -Level Info "[ ] Associating $VMName with $NSGName..."
-    $vmId = $(Get-AzVM -Name $VMName -ResourceGroupName $VmResourceGroupName).Id
-    if ($vmId.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($vmId.Count) VM(s) called $VMName!" }
-    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }
-    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName -ResourceGroupName $NsgResourceGroupName
-    if ($nsg.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($nsg.Count) NSG(s) called $NSGName!" }
-    $nic.NetworkSecurityGroup = $nsg
-    $null = ($nic | Set-AzNetworkInterface)
+    $matchingVMs = Get-AzVM -Name $VMName -ResourceGroupName $VmResourceGroupName -ErrorAction SilentlyContinue
+    if ($matchingVMs.Count -ne 1) { Add-LogMessage -Level $LogLevel "Found $($matchingVMs.Count) VM(s) called $VMName!"; return }
+    $networkCard = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $matchingVMs[0].Id }
+    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName -ResourceGroupName $NsgResourceGroupName -ErrorAction SilentlyContinue
+    if ($nsg.Count -ne 1) { Add-LogMessage -Level $LogLevel "Found $($nsg.Count) NSG(s) called $NSGName!"; return }
+    $networkCard.NetworkSecurityGroup = $nsg
+    $null = ($networkCard | Set-AzNetworkInterface)
     if ($?) {
+        Start-Sleep -Seconds 10  # Allow NSG association to propagate
         Add-LogMessage -Level Success "NSG association succeeded"
     } else {
         Add-LogMessage -Level Fatal "NSG association failed!"
     }
-    Start-Sleep -Seconds 10  # Allow NSG association to propagate
 }
 Export-ModuleMember -Function Add-VmToNSG
 
