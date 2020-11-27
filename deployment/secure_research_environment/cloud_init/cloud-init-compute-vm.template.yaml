@@ -90,8 +90,10 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
+      echo ">=== Waiting for realm availability... ===<"
+      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'"
       /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   - path: "/etc/krb5.conf"
@@ -530,12 +532,14 @@ runcmd:
   - systemctl stop clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
   - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  - rm -f /var/lib/clamav/daily.cvd 2> /dev/null
   - freshclam
   # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
   - systemctl enable clamav-daemon
   - systemctl enable clamav-clamonacc
   - systemctl enable clamav-clamdscan.timer
+  - systemctl enable clamav-freshclam
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

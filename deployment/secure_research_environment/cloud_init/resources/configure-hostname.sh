@@ -1,8 +1,11 @@
 #! /bin/bash
 
 # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
-echo ">=== Setting hostname in /etc/hostname... ===<"
+echo ">=== Setting hostname... ===<"
 hostnamectl set-hostname "<vm-hostname>.<shm-fqdn-lower>"
+echo ">=== /etc/hostname ===<"
+cat /etc/hostname
+echo ">=== end of /etc/hostname ===<"
 
 # Add localhost information to /etc/hosts
 echo ">=== Adding <vm-hostname> [<vm-ipaddress>] to /etc/hosts... ===<"

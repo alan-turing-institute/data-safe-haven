@@ -297,8 +297,8 @@ runcmd:
   - git clone https://github.com/bats-core/bats-file /opt/bats/bats-file
   - /opt/bats/bats-core/install.sh /usr/local
 
-  # Manually update clamav signature database
-  - echo ">=== $(date +%s) Updating clamav database ===<"
+  # Manually update ClamAV signature database
+  - echo ">=== $(date +%s) Updating ClamAV database ===<"
   # We do not update ClamAV at build time since these definitions need to be updated at deployment times
   - systemctl stop clamav-freshclam
   - systemctl disable clamav-freshclam

@@ -83,8 +83,10 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
+      echo ">=== Waiting for realm availability... ===<"
+      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-data-servers-path>' '<domain-join-username>' '<vm-hostname>'
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-data-servers-path>' '<domain-join-username>' '<vm-hostname>'"
       /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   - path: "/etc/local/runonce.d/01-generate-keytab.sh"

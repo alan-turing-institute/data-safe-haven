@@ -12,7 +12,7 @@ VM_HOSTNAME=$4
 # Check that hostname is correct
 echo "Ensuring that hostname is correct..."
 if [ "$(hostnamectl --static)" != "${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}" ] | [ ! "$(grep $VM_HOSTNAME /etc/hosts)" ]; then
-    /opt/configuration/configure-hostname.sh
+    /opt/configuration/configure-hostname.sh > /dev/null
 fi
 
 # Check the NTP service
@@ -38,7 +38,7 @@ fi
 
 # Join realm - creating the SSSD config if it does not exist
 echo "Joining realm '${DOMAIN_FQDN_LOWER}'..."
-cat /etc/domain-join.secret | realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/
+cat /etc/domain-join.secret | realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/ 2>&1
 
 # Update SSSD settings
 echo "Updating SSSD settings..."
