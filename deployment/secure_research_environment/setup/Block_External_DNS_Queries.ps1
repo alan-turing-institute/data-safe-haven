@@ -39,19 +39,18 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Validate external DNS resolution is blocked from DSVMs
 # ------------------------------------------------------
 # Get VM for provided IP address
-$defaultDsvmIpLastOctet = "160"
+$computeVmIds = @(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Id })
+$computeVmIpAddresses = @(Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -in $computeVmIds } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress })
 if (-not $dsvmIpLastOctet) {
-    Add-LogMessage -Level Warning "Test DSVM not specified by providing last octet of its IP address. Attempting to test on DSVM with last octet of '$defaultDsvmIpLastOctet'."
-    $dsvmIpLastOctet = $defaultDsvmIpLastOctet
+    $dsvmIpLastOctet = $computeVmIpAddresses[0].Split(".")[3]
+    Add-LogMessage -Level Warning "Test DSVM not specified by providing last octet of its IP address. Attempting to test on DSVM with last octet of '$dsvmIpLastOctet'."
 }
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $dsvmIpLastOctet
-$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
-if (-not $existingNic) {
-    Add-LogMessage -Level Fatal "No network card found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
-} elseif (-not $existingNic.VirtualMachine.Id) {
-    Add-LogMessage -Level Fatal "No VM attached to network card with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
+$vmIpAddress = @($computeVmIpAddresses | Where-Object { $_.Split(".")[3] -eq $dsvmIpLastOctet })[0]
+Add-LogMessage -Level Info "Looking for DSVM with IP address '$vmIpAddress'..."
+if (-not $vmIpAddress) {
+    Add-LogMessage -Level Fatal "No DSVM found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
 } else {
-    $vmName = $existingNic.VirtualMachine.Id.Split("/")[-1]
+    $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
     $params = @{
         SHM_DOMAIN_FQDN = "`"$($config.shm.domain.fqdn)`""

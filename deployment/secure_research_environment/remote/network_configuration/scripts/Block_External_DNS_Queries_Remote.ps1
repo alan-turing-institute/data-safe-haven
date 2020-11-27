@@ -19,9 +19,9 @@ param(
 function Get-DnsClientSubnetNameFromCidr {
     param(
         [Parameter(HelpMessage = "SRE prefix")]
-        $srePrefix,
+        [string]$srePrefix,
         [Parameter(HelpMessage = "CIDR")]
-        $cidr
+        [string]$cidr
     )
     return "$srePrefix-$($cidr.Replace('/','_'))"
 }
@@ -32,9 +32,9 @@ function Get-DnsClientSubnetNameFromCidr {
 function Set-DnsClientSubnets {
     param(
         [Parameter(HelpMessage = "CIDR")]
-        $cidr,
+        [string]$cidr,
         [Parameter(HelpMessage = "Subnet name")]
-        $subnetName
+        [string]$subnetName
     )
     $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
     if ($subnet) {
@@ -56,11 +56,11 @@ function Set-DnsClientSubnets {
 function Set-DnsQueryResolutionPolicy {
     param(
         [Parameter(HelpMessage = "CIDR")]
-        $cidr,
+        [string]$cidr,
         [Parameter(HelpMessage = "Subnet name")]
-        $subnetName,
+        [string]$subnetName,
         [Parameter(HelpMessage = "Recursion policy")]
-        $recursionScopeName
+        [string]$recursionScopeName
     )
     $policyName = "${subnetName}-default-recursion"
     try {
