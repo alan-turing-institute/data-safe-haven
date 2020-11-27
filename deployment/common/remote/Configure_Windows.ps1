@@ -17,16 +17,12 @@ param(
 # Set locale
 # ----------
 Write-Output "Setting locale..."
-Set-WinHomeLocation -GeoId 0xf2
-$success = $?
+$GeoId = ([System.Globalization.CultureInfo]::GetCultures("InstalledWin32Cultures") | Where-Object { $_.Name -eq $Locale } | ForEach-Object { [System.Globalization.RegionInfo]$_.Name }).GeoId
+Set-WinHomeLocation -GeoId $GeoId
 Set-WinSystemLocale $Locale
-$success = $success -and $?
 Set-Culture $Locale
-$success = $success -and $?
 Set-WinUserLanguageList -LanguageList $Locale -Force
-$success = $success -and $?
-Get-WinUserLanguageList
-if ($success) {
+if (((Get-WinSystemLocale).Name -eq $Locale) -and ((Get-Culture).Name -eq $Locale) -and ((Get-WinUserLanguageList)[0].LanguageTag -eq $Locale)) {
     Write-Output " [o] Setting locale to '$Locale' succeeded"
 } else {
     Write-Output " [x] Setting locale to '$Locale' failed!"
@@ -36,12 +32,12 @@ if ($success) {
 # Configure time zone
 # -------------------
 if ($TimeZone) {
-    Write-Output "Setting timezone and NTP server..."
+    Write-Output "Setting time zone..."
     Set-TimeZone -Name $TimeZone
     if ($?) {
-        Write-Output " [o] Setting time zone succeeded"
+        Write-Output " [o] Setting time zone to '$TimeZone' succeeded"
     } else {
-        Write-Output " [x] Setting time zone failed!"
+        Write-Output " [x] Setting time zone to '$TimeZone' failed!"
     }
 } else {
     Write-Output " [x] Invalid time zone '$TimeZone' provided!"
@@ -52,6 +48,7 @@ if ($TimeZone) {
 # These steps follow the instructions from https://support.microsoft.com/en-gb/help/816042/how-to-configure-an-authoritative-time-server-in-windows-server
 # --------------------------------------------------------------------------------------------------------------------------------------------------------
 if ($NTPServer) {
+    Write-Output "Setting NTP server..."
     # Change DateTime\Servers settings
     # We should end up with exactly two DWORDs: 0th-server and default (pointing to 0th-server)
     # -----------------------------------------------------------------------------------------
@@ -87,9 +84,9 @@ if ($NTPServer) {
     Start-Service W32Time
     $success = $success -and $?
     if ($success) {
-        Write-Output " [o] Setting NTP server succeeded"
+        Write-Output " [o] Setting NTP server to '$NTPServer' succeeded"
     } else {
-        Write-Output " [x] Setting NTP server failed!"
+        Write-Output " [x] Setting NTP server to '$NTPServer' failed!"
     }
 } else {
     Write-Output " [x] Invalid NTP server '$NTPServer' provided!"
