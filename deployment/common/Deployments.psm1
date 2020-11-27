@@ -461,8 +461,7 @@ function Deploy-LogAnalyticsWorkspace {
     if (-not $(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
         Add-LogMessage -Level Info "[ ] Registering Microsoft.Insights provider in this subscription..."
         $null = Register-AzResourceProvider -ProviderNamespace Microsoft.Insights
-        Add-LogMessage -Level Info "Waiting 5 minutes for this change to propagate..."
-        Start-Sleep 300
+        1..300 | ForEach-Object { Write-Progress -Activity "Waiting 5 minutes for this change to propagate..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 3); Start-Sleep 1 }
         if ($(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
             Add-LogMessage -Level Success "Successfully registered Microsoft.Insights provider"
         } else {
@@ -1138,8 +1137,16 @@ function Invoke-RemoteScript {
     if ($Parameter) { $params["Parameter"] = $Parameter }
     $params["CommandId"] = ($Shell -eq "PowerShell") ? "RunPowerShellScript" : "RunShellScript"
     try {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -ScriptPath $ScriptPath @params -ErrorAction Stop
-        $success = $?
+        # Catch failures from running two commands in close proximity and rerun
+        while ($true) {
+            try {
+                $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -ScriptPath $ScriptPath @params -ErrorAction Stop
+                $success = $?
+                break
+            } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+               if (-not ($_.Exception.Message -match "Run command extension execution is in progress")) { throw }
+            }
+        }
     } catch {
         Add-LogMessage -Level Fatal "Running '$ScriptPath' on remote VM '$VMName' failed." -Exception $_.Exception
     }
@@ -1154,15 +1161,13 @@ function Invoke-RemoteScript {
     }
     # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
-    # Wait 30s to allow the run command extension to register as completed
-    Start-Sleep 30
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
-        if (-not $SuppressOutput) { Write-Output $result.Value }
+        if (-not $SuppressOutput) { Write-Host ($result.Value | Out-String) }
     } else {
         Add-LogMessage -Level Info "Script output:"
-        Write-Output ($result | Out-String)
+        Write-Host ($result | Out-String)
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     return $result
@@ -1189,14 +1194,12 @@ function Invoke-WindowsConfigureAndUpdate {
     Add-LogMessage -Level Info "[ ] Installing core Powershell modules on '$VMName'"
     $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
-    Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Install additional Powershell modules
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
     }
-    Start-Sleep 30  # protect against 'Run command extension execution is in progress' errors
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
