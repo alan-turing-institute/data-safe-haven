@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId,
+    [Parameter(Mandatory = $false, HelpMessage = "Force an existing database VM to be redeployed.")]
+    [switch]$Redeploy
 )
 
 Import-Module Az -ErrorAction Stop
@@ -36,6 +38,23 @@ $deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment
 foreach ($dbConfigName in $config.sre.databases.Keys) {
     if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
     $databaseCfg = $config.sre.databases[$dbConfigName]
+
+    # Check whether this database VM has already been deployed
+    # --------------------------------------------------------
+    if (Get-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -ErrorAction SilentlyContinue) {
+        if ($Redeploy) {
+            Add-LogMessage -Level Info "Removing existing database VM '$($databaseCfg.vmName)'..."
+            $null = Remove-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Removal of database VM '$($databaseCfg.vmName)' succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Removal of database VM '$($databaseCfg.vmName)' failed!"
+            }
+        } else {
+            Add-LogMessage -Level Warning "Database VM '$($databaseCfg.vmName)' already exists. Use the '-Redeploy' option if you want to remove the existing database and its data and deploy a new one."
+            continue
+        }
+    }
 
     # Get database subnet and deployment IP address
     # ---------------------------------------------
@@ -83,7 +102,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 
         # Set locale, install updates and reboot
-        Add-LogMessage -Level Info "Updating $($databaseCfg.vmName) [Note that this can take around 20 minutes due to a large SQL server update]..."
+        Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."
         Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn -AdditionalPowershellModules @("SqlServer")
 
         # Change subnets and IP address while the VM is off
