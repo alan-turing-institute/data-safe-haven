@@ -78,7 +78,7 @@ if ($sreResources -or $sreResourceGroups) {
     # ----------------------------------------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
     foreach ($storageAccountName in @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name)) {
-        $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.data.rg -Name $storageAccountName -ErrorAction SilentlyContinue
+        $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $storageAccountName -ErrorAction SilentlyContinue
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
         $params = @{
             shmFqdn              = "`"$($config.shm.domain.fqdn)`""
