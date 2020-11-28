@@ -78,7 +78,7 @@ if ($?) {
     Write-Output " [x] Failed to download NPS extension"
 }
 Write-Output "Installing NPS extension..."
-Start-Process $npsExtnPath -ArgumentList '/install','/quiet'
+Start-Process $npsExtnPath -ArgumentList '/install', '/quiet'
 if ($?) {
     Write-Output " [o] Successfully installed NPS extension"
 } else {

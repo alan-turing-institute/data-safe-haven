@@ -32,7 +32,7 @@ if (-not $ExistingDnsRecord) {
     } else {
         try {
             $NewDnsRecord = $ExistingDnsRecord.Clone()
-            $NewDnsRecord.RecordData.IPv4Address=[System.Net.IPAddress]::parse($IpAddress)
+            $NewDnsRecord.RecordData.IPv4Address = [System.Net.IPAddress]::parse($IpAddress)
             $null = Set-DnsServerResourceRecord -NewInputObject $NewDnsRecord -OldInputObject $ExistingDnsRecord -ZoneName $Fqdn -PassThru
             Write-Output " [o] Successfully updated DNS record for '$HostName' to point to '$IpAddress'"
         } catch [Microsoft.Management.Infrastructure.CimException] {

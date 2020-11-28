@@ -61,7 +61,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 $shmDcFqdn = "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)"
 $gitlabFqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
                                             Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).

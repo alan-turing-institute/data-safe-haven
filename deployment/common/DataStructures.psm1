@@ -52,7 +52,7 @@ Export-ModuleMember -Function Copy-HashtableOverrides
 # ------------------------------------------------------
 function Find-AllMatchingKeys {
     param(
-        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [Parameter(Mandatory = $true, HelpMessage = "Input hashtable")]
         [System.Collections.IDictionary]$Hashtable,
         [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
         [String]$Key
@@ -77,7 +77,7 @@ Export-ModuleMember -Function Find-AllMatchingKeys
 # ----------------------------------------------
 function Find-MultilevelKey {
     param(
-        [Parameter(Mandatory=$true, HelpMessage = "Input hashtable")]
+        [Parameter(Mandatory = $true, HelpMessage = "Input hashtable")]
         [System.Collections.IDictionary]$Hashtable,
         [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
         [String]$Key
@@ -104,9 +104,9 @@ function Limit-StringLength {
         [string]$InputString,
         [Parameter(Mandatory = $True)]
         [int]$MaximumLength,
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [Switch]$FailureIsFatal,
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [Switch]$Silent
     )
     if ($InputString.Length -le $MaximumLength) {

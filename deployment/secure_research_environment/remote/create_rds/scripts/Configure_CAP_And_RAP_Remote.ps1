@@ -21,7 +21,7 @@ Import-Module NPS -ErrorAction Stop
 Import-Module RemoteDesktopServices -ErrorAction Stop
 
 function Get-NpsServerAddresses ($remoteServerGroup) {
-    $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | foreach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }
+    $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | ForEach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }
     return $npserverAddresses
 }
 
@@ -86,4 +86,3 @@ if ($success) {
 } else {
     Write-Output " [x] Failed to set remote NPS server as RD CAP store!"
 }
-

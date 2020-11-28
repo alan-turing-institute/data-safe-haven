@@ -40,7 +40,7 @@ if ($notExists) {
     }
     Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
-$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"]}
+$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"] }
 
 
 # Ensure that the VM is running

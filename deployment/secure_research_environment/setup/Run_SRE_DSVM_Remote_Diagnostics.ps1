@@ -36,8 +36,8 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction 
 Add-LogMessage -Level Info "[ ] Resetting DNS record for DSVM '$vmName'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "ResetDNSRecord.ps1"
 $params = @{
-    Fqdn = $config.shm.domain.fqdn
-    HostName = ($vmHostname | Limit-StringLength -MaximumLength 15)
+    Fqdn      = $config.shm.domain.fqdn
+    HostName  = ($vmHostname | Limit-StringLength -MaximumLength 15)
     IpAddress = $ipAddress
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

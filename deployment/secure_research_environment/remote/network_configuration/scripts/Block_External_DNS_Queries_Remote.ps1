@@ -64,7 +64,7 @@ function Set-DnsQueryResolutionPolicy {
     )
     $policyName = "${subnetName}-default-recursion"
     try {
-        $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
+        $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
         Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
     } catch {
         Write-Output " [x] Failed to create policy to '$policyName' apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"

@@ -128,19 +128,19 @@ $passwordProfile.Password = Resolve-KeyVaultSecret -VaultName $config.keyVault.N
 $passwordProfile.EnforceChangePasswordPolicy = $false
 $passwordProfile.ForceChangePasswordNextLogin = $false
 $params = @{
-    MailNickName = $username
-    DisplayName = $emergencyAdminDisplayName
-    PasswordProfile = $passwordProfile
-    UserType = "Member"
-    AccountEnabled = $true
+    MailNickName     = $username
+    DisplayName      = $emergencyAdminDisplayName
+    PasswordProfile  = $passwordProfile
+    UserType         = "Member"
+    AccountEnabled   = $true
     PasswordPolicies = "DisablePasswordExpiration"
-    UsageLocation = $config.organisation.countryCode
+    UsageLocation    = $config.organisation.countryCode
 }
 
 # Ensure user exists
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists..."
 $user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
-if($user) {
+if ($user) {
     # Update existing user
     $user = Set-AzureADUser -ObjectId $upn @params # We must use object ID here. Passing the upn via -UserPrincipalName does not work
     if ($?) {

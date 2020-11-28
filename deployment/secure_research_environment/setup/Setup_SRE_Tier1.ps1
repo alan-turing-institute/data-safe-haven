@@ -112,7 +112,7 @@ $dataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistent
                                             -Kind $config.sre.storage.persistentdata.account.storageKind `
                                             -SkuName $config.sre.storage.persistentdata.account.performance `
                                             -Location $config.sre.location
-$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object {$_.KeyName -eq "key1"}).Value
+$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
 
 
 # Deploy storage shares for data ingress and egress

@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Name of SQL AuthUpdate User")]
     [string]$DbAdminUsername,
     [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$EnableSSIS,  # it is not possible to pass a bool through the Invoke-RemoteScript interface
+    [string]$EnableSSIS, # it is not possible to pass a bool through the Invoke-RemoteScript interface
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level research users group")]
     [string]$ResearchUsersGroup,
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
@@ -117,7 +117,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Create the data and public schemas
     # ----------------------------------
-    foreach($groupSchemaTuple in @(($DataAdminGroup, "data"), ($ResearchUsersGroup, "dbopublic"))) {
+    foreach ($groupSchemaTuple in @(($DataAdminGroup, "data"), ($ResearchUsersGroup, "dbopublic"))) {
         $domainGroup, $schemaName = $groupSchemaTuple
         $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'$schemaName') EXEC('CREATE SCHEMA $schemaName AUTHORIZATION [$domainGroup]');"
         Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
@@ -135,13 +135,16 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Give domain groups appropriate roles on the SQL Server
     # ------------------------------------------------------
-    foreach($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "researchuser"))) {
+    foreach ($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "researchuser"))) {
         $domainGroup, $role = $groupRoleTuple
-        if ($role -eq "sysadmin") { # this is a server-level role
+        if ($role -eq "sysadmin") {
+            # this is a server-level role
             $sqlCommand = "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
-        } elseif ($role -eq "dataadmin") { # this is a schema-level permission set
+        } elseif ($role -eq "dataadmin") {
+            # this is a schema-level permission set
             $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
-        } elseif ($role -eq "researchuser") { # this is a schema-level permission set
+        } elseif ($role -eq "researchuser") {
+            # this is a schema-level permission set
             $sqlCommand = "ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; USE master; GRANT CONNECT TO [$domainGroup]; GRANT SHOWPLAN TO [$domainGroup]; GRANT SELECT ON SCHEMA::data TO [$domainGroup]; GRANT CREATE TABLE TO [$domainGroup];"
         } else {
             Write-Output " [x] Role $role not recognised!"

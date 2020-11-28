@@ -10,7 +10,7 @@ function New-Password {
     )
     # Construct allowed character set
     $alphaNumeric = [char[]](1..127) -match "[0-9A-Za-z]" -join ""
-    $rangeSize = $alphaNumeric.Length -1
+    $rangeSize = $alphaNumeric.Length - 1
 
     # Initialise common parameters
     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -54,7 +54,7 @@ function New-RandomLetters {
     if ($SeedPhrase -ne $null) {
         $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
     }
-    return (-join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % {[char]$_}))
+    return ( -join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % { [char]$_ }))
 
 }
 Export-ModuleMember -Function New-RandomLetters

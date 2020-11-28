@@ -71,7 +71,7 @@ foreach ($subnet in $VirtualNetwork.Subnets) {
 # --------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 # Application rules
-foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
@@ -89,7 +89,7 @@ if (-not $rules.applicationRuleCollections) {
     Add-LogMessage -Level Warning "No application rules specified."
 }
 # Network rules
-foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }

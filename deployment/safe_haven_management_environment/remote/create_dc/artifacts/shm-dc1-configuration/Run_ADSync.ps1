@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position=0, HelpMessage = "Type of synchronisation ('Initial' or 'Delta')")]
+    [Parameter(Position = 0, HelpMessage = "Type of synchronisation ('Initial' or 'Delta')")]
     [ValidateSet("Initial", "Delta")]
     [String]
     $sync = "Delta"

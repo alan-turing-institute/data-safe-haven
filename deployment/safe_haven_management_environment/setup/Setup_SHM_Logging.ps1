@@ -32,7 +32,7 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 $rgFilter = "RG_SHM_$($config.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
 foreach ($shmResourceGroup in $shmResourceGroups) {
-    foreach($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
+    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
         $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
@@ -52,7 +52,7 @@ $eventLogNames = @(
 )
 
 foreach ($eventLogName in $eventLogNames) {
-    $sourceName = "windows-event-$eventLogName".Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
+    $sourceName = "windows-event-$eventLogName".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
     $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
                                                   -ResourceGroupName $config.logging.rg `
                                                   -WorkspaceName $config.logging.workspaceName
@@ -79,21 +79,21 @@ foreach ($eventLogName in $eventLogNames) {
 # ---------------------------------------------------------
 Add-LogMessage -Level Info "Ensuring required Windows performance counters are being collected...'"
 $counters = @(
-    @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Read"},
-    @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Write"},
-    @{setName = "LogicalDisk"; counterName = "Current Disk Queue Length"},
-    @{setName = "LogicalDisk"; counterName = "Disk Reads/sec"},
-    @{setName = "LogicalDisk"; counterName = "Disk Transfers/sec"},
-    @{setName = "LogicalDisk"; counterName = "Disk Writes/sec"},
-    @{setName = "LogicalDisk"; counterName = "Free Megabytes"},
-    @{setName = "Memory"; counterName = "Available MBytes"},
-    @{setName = "Memory"; counterName = "% Committed Bytes In Use"},
-    @{setName = "LogicalDisk"; counterName = "% Free Space"},
-    @{setName = "Processor"; counterName = "% Processor Time"},
-    @{setName = "System"; counterName = "Processor Queue Length"}
+    @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Read" },
+    @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Write" },
+    @{setName = "LogicalDisk"; counterName = "Current Disk Queue Length" },
+    @{setName = "LogicalDisk"; counterName = "Disk Reads/sec" },
+    @{setName = "LogicalDisk"; counterName = "Disk Transfers/sec" },
+    @{setName = "LogicalDisk"; counterName = "Disk Writes/sec" },
+    @{setName = "LogicalDisk"; counterName = "Free Megabytes" },
+    @{setName = "Memory"; counterName = "Available MBytes" },
+    @{setName = "Memory"; counterName = "% Committed Bytes In Use" },
+    @{setName = "LogicalDisk"; counterName = "% Free Space" },
+    @{setName = "Processor"; counterName = "% Processor Time" },
+    @{setName = "System"; counterName = "Processor Queue Length" }
 )
 foreach ($counter in $counters) {
-    $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%","percent").Replace("/","-per-").Replace(" ","-").ToLower()
+    $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
     $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
                                                   -ResourceGroupName $config.logging.rg `
                                                   -WorkspaceName $config.logging.workspaceName

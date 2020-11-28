@@ -67,7 +67,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
 
         # Ensure that the appropriate storage key is stored in the SRE keyvault
         $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
+        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object { $_.KeyName -eq "key1" }).Value
         $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -AsPlaintext -ForceOverwrite
     }

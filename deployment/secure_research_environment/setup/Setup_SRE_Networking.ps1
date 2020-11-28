@@ -79,7 +79,7 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $gatewayNsg -Rules $
 # Ensure that session host NSG exists with correct rules
 # ------------------------=-----------------------------
 $sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules"  $config.sre.rds.appSessionHost.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.rds.appSessionHost.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules
 
 

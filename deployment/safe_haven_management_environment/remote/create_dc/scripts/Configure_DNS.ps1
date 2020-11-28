@@ -5,7 +5,7 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0,HelpMessage = "IP address for the external (Azure) DNS resolver")]
+    [Parameter(Position = 0, HelpMessage = "IP address for the external (Azure) DNS resolver")]
     [ValidateNotNullOrEmpty()]
     [string]$externalDnsResolver
 )

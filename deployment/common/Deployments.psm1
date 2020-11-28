@@ -522,7 +522,7 @@ function Deploy-NetworkSecurityGroup {
     $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating network security group '$Name'"
-        $nsg = New-AzNetworkSecurityGroup  -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -Force
+        $nsg = New-AzNetworkSecurityGroup -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -Force
         if ($?) {
             Add-LogMessage -Level Success "Created network security group '$Name'"
         } else {
@@ -1078,7 +1078,7 @@ function Get-VirtualNetworkFromSubnet {
     )
     $originalContext = Get-AzContext
     $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2] -ErrorAction Stop
-    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id}).Count -gt 0) }
+    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id }).Count -gt 0) }
     $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     return $virtualNetwork
 }
@@ -1094,9 +1094,9 @@ function Get-VMsByResourceGroupPrefix {
     )
     $matchingResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "${ResourceGroupPrefix}_*" }
     $matchingVMs = [ordered]@{}
-    foreach($rg in $matchingResourceGroups) {
+    foreach ($rg in $matchingResourceGroups) {
         $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
-        if($rgVms) {
+        if ($rgVms) {
             $matchingVMs[$rg.ResourceGroupName] = $rgVms
         }
     }
@@ -1203,7 +1203,7 @@ function Invoke-WindowsConfigureAndUpdate {
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"}
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer" }
     # Reboot the VM
     Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
 }
@@ -1500,14 +1500,14 @@ function Stop-Firewall {
     )
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' is deallocated..."
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if(-not $firewall) {
+    if (-not $firewall) {
         Add-LogMessage -Level Fatal "Firewall '$Name' does not exist."
         Exit 1
     }
     # At this point we either have a running firewall or a stopped firewall.
     # A firewall is allocated if it has one or more IP configurations.
     $firewallAllocacted = ($firewall.IpConfigurations.Length -ge 1)
-    if(-not $firewallAllocacted) {
+    if (-not $firewallAllocacted) {
         Add-LogMessage -Level InfoSuccess "Firewall '$Name' is already deallocated."
     } else {
         Add-LogMessage -Level Info "[ ] Deallocating firewall '$Name'..."
@@ -1550,14 +1550,14 @@ function Start-VM {
         if ($ForceRestart) {
             $operation = "restart"
             Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
-            $result = Restart-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
+            $result = Restart-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
         } else {
             Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
             return
         }
     } elseif ((Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) -or (Confirm-VmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName)) {
         Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
-        $result = Start-AzVm -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
+        $result = Start-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
     } else {
         $vmStatus = (Get-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Status).Statuses.Code
         Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
@@ -1722,7 +1722,7 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 
 # Peer two vnets
 # --------------
-function Set-VnetPeering{
+function Set-VnetPeering {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the first of two VNets to peer")]
         $Vnet1Name,

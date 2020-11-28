@@ -1,9 +1,9 @@
 function Get-MirrorIPs {
     param(
-    [Parameter(Position = 0,HelpMessage = "SRE configuration")]
+    [Parameter(Position = 0, HelpMessage = "SRE configuration")]
     $config
     )
-    if (@(0, 1).Contains([int]$config.sre.tier)){
+    if (@(0, 1).Contains([int]$config.sre.tier)) {
         # For tiers 0 and 1, return null. Get-MirrorAddresses will then return
         # the appropriate settings to use pypi.org and cran.r-project.org
         # directly.
@@ -79,9 +79,9 @@ function Get-MirrorAddresses {
             url = $cranUrl
         }
         pypi = [ordered]@{
-            index = $pypiIndex
+            index    = $pypiIndex
             indexUrl = $pypiIndexUrl
-            host = $pypiHost
+            host     = $pypiHost
         }
     }
     return $addresses

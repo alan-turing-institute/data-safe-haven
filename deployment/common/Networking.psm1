@@ -6,19 +6,19 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 # --------------------
 function Add-WindowsVMtoDomain {
     param(
-        [Parameter(Mandatory=$true, HelpMessage = "Name of VM to domain join")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to domain join")]
         [string]$Name,
-        [Parameter(Mandatory=$true, HelpMessage = "Resource group for VM to domain join")]
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group for VM to domain join")]
         [string]$ResourceGroupName,
-        [Parameter(Mandatory=$true, HelpMessage = "Domain name to join")]
+        [Parameter(Mandatory = $true, HelpMessage = "Domain name to join")]
         [string]$DomainName,
-        [Parameter(Mandatory=$true, HelpMessage = "Username for domain joining account")]
+        [Parameter(Mandatory = $true, HelpMessage = "Username for domain joining account")]
         [string]$DomainJoinUsername,
-        [Parameter(Mandatory=$true, HelpMessage = "Password for domain joining account")]
+        [Parameter(Mandatory = $true, HelpMessage = "Password for domain joining account")]
         [System.Security.SecureString]$DomainJoinPassword,
-        [Parameter(Mandatory=$true, HelpMessage = "The full distinguished name for the OU to add this VM to")]
+        [Parameter(Mandatory = $true, HelpMessage = "The full distinguished name for the OU to add this VM to")]
         [string]$OUPath,
-        [Parameter(Mandatory=$false, HelpMessage = "Force restart of VM if already running")]
+        [Parameter(Mandatory = $false, HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart
     )
     Add-LogMessage -Level Info "[ ] Attempting to join VM '$Name' to domain '$DomainName'"
