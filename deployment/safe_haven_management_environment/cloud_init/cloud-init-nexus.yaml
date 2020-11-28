@@ -1,6 +1,4 @@
 #cloud-config
-timezone: Europe/London
-
 apt:
   update: true
 
@@ -10,7 +8,9 @@ packages:
   - python3-requests
 
 write_files:
-  - path: "/docker-compose.yaml"
+  - path: "/opt/configuration/docker-compose.yaml"
+    owner: root:root
+    permissions: "0400"
     content: |
       ---
       version: "3"
@@ -23,23 +23,36 @@ write_files:
           volumes:
             - /nexus-data:/nexus-data
           restart: always
-  - path: "/configure-nexus.py"
+  - path: "/opt/configuration/configure-nexus.py"
+    owner: root:root
+    permissions: "0500"
     content: |
       <configure_nexus.py>
 
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - <ntp-server>
+
 runcmd:
-  # Create directory for nexus data with correct ownership
+  # Create directory for Nexus data that is owned by the correct user inside the Docker container
   - echo "Creating Nexus data directory"
   - mkdir /nexus-data
   - chown -R 200:200 /nexus-data
+  # Set up the Nexus container
   - echo "Creating Nexus container"
-  - docker-compose -f /docker-compose.yaml up -d
+  - docker-compose -f /opt/configuration/docker-compose.yaml up -d
   # Give Nexus some time to initialise
   - echo "Waiting for Nexus to initialise (3 minutes)"
   - sleep 3m
   # Configure Nexus
   - echo "Configuring Nexus"
-  - python3 /configure-nexus.py --path /nexus-data --admin_password <nexus-admin-password> --tier 2
+  - python3 /opt/configuration/configure-nexus.py --path /nexus-data --admin_password <nexus-admin-password> --tier <tier>
 
 power_state:
   mode: poweroff

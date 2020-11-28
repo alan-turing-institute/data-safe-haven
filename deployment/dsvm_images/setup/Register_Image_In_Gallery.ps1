@@ -18,7 +18,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
 
 # Useful constants
@@ -129,4 +129,4 @@ foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.ds
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

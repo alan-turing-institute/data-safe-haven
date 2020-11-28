@@ -83,33 +83,42 @@ function Add-SreConfig {
             name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
-                identity  = [ordered]@{
+                identity   = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${sreBasePrefix}.${sreThirdOctet}.0/24"
                 }
-                rds       = [ordered]@{
+                rds        = [ordered]@{
                     name = "RDSSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
-                data      = [ordered]@{
+                data       = [ordered]@{
                     name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
-                databases = [ordered]@{
+                databases  = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
-                    nsg  = "databases"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+                        rules = "sre-nsg-rules-databases.json"
+                    }
                 }
-                compute   = [ordered]@{
+                compute    = [ordered]@{
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
+                        rules = "sre-nsg-rules-compute.json"
+                    }
                 }
-            }
-        }
-        nsg  = [ordered]@{
-            data      = [ordered]@{}
-            databases = [ordered]@{
-                name = "$($config.sre.nsgPrefix)_DATABASES".ToUpper()
+                deployment = [ordered]@{
+                    name = "DeploymentSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
+                        rules = "sre-nsg-rules-compute-deployment.json"
+                    }
+                }
             }
         }
     }
@@ -143,21 +152,21 @@ function Add-SreConfig {
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
         }
-        userdata = [ordered]@{
-            account    = [ordered]@{
-                name = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        userdata        = [ordered]@{
+            account = [ordered]@{
+                name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
                 performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "hot"
                 rg          = $storageRg
             }
         }
-        persistentdata = [ordered]@{
+        persistentdata  = [ordered]@{
             account    = [ordered]@{
-                name        = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
-                performance = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier  = "hot"
+                name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind        = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
+                performance        = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier         = "hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
@@ -220,7 +229,10 @@ function Add-SreConfig {
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
-            nsg                     = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
+            nsg                     = [ordered]@{
+                name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
+                rules = "sre-nsg-rules-gateway.json"
+            }
             networkRules            = [ordered]@{}
             disks                   = [ordered]@{
                 data1 = [ordered]@{
@@ -242,7 +254,10 @@ function Add-SreConfig {
             vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
-            nsg                     = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+            nsg                     = [ordered]@{
+                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+                rules = "sre-nsg-rules-session-hosts.json"
+            }
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
@@ -403,8 +418,6 @@ function Add-SreConfig {
     $config.sre.dsvm = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
-        nsg                     = "$($config.sre.nsgPrefix)_COMPUTE".ToUpper()
-        deploymentNsg           = "$($config.sre.nsgPrefix)_COMPUTE_DEPLOYMENT".ToUpper()
         vmImage                 = [ordered]@{
             subscription = $config.shm.dsvmImage.subscription
             rg           = $config.shm.dsvmImage.gallery.rg
@@ -534,7 +547,7 @@ function Get-ShmFullConfig {
     $originalContext = Get-AzContext
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
-    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName
+    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
     $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
     if ($locations.Count -gt 1) {
         Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
@@ -543,7 +556,7 @@ function Get-ShmFullConfig {
             Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
         }
     }
-    $null = Set-AzContext -Context $originalContext
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     # Construct build images config
     $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
     $shm.dsvmImage = [ordered]@{
@@ -556,7 +569,7 @@ function Get-ShmFullConfig {
         build           = [ordered]@{
             rg     = "RG_SH_BUILD_CANDIDATES"
             nsg    = [ordered]@{
-                name = "NSG_IMAGE_BUILD"
+                name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @(193.60.220.240, 193.60.220.253)
             }
             vnet   = [ordered]@{
@@ -634,9 +647,8 @@ function Get-ShmFullConfig {
     $shmPrefixOctets = $shmIpPrefix.Split(".")
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
-    $shmMirrorPrefixes = @{2 = "10.20.2"; 3 = "10.20.3" }
     $shm.network = [ordered]@{
-        vnet        = [ordered]@{
+        vnet           = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -655,64 +667,51 @@ function Get-ShmFullConfig {
                     name = "GatewaySubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
                 }
-                web      = [ordered]@{
-                    name = "WebSubnet"
-                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
-                }
             }
         }
-        vpn         = [ordered]@{
+        vpn            = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         repositoryVnet = [ordered]@{
-            name = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            cidr = "10.30.1.0/24"
+            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+            cidr    = "10.30.1.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
                     name = "RepositorySubnet"
                     cidr = "10.30.1.0/24"
-                    nsg = "repository"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+                    }
                 }
             }
         }
-        mirrorVnets = [ordered]@{}
-        nsg         = [ordered]@{
-            repository = [ordered]@{
-                name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            }
-            externalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
-            }
-            externalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
-            }
-            internalPackageMirrorsTier2 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
-            }
-            internalPackageMirrorsTier3 = [ordered]@{
-                name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
-            }
-        }
+        mirrorVnets    = [ordered]@{}
     }
     # Set package mirror networking information
     foreach ($tier in @(2, 3)) {
+        $shmMirrorPrefix = "10.20.${tier}"
         $shm.network.mirrorVnets["tier${tier}"] = [ordered]@{
             name    = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-            cidr    = "$($shmMirrorPrefixes[$tier]).0/24"
+            cidr    = "${shmMirrorPrefix}.0/24"
             subnets = [ordered]@{
                 external = [ordered]@{
                     name = "ExternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).0/28"
-                    nsg  = "externalPackageMirrorsTier${tier}"
+                    cidr = "${shmMirrorPrefix}.0/28"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                    }
                 }
                 internal = [ordered]@{
                     name = "InternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "$($shmMirrorPrefixes[$tier]).16/28"
-                    nsg  = "internalPackageMirrorsTier${tier}"
+                    cidr = "${shmMirrorPrefix}.16/28"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                    }
                 }
             }
         }
     }
+
 
     # Firewall config
     # ---------------
@@ -877,14 +876,14 @@ function Get-ShmFullConfig {
     # Nexus repository VM config
     # --------------------------
     $shm.repository = [ordered]@{
-        rg = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
-        vmSize = "Standard_B2ms"
+        rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
+        vmSize   = "Standard_B2ms"
         diskType = "Standard_LRS"
-        nexus = [ordered]@{
-            adminPasswordSecretName = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
+        nexus    = [ordered]@{
+            adminPasswordSecretName         = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
             nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-nexus-app-admin-password".ToLower()
-            ipAddress = "10.30.1.10"
-            vmName = "NEXUS-REPOSITORY-TIER-2"
+            ipAddress                       = "10.30.1.10"
+            vmName                          = "NEXUS-REPOSITORY-TIER-2"
         }
     }
 

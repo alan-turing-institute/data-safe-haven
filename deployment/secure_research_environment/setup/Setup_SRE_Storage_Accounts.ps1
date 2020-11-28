@@ -15,12 +15,12 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Ensure that a storage account exists in the SHM for this SRE
 # ------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.shm.storage.persistentdata.rg -Location $config.shm.location
 $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistentdata.account.name `
                                                   -AccessTier $config.sre.storage.persistentdata.account.accessTier `
@@ -30,7 +30,7 @@ $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.pers
                                                   -SkuName $config.sre.storage.persistentdata.account.performance
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Allow
 Start-Sleep 10
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set up containers for persistent data in the SHM
@@ -58,7 +58,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         # We therefore always generate a new token and store it in the keyvault (note that old tokens will still be valid and will still be stored as old versions of the secret)
         # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the key vault
         $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -ForceOverwrite
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
 
     # When using a file share we need to mount using the storage key
     } elseif ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "ShareSMB") {
@@ -66,10 +66,10 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Share"
 
         # Ensure that the appropriate storage key is stored in the SRE keyvault
-        $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object {$_.KeyName -eq "key1"}).Value
-        $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -ForceOverwrite
+        $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object { $_.KeyName -eq "key1" }).Value
+        $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $storageKey -AsPlaintext -ForceOverwrite
     }
 }
 
@@ -85,28 +85,27 @@ $privateDnsZoneName = "$($persistentStorageAccount.StorageAccountName).blob.core
 
 # Ensure that public access to the storage account is only allowed from approved locations
 # ----------------------------------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Deny
 foreach ($IpAddress in $config.sre.storage.persistentdata.account.allowedIpAddresses) {
     $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -IPAddressOrRange $IpAddress
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set up a DNS zone on the SHM DC
 # -------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Setting up DNS zone '$privateDnsZoneName'"
 $params = @{
     Name      = $privateDnsZoneName
     IpAddress = $privateEndpointIp
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "Set_DNS_Zone.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -vmName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -vmName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

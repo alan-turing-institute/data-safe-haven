@@ -16,33 +16,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-
-# Create VNet resource group if it does not exist
-# -----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
-
-
-# Create VNet and subnets
-# -----------------------
-$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
-
-
-# Peer repository vnet to SHM vnet
-# --------------------------------
-Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
-                -Vnet1ResourceGroup $config.sre.network.vnet.rg `
-                -Vnet1SubscriptionName $config.sre.subscriptionName `
-                -Vnet2Name $config.shm.network.vnet.name `
-                -Vnet2ResourceGroup $config.shm.network.vnet.rg `
-                -Vnet2SubscriptionName $config.shm.subscriptionName `
-                -AllowRemoteGatewayFromVNet 2
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set constants used in this script
@@ -57,20 +31,20 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # Retrieve variables from SHM key vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername
-$domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20
-$domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -AsPlaintext
+$domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+$domainJoinSessionHostPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsSessionServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Retrieve variables from SRE key vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
-$rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20
-$rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
 # Ensure that boot diagnostics resource group and storage account exist
@@ -87,70 +61,9 @@ $sreStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.a
 
 # Get SHM storage account
 # -----------------------
-$null = Set-AzContext -Subscription $config.shm.subscriptionName
+$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
 $shmStorageAccount = Deploy-StorageAccount -Name $config.shm.storage.artifacts.accountName -ResourceGroupName $config.shm.storage.artifacts.rg -Location $config.shm.location
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
-
-
-# Set up the NSGs for the gateway and session hosts
-# -------------------------------------------------
-$nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "HttpsIn" `
-                             -Description "Allow HTTPS inbound to RDS server" `
-                             -Priority 100 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix Internet `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 443
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "RadiusAuthenticationRdsToNps" `
-                             -Description "Authenticate to SHM RADIUS server" `
-                             -Priority 300 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.nps.ip `
-                             -DestinationPortRange 1645, 1646, 1812, 1813
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-$nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
-                             -Name "Deny_Internet" `
-                             -Description "Deny Outbound Internet Access" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange *
+$null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Create RDS resource group if it does not exist
@@ -161,38 +74,37 @@ $null = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.loca
 # Deploy RDS from template
 # ------------------------
 Add-LogMessage -Level Info "Deploying RDS from template..."
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
 $params = @{
-    Administrator_User                       = $sreAdminUsername
-    BootDiagnostics_Account_Name             = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Join_Password_Gateway             = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
-    Domain_Join_Password_Session_Hosts       = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
-    Domain_Join_User_Gateway                 = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
-    Domain_Join_User_Session_Hosts           = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
-    Domain_Name                              = $config.shm.domain.fqdn
-    NSG_Gateway_Name                         = $config.sre.rds.gateway.nsg
-    OU_Path_Gateway                          = $config.shm.domain.ous.rdsGatewayServers.path
-    OU_Path_Session_Hosts                    = $config.shm.domain.ous.rdsSessionServers.path
-    RDS_Gateway_Admin_Password               = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
-    RDS_Gateway_Data1_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.data1.sizeGb
-    RDS_Gateway_Data1_Disk_Type              = $config.sre.rds.gateway.disks.data1.type
-    RDS_Gateway_Data2_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.data2.sizeGb
-    RDS_Gateway_Data2_Disk_Type              = $config.sre.rds.gateway.disks.data2.type
-    RDS_Gateway_IP_Address                   = $config.sre.rds.gateway.ip
-    RDS_Gateway_Name                         = $config.sre.rds.gateway.vmName
-    RDS_Gateway_Os_Disk_Size_GB              = [int]$config.sre.rds.gateway.disks.os.sizeGb
-    RDS_Gateway_Os_Disk_Type                 = $config.sre.rds.gateway.disks.os.type
-    RDS_Gateway_VM_Size                      = $config.sre.rds.gateway.vmSize
-    RDS_Session_Host_Apps_Admin_Password     = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Apps_IP_Address         = $config.sre.rds.appSessionHost.ip
-    RDS_Session_Host_Apps_Name               = $config.sre.rds.appSessionHost.vmName
-    RDS_Session_Host_Apps_Os_Disk_Size_GB    = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
-    RDS_Session_Host_Apps_Os_Disk_Type       = $config.sre.rds.appSessionHost.disks.os.type
-    RDS_Session_Host_Apps_VM_Size            = $config.sre.rds.appSessionHost.vmSize
-    SRE_ID                                   = $config.sre.id
-    Virtual_Network_Name                     = $config.sre.network.vnet.name
-    Virtual_Network_Resource_Group           = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet                   = $config.sre.network.vnet.subnets.rds.name
+    Administrator_User                    = $sreAdminUsername
+    BootDiagnostics_Account_Name          = $config.sre.storage.bootdiagnostics.accountName
+    Domain_Join_Password_Gateway          = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
+    Domain_Join_Password_Session_Hosts    = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
+    Domain_Join_User_Gateway              = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
+    Domain_Join_User_Session_Hosts        = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
+    Domain_Name                           = $config.shm.domain.fqdn
+    NSG_Gateway_Name                      = $config.sre.rds.gateway.nsg
+    OU_Path_Gateway                       = $config.shm.domain.ous.rdsGatewayServers.path
+    OU_Path_Session_Hosts                 = $config.shm.domain.ous.rdsSessionServers.path
+    RDS_Gateway_Admin_Password            = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
+    RDS_Gateway_Data1_Disk_Size_GB        = [int]$config.sre.rds.gateway.disks.data1.sizeGb
+    RDS_Gateway_Data1_Disk_Type           = $config.sre.rds.gateway.disks.data1.type
+    RDS_Gateway_Data2_Disk_Size_GB        = [int]$config.sre.rds.gateway.disks.data2.sizeGb
+    RDS_Gateway_Data2_Disk_Type           = $config.sre.rds.gateway.disks.data2.type
+    RDS_Gateway_IP_Address                = $config.sre.rds.gateway.ip
+    RDS_Gateway_Name                      = $config.sre.rds.gateway.vmName
+    RDS_Gateway_Os_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.os.sizeGb
+    RDS_Gateway_Os_Disk_Type              = $config.sre.rds.gateway.disks.os.type
+    RDS_Gateway_VM_Size                   = $config.sre.rds.gateway.vmSize
+    RDS_Session_Host_Apps_Admin_Password  = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Apps_IP_Address      = $config.sre.rds.appSessionHost.ip
+    RDS_Session_Host_Apps_Name            = $config.sre.rds.appSessionHost.vmName
+    RDS_Session_Host_Apps_Os_Disk_Size_GB = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
+    RDS_Session_Host_Apps_Os_Disk_Type    = $config.sre.rds.appSessionHost.disks.os.type
+    RDS_Session_Host_Apps_VM_Size         = $config.sre.rds.appSessionHost.vmSize
+    SRE_ID                                = $config.sre.id
+    Virtual_Network_Name                  = $config.sre.network.vnet.name
+    Virtual_Network_Resource_Group        = $config.sre.network.vnet.rg
+    Virtual_Network_Subnet                = $config.sre.network.vnet.subnets.rds.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
@@ -269,43 +181,41 @@ if ($success) {
 }
 
 
-# Add DNS records for RDS Gateway
-# -------------------------------
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
-Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
-
 # Get public IP address of RDS gateway
+# ------------------------------------
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
 $rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
-# Add DNS records to SRE DNS Zone
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-$dnsTtlSeconds = 30
 
+# Add DNS records for RDS Gateway
+# -------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
+# Add DNS records to SRE DNS Zone
+Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
+$dnsTtlSeconds = 30
 # Set the A record
 $recordName = "@"
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
 Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
+$null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
     Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
 }
-
 # Set the CNAME record
 $recordName = "$($config.sre.rds.gateway.hostname)".ToLower()
 Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
 Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$result = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+$null = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
     Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set locale, install updates and reboot
@@ -319,21 +229,21 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 
 # Import files to RDS VMs
 # -----------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 # Set correct list of packages from blob storage for each session host
 $blobfiles = @{}
 $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
     if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
-        $blobfiles[$config.sre.rds.appSessionHost.vmName] += @{$containerNameSessionHosts = $blob.Name}
+        $blobfiles[$config.sre.rds.appSessionHost.vmName] += @{$containerNameSessionHosts = $blob.Name }
     }
 }
 # ... and for the gateway
 foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-    $blobfiles[$config.sre.rds.gateway.vmName] += @{$containerNameGateway = $blob.Name}
+    $blobfiles[$config.sre.rds.gateway.vmName] += @{$containerNameGateway = $blob.Name }
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 # Copy software and/or scripts to RDS VMs
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
@@ -344,15 +254,14 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
-        storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-        storageService = "blob"
-        shareOrContainerName = "`"$containerName`""
-        sasToken = "`"$sasToken`""
+        storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
+        storageService               = "blob"
+        shareOrContainerName         = "`"$containerName`""
+        sasToken                     = "`"$sasToken`""
         pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
-        downloadDir = "$remoteUploadDir"
+        downloadDir                  = "$remoteUploadDir"
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 }
 
 # Set locale, install updates and reboot
@@ -376,11 +285,11 @@ Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $
 # Reboot all the RDS VMs
 # ----------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
-    $name, $vmName = $nameVMNameParamsPair
-    Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
+    $null, $vmName = $nameVMNameParamsPair
+    Start-VM -Name $vmName -ResourceGroupName $config.sre.rds.rg -ForceRestart
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

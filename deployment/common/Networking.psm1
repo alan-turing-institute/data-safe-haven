@@ -2,6 +2,37 @@ Import-Module Az.Network -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Add a VM to a domain
+# --------------------
+function Add-WindowsVMtoDomain {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to domain join")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group for VM to domain join")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Domain name to join")]
+        [string]$DomainName,
+        [Parameter(Mandatory = $true, HelpMessage = "Username for domain joining account")]
+        [string]$DomainJoinUsername,
+        [Parameter(Mandatory = $true, HelpMessage = "Password for domain joining account")]
+        [System.Security.SecureString]$DomainJoinPassword,
+        [Parameter(Mandatory = $true, HelpMessage = "The full distinguished name for the OU to add this VM to")]
+        [string]$OUPath,
+        [Parameter(Mandatory = $false, HelpMessage = "Force restart of VM if already running")]
+        [switch]$ForceRestart
+    )
+    Add-LogMessage -Level Info "[ ] Attempting to join VM '$Name' to domain '$DomainName'"
+    $domainJoinCredentials = New-Object System.Management.Automation.PSCredential("${DomainName}\${DomainJoinUsername}", $DomainJoinPassword)
+    $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
+    if ($?) {
+        Add-LogMessage -Level Success "Joined VM '$Name' to domain '$DomainName'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to join VM '$Name' to domain '$DomainName'!"
+    }
+}
+Export-ModuleMember -Function Add-WindowsVMtoDomain
+
+
 # Convert an IP address into a decimal integer
 # --------------------------------------------
 function Convert-CidrToIpAddressRange {
@@ -117,18 +148,20 @@ function Get-NextAvailableIpInRange {
         [Parameter(Mandatory = $false, HelpMessage = "Virtual network to check availability against")]
         [Microsoft.Azure.Commands.Network.Models.PSVirtualNetwork]$VirtualNetwork
     )
-        # Get the start and end IP decimals for this CIDR range
-        $ipStart, $ipEnd = Convert-CidrToIpAddressRange -IpRangeCidr $IpRangeCidr -AsDecimal
+    # Get the start and end IP decimals for this CIDR range
+    $ipStart, $ipEnd = Convert-CidrToIpAddressRange -IpRangeCidr $IpRangeCidr -AsDecimal
 
-        # Return the full range or filter as required
-        $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ } | Select-Object -Skip $Offset
-        if ($VirtualNetwork) {
-            $ipAddresses = $ipAddresses | Where-Object { (Test-AzPrivateIPAddressAvailability -VirtualNetwork $VirtualNetwork -IPAddress $_).Available }
-        }
-        if (-not $ipAddresses) {
-            Add-LogMessage -Level Fatal "There are no free IP addresses in '$IpRangeCidr' after applying the offset '$Offset'!"
-        }
-        return $ipAddresses | Select-Object -First 1
+    # Return the full range or filter as required
+    $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ } | Select-Object -Skip $Offset
+    if ($VirtualNetwork) {
+        $ipAddress = $ipAddresses | Where-Object { (Test-AzPrivateIPAddressAvailability -VirtualNetwork $VirtualNetwork -IPAddress $_).Available } | Select-Object -First 1
+    } else {
+        $ipAddress = $ipAddresses | Select-Object -First 1
+    }
+    if (-not $ipAddress) {
+        Add-LogMessage -Level Fatal "There are no free IP addresses in '$IpRangeCidr' after applying the offset '$Offset'!"
+    }
+    return $ipAddress
 }
 Export-ModuleMember -Function Get-NextAvailableIpInRange
 
@@ -169,3 +202,34 @@ function Set-NetworkSecurityGroupRules {
     return $NetworkSecurityGroup
 }
 Export-ModuleMember -Function Set-NetworkSecurityGroupRules
+
+
+# Update subnet and IP address for a VM
+# -------------------------------------
+function Update-VMIpAddress {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter(Mandatory = $true, HelpMessage = "VM name", ParameterSetName = "ByName")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "VM resource group", ParameterSetName = "ByName")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to join")]
+        [Microsoft.Azure.Commands.Network.Models.PSChildResource]$Subnet,
+        [Parameter(Mandatory = $true, HelpMessage = "IP address to switch to")]
+        [string]$IpAddress
+    )
+    # Get VM if not provided
+    if (-not $VM) {
+        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName
+    }
+    Add-LogMessage -Level Info "Changing subnet and IP address for '$($VM.Name)'..."
+    Stop-VM -VM $VM
+    $networkCard = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $VM.Id }
+    if ($networkCard.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($networkCard.Count) network cards for $VMName!" }
+    $networkCard.IpConfigurations[0].Subnet.Id = $Subnet.Id
+    $networkCard.IpConfigurations[0].PrivateIpAddress = $IpAddress
+    $null = $networkCard | Set-AzNetworkInterface
+    Start-VM -VM $VM
+}
+Export-ModuleMember -Function Update-VMIpAddress

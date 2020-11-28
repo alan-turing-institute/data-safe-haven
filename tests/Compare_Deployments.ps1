@@ -224,7 +224,7 @@ $originalContext = Get-AzContext
 if ($BenchmarkSubscription) {
     $JsonConfig = [ordered]@{}
     # Get VMs in current subscription
-    $null = Set-AzContext -SubscriptionId $BenchmarkSubscription
+    $null = Set-AzContext -SubscriptionId $BenchmarkSubscription -ErrorAction Stop
     $benchmarkVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
     Add-LogMessage -Level Info "Found $($benchmarkVMs.Count) VMs in subscription: '$BenchmarkSubscription'"
     foreach ($VM in $benchmarkVMs) {
@@ -270,7 +270,7 @@ foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
 
 # Get VMs in test SHM
 # -------------------
-$null = Set-AzContext -SubscriptionId $Subscription
+$null = Set-AzContext -SubscriptionId $Subscription -ErrorAction Stop
 $testVMs = Get-AzVM
 Add-LogMessage -Level Info "Found $($testVMs.Count) VMs in subscription: '$Subscription'"
 foreach ($VM in $testVMs) {
@@ -298,7 +298,7 @@ foreach ($testVM in $testVMs) {
 
     # Get parameters for new VM
     # -------------------------
-    $null = Set-AzContext -SubscriptionId $Subscription
+    $null = Set-AzContext -SubscriptionId $Subscription -ErrorAction Stop
     Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($testVM.Name)"
     $testRules = Get-NSGRules -VM $testVM
     # Check that each NSG rule has a matching equivalent (which might be named differently)
@@ -325,4 +325,4 @@ foreach ($testVM in $testVMs) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

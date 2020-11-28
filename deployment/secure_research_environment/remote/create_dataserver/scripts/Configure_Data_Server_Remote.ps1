@@ -1,13 +1,13 @@
 param(
-    [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
     [string]$sreNetbiosName,
-    [Parameter(Position=1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
+    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
     [string]$shmNetbiosName,
-    [Parameter(Position=2, Mandatory = $true, HelpMessage = "User which enables the SMB share to be mounted locally")]
+    [Parameter(Position = 2, Mandatory = $true, HelpMessage = "User which enables the SMB share to be mounted locally")]
     [string]$dataMountUser,
-    [Parameter(Position=3, Mandatory = $true, HelpMessage = "Security group name for research users")]
+    [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Security group name for research users")]
     [string]$researcherUserSgName,
-    [Parameter(Position=4, Mandatory = $true, HelpMessage = "Security group name for server admins")]
+    [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Security group name for server admins")]
     [string]$serverAdminSgName
 )
 
@@ -46,8 +46,8 @@ Start-Service ShellHWDetection
 # ---------------------------------------------------------------------------------------------------
 $smbShareMap = @{
     "Ingress" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-0' }).DeviceId)\Ingress"
-    "Shared" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-1' }).DeviceId)\Shared"
-    "Egress" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-2' }).DeviceId)\Egress"
+    "Shared"  = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-1' }).DeviceId)\Shared"
+    "Egress"  = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-2' }).DeviceId)\Egress"
 }
 
 

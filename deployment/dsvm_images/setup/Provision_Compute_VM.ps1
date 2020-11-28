@@ -21,7 +21,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
 
 # Select which VM size to use
@@ -167,8 +167,7 @@ $cloudInitTemplate = $cloudInitTemplate.
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"
-$buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword -DefaultLength 20
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
@@ -183,7 +182,7 @@ Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
     Name                   = $buildVmName
     Size                   = $vmSize
-    AdminPassword          = $buildVmAdminPassword
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword -DefaultLength 20)
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
@@ -200,7 +199,7 @@ $null = Deploy-UbuntuVirtualMachine @params -NoWait
 # Tag the VM with the git commit hash
 # -----------------------------------
 $hash = git rev-parse --verify HEAD
-$tags = @{"Commit hash" = $hash}
+$tags = @{"Commit hash" = $hash }
 $resource = Get-AzResource -Name $buildVmName -ResourceGroup $config.dsvmImage.build.rg
 $null = New-AzTag -ResourceId $resource.Id -Tag $tags
 
@@ -218,4 +217,4 @@ Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

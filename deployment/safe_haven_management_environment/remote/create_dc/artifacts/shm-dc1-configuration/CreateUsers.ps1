@@ -25,7 +25,7 @@ Import-Csv $userFilePath | ForEach-Object {
         Description          = $Description
         Path                 = "$userOuPath"
         Enabled              = $True
-        AccountPassword      = (ConvertTo-SecureString $Password -AsPlainText -force)
+        AccountPassword      = (ConvertTo-SecureString $Password -AsPlainText -Force)
         PasswordNeverExpires = $False
         Mobile               = $_.Mobile
         Email                = $UserPrincipalName

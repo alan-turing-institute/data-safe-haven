@@ -14,6 +14,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
@@ -26,33 +27,29 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Set common variables
-# --------------------
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+# Set VM name and size
+# We need to ensure that the start of the name is unique as LDAP will truncate after 15 characters
+# ------------------------------------------------------------------------------------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
-
-
-# Set VM name including the image version.
-# As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
-# -----------------------------------------------------------------------------------------------------
-$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
+$vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
+$vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
 # Check whether this IP address has been used.
 # --------------------------------------------
-$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
+$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
 if ($existingNic) {
-    Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+    Add-LogMessage -Level Info "Found an existing network card with IP address '$finalIpAddress'"
     if ($upgrade) {
         Add-LogMessage -Level Info "This NIC will be removed in the upgrade process"
     } else {
         if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
-            $null = Set-AzContext -Context $originalContext
+            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. No further action will be taken"
+            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         } else {
             Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
@@ -92,7 +89,7 @@ if ($upgrade) {
     if ($existingVm) {
         if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
             Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
-            $null = Set-AzContext -Context $originalContext
+            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
             exit 0
         }
     }
@@ -240,131 +237,12 @@ if ($orphanedDisks) {
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Ensure that runtime NSG exists and required rules are set
-# ---------------------------------------------------------
-$secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-nsg-rules-compute.json") -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $secureNsg -Rules $rules
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-                             -Name $outboundInternetAccessRuleName `
-                             -Description "Outbound internet access" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange *
-# # Outbound: allow Nexus repository
-# if ($config.sre.nexus) {
-#     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
-#                                  -Name "OutboundAllowNexus" `
-#                                  -Description "Outbound allow Nexus" `
-#                                  -Priority 2100 `
-#                                  -Direction Outbound `
-#                                  -Access Allow `
-#                                  -Protocol * `
-#                                  -SourceAddressPrefix VirtualNetwork `
-#                                  -SourcePortRange * `
-#                                  -DestinationAddressPrefix $config.shm.network.repositoryVnet.subnets.repository.cidr `
-#                                  -DestinationPortRange 8081
-# }
-
-
-# Ensure that deployment NSG exists and required rules are set
-# ------------------------------------------------------------
-$deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
-$srePrivateDataSubnetIpRange = $config.sre.network.vnet.subnets.data.cidr
-# Inbound: allow LDAP then deny all
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundAllowLDAP" `
-                             -Description "Inbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix $shmIdentitySubnetIpRange `
-                             -SourcePortRange 88, 389, 636 `
-                             -DestinationAddressPrefix VirtualNetwork `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundDenyAll" `
-                             -Description "Inbound deny all" `
-                             -Priority 3000 `
-                             -Direction Inbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-# Outbound: allow LDAP and private endpoints then deny all Virtual Network
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundAllowLDAP" `
-                             -Description "Outbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $shmIdentitySubnetIpRange `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundAllowPrivateDataEndpoints" `
-                             -Description "Outbound allow private data endpoints" `
-                             -Priority 3000 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $srePrivateDataSubnetIpRange `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundDenyVNet" `
-                             -Description "Outbound deny virtual network" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork `
-                             -DestinationPortRange *
-
-
-# Check that VNET and subnet exist
-# --------------------------------
-Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-try {
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
-}
-Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.compute.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.compute.name }
-if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.compute.name)' could not be found in virtual network '$($vnet.Name)'!"
-}
-Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
+# Retrieve VNET and subnets
+# -------------------------
+Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
+$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Set mirror URLs
@@ -385,13 +263,19 @@ if ($success) {
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
-$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
-$ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName
-$egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName
-$ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20 -AsPlaintext
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+$ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName -AsPlaintext
+$egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName -AsPlaintext
+$ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
+
+
+# Get deployment and final IP addresses
+# -------------------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+
 
 # Construct the cloud-init YAML file for the target subscription
 # --------------------------------------------------------------
@@ -401,15 +285,11 @@ $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 
-# Insert scripts into the cloud-init template
-$resourcePaths = @()
-$resourcePaths += @("jdk.table.xml", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
-$resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
-foreach ($resourcePath in $resourcePaths) {
-    $resourceFileName = $resourcePath | Split-Path -Leaf
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<${resourceFileName}>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<${resourceFileName}>", $indentedContent)
+# Insert additional files into the cloud-init template
+foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "resources"))) {
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
 }
 
 # Insert xrdp logo into the cloud-init template
@@ -451,15 +331,8 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
     Replace("<timezone>", $config.sre.time.timezone.linux).
-    Replace("<vm-hostname>", $vmName).
-    Replace("<vm-ipaddress>", $vmIpAddress)
-
-
-# Deploy NIC and attach it to the deployment NSG
-# ----------------------------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-$vmNic.NetworkSecurityGroup = $deploymentNsg
-$null = $vmNic | Set-AzNetworkInterface
+    Replace("<vm-hostname>", ($vmHostname | Limit-StringLength -MaximumLength 15)).
+    Replace("<vm-ipaddress>", $finalIpAddress)
 
 
 # Deploy data disks
@@ -469,7 +342,7 @@ if ($upgrade) {
     for ($i = 0; $i -lt $dataDiskNames.Length; $i++) {
         # Create disk from snapshot
         $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
-        $diskName = $vmName + "-" + $dataDiskNames[$i] + "-DISK"
+        $diskName = "${vmName}-$($dataDiskNames[$i])-DISK"
         Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
         $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
         if ($disk) {
@@ -487,19 +360,19 @@ if ($upgrade) {
     $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 }
 
-
 # Deploy the VM
 # -------------
+$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
-    AdminPassword          = $vmAdminPassword
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.sre.location
-    NicId                  = $vmNic.Id
+    NicId                  = $networkCard.Id
     OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
@@ -507,6 +380,19 @@ $params = @{
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
+
+
+# Change subnets and IP address while the VM is off
+# -------------------------------------------------
+$networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
+$networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
+$null = $networkCard | Set-AzNetworkInterface
+
+
+# Restart after the networking switch
+# -----------------------------------
+Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 1.2); Start-Sleep 1 }
 
 
 # Remove snapshots
@@ -522,17 +408,6 @@ if ($upgrade) {
         }
     }
 }
-
-
-# VM must be off for us to switch NSG
-# -----------------------------------
-Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
-Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.dsvm.rg -NSGName $secureNsg.Name -NsgResourceGroupName $config.sre.network.vnet.rg
-
-
-# Restart after the NSG switch
-# ----------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Create local zip file
@@ -570,13 +445,12 @@ $params = @{
     PAYLOAD = $zipFileEncoded
 }
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
-$result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-Write-Output $result.Value
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
 
 
 # Get private IP address for this machine
@@ -587,4 +461,4 @@ Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed fro
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -14,18 +14,18 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
-$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-$hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext
+$hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
-$ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
+$ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 
 
 # Set up the NSG for the webapps
@@ -61,7 +61,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 $shmDcFqdn = "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)"
 $gitlabFqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
                                             Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).
@@ -166,7 +166,7 @@ Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"
 foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
-    Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
+    Start-VM -Name $vmName -ResourceGroupName $config.sre.webapps.rg -ForceRestart
     if ($?) {
         Add-LogMessage -Level Success "Rebooting the $name VM ($vmName) succeeded"
     } else {
@@ -177,4 +177,4 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

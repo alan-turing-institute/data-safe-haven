@@ -25,10 +25,10 @@ def main():
     if args.tier == 3:
         raise NotImplementedError("Currently only tier 2 is supported")
 
-    if args.path is None:
-        nexus_data_dir = "./nexus-data"
-    else:
+    if args.path:
         nexus_data_dir = args.path
+    else:
+        nexus_data_dir = "./nexus-data"
 
     with open(f"{nexus_data_dir}/admin.password") as password_file:
         initial_password = password_file.read()

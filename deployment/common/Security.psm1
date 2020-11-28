@@ -10,7 +10,7 @@ function New-Password {
     )
     # Construct allowed character set
     $alphaNumeric = [char[]](1..127) -match "[0-9A-Za-z]" -join ""
-    $rangeSize = $alphaNumeric.Length -1
+    $rangeSize = $alphaNumeric.Length - 1
 
     # Initialise common parameters
     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -54,7 +54,7 @@ function New-RandomLetters {
     if ($SeedPhrase -ne $null) {
         $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
     }
-    return (-join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % {[char]$_}))
+    return ( -join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % { [char]$_ }))
 
 }
 Export-ModuleMember -Function New-RandomLetters
@@ -75,7 +75,9 @@ function Resolve-KeyVaultSecret {
         [Parameter(Mandatory = $false, HelpMessage = "Default number of random characters to be used when initialising this secret")]
         [string]$DefaultLength,
         [Parameter(Mandatory = $false, HelpMessage = "Overwrite any existing secret with this name")]
-        [switch]$ForceOverwrite
+        [switch]$ForceOverwrite,
+        [Parameter(Mandatory = $false, HelpMessage = "Retrieve secret as plaintext instead of as a secure string")]
+        [switch]$AsPlaintext
     )
     # Create a new secret if one does not exist in the key vault or if we are forcing an overwrite
     if ($ForceOverwrite -or (-not (Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName))) {
@@ -102,7 +104,7 @@ function Resolve-KeyVaultSecret {
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName
-    return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText
+    if ($AsPlaintext) { return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText }
+    return $secret.SecretValue
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"

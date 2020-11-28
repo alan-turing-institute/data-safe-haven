@@ -36,44 +36,159 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
+  - path: /etc/crontab
+    append: true
+    content: |
+      */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+
   - path: "/etc/domain-join.secret"
     owner: root:root
     permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/etc/ldap.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <ldap-search-user-password>
-  - path: "/etc/postgres-user.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <db-admin-password>
-  - path: "/etc/postgres-service-account.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <ldap-postgres-service-account-password>
+
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
       <krb5.conf>
+
+  - path: "/etc/ldap.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <ldap-search-user-password>
+
+  - path: "/etc/postgres-user.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <db-admin-password>
+
+  - path: "/etc/postgres-service-account.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <ldap-postgres-service-account-password>
+
+  - path: "/etc/realmd.conf"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <realmd.conf>
+
+  - path: "/etc/local/runonce.d/00-join-domain.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Waiting for realm availability... ===<"
+      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-data-servers-path>' '<domain-join-username>' '<vm-hostname>'"
+      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
+
+  - path: "/etc/local/runonce.d/01-generate-keytab.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      # Generate a keytab and verify by getting a Kerberos ticket
+      echo ">=== Generating service principal credentials... ===<"
+      SERVICE_PRINCIPAL="POSTGRES/<vm-hostname>.<shm-fqdn-lower>"
+      KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
+      install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
+      echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-search-user-dn>' -W msDS-KeyVersionNumber"
+      KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+      echo "Current KVNO is $KVNO"
+      # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
+      # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab
+      DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
+      DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
+      A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
+      AES128="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
+      printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
+      echo "" # for appropriate spacing after the ktutil command
+      # Set correct permissions for the keytab file
+      chown postgres:postgres $KEYTAB_PATH
+      chmod 0400 $KEYTAB_PATH
+      echo ">=== Testing credentials with kinit... ===<"
+      echo "klist -e -t -k $KEYTAB_PATH"
+      klist -e -t -k $KEYTAB_PATH
+      echo "kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL"
+      kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL
+      klist
+      # Set the appropriate keytab file
+      sed -i "s|#krb_server_keyfile|krb_server_keyfile = '$KEYTAB_PATH'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
+      grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
+
+  - path: "/etc/local/runonce.d/02-initial-ldap-sync.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Ensuring that LDAP sync has run... ===<"
+      sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+
+  - path: "/etc/local/runonce.d/03-set-public-schema-permissions.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      # Set appropriate permissions on public schema
+      # - Remove privileges from PUBLIC (everyone)
+      # - Create the 'data' schema belonging to data-admins and grant read access to research users
+      # - Grant all privileges on the 'public' schema to research users
+      # - Grant superuser privileges to sysadmins
+      echo ">=== Setting appropriate permissions on public schema... ===<"
+      sudo -i -u postgres psql -f /opt/configuration/create-postgres-triggers.sql
+
+  - path: "/etc/local/runonce.d/04-list-postgres-users.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      # Restart the postgresql service
+      echo ">=== Restarting postgres... ===<"
+      systemctl restart postgresql@12-main
+      sleep 10
+      systemctl status postgresql@12-main
+
+      # Show postgres users and roles
+      echo ">=== List postgres users and roles... ===<"
+      echo "USERS:"
+      sudo -i -u postgres psql -q -c "SELECT * FROM pg_user;"
+      echo "ROLES:"
+      sudo -i -u postgres psql -q -c "SELECT rolname, rolsuper, rolinherit, rolinherit, rolcreatedb, rolcanlogin, oid FROM pg_roles;"
+      echo "SCHEMAS:"
+      sudo -i -u postgres psql -q -c "SELECT schema_name FROM information_schema.schemata;"
+
+  - path: "/opt/configuration/configure-dns.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <configure-dns.sh>
+
+  - path: "/opt/configuration/configure-hostname.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <configure-hostname.sh>
+
   - path: "/opt/configuration/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
       <join_domain.sh>
+
   - path: "/opt/configuration/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
     content: |
-      # With this sample config the distinction between LDAP-synchronized
-      # groups/users from is done by the membership to ldap_user and
-      # ldap_group. These two roles has to be defined manally before
-      # pg_ldap_sync can run.
+      # LDAP-synchronized groups/users are identified through their
+      # membership of ldap_user and ldap_group. These two roles must
+      # therefore be manually defined before running pg_ldap_sync.
 
       # Connection parameters to LDAP server
       # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
@@ -214,9 +329,17 @@ write_files:
       $$;
       CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
 
+  - path: "/usr/local/bin/runonce"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <runonce.sh>
+
 # List of packages to install with apt-get
 packages:
+  - adcli
   - gcc
+  - krb5-user
   - ldap-utils
   - libpq-dev
   - make
@@ -224,11 +347,9 @@ packages:
   - postgresql-12-pgrouting
   - postgresql-12-postgis-3-scripts
   - postgresql-contrib-12
+  - realmd
   - ruby
   - ruby-dev
-  - realmd
-  - adcli
-  - krb5-user
   - sssd
 
 # Set locale and timezone
@@ -238,38 +359,18 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
-  pool:
+  pools:
     - <ntp-server>
 
 runcmd:
-  # Join the domain
-  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
+  # Configure services for realm joining
+  - echo ">=== Configuring domain joining settings... ===<"
+  - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
+  - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
+  - /opt/configuration/configure-dns.sh
+  - /opt/configuration/configure-hostname.sh
 
-  # Generate a keytab and verify by getting a Kerberos ticket
-  - echo ">=== Generating service principal credentials... ===<"
-  - SERVICE_PRINCIPAL="POSTGRES/<vm-hostname>.<shm-fqdn-lower>"
-  - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
-  - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
-  - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-search-user-dn>' -W msDS-KeyVersionNumber"
-  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
-  - echo "Current KVNO is $KVNO"
-  # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
-  # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab
-  - DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
-  - DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
-  - A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
-  - AES128="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
-  - printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
-  - echo "" # for appropriate spacing after the ktutil command
-  - chown postgres:postgres $KEYTAB_PATH
-  - chmod 0400 $KEYTAB_PATH
-  - echo ">=== Testing credentials with kinit... ===<"
-  - echo "klist -e -t -k $KEYTAB_PATH"
-  - klist -e -t -k $KEYTAB_PATH
-  - echo "kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL"
-  - kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL
-  - klist
-
+  # Configure the postgres database
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
   - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '$(cat /etc/postgres-user.secret)';"
@@ -284,9 +385,6 @@ runcmd:
   # Allow login to this database from other VMs
   - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
   - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
-  # Set the appropriate keytab file
-  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '$KEYTAB_PATH'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
-  - grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
   # Restart the server with all the above changes
   - systemctl start postgresql@12-main
   - systemctl status postgresql@12-main
@@ -304,46 +402,22 @@ runcmd:
         fi
     done
 
-  # Add LDAP users with pg-ldap-sync and schedule a cronjob
+  # Install postgres extensions
+  - echo ">=== Installing postgis schema and extensions... ===<"
+  - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
+
+  # Install pg-ldap-sync for adding LDAP users
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
   - mv /opt/configuration/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
-  - sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
-  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-
-  # Set appropriate permissions on public schema
-  # - Remove privileges from PUBLIC (everyone)
-  # - Create the 'data' schema belonging to data-admins and grant read access to research users
-  # - Grant all privileges on the 'public' schema to research users
-  # - Grant superuser privileges to sysadmins
-  - echo ">=== Setting appropriate permissions on public schema... ===<"
-  - sudo -i -u postgres psql -f /opt/configuration/create-postgres-triggers.sql
-
-  # Install postgres extensions
-  - echo ">=== Installing postgis schema and extensions... ===<"
-  - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
+  - echo ">=== Checking that LDAP user sync is scheduled every 10 minutes... ===<"
+  - grep pg_ldap_sync /etc/crontab
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
   - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf
   - cat /etc/postgresql/12/main/pg_hba.conf
-
-  # Restart the postgresql service
-  - echo ">=== Restarting postgres... ===<"
-  - systemctl restart postgresql@12-main
-  - systemctl status postgresql@12-main
-
-  # Show postgres users and roles
-  - echo ">=== List postgres users and roles... ===<"
-  - echo "USERS:"
-  - sudo -i -u postgres psql -q -c "SELECT * FROM pg_user;"
-  - echo "ROLES:"
-  - sudo -i -u postgres psql -q -c "SELECT rolname, rolsuper, rolinherit, rolinherit, rolcreatedb, rolcanlogin, oid FROM pg_roles;"
-  - echo "SCHEMAS:"
-  - sudo -i -u postgres psql -q -c "SELECT schema_name FROM information_schema.schemata;"
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state

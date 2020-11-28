@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Common variable names
@@ -52,15 +52,14 @@ foreach ($mirrorType in $mirrorTypes) {
         # Run the script on the mirror VM
         $vmName = "$MirrorType-EXTERNAL-MIRROR-TIER-$tier".ToUpper()
         Add-LogMessage -Level Info "Updating whitelist on $vmName"
-        $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
 
         # Restart the mirror to trigger a pull-then-push
-        Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        Start-VM -Name $vmName -ResourceGroupName $config.mirrors.rg -ForceRestart
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

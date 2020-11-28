@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get SRE virtual network
@@ -22,7 +22,7 @@ $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGro
 
 # Remove SHM side of mirror and repository peerings involving this SRE
 # --------------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $mirrorVnets = Get-AzVirtualNetwork | Where-Object { $_.Name -like "*MIRROR*" -or $_.Name -like "*REPOSITORY" }
 foreach ($mirrorVnet in $mirrorVnets) {
     $mirrorPeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $mirrorVnet.Name -ResourceGroupName $mirrorVnet.ResourceGroupName
@@ -43,7 +43,7 @@ foreach ($mirrorVnet in $mirrorVnets) {
 
 # Remove peering to this SRE from each SHM mirror or repository network
 # ---------------------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $srePeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $sreVnet.Name -ResourceGroupName $sreVnet.ResourceGroupName
 foreach ($srePeering in $srePeerings) {
     # Remove peerings that involve any of the mirror VNets
@@ -62,4 +62,4 @@ foreach ($srePeering in $srePeerings) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

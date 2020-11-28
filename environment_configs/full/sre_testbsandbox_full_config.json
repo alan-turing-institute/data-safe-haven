@@ -190,12 +190,16 @@
             "external": {
               "cidr": "10.20.2.0/28",
               "name": "ExternalPackageMirrorsTier2Subnet",
-              "nsg": "externalPackageMirrorsTier2"
+              "nsg": {
+                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
             },
             "internal": {
               "cidr": "10.20.2.16/28",
               "name": "InternalPackageMirrorsTier2Subnet",
-              "nsg": "internalPackageMirrorsTier2"
+              "nsg": {
+                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
             }
           }
         },
@@ -206,31 +210,18 @@
             "external": {
               "cidr": "10.20.3.0/28",
               "name": "ExternalPackageMirrorsTier3Subnet",
-              "nsg": "externalPackageMirrorsTier3"
+              "nsg": {
+                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
             },
             "internal": {
               "cidr": "10.20.3.16/28",
               "name": "InternalPackageMirrorsTier3Subnet",
-              "nsg": "internalPackageMirrorsTier3"
+              "nsg": {
+                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
             }
           }
-        }
-      },
-      "nsg": {
-        "externalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2"
-        },
-        "externalPackageMirrorsTier3": {
-          "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3"
-        },
-        "internalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2"
-        },
-        "internalPackageMirrorsTier3": {
-          "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3"
-        },
-        "repository": {
-          "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2"
         }
       },
       "repositoryVnet": {
@@ -240,7 +231,9 @@
           "repository": {
             "cidr": "10.30.1.0/24",
             "name": "RepositorySubnet",
-            "nsg": "repository"
+            "nsg": {
+              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2"
+            }
           }
         }
       },
@@ -260,10 +253,6 @@
           "identity": {
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet"
-          },
-          "web": {
-            "cidr": "10.0.1.0/24",
-            "name": "WebSubnet"
           }
         }
       },
@@ -477,7 +466,6 @@
     },
     "dsvm": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
-      "deploymentNsg": "NSG_SHM_TESTB_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
         "home": {
           "sizeGb": "1024",
@@ -492,7 +480,6 @@
           "type": "Standard_LRS"
         }
       },
-      "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
       "rg": "RG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
@@ -518,12 +505,6 @@
     },
     "location": "uksouth",
     "network": {
-      "nsg": {
-        "data": {},
-        "databases": {
-          "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES"
-        }
-      },
       "vnet": {
         "cidr": "10.151.0.0/21",
         "name": "VNET_SHM_TESTB_SRE_SANDBOX",
@@ -531,7 +512,11 @@
         "subnets": {
           "compute": {
             "cidr": "10.151.4.0/24",
-            "name": "ComputeSubnet"
+            "name": "ComputeSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
+              "rules": "sre-nsg-rules-compute.json"
+            }
           },
           "data": {
             "cidr": "10.151.2.0/24",
@@ -540,7 +525,18 @@
           "databases": {
             "cidr": "10.151.3.0/24",
             "name": "DatabasesSubnet",
-            "nsg": "databases"
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES",
+              "rules": "sre-nsg-rules-databases.json"
+            }
+          },
+          "deployment": {
+            "cidr": "10.151.5.0/24",
+            "name": "DeploymentSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT",
+              "rules": "sre-nsg-rules-compute-deployment.json"
+            }
           },
           "identity": {
             "cidr": "10.151.0.0/24",
@@ -567,7 +563,10 @@
         "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
         "ip": "10.151.1.5",
-        "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "nsg": {
+          "name": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SESSION_HOSTS",
+          "rules": "sre-nsg-rules-session-hosts.json"
+        },
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
@@ -594,7 +593,10 @@
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
-        "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SERVER",
+        "nsg": {
+          "name": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SERVER",
+          "rules": "sre-nsg-rules-gateway.json"
+        },
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },

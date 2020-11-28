@@ -9,10 +9,10 @@ Import-Module RemoteDesktopServices -ErrorAction Stop
 # --------------------------
 Write-Output "Initialising data drives..."
 Stop-Service ShellHWDetection
-$CandidateRawDisks = Get-Disk | Where-Object {$_.PartitionStyle -eq 'raw'} | Sort -Property Number
+$CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq 'raw' } | Sort -Property Number
 foreach ($RawDisk in $CandidateRawDisks) {
     Write-Output "Configuring disk $($RawDisk.Number)"
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $RawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
+    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -EQ $RawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
     $null = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
     $Partition = New-Partition -DiskNumber $RawDisk.Number -UseMaximumSize -AssignDriveLetter
     $null = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "DATA-$LUN" -Confirm:$false
@@ -50,8 +50,8 @@ Write-Output "Creating RDS Environment..."
 try {
     New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>") -ErrorAction Stop
     # Setup licensing server
-    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
-    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
+    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING -ErrorAction Stop
+    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser -Force -ErrorAction Stop
     # Setup gateway server
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreDomain>" -ErrorAction Stop
     Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
@@ -65,7 +65,7 @@ try {
 # Create collections
 # ------------------
 $driveLetters = Get-Volume | Where-Object { $_.FileSystemLabel -Like "DATA-[0-9]" } | ForEach-Object { $_.DriveLetter } | Sort
-foreach ($rdsConfiguration in @(,@("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"))) {
+foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
 
     # Setup user profile disk shares
@@ -73,8 +73,8 @@ foreach ($rdsConfiguration in @(,@("Applications", "<rdsAppSessionHostFqdn>", "<
     $null = New-Item -ItemType Directory -Force -Path $sharePath
     $shareName = $sharePath.Split("\")[1]
     $sessionHostComputerName = $sessionHost.Split(".")[0]
-    if ($null -eq $(Get-SmbShare | Where-Object -Property Path -eq $sharePath)) {
-        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$","<shmNetbiosName>\${sessionHostComputerName}$","<shmNetbiosName>\Domain Admins"
+    if ($null -eq $(Get-SmbShare | Where-Object -Property Path -EQ $sharePath)) {
+        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$", "<shmNetbiosName>\${sessionHostComputerName}$", "<shmNetbiosName>\Domain Admins"
     }
 
     # Create collections
@@ -147,7 +147,7 @@ try {
 # ---------------------------------------------------------------------------------------
 Write-Output "Setting up IIS redirect..."
 try {
-    Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\Default Web Site" -Value @{enabled="true";destination="/RDWeb/webclient/";httpResponseStatus="Permanent"} -ErrorAction Stop
+    Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\Default Web Site" -Value @{enabled = "true"; destination = "/RDWeb/webclient/"; httpResponseStatus = "Permanent" } -ErrorAction Stop
     Write-Output " [o] IIS redirection succeeded"
 } catch {
     Write-Output " [x] IIS redirection failed!"

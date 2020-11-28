@@ -16,12 +16,12 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
 
 
 # Setup image resource group if it does not already exist
@@ -35,17 +35,17 @@ $vm = Get-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Erro
 if ($notExists) {
     Add-LogMessage -Level Error "Could not find a machine called '$vmName' in resource group $($config.dsvmImage.build.rg)"
     Add-LogMessage -Level Info "Available machines are:"
-    foreach ($vm in Get-AzVM -ResourceGroupName $config.dsvmImage.build.rg) {
-        Add-LogMessage -Level Info "  $($vm.Name)"
+    foreach ($candidateVM in Get-AzVM -ResourceGroupName $config.dsvmImage.build.rg) {
+        Add-LogMessage -Level Info "  $($candidateVM.Name)"
     }
     Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
-$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"]}
+$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"] }
 
 
 # Ensure that the VM is running
 # -----------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
+Start-VM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
 Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 
 
@@ -109,4 +109,4 @@ Add-LogMessage -Level Info "Finished creating image $imageName"
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

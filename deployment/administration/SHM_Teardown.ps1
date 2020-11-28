@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Make user confirm before beginning deletion
@@ -59,7 +59,7 @@ if ($suspiciousResourceGroups) {
 
 # Remove DNS data from the DNS subscription
 # -----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.dns.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.dns.subscriptionName -ErrorAction Stop
 $adDnsRecordname = "@"
 $shmDomain = $config.domain.fqdn
 Add-LogMessage -Level Info "[ ] Removing '$adDnsRecordname' TXT record from SHM $shmId DNS zone ($shmDomain)"
@@ -69,8 +69,9 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Record removal failed!"
 }
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

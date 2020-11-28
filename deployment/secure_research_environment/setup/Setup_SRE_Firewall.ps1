@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Load the SRE VNet and gateway IP
@@ -22,12 +22,11 @@ $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -Reso
 # $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg | Where-Object { $_.Name -match "$($config.sre.rds.gateway.vmName).*" } | Select-Object -First 1).IpAddress
 
 
-# Load the SHM firewall
-# ---------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-# Ensure Firewall is started (it can be deallocated to save costs or if credit has run out)
+# Load the SHM firewall and ensure it is started (it can be deallocated to save costs or if credit has run out)
+# -------------------------------------------------------------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $firewall = Start-Firewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg -VirtualNetworkName $config.shm.network.vnet.name
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Deploy a route table for this SRE
@@ -40,7 +39,9 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 # ------------------------------------
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
+    Replace("<subnet-sre-deployment-cidr>", $config.sre.network.vnet.subnets.deployment.cidr).
     Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
+$ruleNameFilter = "sre-$($config.sre.id)*"
 
 
 # Add routes to the route table
@@ -54,27 +55,28 @@ foreach ($route in $rules.routes) {
 }
 
 
-# Attach all subnets except the RDG subnet to the firewall route table
-# --------------------------------------------------------------------
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.compute.name -AddressPrefix $config.sre.network.vnet.subnets.compute.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.databases.name -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.vnet.subnets.identity.name -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+# Attach all subnets except the RDG and deployment subnets to the firewall route table
+# ------------------------------------------------------------------------------------
+$excludedSubnetNames = @($config.sre.network.vnet.subnets.rds.name, $config.sre.network.vnet.subnets.deployment.name)
+foreach ($subnet in $VirtualNetwork.Subnets) {
+    if ($excludedSubnetNames.Contains($subnet.Name)) {
+        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
+    } else {
+        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+    }
+}
 
 
 # Set firewall rules from template
 # --------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-
-
-$ruleNameFilter = "sre-$($config.sre.id)*"
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 # Application rules
-# -----------------
-foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.Name)'..."
+    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -86,16 +88,13 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
 if (-not $rules.applicationRuleCollections) {
     Add-LogMessage -Level Warning "No application rules specified."
 }
-
-
 # Network rules
-# -------------
-foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*"} | ForEach-Object { $_.Name }) {
+foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object { $_.Name -like "$ruleNameFilter*" } | ForEach-Object { $_.Name }) {
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
 foreach ($ruleCollection in $rules.networkRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
+    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
     }
@@ -103,6 +102,7 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
 if (-not $rules.networkRuleCollections) {
     Add-LogMessage -Level Warning "No network rules specified."
 }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Update remote firewall with rule changes
@@ -114,4 +114,4 @@ Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -6,6 +6,7 @@ auditd
 automake
 autotools-dev
 bison
+blobfuse
 build-essential
 clamav
 clamav-base

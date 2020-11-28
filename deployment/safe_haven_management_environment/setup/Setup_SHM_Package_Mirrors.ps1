@@ -18,7 +18,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Ensure that package mirror and networking resource groups exist
@@ -29,15 +29,15 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 
 # Set up the VNet with subnets for internal and external package mirrors
 # ----------------------------------------------------------------------
-$vnetPkgMirrors = Deploy-VirtualNetwork -Name $config.network.mirrorVnets["tier${tier}"].name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $config.network.mirrorVnets["tier${tier}"].cidr -Location $config.location
-$subnetExternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.external.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.external.cidr
-$subnetInternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.internal.cidr
+$mirrorConfig = $config.network.mirrorVnets["tier${tier}"]
+$vnetPkgMirrors = Deploy-VirtualNetwork -Name $mirrorConfig.name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $mirrorConfig.cidr -Location $config.location
+$subnetExternal = Deploy-Subnet -Name $mirrorConfig.subnets.external.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.external.cidr
+$subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.internal.cidr
 
 
 # Set up the NSG for external package mirrors
 # -------------------------------------------
-$nsgExternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.external.nsg].name
-$nsgExternal = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$nsgExternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.external.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `
@@ -90,16 +90,15 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging 
                              -DestinationPortRange 22, 873
 $subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$nsgExternalName' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' failed!"
 }
 
 
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
-$nsgInternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.internal.nsg].name
-$nsgInternal = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$nsgInternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.internal.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "RsyncFromExternal" `
                              -Description "Allow ports 22 and 873 for rsync" `
@@ -146,16 +145,16 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -DestinationPortRange *
 $subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$nsgInternalName' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' failed!"
 }
 
 
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 
 
 # Resolve the cloud init file, applying a whitelist if needed
@@ -186,7 +185,7 @@ function Resolve-CloudInit {
         cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
         "
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
-        $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+        $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
         $externalMirrorPublicKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
@@ -205,7 +204,7 @@ function Resolve-CloudInit {
 
     # Set the tier, NTP server and timezone
     $cloudInitYaml = $cloudInitYaml.
-        Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+        Replace("<ntp-server>", $config.time.ntp.poolFqdn).
         Replace("<tier>", "$tier").
         Replace("<timezone>", $config.time.timezone.linux)
     return $cloudInitYaml
@@ -306,7 +305,8 @@ function Deploy-PackageMirror {
             }
         }
         # Restart the VM
-        Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        Start-VM -Name $vmName -ResourceGroupName $config.mirrors.rg -ForceRestart
+
 
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
@@ -318,8 +318,7 @@ function Deploy-PackageMirror {
             #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            Write-Output $result.Value
+            $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
@@ -343,8 +342,7 @@ function Deploy-PackageMirror {
             cat ~mirrordaemon/internal_mirror_ip_addresses.txt
             ls -alh ~mirrordaemon
             "
-            $result = Invoke-RemoteScript -VMName $externalVmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            Write-Output $result.Value
+            $null = Invoke-RemoteScript -VMName $externalVmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$vmName' already exists"
@@ -363,4 +361,4 @@ foreach ($mirrorType in ($config.mirrors.Keys | Where-Object { $config.mirrors[$
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

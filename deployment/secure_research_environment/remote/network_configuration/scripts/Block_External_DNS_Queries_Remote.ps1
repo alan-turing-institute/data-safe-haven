@@ -19,9 +19,9 @@ param(
 function Get-DnsClientSubnetNameFromCidr {
     param(
         [Parameter(HelpMessage = "SRE prefix")]
-        $srePrefix,
+        [string]$srePrefix,
         [Parameter(HelpMessage = "CIDR")]
-        $cidr
+        [string]$cidr
     )
     return "$srePrefix-$($cidr.Replace('/','_'))"
 }
@@ -32,20 +32,20 @@ function Get-DnsClientSubnetNameFromCidr {
 function Set-DnsClientSubnets {
     param(
         [Parameter(HelpMessage = "CIDR")]
-        $cidr,
+        [string]$cidr,
         [Parameter(HelpMessage = "Subnet name")]
-        $subnetName
+        [string]$subnetName
     )
     $subnet = Get-DnsServerClientSubnet -Name $subnetName -ErrorAction SilentlyContinue
     if ($subnet) {
-        Write-Host " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
+        Write-Output " [o] '$subnetName' DNS Client Subnet for CIDR '$cidr' already exists."
     } else {
         try {
             $subnet = Add-DnsServerClientSubnet -Name $subnetName -IPv4Subnet $cidr
-            Write-Host " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            Write-Output " [o] Successfully created '$subnetName' DNS Client Subnet for CIDR '$cidr'"
         } catch {
-            Write-Host " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
-            Write-Host $_.Exception
+            Write-Output " [x] Failed to create '$subnetName' DNS Client Subnet for CIDR '$cidr'"
+            Write-Output $_.Exception
         }
     }
 }
@@ -56,19 +56,19 @@ function Set-DnsClientSubnets {
 function Set-DnsQueryResolutionPolicy {
     param(
         [Parameter(HelpMessage = "CIDR")]
-        $cidr,
+        [string]$cidr,
         [Parameter(HelpMessage = "Subnet name")]
-        $subnetName,
+        [string]$subnetName,
         [Parameter(HelpMessage = "Recursion policy")]
-        $recursionScopeName
+        [string]$recursionScopeName
     )
     $policyName = "${subnetName}-default-recursion"
     try {
-        $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet  "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
-        Write-Host " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+        $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
+        Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
     } catch {
-        Write-Host " [x] Failed to create policy to '$policyName' apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
-        Write-Host $_.Exception
+        Write-Output " [x] Failed to create policy to '$policyName' apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
+        Write-Output $_.Exception
     }
 }
 

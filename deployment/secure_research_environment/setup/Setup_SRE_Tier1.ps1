@@ -22,7 +22,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get absolute path to users file
@@ -100,8 +100,7 @@ $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet 
 # Retrieve credentials from the keyvault
 # --------------------------------------
 $keyVault = $config.sre.keyVault.name
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
 # Ensure that the persistent data storage account exists
@@ -113,7 +112,7 @@ $dataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistent
                                             -Kind $config.sre.storage.persistentdata.account.storageKind `
                                             -SkuName $config.sre.storage.persistentdata.account.performance `
                                             -Location $config.sre.location
-$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object {$_.KeyName -eq "key1"}).Value
+$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
 
 
 # Deploy storage shares for data ingress and egress
@@ -181,9 +180,9 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
             Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
         # Upload keys to key vault
-        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw)
+        $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw) -AsPlaintext
         $success = $?
-        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw)
+        $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw) -AsPlaintext
         $success = $success -and $?
         if ($success) {
             Add-LogMessage -Level Success "Uploaded Ansible SSH keys to '$keyVault'"
@@ -197,8 +196,8 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
 }
 # Fetch SSH keys from key vault
 Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
-$sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault
-$sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault
+$sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -AsPlaintext
+$sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -AsPlaintext
 
 
 # Get list of image definitions
@@ -223,7 +222,7 @@ $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdi
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
-    AdminPassword          = $vmAdminPassword
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     AdminPublicSshKey      = $sshPublicKey
     BootDiagnosticsAccount = $bootDiagnosticsAccount
@@ -309,4 +308,4 @@ You can then open a browser locally and go to https://localhost:8443
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -20,7 +20,8 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
 + [:fishing_pole_and_fish: Deploy virtual network and remote desktop](#fishing_pole_and_fish-deploy-virtual-network-and-remote-desktop)
   + [:clubs: Create SRE DNS Zone](#clubs-create-sre-dns-zone)
-  + [:tropical_fish: Deploy the virtual network and remote desktop](#tropical_fish-deploy-the-virtual-network-and-remote-desktop)
+  + [:station: Deploy the virtual network](#station-deploy-the-virtual-network)
+  + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   + [:accept: Configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings)
   + [:closed_lock_with_key: Update SSL certificate](#closed_lock_with_key-update-ssl-certificate)
@@ -55,7 +56,7 @@ These instructions will walk you through deploying a Secure Research Environment
 
 + `PowerShell` with support for Azure
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>)
+  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 + `Microsoft Remote Desktop`
   + On OSX this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
@@ -224,7 +225,18 @@ On your **deployment machine**.
 
   </details>
 
-### :tropical_fish: Deploy the virtual network and remote desktop
+### :station: Deploy the virtual network
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
++ Run `./Setup_SRE_Networking.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` qual to `testcsandbox` .
++ The deployment will take **around 5 minutes**.
++ The VNet peerings may take a few minutes to provision after the script completes.
+
+### :tropical_fish: Deploy the remote desktop servers
 
 On your **deployment machine**.
 
@@ -233,8 +245,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 + Run `./Setup_SRE_VNET_RDS.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + The deployment will take **around 50 minutes**.
-+ The VNet peerings may take a few minutes to provision after the script completes.
-  + **Troubleshooting** If you encounter errors with the deployment of the virtual network, or later with the RDS, do not rerun the scripts as they are not currently idempotent and can lead to different outputs. Instead, you should delete the entire SRE and start over from the beginning of this step.
++ **Troubleshooting** If you encounter errors with the deployment of the RDS, do not rerun the scripts as they are not currently idempotent and can lead to different outputs. Instead, you should delete everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and start over from [the beginning of this step](#tropical_fish-deploy-remote-desktop-servers).
 
 ### :accept: Disable insecure TLS connections
 

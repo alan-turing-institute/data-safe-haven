@@ -5,7 +5,7 @@ Import-Module PSScriptAnalyzer
 # ------------------
 $FileExtensions = @("*.ps1", "*.psm1", "*.psd1")
 $CodeRootPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent.Parent -ChildPath "deployment"
-$FileDetails = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name } })
+$FileDetails = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | Where-Object { ($_.FullName -notmatch "shm-dc1-setup-scripts") -and ($_ -notmatch "shm-dc2-setup-scripts") } | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name } })
 
 
 # Run Invoke-Formatter on all files
@@ -14,7 +14,7 @@ Describe "Powershell formatting" {
     BeforeAll {
         $SettingsPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent.Parent -ChildPath ".PSScriptFormatterSettings.psd1"
     }
-    It "Checks that '<FilePath>' is correctly formatted" -TestCases $FileDetails -Skip {
+    It "Checks that '<FilePath>' is correctly formatted" -TestCases $FileDetails {
         param ($FileName, $FilePath)
         $Unformatted = Get-Content -Path $FilePath -Raw
         $Formatted = Invoke-Formatter -ScriptDefinition $Unformatted -Settings $SettingsPath

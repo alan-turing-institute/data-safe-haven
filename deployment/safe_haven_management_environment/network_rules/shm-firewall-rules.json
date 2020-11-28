@@ -15,7 +15,31 @@
             }
         }
     ],
-    "networkRuleCollections": [],
+    "networkRuleCollections": [
+        {
+            "name": "shm-<shm-id>-allow",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "UDP:123"
+                        ],
+                        "targetAddresses": [
+                            "<ntp-server-ip-addresses>"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
     "applicationRuleCollections": [
         {
             "name": "shm-<shm-id>-allow",
@@ -30,7 +54,7 @@
                         "protocols": [
                             "http:80",
                             "https:443"
-                       ],
+                        ],
                         "fqdnTags": [],
                         "targetFqdns": [
                             "windowsupdate.microsoft.com",
@@ -51,6 +75,46 @@
                         ],
                         "sourceAddresses": [
                             "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowUbuntuUpdate",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "database.clamav.net",
+                            "packages.microsoft.com",
+                            "download.mono-project.com",
+                            "developer.download.nvidia.com",
+                            "packagecloud.io",
+                            "apt.postgresql.org",
+                            "cloud.r-project.org",
+                            "archive.ubuntu.com",
+                            "azure.archive.ubuntu.com",
+                            "changelogs.ubuntu.com",
+                            "security.ubuntu.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-mirror-tier2-cidr>",
+                            "<subnet-mirror-tier3-cidr>",
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowDocker",
+                        "protocols": [
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.docker.com",
+                            "*.docker.io"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
@@ -99,7 +163,7 @@
                         ]
                     },
                     {
-                        "name": "AllowPyPiPackageInstallation",
+                        "name": "AllowPyPIPackageInstallation",
                         "protocols": [
                             "https:443"
                         ],

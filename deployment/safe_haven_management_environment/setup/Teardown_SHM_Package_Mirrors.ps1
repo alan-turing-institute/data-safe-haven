@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Tear down a single package mirror
@@ -56,4 +56,4 @@ if ($notExists) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

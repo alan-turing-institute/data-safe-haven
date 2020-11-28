@@ -17,7 +17,7 @@ $originalContext = Get-AzContext
 
 # Set to Domains subscription
 # ---------------------------
-$null = Set-AzContext -Subscription $config.shm.dns.subscriptionName
+$null = Set-AzContext -Subscription $config.shm.dns.subscriptionName -ErrorAction Stop
 
 
 # Create the DNS Zone and set the parent NS records if required
@@ -27,4 +27,4 @@ Set-DnsZoneAndParentNSRecords -DnsZoneName $config.sre.domain.fqdn -ResourceGrou
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

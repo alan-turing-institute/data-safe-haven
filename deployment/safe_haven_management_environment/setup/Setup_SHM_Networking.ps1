@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Create VNet resource group if it does not exist
@@ -28,8 +28,9 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
     IPAddresses_ExternalNTP = $config.time.ntp.serverAddresses
-    P2S_VPN_Certificate     = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-    Shm_Id                  = "$($config.id)".ToLower()
+    NSG_Identity_Name       = $config.network.nsg.identity.name
+    P2S_VPN_Certificate     = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
+    Shm_Id                  = ($config.id).ToLower()
     Subnet_Firewall_CIDR    = $config.network.vnet.subnets.firewall.cidr
     Subnet_Firewall_Name    = $config.network.vnet.subnets.firewall.name
     Subnet_Gateway_CIDR     = $config.network.vnet.subnets.gateway.cidr
@@ -49,4 +50,4 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

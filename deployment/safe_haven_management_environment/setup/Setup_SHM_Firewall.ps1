@@ -13,13 +13,13 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Ensure that firewall subnet exists
 # ----------------------------------
-$virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
+$VirtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $VirtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -55,12 +55,16 @@ Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
     Replace("<dc1-ip-address>", $config.dc.ip).
     Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
+    Replace("<ntp-server-ip-addresses>", $($config.time.ntp.serverAddresses -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
     Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
+    Replace("<subnet-mirror-tier2-cidr>", $config.network.mirrorVnets.tier2.cidr).
+    Replace("<subnet-mirror-tier3-cidr>", $config.network.mirrorVnets.tier3.cidr).
     Replace("<subnet-repository-cidr>", $config.network.repositoryVnet.subnets.repository.cidr).
     Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr).
     Replace("<logging-workspace-id>", $workspaceId) | ConvertFrom-Json -AsHashtable
+$ruleNameFilter = "shm-$($config.id)"
 
 
 # Add routes to the route table
@@ -74,13 +78,16 @@ foreach ($route in $rules.routes) {
 }
 
 
-# Attach all subnets except the VPN gateway to the firewall route table
-# ---------------------------------------------------------------------
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.identity.name -AddressPrefix $config.network.vnet.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.web.name -AddressPrefix $config.network.vnet.subnets.web.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
-
-
-$ruleNameFilter = "shm-$($config.id)"
+# Attach all subnets except the VPN gateway and firewall subnets to the firewall route table
+# ------------------------------------------------------------------------------------------
+$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name)
+foreach ($subnet in $VirtualNetwork.Subnets) {
+    if ($excludedSubnetNames.Contains($subnet.Name)) {
+        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
+    } else {
+        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+    }
+}
 
 
 # Application rules
@@ -90,7 +97,7 @@ foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Obj
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
 foreach ($ruleCollection in $rules.applicationRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.Name)'..."
+    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
         $params = @{}
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
@@ -112,9 +119,15 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
 }
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.Name)'..."
+    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.name)'..."
     foreach ($rule in $ruleCollection.properties.rules) {
-        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
+        $params = @{}
+        if ($rule.protocols) {
+            $params["Protocol"] = @($rule.protocols | ForEach-Object { $_.Split(":")[0] })
+            $params["DestinationPort"] = @($rule.protocols | ForEach-Object { $_.Split(":")[1] })
+        }
+        if ($rule.targetAddresses) { $params["DestinationAddress"] = $rule.targetAddresses }
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
 if (-not $rules.networkRuleCollections) {
@@ -140,4 +153,4 @@ if (Confirm-AzVMRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

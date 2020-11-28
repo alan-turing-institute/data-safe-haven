@@ -1,6 +1,7 @@
 #!/bin/bash
 # $DOMAIN_JOIN_USER must be present as an environment variable
 # $DOMAIN_LOWER must be present as an environment variable
+# $DOMAIN_JOIN_OU must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
@@ -12,12 +13,13 @@ END="\033[0m"
 echo -e "${BLUE}Checking realm membership${END}"
 REALM_LIST_CMD="sudo realm list"
 STATUS_CMD="sudo realm list --name-only | grep $DOMAIN_LOWER"
+REJOIN_CMD="sudo cat /etc/domain-join.secret | sudo realm join --verbose --computer-ou='${DOMAIN_JOIN_OU}' -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/ 2>&1"
 
 echo -e "Testing current realms..."
 STATUS=$(${STATUS_CMD})
 if [ "$STATUS" == "" ]; then
     echo -e "${RED}No realm memberships found. Attempting to join $DOMAIN_LOWER${END}"
-    sudo cat /etc/ldap.secret | sudo realm join --verbose -U $DOMAIN_JOIN_USER $DOMAIN_LOWER --install=/
+    eval $REJOIN_CMD
     sleep 30  # allow time for the realm join to propagate
 else
     echo -e "${BLUE} [o] Currently a member of realm: '$STATUS'. No need to rejoin.${END}"

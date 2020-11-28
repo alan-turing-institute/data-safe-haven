@@ -31,7 +31,7 @@ if (-not $azProfile.Accounts.Count) {
 # -------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Set certificate name
@@ -77,7 +77,7 @@ if ($requestCertificate) {
 
     # Get token for DNS subscription
     # ------------------------------
-    $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName
+    $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName -ErrorAction Stop
     if ($azureContext.TokenCache) {
         # Old method: pre Az.Accounts 2.0
         $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
@@ -86,7 +86,7 @@ if ($requestCertificate) {
         $profileClient = New-Object Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient($azProfile)
         $token = $profileClient.AcquireAccessToken($azureContext.Tenant.TenantId).AccessToken
     }
-    $null = Set-AzContext -Subscription $config.sre.subscriptionName
+    $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
@@ -246,8 +246,7 @@ if ($doInstall) {
             sudo chmod 0600 /opt/ssl/*.*
             ls -alh /opt/ssl/
         "
-        $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
 
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
@@ -272,12 +271,11 @@ if ($doInstall) {
             certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
             remoteDirectory = "`"$remoteDirectory`""
         }
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop
