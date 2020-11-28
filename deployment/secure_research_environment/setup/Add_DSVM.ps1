@@ -279,10 +279,10 @@ Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 
-# Insert additional files into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "resources"))) {
+# Insert resources into the cloud-init template
+$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
     $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
@@ -291,7 +291,7 @@ foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
 # If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
-$xrdpCustomLogo = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
+$xrdpCustomLogo = Get-Content (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
 $outputStream = New-Object IO.MemoryStream
 $gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
 $gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
