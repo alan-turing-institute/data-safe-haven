@@ -14,6 +14,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
@@ -33,7 +34,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # We need to ensure that the start of the name is unique as LDAP will truncate after 15 characters
 # ------------------------------------------------------------------------------------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
-$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
+$vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
+$vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
@@ -329,7 +331,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
     Replace("<timezone>", $config.sre.time.timezone.linux).
-    Replace("<vm-hostname>", $vmName).
+    Replace("<vm-hostname>", ($vmHostname | Limit-StringLength -MaximumLength 15)).
     Replace("<vm-ipaddress>", $finalIpAddress)
 
 
@@ -340,7 +342,7 @@ if ($upgrade) {
     for ($i = 0; $i -lt $dataDiskNames.Length; $i++) {
         # Create disk from snapshot
         $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
-        $diskName = $vmName + "-" + $dataDiskNames[$i] + "-DISK"
+        $diskName = "${vmName}-$($dataDiskNames[$i])-DISK"
         Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
         $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
         if ($disk) {
@@ -386,10 +388,11 @@ $networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
 $networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
 $null = $networkCard | Set-AzNetworkInterface
 
+
 # Restart after the networking switch
 # -----------------------------------
 Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 0.6); Start-Sleep 1 }
+1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 1.2); Start-Sleep 1 }
 
 
 # Remove snapshots
