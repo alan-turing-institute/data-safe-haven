@@ -6,18 +6,18 @@
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
     [Parameter(HelpMessage = "FQDN for the SHM", Mandatory = $false)]
-    [string]$shmFqdn,
+    [string]$ShmFqdn,
     [Parameter(HelpMessage = "SRE ID", Mandatory = $false)]
-    [string]$sreId,
+    [string]$SreId,
     [Parameter(HelpMessage = "Fragment to match any private DNS zones", Mandatory = $false)]
-    [string]$privateEndpointMatch
+    [string]$PipeSeparatedPrivateEndpoints
 )
 
 # Remove records for domain-joined SRE VMs
 # ----------------------------------------
 Write-Output "Removing SRE DNS records..."
-foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where-Object { $_.HostName -like "*$sreId" })) {
-    $dnsRecord | Remove-DnsServerResourceRecord -ZoneName "$shmFqdn" -Force
+foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$ShmFqdn" | Where-Object { $_.HostName -like "*$SreId" })) {
+    $dnsRecord | Remove-DnsServerResourceRecord -ZoneName "$ShmFqdn" -Force
     if ($?) {
         Write-Output " [o] Successfully removed DNS record '$($dnsRecord.HostName)'"
     } else {
@@ -27,14 +27,19 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where
 
 # Remove private endpoint DNS Zone
 # --------------------------------
-if ($privateEndpointMatch) {
-    Write-Output " [ ] Ensuring that DNS zones matching '$privateEndpointMatch' are removed"
-    foreach ($DnsZone in (Get-DnsServerZone | Where-Object { $_.ZoneName -like "$privateEndpointMatch*.core.windows.net" })) {
-        try {
-            $DnsZone | Remove-DnsServerZone -Force
-            Write-Output " [o] Successfully removed '$($DnsZone.ZoneName)' DNS zone"
-        } catch [System.ArgumentException] {
-            Write-Output " [x] Failed to remove '$($DnsZone.ZoneName)' DNS zone!"
+foreach ($PrivateEndpointMatch in $PipeSeparatedPrivateEndpoints.Split("|")) {
+    Write-Output " [ ] Ensuring that DNS zones matching '$PrivateEndpointMatch' are removed"
+    $DnsZones = Get-DnsServerZone | Where-Object { $_.ZoneName -like "${PrivateEndpointMatch}*.core.windows.net" }
+    if ($DnsZones) {
+        foreach ($DnsZone in $DnsZones) {
+            try {
+                $DnsZone | Remove-DnsServerZone -Force
+                Write-Output " [o] Successfully removed '$($DnsZone.ZoneName)' DNS zone"
+            } catch [System.ArgumentException] {
+                Write-Output " [x] Failed to remove '$($DnsZone.ZoneName)' DNS zone!"
+            }
         }
+    } else {
+        Write-Output " [o] No DNS zones matching '$PrivateEndpointMatch' were found"
     }
 }

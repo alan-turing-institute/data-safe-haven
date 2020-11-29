@@ -5,7 +5,7 @@ package_upgrade: false
 mounts:
   #- ["//<dataserver-hostname>/Shared", /shared, cifs, "_netdev,credentials=/opt/configuration/credentials-data-server.secret,file_mode=0777,dir_mode=0777"]
   - ["//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
-  - ["//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /hometest, nfs, "_netdev,sec=sys"]
+  - ["//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
   - path: "/etc/bash.bashrc"

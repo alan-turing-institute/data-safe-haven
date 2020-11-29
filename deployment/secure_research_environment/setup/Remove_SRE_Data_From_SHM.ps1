@@ -67,9 +67,9 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
-        groupNamesJoined           = "`"$($groupNames -Join '|')`""
-        userNamesJoined            = "`"$($userNames -Join '|')`""
-        computerNamePatternsJoined = "`"$($computerNamePatterns -Join '|')`""
+        groupNamesJoined           = $groupNames -join "|")
+        userNamesJoined            = $userNames -join "|")
+        computerNamePatternsJoined = $computerNamePatterns -join "|"
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
@@ -77,23 +77,25 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE DNS records and private endpoint DNS Zones from SHM DC
     # ----------------------------------------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
-    foreach ($storageAccountName in @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name)) {
-        $storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $storageAccountName -ErrorAction SilentlyContinue
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
-        $params = @{
-            shmFqdn              = "`"$($config.shm.domain.fqdn)`""
-            sreId                = "`"$($config.sre.id)`""
-            privateEndpointMatch = $storageAccount ? $storageAccount.Context.Name : ""
-        }
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    $privateEndpointNames = @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name) |
+        ForEach-Object { Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $_ -ErrorAction SilentlyContinue } |
+        Where-Object { $_ } |
+        ForEach-Object { $_.Context.Name }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $params = @{
+        ShmFqdn                       = $config.shm.domain.fqdn
+        SreId                         = $config.sre.id
+        PipeSeparatedPrivateEndpoints = ($privateEndpointNames -join "|")
     }
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
     # ---------------------------------------------
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
     $params = @{
-        rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
+        rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 
