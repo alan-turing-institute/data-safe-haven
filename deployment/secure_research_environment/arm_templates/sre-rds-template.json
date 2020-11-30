@@ -99,21 +99,15 @@
         "RDS_Gateway_Os_Disk_Type": {
             "type": "string"
         },
+        "RDS_Gateway_Subnet_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the subnet that the RDS gateway should belong to"
+            }
+        },
         "RDS_Gateway_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D32_v3",
-                "Standard_DS2_v2",
-                "Standard_DS4_v2",
-                "Standard_DS14_v2",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2"
-            ],
             "metadata": {
                 "description": "Select size of RDS Gateway VM"
             }
@@ -146,20 +140,14 @@
         "RDS_Session_Host_Apps_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D32_v3",
-                "Standard_DS2_v2",
-                "Standard_DS4_v2",
-                "Standard_DS14_v2",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2"
-            ],
             "metadata": {
                 "description": "Select size of RDS_Session_Host_Apps VM"
+            }
+        },
+        "RDS_Session_Host_Subnet_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the subnet that the RDS gateway should belong to"
             }
         },
         "SRE_ID": {
@@ -179,21 +167,15 @@
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
             }
-        },
-        "Virtual_Network_Subnet": {
-            "type": "string",
-            "defaultValue": "Subnet-RDS",
-            "metadata": {
-                "description": "Enter name of subnet where you want to provision this VM"
-            }
         }
     },
     "variables": {
-        "rdsnic": "[concat(parameters('RDS_Gateway_Name'),'-','NIC')]",
+        "rdsGatewayNic": "[concat(parameters('RDS_Gateway_Name'),'-','NIC')]",
         "rdsAppSessionHostNic": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-','NIC')]",
-        "rdspip": "[concat(parameters('RDS_Gateway_Name'),'-','PIP')]",
+        "rdsGatewayPip": "[concat(parameters('RDS_Gateway_Name'),'-','PIP')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
+        "rdsGatewaySubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Gateway_Subnet_Name'))]",
+        "rdsServersSubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Session_Host_Subnet_Name'))]"
     },
     "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
@@ -260,7 +242,7 @@
                 },
                 "networkProfile": {
                     "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsnic'))]",
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsGatewayNic'))]",
                         "properties": {
                             "primary": true
                         }
@@ -274,7 +256,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsnic'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsGatewayNic'))]"
             ]
         },
         {
@@ -350,7 +332,7 @@
                         "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
                         "privateIPAllocationMethod": "Static",
                         "subnet": {
-                            "id": "[variables('subnet')]"
+                            "id": "[variables('rdsServersSubnet')]"
                         },
                         "primary": true,
                         "privateIPAddressVersion": "IPv4"
@@ -369,7 +351,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('rdsnic')]",
+            "name": "[variables('rdsGatewayNic')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -380,10 +362,10 @@
                         "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
                         "privateIPAllocationMethod": "Static",
                         "publicIPAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdspip'))]"
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdsGatewayPip'))]"
                         },
                         "subnet": {
-                            "id": "[variables('subnet')]"
+                            "id": "[variables('rdsGatewaySubnet')]"
                         },
                         "primary": true,
                         "privateIPAddressVersion": "IPv4"
@@ -402,7 +384,7 @@
                 "tapConfigurations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdspip'))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdsGatewayPip'))]"
             ]
         },
         {
@@ -411,7 +393,7 @@
                 "name": "Basic",
                 "tier": "Regional"
             },
-            "name": "[variables('rdspip')]",
+            "name": "[variables('rdsGatewayPip')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,

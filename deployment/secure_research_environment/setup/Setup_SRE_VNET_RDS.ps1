@@ -82,7 +82,7 @@ $params = @{
     Domain_Join_User_Gateway              = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
     Domain_Join_User_Session_Hosts        = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
     Domain_Name                           = $config.shm.domain.fqdn
-    NSG_Gateway_Name                      = $config.sre.rds.gateway.nsg
+    NSG_Gateway_Name                      = $config.sre.rds.gateway.nsg.name
     OU_Path_Gateway                       = $config.shm.domain.ous.rdsGatewayServers.path
     OU_Path_Session_Hosts                 = $config.shm.domain.ous.rdsSessionServers.path
     RDS_Gateway_Admin_Password            = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
@@ -94,6 +94,7 @@ $params = @{
     RDS_Gateway_Name                      = $config.sre.rds.gateway.vmName
     RDS_Gateway_Os_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.os.sizeGb
     RDS_Gateway_Os_Disk_Type              = $config.sre.rds.gateway.disks.os.type
+    RDS_Gateway_Subnet_Name               = $config.sre.network.vnet.subnets.rds.name
     RDS_Gateway_VM_Size                   = $config.sre.rds.gateway.vmSize
     RDS_Session_Host_Apps_Admin_Password  = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
     RDS_Session_Host_Apps_IP_Address      = $config.sre.rds.appSessionHost.ip
@@ -101,10 +102,10 @@ $params = @{
     RDS_Session_Host_Apps_Os_Disk_Size_GB = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
     RDS_Session_Host_Apps_Os_Disk_Type    = $config.sre.rds.appSessionHost.disks.os.type
     RDS_Session_Host_Apps_VM_Size         = $config.sre.rds.appSessionHost.vmSize
+    RDS_Session_Host_Subnet_Name          = $config.sre.network.vnet.subnets.rds.name
     SRE_ID                                = $config.sre.id
     Virtual_Network_Name                  = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group        = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet                = $config.sre.network.vnet.subnets.rds.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
