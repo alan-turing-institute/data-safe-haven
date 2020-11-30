@@ -169,7 +169,6 @@ foreach ($ouName in ("<ou-research-users-name>",
                      "<ou-security-groups-name>",
                      "<ou-service-accounts-name>",
                      "<ou-identity-servers-name>",
-                     "<ou-data-servers-name>",
                      "<ou-linux-servers-name>",
                      "<ou-rds-session-servers-name>",
                      "<ou-rds-gateway-servers-name>")
@@ -217,7 +216,7 @@ $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-foreach ($serviceAccount in @("identityServers", "dataServers", "linuxServers", "rdsGatewayServers", "rdsSessionServers")) {
+foreach ($serviceAccount in @("identityServers", "linuxServers", "rdsGatewayServers", "rdsSessionServers")) {
     Write-Output "Creating $serviceAccount domain joining account $($userAccounts."$serviceAccount".samAccountName)..."
     New-ShmUser -Name "$($userAccounts."$serviceAccount".name)" -SamAccountName "$($userAccounts."$serviceAccount".samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts."$serviceAccount".password -AsPlainText -Force) -Domain $shmFdqn
 }
@@ -228,7 +227,6 @@ foreach ($serviceAccount in @("identityServers", "dataServers", "linuxServers", 
 Write-Output "Adding users to security groups..."
 Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $securityGroups.serverAdmins.name
 Add-ShmUserToGroup -SamAccountName $userAccounts.identityServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.dataServers.samAccountName -GroupName $securityGroups.computerManagers.name
 Add-ShmUserToGroup -SamAccountName $userAccounts.linuxServers.samAccountName -GroupName $securityGroups.computerManagers.name
 Add-ShmUserToGroup -SamAccountName $userAccounts.rdsGatewayServers.samAccountName -GroupName $securityGroups.computerManagers.name
 Add-ShmUserToGroup -SamAccountName $userAccounts.rdsSessionServers.samAccountName -GroupName $securityGroups.computerManagers.name
@@ -255,17 +253,14 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # -----------------
 Write-Output "Linking GPOs to OUs..."
 foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity-servers-name>"),
-                            ("All servers - Local Administrators", "<ou-data-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Services", "Domain Controllers"),
                             ("All Servers - Windows Services", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Services", "<ou-data-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Update", "Domain Controllers"),
                             ("All Servers - Windows Update", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Update", "<ou-data-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
                             ("Session Servers - Remote Desktop Control", "<ou-rds-session-servers-name>"))) {
@@ -351,8 +346,6 @@ if ($success) {
 Write-Output "Delegating Active Directory registration permissions to service users..."
 # Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
-# Allow the data server user to register computers in the '<ou-data-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-data-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.dataServers.samAccountName)"
 # Allow the Linux server user to register computers in the '<ou-linux-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-linux-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
 # Allow the RDS gateway server user to register computers in the '<ou-rds-gateway-servers-name>' container

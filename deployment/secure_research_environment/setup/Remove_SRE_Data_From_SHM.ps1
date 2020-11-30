@@ -67,8 +67,8 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
-        groupNamesJoined           = $groupNames -join "|")
-        userNamesJoined            = $userNames -join "|")
+        groupNamesJoined           = $groupNames -join "|"
+        userNamesJoined            = $userNames -join "|"
         computerNamePatternsJoined = $computerNamePatterns -join "|"
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

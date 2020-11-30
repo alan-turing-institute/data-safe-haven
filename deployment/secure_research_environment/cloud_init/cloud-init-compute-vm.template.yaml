@@ -327,13 +327,6 @@ write_files:
       grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
       echo ">=== end of /etc/pam.d/common-session ===<"
 
-  - path: "/opt/configuration/credentials-data-server.secret"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      username=<datamount-username>
-      password=<datamount-password>
-
   - path: "/opt/configuration/credentials-ingress.secret"
     owner: root:root
     permissions: "0400"

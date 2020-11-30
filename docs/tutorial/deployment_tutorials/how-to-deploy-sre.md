@@ -27,7 +27,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
   + [:bicyclist: Set up a non-privileged user account](#bicyclist-set-up-a-non-privileged-user-account)
   + [:mountain_bicyclist: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
-+ [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
++ [:floppy_disk: Deploy storage accounts](#floppy_disk-deploy-storage-accounts)
 + [:baseball: Deploy databases](#baseball-deploy-databases)
 + [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
   + [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
@@ -446,18 +446,7 @@ On your **deployment machine**.
 
 </details>
 
-## :floppy_disk: Deploy Data Server
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_Data_Server.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
-+ The deployment will take around 20 minutes to complete
-
-## :computer: Deploy SRE Storage Accounts
+## :floppy_disk: Deploy storage accounts
 
 On your **deployment machine**.
 

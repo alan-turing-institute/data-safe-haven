@@ -224,11 +224,6 @@ function Add-SreConfig {
                 samAccountName     = "$($config.sre.id)dbpostgres".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "$($config.sre.shortName)-db-service-account-password-postgres"
             }
-            datamount  = [ordered]@{
-                name               = "$($config.sre.domain.netbiosName) Data Mount Service Account"
-                samAccountName     = "$($config.sre.id)datamount".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "$($config.sre.shortName)-other-service-account-password-datamount"
-            }
         }
     }
 
@@ -313,34 +308,6 @@ function Add-SreConfig {
         $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.outboundInternet
     }
 
-
-    # Data server
-    # -----------
-    $hostname = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-    $config.sre.dataserver = [ordered]@{
-        adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-dataserver"
-        rg                      = "$($config.sre.rgPrefix)_DATA".ToUpper()
-        nsg                     = "$($config.sre.nsgPrefix)_DATA".ToUpper()
-        vmName                  = $hostname
-        vmSize                  = "Standard_D2s_v3"
-        hostname                = $hostname
-        fqdn                    = "${hostname}.$($config.shm.domain.fqdn)"
-        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 4
-        disks                   = [ordered]@{
-            egress  = [ordered]@{
-                sizeGb = "512"
-                type   = "Standard_LRS"
-            }
-            ingress = [ordered]@{
-                sizeGb = "512"
-                type   = "Standard_LRS"
-            }
-            shared  = [ordered]@{
-                sizeGb = "512"
-                type   = "Standard_LRS"
-            }
-        }
-    }
 
     # HackMD and Gitlab servers
     # -------------------------
@@ -624,7 +591,6 @@ function Get-ShmFullConfig {
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn          = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous         = [ordered]@{
-            dataServers       = [ordered]@{ name = "Secure Research Environment Data Servers" }
             linuxServers      = [ordered]@{ name = "Secure Research Environment Linux Servers" }
             rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
             rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
@@ -763,11 +729,6 @@ function Get-ShmFullConfig {
                 samAccountName     = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
-            dataServers       = [ordered]@{
-                name               = "$($shm.domain.netbiosName) Data Servers Manager"
-                samAccountName     = "$($shm.id)datasrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-data-servers".ToLower()
-            }
             linuxServers      = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Linux Servers Manager"
                 samAccountName     = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
@@ -863,16 +824,17 @@ function Get-ShmFullConfig {
 
     # Storage config
     # --------------
+    $shmStoragePrefix = "shm$($config.shm.id)"
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{
         artifacts       = [ordered]@{
             rg          = $storageRg
-            accountName = "shm$($shm.id)artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "${shmStoragePrefix}artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         bootdiagnostics = [ordered]@{
             rg          = $storageRg
-            accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "${shmStoragePrefix}bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         persistentdata  = [ordered]@{
             rg = "$($shm.rgPrefix)_PERSISTENT_DATA".ToUpper()

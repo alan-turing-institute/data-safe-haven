@@ -265,7 +265,6 @@ if ($success) {
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20 -AsPlaintext
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 $ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName -AsPlaintext
 $egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName -AsPlaintext
@@ -302,9 +301,6 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdp
 
 # Expand placeholders in the cloud-init template
 $cloudInitTemplate = $cloudInitTemplate.
-    Replace("<datamount-password>", $dataMountPassword).
-    Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
-    Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
     Replace("<domain-join-password>", $domainJoinPassword).
     Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
