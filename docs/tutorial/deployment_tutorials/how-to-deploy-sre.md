@@ -18,9 +18,10 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
-+ [:fishing_pole_and_fish: Deploy virtual network and remote desktop](#fishing_pole_and_fish-deploy-virtual-network-and-remote-desktop)
++ [:station: Deploy networking components](#station-deploy-networking-components)
   + [:clubs: Create SRE DNS Zone](#clubs-create-sre-dns-zone)
-  + [:station: Deploy the virtual network](#station-deploy-the-virtual-network)
+  + [:ghost: Deploy the virtual network](#ghost-deploy-the-virtual-network)
++ [:fishing_pole_and_fish: Deploy remote desktop](#fishing_pole_and_fish-deploy-remote-desktop)
   + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   + [:accept: Configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings)
@@ -200,7 +201,7 @@ On your **deployment machine**.
 + Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_<SRE ID>_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-## :fishing_pole_and_fish: Deploy virtual network and remote desktop
+## :station: Deploy networking components
 
 ### :clubs: Create SRE DNS Zone
 
@@ -225,7 +226,7 @@ On your **deployment machine**.
 
   </details>
 
-### :station: Deploy the virtual network
+### :ghost: Deploy the virtual network
 
 On your **deployment machine**.
 
@@ -235,6 +236,8 @@ On your **deployment machine**.
 + Run `./Setup_SRE_Networking.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` qual to `testcsandbox` .
 + The deployment will take **around 5 minutes**.
 + The VNet peerings may take a few minutes to provision after the script completes.
+
+## :fishing_pole_and_fish: Deploy remote desktop
 
 ### :tropical_fish: Deploy the remote desktop servers
 
