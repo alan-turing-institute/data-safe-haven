@@ -177,7 +177,8 @@
         "rdsGatewaySubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Gateway_Subnet_Name'))]",
         "rdsServersSubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Session_Host_Subnet_Name'))]"
     },
-    "resources": [{
+    "resources": [
+        {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('RDS_Gateway_Name')]",
             "apiVersion": "2018-06-01",
@@ -205,7 +206,8 @@
                         },
                         "diskSizeGB": "[parameters('RDS_Gateway_Os_Disk_Size_GB')]"
                     },
-                    "dataDisks": [{
+                    "dataDisks": [
+                        {
                             "lun": 0,
                             "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK-1')]",
                             "createOption": "Empty",
@@ -241,12 +243,14 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsGatewayNic'))]",
-                        "properties": {
-                            "primary": true
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsGatewayNic'))]",
+                            "properties": {
+                                "primary": true
+                            }
                         }
-                    }]
+                    ]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -301,12 +305,14 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [{
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsAppSessionHostNic'))]",
-                        "properties": {
-                            "primary": true
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsAppSessionHostNic'))]",
+                            "properties": {
+                                "primary": true
+                            }
                         }
-                    }]
+                    ]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -326,18 +332,20 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [{
-                    "name": "ipconfig1",
-                    "properties": {
-                        "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
-                        "privateIPAllocationMethod": "Static",
-                        "subnet": {
-                            "id": "[variables('rdsServersSubnet')]"
-                        },
-                        "primary": true,
-                        "privateIPAddressVersion": "IPv4"
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('rdsServersSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
                     }
-                }],
+                ],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -356,21 +364,23 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [{
-                    "name": "ipconfig1",
-                    "properties": {
-                        "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
-                        "privateIPAllocationMethod": "Static",
-                        "publicIPAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdsGatewayPip'))]"
-                        },
-                        "subnet": {
-                            "id": "[variables('rdsGatewaySubnet')]"
-                        },
-                        "primary": true,
-                        "privateIPAddressVersion": "IPv4"
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdsGatewayPip'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('rdsGatewaySubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
                     }
-                }],
+                ],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
