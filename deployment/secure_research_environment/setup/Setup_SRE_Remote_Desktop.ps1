@@ -219,15 +219,6 @@ if ($?) {
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Set locale, install updates and reboot
-# --------------------------------------
-foreach ($nameVMNameParamsPair in $vmNamePairs) {
-    $name, $vmName = $nameVMNameParamsPair
-    Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn
-}
-
-
 # Import files to RDS VMs
 # -----------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
