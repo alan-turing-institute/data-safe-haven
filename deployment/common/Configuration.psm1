@@ -824,7 +824,7 @@ function Get-ShmFullConfig {
 
     # Storage config
     # --------------
-    $shmStoragePrefix = "shm$($config.shm.id)"
+    $shmStoragePrefix = "shm$($shm.id)"
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{

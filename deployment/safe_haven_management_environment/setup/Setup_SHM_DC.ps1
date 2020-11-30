@@ -86,12 +86,6 @@ $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" }
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
-# WinSCP
-$httpContent = Invoke-WebRequest -Uri "https://winscp.net/eng/download.php"
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -Uri "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
-Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } else {
