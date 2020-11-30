@@ -44,12 +44,6 @@
                 "description": "Enter Domain Name"
             }
         },
-        "NSG_Gateway_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter NSG Gateway Name"
-            }
-        },
         "OU_Path_Gateway": {
             "type": "string",
             "metadata": {
@@ -91,6 +85,12 @@
             "type": "string",
             "metadata": {
                 "description": "Name of the RDS gateway VM"
+            }
+        },
+        "RDS_Gateway_NSG_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter NSG Gateway Name"
             }
         },
         "RDS_Gateway_Os_Disk_Size_GB": {
@@ -378,7 +378,7 @@
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
-                    "id": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/networkSecurityGroups', parameters('NSG_Gateway_Name'))]"
+                    "id": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/networkSecurityGroups', parameters('RDS_Gateway_NSG_Name'))]"
                 },
                 "primary": true,
                 "tapConfigurations": []
