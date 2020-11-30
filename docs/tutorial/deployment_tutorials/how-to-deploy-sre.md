@@ -18,13 +18,13 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
-+ [:fishing_pole_and_fish: Deploy virtual network and remote desktop](#fishing_pole_and_fish-deploy-virtual-network-and-remote-desktop)
++ [:station: Deploy networking components](#station-deploy-networking-components)
   + [:clubs: Create SRE DNS Zone](#clubs-create-sre-dns-zone)
-  + [:station: Deploy the virtual network](#station-deploy-the-virtual-network)
+  + [:ghost: Deploy the virtual network](#ghost-deploy-the-virtual-network)
++ [:fishing_pole_and_fish: Deploy remote desktop](#fishing_pole_and_fish-deploy-remote-desktop)
   + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
-  + [:accept: Configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings)
-  + [:closed_lock_with_key: Update SSL certificate](#closed_lock_with_key-update-ssl-certificate)
+  + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
   + [:bicyclist: Set up a non-privileged user account](#bicyclist-set-up-a-non-privileged-user-account)
   + [:mountain_bicyclist: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
 + [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
@@ -200,7 +200,7 @@ On your **deployment machine**.
 + Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_<SRE ID>_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-## :fishing_pole_and_fish: Deploy virtual network and remote desktop
+## :station: Deploy networking components
 
 ### :clubs: Create SRE DNS Zone
 
@@ -209,7 +209,8 @@ On your **deployment machine**.
 + Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
-  <details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
+  <details>
+  <summary><b>Instructions for manually creating SRE DNS records</b></summary>
 
   + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
 
@@ -225,7 +226,7 @@ On your **deployment machine**.
 
   </details>
 
-### :station: Deploy the virtual network
+### :ghost: Deploy the virtual network
 
 On your **deployment machine**.
 
@@ -236,6 +237,8 @@ On your **deployment machine**.
 + The deployment will take **around 5 minutes**.
 + The VNet peerings may take a few minutes to provision after the script completes.
 
+## :fishing_pole_and_fish: Deploy remote desktop
+
 ### :tropical_fish: Deploy the remote desktop servers
 
 On your **deployment machine**.
@@ -243,18 +246,9 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Setup_SRE_VNET_RDS.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
++ Run `./Setup_SRE_Remote_Desktop.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 + The deployment will take **around 50 minutes**.
 + **Troubleshooting** If you encounter errors with the deployment of the RDS, do not rerun the scripts as they are not currently idempotent and can lead to different outputs. Instead, you should delete everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and start over from [the beginning of this step](#tropical_fish-deploy-remote-desktop-servers).
-
-### :accept: Disable insecure TLS connections
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Disable_Legacy_TLS.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
-+ The deployment will take **less than 5 minutes**.
-  + NB. If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
 
 ### :satellite: Configure RDS webclient
 
@@ -271,7 +265,32 @@ On the **SRE RDS Gateway**.
 + Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 + This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 
-### :accept: Configure RDS CAP and RAP settings
+### :closed_lock_with_key: Secure RDS webclient
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
++ Run `./Secure_SRE_Remote_Desktop_Gateway.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
++ This will perform the following actions, which can be run individually if desired:
+
+<details>
+<summary><strong>Disable insecure TLS connections</strong></summary>
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
++ Run `./Disable_Legacy_TLS.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
++ The deployment will take **less than 5 minutes**.
+  + NB. If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
+
+</details>
+
+<details>
+<summary><strong>Configure RDS CAP and RAP settings</strong></summary>
 
 On your **deployment machine**.
 
@@ -280,7 +299,10 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 + Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 
-### :closed_lock_with_key: Update SSL certificate
+</details>
+
+<details>
+<summary><strong>Update SSL certificate</strong></summary>
 
 On your **deployment machine**.
 
@@ -291,6 +313,8 @@ On your **deployment machine**.
 + Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 + **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 + **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+
+</details>
 
 ### :bicyclist: Set up a non-privileged user account
 

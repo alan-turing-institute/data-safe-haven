@@ -1201,9 +1201,9 @@ function Invoke-WindowsConfigureAndUpdate {
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
     }
     # Set locale and run update script
-    Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
+    Add-LogMessage -Level Info "[ ] Setting time/locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer" }
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"TimeZone" = "$TimeZone"; "NTPServer" = "$NtpServer"; "Locale" = "en-GB" }
     # Reboot the VM
     Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
 }
