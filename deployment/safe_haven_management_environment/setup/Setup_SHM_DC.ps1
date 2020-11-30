@@ -36,14 +36,6 @@ Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
 foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
-# NB. we would like the NPS VM to log to a database, but this is not yet working
-# # Create file storage shares
-# foreach ($shareName in ("sqlserver")) {
-#     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
-#         Add-LogMessage -Level Info "Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
-#         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
-#     }
-# }
 
 
 # Upload artifacts
@@ -105,12 +97,7 @@ if ($success) {
 } else {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
 }
-# NB. we would like the NPS VM to log to a database, but this is not yet working
-# Add-LogMessage -Level Info "Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
-# # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
-# Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
-# # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
-# Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/4/E/54EC1AD8-042C-4CA3-85AB-BA307CF73710/SSMS-Setup-ENU.exe" -DestShareName "sqlserver" -DestFilePath "SSMS-Setup-ENU.exe" -DestContext $storageAccount.Context -Force
+
 
 # Create SHM DC resource group if it does not exist
 # -------------------------------------------------
