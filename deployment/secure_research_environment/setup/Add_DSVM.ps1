@@ -440,7 +440,7 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -configId $configId -ipLastOctet $ipLastOctet }
 
 
 # Get private IP address for this machine
