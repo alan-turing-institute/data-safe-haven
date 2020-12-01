@@ -1,5 +1,5 @@
-Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
-Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+Import-Module $PSScriptRoot/DataStructures -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -Force -ErrorAction Stop
 
 
 # Expand a mustache template
@@ -29,7 +29,7 @@ function Expand-MustacheTemplate {
     # Replace each mustache tag with a value from parameters if there is one
     foreach ($tag in $tags) {
         $tagKey = $tag.Replace($StartDelimeter, "").Replace($EndDelimiter, "").Trim()
-        $value = Find-MultilevelKey -Hashtable $Parameters -Key $tagKey
+        $value = Get-MultilevelKey -Hashtable $Parameters -Key $tagKey
         if ($null -eq $value) {
             Add-LogMessage -Level Fatal "No value for '$tagKey' found in Parameters hashtable."
         } else {

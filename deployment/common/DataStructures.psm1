@@ -72,28 +72,46 @@ function Find-AllMatchingKeys {
 }
 Export-ModuleMember -Function Find-AllMatchingKeys
 
+# Does hashtable or ordered hashtable have key?
+# ----------------------------------------------
+function Find-Key {
+  param(
+    [Parameter(Mandatory = $true, HelpMessage = "Input hashtable")]
+    [System.Collections.IDictionary]$Hashtable,
+    [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
+    [String]$Key
+  )
+
+  try {
+      $hasKey = $Hashtable.ContainsKey($Key)
+  } catch [System.Management.Automation.RuntimeException] {
+      $hasKey = $Hashtable.Contains($Key)
+  }
+  return $hasKey
+}
+Export-ModuleMember -Function Find-Key
 
 # Retrieve value for a (possibly) multilevel key
 # ----------------------------------------------
-function Find-MultilevelKey {
+function Get-MultilevelKey {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Input hashtable")]
         [System.Collections.IDictionary]$Hashtable,
         [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
         [String]$Key
     )
-    if ($Hashtable.ContainsKey($Key)) {
+    if (Find-Key -Hashtable $Hashtable -Key $key) {
         return $Hashtable[$Key]
     } elseif ($Key.Contains(".")) {
         $keyPrefix = $Key.Split(".")[0]
-        if ($Hashtable.ContainsKey($keyPrefix)) {
+        if (Find-Key -Hashtable $Hashtable -Key $keyPrefix) {
             $keySuffix = $Key.Split(".") | Select-Object -Skip 1 | Join-String -Separator "."
-            return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
+            return Get-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
         }
     }
     return $null
 }
-Export-ModuleMember -Function Find-MultilevelKey
+Export-ModuleMember -Function Get-MultilevelKey
 
 
 # Truncate string at a given length
