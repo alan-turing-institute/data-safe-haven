@@ -120,7 +120,6 @@ if ($Upgrade) {
 
     # Find and snapshot the existing data disks
     # -----------------------------------------
-    # $dataDiskTypes = @("SCRATCH", "HOME")
     $dataDiskTypes = @("SCRATCH")
     $snapshots = @{}
     $snapshotNames = @()
@@ -382,7 +381,7 @@ $null = $networkCard | Set-AzNetworkInterface
 # Restart after the networking switch
 # -----------------------------------
 Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 1.2); Start-Sleep 1 }
+1..240 | ForEach-Object { Write-Progress -Activity "Waiting 4 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 2.4); Start-Sleep 1 }
 
 
 # Remove snapshots

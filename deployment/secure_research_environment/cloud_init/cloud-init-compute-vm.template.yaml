@@ -3,9 +3,8 @@ package_upgrade: false
 
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
-  #- ["//<dataserver-hostname>/Shared", /shared, cifs, "_netdev,credentials=/opt/configuration/credentials-data-server.secret,file_mode=0777,dir_mode=0777"]
-  - ["//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
-  - ["//<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
+  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
+  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
   - path: "/etc/bash.bashrc"
@@ -27,15 +26,13 @@ write_files:
     permissions: "0644"
     append: true
     content: |
-      # Scan on access settings
-      # Scan on access for locally mounted disks
-      OnAccessIncludePath /home
-      OnAccessIncludePath /scratch
-      OnAccessIncludePath /mnt
-      # Scan on access for samba shares
-      OnAccessIncludePath /shared
+      # Scan all local and remote mounts on access
       OnAccessIncludePath /data
+      OnAccessIncludePath /home
+      OnAccessIncludePath /mnt
       OnAccessIncludePath /output
+      OnAccessIncludePath /scratch
+      OnAccessIncludePath /shared
       # Prevent access to infected files
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
@@ -97,6 +94,15 @@ write_files:
       echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
       echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'"
       /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
+
+  - path: "/etc/local/runonce.d/01-remount-nfs.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Re-mounting nfs after domain join... ===<"
+      systemctl start home.mount
+      systemctl start shared.mount
 
   - path: "/etc/krb5.conf"
     owner: root:root
@@ -508,7 +514,6 @@ runcmd:
   - systemctl enable xrdp-sesman
   # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
   - /opt/configuration/setup_disk.sh 1 /scratch
-  # - /opt/configuration/setup_disk.sh 2 /home
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
   - echo ">=== Configure ingress and egress mounts ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp

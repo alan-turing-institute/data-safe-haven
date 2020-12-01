@@ -47,7 +47,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + An SHM environment that has already been deployed in Azure - follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
 + An Azure subscription with sufficient credits to build the SRE.
   + :notebook: Our convention is to name these `Turing SRE - <SRE ID> (SHM <SHM ID>)`
-  + :information_source: We recommend allowing at least **$1, 000** in Azure credits for setting up each SRE
+  + :information_source: We recommend allowing at least **$1,000** in Azure credits for setting up each SRE
 + **Owner** access to the SRE and SHM Azure subscriptions
   + :information_source: We recommend using security groups to control access (eg. our subscriptions belong to `Safe Haven Test Admins` or `Safe Haven Production Admins` )
 + Access to a global administrator account on the SHM Azure Active Directory

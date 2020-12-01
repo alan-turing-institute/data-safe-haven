@@ -57,7 +57,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         # As we want to ensure that the SAS token is valid for 1 year from *now* we do not want to re-use old tokens
         # We therefore always generate a new token and store it in the keyvault (note that old tokens will still be valid and will still be stored as old versions of the secret)
         # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the key vault
-        $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -Policy $sasPolicy.Policy -StorageAccount $persistentStorageAccount
+        $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
 
     # When using a file share we need to mount using the storage key
@@ -96,7 +96,7 @@ while ($registrationState -ne "Registered") {
 #   layer of encryption for all data in transit between Azure datacenters
 #   using MACSec. NFS shares can only be accessed from trusted virtual
 #   networks and over VPN tunnels. No additional transport layer encryption
-#   is available on NFS shares.""
+#   is available on NFS shares."
 $userdataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.userdata.account.name `
                                                 -AccessTier $config.sre.storage.userdata.account.accessTier `
                                                 -Kind $config.sre.storage.userdata.account.storageKind `
@@ -104,6 +104,7 @@ $userdataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.userda
                                                 -ResourceGroupName $config.sre.storage.userdata.account.rg `
                                                 -SkuName $config.sre.storage.userdata.account.performance `
                                                 -AllowHttpTraffic
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Allow
 
 
 # Ensure that all required userdata containers exist
@@ -150,12 +151,15 @@ foreach ($storageAccount in @($persistentStorageAccount, $userdataStorageAccount
 
 # Ensure that public access to the storage account is only allowed from approved locations
 # ----------------------------------------------------------------------------------------
+# Persistent data
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Deny
 foreach ($IpAddress in $config.sre.storage.persistentdata.account.allowedIpAddresses) {
     $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -IPAddressOrRange $IpAddress
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# User data - deny all access
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Deny
 
 
 # Switch back to original subscription
