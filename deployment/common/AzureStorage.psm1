@@ -31,7 +31,7 @@ function Deploy-StorageAccount {
         if ($Kind -eq "BlobStorage") { $params["AccessTier"] = $AccessTier }
         if ($AllowHttpTraffic) {
             $params["EnableHttpsTrafficOnly"] = $false
-            Add-LogMessage -Level Warning "Storage account '$Name' will be deployed with EnableHttpsTrafficOnly disabled. Note that this can take around 15 minutes to complete."
+            Add-LogMessage -Level Warning "Storage account '$Name' will be deployed with EnableHttpsTrafficOnly disabled. Note that this can take up to 15 minutes to complete."
         }
         $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params
         if ($?) {
@@ -325,8 +325,8 @@ function New-StorageReceptacleSasToken {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
         [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
-        [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
-        [string]$Policy,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of an access policy that is valid for this storage account")]
+        [string]$PolicyName,
         [Parameter(Mandatory = $false, ParameterSetName = "ByContainerName", HelpMessage = "Container name")]
         [string]$ContainerName,
         [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
@@ -335,12 +335,14 @@ function New-StorageReceptacleSasToken {
     $identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
     Add-LogMessage -Level Info "Generating new SAS token for $identifier in '$($StorageAccount.StorageAccountName)..."
     if ($ContainerName) {
-        $SasToken = New-AzStorageContainerSASToken -Name $ContainerName -Policy $Policy -Context $StorageAccount.Context
+        $SasToken = New-AzStorageContainerSASToken -Name $ContainerName -Policy $PolicyName -Context $StorageAccount.Context
+        $expiryTime = (Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context).ExpiryTime
     } elseif ($ShareName) {
-        $SasToken = New-AzStorageShareSASToken -ShareName $ShareName -Policy $Policy -Context $StorageAccount.Context
+        $SasToken = New-AzStorageShareSASToken -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context
+        $expiryTime = (Get-AzStorageShareStoredAccessPolicy -ShareName $ContainerName -Policy $PolicyName -Context $StorageAccount.Context).ExpiryTime
     }
     if ($?) {
-        Add-LogMessage -Level Success "Created new SAS token for $identifier in '$($StorageAccount.StorageAccountName)"
+        Add-LogMessage -Level Success "Created new SAS token for $identifier in '$($StorageAccount.StorageAccountName)' valid until $($expiryTime.UtcDateTime.ToString('yyyy-MM-dd'))"
     } else {
         Add-LogMessage -Level Fatal "Failed to create new SAS token for $identifier in '$($StorageAccount.StorageAccountName)!"
     }
@@ -373,7 +375,7 @@ function Deploy-SasAccessPolicy {
     if ($ContainerName) {
         $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     } elseif ($ShareName) {
-        $policy = Get-AzStorageShareStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
+        $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     }
     if ($policy) {
         Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
