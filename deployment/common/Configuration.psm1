@@ -935,6 +935,6 @@ function Show-FullConfig {
     } elseif ($configType -eq 'sre') {
         $config = Get-SreConfig -configId $configId
     }
-    Write-Output $config
+    Write-Output ($config | ConvertTo-JSON -depth 10)
 }
 Export-ModuleMember -Function Show-FullConfig
