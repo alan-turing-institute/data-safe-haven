@@ -94,7 +94,7 @@ $null = New-AzTag -ResourceId $image.id -Tag $vmTags
 if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
     Add-LogMessage -Level Info "... virtual machine: $vmName"
-    $null = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
+    $null = Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... hard disk: ${vmName}-OS-DISK"
     $null = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... network card: $vmName-NIC"

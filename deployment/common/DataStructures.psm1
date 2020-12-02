@@ -121,3 +121,17 @@ function Limit-StringLength {
     return $InputString[0..($MaximumLength - 1)] -join ""
 }
 Export-ModuleMember -Function Limit-StringLength
+
+
+# Retrieve value for a (possibly) multilevel key
+# ----------------------------------------------
+function Wait-For {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Number of seconds to wait for")]
+        [int]$Seconds,
+        [Parameter(Mandatory = $true, HelpMessage = "Thing that we are waiting for")]
+        [string]$Target
+    )
+    1..$Seconds | ForEach-Object { Write-Progress -Activity "Waiting $Seconds seconds for $Target..." -Status "$_ seconds elapsed" -PercentComplete (100 * $_ / $Seconds); Start-Sleep 1 }
+}
+Export-ModuleMember -Function Wait-For

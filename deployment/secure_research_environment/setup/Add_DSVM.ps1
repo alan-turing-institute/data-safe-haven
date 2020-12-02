@@ -39,6 +39,11 @@ $vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
+# Create DSVM resource group if it does not exist
+# ----------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
+
+
 # Retrieve VNET and subnets
 # -------------------------
 Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
@@ -56,174 +61,68 @@ $finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vn
 # Check whether this IP address has been used.
 # --------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
-if ($existingNic) {
-    Add-LogMessage -Level Info "Found an existing network card with IP address '$finalIpAddress'"
-    if (-not $Upgrade) {
-        if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
-            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-            exit 0
-        } else {
-            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
-            $null = $existingNic | Remove-AzNetworkInterface -Force
-            if ($?) {
-                Add-LogMessage -Level Success "Network card removal succeeded"
-            } else {
-                Add-LogMessage -Level Fatal "Network card removal failed!"
-            }
-        }
-
-    }
+if (($existingNic.VirtualMachine.Id) -and -not $Upgrade) {
+    Add-LogMessage -Level InfoSuccess "A VM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    exit 0
 }
 
 
+# If we are upgrading then we need an existing VM
+# -----------------------------------------------
 if ($Upgrade) {
-    # Attempt to find an existing virtual machine
-    # -------------------------------------------
+    # Attempt to find exactly one existing virtual machine
     $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }
-    if ($existingVm) {
-        if ($existingVm.Length -ne 1) {
-            foreach ($vm in $existingVm) {
-                $vmName = $vm.Name
-                Add-LogMessage -Level Info "Candidate VM: '$vmName'"
-            }
-            Add-LogMessage -Level Fatal "Multiple candidate VMs found, aborting upgrade"
-        } else {
-            $existingVmName = $existingVm.Name
-            Add-LogMessage -Level Info "Found an existing VM '$existingVmName'"
-        }
+    if (-not $existingVm) {
+        Add-LogMessage -Level Fatal "No existing VM found to upgrade"
+    } elseif ($existingVm.Length -ne 1) {
+        $existingVm | ForEach-Object { Add-LogMessage -Level Info "Candidate VM: '$($_.Name)'" }
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Fatal "Multiple candidate VMs found, aborting upgrade"
     } else {
-        Add-LogMessage -Level Warning "No existing VM found to upgrade"
+        Add-LogMessage -Level Info "Found an existing VM '$($existingVm.Name)'"
     }
 
-    # Ensure that an upgrade will occur
-    # ---------------------------------
-    if ($existingVm) {
-        if ($existingVm.Name -eq $vmName -and -not $Force) {
-            Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade is needed. Use -Force to upgrade anyway."
-            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-            exit 0
-        }
+    # Check whether an upgrade is needed
+    if (($existingVm.Name -eq $vmName) -and -not $Force) {
+        Add-LogMessage -Level Warning "The existing VM appears to be using the same image version, no upgrade is needed. Use -Force to upgrade anyway."
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        exit 0
     }
 
-    # Stop existing VM
-    # ----------------
-    if ($existingVm) {
-        Add-LogMessage -Level Info "[ ] Stopping existing virtual machine."
-        $null = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVm.Name -Force
-        if ($?) {
-            Add-LogMessage -Level Success "VM stopping succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "VM stopping failed!"
-        }
-    }
-
-    # Find and snapshot the existing data disks
-    # -----------------------------------------
-    $dataDiskTypes = @("SCRATCH")
-    $snapshots = @{}
-    $snapshotNames = @()
-    foreach ($dataDiskType in $dataDiskTypes) {
-        # First attempt to find a disk
-        Add-LogMessage -Level Info "[ ] Locating '$dataDiskType' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "${vmNamePrefix}-\d-\d-\d{10}-${dataDiskType}-DISK" }
-        $snapshotName = "${vmNamePrefix}-${dataDiskType}-DISK-SNAPSHOT"
-
-        # If there is a disk, take a snapshot
-        if ($disk) {
-            if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Fatal "Multiple candidate '$dataDiskType' disks found, aborting upgrade"
-            }
-            Add-LogMessage -Level Success "Found '$dataDiskType' disk"
-            # Snapshot disk
-            Add-LogMessage -Level Info "[ ] Snapshotting disk '$($disk.Name)'."
-            $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
-            if ($snapshot) {
-                Add-LogMessage -Level Success "Snapshot succeeded"
-                $snapshots[$dataDiskType] = $snapshot
-                $snapshotNames += $snapshotName
-            } else {
-                Add-LogMessage -Level Fatal "Snapshot failed!"
-            }
-
-        # If there is no disk, look for an existing snapshot
-        } else {
-            Add-LogMessage -Level Info "'$dataDiskType' disk not found, attempting to find existing snapshot"
-            $snapshot = Get-AzSnapshot | Where-Object { $_.Name -match "$snapshotName" }
-            if ($snapshot) {
-                if ($snapshot.Length -ne 1) {
-                    Add-LogMessage -Level Fatal "Multiple candidate '$dataDiskType' snapshots found, aborting upgrade"
-                }
-                Add-LogMessage -Level Success "Snapshot found"
-                $snapshots[$dataDiskType] += $snapshot
-                $snapshotNames += $snapshot.Name
-            } else {
-                Add-LogMessage -Level Fatal "No disk or snapshot for '$dataDiskType' found, aborting upgrade"
-            }
-        }
-    }
-
-    # Remove the existing VM
-    # ----------------------
-    if ($existingVm) {
-        Add-LogMessage -Level Info "[ ] Deleting existing VM"
-        $null = Remove-AzVM -Name $existingVmName -ResourceGroupName $config.sre.dsvm.rg -Force
-        if ($?) {
-            Add-LogMessage -Level Success "VM removal succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "VM removal failed!"
-        }
+    # Stop and remove the existing VM
+    Stop-VM -Name $existingVm.Name -ResourceGroupName $existingVm.ResourceGroupName
+    Add-LogMessage -Level Info "[ ] Removing existing VM '$($existingVm.Name)'"
+    $null = Remove-VirtualMachine -Name $existingVm.Name -ResourceGroupName $existingVm.ResourceGroupName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Removal of VM '$($existingVm.Name)' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Removal of VM '$($existingVm.Name)' failed!"
     }
 
     # Remove the existing NIC
-    # -----------------------
     if ($existingNic) {
-        Add-LogMessage -Level Info "[ ] Deleting existing NIC"
-        $null = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $config.sre.dsvm.rg -Force
+        Add-LogMessage -Level Info "[ ] Deleting existing network card '$($existingNic.Name)'"
+        $null = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $existingNic.ResourceGroupName -Force
         if ($?) {
-            Add-LogMessage -Level Success "NIC removal succeeded"
+            Add-LogMessage -Level Success "Removal of network card '$($existingNic.Name)' succeeded"
         } else {
-            Add-LogMessage -Level Fatal "NIC removal failed!"
+            Add-LogMessage -Level Fatal "Removal of network card '$($existingNic.Name)' failed!"
         }
     }
 
     # Remove the existing disks
-    # -------------------------
-    $diskTypes = $dataDiskTypes + @("OS")
-    foreach ($diskType in $diskTypes) {
-        Add-LogMessage -Level Info "[ ] Removing '$diskType' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskType-DISK" }
-        if ($disk) {
-            if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Warning "Multiple candidate '$diskType' disks found, not removing any"
+    foreach ($diskType in @("OS")) {
+        Add-LogMessage -Level Info "[ ] Removing '$diskType' disks"
+        foreach ($disk in $(Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskType-DISK" })) {
+            $null = $disk | Remove-AzDisk -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Removal of '$($disk.Name)' succeeded"
             } else {
-                $null = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
-                if ($?) {
-                    Add-LogMessage -Level Success "Disk deletion succeeded"
-                } else {
-                    Add-LogMessage -Level Fatal "Disk deletion failed!"
-                }
+                Add-LogMessage -Level Fatal "Removal of '$($disk.Name)' failed!"
             }
-        } else {
-            Add-LogMessage -Level Success "No disk found"
         }
     }
-}
-
-
-# Check that this is a valid image version and get its ID
-# -------------------------------------------------------
-$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
-
-
-# Set the OS disk size for this image
-# -----------------------------------
-$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
-if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
-if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
-    Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
 
 
@@ -241,9 +140,19 @@ if ($orphanedDisks) {
 }
 
 
-# Create DSVM resource group if it does not exist
-# ----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
+# Check that this is a valid image version and get its ID
+# -------------------------------------------------------
+$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
+$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
+
+
+# Set the OS disk size for this image
+# -----------------------------------
+$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
+if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
+    Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
+}
 
 
 # Set mirror URLs
@@ -362,22 +271,7 @@ $null = $networkCard | Set-AzNetworkInterface
 # Restart after the networking switch
 # -----------------------------------
 Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-1..240 | ForEach-Object { Write-Progress -Activity "Waiting 4 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 2.4); Start-Sleep 1 }
-
-
-# Remove snapshots
-# ----------------
-if ($Upgrade) {
-    foreach ($snapshotName in $snapshotNames) {
-        Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
-        $null = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Snapshot deletion succeeded"
-        } else {
-            Add-LogMessage -Level Failure "Snapshot deletion failed!"
-        }
-    }
-}
+Wait-For -Target "domain joining to complete" -Seconds 240
 
 
 # Create local zip file

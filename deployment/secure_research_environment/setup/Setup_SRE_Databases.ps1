@@ -44,7 +44,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     if (Get-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -ErrorAction SilentlyContinue) {
         if ($Redeploy) {
             Add-LogMessage -Level Info "Removing existing database VM '$($databaseCfg.vmName)'..."
-            $null = Remove-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Force
+            $null = Remove-VirtualMachine -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Force
             if ($?) {
                 Add-LogMessage -Level Success "Removal of database VM '$($databaseCfg.vmName)' succeeded"
             } else {
