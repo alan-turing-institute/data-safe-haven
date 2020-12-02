@@ -14,7 +14,7 @@ fs_setup:
 
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
-  - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec,umask=000"]
+  - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec"]
   - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
   - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
 
