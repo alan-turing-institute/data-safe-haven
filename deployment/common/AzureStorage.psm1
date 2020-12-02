@@ -52,16 +52,16 @@ Export-ModuleMember -Function Deploy-StorageAccount
 function Deploy-StorageAccountEndpoint {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to generate a private endpoint for")]
-        $StorageAccount,
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy the endpoint into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy the endpoint into")]
-        $Subnet,
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "Type of storage to connect to (Blob, File or Default)")]
         [ValidateSet("Blob", "File", "Default")]
-        $StorageType,
+        [string]$StorageType,
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint into")]
-        $Location
+        [string]$Location
     )
     # Allow a default if we're using a storage account that is only compatible with one storage type
     if ($StorageType -eq "Default") {
@@ -118,13 +118,13 @@ Export-ModuleMember -Function Deploy-StorageAccountEndpoint
 
 
 # Create storage container if it does not exist
-# ------------------------------------------
+# ---------------------------------------------
 function Deploy-StorageContainer {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        $StorageAccount
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
     $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -149,9 +149,9 @@ Export-ModuleMember -Function Deploy-StorageContainer
 function Deploy-StorageShare {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        $StorageAccount
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage share '$Name' exists..."
     $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -176,9 +176,9 @@ Export-ModuleMember -Function Deploy-StorageShare
 function Deploy-StorageNfsShare {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        $StorageAccount
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that NFS storage share '$Name' exists..."
     $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -223,12 +223,12 @@ Export-ModuleMember -Function Deploy-StorageNfsShare
 function Deploy-StorageReceptacle {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage receptacle to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        $StorageAccount,
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Type of storage receptacle to create (Share, Container or NfsShare)")]
         [ValidateSet("Share", "Container", "NfsShare")]
-        $StorageType
+        [string]$StorageType
     )
     if ($StorageType -eq "Share") {
         return Deploy-StorageShare -Name $Name -StorageAccount $StorageAccount
@@ -242,12 +242,28 @@ function Deploy-StorageReceptacle {
 Export-ModuleMember -Function Deploy-StorageReceptacle
 
 
+# Get storage account possibly in another subscription
+# ----------------------------------------------------
+function Get-StorageAccount {
+    # Note that in order to use @Args we must not include any [Parameter(...)] information
+    param(
+        [string]$SubscriptionName
+    )
+    $originalContext = Get-AzContext
+    $null = Set-AzContext -SubscriptionId $SubscriptionName -ErrorAction Stop
+    $StorageAccount = Get-AzStorageAccount @Args
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    return $StorageAccount
+}
+Export-ModuleMember -Function Get-StorageAccount
+
+
 # Get all available endpoints for a given storage account
 # -------------------------------------------------------
 function Get-StorageAccountEndpoints {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        $StorageAccount
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     return @(
         @($StorageAccount.PrimaryEndpoints.Blob,
