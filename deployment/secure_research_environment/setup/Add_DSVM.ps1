@@ -234,15 +234,13 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<vm-ipaddress>", $finalIpAddress)
 
 
-# Deploy data disks
-# -----------------
-$dataDisks = @()
-$dataDisks += Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-
 # Deploy the VM
 # -------------
-$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$dataDisks = @(
+    (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location)
+)
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
@@ -271,56 +269,35 @@ $null = $networkCard | Set-AzNetworkInterface
 # Restart after the networking switch
 # -----------------------------------
 Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-Wait-For -Target "domain joining to complete" -Seconds 240
+Wait-For -Target "domain joining to complete" -Seconds 120
 
 
-# Create local zip file
-# ---------------------
+# Upload smoke tests to DSVM
+# --------------------------
 Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
-$zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
-$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
-# Set correct database paths
-$template = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
+# Arrange files in temporary directory
+$localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
+Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
+$template = Join-Path $localSmokeTestDir "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
 $template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
           Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
           Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
-          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $tempDir "tests" "test_databases.sh")
-if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
-Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
-Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
-if ($?) {
-    Add-LogMessage -Level Success "Zip file creation succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Zip file creation failed!"
-}
-Remove-Item -Path $tempDir -Recurse -Force
-
-
-# Upload the zip file to the compute VM
-# -------------------------------------
-Add-LogMessage -Level Info "Uploading smoke tests to the DSVM..."
-$zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
-Remove-Item -Path $zipFilePath
-# Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
-$params = @{
-    PAYLOAD = $zipFileEncoded
-}
-Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
-$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
+# Upload files to VM via the SHM persistent data storage account (since access is allowed from both the deployment machine and the DSVM)
+$persistentStorageAccount = Get-StorageAccount -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -SubscriptionName $config.shm.subscriptionName -ErrorAction Stop
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $persistentStorageAccount
+Remove-Item -Path $localSmokeTestDir -Recurse -Force
+# Set smoke test permissions
+Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "set_smoke_test_permissions.sh"
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Run remote diagnostic scripts
 # -----------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -configId $configId -ipLastOctet $ipLastOctet }
-
-
-# Get private IP address for this machine
-# ---------------------------------------
-$privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
-Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed from the RDS at $privateIpAddress"
 
 
 # Switch back to original subscription

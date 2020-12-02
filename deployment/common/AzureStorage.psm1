@@ -351,6 +351,92 @@ function New-StorageReceptacleSasToken {
 Export-ModuleMember -Function New-StorageReceptacleSasToken
 
 
+# Send local files to a Linux VM
+# ------------------------------
+function Send-FilesToLinuxVM {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to create")]
+        [string]$LocalDirectory,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to create")]
+        [string]$RemoteDirectory,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to generate a private endpoint for")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$BlobStorageAccount,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to generate a private endpoint for")]
+        [string]$VMName,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to generate a private endpoint for")]
+        [string]$VMResourceGroupName
+    )
+    $originalContext = Get-AzContext
+    $ResolvedPath = Get-Item -Path $LocalDirectory
+
+    # Zip files from the local directory
+    try {
+        $zipFileDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString()))
+        $zipFileContainerName = [Guid]::NewGuid().ToString()
+        $zipFileName = "${zipFileContainerName}.zip"
+        $zipFilePath = Join-Path $zipFileDir $zipFileName
+        if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
+        Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
+        Compress-Archive -CompressionLevel NoCompression -Path $ResolvedPath -DestinationPath $zipFilePath -ErrorAction Stop
+        Add-LogMessage -Level Success "Zip file creation succeeded"
+    } catch {
+        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
+        Add-LogMessage -Level Fatal "Zip file creation failed!"
+    }
+
+    # Upload the zipfile to blob storage
+    Add-LogMessage -Level Info "[ ] Uploading zip file to container '$zipFileContainerName'..."
+    try {
+        $null = Set-AzContext -SubscriptionId $BlobStorageAccount.Id.Split("/")[2] -ErrorAction Stop
+        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -ResourceGroupName $BlobStorageAccount.ResourceGroupName -Name $BlobStorageAccount.StorageAccountName).DefaultAction
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
+        $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
+        $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Success "Successfully uploaded zip file to '$zipFileContainerName'"
+    } catch {
+        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
+        $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction SilentlyContinue
+        Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'!" -Exception $_.Exception
+    }
+
+    # Remove zip file directory
+    Add-LogMessage -Level Info "[ ] Cleaning up directory $zipFileDir..."
+    try {
+        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
+        Add-LogMessage -Level Success "Successfully cleaned up '$zipFileDir'"
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileDir'!"
+    }
+
+    # Generate a SAS token and construct URL
+    Add-LogMessage -Level Info "[ ] Generating download URL..."
+    $sasToken = New-ReadOnlyStorageAccountSasToken -ResourceGroup $BlobStorageAccount.ResourceGroupName -AccountName $BlobStorageAccount.StorageAccountName -SubscriptionName $BlobStorageAccount.Id.Split("/")[2]
+    $remoteUrl = "$($BlobStorageAccount.PrimaryEndpoints.Blob)${zipFileContainerName}/${zipFileName}${sasToken}"
+    Add-LogMessage -Level Success "Constructed download URL $remoteUrl"
+
+    # Download the zip file onto the remote machine using curl
+    $script = @("#!/bin/bash",
+                "tmpdir=`$(mktemp -d)",
+                "curl -X GET -o `$tmpdir/${zipFileName} '${remoteUrl}' 2>&1",
+                "mkdir -p ${RemoteDirectory}",
+                "unzip `$tmpdir/${zipFileName} -d ${RemoteDirectory}",
+                "rm -rf `$tmpdir") -join "`n"
+    Add-LogMessage -Level Info "[ ] Downloading zip file onto $VMName"
+    $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $VMName -ResourceGroupName $VMResourceGroupName
+
+    # Remove blob storage container
+    Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
+    try {
+        $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
+        Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!"
+    }
+}
+Export-ModuleMember -Function Send-FilesToLinuxVM
+
 # Generate a new SAS policy
 # Note that there is a limit of 5 policies for a given storage account/container
 # ------------------------------------------------------------------------------
