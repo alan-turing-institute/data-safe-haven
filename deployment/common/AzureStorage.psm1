@@ -3,6 +3,59 @@ Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Generate a new SAS policy
+# Note that there is a limit of 5 policies for a given storage account/container
+# ------------------------------------------------------------------------------
+function Deploy-SasAccessPolicy {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Policy name")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
+        [string]$Permission,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByContainerName", HelpMessage = "Container name")]
+        [string]$ContainerName,
+        [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
+        [string]$ShareName,
+        [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
+        [int]$ValidityYears = 1
+    )
+    $Identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
+    $PolicyName = "${identifier}${Name}".Replace(" ", "").Replace("'", "").ToLower()
+    Add-LogMessage -Level Info "Ensuring that SAS policy '$PolicyName' exists for $Identifier in '$($StorageAccount.StorageAccountName)..."
+    if ($ContainerName) {
+        $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
+    } elseif ($ShareName) {
+        $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
+    }
+    if ($policy) {
+        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+    } else {
+        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+        $StartTime = (Get-Date).AddMinutes(-15)
+        $ExpiryTime = $StartTime.AddYears($ValidityYears)
+        $success = $false
+        if ($ContainerName) {
+            $null = New-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
+            $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context
+            $success = $?
+        } elseif ($ShareName) {
+            $null = New-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
+            $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context
+            $success = $?
+        }
+        if ($success) {
+            Add-LogMessage -Level Success "Created new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)!"
+        }
+    }
+    return $policy
+}
+Export-ModuleMember -Function Deploy-SasAccessPolicy
+
+
 # Create storage account if it does not exist
 # ------------------------------------------
 function Deploy-StorageAccount {
@@ -453,54 +506,3 @@ function Send-FilesToLinuxVM {
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
 
-# Generate a new SAS policy
-# Note that there is a limit of 5 policies for a given storage account/container
-# ------------------------------------------------------------------------------
-function Deploy-SasAccessPolicy {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Policy name")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Policy permissions")]
-        [string]$Permission,
-        [Parameter(Mandatory = $true, HelpMessage = "Storage account")]
-        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
-        [Parameter(Mandatory = $false, ParameterSetName = "ByContainerName", HelpMessage = "Container name")]
-        [string]$ContainerName,
-        [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
-        [string]$ShareName,
-        [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
-        [int]$ValidityYears = 1
-    )
-    $Identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
-    $PolicyName = "${identifier}${Name}".Replace(" ", "").Replace("'", "").ToLower()
-    Add-LogMessage -Level Info "Ensuring that SAS policy '$PolicyName' exists for $Identifier in '$($StorageAccount.StorageAccountName)..."
-    if ($ContainerName) {
-        $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
-    } elseif ($ShareName) {
-        $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
-    }
-    if ($policy) {
-        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
-    } else {
-        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
-        $StartTime = (Get-Date).AddMinutes(-15)
-        $ExpiryTime = $StartTime.AddYears($ValidityYears)
-        $success = $false
-        if ($ContainerName) {
-            $null = New-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
-            $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context
-            $success = $?
-        } elseif ($ShareName) {
-            $null = New-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context -Permission $Permission -StartTime $StartTime -ExpiryTime $ExpiryTime
-            $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ShareName -Policy $PolicyName -Context $StorageAccount.Context
-            $success = $?
-        }
-        if ($success) {
-            Add-LogMessage -Level Success "Created new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)!"
-        }
-    }
-    return $policy
-}
-Export-ModuleMember -Function Deploy-SasAccessPolicy
