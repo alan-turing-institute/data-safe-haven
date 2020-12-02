@@ -251,10 +251,9 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 $IPs = Get-MirrorIPs $config
 $addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
-$success = $?
-Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-if ($success) {
+if ($?) {
+    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
     Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
 } else {
     Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
@@ -329,25 +328,7 @@ $cloudInitTemplate = $cloudInitTemplate.
 # Deploy data disks
 # -----------------
 $dataDisks = @()
-if ($Upgrade) {
-    foreach ($dataDiskType in $dataDiskTypes) {
-        # Create disk from snapshot
-        $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$dataDiskType].Id -CreateOption Copy
-        $diskName = "${vmName}-${dataDiskType}-DISK"
-        Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
-        $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
-        if ($disk) {
-            Add-LogMessage -Level Success "Disk creation succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Disk creation failed!"
-        }
-        $dataDisks += $disk
-    }
-} else {
-    # Create empty disks
-    $dataDisks += Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    # $dataDisks += Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-}
+$dataDisks += Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 
 # Deploy the VM
 # -------------

@@ -1,3 +1,5 @@
+# Get IP addresses for package mirrors/repositories
+# -------------------------------------------------
 function Get-MirrorIPs {
     param(
     [Parameter(Position = 0, HelpMessage = "SRE configuration")]
@@ -29,8 +31,9 @@ function Get-MirrorIPs {
 }
 Export-ModuleMember -Function Get-MirrorIPs
 
-# Get root directory for configuration files
-# ------------------------------------------
+
+# Get URLs for package mirrors/repositories
+# -----------------------------------------
 function Get-MirrorAddresses {
     param(
         [Parameter(HelpMessage = "CRAN IP address")]
@@ -48,7 +51,6 @@ function Get-MirrorAddresses {
         if ($nexus) {
             $cranUrl = "${cranUrl}:${nexus_port}/repository/cran-proxy"
         }
-
     } else {
         $cranUrl = "https://cran.r-project.org"
     }

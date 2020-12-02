@@ -406,10 +406,6 @@ function Add-SreConfig {
         }
         vmSizeDefault           = "Standard_D2s_v3"
         disks                   = [ordered]@{
-            home    = [ordered]@{
-                sizeGb = "1024"
-                type   = "Standard_LRS"
-            }
             os      = [ordered]@{
                 sizeGb = "default"
                 type   = "Standard_LRS"

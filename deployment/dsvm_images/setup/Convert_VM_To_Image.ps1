@@ -65,7 +65,7 @@ if (-not $?) {
 Add-LogMessage -Level Info "Waiting for deprovisioning to finish..."
 $progress = 0
 $statuses = (Get-AzVM -Name $vm.Name -ResourceGroupName $config.dsvmImage.build.rg -Status).Statuses.Code
-while (-Not $statuses.Contains("ProvisioningState/succeeded")) {
+while (-not $statuses.Contains("ProvisioningState/succeeded")) {
     $statuses = (Get-AzVM -Name $vm.Name -ResourceGroupName $config.dsvmImage.build.rg -Status).Statuses.Code
     $progress = [math]::min(100, $progress + 1)
     Write-Progress -Activity "Deprovisioning status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress

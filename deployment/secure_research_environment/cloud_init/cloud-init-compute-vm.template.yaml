@@ -1,8 +1,20 @@
 #cloud-config
 package_upgrade: false
 
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    filesystem: ext4
+    partition: 1
+
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
+  - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec,umask=000"]
   - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
   - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
 
@@ -381,39 +393,6 @@ write_files:
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
-  - path: "/opt/configuration/setup_disk.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      #!/bin/sh
-      if [ $# -ne 2 ]; then echo "$(basename $0) requires two arguments!"; fi
-      DISK_LUN=$1
-      FOLDER_PATH=$2
-      # Create folder and grant appropriate access
-      echo ">=== Creating new mount at '$FOLDER_PATH'... ===<"
-      mkdir -p $FOLDER_PATH
-      DISK_PATH="/dev/disk/azure/scsi1/lun${DISK_LUN}"
-      DEVICE=$(readlink -f ${DISK_PATH})
-      PARTITION="${DEVICE}1"
-      echo "Using partition ${PARTITION} from disk ${DISK_PATH}"
-      # Get the partition table format of the disk
-      PARTITION_TABLE=$(parted $DEVICE print 2> /dev/null | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
-      # If the device has no partition table, then create one before partitioning the disk and making an ext4 file system
-      if [ "$PARTITION_TABLE" = "unknown" ]; then
-          echo "Formatting ${DEVICE}..."
-          yes | parted $DEVICE mklabel gpt > /dev/null 2>&1
-          parted $DEVICE mkpart primary ext4 0% 100% > /dev/null 2>&1
-          sleep 5
-          mkfs -t ext4 $PARTITION > /dev/null 2>&1
-          parted $DEVICE print
-      fi
-      # Ensure that there is exactly one fstab entry for the primary partition
-      cp /etc/fstab /tmp/fstab
-      grep -v "${FOLDER_PATH}" /tmp/fstab > /etc/fstab
-      echo "${DISK_PATH}-part1\t${FOLDER_PATH}\text4\tdefaults\t0\t2" >> /etc/fstab
-      rm /tmp/fstab 2> /dev/null
-      tail -n 1 /etc/fstab
-
   - path: "/usr/local/bin/runonce"
     owner: root:root
     permissions: "0500"
@@ -512,8 +491,6 @@ runcmd:
   - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
   - systemctl enable xrdp-sesman
-  # Mount and configure disks, matching the order of disks in Add_DSVM.ps1
-  - /opt/configuration/setup_disk.sh 1 /scratch
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
   - echo ">=== Configure ingress and egress mounts ... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp

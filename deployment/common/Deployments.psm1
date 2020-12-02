@@ -1613,7 +1613,7 @@ function Stop-VM {
     if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
         # Synchronous operation requested
         if ($result.Status -eq "Succeeded") {
-            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped.'"
+            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped."
         } else {
             Add-LogMessage -Level Fatal "Failed to stop VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
         }
