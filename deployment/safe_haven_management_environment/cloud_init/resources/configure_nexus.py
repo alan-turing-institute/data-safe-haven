@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
+from pathlib import Path
+import time
 import requests
-from requests.auth import HTTPBasicAuth
 
 
 def main():
@@ -30,7 +31,10 @@ def main():
     else:
         nexus_data_dir = "./nexus-data"
 
-    with open(f"{nexus_data_dir}/admin.password") as password_file:
+    password_file_path = Path(f"{nexus_data_dir}/admin.password")
+    while not password_file_path.is_file():
+        time.sleep(5)
+    with password_file_path.open() as password_file:
         initial_password = password_file.read()
 
     nexus_api = NexusAPI(
@@ -184,7 +188,7 @@ class NexusAPI:
 
     @property
     def auth(self):
-        return HTTPBasicAuth(self.username, self.password)
+        return requests.auth.HTTPBasicAuth(self.username, self.password)
 
     def change_admin_password(self, new_password):
         # Change admin password
