@@ -126,23 +126,18 @@ if ($?) {
 }
 
 
-# Deploy NIC and data disks
-# -------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository.rg -Subnet $subnetRepository -PrivateIpAddress $privateIpAddress -Location $config.location
-
-
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-nexus.yaml"
-$cloudInitYaml = Get-Content $cloudInitFilePath -Raw
-# Insert Nexus configuration script into cloud-init
-$indent = "      "
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nexus" "configure_nexus.py"
-$raw_script = Get-Content $scriptPath -Raw
-$indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitYaml = $cloudInitYaml.
-    Replace("${indent}<configure_nexus.py>", $indented_script).
+$cloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-nexus.yaml") -Raw
+# Insert additional files into the cloud-init template
+foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
+}
+# Expand placeholders in the cloud-init template
+$cloudInitTemplate = $cloudInitTemplate.
     Replace("<nexus-admin-password>", $nexusAppAdminPassword).
     Replace("<ntp-server>", $config.time.ntp.poolFqdn).
     Replace("<tier>", $tier).
@@ -151,14 +146,14 @@ $cloudInitYaml = $cloudInitYaml.
 
 # Deploy the VM
 # -------------
-$adminPasswordSecretName = $config.repository.nexus.adminPasswordSecretName
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository.rg -Subnet $subnetRepository -PrivateIpAddress $privateIpAddress -Location $config.location
 $params = @{
     Name                   = $vmName
     Size                   = $config.repository.vmSize
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml          = $cloudInitYaml
+    CloudInitYaml          = $cloudInitTemplate
     Location               = $config.location
     NicId                  = $vmNic.Id
     OsDiskType             = $config.repository.diskType
