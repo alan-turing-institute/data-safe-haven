@@ -781,7 +781,6 @@ From your **deployment machine**
 + Deploy and configure the package mirrors by running `./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 30 minutes** to run.
 
-
 ### How to deploy a local package mirror
 
 From your **deployment machine**

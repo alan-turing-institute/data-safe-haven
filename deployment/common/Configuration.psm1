@@ -680,7 +680,7 @@ function Get-ShmFullConfig {
                     name = "RepositorySubnet"
                     cidr = "10.30.1.0/24"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
+                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
                         rules = "shm-nsg-rules-nexus.json"
                     }
                 }

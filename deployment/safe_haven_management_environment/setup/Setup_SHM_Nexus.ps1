@@ -79,7 +79,7 @@ Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name `
 # Ensure that Nexus NSG exists with correct rules and attach it to the Nexus subnet
 # ---------------------------------------------------------------------------------
 $repositoryNsg = Deploy-NetworkSecurityGroup -Name $config.network.repositoryVnet.subnets.repository.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-$tmpConfig = @{"network" = @{"repositoryVnet" = @{"subnets" = @{"repository" = @{"cidr" = $config.network.repositoryVnet.subnets.repository.cidr }}}}} # Note that PR #873 has the fix which means that this will no longer be needed
+$tmpConfig = @{"network" = @{"repositoryVnet" = @{"subnets" = @{"repository" = @{"cidr" = $config.network.repositoryVnet.subnets.repository.cidr } } } } } # Note that PR #873 has the fix which means that this will no longer be needed
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.repositoryVnet.subnets.repository.nsg.rules) -ArrayJoiner '"' -Parameters $tmpConfig -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $repositoryNsg -Rules $rules
 $repositorySubnet = Set-SubnetNetworkSecurityGroup -Subnet $repositorySubnet -NetworkSecurityGroup $repositoryNsg
