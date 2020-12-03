@@ -232,7 +232,8 @@
             "cidr": "10.30.1.0/24",
             "name": "RepositorySubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2"
+              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
+              "rules": "shm-nsg-rules-nexus.json"
             }
           }
         }
@@ -288,9 +289,9 @@
     "repository": {
       "diskType": "Standard_LRS",
       "nexus": {
-        "adminPasswordSecretName": "shm-testb-nexus-repository-vm-admin-password",
+        "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus",
         "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-nexus-app-admin-password",
+        "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password",
         "vmName": "NEXUS-REPOSITORY-TIER-2"
       },
       "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
@@ -299,11 +300,11 @@
     "rgPrefix": "RG_SHM_TESTB",
     "storage": {
       "artifacts": {
-        "accountName": "shmtestbartifactsqtxiyzd",
+        "accountName": "shmtestbartifactslubiehy",
         "rg": "RG_SHM_TESTB_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "shmtestbbootdiagsqtxiyzd",
+        "accountName": "shmtestbbootdiagslubiehy",
         "rg": "RG_SHM_TESTB_ARTIFACTS"
       },
       "persistentdata": {
@@ -614,18 +615,18 @@
         }
       },
       "artifacts": {
-        "accountName": "testbsandboxartifactsopm",
+        "accountName": "testbsandboxartifactszoa",
         "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "testbsandboxbootdiagsopm",
+        "accountName": "testbsandboxbootdiagszoa",
         "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS"
       },
       "persistentdata": {
         "account": {
           "accessTier": "hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testbsandboxdataopmkqvui",
+          "name": "testbsandboxdatazoaweyqi",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
@@ -645,7 +646,7 @@
       "userdata": {
         "account": {
           "accessTier": "hot",
-          "name": "testbsandboxuserdataopmk",
+          "name": "testbsandboxuserdatazoaw",
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS",
           "storageKind": "FileStorage"

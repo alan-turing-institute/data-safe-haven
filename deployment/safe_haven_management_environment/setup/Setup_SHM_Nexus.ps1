@@ -50,80 +50,39 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 # Set up the VNet and subnet
 # -------------------------
 $vnetRepository = Deploy-VirtualNetwork -Name $config.network.repositoryVnet.name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $config.network.repositoryVnet.cidr -Location $config.location
-$subnetRepository = Deploy-Subnet -Name $config.network.repositoryVnet.subnets.repository.name -VirtualNetwork $vnetRepository -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr
+$repositorySubnet = Deploy-Subnet -Name $config.network.repositoryVnet.subnets.repository.name -VirtualNetwork $vnetRepository -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr
 
 
-# Attach repository subnet to SHM firewall route table
-# ----------------------------------------------------
-Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM firewall route table"
+# Attach repository subnet to SHM route table
+# -------------------------------------------
+Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM route table"
 $routeTable = Get-AzRouteTable | Where-Object { $_.Name -eq $config.firewall.routeTableName }
 $vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $config.network.repositoryVnet.subnets.repository.name -AddressPrefix $config.network.repositoryVnet.subnets.repository.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 if ($?) {
-    Add-LogMessage -Level Success "Route table attached"
+    Add-LogMessage -Level Success "Attached subnet '$($repositorySubnet.Name)' to SHM route table."
 } else {
-    Add-LogMessage -Level Fatal "Attaching route table failed!"
+    Add-LogMessage -Level Fatal "Failed to attach subnet '$($repositorySubnet.Name)' to SHM route table!"
 }
 
 
 # Peer repository vnet to SHM vnet
 # --------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
-Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name -Vnet1ResourceGroup $config.network.vnet.rg -Vnet1SubscriptionName $config.subscriptionName -Vnet2Name $config.network.vnet.name -Vnet2ResourceGroup $config.network.vnet.rg -Vnet2SubscriptionName $config.subscriptionName
+Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name `
+                -Vnet1ResourceGroup $config.network.vnet.rg `
+                -Vnet1SubscriptionName $config.subscriptionName `
+                -Vnet2Name $config.network.vnet.name `
+                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2SubscriptionName $config.subscriptionName
 
 
-# Set up the NSG for Nexus repository
-# -----------------------------------
-$nsgRepository = Deploy-NetworkSecurityGroup -Name $config.network.repositoryVnet.subnets.repository.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
-                             -Name "AllowRepositoryAccessFromDSVMs" `
-                             -Description "Allow port 80 (nexus) so that DSVM users can get packages" `
-                             -Priority 300 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $subnetRepository.AddressPrefix `
-                             -DestinationPortRange 80
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
-                             -Name "IgnoreInboundRulesBelowHere" `
-                             -Description "Deny all other inbound" `
-                             -Priority 3000 `
-                             -Direction Inbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
-                             -Name "AllowPackageFetchingFromInternet" `
-                             -Description "Allow ports 443 (https) and 80 (http) for fetching packages" `
-                             -Priority 300 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix $subnetRepository.AddressPrefix `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange 443, 80
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgRepository `
-                             -Name "IgnoreOutboundRulesBelowHere" `
-                             -Description "Deny all other outbound" `
-                             -Priority 3000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-$subnetRepository = Set-SubnetNetworkSecurityGroup -Subnet $subnetRepository -NetworkSecurityGroup $nsgRepository -VirtualNetwork $vnetRepository
-if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($config.network.repositoryVnet.subnets.repository.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.repositoryVnet.subnets.repository.name)' failed!"
-}
+# Ensure that Nexus NSG exists with correct rules and attach it to the Nexus subnet
+# ---------------------------------------------------------------------------------
+$repositoryNsg = Deploy-NetworkSecurityGroup -Name $config.network.repositoryVnet.subnets.repository.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$tmpConfig = @{"network" = @{"repositoryVnet" = @{"subnets" = @{"repository" = @{"cidr" = $config.network.repositoryVnet.subnets.repository.cidr }}}}} # Note that PR #873 has the fix which means that this will no longer be needed
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.repositoryVnet.subnets.repository.nsg.rules) -ArrayJoiner '"' -Parameters $tmpConfig -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $repositoryNsg -Rules $rules
+$repositorySubnet = Set-SubnetNetworkSecurityGroup -Subnet $repositorySubnet -NetworkSecurityGroup $repositoryNsg
 
 
 # Construct cloud-init YAML file
@@ -146,7 +105,7 @@ $cloudInitTemplate = $cloudInitTemplate.
 
 # Deploy the VM
 # -------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository.rg -Subnet $subnetRepository -PrivateIpAddress $privateIpAddress -Location $config.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository.rg -Subnet $repositorySubnet -PrivateIpAddress $privateIpAddress -Location $config.location
 $params = @{
     Name                   = $vmName
     Size                   = $config.repository.vmSize
