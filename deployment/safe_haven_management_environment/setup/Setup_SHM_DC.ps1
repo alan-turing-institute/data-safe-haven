@@ -174,7 +174,8 @@ foreach ($user in $userAccounts.Keys) {
 }
 # Run remote script
 $scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
-$script = $scriptTemplate.Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
+$script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name).
+                          Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
                           Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
                           Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
                           Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).

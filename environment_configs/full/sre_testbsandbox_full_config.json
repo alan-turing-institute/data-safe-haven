@@ -47,9 +47,9 @@
       "fqdn": "testb.dsgroupdev.co.uk",
       "netbiosName": "TESTB",
       "ous": {
-        "dataServers": {
-          "name": "Secure Research Environment Data Servers",
-          "path": "OU=Secure Research Environment Data Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "databaseServers": {
+          "name": "Secure Research Environment Database Servers",
+          "path": "OU=Secure Research Environment Database Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         },
         "identityServers": {
           "name": "Safe Haven Identity Servers",
@@ -336,10 +336,10 @@
     },
     "users": {
       "computerManagers": {
-        "dataServers": {
-          "name": "TESTB Data Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-data-servers",
-          "samAccountName": "testbdatasrvrs"
+        "databaseServers": {
+          "name": "TESTB Database Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-database-servers",
+          "samAccountName": "testbdatabasesrvrs"
         },
         "identityServers": {
           "name": "TESTB Identity Servers Manager",

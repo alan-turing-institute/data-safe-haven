@@ -168,6 +168,7 @@ Write-Output "Creating management OUs..."
 foreach ($ouName in ("<ou-research-users-name>",
                      "<ou-security-groups-name>",
                      "<ou-service-accounts-name>",
+                     "<ou-database-servers-name>",
                      "<ou-identity-servers-name>",
                      "<ou-linux-servers-name>",
                      "<ou-rds-session-servers-name>",
@@ -216,20 +217,18 @@ $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-foreach ($serviceAccount in @("identityServers", "linuxServers", "rdsGatewayServers", "rdsSessionServers")) {
+foreach ($serviceAccount in $userAccounts.Keys) {
     Write-Output "Creating $serviceAccount domain joining account $($userAccounts."$serviceAccount".samAccountName)..."
     New-ShmUser -Name "$($userAccounts."$serviceAccount".name)" -SamAccountName "$($userAccounts."$serviceAccount".samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts."$serviceAccount".password -AsPlainText -Force) -Domain $shmFdqn
 }
-
 
 # Add users to security groups
 # ----------------------------
 Write-Output "Adding users to security groups..."
 Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $securityGroups.serverAdmins.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.identityServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.linuxServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.rdsGatewayServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.rdsSessionServers.samAccountName -GroupName $securityGroups.computerManagers.name
+foreach ($serviceAccount in $userAccounts.Keys) {
+    Add-ShmUserToGroup -SamAccountName $userAccounts."$serviceAccount".samAccountName -GroupName $securityGroups.computerManagers.name
+}
 
 
 # Import GPOs onto domain controller
@@ -252,14 +251,17 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # Link GPO with OUs
 # -----------------
 Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity-servers-name>"),
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-database-servers-name>"),
+                            ("All servers - Local Administrators", "<ou-identity-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Services", "Domain Controllers"),
+                            ("All Servers - Windows Services", "<ou-database-servers-name>"),
                             ("All Servers - Windows Services", "<ou-identity-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Update", "Domain Controllers"),
+                            ("All Servers - Windows Update", "<ou-database-servers-name>"),
                             ("All Servers - Windows Update", "<ou-identity-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
@@ -268,17 +270,12 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
     [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.Id -ReportType xml
-    $hasGPLink = $false
-    foreach ($existingGPLink in $gpoReportXML.GPO.LinksTo) {
-        if (($existingGPLink.SOMName -like "*$ouName*") -and ($existingGPLink.SOMPath -eq "$shmFdqn/$ouName")) {
-            $hasGPLink = $true
-        }
-    }
+    $hasGPLink = (@($gpoReportXML.GPO.LinksTo | Where-Object { ($_.SOMName -like "*${ouName}*") -and ($_.SOMPath -eq "${shmFdqn}/${ouName}") }).Count -gt 0)
     # Create a GP link if it doesn't already exist
     if ($hasGPLink) {
         Write-Output " [o] GPO '$gpoName' already linked to '$ouName'"
     } else {
-        New-GPLink -Guid $gpo.Id -Target "OU=$ouName,$domainOuBase" -LinkEnabled Yes
+        $null = New-GPLink -Guid $gpo.Id -Target "OU=${ouName},${domainOuBase}" -LinkEnabled Yes
         if ($?) {
             Write-Output " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
         } else {
@@ -344,6 +341,8 @@ if ($success) {
 # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
+# Allow the database server user to register computers in the '<ou-database-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-database-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.databaseServers.samAccountName)"
 # Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
 # Allow the Linux server user to register computers in the '<ou-linux-servers-name>' container

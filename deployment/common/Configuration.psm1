@@ -587,7 +587,7 @@ function Get-ShmFullConfig {
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn          = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous         = [ordered]@{
-            dataServers       = [ordered]@{ name = "Secure Research Environment Data Servers" }
+            databaseServers   = [ordered]@{ name = "Secure Research Environment Database Servers" }
             linuxServers      = [ordered]@{ name = "Secure Research Environment Linux Servers" }
             rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
             rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
@@ -721,10 +721,10 @@ function Get-ShmFullConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            dataServers       = [ordered]@{
-                name               = "$($shm.domain.netbiosName) Data Servers Manager"
-                samAccountName     = "$($shm.id)datasrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-data-servers".ToLower()
+            databaseServers   = [ordered]@{
+                name               = "$($shm.domain.netbiosName) Database Servers Manager"
+                samAccountName     = "$($shm.id)databasesrvrs".ToLower() | Limit-StringLength -MaximumLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-database-servers".ToLower()
             }
             identityServers   = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Identity Servers Manager"
