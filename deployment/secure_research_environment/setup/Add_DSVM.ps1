@@ -261,9 +261,7 @@ $null = Deploy-UbuntuVirtualMachine @params
 
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
-$networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
-$networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
-$null = $networkCard | Set-AzNetworkInterface
+Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
 
 
 # Restart after the networking switch
