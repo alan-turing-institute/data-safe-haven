@@ -880,8 +880,8 @@ function Get-ShmFullConfig {
         vmSize   = "Standard_B2ms"
         diskType = "Standard_LRS"
         nexus    = [ordered]@{
-            adminPasswordSecretName         = "shm-$($shm.id)-nexus-repository-vm-admin-password".ToLower()
-            nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-nexus-app-admin-password".ToLower()
+            adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus".ToLower()
+            nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password".ToLower()
             ipAddress                       = "10.30.1.10"
             vmName                          = "NEXUS-REPOSITORY-TIER-2"
         }
