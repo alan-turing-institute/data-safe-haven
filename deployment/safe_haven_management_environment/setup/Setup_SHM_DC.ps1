@@ -211,7 +211,8 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Configure DNS to forward requests to the Azure DNS resolver
     $params = @{
-        externalDnsResolver = "`"$($config.dc.external_dns_resolver)`""
+        ExternalDnsResolver = "$($config.dc.external_dns_resolver)"
+        IdentitySubnetCidr  = "$($config.network.vnet.subnets.identity.cidr)"
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
