@@ -1,13 +1,10 @@
 #cloud-config
 
-
 # Update package database on first boot (ie. run `apt-get update`)
 package_update: true
 
-
 # Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
 package_upgrade: true
-
 
 apt:
   # Preserves the existing /etc/apt/sources.list
@@ -18,7 +15,6 @@ apt:
     postgresql.list:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
       keyid: 7FCC7D46ACCC4CF8
-
 
 # We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
 disk_setup:
@@ -337,7 +333,7 @@ write_files:
 
 # List of packages to install with apt-get
 packages:
-  - adcli
+  - adcli=0.8.2-1 # https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/1868703 note that '0.8.2-1ubuntu1' attempts to use ad_use_ldaps but `realm` does not yet support this
   - gcc
   - krb5-user
   - ldap-utils
@@ -363,13 +359,27 @@ ntp:
     - <ntp-server>
 
 runcmd:
+  # Set locale
+  - locale-gen en_GB.UTF-8
+  - update-locale LANG=en_GB.UTF-8
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
   - /opt/configuration/configure-dns.sh
   - /opt/configuration/configure-hostname.sh
-
+  - systemctl enable sssd
+  # Check Kerberos settings
+  - echo "Checking Kerberos config"
+  - echo ">=== /etc/krb5.conf ===<"
+  - cat /etc/krb5.conf | grep -v "^$"
+  - echo ">=== end of /etc/krb5.conf ===<"
+  # Check timezone and NTP server
+  - echo ">=== Current timezone... ===<"
+  - echo "Date     $(date)"
+  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+  - echo ">=== Current time synchronisation status... ===<"
+  - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # Configure the postgres database
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
@@ -388,7 +398,6 @@ runcmd:
   # Restart the server with all the above changes
   - systemctl start postgresql@12-main
   - systemctl status postgresql@12-main
-
   # Create the required LDAP groups on the postgres server
   - echo ">=== Creating necessary LDAP roles... ===<"
   - |
@@ -401,11 +410,9 @@ runcmd:
             echo "${ROLE} role already exists"
         fi
     done
-
   # Install postgres extensions
   - echo ">=== Installing postgis schema and extensions... ===<"
   - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
-
   # Install pg-ldap-sync for adding LDAP users
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
@@ -413,12 +420,10 @@ runcmd:
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
   - echo ">=== Checking that LDAP user sync is scheduled every 10 minutes... ===<"
   - grep pg_ldap_sync /etc/crontab
-
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
   - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf
   - cat /etc/postgresql/12/main/pg_hba.conf
-
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
