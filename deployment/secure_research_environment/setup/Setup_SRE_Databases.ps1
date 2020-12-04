@@ -193,7 +193,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
             Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
             Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-            Replace("<ou-data-servers-path>", $config.shm.domain.ous.databaseServers.path).
+            Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
             Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

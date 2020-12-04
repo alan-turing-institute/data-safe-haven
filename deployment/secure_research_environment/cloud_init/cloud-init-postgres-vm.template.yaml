@@ -56,24 +56,6 @@ write_files:
     content: |
       <ldap-search-user-password>
 
-  - path: "/etc/postgres-user.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <db-admin-password>
-
-  - path: "/etc/postgres-service-account.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      <ldap-postgres-service-account-password>
-
-  - path: "/etc/realmd.conf"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <realmd.conf>
-
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     owner: root:root
     permissions: "0500"
@@ -82,8 +64,8 @@ write_files:
       echo ">=== Waiting for realm availability... ===<"
       while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-data-servers-path>' '<domain-join-username>' '<vm-hostname>'"
-      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>"
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-database-servers-path>' '<domain-join-username>' '<vm-hostname>'"
+      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-database-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   - path: "/etc/local/runonce.d/01-generate-keytab.sh"
     owner: root:root
@@ -160,6 +142,24 @@ write_files:
       echo "SCHEMAS:"
       sudo -i -u postgres psql -q -c "SELECT schema_name FROM information_schema.schemata;"
 
+  - path: "/etc/postgres-user.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <db-admin-password>
+
+  - path: "/etc/postgres-service-account.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <ldap-postgres-service-account-password>
+
+  - path: "/etc/realmd.conf"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <realmd.conf>
+
   - path: "/opt/configuration/configure-dns.sh"
     owner: root:root
     permissions: "0500"
@@ -171,6 +171,86 @@ write_files:
     permissions: "0500"
     content: |
       <configure-hostname.sh>
+
+  - path: "/opt/configuration/create-postgres-triggers.sql"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
+      /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
+      /* We require that CURRENT_USER has SUPERUSER permissions inside the function, otherwise the ALTER USER calls will fail*/
+      CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
+          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
+          END LOOP;
+          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);
+          END LOOP;
+        END IF;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
+      /* Restrict default privileges on public schema to '<db-users-group>' */
+      REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
+      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
+          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
+      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
+      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
+      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
+      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
+          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
+
+  - path: "/opt/configuration/install-postgres-extensions.sql"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      CREATE SCHEMA IF NOT EXISTS postgis;
+      CREATE EXTENSION IF NOT EXISTS postgis;
+      CREATE EXTENSION IF NOT EXISTS postgis_topology;
+      CREATE EXTENSION IF NOT EXISTS postgis_sfcgal;
+      CREATE EXTENSION IF NOT EXISTS pgrouting;
+      CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+      CREATE EXTENSION IF NOT EXISTS unaccent;
+      CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      CREATE EXTENSION IF NOT EXISTS bloom;
+      CREATE EXTENSION IF NOT EXISTS citext;
+      CREATE EXTENSION IF NOT EXISTS cube;
+      CREATE EXTENSION IF NOT EXISTS file_fdw;
+      CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+      CREATE EXTENSION IF NOT EXISTS earthdistance;
 
   - path: "/opt/configuration/join_domain.sh"
     owner: root:root
@@ -244,86 +324,6 @@ write_files:
         # Options for CREATE RULE statements
         create_options: NOLOGIN IN ROLE ldap_groups
         grant_options:
-
-  - path: "/opt/configuration/install-postgres-extensions.sql"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      CREATE SCHEMA IF NOT EXISTS postgis;
-      CREATE EXTENSION IF NOT EXISTS postgis;
-      CREATE EXTENSION IF NOT EXISTS postgis_topology;
-      CREATE EXTENSION IF NOT EXISTS postgis_sfcgal;
-      CREATE EXTENSION IF NOT EXISTS pgrouting;
-      CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-      CREATE EXTENSION IF NOT EXISTS unaccent;
-      CREATE EXTENSION IF NOT EXISTS pg_trgm;
-      CREATE EXTENSION IF NOT EXISTS bloom;
-      CREATE EXTENSION IF NOT EXISTS citext;
-      CREATE EXTENSION IF NOT EXISTS cube;
-      CREATE EXTENSION IF NOT EXISTS file_fdw;
-      CREATE EXTENSION IF NOT EXISTS postgres_fdw;
-      CREATE EXTENSION IF NOT EXISTS earthdistance;
-
-  - path: "/opt/configuration/create-postgres-triggers.sql"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
-      /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
-      /* We require that CURRENT_USER has SUPERUSER permissions inside the function, otherwise the ALTER USER calls will fail*/
-      CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
-        RETURNS event_trigger
-        LANGUAGE plpgsql
-      AS $$
-      DECLARE
-        obj record;
-      BEGIN
-        IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
-          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
-            EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
-          END LOOP;
-          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
-            EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);
-          END LOOP;
-        END IF;
-      END;
-      $$;
-      CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
-      /* Restrict default privileges on public schema to '<db-users-group>' */
-      REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
-      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
-      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
-        RETURNS event_trigger
-        LANGUAGE plpgsql
-      AS $$
-      DECLARE
-        obj record;
-      BEGIN
-        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
-          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
-        END LOOP;
-      END;
-      $$;
-      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
-      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
-      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
-      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
-      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
-      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
-        RETURNS event_trigger
-        LANGUAGE plpgsql
-      AS $$
-      DECLARE
-        obj record;
-      BEGIN
-        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
-          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
-        END LOOP;
-      END;
-      $$;
-      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
 
   - path: "/usr/local/bin/runonce"
     owner: root:root
