@@ -1257,8 +1257,8 @@ function Remove-VirtualMachine {
         # Remove VM
         Add-LogMessage -Level Info "[ ] Removing VM '$($vm.Name)'"
         $params = @{}
-        if ($Force) { $params["Force"] = $Force}
-        if ($ErrorAction) { $params["ErrorAction"] = $ErrorAction}
+        if ($Force) { $params["Force"] = $Force }
+        if ($ErrorAction) { $params["ErrorAction"] = $ErrorAction }
         $null = $vm | Remove-AzVM @params
         $success = $?
         # Remove boot diagnostics container

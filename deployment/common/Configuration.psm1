@@ -153,7 +153,7 @@ function Add-SreConfig {
             rg          = $storageRg
         }
         userdata        = [ordered]@{
-            account = [ordered]@{
+            account    = [ordered]@{
                 name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
                 performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
@@ -166,7 +166,7 @@ function Add-SreConfig {
                     mountType        = "NFS"
                     sizeGb           = "1024"
                 }
-                home  = [ordered]@{
+                home   = [ordered]@{
                     accessPolicyName = "readWrite"
                     mountType        = "NFS"
                     sizeGb           = "1024"
