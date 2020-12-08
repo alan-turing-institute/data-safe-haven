@@ -22,8 +22,9 @@ Set-WinSystemLocale -SystemLocale $Locale
 Set-WinHomeLocation -GeoId $GeoId
 Set-Culture -CultureInfo $Locale
 Set-WinUserLanguageList -LanguageList $Locale -Force
-# Note that Set-WinSystemLocale will not be applied until after a restart
-if (((Get-Culture).Name -eq $Locale) -and ((Get-WinUserLanguageList)[0].LanguageTag -eq $Locale)) {
+# Set-WinSystemLocale will not be applied until after a restart
+# Set-Culture does not affect the current shell so we must spawn a new Powershell process
+if (($(& (Get-Process -Id $PID).Path { (Get-Culture).Name }) -eq $Locale) -and ((Get-WinUserLanguageList)[0].LanguageTag -eq $Locale)) {
     Write-Output " [o] Setting locale to '$Locale' succeeded"
 } else {
     Write-Output " ... Culture: $((Get-Culture).DisplayName)"

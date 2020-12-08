@@ -40,6 +40,11 @@ ntp:
     - <ntp-server>
 
 runcmd:
+  # Ensure that Docker will run on restart
+  - systemctl enable docker
+  - systemctl start docker
+  - sleep 1m
+  - systemctl status docker
   # Create directory for Nexus data that is owned by the correct user inside the Docker container
   - echo "Creating Nexus data directory"
   - mkdir /nexus-data

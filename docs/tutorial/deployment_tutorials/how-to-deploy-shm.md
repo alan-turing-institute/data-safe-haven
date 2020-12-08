@@ -781,12 +781,6 @@ From your **deployment machine**
 + Deploy and configure the package mirrors by running `./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 30 minutes** to run.
 
-<<<<<<< HEAD
-=======
-## Server list
-The following three virtual machines are created as a result of these instructions (you can check they exist using the Azure Portal by navigating to `Virtual machines`, applying a filter on the subscription that you used and then searching with the name filter):
->>>>>>> master
-
 ### How to deploy a local package mirror
 
 From your **deployment machine**

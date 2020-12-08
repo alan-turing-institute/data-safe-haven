@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
+from pathlib import Path
+import time
 import requests
-from requests.auth import HTTPBasicAuth
 
 
 def main():
@@ -30,7 +31,10 @@ def main():
     else:
         nexus_data_dir = "./nexus-data"
 
-    with open(f"{nexus_data_dir}/admin.password") as password_file:
+    password_file_path = Path(f"{nexus_data_dir}/admin.password")
+    while not password_file_path.is_file():
+        time.sleep(5)
+    with password_file_path.open() as password_file:
         initial_password = password_file.read()
 
     nexus_api = NexusAPI(
@@ -44,7 +48,7 @@ def main():
     # Delete all existing repositories
     nexus_api.delete_all_repositories()
 
-    # Add PyPi proxy
+    # Add PyPI proxy
     nexus_api.create_proxy_repository("pypi", "pypi-proxy", "https://pypi.org/")
     # Add CRAN proxy
     nexus_api.create_proxy_repository("r", "cran-proxy", "https://cran.r-project.org/")
@@ -61,11 +65,11 @@ def main():
     pypi_privilege_names = []
     cran_privilege_names = []
 
-    # Content selector and privilege for PyPi 'simple' path, used to search for
+    # Content selector and privilege for PyPI 'simple' path, used to search for
     # packages
     nexus_api.create_content_selector(
         name="simple",
-        description="Allow access to 'simple' directory in PyPi repository",
+        description="Allow access to 'simple' directory in PyPI repository",
         expression='format == "pypi" and path=^"/simple"',
     )
     nexus_api.create_content_selector_privilege(
@@ -79,15 +83,15 @@ def main():
 
     # Create content selectors and privileges for packages according to the tier
     if args.tier == 2:
-        # Allow all PyPi packages/versions
+        # Allow all PyPI packages/versions
         nexus_api.create_content_selector(
             name="pypi",
-            description="Allow access to all PyPi packages",
+            description="Allow access to all PyPI packages",
             expression='format == "pypi" and path=^"/packages/"',
         )
         nexus_api.create_content_selector_privilege(
             name="pypi",
-            description="Allow access to all PyPi packages",
+            description="Allow access to all PyPI packages",
             repo_type="pypi",
             repo="pypi-proxy",
             content_selector="pypi",
@@ -109,7 +113,7 @@ def main():
         )
         cran_privilege_names.append("cran")
     elif args.tier == 3:
-        # Collect allowed PyPi package names and versions
+        # Collect allowed PyPI package names and versions
         allowed_pypi_packages = []
 
         for package, version in allowed_pypi_packages:
@@ -127,7 +131,7 @@ def main():
             )
             pypi_privilege_names.append(name)
 
-        # Collect allowed PyPi package names and versions
+        # Collect allowed PyPI package names and versions
         allowed_cran_packages = []
 
         for package, version in allowed_cran_packages:
@@ -151,11 +155,11 @@ def main():
     # Delete non-default roles
     nexus_api.delete_all_custom_roles()
 
-    # Create a role with the PyPi privileges
+    # Create a role with the PyPI privileges
     pypi_role_name = f"tier {args.tier} pypi"
     nexus_api.create_role(
         name=pypi_role_name,
-        description=f"Allow access to tier {args.tier} PyPi packages",
+        description=f"Allow access to tier {args.tier} PyPI packages",
         privileges=pypi_privilege_names,
     )
 
@@ -184,7 +188,7 @@ class NexusAPI:
 
     @property
     def auth(self):
-        return HTTPBasicAuth(self.username, self.password)
+        return requests.auth.HTTPBasicAuth(self.username, self.password)
 
     def change_admin_password(self, new_password):
         # Change admin password

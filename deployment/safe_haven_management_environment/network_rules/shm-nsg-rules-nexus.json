@@ -1,0 +1,50 @@
+[
+    {
+        "name": "AllowRepositoryAccessInbound",
+        "access": "Allow",
+        "description": "Allow port 80 (nexus) so that DSVM users can get packages",
+        "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "destinationPortRange": 80,
+        "direction": "Inbound",
+        "priority": 300,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "IgnoreRulesBelowHereInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowPackageFetchingFromInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections on ports 443 (https) and 80 (http) for fetching packages",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": [80, 443],
+        "direction": "Outbound",
+        "priority": 300,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "IgnoreRulesBelowHereOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

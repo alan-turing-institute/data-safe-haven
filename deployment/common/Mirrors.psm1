@@ -35,9 +35,9 @@ function Get-MirrorAddresses {
     param(
         [Parameter(HelpMessage = "CRAN IP address")]
         [string]$cranIp = $null,
-        [Parameter(HelpMessage = "PyPi IP address")]
+        [Parameter(HelpMessage = "PyPI IP address")]
         [string]$pypiIp = $null,
-        [Parameter(HelpMessage = "PyPi is a Nexus proxy")]
+        [Parameter(HelpMessage = "PyPI is a Nexus proxy")]
         [bool]$nexus = $false
     )
 
