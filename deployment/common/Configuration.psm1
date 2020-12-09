@@ -923,17 +923,16 @@ Export-ModuleMember -Function Get-ShmFullConfig
 # ---------------------
 function Show-FullConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter either sre or shm")]
-        [string]$configType,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-        [string]$configId,
-        [Parameter( Mandatory = $false, HelpMessage = "Enter SHM ID")]
-        $shmId
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [string]$shmId,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
+        [string]$sreId
     )
     # Generate and return the full config for the SHM or SRE
-    if ($configType -eq 'shm') {
+    if ($sreId -eq "") {
         $config = Get-ShmFullConfig -shmId $shmId
-    } elseif ($configType -eq 'sre') {
+    } else {
+        $configId = -join($shmId, $sreId)
         $config = Get-SreConfig -configId $configId
     }
     Write-Output ($config | ConvertTo-JSON -depth 10)
