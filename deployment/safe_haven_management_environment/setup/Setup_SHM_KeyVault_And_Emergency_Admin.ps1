@@ -226,7 +226,7 @@ try {
     # -----------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
     $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-    $vpnCaCertificatePlain = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
+    $vpnCaCertificatePlain = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
     if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
         Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
@@ -307,7 +307,7 @@ try {
         # Load CA certificate into local PFX file and extract the private key
         # -------------------------------------------------------------------
         Add-LogMessage -Level Info "[ ] Loading CA private key from key vault..."
-        $caPfxBase64 = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -AsPlaintext
+        $caPfxBase64 = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificate -AsPlaintext
         [IO.File]::WriteAllBytes($caPfxPath, [System.Convert]::FromBase64String($caPfxBase64))
         $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
         $caKeyData.Where( { $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
@@ -322,7 +322,7 @@ try {
         # ---------------------------------------------
         Add-LogMessage -Level Info "[ ] Retrieving CA plain certificate..."
         # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
-        $vpnCaCertificatePlain = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
+        $vpnCaCertificatePlain = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
         "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
         $vpnCaCertificatePlain.Replace(" ", "") -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
         "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath

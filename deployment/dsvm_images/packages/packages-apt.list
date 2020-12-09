@@ -1,4 +1,4 @@
-adcli
+adcli=0.8.2-1
 apt-transport-https
 aspell
 atom
@@ -63,6 +63,7 @@ lyx
 m4
 mono-complete
 mono-devel
+nfs-common
 octave
 p7zip
 parallel

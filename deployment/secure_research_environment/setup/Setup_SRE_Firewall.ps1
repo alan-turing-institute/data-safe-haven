@@ -108,9 +108,14 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Update remote firewall with rule changes
 # ----------------------------------------
 Add-LogMessage -Level Info "[ ] Updating remote firewall with rule changes..."
-$firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
-Add-LogMessage -Level Success "Updated remote firewall with rule changes."
-
+try {
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    $null = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Success "Updated remote firewall with rule changes."
+} catch {
+    Add-LogMessage -Level Fatal "Failed to update remote firewall with rule changes!" -Exception $_.Exception
+}
 
 # Switch back to original subscription
 # ------------------------------------

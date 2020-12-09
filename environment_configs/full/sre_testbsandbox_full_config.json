@@ -47,9 +47,9 @@
       "fqdn": "testb.dsgroupdev.co.uk",
       "netbiosName": "TESTB",
       "ous": {
-        "dataServers": {
-          "name": "Secure Research Environment Data Servers",
-          "path": "OU=Secure Research Environment Data Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "databaseServers": {
+          "name": "Secure Research Environment Database Servers",
+          "path": "OU=Secure Research Environment Database Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         },
         "identityServers": {
           "name": "Safe Haven Identity Servers",
@@ -336,10 +336,10 @@
     },
     "users": {
       "computerManagers": {
-        "dataServers": {
-          "name": "TESTB Data Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-data-servers",
-          "samAccountName": "testbdatasrvrs"
+        "databaseServers": {
+          "name": "TESTB Database Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-database-servers",
+          "samAccountName": "testbdatabasesrvrs"
         },
         "identityServers": {
           "name": "TESTB Identity Servers Manager",
@@ -422,30 +422,6 @@
       },
       "rg": "RG_SHM_TESTB_SRE_SANDBOX_DATABASES"
     },
-    "dataserver": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
-      "disks": {
-        "egress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        },
-        "ingress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        },
-        "shared": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        }
-      },
-      "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-      "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.151.4.4",
-      "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_DATA",
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_DATA",
-      "vmName": "DAT-SRE-SANDBOX",
-      "vmSize": "Standard_D2s_v3"
-    },
     "domain": {
       "dn": "DC=sandbox,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "sandbox.testb.dsgroupdev.co.uk",
@@ -468,10 +444,6 @@
     "dsvm": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
       "disks": {
-        "home": {
-          "sizeGb": "1024",
-          "type": "Standard_LRS"
-        },
         "os": {
           "sizeGb": "default",
           "type": "Standard_LRS"
@@ -650,6 +622,18 @@
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS",
           "storageKind": "FileStorage"
+        },
+        "containers": {
+          "home": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          },
+          "shared": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          }
         }
       }
     },
@@ -663,11 +647,6 @@
     },
     "users": {
       "serviceAccounts": {
-        "datamount": {
-          "name": "SANDBOX Data Mount Service Account",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-datamount",
-          "samAccountName": "sandboxdatamount"
-        },
         "ldapSearch": {
           "name": "SANDBOX LDAP Search Service Account",
           "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",

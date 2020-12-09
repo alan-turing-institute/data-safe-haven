@@ -1,4 +1,5 @@
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -461,7 +462,7 @@ function Deploy-LogAnalyticsWorkspace {
     if (-not $(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
         Add-LogMessage -Level Info "[ ] Registering Microsoft.Insights provider in this subscription..."
         $null = Register-AzResourceProvider -ProviderNamespace Microsoft.Insights
-        1..300 | ForEach-Object { Write-Progress -Activity "Waiting 5 minutes for this change to propagate..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 3); Start-Sleep 1 }
+        Wait-For -Target "Microsoft.Insights provider to register" -Seconds 300
         if ($(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
             Add-LogMessage -Level Success "Successfully registered Microsoft.Insights provider"
         } else {
@@ -1239,24 +1240,39 @@ Export-ModuleMember -Function New-DNSZone
 # Remove Virtual Machine
 # ----------------------
 function Remove-VirtualMachine {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the VM to remove")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
-        [string]$ResourceGroupName
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Forces the command to run without asking for user confirmation.")]
+        [switch]$Force
     )
-
-    $null = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level InfoSuccess "VM '$Name' does not exist"
-    } else {
-        Add-LogMessage -Level Info "[ ] Removing VM '$Name'"
-        $null = Remove-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Force
-        if ($?) {
+    $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+    if ($vm) {
+        # Get boot diagnostics details
+        $storageAccountName = [regex]::match($vm.DiagnosticsProfile.bootDiagnostics.storageUri, '^http[s]?://(.+?)\.').Groups[1].Value
+        $bootDiagnosticsContainerName = "bootdiagnostics-*-$($vm.VmId)"
+        # Remove VM
+        Add-LogMessage -Level Info "[ ] Removing VM '$($vm.Name)'"
+        $params = @{}
+        if ($Force) { $params["Force"] = $Force }
+        if ($ErrorAction) { $params["ErrorAction"] = $ErrorAction }
+        $null = $vm | Remove-AzVM @params
+        $success = $?
+        # Remove boot diagnostics container
+        Add-LogMessage -Level Info "[ ] Removing boot diagnostics account for '$($vm.Name)'"
+        $storageAccount = Get-AzStorageAccount | Where-Object { $_.StorageAccountName -eq $storageAccountName }
+        $null = $storageAccount | Get-AzStorageContainer | Where-Object { $_.Name -like $bootDiagnosticsContainerName } | Remove-AzStorageContainer -Force
+        $success = $success -and $?
+        if ($success) {
             Add-LogMessage -Level Success "Removed VM '$Name'"
         } else {
             Add-LogMessage -Level Failure "Failed to remove VM '$Name'"
         }
+    } else {
+        Add-LogMessage -Level InfoSuccess "VM '$Name' does not exist"
     }
 }
 Export-ModuleMember -Function Remove-VirtualMachine
@@ -1613,7 +1629,7 @@ function Stop-VM {
     if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
         # Synchronous operation requested
         if ($result.Status -eq "Succeeded") {
-            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped.'"
+            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped."
         } else {
             Add-LogMessage -Level Fatal "Failed to stop VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
         }

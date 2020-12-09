@@ -44,7 +44,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     if (Get-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -ErrorAction SilentlyContinue) {
         if ($Redeploy) {
             Add-LogMessage -Level Info "Removing existing database VM '$($databaseCfg.vmName)'..."
-            $null = Remove-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Force
+            $null = Remove-VirtualMachine -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Force
             if ($?) {
                 Add-LogMessage -Level Success "Removal of database VM '$($databaseCfg.vmName)' succeeded"
             } else {
@@ -66,7 +66,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     # ----------------------------------------------
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
     Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-    $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.dataServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+    $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.databaseServers.passwordSecretName -DefaultLength 20 -AsPlaintext
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
     # Retrieve usernames/passwords from SRE keyvault
@@ -112,9 +112,9 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         Add-WindowsVMtoDomain -Name $databaseCfg.vmName `
                               -ResourceGroupName $config.sre.databases.rg `
                               -DomainName $config.shm.domain.fqdn `
-                              -DomainJoinUsername $config.shm.users.computerManagers.dataServers.samAccountName `
+                              -DomainJoinUsername $config.shm.users.computerManagers.databaseServers.samAccountName `
                               -DomainJoinPassword (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force) `
-                              -OUPath $config.shm.domain.ous.dataServers.path `
+                              -OUPath $config.shm.domain.ous.databaseServers.path `
                               -ForceRestart
 
         # Lockdown SQL server
@@ -182,7 +182,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
             Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
             Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
-            Replace("<domain-join-username>", $config.shm.users.computerManagers.dataServers.samAccountName).
+            Replace("<domain-join-username>", $config.shm.users.computerManagers.databaseServers.samAccountName).
             Replace("<domain-join-password>", $domainJoinPassword).
             Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
             Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
@@ -193,7 +193,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
             Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
             Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-            Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
+            Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
             Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

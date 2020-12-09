@@ -18,20 +18,32 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Get Log Analytics Workspace details
 # -----------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
-$key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+Add-LogMessage -Level Info "[ ] Getting Log Analytics Workspace details..."
+try {
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    $workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
+    $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Success "Retrieved Log Analytics Workspace '$($workspace.Name)."
+} catch {
+    Add-LogMessage -Level Fatal "Failed to retrieve Log Analytics Workspace!" -Exception $_.Exception
+}
 
 
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
-$rgFilter = "RG_SRE_$($config.sre.id)*"
-$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
-foreach ($sreResourceGroup in $sreResourceGroups) {
-    foreach ($vm in $(Get-AzVM -ResourceGroup $sreResourceGroup.ResourceGroupName)) {
-        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SRE VMs..."
+try {
+    $rgFilter = "RG_SRE_$($config.sre.id)*"
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
+    foreach ($sreResourceGroup in $sreResourceGroups) {
+        foreach ($vm in $(Get-AzVM -ResourceGroup $sreResourceGroup.ResourceGroupName)) {
+            $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+        }
     }
+    Add-LogMessage -Level Success "Ensured that logging agent is installed on all SRE VMs."
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that logging agent is installed on all SRE VMs!" -Exception $_.Exception
 }
 
 

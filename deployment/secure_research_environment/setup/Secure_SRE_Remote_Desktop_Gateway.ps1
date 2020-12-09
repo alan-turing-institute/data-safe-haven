@@ -21,17 +21,17 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Disable legacy TLS on the RDS gateway
 # -------------------------------------
-Invoke-Command -ScriptBlock { ./Disable_Legacy_TLS.ps1 -configId $configId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Disable_Legacy_TLS.ps1')" -configId $configId }
 
 
 # Configure CAP and RAP settings on the RDS gateway
 # -------------------------------------------------
-Invoke-Command -ScriptBlock { ./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId $configId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Configure_SRE_RDS_CAP_And_RAP.ps1')" -configId $configId }
 
 
 # Update the SSL certificates on the RDS gateway
 # ----------------------------------------------
-Invoke-Command -ScriptBlock { ./Update_SRE_RDS_SSL_Certificate.ps1 -configId $configId -emailAddress $emailAddress -dryRun:$dryRun -forceInstall:$forceInstall }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_RDS_SSL_Certificate.ps1')" -configId $configId -emailAddress $emailAddress -dryRun:$dryRun -forceInstall:$forceInstall }
 
 
 # Switch back to original subscription
