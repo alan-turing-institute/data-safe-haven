@@ -37,9 +37,13 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # These are Blob storage mounted over SMB
 # ------------------------------------------------
 if (-not $persistentStorageAccount.PrimaryEndpoints.Blob) {
-    Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.persistentdata.account.name)' does not support blob storage!"
+    Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.userdata.account.name)' does not support blob storage! If you attempted to override this setting in your config file, please remove this change."
 }
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
+    if ($config.sre.storage.userdata.containers[$receptacleName].mountType -notlike "*SMB*") {
+        Add-LogMessage -Level Fatal "Currently only file-storage mounted over SMB is supported for the '$receptacleName' container! If you attempted to override this setting in your config file, please remove this change."
+    }
+
     # When using blob storage we need to mount using a SAS token
     if ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -eq "BlobSMB") {
         # Deploy the container
@@ -73,10 +77,12 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
     }
 }
 
+
 # Set up containers for user data in the SRE
 # These are Files storage mounted over NFS
-# Note that we *must* register the NFS provider before creating the storage account (https://docs.microsoft.com/en-us/azure/storage/files/storage-troubleshooting-files-nfs#cause-3-the-storage-account-was-created-prior-to-registration-completing)
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Note that we *must* register the NFS provider before creating the storage account:
+#   https://docs.microsoft.com/en-us/azure/storage/files/storage-troubleshooting-files-nfs#cause-3-the-storage-account-was-created-prior-to-registration-completing
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Register NFS provider
 if ((Get-AzProviderFeature -FeatureName AllowNfsFileShares -ProviderNamespace Microsoft.Storage).RegistrationState -eq "NotRegistered") {
     $null = Register-AzProviderFeature -FeatureName AllowNfsFileShares -ProviderNamespace Microsoft.Storage
@@ -110,12 +116,12 @@ $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata
 # Ensure that all required userdata containers exist
 # --------------------------------------------------
 if (-not $userdataStorageAccount.PrimaryEndpoints.File) {
-    Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.userdata.account.name)' does not support file storage!"
+    Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.userdata.account.name)' does not support file storage! If you attempted to override this setting in your config file, please remove this change."
 }
 foreach ($receptacleName in $config.sre.storage.userdata.containers.Keys) {
     # Ensure that we are using NFS
     if ($config.sre.storage.userdata.containers[$receptacleName].mountType -ne "NFS") {
-        Add-LogMessage -Level Fatal "Currently only file-storage mounted over NFS is supported for the '$receptacleName' container!"
+        Add-LogMessage -Level Fatal "Currently only file-storage mounted over NFS is supported for the '$receptacleName' container! If you attempted to override this setting in your config file, please remove this change."
     }
 
     # Deploy the share
