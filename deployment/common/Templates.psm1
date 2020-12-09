@@ -1,5 +1,5 @@
-Import-Module $PSScriptRoot/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Expand a mustache template
