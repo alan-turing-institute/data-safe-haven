@@ -94,9 +94,7 @@ Please [read the instructions](how-to-deploy-shm.md#create-configuration-file) t
 
 The core properties for the new SRE environment must be present in the `environment_configs` folder.
 
-> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer.
-
-> :pencil: This also gives you the `<SRE config ID>` - which is the combination: `<SHM ID><SRE ID>`
+> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer (this also gives you the `<SRE config ID>` - which is the combination: `<SHM ID><SRE ID>`
 
 The following core SRE properties must be defined in a JSON file named `sre_<SRE config ID>_core_config.json`.
 
@@ -298,6 +296,7 @@ If you already set up a non-privileged user account when setting up the SHM, the
 <summary><strong>Set up a non-privileged user account</strong></summary>
 
 Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you set this up when setting up the SHM):
+
 + Double click on the desktop named with the Private IP address from the `DC1-SHM-<SHM ID>` VM
   + You can remind yourself of this by finding the VM in the Azure Portal under the `RG_SHM_<SHM ID>_DC` resource group
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
