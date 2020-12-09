@@ -223,13 +223,25 @@ function Update-VMIpAddress {
     if (-not $VM) {
         $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName
     }
-    Add-LogMessage -Level Info "Changing subnet and IP address for '$($VM.Name)'..."
+    Add-LogMessage -Level Info "Updating subnet and IP address for '$($VM.Name)'..."
     Stop-VM -VM $VM
     $networkCard = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $VM.Id }
     if ($networkCard.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($networkCard.Count) network cards for $VMName!" }
     $networkCard.IpConfigurations[0].Subnet.Id = $Subnet.Id
     $networkCard.IpConfigurations[0].PrivateIpAddress = $IpAddress
     $null = $networkCard | Set-AzNetworkInterface
+    # Validate changes
+    $networkCard = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $VM.Id }
+    if ($networkCard.IpConfigurations[0].Subnet.Id -eq $Subnet.Id) {
+        Add-LogMessage -Level Info "Set '$($VM.Name)' subnet to '$($Subnet.Name)'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to change subnet to '$($Subnet.Name)'!"
+    }
+    if ($networkCard.IpConfigurations[0].PrivateIpAddress -eq $IpAddress) {
+        Add-LogMessage -Level Info "Set '$($VM.Name)' IP address to '$IpAddress'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to change IP address to '$IpAddress'!"
+    }
     Start-VM -VM $VM
 }
 Export-ModuleMember -Function Update-VMIpAddress

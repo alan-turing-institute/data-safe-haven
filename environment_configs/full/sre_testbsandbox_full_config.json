@@ -682,6 +682,7 @@
         "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
         "ip": "10.151.5.5",
+        "osVersion": "18.04-LTS",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
@@ -697,6 +698,7 @@
         "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
         "ip": "10.151.5.6",
+        "osVersion": "18.04-LTS",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },

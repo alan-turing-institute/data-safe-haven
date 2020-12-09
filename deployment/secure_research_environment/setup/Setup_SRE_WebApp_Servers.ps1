@@ -7,6 +7,7 @@ Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
@@ -20,7 +21,6 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 
@@ -41,8 +41,8 @@ try {
 # Common components
 # -----------------
 $null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
-$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 
 
@@ -60,36 +60,31 @@ $gitlabCloudInitTemplate = $gitlabCloudInitTemplate.
     Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
     Replace("<gitlab-hostname>", $config.sre.webapps.gitlab.hostname).
     Replace("<gitlab-fqdn>", "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
-    Replace("<gitlab-root-password>", $gitlabRootPassword).
+    Replace("<gitlab-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)).
     Replace("<gitlab-login-domain>", $config.shm.domain.fqdn).
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 # Deploy GitLab VM
-$gitlabVmName = $config.sre.webapps.gitlab.vmName
-$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
-$networkCard = Deploy-VirtualMachineNIC -Name "${gitlabVmName}-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
-$dataDisks = @(
-    (Deploy-ManagedDisk -Name "${gitlabVmName}-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location)
-)
+$dataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
     AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $gitlabCloudInitTemplate
-    DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
-    ImageSku               = "18.04-LTS"
+    DataDiskIds            = @($dataDisk.Id)
+    ImageSku               = $config.sre.webapps.gitlab.osVersion
     Location               = $config.sre.location
-    Name                   = $gitlabVmName
-    NicId                  = $networkCard.Id
+    Name                   = $config.sre.webapps.gitlab.vmName
     OsDiskSizeGb           = $config.sre.webapps.gitlab.disks.os.sizeGb
     OsDiskType             = $config.sre.webapps.gitlab.disks.os.type
+    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
     ResourceGroupName      = $config.sre.webapps.rg
     Size                   = $config.sre.webapps.gitlab.vmSize
+    Subnet                 = $deploymentSubnet
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$gitlabVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while HackMD VM is off
-Update-VMIpAddress -Name $gitlabVmName -ResourceGroupName $config.sre.webapps.rg -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
-Start-VM -Name $gitlabVmName -ResourceGroupName $config.sre.webapps.rg -Force
+Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
 
 
 # Deploy and configure HackMD VM
@@ -110,27 +105,24 @@ $hackmdCloudInitTemplate = $hackmdCloudInitTemplate.
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 # Deploy HackMD VM
-$hackmdVmName = $config.sre.webapps.hackmd.vmName
-$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
-$networkCard = Deploy-VirtualMachineNIC -Name "${hackmdVmName}-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $params = @{
     AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $hackmdCloudInitTemplate
-    ImageSku               = "18.04-LTS"
+    ImageSku               = $config.sre.webapps.hackmd.osVersion
     Location               = $config.sre.location
-    Name                   = $hackmdVmName
-    NicId                  = $networkCard.Id
+    Name                   = $config.sre.webapps.hackmd.vmName
     OsDiskSizeGb           = $config.sre.webapps.hackmd.disks.os.sizeGb
     OsDiskType             = $config.sre.webapps.hackmd.disks.os.type
+    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
     ResourceGroupName      = $config.sre.webapps.rg
     Size                   = $config.sre.webapps.hackmd.vmSize
+    Subnet                 = $deploymentSubnet
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$hackmdVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while HackMD VM is off then restart
-Update-VMIpAddress -Name $hackmdVmName -ResourceGroupName $config.sre.webapps.rg -Subnet $webappsSubnet -IpAddress $config.sre.webapps.hackmd.ip
-Start-VM -Name $hackmdVmName -ResourceGroupName $config.sre.webapps.rg -Force
+Update-VMIpAddress -Name $hackmdVm.Name -ResourceGroupName $hackmdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.hackmd.ip
 
 
 # Switch back to original subscription

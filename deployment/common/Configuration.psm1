@@ -319,6 +319,7 @@ function Add-SreConfig {
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
+            osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "750"
@@ -335,6 +336,7 @@ function Add-SreConfig {
             vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
+            osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "750"
