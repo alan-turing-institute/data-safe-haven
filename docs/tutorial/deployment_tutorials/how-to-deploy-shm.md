@@ -18,7 +18,6 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
 + [Deploy Python/R package repositories](#deploy-PythonR-package-repositories)
-+ [Tear down the SHM](#tearing-down-the-shm)
 
 ## Prerequisites
 
