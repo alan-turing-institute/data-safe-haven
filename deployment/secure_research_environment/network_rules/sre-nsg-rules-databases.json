@@ -1,6 +1,6 @@
 [
     {
-        "name": "AllowSHMVPNInbound",
+        "name": "AllowAdminVpnInbound",
         "access": "Allow",
         "description": "Allow inbound connections from admin VPN",
         "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
@@ -24,7 +24,7 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "DenyAllInbound",
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny inbound connections from anywhere",
         "destinationAddressPrefix": "*",
@@ -96,7 +96,7 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "IgnoreRulesBelowHereOutbound",
+        "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
         "destinationAddressPrefix": "*",
