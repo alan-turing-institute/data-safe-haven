@@ -30,30 +30,7 @@ $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault
 
 # Set up the NSG for the webapps
 # ------------------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "OutboundAllowNTP" `
-                             -Description "Outbound allow connections to NTP servers" `
-                             -Priority 2200 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.time.ntp.serverAddresses `
-                             -DestinationPortRange 123
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name $outboundInternetAccessRuleName `
-                             -Description "Outbound internet access" `
-                             -Priority 4000 `
-                             -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
-                             -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange *
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 
 
 # Expand GitLab cloudinit
@@ -129,7 +106,7 @@ $params = @{
     HackMD_VM_Size                 = $config.sre.webapps.hackmd.vmSize
     Virtual_Network_Name           = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet         = $config.sre.network.vnet.subnets.compute.name
+    Virtual_Network_Subnet         = $config.sre.network.vnet.subnets.webapps.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
 

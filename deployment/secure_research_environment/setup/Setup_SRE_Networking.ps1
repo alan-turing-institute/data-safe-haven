@@ -30,8 +30,8 @@ $computeSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.na
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 $databasesSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
 $deploymentSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
+$webappsSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.webapps.cidr
 
 
 # Peer repository vnet to SHM vnet
@@ -69,6 +69,14 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rule
 $deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg
 
 
+# Ensure that webapps NSG exists with correct rules and attach it to the webapps subnet
+# -------------------------------------------------------------------------------------
+$webappsNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.webapps.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $webappsNsg -Rules $rules
+$webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $webappsNsg
+
+
 # Ensure that gateway NSG exists with correct rules
 # -------------------------------------------------
 $gatewayNsg = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
@@ -77,7 +85,7 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $gatewayNsg -Rules $
 
 
 # Ensure that session host NSG exists with correct rules
-# ------------------------=-----------------------------
+# ------------------------------------------------------
 $sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.rds.appSessionHost.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules

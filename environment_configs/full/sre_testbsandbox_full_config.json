@@ -507,20 +507,24 @@
             }
           },
           "deployment": {
-            "cidr": "10.151.5.0/24",
+            "cidr": "10.151.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT",
               "rules": "sre-nsg-rules-compute-deployment.json"
             }
           },
-          "identity": {
-            "cidr": "10.151.0.0/24",
-            "name": "IdentitySubnet"
-          },
           "rds": {
             "cidr": "10.151.1.0/24",
             "name": "RDSSubnet"
+          },
+          "webapps": {
+            "cidr": "10.151.5.0/24",
+            "name": "WebappsSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_WEBAPPS",
+              "rules": "sre-nsg-rules-webapps.json"
+            }
           }
         }
       }
@@ -696,7 +700,6 @@
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
-      "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_WEBAPPS",
       "rg": "RG_SHM_TESTB_SRE_SANDBOX_WEBAPPS"
     }
   }
