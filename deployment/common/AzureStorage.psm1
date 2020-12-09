@@ -19,7 +19,7 @@ function Deploy-SasAccessPolicy {
         [Parameter(Mandatory = $false, ParameterSetName = "ByShareName", HelpMessage = "Container name")]
         [string]$ShareName,
         [Parameter(Mandatory = $false, HelpMessage = "Validity in years")]
-        [int]$ValidityYears = 1
+        [int]$ValidityYears = 20
     )
     $Identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
     $PolicyName = "${identifier}${Name}".Replace(" ", "").Replace("'", "").ToLower()
