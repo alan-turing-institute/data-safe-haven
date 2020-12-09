@@ -33,7 +33,7 @@ function Deploy-SasAccessPolicy {
         Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
     } else {
         Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
-        $StartTime = (Get-Date).AddMinutes(-15)
+        $StartTime = (Get-Date).AddMinutes(-1) # allow for possible clock-skew between different systems
         $ExpiryTime = $StartTime.AddYears($ValidityYears)
         $success = $false
         if ($ContainerName) {
