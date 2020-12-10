@@ -299,8 +299,7 @@ You should have already set up a non-privileged user account upon setting up the
 
 Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you deployed this when setting up the SHM):
 
-+ Double click on the desktop named with the Private IP address from the `DC1-SHM-<SHM ID>` VM
-  + You can remind yourself of this by finding the VM in the Azure Portal under the `RG_SHM_<SHM ID>_DC` resource group
++ Double click on the desktop named `DC1-SHM-<SHM ID>`
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
   + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
   + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.

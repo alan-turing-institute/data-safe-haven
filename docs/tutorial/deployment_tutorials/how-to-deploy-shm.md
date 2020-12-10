@@ -442,7 +442,9 @@ From your **deployment machine**
 + Click `Add Desktop` / `Add PC`
   + On Mac, first click the `+`
 + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
++ Copy the Private IP address and enter it in the `PC name` field on remote desktop.
++ Enter `DC1-SHM-<SHM ID>` in the Friendly name field
++ Click Add
 + Double click on the desktop that appears under `saved desktops` or `PCs`.
   + Ensure you are connected the virtual network you set up via the VPN, or this will not work
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
@@ -632,7 +634,9 @@ Once you're certain that you're adding a new user, make sure that the following 
   + Click `Add Desktop` / `Add PC`
     + On Mac, first click the `+`
   + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_NPS` resource group and then to the `NPS-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-  + Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
+  + Copy the Private IP address and enter it in the `PC name` field on remote desktop.
+  + Enter `NPS-SHM-<SHM ID>` in the Friendly name field
+  + Click Add
   + Double click on the desktop that appears under `saved desktops` or `PCs`.
     + Ensure you are connected the virtual network you set up via the VPN, or this will not work
   + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
