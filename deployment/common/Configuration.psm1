@@ -631,6 +631,9 @@ function Get-ShmFullConfig {
                 identity = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
+                    }
                 }
                 firewall = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
