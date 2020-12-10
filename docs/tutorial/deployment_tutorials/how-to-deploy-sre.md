@@ -94,7 +94,9 @@ Please [read the instructions](how-to-deploy-shm.md#create-configuration-file) t
 
 The core properties for the new SRE environment must be present in the `environment_configs` folder.
 
-> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer (this also gives you the `<SRE config ID>` - which is the combination: `<SHM ID><SRE ID>`
+> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer
+
+This also gives you the `<SRE config ID>`, which is the combination: `<SHM ID><SRE ID>`
 
 The following core SRE properties must be defined in a JSON file named `sre_<SRE config ID>_core_config.json`.
 
