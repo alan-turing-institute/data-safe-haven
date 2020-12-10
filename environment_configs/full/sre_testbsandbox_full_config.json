@@ -553,11 +553,7 @@
       "gateway": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
         "disks": {
-          "data1": {
-            "sizeGb": "1023",
-            "type": "Standard_LRS"
-          },
-          "data2": {
+          "data": {
             "sizeGb": "1023",
             "type": "Standard_LRS"
           },
@@ -671,11 +667,11 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
         "disks": {
           "data": {
-            "sizeGb": "750",
+            "sizeGb": "512",
             "type": "Standard_LRS"
           },
           "os": {
-            "sizeGb": "50",
+            "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
@@ -689,9 +685,16 @@
       },
       "hackmd": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-hackmd",
+        "codimd": {
+          "dockerVersion": "2.2.0"
+        },
         "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
           "os": {
-            "sizeGb": "750",
+            "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
@@ -699,6 +702,10 @@
         "hostname": "HACKMD-SRE-SANDBOX",
         "ip": "10.151.5.6",
         "osVersion": "18.04-LTS",
+        "postgres": {
+          "dockerVersion": "13.1",
+          "passwordSecretName": "sre-sandbox-other-hackmd-password-postgresdb"
+        },
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
