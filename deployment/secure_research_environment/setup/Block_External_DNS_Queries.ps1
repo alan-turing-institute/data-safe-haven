@@ -27,7 +27,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scr
 $params = @{
     sreId              = "`"$($config.sre.id)`""
     blockedCidrsList   = "`"$($config.sre.network.vnet.subnets.compute.cidr)`""
-    exceptionCidrsList = "`"$($config.sre.dataserver.ip)/32`""
+    exceptionCidrsList = ""
 }
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
     Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."

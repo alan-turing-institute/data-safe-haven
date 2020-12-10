@@ -112,6 +112,7 @@ setup_python () {
     assert_output --partial 'CRAN working OK'
 }
 
+
 # Databases
 # ---------
 # Test MS SQL database
@@ -132,4 +133,28 @@ setup_python () {
 @test "Postgres database (R)" {
     run bash tests/test_databases.sh -d postgres -l R
     assert_output --partial 'All database tests passed'
+}
+
+
+# Mounted drives
+# --------------
+@test "Mounted drives (/data)" {
+    run bash tests/test_mounted_drives.sh -d data
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/home)" {
+    run bash tests/test_mounted_drives.sh -d home
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/output)" {
+    run bash tests/test_mounted_drives.sh -d output
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/shared)" {
+    run bash tests/test_mounted_drives.sh -d shared
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/scratch)" {
+    run bash tests/test_mounted_drives.sh -d scratch
+    assert_output --partial 'All tests passed'
 }

@@ -26,8 +26,8 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
   + [:bicyclist: Set up a non-privileged user account](#bicyclist-optional-set-up-a-non-privileged-user-account)
-  + [:mountain_bicyclist: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
-+ [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
+  + [:microscope: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
++ [:floppy_disk: Deploy storage accounts](#floppy_disk-deploy-storage-accounts)
 + [:baseball: Deploy databases](#baseball-deploy-databases)
 + [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
   + [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
@@ -47,7 +47,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + An SHM environment that has already been deployed in Azure - follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
 + An Azure subscription with sufficient credits to build the SRE.
   + :notebook: Our convention is to name these `Turing SRE - <SRE ID> (SHM <SHM ID>)`
-  + :information_source: We recommend allowing at least **$1, 000** in Azure credits for setting up each SRE
+  + :information_source: We recommend allowing at least **$1,000** in Azure credits for setting up each SRE
 + **Owner** access to the SRE and SHM Azure subscriptions
   + :information_source: We recommend using security groups to control access (eg. our subscriptions belong to `Safe Haven Test Admins` or `Safe Haven Production Admins` )
 + Access to a global administrator account on the SHM Azure Active Directory
@@ -219,7 +219,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 + Run `./Setup_SRE_Remote_Desktop.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + The deployment will take **around 50 minutes**.
-+ **Troubleshooting** If you encounter errors with the deployment of the RDS, do not rerun the scripts as they are not currently idempotent and can lead to different outputs. Instead, you should delete everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and start over from [the beginning of this step](#tropical_fish-deploy-remote-desktop-servers).
++ **Troubleshooting** If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
 ### :satellite: Configure RDS webclient
 
@@ -350,7 +350,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 </details>
 
-### :mountain_bicyclist: Test the RDS using a non-privileged user account
+### :microscope: Test the RDS using a non-privileged user account
 
 On your **deployment machine**.
 
@@ -434,18 +434,7 @@ On your **deployment machine**.
 
 </details>
 
-## :floppy_disk: Deploy Data Server
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_Data_Server.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
-+ The deployment will take around 20 minutes to complete
-
-## :computer: Deploy SRE Storage Accounts
+## :floppy_disk: Deploy storage accounts
 
 On your **deployment machine**.
 

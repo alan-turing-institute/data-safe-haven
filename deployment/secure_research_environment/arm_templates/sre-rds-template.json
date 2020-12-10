@@ -334,7 +334,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "ipConfigRdsAppSessionHost",
                         "properties": {
                             "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
                             "privateIPAllocationMethod": "Static",
@@ -366,7 +366,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "ipConfigRdsGateway",
                         "properties": {
                             "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
                             "privateIPAllocationMethod": "Static",

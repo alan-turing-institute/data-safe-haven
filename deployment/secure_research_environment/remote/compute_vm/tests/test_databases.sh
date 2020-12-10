@@ -1,5 +1,5 @@
 #! /bin/bash
-while getopts d:l:n:p:s: flag
+while getopts d:l: flag
 do
     case "${flag}" in
         d) db_type=${OPTARG};;

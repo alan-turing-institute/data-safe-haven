@@ -32,6 +32,7 @@ fi
 # Check the SSSD service
 echo "Ensuring that SSSD service is running..."
 if [ "$(systemctl is-active sssd)" != "active" ]; then
+    if [ -f /etc/sssd/sssd.conf ]; then rm -f /etc/sssd/sssd.conf; fi
     systemctl restart sssd
     sleep 10
 fi

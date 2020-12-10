@@ -20,6 +20,6 @@ $pesterBlock = {
 
 # Run Pester tests in a fresh Powershell context
 # ----------------------------------------------
-$job = Start-Job -ScriptBlock $pesterBlock -Arg (Join-Path $PSScriptRoot "pester") #| Receive-Job -Wait -AutoRemoveJob
+$job = Start-Job -ScriptBlock $pesterBlock -Arg (Join-Path $PSScriptRoot "pester")
 $job | Receive-Job -Wait -AutoRemoveJob
 if ($job.State -eq "Failed") { exit 1 }

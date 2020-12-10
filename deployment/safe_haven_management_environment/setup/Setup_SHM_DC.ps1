@@ -36,14 +36,6 @@ Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
 foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
-# NB. we would like the NPS VM to log to a database, but this is not yet working
-# # Create file storage shares
-# foreach ($shareName in ("sqlserver")) {
-#     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
-#         Add-LogMessage -Level Info "Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
-#         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
-#     }
-# }
 
 
 # Upload artifacts
@@ -94,23 +86,12 @@ $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" }
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
-# WinSCP
-$httpContent = Invoke-WebRequest -Uri "https://winscp.net/eng/download.php"
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -Uri "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
-Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } else {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
 }
-# NB. we would like the NPS VM to log to a database, but this is not yet working
-# Add-LogMessage -Level Info "Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
-# # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
-# Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
-# # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
-# Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/4/E/54EC1AD8-042C-4CA3-85AB-BA307CF73710/SSMS-Setup-ENU.exe" -DestShareName "sqlserver" -DestFilePath "SSMS-Setup-ENU.exe" -DestContext $storageAccount.Context -Force
+
 
 # Create SHM DC resource group if it does not exist
 # -------------------------------------------------
@@ -193,7 +174,7 @@ foreach ($user in $userAccounts.Keys) {
 }
 # Run remote script
 $scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
-$script = $scriptTemplate.Replace("<ou-data-servers-name>", $config.domain.ous.dataServers.name).
+$script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name).
                           Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
                           Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
                           Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
@@ -230,7 +211,8 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Configure DNS to forward requests to the Azure DNS resolver
     $params = @{
-        externalDnsResolver = "`"$($config.dc.external_dns_resolver)`""
+        ExternalDnsResolver = "$($config.dc.external_dns_resolver)"
+        IdentitySubnetCidr  = "$($config.network.vnet.subnets.identity.cidr)"
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params

@@ -6,9 +6,9 @@ param(
     [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
-    [switch]$upgrade,
+    [switch]$Upgrade,
     [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
-    [switch]$forceUpgrade
+    [switch]$Force
 )
 
 Import-Module Az -ErrorAction Stop
@@ -31,174 +31,111 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 
 # Set VM name and size
-# We need to ensure that the start of the name is unique as LDAP will truncate after 15 characters
-# ------------------------------------------------------------------------------------------------
+# We need to define a unique hostname of no more than 15 characters
+# -----------------------------------------------------------------
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
 $vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
+# Create DSVM resource group if it does not exist
+# ----------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
+
+
+# Retrieve VNET and subnets
+# -------------------------
+Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
+$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+
+
+# Get deployment and final IP addresses
+# -------------------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
+
+
 # Check whether this IP address has been used.
 # --------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
-if ($existingNic) {
-    Add-LogMessage -Level Info "Found an existing network card with IP address '$finalIpAddress'"
-    if ($upgrade) {
-        Add-LogMessage -Level Info "This NIC will be removed in the upgrade process"
-    } else {
-        if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$finalIpAddress'. No further action will be taken"
-            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-            exit 0
-        } else {
-            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
-            $null = $existingNic | Remove-AzNetworkInterface -Force
-            if ($?) {
-                Add-LogMessage -Level Success "Network card removal succeeded"
-            } else {
-                Add-LogMessage -Level Fatal "Network card removal failed!"
-            }
-        }
-
-    }
+if (($existingNic.VirtualMachine.Id) -and -not $Upgrade) {
+    Add-LogMessage -Level InfoSuccess "A VM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    exit 0
 }
 
 
-if ($upgrade) {
-    # Attempt to find an existing virtual machine
-    # -------------------------------------------
+# If we are upgrading then we need an existing VM
+# -----------------------------------------------
+if ($Upgrade) {
+    # Attempt to find exactly one existing virtual machine
     $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }
-    if ($existingVm) {
-        if ($existingVm.Length -ne 1) {
-            foreach ($vm in $existingVm) {
-                $vmName = $vm.Name
-                Add-LogMessage -Level Info "Candidate VM: '$vmName'"
-            }
-            Add-LogMessage -Level Fatal "Multiple candidate VMs found, aborting upgrade"
-        } else {
-            $existingVmName = $existingVm.Name
-            Add-LogMessage -Level Info "Found an existing VM '$existingVmName'"
-        }
+    if (-not $existingVm) {
+        Add-LogMessage -Level Fatal "No existing VM found to upgrade"
+    } elseif ($existingVm.Length -ne 1) {
+        $existingVm | ForEach-Object { Add-LogMessage -Level Info "Candidate VM: '$($_.Name)'" }
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Fatal "Multiple candidate VMs found, aborting upgrade"
     } else {
-        Add-LogMessage -Level Warning "No existing VM found to upgrade"
+        Add-LogMessage -Level Info "Found an existing VM '$($existingVm.Name)'"
     }
 
-    # Ensure that an upgrade will occur
-    # ---------------------------------
-    if ($existingVm) {
-        if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
-            Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
-            $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-            exit 0
-        }
+    # Check whether an upgrade is needed
+    if (($existingVm.Name -eq $vmName) -and -not $Force) {
+        Add-LogMessage -Level Warning "The existing VM appears to be using the same image version, no upgrade is needed. Use -Force to upgrade anyway."
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        exit 0
     }
 
-    # Stop existing VM
-    # ----------------
-    if ($existingVm) {
-        Add-LogMessage -Level Info "[ ] Stopping existing virtual machine."
-        $null = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVm.Name -Force
-        if ($?) {
-            Add-LogMessage -Level Success "VM stopping succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "VM stopping failed!"
-        }
-    }
-
-    # Find and snapshot the existing data disks
-    # -----------------------------------------
-    $dataDiskNames = @("SCRATCH", "HOME")
-    $snapshots = @()
-    $snapshotNames = @()
-    foreach ($name in $dataDiskNames) {
-        # First attempt to find a disk
-        Add-LogMessage -Level Info "[ ] Locating '$name' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$name-DISK" }
-
-        # If there is a disk, take a snapshot
-        if ($disk) {
-            if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Fatal "Multiple candidate '$name' disks found, aborting upgrade"
-            }
-
-            Add-LogMessage -Level Success "Data disk found"
-            $diskName = $disk.Name
-
-            # Snapshot disk
-            Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
-            $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshotName = "${vmNamePrefix}-${name}-DISK-SNAPSHOT"
-            $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
-            if ($snapshot) {
-                Add-LogMessage -Level Success "Snapshot succeeded"
-            } else {
-                Add-LogMessage -Level Fatal "Snapshot failed!"
-            }
-            $snapshots += $snapshot
-            $snapshotNames += $snapshotName
-
-        # If there is no disk, look for an existing snapshot
-        } else {
-            Add-LogMessage -Level Info "'$name' disk not found, attempting to find existing snapshot"
-            $snapshot = Get-AzSnapshot | Where-Object { $_.Name -match "$vmNamePrefix-$name-DISK-SNAPSHOT" }
-            if ($snapshot) {
-                if ($snapshot.Length -ne 1) {
-                    Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
-                }
-                Add-LogMessage -Level Success "Snapshot found"
-                $snapshots += $snapshot
-                $snapshotNames += $snapshot.Name
-            } else {
-                Add-LogMessage -Level Fatal "No disk or snapshot for '$name' found, aborting upgrade"
-            }
-        }
-    }
-
-    # Remove the existing VM
-    # ----------------------
-    if ($existingVm) {
-        Add-LogMessage -Level Info "[ ] Deleting existing VM"
-        $null = Remove-AzVM -Name $existingVmName -ResourceGroupName $config.sre.dsvm.rg -Force
-        if ($?) {
-            Add-LogMessage -Level Success "VM removal succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "VM removal failed!"
-        }
+    # Stop and remove the existing VM
+    Stop-VM -Name $existingVm.Name -ResourceGroupName $existingVm.ResourceGroupName
+    Add-LogMessage -Level Info "[ ] Removing existing VM '$($existingVm.Name)'"
+    $null = Remove-VirtualMachine -Name $existingVm.Name -ResourceGroupName $existingVm.ResourceGroupName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Removal of VM '$($existingVm.Name)' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Removal of VM '$($existingVm.Name)' failed!"
     }
 
     # Remove the existing NIC
-    # -----------------------
     if ($existingNic) {
-        Add-LogMessage -Level Info "[ ] Deleting existing NIC"
-        $null = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $config.sre.dsvm.rg -Force
+        Add-LogMessage -Level Info "[ ] Deleting existing network card '$($existingNic.Name)'"
+        $null = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $existingNic.ResourceGroupName -Force
         if ($?) {
-            Add-LogMessage -Level Success "NIC removal succeeded"
+            Add-LogMessage -Level Success "Removal of network card '$($existingNic.Name)' succeeded"
         } else {
-            Add-LogMessage -Level Fatal "NIC removal failed!"
+            Add-LogMessage -Level Fatal "Removal of network card '$($existingNic.Name)' failed!"
         }
     }
 
     # Remove the existing disks
-    # -------------------------
-    $diskNames = @("OS", "SCRATCH", "HOME")
-    foreach ($diskName in $diskNames) {
-        Add-LogMessage -Level Info "[ ] Removing '$diskName' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskName-DISK" }
-        if ($disk) {
-            if ($disk.Length -ne 1) {
-                Add-LogMessage -Level Warning "Multiple candidate '$diskName' disks found, not removing any"
+    foreach ($diskType in @("OS")) {
+        Add-LogMessage -Level Info "[ ] Removing '$diskType' disks"
+        foreach ($disk in $(Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskType-DISK" })) {
+            $null = $disk | Remove-AzDisk -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Removal of '$($disk.Name)' succeeded"
             } else {
-                $null = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
-                if ($?) {
-                    Add-LogMessage -Level Success "Disk deletion succeeded"
-                } else {
-                    Add-LogMessage -Level Fatal "Disk deletion failed!"
-                }
+                Add-LogMessage -Level Fatal "Removal of '$($disk.Name)' failed!"
             }
-        } else {
-            Add-LogMessage -Level Success "No disk found"
         }
+    }
+}
+
+
+# Check for any orphaned disks
+# ----------------------------
+$orphanedDisks = Get-AzDisk | Where-Object { $_.DiskState -eq "Unattached" } | Where-Object { $_.Name -Like "${$vmNamePrefix}*" }
+if ($orphanedDisks) {
+    Add-LogMessage -Level Info "Removing $($orphanedDisks.Length) orphaned disks"
+    $null = $orphanedDisks | Remove-AzDisk -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Orphaned disk removal succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Orphaned disk removal failed!"
     }
 }
 
@@ -218,42 +155,14 @@ if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
 }
 
 
-# Check for any orphaned disks
-# ----------------------------
-$orphanedDisks = Get-AzDisk | Where-Object { $_.DiskState -eq "Unattached" } | Where-Object { $_.Name -Like "${$vmNamePrefix}*" }
-if ($orphanedDisks) {
-    Add-LogMessage -Level Info "Removing $($orphanedDisks.Length) orphaned disks"
-    $null = $orphanedDisks | Remove-AzDisk -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Orphaned disk removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Orphaned disk removal failed!"
-    }
-}
-
-
-# Create DSVM resource group if it does not exist
-# ----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
-
-
-# Retrieve VNET and subnets
-# -------------------------
-Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
-$vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-
-
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 $IPs = Get-MirrorIPs $config
 $addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
-$success = $?
-Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-if ($success) {
+if ($?) {
+    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
     Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
 } else {
     Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
@@ -263,18 +172,11 @@ if ($success) {
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20 -AsPlaintext
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 $ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName -AsPlaintext
 $egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName -AsPlaintext
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
-
-
-# Get deployment and final IP addresses
-# -------------------------------------
-$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
-$finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset $ipLastOctet
 
 
 # Construct the cloud-init YAML file for the target subscription
@@ -283,10 +185,10 @@ Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 
-# Insert additional files into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "resources"))) {
+# Insert resources into the cloud-init template
+$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
     $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
@@ -295,7 +197,7 @@ foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
 # If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
-$xrdpCustomLogo = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
+$xrdpCustomLogo = Get-Content (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
 $outputStream = New-Object IO.MemoryStream
 $gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
 $gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
@@ -306,9 +208,6 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdp
 
 # Expand placeholders in the cloud-init template
 $cloudInitTemplate = $cloudInitTemplate.
-    Replace("<datamount-password>", $dataMountPassword).
-    Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
-    Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
     Replace("<domain-join-password>", $domainJoinPassword).
     Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
@@ -335,35 +234,13 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<vm-ipaddress>", $finalIpAddress)
 
 
-# Deploy data disks
-# -----------------
-if ($upgrade) {
-    $dataDisks = @()
-    for ($i = 0; $i -lt $dataDiskNames.Length; $i++) {
-        # Create disk from snapshot
-        $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
-        $diskName = "${vmName}-$($dataDiskNames[$i])-DISK"
-        Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
-        $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
-        if ($disk) {
-            Add-LogMessage -Level Success "Disk creation succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Disk creation failed!"
-        }
-        $dataDisks += $disk
-    }
-    $scratchDisk = $dataDisks[0]
-    $homeDisk = $dataDisks[1]
-} else {
-    # Create empty disks
-    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-}
-
 # Deploy the VM
 # -------------
-$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$dataDisks = @(
+    (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location)
+)
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
@@ -376,7 +253,7 @@ $params = @{
     OsDiskSizeGb           = $osDiskSizeGB
     OsDiskType             = $config.sre.dsvm.disks.os.type
     ResourceGroupName      = $config.sre.dsvm.rg
-    DataDiskIds            = @($homeDisk.Id, $scratchDisk.Id)
+    DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
@@ -384,79 +261,41 @@ $null = Deploy-UbuntuVirtualMachine @params
 
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
-$networkCard.IpConfigurations[0].Subnet.Id = $computeSubnet.Id
-$networkCard.IpConfigurations[0].PrivateIpAddress = $finalIpAddress
-$null = $networkCard | Set-AzNetworkInterface
+Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
 
 
 # Restart after the networking switch
 # -----------------------------------
 Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-1..120 | ForEach-Object { Write-Progress -Activity "Waiting 2 minutes for domain joining to complete..." -Status "$_ seconds elapsed" -PercentComplete ($_ / 1.2); Start-Sleep 1 }
+Wait-For -Target "domain joining to complete" -Seconds 120
 
 
-# Remove snapshots
-# ----------------
-if ($upgrade) {
-    foreach ($snapshotName in $snapshotNames) {
-        Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
-        $null = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Snapshot deletion succeeded"
-        } else {
-            Add-LogMessage -Level Failure "Snapshot deletion failed!"
-        }
-    }
-}
-
-
-# Create local zip file
-# ---------------------
+# Upload smoke tests to DSVM
+# --------------------------
 Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
-$zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
-$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
-# Set correct database paths
-$template = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
+# Arrange files in temporary directory
+$localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
+Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
+$template = Join-Path $localSmokeTestDir "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
 $template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
           Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
           Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
-          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $tempDir "tests" "test_databases.sh")
-if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
-Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
-Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
-if ($?) {
-    Add-LogMessage -Level Success "Zip file creation succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Zip file creation failed!"
-}
-Remove-Item -Path $tempDir -Recurse -Force
-
-
-# Upload the zip file to the compute VM
-# -------------------------------------
-Add-LogMessage -Level Info "Uploading smoke tests to the DSVM..."
-$zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
-Remove-Item -Path $zipFilePath
-# Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
-$params = @{
-    PAYLOAD = $zipFileEncoded
-}
-Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
-$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
+# Upload files to VM via the SHM persistent data storage account (since access is allowed from both the deployment machine and the DSVM)
+$persistentStorageAccount = Get-StorageAccount -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -SubscriptionName $config.shm.subscriptionName -ErrorAction Stop
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $persistentStorageAccount
+Remove-Item -Path $localSmokeTestDir -Recurse -Force
+# Set smoke test permissions
+Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "set_smoke_test_permissions.sh"
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
-
-
-# Get private IP address for this machine
-# ---------------------------------------
-$privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
-Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed from the RDS at $privateIpAddress"
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -configId $configId -ipLastOctet $ipLastOctet }
 
 
 # Switch back to original subscription
