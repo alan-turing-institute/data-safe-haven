@@ -225,10 +225,9 @@ try {
     # Generate or retrieve CA certificate
     # -----------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-    $hasPlainCertificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain)
-    if ($vpnCaCertificate -And $hasPlainCertificate) {
-        $vpnCaCertificatePlain = Resolve-AzKeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlainText
+    $hasFullCertificate = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -ErrorAction SilentlyContinue
+    $hasPlainCertificate = Get-AzKeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -ErrorAction SilentlyContinue
+    if ($hasFullCertificate -And $hasPlainCertificate) {
         Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
         # Remove any previous certificate with the same name
