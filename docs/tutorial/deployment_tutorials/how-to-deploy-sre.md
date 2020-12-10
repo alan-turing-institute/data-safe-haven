@@ -135,7 +135,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 
 ### :full_moon: Optional: View full SRE configuration
 
-In subsequent steps that require the configuration file you just created, the config actually used is the full config that is generated automatically. Should you wish to, you can view a nested printout of the full SRE (or full SHM) config by doing the following:
+A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can view a nested printout of the full SRE (or full SHM) config by doing the following:
 
 On your **deployment machine**.
 
