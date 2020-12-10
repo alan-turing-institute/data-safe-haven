@@ -297,7 +297,7 @@ You should have already set up a non-privileged user account upon setting up the
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
 
-Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you set this up when setting up the SHM):
+Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you deployed this when setting up the SHM):
 
 + Double click on the desktop named with the Private IP address from the `DC1-SHM-<SHM ID>` VM
   + You can remind yourself of this by finding the VM in the Azure Portal under the `RG_SHM_<SHM ID>_DC` resource group
