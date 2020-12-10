@@ -25,7 +25,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
-  + [:bicyclist: Set up a non-privileged user account](#bicyclist-set-up-a-non-privileged-user-account)
+  + [:bicyclist: Set up a non-privileged user account](#bicyclist-optional-set-up-a-non-privileged-user-account)
   + [:mountain_bicyclist: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
 + [:floppy_disk: Deploy data server](#floppy_disk-deploy-data-server)
 + [:baseball: Deploy databases](#baseball-deploy-databases)
@@ -287,12 +287,12 @@ On your **deployment machine**.
 
 </details>
 
-### :bicyclist: Set up a non-privileged user account
+### :bicyclist: Optional: Set up a non-privileged user account
 
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
 
-If you already set up a non-privileged user account when setting up the SHM, then skip the following step, but verify you have done this first as below:
+You should have already set up a non-privileged user account upon setting up the SHM, when [validating the active directory synchronisation](./how-to-deploy-shm.md#validate-active-directory-synchronisation), but you may wish to set up another or verify that you have set one up already:
 
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
