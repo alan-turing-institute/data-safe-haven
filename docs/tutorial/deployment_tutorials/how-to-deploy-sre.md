@@ -14,7 +14,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:clipboard: Define SRE configuration](#clipboard-define-sre-configuration)
   + [:apple: SHM configuration properties](#apple-shm-configuration-properties)
   + [:green_apple: SRE configuration properties](#green_apple-sre-configuration-properties)
-  + [:full_moon: View full SRE configuration](#full_moon-view-full-sre-configuration)
+  + [:full_moon: View full SRE configuration](#full_moon-optional-view-full-sre-configuration)
 + [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
@@ -133,7 +133,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 > It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
 > This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
-### :full_moon: View full SRE configuration
+### :full_moon: Optional: View full SRE configuration
 
 In subsequent steps that require the configuration file you just created, the config actually used is the full config that is generated automatically. Should you wish to, you can view a nested printout of the full SRE (or full SHM) config by doing the following:
 
