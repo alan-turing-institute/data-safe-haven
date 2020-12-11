@@ -203,16 +203,14 @@ if ($userHasRole) {
 # Ensure that certificates exist
 # ------------------------------
 try {
-    # Define single folder for certificate generation for easier cleanup
-    $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
-
     # Certificate validities
-    $caValidityMonths = 27
-    $caValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($caValidityMonths) - $_ }).Days # The CAB standard now limits certificates to 825 days
-    $clientValidityMonths = 24
-    $clientValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($clientValidityMonths) - $_ }).Days # 2 years
+    $caValidityMonths = 27 # The CAB standard now limits certificates to 825 days
+    $caValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($caValidityMonths) - $_ }).Days
+    $clientValidityMonths = 24 # 2 years
+    $clientValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($clientValidityMonths) - $_ }).Days
 
-    # Certificate local paths
+    # Generate all certificates in a single folder for easier cleanup
+    $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
     $caStem = "SHM-$($config.id)-P2S-CA".ToUpper()
     $caCrtPath = Join-Path $certFolderPath "${caStem}.crt"
     $caKeyPath = Join-Path $certFolderPath "${caStem}.key"
