@@ -905,10 +905,10 @@ function Show-FullConfig {
         [string]$sreId
     )
     # Generate and return the full config for the SHM or SRE
+    $configId = -join($shmId, $sreId)
     if ($sreId -eq "") {
         $config = Get-ShmFullConfig -shmId $shmId
     } else {
-        $configId = -join($shmId, $sreId)
         $config = Get-SreConfig -configId $configId
     }
     Write-Output ($config | ConvertTo-JSON -depth 10)
