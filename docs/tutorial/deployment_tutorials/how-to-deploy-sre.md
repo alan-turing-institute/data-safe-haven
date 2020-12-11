@@ -247,7 +247,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 + Run `./Setup_SRE_Remote_Desktop.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is the  name specified in the full config file, equal to `<shmid><sreid>` . For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
-+ The deployment will take **around 50 minutes**.
++ The deployment will take **around 40 minutes**.
 + **Troubleshooting** If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
 ### :satellite: Configure RDS webclient
