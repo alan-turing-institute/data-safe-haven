@@ -632,7 +632,7 @@ function Get-ShmFullConfig {
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
+                        name = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
                     }
                 }
                 firewall = [ordered]@{
