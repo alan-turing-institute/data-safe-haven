@@ -246,7 +246,7 @@ function Add-SreConfig {
                     sizeGb = "1023"
                     type   = "Standard_LRS"
                 }
-                os    = [ordered]@{
+                os   = [ordered]@{
                     sizeGb = "128"
                     type   = "Standard_LRS"
                 }
