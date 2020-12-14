@@ -1,0 +1,39 @@
+---
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+template: |
+  ## What's Changed
+
+  ...
+
+  Released: `date +"%d %B %Y"`
+
+  ## Merged Pull Requests
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
+
+categories:
+  - title: '🚀 Features'
+    label: 'type: enhancement'
+  - title: '🐛 Bug Fixes'
+    label: 'type: bug'
+  - title: '📚 Documentation'
+    label: 'type: documentation'
+
+version-resolver:
+  major:
+    labels: []
+  minor:
+    labels:
+      - 'type: enhancement'
+  patch:
+    labels:
+      - 'type: documentation'
+      - 'type: bug'
+  default: patch
