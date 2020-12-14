@@ -28,7 +28,7 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
     IPAddresses_ExternalNTP = $config.time.ntp.serverAddresses
-    NSG_Identity_Name       = $config.network.nsg.identity.name
+    NSG_Identity_Name       = $config.network.vnet.subnets.identity.nsg.name
     P2S_VPN_Certificate     = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
     Shm_Id                  = ($config.id).ToLower()
     Subnet_Firewall_CIDR    = $config.network.vnet.subnets.firewall.cidr
@@ -37,8 +37,6 @@ $params = @{
     Subnet_Gateway_Name     = $config.network.vnet.subnets.gateway.name
     Subnet_Identity_CIDR    = $config.network.vnet.subnets.identity.cidr
     Subnet_Identity_Name    = $config.network.vnet.subnets.identity.name
-    Subnet_Web_CIDR         = $config.network.vnet.subnets.web.cidr
-    Subnet_Web_Name         = $config.network.vnet.subnets.web.name
     Virtual_Network_Name    = $config.network.vnet.name
     VNET_CIDR               = $config.network.vnet.cidr
     VNET_DNS_DC1            = $config.dc.ip

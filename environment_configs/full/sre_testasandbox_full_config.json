@@ -47,9 +47,9 @@
       "fqdn": "testa.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENTESTA",
       "ous": {
-        "dataServers": {
-          "name": "Secure Research Environment Data Servers",
-          "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "databaseServers": {
+          "name": "Secure Research Environment Database Servers",
+          "path": "OU=Secure Research Environment Database Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
         },
         "identityServers": {
           "name": "Safe Haven Service Servers",
@@ -190,12 +190,16 @@
             "external": {
               "cidr": "10.20.2.0/28",
               "name": "ExternalPackageMirrorsTier2Subnet",
-              "nsg": "externalPackageMirrorsTier2"
+              "nsg": {
+                "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
             },
             "internal": {
               "cidr": "10.20.2.16/28",
               "name": "InternalPackageMirrorsTier2Subnet",
-              "nsg": "internalPackageMirrorsTier2"
+              "nsg": {
+                "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
             }
           }
         },
@@ -206,31 +210,18 @@
             "external": {
               "cidr": "10.20.3.0/28",
               "name": "ExternalPackageMirrorsTier3Subnet",
-              "nsg": "externalPackageMirrorsTier3"
+              "nsg": {
+                "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
             },
             "internal": {
               "cidr": "10.20.3.16/28",
               "name": "InternalPackageMirrorsTier3Subnet",
-              "nsg": "internalPackageMirrorsTier3"
+              "nsg": {
+                "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
             }
           }
-        }
-      },
-      "nsg": {
-        "externalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER2"
-        },
-        "externalPackageMirrorsTier3": {
-          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER3"
-        },
-        "internalPackageMirrorsTier2": {
-          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER2"
-        },
-        "internalPackageMirrorsTier3": {
-          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
-        },
-        "repository": {
-          "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_2"
         }
       },
       "repositoryVnet": {
@@ -240,7 +231,10 @@
           "repository": {
             "cidr": "10.30.1.0/24",
             "name": "RepositorySubnet",
-            "nsg": "repository"
+            "nsg": {
+              "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_2",
+              "rules": "shm-nsg-rules-nexus.json"
+            }
           }
         }
       },
@@ -259,11 +253,10 @@
           },
           "identity": {
             "cidr": "10.0.0.0/24",
-            "name": "IdentitySubnet"
-          },
-          "web": {
-            "cidr": "10.0.1.0/24",
-            "name": "WebSubnet"
+            "name": "IdentitySubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTA_IDENTITY"
+            }
           }
         }
       },
@@ -299,9 +292,9 @@
     "repository": {
       "diskType": "Standard_LRS",
       "nexus": {
-        "adminPasswordSecretName": "shm-testa-nexus-repository-vm-admin-password",
+        "adminPasswordSecretName": "shm-testa-vm-admin-password-nexus",
         "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testa-nexus-repository-nexus-app-admin-password",
+        "nexusAppAdminPasswordSecretName": "shm-testa-nexus-repository-admin-password",
         "vmName": "NEXUS-REPOSITORY-TIER-2"
       },
       "rg": "RG_SHM_NEXUS_REPOSITORIES",
@@ -346,8 +339,12 @@
     },
     "users": {
       "computerManagers": {
+        "databaseServers": {
+          "name": "TESTA Database Servers Manager",
+          "passwordSecretName": "shm-testa-computer-manager-password-database-servers",
+          "samAccountName": "testadatabasesrvrs"
+        },
         "dataServers": {
-          "name": "TESTA Data Servers Manager",
           "passwordSecretName": "shm-testa-domain-admin-password",
           "samAccountName": "shmtestaadmin"
         },
@@ -432,30 +429,6 @@
       },
       "rg": "RG_SHM_TESTA_SRE_SANDBOX_DATABASES"
     },
-    "dataserver": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
-      "disks": {
-        "egress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        },
-        "ingress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        },
-        "shared": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        }
-      },
-      "fqdn": "DAT-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-      "hostname": "DAT-SRE-SANDBOX",
-      "ip": "10.150.4.4",
-      "nsg": "NSG_SHM_TESTA_SRE_SANDBOX_DATA",
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_DATA",
-      "vmName": "DAT-SRE-SANDBOX",
-      "vmSize": "Standard_D2s_v3"
-    },
     "domain": {
       "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "sandbox.testa.dsgroupdev.co.uk",
@@ -477,12 +450,7 @@
     },
     "dsvm": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
-      "deploymentNsg": "NSG_SHM_TESTA_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "disks": {
-        "home": {
-          "sizeGb": "1024",
-          "type": "Standard_LRS"
-        },
         "os": {
           "sizeGb": "default",
           "type": "Standard_LRS"
@@ -492,7 +460,6 @@
           "type": "Standard_LRS"
         }
       },
-      "nsg": "NSG_SHM_TESTA_SRE_SANDBOX_COMPUTE",
       "rg": "RG_SHM_TESTA_SRE_SANDBOX_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
@@ -518,12 +485,6 @@
     },
     "location": "centralus",
     "network": {
-      "nsg": {
-        "data": {},
-        "databases": {
-          "name": "NSG_SHM_TESTA_SRE_SANDBOX_DATABASES"
-        }
-      },
       "vnet": {
         "cidr": "10.150.0.0/21",
         "name": "VNET_SHM_TESTA_SRE_SANDBOX",
@@ -531,7 +492,11 @@
         "subnets": {
           "compute": {
             "cidr": "10.150.4.0/24",
-            "name": "ComputeSubnet"
+            "name": "ComputeSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTA_SRE_SANDBOX_COMPUTE",
+              "rules": "sre-nsg-rules-compute.json"
+            }
           },
           "data": {
             "cidr": "10.150.2.0/24",
@@ -540,7 +505,18 @@
           "databases": {
             "cidr": "10.150.3.0/24",
             "name": "DatabasesSubnet",
-            "nsg": "databases"
+            "nsg": {
+              "name": "NSG_SHM_TESTA_SRE_SANDBOX_DATABASES",
+              "rules": "sre-nsg-rules-databases.json"
+            }
+          },
+          "deployment": {
+            "cidr": "10.150.5.0/24",
+            "name": "DeploymentSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTA_SRE_SANDBOX_DEPLOYMENT",
+              "rules": "sre-nsg-rules-compute-deployment.json"
+            }
           },
           "identity": {
             "cidr": "10.150.0.0/24",
@@ -567,7 +543,10 @@
         "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
         "ip": "10.150.1.5",
-        "nsg": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "nsg": {
+          "name": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SESSION_HOSTS",
+          "rules": "sre-nsg-rules-session-hosts.json"
+        },
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
@@ -594,7 +573,10 @@
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
-        "nsg": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SERVER",
+        "nsg": {
+          "name": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SERVER",
+          "rules": "sre-nsg-rules-gateway.json"
+        },
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2"
       },
@@ -612,18 +594,18 @@
         }
       },
       "artifacts": {
-        "accountName": "testasandboxartifactsaln",
+        "accountName": "testasandboxartifactszoa",
         "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "testasandboxbootdiagsaln",
+        "accountName": "testasandboxbootdiagszoa",
         "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS"
       },
       "persistentdata": {
         "account": {
           "accessTier": "hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testasandboxdataalnpdsmr",
+          "name": "testasandboxdatazoaweyqi",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
@@ -643,10 +625,22 @@
       "userdata": {
         "account": {
           "accessTier": "hot",
-          "name": "testasandboxuserdataalnp",
+          "name": "testasandboxuserdatazoaw",
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS",
           "storageKind": "FileStorage"
+        },
+        "containers": {
+          "home": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          },
+          "shared": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          }
         }
       }
     },
@@ -660,11 +654,6 @@
     },
     "users": {
       "serviceAccounts": {
-        "datamount": {
-          "name": "SANDBOX Data Mount Service Account",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-datamount",
-          "samAccountName": "sandboxdatamount"
-        },
         "ldapSearch": {
           "name": "SANDBOX LDAP Search Service Account",
           "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
