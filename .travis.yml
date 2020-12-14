@@ -8,7 +8,7 @@ jobs:
   include:
     - name: Lint Ansible
       language: python
-      python: 3.8
+      python: 3.9
       before_script: pip install ansible-lint
       script: ansible-lint
     - name: Lint JSON
@@ -27,7 +27,7 @@ jobs:
       script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
     - name: Lint Python
       language: python
-      python: 3.8
+      python: 3.9
       before_script: pip install flake8
       script: flake8 . --statistics --count
     - name: Lint shell
@@ -35,7 +35,7 @@ jobs:
       script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
     - name: Lint YAML
       language: python
-      python: 3.8
+      python: 3.9
       before_script: pip install yamllint
       script: yamllint .
     - name: Test Powershell
