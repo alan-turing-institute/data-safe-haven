@@ -4,6 +4,7 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -65,13 +66,13 @@ $gitlabCloudInitTemplate = $gitlabCloudInitTemplate.
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 # Deploy GitLab VM
-$dataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
+$gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
     AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $gitlabCloudInitTemplate
-    DataDiskIds            = @($dataDisk.Id)
+    DataDiskIds            = @($gitlabDataDisk.Id)
     ImageSku               = $config.sre.webapps.gitlab.osVersion
     Location               = $config.sre.location
     Name                   = $config.sre.webapps.gitlab.vmName
@@ -93,23 +94,28 @@ Add-LogMessage -Level Info "Constructing HackMD cloud-init from template..."
 $hackmdCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-hackmd.template.yaml") -Raw
 # Expand placeholders in the cloud-init template
 $hackmdCloudInitTemplate = $hackmdCloudInitTemplate.
-    Replace("<hackmd-bind-dn>", $ldapSearchUserDn).
+    Replace("<docker-hackmd-version>", $config.sre.webapps.hackmd.codimd.dockerVersion).
+    Replace("<docker-postgres-version>", $config.sre.webapps.hackmd.postgres.dockerVersion).
     Replace("<hackmd-bind-creds>", $ldapSearchUserPassword).
-    Replace("<hackmd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(userPrincipalName={{username}}))").
-    Replace("<hackmd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<hackmd-ip>", $config.sre.webapps.hackmd.ip).
-    Replace("<hackmd-hostname>", $config.sre.webapps.hackmd.hostname).
+    Replace("<hackmd-bind-dn>", $ldapSearchUserDn).
     Replace("<hackmd-fqdn>", "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)").
-    Replace("<hackmd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
+    Replace("<hackmd-hostname>", $config.sre.webapps.hackmd.hostname).
+    Replace("<hackmd-ip>", $config.sre.webapps.hackmd.ip).
+    Replace("<hackmd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
     Replace("<hackmd-ldap-netbios>", $config.shm.domain.netbiosName).
+    Replace("<hackmd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
+    Replace("<hackmd-postgres-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<hackmd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))").
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 # Deploy HackMD VM
+$hackmdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.hackmd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.hackmd.disks.data.sizeGb -Type $config.sre.webapps.hackmd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
     AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $hackmdCloudInitTemplate
+    DataDiskIds            = @($hackmdDataDisk.Id)
     ImageSku               = $config.sre.webapps.hackmd.osVersion
     Location               = $config.sre.location
     Name                   = $config.sre.webapps.hackmd.vmName

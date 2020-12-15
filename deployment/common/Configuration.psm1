@@ -322,24 +322,35 @@ function Add-SreConfig {
             osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
-                    sizeGb = "750"
+                    sizeGb = "512"
                     type   = "Standard_LRS"
                 }
                 os   = [ordered]@{
-                    sizeGb = "50"
+                    sizeGb = "32"
                     type   = "Standard_LRS"
                 }
             }
         }
         hackmd = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
-            vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
-            vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion               = "18.04-LTS"
-            disks                   = [ordered]@{
+            adminPasswordSecretName    = "$($config.sre.shortName)-vm-admin-password-hackmd"
+            vmName                     = "HACKMD-SRE-$($config.sre.id)".ToUpper()
+            vmSize                     = "Standard_D2s_v3"
+            ip                         = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
+            osVersion                  = "18.04-LTS"
+            codimd = [ordered]@{
+                dockerVersion      = "2.2.0"
+            }
+            postgres = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-hackmd-password-postgresdb"
+                dockerVersion      = "13.1"
+            }
+            disks                      = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
                 os = [ordered]@{
-                    sizeGb = "750"
+                    sizeGb = "32"
                     type   = "Standard_LRS"
                 }
             }
