@@ -88,6 +88,13 @@ if ($requestCertificate) {
     }
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
+    # Purge a deleted certificate if needed
+    # -------------------------------------
+    if (Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState) {
+        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force
+        Start-Sleep 10
+    }
+
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
     Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."

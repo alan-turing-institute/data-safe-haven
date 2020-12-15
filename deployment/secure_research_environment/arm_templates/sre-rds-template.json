@@ -62,16 +62,10 @@
                 "description": "Password for RDS gateway"
             }
         },
-        "RDS_Gateway_Data1_Disk_Size_GB": {
+        "RDS_Gateway_Data_Disk_Size_GB": {
             "type": "int"
         },
-        "RDS_Gateway_Data1_Disk_Type": {
-            "type": "string"
-        },
-        "RDS_Gateway_Data2_Disk_Size_GB": {
-            "type": "int"
-        },
-        "RDS_Gateway_Data2_Disk_Type": {
+        "RDS_Gateway_Data_Disk_Type": {
             "type": "string"
         },
         "RDS_Gateway_IP_Address": {
@@ -209,25 +203,14 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK-1')]",
+                            "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "[parameters('RDS_Gateway_Data1_Disk_Type')]"
+                                "storageAccountType": "[parameters('RDS_Gateway_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": "[parameters('RDS_Gateway_Data1_Disk_Size_GB')]"
-                        },
-                        {
-                            "lun": 1,
-                            "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK-2')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('RDS_Gateway_Data2_Disk_Type')]"
-                            },
-                            "diskSizeGB": "[parameters('RDS_Gateway_Data2_Disk_Size_GB')]"
+                            "diskSizeGB": "[parameters('RDS_Gateway_Data_Disk_Size_GB')]"
                         }
                     ]
                 },

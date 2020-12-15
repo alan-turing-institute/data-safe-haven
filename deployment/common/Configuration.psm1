@@ -242,15 +242,11 @@ function Add-SreConfig {
             }
             networkRules            = [ordered]@{}
             disks                   = [ordered]@{
-                data1 = [ordered]@{
+                data = [ordered]@{
                     sizeGb = "1023"
                     type   = "Standard_LRS"
                 }
-                data2 = [ordered]@{
-                    sizeGb = "1023"
-                    type   = "Standard_LRS"
-                }
-                os    = [ordered]@{
+                os   = [ordered]@{
                     sizeGb = "128"
                     type   = "Standard_LRS"
                 }

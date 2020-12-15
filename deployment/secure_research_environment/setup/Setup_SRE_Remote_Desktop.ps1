@@ -85,10 +85,8 @@ $params = @{
     OU_Path_Gateway                       = $config.shm.domain.ous.rdsGatewayServers.path
     OU_Path_Session_Hosts                 = $config.shm.domain.ous.rdsSessionServers.path
     RDS_Gateway_Admin_Password            = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
-    RDS_Gateway_Data1_Disk_Size_GB        = [int]$config.sre.rds.gateway.disks.data1.sizeGb
-    RDS_Gateway_Data1_Disk_Type           = $config.sre.rds.gateway.disks.data1.type
-    RDS_Gateway_Data2_Disk_Size_GB        = [int]$config.sre.rds.gateway.disks.data2.sizeGb
-    RDS_Gateway_Data2_Disk_Type           = $config.sre.rds.gateway.disks.data2.type
+    RDS_Gateway_Data_Disk_Size_GB         = [int]$config.sre.rds.gateway.disks.data.sizeGb
+    RDS_Gateway_Data_Disk_Type            = $config.sre.rds.gateway.disks.data.type
     RDS_Gateway_IP_Address                = $config.sre.rds.gateway.ip
     RDS_Gateway_Name                      = $config.sre.rds.gateway.vmName
     RDS_Gateway_NSG_Name                  = $config.sre.rds.gateway.nsg.name
@@ -118,7 +116,7 @@ foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) 
     $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
     $numBlobs = $blobs.Length
     if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
+        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs aready in container '$containerName'..."
         $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
         while ($numBlobs -gt 0) {
             Start-Sleep -Seconds 5
@@ -159,26 +157,23 @@ $template.Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
           Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn) | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
-Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
-$blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
-$null = $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
-if ($?) {
+try {
+    Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts -ErrorAction Stop
+    $null = $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force -ErrorAction Stop
     Add-LogMessage -Level Success "File copying succeeded"
-} else {
-    Add-LogMessage -Level Fatal "File copying failed!"
+} catch {
+    Add-LogMessage -Level Fatal "File copying failed!" -Exception $_.Exception
 }
 
 # Upload scripts
-Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
-$success = $true
-$null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
-$success = $success -and $?
-$null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
-$success = $success -and $?
-if ($success) {
+try {
+    Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force -ErrorAction Stop
+    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force -ErrorAction Stop
     Add-LogMessage -Level Success "File uploading succeeded"
-} else {
-    Add-LogMessage -Level Fatal "File uploading failed!"
+} catch {
+    Add-LogMessage -Level Fatal "File uploading failed!" -Exception $_.Exception
 }
 
 
