@@ -15,14 +15,23 @@ $null = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | ForEach-Object
 Write-Output "Checking drive partitioning..."
 $DataDisks = Get-Disk | Where-Object { $_.Model -ne "Virtual HD" } | Sort -Property Number  # This excludes the OS and temp disks
 foreach ($DataDisk in $DataDisks) {
-    $existingPartition = Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" }  # This selects normal partitions that are not system-reserved
-    if ($existingPartition.DriveLetter) {
+    $existingPartitions = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })  # This selects normal partitions that are not system-reserved
+    # Remove all basic partitions if there is not exactly one
+    if ($existingPartitions.Count -gt 1) {
+        Write-Output " [ ] Found $($existingPartitions.Count) partitions on disk $($DataDisk.DiskNumber) but expected 1! Removing all of them."
+        $existingPartitions | ForEach-Object { Remove-Partition -DiskNumber $DataDisk.DiskNumber -PartitionNumber $_.PartitionNumber -Confirm:$false }
+    }
+    # Remove any non-lettered partitions
+    $existingPartition = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })[0]
+    if ($existingPartition -and (-not $existingPartition.DriveLetter)) {
+        Write-Output "Removing non-lettered partition $($existingPartition.PartitionNumber) from disk $($DataDisk.DiskNumber)!"
+        Remove-Partition -DiskNumber $DataDisk.DiskNumber -PartitionNumber $existingPartition.PartitionNumber -Confirm:$false
+    }
+    # Create a new partition if one does not exist
+    $existingPartition = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })[0]
+    if ($existingPartition) {
         Write-Output " [o] Partition $($existingPartition.PartitionNumber) of disk $($DataDisk.DiskNumber) is mounted at drive letter '$($existingPartition.DriveLetter)'"
     } else {
-        if ($existingPartition.PartitionNumber) {
-            Write-Output "Removing non-lettered partition $($existingPartition.PartitionNumber) from disk $($DataDisk.DiskNumber)!"
-            Remove-Partition -DiskNumber $DataDisk.DiskNumber -PartitionNumber $existingPartition.PartitionNumber -Confirm:$false
-        }
         $LUN = $(Get-WmiObject Win32_DiskDrive | Where-Object { $_.Index -eq $DataDisk.Number }).SCSILogicalUnit
         $Label = "DATA-$LUN"
         $Partition = New-Partition -DiskNumber $DataDisk.Number -UseMaximumSize -AssignDriveLetter
