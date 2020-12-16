@@ -11,10 +11,6 @@
         {
             "_comment": "Seems to return redirect codes in curl, 200 in browser. markdown-link-check does not return the http code",
             "pattern": "^https://www.turing.ac.uk/"
-        },
-        {
-            "_comment": "Returns 0 in GitHub workflows",
-            "pattern": "^https://www.refreshyourcache.com/"
         }
     ],
     "retryOn429": true,
