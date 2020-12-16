@@ -115,7 +115,7 @@ function Add-SreConfig {
                         rules = "sre-nsg-rules-compute.json"
                     }
                 }
-                webapps = [ordered]@{
+                webapps    = [ordered]@{
                     name = "WebappsSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
                     nsg  = [ordered]@{
@@ -332,24 +332,24 @@ function Add-SreConfig {
             }
         }
         hackmd = [ordered]@{
-            adminPasswordSecretName    = "$($config.sre.shortName)-vm-admin-password-hackmd"
-            vmName                     = "HACKMD-SRE-$($config.sre.id)".ToUpper()
-            vmSize                     = "Standard_D2s_v3"
-            ip                         = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion                  = "18.04-LTS"
-            codimd = [ordered]@{
-                dockerVersion      = "2.2.0"
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
+            vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
+            vmSize                  = "Standard_D2s_v3"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
+            osVersion               = "18.04-LTS"
+            codimd                  = [ordered]@{
+                dockerVersion = "2.2.0"
             }
-            postgres = [ordered]@{
+            postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-hackmd-password-postgresdb"
                 dockerVersion      = "13.1"
             }
-            disks                      = [ordered]@{
+            disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
                     type   = "Standard_LRS"
                 }
-                os = [ordered]@{
+                os   = [ordered]@{
                     sizeGb = "32"
                     type   = "Standard_LRS"
                 }

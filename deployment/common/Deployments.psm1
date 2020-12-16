@@ -711,30 +711,30 @@ function Deploy-UbuntuVirtualMachine {
         [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$BootDiagnosticsAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
         [string]$CloudInitYaml,
-        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
         [string]$ImageId = $null,
-        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         [string]$ImageSku = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
         [string]$Name,
-        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageId", HelpMessage = "ID of network card to attach to this VM")]
-        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageSku", HelpMessage = "ID of network card to attach to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of network card to attach to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "ID of network card to attach to this VM")]
         [string]$NicId,
         [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
         [string]$OsDiskType,
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "Private IP address to assign to this VM")]
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "Private IP address to assign to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "Private IP address to assign to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "Private IP address to assign to this VM")]
         [string]$PrivateIpAddress,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
         [string]$Size,
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "Subnet to deploy this VM into")]
-        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "Subnet to deploy this VM into")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "Subnet to deploy this VM into")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "Subnet to deploy this VM into")]
         [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
         [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
         [string]$AdminPublicSshKey = $null,
