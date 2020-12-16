@@ -734,7 +734,7 @@ We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/ad
 
 You can access HackMD from the `HackMD` icon on the Work Resources page.
 
-Login with your long-form username `firstname.lastname@<username domain>` (the domain is required) and `password` .
+Login with your short-form username `firstname.lastname` and `password`.
 
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 
@@ -742,7 +742,7 @@ Login with your long-form username `firstname.lastname@<username domain>` (the d
       <img src="../../images/user_guide/hackmd_logon.png" width="80%" title="hackmd_logon">
    </p>
 
-You can also access HackMD from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access HackMD from the Work Resources page.
+You can also access HackMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access HackMD from the Work Resources page.
 
 > :point_right: Accessing HackMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 > You do not have to return to the `All Resources` tab ever time you want to launch HackMD.
