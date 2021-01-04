@@ -2,25 +2,15 @@
 
 # Create files
 write_files:
-  - path: "/opt/hackmd-docker-compose.yml"
+  - path: "/opt/hackmd/docker-compose.yml"
     permissions: "0400"
     content: |
       version: '3'
       services:
-        database:
-          image: postgres:<docker-postgres-version>
-          environment:
-            - POSTGRES_USER=hackmd
-            - POSTGRES_PASSWORD=<hackmd-postgres-password>
-            - POSTGRES_DB=hackmd
-          volumes:
-            - /data/postgresql:/var/lib/postgresql/data
-          restart: always
-
-        app:
+        codimd:
+          depends_on:
+            - database
           image: nabo.codimd.dev/hackmdio/hackmd:<docker-hackmd-version>
-          volumes:
-            - /data/hackmd:/hackmd/public/uploads
           environment:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
@@ -38,9 +28,24 @@ write_files:
           ports:
             # Map port 80 (external) to port 3000 (internal)
             - 80:3000
+          networks:
+            dockernet:
           restart: always
-          depends_on:
-            - database
+          volumes:
+            - /data/hackmd:/hackmd/public/uploads
+        database:
+          image: postgres:<docker-postgres-version>
+          environment:
+            - POSTGRES_USER=hackmd
+            - POSTGRES_PASSWORD=<hackmd-postgres-password>
+            - POSTGRES_DB=hackmd
+          networks:
+            dockernet:
+          restart: always
+          volumes:
+            - /data/postgresql:/var/lib/postgresql/data
+      networks:
+        dockernet:
 
 # Set locale
 locale: en_GB.UTF-8
@@ -107,16 +112,13 @@ runcmd:
   - echo ">=== Configuring attached disks... ===<"
   - mkdir -p /data/postgresql
   - mkdir -p /data/hackmd
+  - chown -R 1500:1500 /data/hackmd # allow the 'hackmd' user inside the docker container to access this volume
+  - ls -alh /data/
   # Ensure that Docker is running
   - echo "Current Docker status..."
   - systemctl start docker
   - systemctl enable docker
   - systemctl status docker
-  # Pulling HackMD Docker image
-  - echo "Pulling HackMD Docker image..."
-  - git clone https://github.com/hackmdio/docker-hackmd.git /opt/hackmd
-  - echo "Overwriting HackMD configuration"
-  - mv /opt/hackmd-docker-compose.yml /opt/hackmd/docker-compose.yml
   # Set up the hackmddaemon user
   - echo "Configuring hackmddaemon user..."
   - groupadd docker
@@ -124,9 +126,9 @@ runcmd:
   - newgrp docker
   - chown -R hackmddaemon:hackmddaemon /opt/hackmd
   - ls -alh /opt/hackmd
-  # Ensure that HackMD is running
-  - echo "Creating HackMD container..."
-  - docker-compose -f /opt/hackmd/docker-compose.yml up -d
+  # Deploy HackMD using Docker
+  - echo "Deploying HackMD with Docker..."
+  - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
   - sleep 2m
   # Check current status
   - echo "Current HackMD status..."
