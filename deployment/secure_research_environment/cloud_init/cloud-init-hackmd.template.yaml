@@ -2,7 +2,7 @@
 
 # Create files
 write_files:
-  - path: "/opt/docker-hackmd-compose.yml"
+  - path: "/opt/hackmd-docker-compose.yml"
     permissions: "0400"
     content: |
       version: '3'
@@ -41,25 +41,6 @@ write_files:
           restart: always
           depends_on:
             - database
-
-  - path: "/etc/systemd/system/hackmd-app.service"
-    permissions: "0444"
-    content: |
-      [Unit]
-      Description=HackMD Docker compose application service
-      Requires=docker.service
-      After=docker.service
-      [Service]
-      Type=oneshot
-      RemainAfterExit=yes
-      WorkingDirectory=/opt/docker-hackmd
-      ExecStart=/usr/bin/docker-compose -f /opt/docker-hackmd/docker-compose.yml up -d
-      ExecStop=/usr/bin/docker-compose -f /opt/docker-hackmd/docker-compose.yml down
-      TimeoutStartSec=0
-      User=hackmddaemon
-      Group=docker
-      [Install]
-      WantedBy=multi-user.target
 
 # Set locale
 locale: en_GB.UTF-8
@@ -133,20 +114,23 @@ runcmd:
   - systemctl status docker
   # Pulling HackMD Docker image
   - echo "Pulling HackMD Docker image..."
-  - git clone https://github.com/hackmdio/docker-hackmd.git /opt/docker-hackmd
+  - git clone https://github.com/hackmdio/docker-hackmd.git /opt/hackmd
   - echo "Overwriting HackMD configuration"
-  - mv /opt/docker-hackmd-compose.yml /opt/docker-hackmd/docker-compose.yml
+  - mv /opt/hackmd-docker-compose.yml /opt/hackmd/docker-compose.yml
   # Set up the hackmddaemon user
   - echo "Configuring hackmddaemon user..."
   - groupadd docker
   - usermod -aG docker hackmddaemon
   - newgrp docker
-  - chown -R hackmddaemon:hackmddaemon /opt/docker-hackmd
+  - chown -R hackmddaemon:hackmddaemon /opt/hackmd
+  - ls -alh /opt/hackmd
   # Ensure that HackMD is running
+  - echo "Creating HackMD container..."
+  - docker-compose -f /opt/hackmd/docker-compose.yml up -d
+  - sleep 2m
+  # Check current status
   - echo "Current HackMD status..."
-  - systemctl start hackmd-app
-  - systemctl enable hackmd-app
-  - systemctl status hackmd-app
+  - docker-compose -f /opt/hackmd/docker-compose.yml ps
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
