@@ -507,20 +507,24 @@
             }
           },
           "deployment": {
-            "cidr": "10.151.5.0/24",
+            "cidr": "10.151.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT",
               "rules": "sre-nsg-rules-compute-deployment.json"
             }
           },
-          "identity": {
-            "cidr": "10.151.0.0/24",
-            "name": "IdentitySubnet"
-          },
           "rds": {
             "cidr": "10.151.1.0/24",
             "name": "RDSSubnet"
+          },
+          "webapps": {
+            "cidr": "10.151.5.0/24",
+            "name": "WebappsSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_SANDBOX_WEBAPPS",
+              "rules": "sre-nsg-rules-webapps.json"
+            }
           }
         }
       }
@@ -549,11 +553,7 @@
       "gateway": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
         "disks": {
-          "data1": {
-            "sizeGb": "1023",
-            "type": "Standard_LRS"
-          },
-          "data2": {
+          "data": {
             "sizeGb": "1023",
             "type": "Standard_LRS"
           },
@@ -667,36 +667,48 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
         "disks": {
           "data": {
-            "sizeGb": "750",
+            "sizeGb": "512",
             "type": "Standard_LRS"
           },
           "os": {
-            "sizeGb": "50",
+            "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
         "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.4.5",
+        "ip": "10.151.5.5",
+        "osVersion": "18.04-LTS",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
       "hackmd": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-hackmd",
+        "codimd": {
+          "dockerVersion": "2.2.0"
+        },
         "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
           "os": {
-            "sizeGb": "750",
+            "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
         "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "ip": "10.151.4.6",
+        "ip": "10.151.5.6",
+        "osVersion": "18.04-LTS",
+        "postgres": {
+          "dockerVersion": "13.1",
+          "passwordSecretName": "sre-sandbox-other-hackmd-password-postgresdb"
+        },
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
-      "nsg": "NSG_SHM_TESTB_SRE_SANDBOX_WEBAPPS",
       "rg": "RG_SHM_TESTB_SRE_SANDBOX_WEBAPPS"
     }
   }

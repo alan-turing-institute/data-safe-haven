@@ -96,6 +96,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowWebappsOutbound",
+        "access": "Allow",
+        "description": "Allow outbound http(s) connections to the webapps subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3200,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowVirtualNetworkOutbound",
         "access": "Allow",
         "description": "Allow other outbound traffic to the virtual network.",
@@ -132,7 +144,7 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "IgnoreRulesBelowHereOutbound",
+        "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
         "destinationAddressPrefix": "*",

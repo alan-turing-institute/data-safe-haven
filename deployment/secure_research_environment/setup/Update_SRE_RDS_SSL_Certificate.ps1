@@ -65,7 +65,6 @@ if ($null -eq $kvCertificate) {
         $requestCertificate = $true
     }
 }
-$requestCertificate = $true
 
 
 # Request a new certificate

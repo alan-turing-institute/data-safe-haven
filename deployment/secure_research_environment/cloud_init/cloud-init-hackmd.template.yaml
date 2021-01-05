@@ -1,8 +1,64 @@
 #cloud-config
-package_update: true
-package_upgrade: true
 
-# Install LDAP tools for debugging LDAP issues
+# Create files
+write_files:
+  - path: "/opt/hackmd/docker-compose.yml"
+    permissions: "0400"
+    content: |
+      version: '3'
+      services:
+        codimd:
+          depends_on:
+            - database
+          image: nabo.codimd.dev/hackmdio/hackmd:<docker-hackmd-version>
+          environment:
+            - CMD_ALLOW_ANONYMOUS=false
+            - CMD_ALLOW_FREEURL=true
+            - CMD_DB_URL=postgres://hackmd:<hackmd-postgres-password>@database:5432/hackmd
+            - CMD_EMAIL=false
+            - CMD_IMAGE_UPLOAD_TYPE=filesystem
+            - CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
+            - CMD_LDAP_BINDDN=<hackmd-bind-dn>
+            - CMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
+            - CMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
+            - CMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
+            - CMD_LDAP_URL=<hackmd-ldap-url>
+            - CMD_LDAP_USERIDFIELD=sAMAccountName
+            - CMD_USECDN=false
+          ports:
+            # Map port 80 (external) to port 3000 (internal)
+            - 80:3000
+          networks:
+            dockernet:
+          restart: always
+          volumes:
+            - /data/hackmd:/hackmd/public/uploads
+        database:
+          image: postgres:<docker-postgres-version>
+          environment:
+            - POSTGRES_USER=hackmd
+            - POSTGRES_PASSWORD=<hackmd-postgres-password>
+            - POSTGRES_DB=hackmd
+          networks:
+            dockernet:
+          restart: always
+          volumes:
+            - /data/postgresql:/var/lib/postgresql/data
+      networks:
+        dockernet:
+
+# Set locale
+locale: en_GB.UTF-8
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    gitlab.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
+
+# Install necessary apt packages
 packages:
   - apt-transport-https
   - ca-certificates
@@ -11,122 +67,72 @@ packages:
   - docker-compose
   - ldap-utils
   - software-properties-common
+package_update: true
+package_upgrade: true
 
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
-  # Add repositories
-  sources:
-    gitlab.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-      keyid: 8D81803C0EBFCD88
+# Set hostname
+fqdn: <hackmd-fqdn>
+hostname: <hackmd-fqdn>
 
-write_files:
-  - path: "/docker-compose-hackmd.yml"
-    content: |
-      version: '3'
-      services:
-        database:
-          # Don't upgrade PostgreSQL by simply changing the version number
-          # You need to migrate the Database to the new PostgreSQL version
-          image: postgres:11.5
-          #mem_limit: 256mb         # version 2 only
-          #memswap_limit: 512mb     # version 2 only
-          #read_only: true          # not supported in swarm mode please enable along with tmpfs
-          #tmpfs:
-          #  - /run/postgresql:size=512K
-          #  - /tmp:size=256K
-          environment:
-            - POSTGRES_USER=hackmd
-            - POSTGRES_PASSWORD=hackmdpass
-            - POSTGRES_DB=hackmd
-          volumes:
-            - database:/var/lib/postgresql/data
-          networks:
-            backend:
-          restart: always
+# Add the SRE admin (default) and hackmddaemon users
+users:
+  - default
+  - name: hackmddaemon
+    lock_passwd: True # Lock the password to disable password login
+    sudo: False       # This user will not have sudo privileges
 
-        app:
-          image: nabo.codimd.dev/hackmdio/hackmd:1.4.1
-          #mem_limit: 256mb         # version 2 only
-          #memswap_limit: 512mb     # version 2 only
-          #read_only: true          # not supported in swarm mode, enable along with tmpfs
-          #tmpfs:
-          #  - /tmp:size=512K
-          #  - /hackmd/tmp:size=1M
-          # Make sure you remove this when you use filesystem as upload type
-          #  - /hackmd/public/uploads:size=10M
-          volumes:
-            - uploads:/hackmd/public/uploads
-          environment:
-            # DB_URL is formatted like: <databasetype>://<username>:<password>@<hostname>/<database>
-            # Other examples are:
-            # - mysql://hackmd:hackmdpass@database:3306/hackmd
-            # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
-            # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
-            - CMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
-            - CMD_ALLOW_ANONYMOUS=false
-            - CMD_ALLOW_FREEURL=true
-            - CMD_EMAIL=false
-            - CMD_USECDN=false
-            - CMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
-            - CMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
-            - CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
-            - CMD_LDAP_BINDDN=<hackmd-bind-dn>
-            - CMD_LDAP_URL=<hackmd-ldap-url>
-            - CMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
-            - CMD_IMAGE_UPLOAD_TYPE=filesystem
-          ports:
-            # Ports that are published to the outside.
-            # The latter port is the port inside the container. It should always stay on 3000
-            # If you only specify a port it'll published on all interfaces. If you want to use a
-            # local reverse proxy, you may want to listen on 127.0.0.1.
-            # Example:
-            # - "127.0.0.1:3000:3000"
-            - "3000:3000"
-          networks:
-            backend:
-          restart: always
-          depends_on:
-            - database
-
-      # Define networks to allow best isolation
-      networks:
-        # Internal network for communication with PostgreSQL/MySQL
-        backend:
-
-      # Define named volumes so data stays in place
-      volumes:
-        # Volume for PostgreSQL/MySQL database
-        database:
-        uploads:
-
-# Set locale and timezone
-locale: en_GB.UTF-8
-timezone: <timezone>
-
-# Set the NTP server
+# Set the NTP server and timezone
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   pools:
     - <ntp-server>
+timezone: <timezone>
 
+# Run other commands
 runcmd:
-  # Configure server
-  - echo "Configuring server"
-  - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
-  - dpkg-reconfigure -f noninteractive tzdata
-  # Checking Docker status
-  - echo "Current Docker status"
+  # Check server settings
+  - echo ">=== Hostname ===<"
+  - hostnamectl
+  - echo ">=== Date/time ===<"
+  - timedatectl
+  # Configuring attached disks
+  - echo ">=== Configuring attached disks... ===<"
+  - mkdir -p /data/postgresql
+  - mkdir -p /data/hackmd
+  - chown -R 1500:1500 /data/hackmd # allow the 'hackmd' user inside the docker container to access this volume
+  - ls -alh /data/
+  # Ensure that Docker is running
+  - echo "Current Docker status..."
+  - systemctl start docker
+  - systemctl enable docker
   - systemctl status docker
-  # Pulling HackMD Docker image
-  - echo "Pulling HackMD Docker image"
-  - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
-  - echo "Overwriting HackMD configuration"
-  - cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
-  - echo "Starting HackMD"
-  - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
+  # Set up the hackmddaemon user
+  - echo "Configuring hackmddaemon user..."
+  - groupadd docker
+  - usermod -aG docker hackmddaemon
+  - newgrp docker
+  - chown -R hackmddaemon:hackmddaemon /opt/hackmd
+  - ls -alh /opt/hackmd
+  # Deploy HackMD using Docker
+  - echo "Deploying HackMD with Docker..."
+  - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
+  - sleep 2m
+  # Check current status
+  - echo "Current HackMD status..."
+  - docker-compose -f /opt/hackmd/docker-compose.yml ps
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

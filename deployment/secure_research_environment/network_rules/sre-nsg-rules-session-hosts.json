@@ -16,7 +16,7 @@
         "access": "Deny",
         "description": "Deny outbound connections to the internet",
         "destinationAddressPrefix": "Internet",
-        "destinationPortRange": [1645, 1646, 1812, 1813],
+        "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 4000,
         "protocol": "*",
