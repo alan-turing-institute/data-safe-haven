@@ -441,7 +441,7 @@ function Get-ConfigRootDir {
 
 
 # Load minimal management config parameters from JSON config file into a hashtable
-# -----------------------------------
+# --------------------------------------------------------------------------------
 function Get-BaseConfigHash {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
