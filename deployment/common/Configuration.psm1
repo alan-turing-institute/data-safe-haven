@@ -15,7 +15,7 @@ function Get-SreConfig {
     Add-LogMessage -Level Info "Generating/updating config file for '$configId'"
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-BaseConfigHash -configType "sre" -configName $configId
+    $sreConfigBase = Get-BaseConfigHashtable -configType "sre" -configName $configId
 
     # Ensure that naming structure is being adhered to
     if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
@@ -442,7 +442,7 @@ function Get-ConfigRootDir {
 
 # Load minimal management config parameters from JSON config file into a hashtable
 # --------------------------------------------------------------------------------
-function Get-BaseConfigHash {
+function Get-BaseConfigHashtable {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
         [ValidateSet("sre", "shm")]
@@ -471,7 +471,7 @@ function Get-ShmFullConfig {
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-BaseConfigHash -configType "shm" -configName $shmId
+    $shmConfigBase = Get-BaseConfigHashtable -configType "shm" -configName $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
