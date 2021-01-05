@@ -44,7 +44,7 @@ switch ($Action) {
             # Ensure Identity VMs are started before any other VMs
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.dc.rg)' are started..."
             # Primary DC must be started before Secondary DC
-            $primaryDCAlreadyRunning = Confirm-AzVmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
+            $primaryDCAlreadyRunning = Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
             if ($primaryDCAlreadyRunning) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
                 # Start Secondary DC and NPS

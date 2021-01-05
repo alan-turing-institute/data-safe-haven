@@ -703,41 +703,50 @@ Export-ModuleMember -Function Deploy-Subnet
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
-        $Size,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator password")]
         [System.Security.SecureString]$AdminPassword,
         [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
-        $AdminUsername,
-        [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
-        $AdminPublicSshKey = $null,
+        [string]$AdminUsername,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
-        $BootDiagnosticsAccount,
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$BootDiagnosticsAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
-        $CloudInitYaml,
+        [string]$CloudInitYaml,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [string]$ImageId = $null,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [string]$ImageSku = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
-        [Parameter(Mandatory = $true, HelpMessage = "ID of network card to attach to this VM")]
-        $NicId,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of network card to attach to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "ID of network card to attach to this VM")]
+        [string]$NicId,
         [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
-        $OsDiskType,
+        [string]$OsDiskType,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "Private IP address to assign to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "Private IP address to assign to this VM")]
+        [string]$PrivateIpAddress,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByImageId", HelpMessage = "ID of VM image to deploy")]
-        $ImageId = $null,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByImageSku", HelpMessage = "SKU of VM image to deploy")]
-        $ImageSku = $null,
-        [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
-        $OsDiskSizeGb = $null,
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
+        [string]$Size,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "Subnet to deploy this VM into")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "Subnet to deploy this VM into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
+        [Parameter(Mandatory = $false, HelpMessage = "Administrator public SSH key")]
+        [string]$AdminPublicSshKey = $null,
         [Parameter(Mandatory = $false, HelpMessage = "IDs of data disks")]
-        $DataDiskIds = $null,
+        [string[]]$DataDiskIds = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Do not wait for deployment to finish")]
-        [switch]$NoWait = $false
+        [switch]$NoWait = $false,
+        [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
+        [int]$OsDiskSizeGb = $null
     )
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
-    $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         $adminCredentials = New-Object System.Management.Automation.PSCredential("$AdminUsername", $AdminPassword)
         # Build VM configuration
@@ -745,10 +754,15 @@ function Deploy-UbuntuVirtualMachine {
         # Set source image to a custom image or to latest Ubuntu (default)
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
-        } else {
+        } elseif ($ImageSku) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+        } else {
+            Add-LogMessage -Level Fatal "Could not determine which source image to use!"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
+        if (-not $NicId) {
+            $NicId = (Deploy-VirtualMachineNIC -Name "${Name}-NIC" -ResourceGroupName $ResourceGroupName -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -Location $Location).Id
+        }
         $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $NicId -Primary
         if ($OsDiskSizeGb) {
             $vmConfig = Set-AzVMOSDisk -VM $vmConfig -StorageAccountType $OsDiskType -Name "$Name-OS-DISK" -CreateOption FromImage -DiskSizeInGB $OsDiskSizeGb
@@ -759,7 +773,7 @@ function Deploy-UbuntuVirtualMachine {
         # Add optional data disks
         $lun = 0
         foreach ($diskId in $DataDiskIds) {
-            $lun += 1
+            $lun += 1 # NB. this line means that our first disk gets deployed at lun1 and we do not use lun0. Consider changing this.
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
         }
         # Copy public key to VM
@@ -768,11 +782,11 @@ function Deploy-UbuntuVirtualMachine {
         }
         # Create VM
         Add-LogMessage -Level Info "[ ] Creating virtual machine '$Name'"
-        $vm = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig
-        if ($?) {
+        try {
+            $null = New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig -ErrorAction Stop
             Add-LogMessage -Level Success "Created virtual machine '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region." -Exception $_.Exception
         }
         if (-not $NoWait) {
             Start-Sleep 30  # wait for VM deployment to register
@@ -781,7 +795,7 @@ function Deploy-UbuntuVirtualMachine {
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }
-    return $vm
+    return (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName)
 }
 Export-ModuleMember -Function Deploy-UbuntuVirtualMachine
 

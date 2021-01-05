@@ -38,7 +38,7 @@ switch ($Action) {
         # Ensure RDS VMs are started
         Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.sre.rds.rg)' are started..."
         # RDS gateway must be started before RDS session hosts
-        $gatewayAlreadyRunning = Confirm-AzVmRunning -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
+        $gatewayAlreadyRunning = Confirm-VmRunning -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
         if ($gatewayAlreadyRunning) {
             Add-LogMessage -Level InfoSuccess "VM '$($config.sre.rds.gateway.vmName)' already running."
             # Ensure session hosts started

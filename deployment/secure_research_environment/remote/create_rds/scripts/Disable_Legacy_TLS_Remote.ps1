@@ -42,7 +42,7 @@ function Set-Protocol {
         [Parameter(HelpMessage = "Set whether we are enabling or disabling [must be 'Enable' or 'Disable']")]
         $Action
     )
-    Write-Output "Ensuring '$Protocol' is ${Action}..."
+    Write-Output "Ensuring '$Protocol' is ${Action}d..."
     Set-ProtocolForRole -Protocol $Protocol -Role "Client" -Action $Action
     Set-ProtocolForRole -Protocol $Protocol -Role "Server" -Action $Action
 }

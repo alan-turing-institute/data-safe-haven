@@ -60,8 +60,10 @@ foreach ($route in $rules.routes) {
 $excludedSubnetNames = @($config.sre.network.vnet.subnets.rds.name, $config.sre.network.vnet.subnets.deployment.name)
 foreach ($subnet in $VirtualNetwork.Subnets) {
     if ($excludedSubnetNames.Contains($subnet.Name)) {
+        Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is NOT attached to any route table..."
         $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
     } else {
+        Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is attached to $($routeTable.Name)..."
         $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
     }
 }
@@ -75,17 +77,18 @@ foreach ($ruleCollectionName in $firewall.ApplicationRuleCollections | Where-Obj
     $null = $firewall.RemoveApplicationRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' application rule collection."
 }
-foreach ($ruleCollection in $rules.applicationRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.name)'..."
-    foreach ($rule in $ruleCollection.properties.rules) {
-        $params = @{}
-        if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
-        if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
-        if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
-        $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
+if ($rules.applicationRuleCollections) {
+    foreach ($ruleCollection in $rules.applicationRuleCollections) {
+        Add-LogMessage -Level Info "Setting rules for application rule collection '$($ruleCollection.name)'..."
+        foreach ($rule in $ruleCollection.properties.rules) {
+            $params = @{}
+            if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
+            if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
+            if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
+            $firewall = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
+        }
     }
-}
-if (-not $rules.applicationRuleCollections) {
+} else {
     Add-LogMessage -Level Warning "No application rules specified."
 }
 # Network rules
@@ -93,13 +96,14 @@ foreach ($ruleCollectionName in $firewall.NetworkRuleCollections | Where-Object 
     $null = $firewall.RemoveNetworkRuleCollectionByName($ruleCollectionName)
     Add-LogMessage -Level Info "Removed existing '$ruleCollectionName' network rule collection."
 }
-foreach ($ruleCollection in $rules.networkRuleCollections) {
-    Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.name)'..."
-    foreach ($rule in $ruleCollection.properties.rules) {
-        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
+if ($rules.networkRuleCollections) {
+    foreach ($ruleCollection in $rules.networkRuleCollections) {
+        Add-LogMessage -Level Info "Setting rules for network rule collection '$($ruleCollection.name)'..."
+        foreach ($rule in $ruleCollection.properties.rules) {
+            $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type -LocalChangeOnly
+        }
     }
-}
-if (-not $rules.networkRuleCollections) {
+} else {
     Add-LogMessage -Level Warning "No network rules specified."
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop

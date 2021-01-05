@@ -99,7 +99,7 @@ function Resolve-KeyVaultSecret {
             Start-Sleep 10
             $null = Set-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop
         } catch [Microsoft.Azure.KeyVault.Models.KeyVaultErrorException] {
-            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
+            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'" -Exception $_.Exception
         }
     }
     # Retrieve the secret from the key vault and return its value

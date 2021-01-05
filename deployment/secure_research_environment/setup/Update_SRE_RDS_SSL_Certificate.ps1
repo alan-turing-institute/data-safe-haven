@@ -65,7 +65,6 @@ if ($null -eq $kvCertificate) {
         $requestCertificate = $true
     }
 }
-$requestCertificate = $true
 
 
 # Request a new certificate
@@ -87,6 +86,13 @@ if ($requestCertificate) {
         $token = $profileClient.AcquireAccessToken($azureContext.Tenant.TenantId).AccessToken
     }
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
+
+    # Purge a deleted certificate if needed
+    # -------------------------------------
+    if (Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState) {
+        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force
+        Start-Sleep 10
+    }
 
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------

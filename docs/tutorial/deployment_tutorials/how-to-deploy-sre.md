@@ -403,8 +403,7 @@ On your **deployment machine**.
 + Test `HackMD` by clicking on the `HackMD` app icon.
   + You should receive an MFA request to your phone or authentication app.
   + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
-  + Log in with the long-form `username@<shm-domain-fqdn>` of a user in the `SG <SRE ID> Research Users` security group.
-  + Note that for `HackMD` you **must** use the full, email style username that **includes the Safe Haven domain**. For all other logins, you can use either the short-form or long-form username.
+  + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 + If you do not get an MFA prompt or you cannot connect to the GitLab and HackMD servers, follow the **troubleshooting** instructions below.
 
 <details>

@@ -83,9 +83,13 @@ function Get-SreConfig {
             name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
-                identity   = [ordered]@{
-                    name = "IdentitySubnet"
-                    cidr = "${sreBasePrefix}.${sreThirdOctet}.0/24"
+                deployment = [ordered]@{
+                    name = "DeploymentSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
+                        rules = "sre-nsg-rules-compute-deployment.json"
+                    }
                 }
                 rds        = [ordered]@{
                     name = "RDSSubnet"
@@ -111,12 +115,12 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-compute.json"
                     }
                 }
-                deployment = [ordered]@{
-                    name = "DeploymentSubnet"
+                webapps    = [ordered]@{
+                    name = "WebappsSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
                     nsg  = [ordered]@{
-                        name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
-                        rules = "sre-nsg-rules-compute-deployment.json"
+                        name  = "$($config.sre.nsgPrefix)_WEBAPPS".ToUpper()
+                        rules = "sre-nsg-rules-webapps.json"
                     }
                 }
             }
@@ -242,15 +246,11 @@ function Get-SreConfig {
             }
             networkRules            = [ordered]@{}
             disks                   = [ordered]@{
-                data1 = [ordered]@{
+                data = [ordered]@{
                     sizeGb = "1023"
                     type   = "Standard_LRS"
                 }
-                data2 = [ordered]@{
-                    sizeGb = "1023"
-                    type   = "Standard_LRS"
-                }
-                os    = [ordered]@{
+                os   = [ordered]@{
                     sizeGb = "128"
                     type   = "Standard_LRS"
                 }
@@ -313,20 +313,20 @@ function Get-SreConfig {
     # -------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        nsg    = "$($config.sre.nsgPrefix)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 5
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
+            osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
-                    sizeGb = "750"
+                    sizeGb = "512"
                     type   = "Standard_LRS"
                 }
                 os   = [ordered]@{
-                    sizeGb = "50"
+                    sizeGb = "32"
                     type   = "Standard_LRS"
                 }
             }
@@ -335,10 +335,22 @@ function Get-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 6
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
+            osVersion               = "18.04-LTS"
+            codimd                  = [ordered]@{
+                dockerVersion = "2.2.0"
+            }
+            postgres                = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-hackmd-password-postgresdb"
+                dockerVersion      = "13.1"
+            }
             disks                   = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "750"
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
+                os   = [ordered]@{
+                    sizeGb = "32"
                     type   = "Standard_LRS"
                 }
             }
@@ -623,6 +635,9 @@ function Get-ShmFullConfig {
                 identity = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
+                    nsg  = [ordered]@{
+                        name = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
+                    }
                 }
                 firewall = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal

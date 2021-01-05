@@ -203,37 +203,36 @@ if ($userHasRole) {
 # Ensure that certificates exist
 # ------------------------------
 try {
-    # Define single folder for certificate generation for easier cleanup
-    $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
-
     # Certificate validities
-    $caValidityDays = 825 # The CAB standard now limits certificates to 825 days
-    $clientValidityDays = 732 # 2 years
+    $caValidityMonths = 27 # The CAB standard now limits certificates to 825 days
+    $caValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($caValidityMonths) - $_ }).Days
+    $clientValidityMonths = 24 # 2 years
+    $clientValidityDays = (Get-Date | ForEach-Object { $_.AddMonths($clientValidityMonths) - $_ }).Days
 
-    # Certificate local paths
+    # Generate all certificates in a single folder for easier cleanup
+    $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
     $caStem = "SHM-$($config.id)-P2S-CA".ToUpper()
-    $caCrtPath = Join-Path $certFolderPath "$caStem.crt"
-    $caKeyPath = Join-Path $certFolderPath "$caStem.key"
-    $caPfxPath = Join-Path $certFolderPath "$caStem.pfx"
+    $caCrtPath = Join-Path $certFolderPath "${caStem}.crt"
+    $caKeyPath = Join-Path $certFolderPath "${caStem}.key"
+    $caPfxPath = Join-Path $certFolderPath "${caStem}.pfx"
     $clientStem = "SHM-$($config.id)-P2S-CLIENT".ToUpper()
-    $clientCrtPath = Join-Path $certFolderPath "$clientStem.crt"
-    $clientCsrPath = Join-Path $certFolderPath "$clientStem.csr"
-    # $clientKeyPath = Join-Path $certFolderPath "$clientStem.key"
-    # $clientPfxPath = Join-Path $certFolderPath "$clientStem.pfx"
-    $clientPkcs7Path = Join-Path $certFolderPath "$clientStem.p7b"
+    $clientCrtPath = Join-Path $certFolderPath "${clientStem}.crt"
+    $clientCsrPath = Join-Path $certFolderPath "${clientStem}.csr"
+    $clientPkcs7Path = Join-Path $certFolderPath "${clientStem}.p7b"
 
-    # Generate or retrieve CA certificate
-    # -----------------------------------
+    # Ensure that CA certificate exists in the key vault
+    # --------------------------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-    $vpnCaCertificatePlain = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
-    if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
+    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove any existing certificate with this name
+    try {
+        if (-not (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate.HasPrivateKey) { throw }
         Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
-    } else {
-        # Remove any previous certificate with the same name
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
+    } catch {
         Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
+    }
+    # Generate a new certificate if required
+    if (-not (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate)) {
+        Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
 
         # Create self-signed CA certificate with private key
         # --------------------------------------------------
@@ -261,8 +260,7 @@ try {
         # # Generate a self-signed CA certificate in the KeyVault
         # # -----------------------------------------------------
         # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' KeyVault"
-        # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeySize 2048 `
-        #                                             -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
+        # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeyUsage @("KeyCertSign", "CrlSign") -Ekus @("1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "2.5.29.37.0") -KeySize 2048 -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
         # $caPolicy.Exportable = $true
         # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
         # while ($status -ne "completed") {
@@ -295,14 +293,16 @@ try {
     # Generate or retrieve client certificate
     # ---------------------------------------
     Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
-    if ($vpnClientCertificate) {
+    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove any existing certificate with this name
+    try {
+        if (-not (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate.HasPrivateKey) { throw }
         Add-LogMessage -Level InfoSuccess "Found existing client certificate"
-    } else {
-        # Remove any previous certificate with the same name
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Creating new client certificate..."
+    } catch {
         Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
+    }
+    # Generate a new certificate if required
+    if (-not (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate)) {
+        Add-LogMessage -Level Info "Creating new client certificate..."
 
         # Load CA certificate into local PFX file and extract the private key
         # -------------------------------------------------------------------
