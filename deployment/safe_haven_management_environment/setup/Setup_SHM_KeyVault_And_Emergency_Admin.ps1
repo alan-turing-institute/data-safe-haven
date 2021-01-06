@@ -223,7 +223,7 @@ try {
     # Ensure that CA certificate exists in the key vault
     # --------------------------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove any existing certificate with this name
+    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove and purge any existing certificate with this name
     $newCertRequired = $True
     $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate
     if ($existingCert) {
@@ -232,6 +232,7 @@ try {
             $newCertRequired = $False
         } else {
             Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
+            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
         }
     }
     # Generate a new certificate if required
@@ -297,7 +298,7 @@ try {
     # Generate or retrieve client certificate
     # ---------------------------------------
     Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove any existing certificate with this name
+    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove and purge any existing certificate with this name
     $newCertRequired = $True
     $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
     if ($existingCert) {
@@ -306,6 +307,7 @@ try {
             $newCertRequired = $False
         } else {
             Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
+            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
         }
     }
     # Generate a new certificate if required
