@@ -61,8 +61,8 @@ if ($null -eq $kvCertificate) {
     }
     if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$($config.sre.keyVault.name)'..."
-        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -Force
-        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force
+        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -Force -ErrorAction SilentlyContinue
+        $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force -ErrorAction SilentlyContinue
         $requestCertificate = $true
     }
 }
