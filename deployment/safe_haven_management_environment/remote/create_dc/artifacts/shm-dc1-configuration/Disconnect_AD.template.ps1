@@ -23,11 +23,8 @@ if (Get-Module -ListAvailable -Name MSOnline) {
     }
     # Remove user-added service principals except the MFA service principal
     Write-Output "Removing any user-added service principals..."
+    $nServicePrincipalsBefore = (Get-MsolServicePrincipal | Measure-Object).Count
     Get-MsolServicePrincipal | Where-Object { $_.AppPrincipalId -ne "981f26a1-7f43-403b-a875-f8b09b8cd720" } | Remove-MsolServicePrincipal 2>&1 | Out-Null
-    $nServicePrincipals = (Get-MsolServicePrincipal | Where-Object { $_.AppPrincipalId -ne "981f26a1-7f43-403b-a875-f8b09b8cd720" } | Measure-Object).Count
-    if ((Get-MsolServicePrincipal | Where-Object { $_.AppPrincipalId -ne "981f26a1-7f43-403b-a875-f8b09b8cd720" } | Measure-Object).Count -le 1) {
-        Write-Output "[o] There are $nServicePrincipals service principal(s) remaining"
-    } else {
-        Write-Output "[x] There are $nServicePrincipals service principals remaining"
-    }
+    $nServicePrincipalsAfter = (Get-MsolServicePrincipal | Measure-Object).Count
+    Write-Output "[o] Removed $($nServicePrincipalsBefore - $nServicePrincipalsAfter) service principal(s). There are $nServicePrincipalsAfter remaining"
 }
