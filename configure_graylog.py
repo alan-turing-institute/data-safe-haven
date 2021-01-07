@@ -29,6 +29,8 @@ def main():
 
     inputs = api.get_inputs()
     print(inputs)
+    if inputs["total"] > 0:
+        api.delete_all_inputs(inputs["inputs"])
     api.add_syslog_input()
 
 
@@ -37,6 +39,7 @@ class GraylogAPI(object):
         self.api_root = f"{url}:{port}/api"
         self.username = "admin"
         self.password = admin_password
+        self.headers = {"X-Requested-By": "admin"}
 
     @property
     def auth(self):
@@ -54,6 +57,24 @@ class GraylogAPI(object):
             return response.json()
         else:
             print(f"Failed to get inputs.\nStatus code:{code}")
+
+    def delete_all_inputs(self, inputs):
+        for _input in inputs:
+            print(_input["id"])
+            response = requests.delete(
+                f"{self.api_root}/system/inputs/{_input['id']}",
+                auth=self.auth,
+                headers=self.headers
+            )
+
+            code = response.status_code
+
+            if code == 204:
+                print(f"Successfully deleted input {_input['title']}")
+            else:
+                print(f"Failed to delete input {_input['title']}."
+                      f"\nStatus code: {code}")
+                print(response.content)
 
     def add_syslog_input(self):
         payload = {
@@ -76,7 +97,7 @@ class GraylogAPI(object):
         response = requests.post(
             f"{self.api_root}/system/inputs",
             auth=self.auth,
-            headers={"X-Requested-By": "admin"},
+            headers=self.headers,
             json=payload
         )
 
