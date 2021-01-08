@@ -1,7 +1,7 @@
 {   
-    "name": "Turing DSH TLA TEST",
-    "shmId": "tlatest",
-    "domain": "tlatest.dsgroupdev.co.uk",
+    "name": "Turing DSH TL TEST",
+    "shmId": "testtl",
+    "domain": "testtl.dsgroupdev.co.uk",
     "timezone": "Europe/London",
     "azure": {
         "subscriptionName": "Safe Haven Management Test A",

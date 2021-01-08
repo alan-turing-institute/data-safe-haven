@@ -217,9 +217,9 @@ $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-foreach ($serviceAccount in $userAccounts.Keys) {
-    Write-Output "Creating $serviceAccount domain joining account $($userAccounts."$serviceAccount".samAccountName)..."
-    New-ShmUser -Name "$($userAccounts."$serviceAccount".name)" -SamAccountName "$($userAccounts."$serviceAccount".samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts."$serviceAccount".password -AsPlainText -Force) -Domain $shmFdqn
+foreach ($serviceAccountCfg in $($userAccounts.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject"} )) {
+    Write-Output "Creating $($serviceAccountCfg.Value.name) domain joining account $($serviceAccountCfg.Value.samAccountName)..."
+    New-ShmUser -Name "$($serviceAccountCfg.Value.name)" -SamAccountName "$($serviceAccountCfg.Value.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $serviceAccountCfg.Value.password -AsPlainText -Force) -Domain $shmFdqn
 }
 
 # Add users to security groups
