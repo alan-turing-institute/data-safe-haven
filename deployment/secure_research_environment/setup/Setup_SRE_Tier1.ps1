@@ -165,7 +165,7 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
     if (Get-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName) {
         Add-LogMessage -Level Info "[ ] Removing outdated private key '$privateKeySecretName'"
         Remove-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName -Force -ErrorAction SilentlyContinue
-        Remove-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName -InRemovedState -Force -ErrorAction SilentlyContinue
+        Remove-AzKeyVaultSecret -VaultName $keyVault -Name $privateKeySecretName -InRemovedState -Force -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Removed outdated private key '$privateKeySecretName'"
         } else {

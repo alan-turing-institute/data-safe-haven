@@ -303,11 +303,11 @@ try {
     $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
     if ($existingCert) {
         if ($existingCert.Certificate.HasPrivateKey) {
-            Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
+            Add-LogMessage -Level InfoSuccess "Found existing client certificate"
             $newCertRequired = $False
         } else {
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
+            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
+            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
         }
     }
     # Generate a new certificate if required
