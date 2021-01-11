@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
 import requests
+import json
 
 
 def main():
@@ -28,10 +29,20 @@ def main():
     api = GraylogAPI(**vars(args))
 
     inputs = api.get_inputs()
-    print(inputs)
+    # print(json.dumps(inputs, indent=2))
     if inputs["total"] > 0:
         api.delete_all_inputs(inputs["inputs"])
     api.add_syslog_input()
+
+    events = api.get_events()
+    # print(json.dumps(events, indent=2))
+    if events["total"] > 0:
+        api.delete_all_events(events["event_definitions"])
+    api.create_event(
+        title="root",
+        description="A user has opened a root session",
+        query="session opened for user root"
+    )
 
 
 class GraylogAPI(object):
@@ -60,7 +71,6 @@ class GraylogAPI(object):
 
     def delete_all_inputs(self, inputs):
         for _input in inputs:
-            print(_input["id"])
             response = requests.delete(
                 f"{self.api_root}/system/inputs/{_input['id']}",
                 auth=self.auth,
@@ -110,6 +120,78 @@ class GraylogAPI(object):
             print(response.content)
         else:
             print(f"Syslog input creation failed.\nStatus code: {code}")
+
+    def get_events(self):
+        response = requests.get(
+            f"{self.api_root}/events/definitions",
+            auth=self.auth
+        )
+
+        code = response.status_code
+
+        if code == 200:
+            return response.json()
+        else:
+            print(f"Failed to get inputs.\nStatus code:{code}")
+
+    def delete_all_events(self, events):
+        for event in events:
+            response = requests.delete(
+                f"{self.api_root}/events/definitions/{event['id']}",
+                auth=self.auth,
+                headers=self.headers
+            )
+
+            code = response.status_code
+
+            if code == 204:
+                print(f"Successfully deleted event {event['title']}")
+            else:
+                print(f"Failed to delete event {event['title']}."
+                      f"\nStatus code: {code}")
+                print(response.content)
+
+    def create_event(self, **kwargs):
+        payload = {
+            "title": kwargs["title"],
+            "description": kwargs["description"],
+            "priority": 2,
+            "alert": False,
+            "key_spec": [],
+            "notification_settings": {
+                "grace_period_ms": 0,
+                "backlog_size": 0
+            },
+            "config": {
+                "type": "aggregation-v1",
+                "query": kwargs["query"],
+                "streams": [],
+                "group_by": [],
+                "series": [],
+                "search_within_ms": 60000,
+                "execute_every_ms": 60000
+            }
+        }
+
+        response = requests.post(
+            f"{self.api_root}/events/definitions",
+            auth=self.auth,
+            headers=self.headers,
+            json=payload
+        )
+
+        code = response.status_code
+        title = kwargs["title"]
+
+        if code == 200:
+            print(f"Event '{title}' successfully created")
+        elif code == 400:
+            print(f"Event '{title}' already exists or missing/invalid"
+                  " configuration")
+            print(response.content)
+        else:
+            print(f"Event '{title}' creation failed.\nStatus code: {code}")
+            print(response.content)
 
 
 if __name__ == "__main__":
