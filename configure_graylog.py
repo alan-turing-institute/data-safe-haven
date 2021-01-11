@@ -41,7 +41,12 @@ def main():
     api.create_event(
         title="root",
         description="A user has opened a root session",
-        query="session opened for user root"
+        query='application_name:sudo AND "session opened for user root"'
+    )
+    api.create_event(
+        title="clamav",
+        description="Clamav has found a threat",
+        query='application_name: clamd AND "FOUND"'
     )
 
 
