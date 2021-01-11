@@ -66,6 +66,7 @@ function Add-SreConfig {
         dataAdministrators   = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Data Administrators" }
         systemAdministrators = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) System Administrators" }
         researchUsers        = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Research Users" }
+        reviewUsers          = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Review Users" }
     }
     foreach ($groupName in $config.sre.domain.securityGroups.Keys) {
         $config.sre.domain.securityGroups[$groupName].description = $config.sre.domain.securityGroups[$groupName].name
@@ -123,6 +124,14 @@ function Add-SreConfig {
                         rules = "sre-nsg-rules-webapps.json"
                     }
                 }
+                review     = [ordered]@{
+                    name = "ReviewSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 6).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($config.sre.nsgPrefix)_REVIEW".ToUpper()
+                        rules = "sre-nsg-rules-review.json"
+                    }
+                }
             }
         }
     }
@@ -151,6 +160,11 @@ function Add-SreConfig {
         artifacts       = [ordered]@{
             accountName = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
             rg          = $storageRg
+            containers  = [ordered]@{
+                codereview = [ordered]@{
+                    mountType = "BlobSMB"
+                }
+            }
         }
         bootdiagnostics = [ordered]@{
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -234,8 +248,8 @@ function Add-SreConfig {
     # RDS Servers
     # -----------
     $config.sre.rds = [ordered]@{
-        rg             = "$($config.sre.rgPrefix)_RDS".ToUpper()
-        gateway        = [ordered]@{
+        rg                = "$($config.sre.rgPrefix)_RDS".ToUpper()
+        gateway           = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
@@ -256,11 +270,27 @@ function Add-SreConfig {
                 }
             }
         }
-        appSessionHost = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
+        appSessionHost    = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-app"
             vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
+            nsg                     = [ordered]@{
+                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
+                rules = "sre-nsg-rules-session-hosts.json"
+            }
+            disks                   = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type   = "Standard_LRS"
+                }
+            }
+        }
+        reviewSessionHost = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-review"
+            vmName                  = "REV-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+            vmSize                  = "Standard_DS2_v2"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 6
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
                 rules = "sre-nsg-rules-session-hosts.json"
@@ -312,13 +342,13 @@ function Add-SreConfig {
     # HackMD and Gitlab servers
     # -------------------------
     $config.sre.webapps = [ordered]@{
-        rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        gitlab = [ordered]@{
+        rg           = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
+        gitlab       = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
+            apiTokenSecretName      = "$($config.sre.shortName)-other-gitlab-api-token"
             vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
-            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
             osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
@@ -330,8 +360,40 @@ function Add-SreConfig {
                     type   = "Standard_LRS"
                 }
             }
+            userIngress             = [ordered]@{
+                usernameSecretName = "$($config.sre.shortName)-other-gitlab-username-ingress-"
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-password-ingress"
+            }
+            userRoot                = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-password-root"
+            }
         }
-        hackmd = [ordered]@{
+        gitlabReview = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab-review"
+            apiTokenSecretName      = "$($config.sre.shortName)-other-gitlab-review-api-token"
+            vmName                  = "GITLAB-REVIEW-SRE-$($config.sre.id)".ToUpper()
+            vmSize                  = "Standard_D2s_v3"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.review.cidr -Offset 4
+            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-review-password-root"
+            disks                   = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
+                os   = [ordered]@{
+                    sizeGb = "32"
+                    type   = "Standard_LRS"
+                }
+            }
+            userIngress             = [ordered]@{
+                usernameSecretName = "$($config.sre.shortName)-other-gitlab-review-username-ingress"
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-review-password-ingress"
+            }
+            userRoot                = [ordered]@{
+                passwordSecretName = "$($config.sre.shortName)-other-gitlab-review-password-root"
+            }
+        }
+        hackmd       = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"

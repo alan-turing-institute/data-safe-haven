@@ -58,7 +58,7 @@ This request should then be evaluated by the development team of the Turing Safe
   + Note that this does not mean a review of the code by a member of the Research Engineering team. Default tools should have a community review and development process. Bespoke code written by an individual developer is not likely to meet this criterion.
 + Will this tool be useful to additional researchers? As a rule, any default software should be used by more than 1 person.
 
-As a general rule, code which is primarily written by researchers on any particular project should *not* be added to the default installation. Instead, such code should follow the policies for software ingress detailed below.
+As a general rule, code which is primarily written by researchers on any particular project should *not* be added to the default installation. Instead, such code should follow the policies for software ingress [detailed here](code_ingress.md).
 
 ### Installation during virtual machine deployment
 

@@ -31,6 +31,7 @@ $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualN
 $databasesSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
 $deploymentSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
+$reviewSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.review.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.review.cidr
 $webappsSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.webapps.cidr
 
 
@@ -67,6 +68,14 @@ $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subn
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.deployment.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
 $deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg
+
+
+# Ensure that webapps NSG exists with correct rules and attach it to the webapps subnet
+# -------------------------------------------------------------------------------------
+$reviewNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.review.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.review.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $reviewNsg -Rules $rules
+$reviewSubnet = Set-SubnetNetworkSecurityGroup -Subnet $reviewSubnet -NetworkSecurityGroup $webappsNsg
 
 
 # Ensure that webapps NSG exists with correct rules and attach it to the webapps subnet

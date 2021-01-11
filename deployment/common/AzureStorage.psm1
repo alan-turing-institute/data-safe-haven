@@ -3,6 +3,36 @@ Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Ensure that all blobs are removed from the specified storage container
+# ----------------------------------------------------------------------
+function Clear-StorageContainerBlobs {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to clear")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account where the container exists")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+    )
+    # Delete existing blobs in the container
+    $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
+    if ($blobs.Length -gt 0) {
+        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs already in container '$Name'..."
+        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $Name -Context $StorageAccount.Context -Force }
+        while ((Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length) {
+            Start-Sleep 5
+        }
+        if ($?) {
+            Add-LogMessage -Level Success "Removing blobs from $Name' succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Removing blobs from $Name' failed!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Container '$Name' was already empty of blobs"
+    }
+
+}
+Export-ModuleMember -Function Clear-StorageContainerBlobs
+
+
 # Generate a new SAS policy
 # Note that there is a limit of 5 policies for a given storage account/container
 # ------------------------------------------------------------------------------

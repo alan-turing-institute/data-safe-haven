@@ -1,0 +1,86 @@
+[
+    {
+        "name": "AllowAdminVpnInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from admin VPN",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.review.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowRdsReviewHostInbound",
+        "access": "Allow",
+        "description": "Allow inbound http(s) and RDP connections from review session host",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.review.cidr}}",
+        "destinationPortRange": ["80", "443", "3389"],
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.rds.reviewSessionHost.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllInbound",
+        "access": "Deny",
+        "description": "Deny inbound connections from anywhere",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.review.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowIdentityOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.review.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowHttpSshGitLabOutbound",
+        "access": "Allow",
+        "description": "Allow outbound ssh and http(s) connections to user-facing GitLab VM",
+        "destinationAddressPrefix": "{{sre.webapps.gitlab.ip}}",
+        "destinationPortRange": ["22", "80", "443"],
+        "direction": "Outbound",
+        "priority": 3500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.review.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

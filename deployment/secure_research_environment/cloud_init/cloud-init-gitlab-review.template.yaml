@@ -1,0 +1,228 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+# Install necessary apt packages
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - git
+  - gitlab-ce
+  - gnupg
+  - ldap-utils
+  - openssh-server
+  - postfix
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+  # Add repositories
+  sources:
+    gitlab.list:
+      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
+      keyid: 3F01618A51312F3F
+
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
+
+write_files:
+  # Gitlab server config
+  - path: /etc/gitlab/gitlab.rb
+    permissions: "0600"
+    content: |
+      external_url 'http://<gitlab-review-ip>'
+      gitlab_rails['ldap_enabled'] = true
+      gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
+        main: # 'main' is the GitLab 'provider ID' of this LDAP server
+          label: 'LDAP'
+          host: '<gitlab-review-rb-host>'
+          port: 389
+          uid: 'sAMAccountName'
+          method: 'plain' # "tls" or "ssl" or "plain"
+          bind_dn: '<gitlab-review-rb-bind-dn>'
+          password: '<gitlab-review-rb-pw>'
+          active_directory: true
+          allow_username_or_email_login: true
+          block_auto_created_users: false
+          base: '<gitlab-review-rb-base>'
+          user_filter: '<gitlab-review-rb-user-filter>'
+      attributes:
+        username: ['uid', 'userid', 'sAMAccountName']
+        email:    ['mail', 'email', 'userPrincipalName']
+        name:       'cn'
+        first_name: 'givenName'
+        last_name:  'sn'
+      EOS
+      git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
+  # Secrets for Gitlab and Review Access, and script to get them
+  - path: "/home/gitlabdaemon/.secrets/gitlab-config.json"
+    permissions: "0600"
+    content: |
+      {
+        "GITLAB": {
+          "ip_address": "<gitlab-ip>",
+          "username": "<gitlab-username>",
+          "user_email": "<gitlab-username>@example.com",
+          "api_token": "<gitlab-api-token>"
+        },
+        "GITLAB-REVIEW": {
+          "ip_address": "<gitlab-review-ip>",
+          "username": "<gitlab-review-username>",
+          "user_email": "<gitlab-review-username>@example.com",
+          "api_token": "<gitlab-review-api-token>"
+        }
+      }
+  - path: "/home/gitlabdaemon/gitlab_config.py"
+    permissions: "0755"
+    content: |
+      <gitlab_config.py>
+  # Script for creating projects and merge requests on gitlab-review
+  - path: "/home/gitlabdaemon/zipfile_to_gitlab_project.py"
+    permissions: "0755"
+    content: |
+      <zipfile_to_gitlab_project.py>
+  # Script for monitoring and accepting merge requests
+  - path: "/home/gitlabdaemon/check_merge_requests.py"
+    permissions: "0755"
+    content: |
+      <check_merge_requests.py>
+  # Populate SSH known hosts with keys from gitlab server
+  - path: "/home/gitlabdaemon/.ssh/known_hosts"
+    permissions: "0600"
+    content: |
+      <gitlab-ssh-keys>
+
+# Add the SRE admin (default) and gitlabdaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: gitlabdaemon
+    lock_passwd: True
+    sudo: False
+
+runcmd:
+  # --------------------------------
+  # SETUP GITLAB REVIEW SERVER
+  # --------------------------------
+  # Configure server
+  - echo "Configuring gitlab review server"
+  - echo "<gitlab-review-ip> <gitlab-review-hostname> <gitlab-review-fqdn>" >> /etc/hosts
+  - echo "Europe/London" > /etc/timezone
+  - dpkg-reconfigure -f noninteractive tzdata
+  # Set up the data disk
+  - echo "Setting up data disk..."
+  - mkdir -p /datadrive/gitdata
+  # Enable custom GitLab settings and run an initial configuration
+  - echo "Running initial configuration"
+  - gitlab-ctl reconfigure
+  # Set root password and don't prompt for it to be reset when web app first loaded
+  - |
+    echo "user = User.find_by(username: 'root');user.password=user.password_confirmation='<gitlab-review-root-password>';user.password_automatically_set=false;user.save!;exit;" | gitlab-rails console -e production
+  # Turn off user account creation
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
+  # Create user for ingressing external git repos
+  - |
+    echo "user = User.create(:username => '<gitlab-review-username>', :password => '<gitlab-review-password>', :password_confirmation => '<gitlab-review-password>', :email =>'<gitlab-review-username>@example.com', :skip_confirmation => true, :name => '<gitlab-review-username>');user.save!;exit;" | gitlab-rails console -e production
+
+    # Restrict login to SHM domain (must be done AFTER GitLab update)
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-review-login-domain>'])"
+  # Create a API token for the ingress user created above
+  - |
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
+    echo "user = User.find_by(username: '<gitlab-review-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('$token'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
+  # Reload GitLab configuration and restart GitLab
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
+  # --------------------------------
+  # CREATE SSH KEY
+  # --------------------------------
+  - |
+    mkdir -p /home/gitlabdaemon/.ssh
+    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/gitlabdaemon/.ssh/id_ed25519
+  # --------------------------------
+  # GITLAB SSH SETUP
+  # --------------------------------
+  - |
+    key=$(cat /home/gitlabdaemon/.ssh/id_ed25519.pub)
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
+    curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"GitlabAPIUser\"}" <gitlab-ip>/api/v4/user/keys
+    ssh-keyscan -H <gitlab-ip> >> /home/gitlabdaemon/.ssh/known_hosts
+  # --------------------------------
+  # WAIT FOR GITLAB REVIEW HEALTH CHECK
+  # --------------------------------
+  - |
+    attempt_counter=0
+    max_attempts=60
+    echo
+    echo "Waiting for GitLab OK health check"
+    until [ "$(curl -s localhost/-/health)" = "GitLab OK" ]
+    do
+      if [ ${attempt_counter} -eq ${max_attempts} ];then
+        echo
+        echo "FAILED: Max GitLab attempts reached. Exiting."
+        exit 1
+      fi
+      printf "."
+      attempt_counter=$((attempt_counter+1))
+      sleep 10
+    done
+    echo
+  # --------------------------------
+  # SETUP ACCESS TO GITLAB REVIEW
+  # --------------------------------
+  - echo "Configuring access to gitlab review"
+  # Create SSH key for gitlab review access
+  - |
+    key=$(cat /home/gitlabdaemon/.ssh/id_ed25519.pub);
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
+    curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ReviewAPIUser\"}" <gitlab-review-ip>/api/v4/user/keys
+  #  Get local ssh host keys, add them to known hosts under the gitlab review ip
+  - |
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
+  # Create groups for storing unapproved and approved repos
+  - |
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
+    curl --header "Authorization: Bearer $token" --data "name=approved&path=approved&visibility=internal" <gitlab-review-ip>/api/v4/groups
+    curl --header "Authorization: Bearer $token" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-review-ip>/api/v4/groups
+  # --------------------------------
+  # GIT SETUP
+  # --------------------------------
+  - |
+    echo "Configuring git"
+    HOME=/home/gitlabdaemon git config --global user.name '<gitlab-username>'
+    HOME=/home/gitlabdaemon git config --global user.email '<gitlab-username>@example.com'
+  # --------------------------------
+  # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
+  # --------------------------------
+  # run zipfile_to_gitlab_project.py and check_merge_requests.py sequentially, and with a lock, to prevent
+  # them from interfering.  Return an error code
+  - echo "*** Adding zipfile_to_gitlab_project.py and check_merge_requests.py to crontab ***"
+  - echo "*/10 * * * * gitlabdaemon flock -n /tmp/review_steps.lock bash -c 'EXIT_STATUS=0; /home/gitlabdaemon/zipfile_to_gitlab_project.py || EXIT_STATUS=\$?; /home/gitlabdaemon/check_merge_requests.py || EXIT_STATUS=\$?; exit \$EXIT_STATUS'" >> /etc/crontab
+  # --------------------------------
+  # GIVE gitlabdaemon OWNERSHIP OF THEIR HOME DIRECTORY
+  # --------------------------------
+  - chown -R gitlabdaemon:gitlabdaemon "/home/gitlabdaemon"
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

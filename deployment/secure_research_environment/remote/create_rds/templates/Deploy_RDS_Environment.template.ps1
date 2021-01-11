@@ -42,7 +42,8 @@ foreach ($DataDisk in $DataDisks) {
 Start-Service ShellHWDetection
 # Construct map of folders to disk labels
 $DiskLabelMap = @{
-    "AppFileShares" = "DATA-0"
+    "AppFileShares" = "DATA-0";
+    "ReviewFileShares" = "DATA-0"
 }
 
 
@@ -74,7 +75,7 @@ foreach ($policyName in $(Get-Item "RDS:\GatewayServer\CAP" -ErrorAction Silentl
 # ----------------------
 Write-Output "Creating RDS Environment..."
 try {
-    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>") -ErrorAction Stop
+    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>", "<rdsReviewSessionHostFqdn>") -ErrorAction Stop
     # Setup licensing server
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING -ErrorAction Stop
     Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser -Force -ErrorAction Stop
@@ -90,7 +91,10 @@ try {
 
 # Create collections
 # ------------------
-foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "AppFileShares"))) {
+foreach ($rdsConfiguration in @(
+    @("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "AppFileShares"),
+    @("Review", "<rdsReviewSessionHostFqdn>", "<reviewUserSgName>", "ReviewFileShares")
+)) {
     $collectionName, $sessionHost, $userGroup, $shareName = $rdsConfiguration
     $sharePath = Join-Path "$((Get-Volume | Where-Object { $_.FileSystemLabel -eq $DiskLabelMap[$shareName] }).DriveLetter):" $shareName
 
@@ -121,6 +125,7 @@ foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Review" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabReviewIpAddress>" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -ErrorAction Stop
     $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "GitLab" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -ErrorAction Stop

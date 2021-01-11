@@ -25,7 +25,8 @@ $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
-                 ("RDS Session Host (App server)", $config.sre.rds.appSessionHost.vmName))
+                 ("RDS Session Host (App server)", $config.sre.rds.appSessionHost.vmName),
+                 ("RDS Session Host (Review server)", $config.sre.rds.reviewSessionHost.vmName))
 
 
 # Retrieve variables from SHM key vault
@@ -44,6 +45,7 @@ Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($confi
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$rdsReviewSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.reviewSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
@@ -75,35 +77,41 @@ $null = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.loca
 # ------------------------
 Add-LogMessage -Level Info "Deploying RDS from template..."
 $params = @{
-    Administrator_User                    = $sreAdminUsername
-    BootDiagnostics_Account_Name          = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Join_Password_Gateway          = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
-    Domain_Join_Password_Session_Hosts    = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
-    Domain_Join_User_Gateway              = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
-    Domain_Join_User_Session_Hosts        = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
-    Domain_Name                           = $config.shm.domain.fqdn
-    OU_Path_Gateway                       = $config.shm.domain.ous.rdsGatewayServers.path
-    OU_Path_Session_Hosts                 = $config.shm.domain.ous.rdsSessionServers.path
-    RDS_Gateway_Admin_Password            = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
-    RDS_Gateway_Data_Disk_Size_GB         = [int]$config.sre.rds.gateway.disks.data.sizeGb
-    RDS_Gateway_Data_Disk_Type            = $config.sre.rds.gateway.disks.data.type
-    RDS_Gateway_IP_Address                = $config.sre.rds.gateway.ip
-    RDS_Gateway_Name                      = $config.sre.rds.gateway.vmName
-    RDS_Gateway_NSG_Name                  = $config.sre.rds.gateway.nsg.name
-    RDS_Gateway_Os_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.os.sizeGb
-    RDS_Gateway_Os_Disk_Type              = $config.sre.rds.gateway.disks.os.type
-    RDS_Gateway_Subnet_Name               = $config.sre.network.vnet.subnets.rds.name
-    RDS_Gateway_VM_Size                   = $config.sre.rds.gateway.vmSize
-    RDS_Session_Host_Apps_Admin_Password  = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Apps_IP_Address      = $config.sre.rds.appSessionHost.ip
-    RDS_Session_Host_Apps_Name            = $config.sre.rds.appSessionHost.vmName
-    RDS_Session_Host_Apps_Os_Disk_Size_GB = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
-    RDS_Session_Host_Apps_Os_Disk_Type    = $config.sre.rds.appSessionHost.disks.os.type
-    RDS_Session_Host_Apps_VM_Size         = $config.sre.rds.appSessionHost.vmSize
-    RDS_Session_Host_Subnet_Name          = $config.sre.network.vnet.subnets.rds.name
-    SRE_ID                                = $config.sre.id
-    Virtual_Network_Name                  = $config.sre.network.vnet.name
-    Virtual_Network_Resource_Group        = $config.sre.network.vnet.rg
+    Administrator_User                      = $sreAdminUsername
+    BootDiagnostics_Account_Name            = $config.sre.storage.bootdiagnostics.accountName
+    Domain_Join_Password_Gateway            = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
+    Domain_Join_Password_Session_Hosts      = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
+    Domain_Join_User_Gateway                = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
+    Domain_Join_User_Session_Hosts          = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
+    Domain_Name                             = $config.shm.domain.fqdn
+    OU_Path_Gateway                         = $config.shm.domain.ous.rdsGatewayServers.path
+    OU_Path_Session_Hosts                   = $config.shm.domain.ous.rdsSessionServers.path
+    RDS_Gateway_Admin_Password              = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
+    RDS_Gateway_Data_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.data.sizeGb
+    RDS_Gateway_Data_Disk_Type              = $config.sre.rds.gateway.disks.data.type
+    RDS_Gateway_IP_Address                  = $config.sre.rds.gateway.ip
+    RDS_Gateway_Name                        = $config.sre.rds.gateway.vmName
+    RDS_Gateway_NSG_Name                    = $config.sre.rds.gateway.nsg.name
+    RDS_Gateway_Os_Disk_Size_GB             = [int]$config.sre.rds.gateway.disks.os.sizeGb
+    RDS_Gateway_Os_Disk_Type                = $config.sre.rds.gateway.disks.os.type
+    RDS_Gateway_Subnet_Name                 = $config.sre.network.vnet.subnets.rds.name
+    RDS_Gateway_VM_Size                     = $config.sre.rds.gateway.vmSize
+    RDS_Session_Host_Apps_Admin_Password    = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Apps_IP_Address        = $config.sre.rds.appSessionHost.ip
+    RDS_Session_Host_Apps_Name              = $config.sre.rds.appSessionHost.vmName
+    RDS_Session_Host_Apps_Os_Disk_Size_GB   = [int]$config.sre.rds.appSessionHost.disks.os.sizeGb
+    RDS_Session_Host_Apps_Os_Disk_Type      = $config.sre.rds.appSessionHost.disks.os.type
+    RDS_Session_Host_Apps_VM_Size           = $config.sre.rds.appSessionHost.vmSize
+    RDS_Session_Host_Review_Admin_Password  = (ConvertTo-SecureString $rdsReviewSessionHostAdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Review_IP_Address      = $config.sre.rds.reviewSessionHost.ip
+    RDS_Session_Host_Review_Name            = $config.sre.rds.reviewSessionHost.vmName
+    RDS_Session_Host_Review_Os_Disk_Size_GB = [int]$config.sre.rds.reviewSessionHost.disks.os.sizeGb
+    RDS_Session_Host_Review_Os_Disk_Type    = $config.sre.rds.reviewSessionHost.disks.os.type
+    RDS_Session_Host_Review_VM_Size         = $config.sre.rds.reviewSessionHost.vmSize
+    RDS_Session_Host_Subnet_Name            = $config.sre.network.vnet.subnets.rds.name
+    SRE_ID                                  = $config.sre.id
+    Virtual_Network_Name                    = $config.sre.network.vnet.name
+    Virtual_Network_Resource_Group          = $config.sre.network.vnet.rg
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
@@ -113,21 +121,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
 foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs aready in container '$containerName'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
+    $null = Clear-StorageContainerBlobs -Name $containerName -StorageAccount $sreStorageAccount
 }
 
 
@@ -141,10 +135,12 @@ $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Depl
 $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<dsvmInitialIpAddress>", $dsvmInitialIpAddress).
           Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
+          Replace("<gitlabReviewIpAddress>", $config.sre.webapps.gitlabReview.ip).
           Replace("<hackmdIpAddress>", $config.sre.webapps.hackmd.ip).
           Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
           Replace("<rdsGatewayVmName>", $config.sre.rds.gateway.vmName).
           Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn).
+          Replace("<rdsReviewSessionHostFqdn>", $config.sre.rds.reviewSessionHost.fqdn).
           Replace("<remoteUploadDir>", $remoteUploadDir).
           Replace("<researchUserSgName>", $config.sre.domain.securityGroups.researchUsers.name).
           Replace("<shmNetbiosName>", $config.shm.domain.netbiosName).
@@ -154,7 +150,8 @@ $template.Replace("<domainAdminUsername>", $domainAdminUsername).
 $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
 $template.Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
-          Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn) | Out-File $serverListLocalFilePath
+          Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn).
+          Replace("<rdsReviewSessionHostFqdn>", $config.sre.rds.reviewSessionHost.fqdn) | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
 try {
@@ -267,6 +264,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 # ----------------------
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
 Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+Add-VmToNSG -VMName $config.sre.rds.reviewSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.reviewSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
 
 
 # Reboot all the RDS VMs

@@ -22,8 +22,9 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
+$gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.apiTokenSecretName -DefaultLength 20
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
 # Retrieve VNET and subnets
@@ -33,6 +34,7 @@ try {
     $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
     $deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
     $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    $reviewSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.review.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
     Add-LogMessage -Level Success "Successfully retrieved virtual network '$($config.sre.network.vnet.name)' and subnets."
 } catch {
     Add-LogMessage -Level Fatal "Failed to retrieve virtual network '$($config.sre.network.vnet.name)'!"
@@ -53,16 +55,17 @@ Add-LogMessage -Level Info "Constructing GitLab cloud-init from template..."
 $gitlabCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Raw
 # Expand placeholders in the cloud-init template
 $gitlabCloudInitTemplate = $gitlabCloudInitTemplate.
-    Replace("<gitlab-rb-host>", "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
-    Replace("<gitlab-rb-bind-dn>", $ldapSearchUserDn).
-    Replace("<gitlab-rb-pw>", $ldapSearchUserPassword).
-    Replace("<gitlab-rb-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<gitlab-rb-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
-    Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
-    Replace("<gitlab-hostname>", $config.sre.webapps.gitlab.hostname).
+    Replace("<gitlab-api-token>", $gitlabAPIToken).
     Replace("<gitlab-fqdn>", "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
-    Replace("<gitlab-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<gitlab-hostname>", $config.sre.webapps.gitlab.hostname).
+    Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
     Replace("<gitlab-login-domain>", $config.shm.domain.fqdn).
+    Replace("<gitlab-rb-base>", $config.shm.domain.ous.researchUsers.path).
+    Replace("<gitlab-rb-bind-dn>", $ldapSearchUserDn).
+    Replace("<gitlab-rb-host>", "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
+    Replace("<gitlab-rb-pw>", $ldapSearchUserPassword).
+    Replace("<gitlab-rb-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
+    Replace("<gitlab-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)).
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 # Deploy GitLab VM
@@ -84,8 +87,80 @@ $params = @{
     Subnet                 = $deploymentSubnet
 }
 $gitlabVm = Deploy-UbuntuVirtualMachine @params
-# Change subnets and IP address while HackMD VM is off
+# Change subnets and IP address while GitLab VM is off
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
+
+
+# Deploy and configure GitLab review VM
+# -------------------------------------
+# Get public SSH keys from the GitLab server, allowing it to be added as a known host on the GitLab review server
+Add-LogMessage -Level Info "Fetching SSH keys from GitLab server..."
+$script = @"
+#! /bin/bash
+echo "<gitlab-ip> $(cut -d ' ' -f -2 /etc/ssh/ssh_host_rsa_key.pub)"
+echo "<gitlab-ip> $(cut -d ' ' -f -2 /etc/ssh/ssh_host_ed25519_key.pub)"
+echo "<gitlab-ip> $(cut -d ' ' -f -2 /etc/ssh/ssh_host_ecdsa_key.pub)"
+"@.Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip)
+Add-LogMessage -Level Info "Constructing GitLab review cloud-init from template..."
+$result = Invoke-RemoteScript -VMName $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Shell "UnixShell" -Script $script
+Add-LogMessage -Level Success "Fetching ssh keys from gitlab succeeded"
+$sshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\[stderr\]"  # Extract everything in between the [stdout] and [stderr] blocks of the result message. i.e. all output of the script.
+$gitlabReviewCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-gitlab-review.template.yaml") -Raw
+# Expand placeholders in the cloud-init template
+$gitlabReviewCloudInitTemplate = $gitlabReviewCloudInitTemplate.
+    Replace("<gitlab-review-api-token>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.apiTokenSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<gitlab-review-fqdn>", "$($config.sre.webapps.gitlabReview.hostname).$($config.sre.domain.fqdn)").
+    Replace("<gitlab-review-hostname>", $config.sre.webapps.gitlabReview.hostname).
+    Replace("<gitlab-review-ip>", $config.sre.webapps.gitlabReview.ip).
+    Replace("<gitlab-review-login-domain>", $config.shm.domain.fqdn).
+    Replace("<gitlab-review-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userIngress.passwordSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<gitlab-review-rb-base>", $config.shm.domain.ous.researchUsers.path).
+    Replace("<gitlab-review-rb-bind-dn>", $ldapSearchUserDn).
+    Replace("<gitlab-review-rb-host>", "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
+    Replace("<gitlab-review-rb-pw>", $ldapSearchUserPassword).
+    Replace("<gitlab-review-rb-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.reviewUsers.name),$($config.shm.domain.securityOuPath)))").
+    Replace("<gitlab-review-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userRoot.passwordSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<gitlab-review-username>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.userIngress.usernameSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<gitlab-username>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.userIngress.usernameSecretName -DefaultValue "ingress" -AsPlaintext)).
+    Replace("<gitlab-api-token>", $gitlabAPIToken).
+    Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
+    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+    Replace("<timezone>", $config.sre.time.timezone.linux)
+# Insert SSH keys and scripts into cloud init template, maintaining indentation
+$indent = "      "
+foreach ($scriptName in @("zipfile_to_gitlab_project.py",
+                          "check_merge_requests.py",
+                          "gitlab_config.py",
+                          "gitlab-ssh-keys")) {
+    if ($scriptName -eq "gitlab-ssh-keys") {
+        $raw_script = $sshKeys.Matches.Groups[1].Value
+    } else {
+        $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
+    }
+    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $gitlabReviewCloudInit = $gitlabReviewCloudInit.Replace("${indent}<$scriptName>", $indented_script)
+}
+# Deploy GitLab review VM
+$gitlabReviewDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlabReview.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlabReview.disks.data.sizeGb -Type $config.sre.webapps.gitlabReview.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
+$params = @{
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlabReview.adminPasswordSecretName -DefaultLength 20)
+    AdminUsername          = $vmAdminUsername
+    BootDiagnosticsAccount = $bootDiagnosticsAccount
+    CloudInitYaml          = $gitlabReviewCloudInit
+    DataDiskIds            = @($gitlabReviewDataDisk.Id)
+    ImageSku               = $config.sre.webapps.gitlabReview.osVersion
+    Location               = $config.sre.location
+    Name                   = $config.sre.webapps.gitlabReview.vmName
+    OsDiskSizeGb           = $config.sre.webapps.gitlabReview.disks.os.sizeGb
+    OsDiskType             = $config.sre.webapps.gitlabReview.disks.os.type
+    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
+    ResourceGroupName      = $config.sre.webapps.rg
+    Size                   = $config.sre.webapps.gitlab.vmSize
+    Subnet                 = $deploymentSubnet
+}
+$gitlabReviewVm = Deploy-UbuntuVirtualMachine @params
+# Change subnets and IP address while GitLab VM is off
+Update-VMIpAddress -Name $gitlabReviewVm.Name -ResourceGroupName $gitlabReviewVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlabReview.ip
 
 
 # Deploy and configure HackMD VM
