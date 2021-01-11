@@ -5,24 +5,24 @@ Please have a look through and give any feedback/ideas/comments as we collect th
 
 Status Key:
 
-* Y: Yes
-* N: No
-* ?: Don't Know
-* P: Partly
-* NA: Not Applicable
++ Y: Yes
++ N: No
++ ?: Don't Know
++ P: Partly
++ NA: Not Applicable
 
 Likely Solution Key:
 
-* PD: Policy Document
-* TD: Technical Documentation
-* TS: Technical Solution
++ PD: Policy Document
++ TD: Technical Documentation
++ TS: Technical Solution
 
 Evidence Reference |Evidence text - Others (Category 3) |Tool tips - Others (Category 3)  |Status |Likely Solution |Notes/Evidence|
 ------------------ |----------------------------------- |-------------------------------- |------ |--------------- |------------- |
 1.1.1 |Has responsibility for data security been assigned?  |This is a formally assigned responsibility for data security to a relevant individual. It could form part of their job description or be an email from the appropriate manager in your organisation. |Y |PD|Ian Carter
 1.1.2 |Who are your staff with responsibility for data protection and / or security. |Record names and job titles only for staff who have a specialised role. |Y |PD |Ian Carter/ members of the data protection team, as listed in the [Turing Data breach and security incident management policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621) section 4, also section 7:  |
 1.2.1|Are there approved data security and protection policies in place that follow relevant guidance?| Confirm that you have policies in place that explain the organisation's plan or principles for data protection, data quality, records management, data security, registration authority, Subject access requests, Freedom of Information and network security.|Y|PD|[Data Protection policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=5d4e868d975b4e849a43f7cd0e629f16) |
-1.3.1|What is your ICO registration number?|You can get this number from the Information Commissioner's Office website https://ico.org.uk/esdwebpages/search|Y	|PD|ZA541179 (from[ICO](https://ico.org.uk/ESDWebPages/Entry/ZA541179)|
+1.3.1|What is your ICO registration number?|You can get this number from the Information Commissioner's Office website https://ico.org.uk/esdwebpages/search|Y|PD|ZA541179 (from[ICO](https://ico.org.uk/ESDWebPages/Entry/ZA541179)|
 1.3.2|How is transparency information (e.g. your privacy notice) published and available to the public?|This covers personal information you collect or manage for patients and the public.  Provide a weblink if possible or other publicly available document.|Y|PD|[Data Subjects Protection policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=11b7dab8a01047ee992508f16a95e566) ; [Data Protection Policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=5d4e868d975b4e849a43f7cd0e629f16) section 2.3 lists potential data collection carreid out by institute|
 1.3.3 |How have individuals been informed about their rights and how to exercise them?|This covers personal information you collect or manage for patients and the public and could be a website, leaflet, letter or other method. It Would include a list of rights and when/whether they apply to the processing undertaken, contact details and procedure for subject access, and other rights requests.|Y|PD|[Data Subjects Request policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=11b7dab8a01047ee992508f16a95e566)|
 1.4.1 |Provide details of the record or register that details each use or sharing of personal information. |The record should include for each entry:Purpose of processing, Legal basis relied on from GDPR Article 6 and Article 9, Categories of data subject/personal data, Categories of recipients, whether information is transferred overseas, whether data is retained and disposed of in line with policies, or if not, why not. Whether a written data-sharing agreement or contract is in place and when it ends. |?|PD|How do we want to do this? |
@@ -44,7 +44,7 @@ Evidence Reference |Evidence text - Others (Category 3) |Tool tips - Others (Cat
 3.4.1 |Have the senior people with responsibility for data security received appropriate data security and protection training? |As defined in your organisations data security and protection training needs analysis. |Y|PD|IC believes [acceptable use policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=fb1b75737e5b452e9f5327a4b8ac2add) cSection 10: mandated GDPR and cyber training within first month covers requirement|
 4.1.1 |Your organisation maintains a record of staff and their roles.| |?|PD|To check with HR |
 4.1.2 |Does the organisation understand who has access to personal and confidential data through your systems, including any systems which do not support individual logins? |Each system may use its own user list(s) or use federated access. There may be systems where technically or operationally it is not possible to have individual logins but there are alternative methods of maintaining user lists. Where this occurs, it is understood and risk assessed by the organisation. |N |PD|We need to define a specific DSH policy for access - is this something for the team or for IC to do? |
-4.2.1|When was the last audit of user accounts held?	An audit of staff accounts from your organisation, to make sure there aren't any inappropriate access permissions.|Record the date when the last user audit was held. This should be completed annually as a minimum|N|PD|We need to define a specific DSH policy for access, is this something for the team or for IC to do?|
+4.2.1|When was the last audit of user accounts held? An audit of staff accounts from your organisation, to make sure there aren't any inappropriate access permissions.|Record the date when the last user audit was held. This should be completed annually as a minimum|N|PD|We need to define a specific DSH policy for access, is this something for the team or for IC to do?|
 4.3.1 |All system administrators have signed an agreement which holds them accountable to the highest standards of use. |With great power comes great responsibility and all administrators should attest to that responsibility by being signatory to a agreement affirming the highest standard of use. If no systems select Yes. |?|PD|IC says that [Standards of use policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=fb1b75737e5b452e9f5327a4b8ac2add&from=0d1cf443-a273-4da6-b2fb-6dfbec2f76f2) that everyone signs should be enough. Do we agree?  |
 4.5.1 |Do you have a password policy giving staff advice on managing their passwords? |Password policy must cover (a) How to avoid choosing obvious passwords (b) Not to choose common passwords (c) No password reuse. (d) Where and how they may record passwords to store and retrieve them securely. (e) If password management software is allowed, and if so, which.(f) Which passwords they really must memorise and not record anywhere. |Y|PD|We have one defined for the DSH - is this a) visible enough, and b) do we want to make it enforceable when setting passwords or is a policy doc enough of a level for us to be comfortable with? |
 5.1.2 |Provide summary details of process reviews held to identify and manage problem processes that cause security breaches. |Processes which have caused breaches or near misses, are reviewed to identify and improve processes which force staff to use workarounds which compromise data security. |Y |PD|Section 6 of [Data Breach & Security Incident Management Policy](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621)|
