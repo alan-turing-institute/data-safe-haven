@@ -10,6 +10,8 @@ These reference guides assume some knowledge of how our Safe Havens work.
 
 + We are working towards generating better code documentation but this is a work-in-progress
 
-## How to be a sysadmin
+## Security guides
 
 + [Security checklist](checklists/security-checklist.md) - A checklist of the claims that we make about the Safe Haven together with suggested methods for verifying them.
++ [DSPT evidence](checklists/DSPT.md) - A list of the requirements for the NHS DSPT certification together with our evidence that we meet each requirement
+

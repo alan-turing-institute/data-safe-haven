@@ -60,7 +60,7 @@ It is the responsibility of the data owner to digitise the files.
 
 The data should be transferred to the staging area via [SCP transfer](https://en.wikipedia.org/wiki/Secure_copy) (not [SFTP](https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol)) from the data owner to the Turing Institute.
 
-In order to set up the transfer, a secure email (via [Egress](https://www.egress.com/what-we-offer/email-and-file-protection) which is [certified](https://www.ncsc.gov.uk/scheme/commercial-product-assurance-cpa) by the UK National Cyber Security Centre (NCSC)) should be sent to the Data Owner by Turing to provide the access details and instructions for how they can load their data to the staging area in order for Turing to receive it.
+In order to set up the transfer, a secure email (via [Egress](https://www.egress.com/what-we-offer/email-and-file-protection) which is [certified](https://www.ncsc.gov.uk/information/commercial-product-assurance-cpa) by the UK National Cyber Security Centre (NCSC)) should be sent to the Data Owner by Turing to provide the access details and instructions for how they can load their data to the staging area in order for Turing to receive it.
 The following Turing staff members are authorised to send this email: Head of IT and Security, IT team member, Programme Manager, REG team member.
 
 On receipt of this email the data owner will need to provide Turing with a public IP address for a member of the Turing to whitelist in order for the files to be transferred.
