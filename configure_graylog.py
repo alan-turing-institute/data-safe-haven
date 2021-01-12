@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
 import requests
-import json
 
 
 def main():
@@ -29,13 +28,11 @@ def main():
     api = GraylogAPI(**vars(args))
 
     inputs = api.get_inputs()
-    # print(json.dumps(inputs, indent=2))
     if inputs["total"] > 0:
         api.delete_all_inputs(inputs["inputs"])
     api.add_syslog_input()
 
     events = api.get_events()
-    # print(json.dumps(events, indent=2))
     if events["total"] > 0:
         api.delete_all_events(events["event_definitions"])
     api.create_event(
