@@ -7,6 +7,9 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force 
+Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
