@@ -191,14 +191,16 @@ Please follow these steps carefully.
 
    > :point_right: Your password must comply with the following requirements:
 
+  + [microsft Azure AD password requirements](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-policy)
   + alphanumeric
   + minimum 12 characters
   + at least one each of:
     + :capital_abcd: uppercase character
     + :abcd: lowercase character
     + :1234: number
+  + you should choose a unique password for the Data Safe Haven to ensure it is secure 
 
-   We recommend using this [Secure Password Generator](<https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1>) to create a password that meets these requirements.
+   We recommend using this [Secure Password Generator](<https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1>) to create a password that meets these requirements. This also ensures it is unique and won't be a commonly used password.
 
    > :warning: Do not use special characters or symbols in your password.
    > The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
