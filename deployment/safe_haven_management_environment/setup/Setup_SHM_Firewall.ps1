@@ -147,9 +147,7 @@ Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 # This ensures that it establishes a new SSPR connection through the firewall in case
 # it was previously blocked due to incorrect firewall rules or a deallocated firewall
 
-$vm_status = ((Get-AzVM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -Status).Statuses | where-object Code -Like 'PowerState/*')[0].DisplayStatus -eq 'VM running'
-
-if ($vm_status) {
+if (Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
     Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 
