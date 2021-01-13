@@ -676,6 +676,20 @@ function Get-ShmFullConfig {
                 }
             }
         }
+        graylogVnet = [ordered]@{
+            name    = "VNET_SHM_$($shm.id)_GRAYLOG".ToUpper()
+            cidr    = "10.40.1.0/24"
+            subnets = [ordered]@{
+                graylog = [ordered]@{
+                    name = "GraylogSubnet"
+                    cidr = "10.40.1.0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_GRAYLOG".ToUpper()
+                        rules = "shm-nsg-rules-graylog.json"
+                    }
+                }
+            }
+        }
         mirrorVnets    = [ordered]@{}
     }
     # Set package mirror networking information
@@ -863,6 +877,20 @@ function Get-ShmFullConfig {
     $shm.dns = [ordered]@{
         subscriptionName = $shmConfigBase.dnsRecords.subscriptionName ? $shmConfigBase.dnsRecords.subscriptionName : $shm.subscriptionName
         rg               = $shmConfigBase.dnsRecords.resourceGroupName ? $shmConfigBase.dnsRecords.resourceGroupName : "$($shm.rgPrefix)_DNS_RECORDS".ToUpper()
+    }
+
+    # Graylog VM config
+    # -----------------
+    $shm.graylog = [ordered]@{
+        rg       = "$($shm.rgPrefix)_GRAYLOG".ToUpper()
+        vmSize   = "Standard_B2ms"
+        diskType = "Standard_LRS"
+        graylog  = [ordered]@{
+            adminPasswordSecretName           = "shm-$($shm.id)-vm-admin-password-graylog".ToLower()
+            graylogAppAdminPasswordSecretName = "shm-$($shm.id)-graylog-admin-password".ToLower()
+            ipAddress                         = "10.40.1.10"
+            vmName                            = "GRAYLOG"
+        }
     }
 
     # Nexus repository VM config
