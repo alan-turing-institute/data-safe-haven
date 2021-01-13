@@ -149,6 +149,12 @@ write_files:
           options(repos = r)
       })
 
+  - path: "/etc/rsyslog.d/10-graylog.conf"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      *.* @@<syslog-ip>:1514;RSYSLOG_SyslogProtocol23Format
+
   - path: "/etc/skel/.bashrc"
     owner: root:root
     permissions: "0644"

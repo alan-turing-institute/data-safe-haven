@@ -229,6 +229,7 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+    Replace("<syslog-ip>", $config.shm.graylog.ipAddress).
     Replace("<timezone>", $config.sre.time.timezone.linux).
     Replace("<vm-hostname>", ($vmHostname | Limit-StringLength -MaximumLength 15)).
     Replace("<vm-ipaddress>", $finalIpAddress)
