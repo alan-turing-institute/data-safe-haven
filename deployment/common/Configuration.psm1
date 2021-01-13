@@ -885,12 +885,10 @@ function Get-ShmFullConfig {
         rg       = "$($shm.rgPrefix)_GRAYLOG".ToUpper()
         vmSize   = "Standard_B2ms"
         diskType = "Standard_LRS"
-        graylog  = [ordered]@{
-            adminPasswordSecretName           = "shm-$($shm.id)-vm-admin-password-graylog".ToLower()
-            graylogAppAdminPasswordSecretName = "shm-$($shm.id)-graylog-admin-password".ToLower()
-            ipAddress                         = "10.40.1.10"
-            vmName                            = "GRAYLOG"
-        }
+        adminPasswordSecretName           = "shm-$($shm.id)-vm-admin-password-graylog".ToLower()
+        graylogAppAdminPasswordSecretName = "shm-$($shm.id)-graylog-admin-password".ToLower()
+        ipAddress                         = "10.40.1.10"
+        vmName                            = "GRAYLOG"
     }
 
     # Nexus repository VM config
