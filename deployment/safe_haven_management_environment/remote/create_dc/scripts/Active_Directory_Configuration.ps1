@@ -217,7 +217,7 @@ $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-foreach ($serviceAccountCfg in $($userAccounts.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject"} )) {
+foreach ($serviceAccountCfg in $($userAccounts.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } )) {
     Write-Output "Creating $($serviceAccountCfg.Value.name) domain joining account $($serviceAccountCfg.Value.samAccountName)..."
     New-ShmUser -Name "$($serviceAccountCfg.Value.name)" -SamAccountName "$($serviceAccountCfg.Value.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $serviceAccountCfg.Value.password -AsPlainText -Force) -Domain $shmFdqn
 }
