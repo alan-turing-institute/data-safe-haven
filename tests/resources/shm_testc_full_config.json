@@ -1,0 +1,426 @@
+{
+  "azureAdminGroupName": "Safe Haven Test Admins",
+  "dc": {
+    "disks": {
+      "data": {
+        "sizeGb": "20",
+        "type": "Standard_LRS"
+      },
+      "os": {
+        "sizeGb": "128",
+        "type": "Standard_LRS"
+      }
+    },
+    "external_dns_resolver": "168.63.129.16",
+    "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
+    "hostname": "DC1-SHM-TESTC",
+    "ip": "10.0.0.4",
+    "rg": "RG_SHM_TESTC_DC",
+    "safemodePasswordSecretName": "shm-testc-vm-safemode-password-dc",
+    "vmName": "DC1-SHM-TESTC",
+    "vmSize": "Standard_D2s_v3"
+  },
+  "dcb": {
+    "disks": {
+      "data": {
+        "sizeGb": "20",
+        "type": "Standard_LRS"
+      },
+      "os": {
+        "sizeGb": "128",
+        "type": "Standard_LRS"
+      }
+    },
+    "fqdn": "DC2-SHM-TESTC.testc.dsgroupdev.co.uk",
+    "hostname": "DC2-SHM-TESTC",
+    "ip": "10.0.0.5",
+    "vmName": "DC2-SHM-TESTC",
+    "vmSize": "Standard_D2s_v3"
+  },
+  "dns": {
+    "rg": "RG_SHM_DNS_TEST",
+    "subscriptionName": "[Prod] Safe Haven Domains"
+  },
+  "domain": {
+    "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+    "fqdn": "testc.dsgroupdev.co.uk",
+    "netbiosName": "TESTC",
+    "ous": {
+      "databaseServers": {
+        "name": "Secure Research Environment Database Servers",
+        "path": "OU=Secure Research Environment Database Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "identityServers": {
+        "name": "Safe Haven Identity Servers",
+        "path": "OU=Safe Haven Identity Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "linuxServers": {
+        "name": "Secure Research Environment Linux Servers",
+        "path": "OU=Secure Research Environment Linux Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "rdsGatewayServers": {
+        "name": "Secure Research Environment RDS Gateway Servers",
+        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "rdsSessionServers": {
+        "name": "Secure Research Environment RDS Session Servers",
+        "path": "OU=Secure Research Environment RDS Session Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "researchUsers": {
+        "name": "Safe Haven Research Users",
+        "path": "OU=Safe Haven Research Users,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "securityGroups": {
+        "name": "Safe Haven Security Groups",
+        "path": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      },
+      "serviceAccounts": {
+        "name": "Safe Haven Service Accounts",
+        "path": "OU=Safe Haven Service Accounts,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+      }
+    },
+    "securityGroups": {
+      "computerManagers": {
+        "description": "SG Safe Haven Computer Management Users",
+        "name": "SG Safe Haven Computer Management Users"
+      },
+      "serverAdmins": {
+        "description": "SG Safe Haven Server Administrators",
+        "name": "SG Safe Haven Server Administrators"
+      }
+    }
+  },
+  "dsvmImage": {
+    "bootdiagnostics": {
+      "accountName": "buildimgbootdiagscmtvwne",
+      "rg": "RG_SH_BOOT_DIAGNOSTICS"
+    },
+    "build": {
+      "nsg": {
+        "allowedIpAddresses": [
+          "188.214.11.75",
+          "86.133.150.218",
+          "86.1.240.134",
+          "188.155.244.29",
+          "193.60.220.240",
+          "193.60.220.253"
+        ],
+        "name": "NSG_IMAGE_BUILD"
+      },
+      "rg": "RG_SH_BUILD_CANDIDATES",
+      "subnet": {
+        "cidr": "10.48.0.0/24",
+        "name": "ImageBuildSubnet"
+      },
+      "vm": {
+        "diskSizeGb": 64,
+        "size": "Standard_F4s_v2"
+      },
+      "vnet": {
+        "cidr": "10.48.0.0/16",
+        "name": "VNET_IMAGE_BUILD"
+      }
+    },
+    "gallery": {
+      "imageMajorVersion": 0,
+      "imageMinorVersion": 3,
+      "rg": "RG_SH_IMAGE_GALLERY",
+      "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
+    },
+    "images": {
+      "rg": "RG_SH_IMAGE_STORAGE"
+    },
+    "keyVault": {
+      "name": "kv-shm-testc-dsvm-imgs",
+      "rg": "RG_SH_SECRETS"
+    },
+    "location": "uksouth",
+    "network": {
+      "rg": "RG_SH_NETWORKING"
+    },
+    "subscription": "[Prod] Safe Haven VM Images"
+  },
+  "firewall": {
+    "name": "FIREWALL-SHM-TESTC",
+    "routeTableName": "ROUTE-TABLE-SHM-TESTC"
+  },
+  "id": "testc",
+  "keyVault": {
+    "name": "kv-shm-testc",
+    "rg": "RG_SHM_TESTC_SECRETS",
+    "secretNames": {
+      "aadEmergencyAdminPassword": "shm-testc-aad-emergency-admin-password",
+      "aadEmergencyAdminUsername": "shm-testc-aad-emergency-admin-username",
+      "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
+      "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
+      "domainAdminPassword": "shm-testc-domain-admin-password",
+      "domainAdminUsername": "shm-testc-domain-admin-username",
+      "vmAdminUsername": "shm-testc-vm-admin-username",
+      "vpnCaCertificate": "shm-testc-vpn-ca-cert",
+      "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
+      "vpnCaCertPassword": "shm-testc-vpn-ca-cert-password",
+      "vpnClientCertificate": "shm-testc-vpn-client-cert",
+      "vpnClientCertPassword": "shm-testc-vpn-client-cert-password"
+    }
+  },
+  "location": "uksouth",
+  "logging": {
+    "rg": "RG_SHM_TESTC_LOGGING",
+    "workspaceName": "shmtestcloganalytics"
+  },
+  "mirrors": {
+    "cran": {
+      "tier2": {
+        "diskSize": 128,
+        "external": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-2",
+          "ipAddress": "10.20.2.5",
+          "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+        },
+        "internal": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-2",
+          "ipAddress": "10.20.2.21",
+          "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+        }
+      },
+      "tier3": {
+        "diskSize": 32,
+        "external": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-3",
+          "ipAddress": "10.20.3.5",
+          "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+        },
+        "internal": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-3",
+          "ipAddress": "10.20.3.21",
+          "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+        }
+      }
+    },
+    "diskType": "Standard_LRS",
+    "pypi": {
+      "tier2": {
+        "diskSize": 8192,
+        "external": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-2",
+          "ipAddress": "10.20.2.4",
+          "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+        },
+        "internal": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-2",
+          "ipAddress": "10.20.2.20",
+          "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+        }
+      },
+      "tier3": {
+        "diskSize": 512,
+        "external": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
+          "ipAddress": "10.20.3.4",
+          "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+        },
+        "internal": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-3",
+          "ipAddress": "10.20.3.20",
+          "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+        }
+      }
+    },
+    "rg": "RG_SHM_TESTC_PKG_MIRRORS",
+    "vmSize": "Standard_B2ms"
+  },
+  "name": "Turing Development Safe Haven C",
+  "network": {
+    "mirrorVnets": {
+      "tier2": {
+        "cidr": "10.20.2.0/24",
+        "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER2",
+        "subnets": {
+          "external": {
+            "cidr": "10.20.2.0/28",
+            "name": "ExternalPackageMirrorsTier2Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+            }
+          },
+          "internal": {
+            "cidr": "10.20.2.16/28",
+            "name": "InternalPackageMirrorsTier2Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER2"
+            }
+          }
+        }
+      },
+      "tier3": {
+        "cidr": "10.20.3.0/24",
+        "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER3",
+        "subnets": {
+          "external": {
+            "cidr": "10.20.3.0/28",
+            "name": "ExternalPackageMirrorsTier3Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+            }
+          },
+          "internal": {
+            "cidr": "10.20.3.16/28",
+            "name": "InternalPackageMirrorsTier3Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3"
+            }
+          }
+        }
+      }
+    },
+    "repositoryVnet": {
+      "cidr": "10.30.1.0/24",
+      "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+      "subnets": {
+        "repository": {
+          "cidr": "10.30.1.0/24",
+          "name": "RepositorySubnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+            "rules": "shm-nsg-rules-nexus.json"
+          }
+        }
+      }
+    },
+    "vnet": {
+      "cidr": "10.0.0.0/21",
+      "name": "VNET_SHM_TESTC",
+      "rg": "RG_SHM_TESTC_NETWORKING",
+      "subnets": {
+        "firewall": {
+          "cidr": "10.0.2.0/24",
+          "name": "AzureFirewallSubnet"
+        },
+        "gateway": {
+          "cidr": "10.0.7.0/24",
+          "name": "GatewaySubnet"
+        },
+        "identity": {
+          "cidr": "10.0.0.0/24",
+          "name": "IdentitySubnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_IDENTITY"
+          }
+        }
+      }
+    },
+    "vpn": {
+      "cidr": "172.16.201.0/24"
+    }
+  },
+  "nps": {
+    "adminPasswordSecretName": "shm-testc-vm-admin-password-nps",
+    "disks": {
+      "data": {
+        "sizeGb": "20",
+        "type": "Standard_LRS"
+      },
+      "os": {
+        "sizeGb": "128",
+        "type": "Standard_LRS"
+      }
+    },
+    "hostname": "NPS-SHM-TESTC",
+    "ip": "10.0.0.6",
+    "rg": "RG_SHM_TESTC_NPS",
+    "vmName": "NPS-SHM-TESTC",
+    "vmSize": "Standard_D2s_v3"
+  },
+  "nsgPrefix": "NSG_SHM_TESTC",
+  "organisation": {
+    "countryCode": "GB",
+    "name": "The Alan Turing Institute",
+    "stateCountyRegion": "London",
+    "townCity": "London"
+  },
+  "repository": {
+    "diskType": "Standard_LRS",
+    "nexus": {
+      "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus",
+      "ipAddress": "10.30.1.10",
+      "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password",
+      "vmName": "NEXUS-REPOSITORY-TIER-2"
+    },
+    "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
+    "vmSize": "Standard_B2ms"
+  },
+  "rgPrefix": "RG_SHM_TESTC",
+  "storage": {
+    "artifacts": {
+      "accountName": "shmtestcartifactslubiehy",
+      "rg": "RG_SHM_TESTC_ARTIFACTS"
+    },
+    "bootdiagnostics": {
+      "accountName": "shmtestcbootdiagslubiehy",
+      "rg": "RG_SHM_TESTC_ARTIFACTS"
+    },
+    "persistentdata": {
+      "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
+    }
+  },
+  "subscriptionName": "Safe Haven Management Test C",
+  "time": {
+    "ntp": {
+      "poolFqdn": "time.google.com",
+      "serverAddresses": [
+        "216.239.35.0",
+        "216.239.35.4",
+        "216.239.35.8",
+        "216.239.35.12"
+      ],
+      "serverFqdns": [
+        "time.google.com",
+        "time1.google.com",
+        "time2.google.com",
+        "time3.google.com",
+        "time4.google.com"
+      ]
+    },
+    "timezone": {
+      "linux": "Europe/London",
+      "windows": "GMT Standard Time"
+    }
+  },
+  "users": {
+    "computerManagers": {
+      "databaseServers": {
+        "name": "TESTC Database Servers Manager",
+        "passwordSecretName": "shm-testc-computer-manager-password-database-servers",
+        "samAccountName": "testcdatabasesrvrs"
+      },
+      "identityServers": {
+        "name": "TESTC Identity Servers Manager",
+        "passwordSecretName": "shm-testc-computer-manager-password-identity-servers",
+        "samAccountName": "testcidentitysrvrs"
+      },
+      "linuxServers": {
+        "name": "TESTC Linux Servers Manager",
+        "passwordSecretName": "shm-testc-computer-manager-password-linux-servers",
+        "samAccountName": "testclinuxsrvrs"
+      },
+      "rdsGatewayServers": {
+        "name": "TESTC RDS Gateway Manager",
+        "passwordSecretName": "shm-testc-computer-manager-password-rds-gateway-servers",
+        "samAccountName": "testcgatewaysrvrs"
+      },
+      "rdsSessionServers": {
+        "name": "TESTC RDS Session Servers Manager",
+        "passwordSecretName": "shm-testc-computer-manager-password-rds-session-servers",
+        "samAccountName": "testcsessionsrvrs"
+      }
+    },
+    "serviceAccounts": {
+      "aadLocalSync": {
+        "name": "TESTC Local AD Sync Administrator",
+        "passwordSecretName": "shm-testc-aad-localsync-password",
+        "samAccountName": "testclocaladsync",
+        "usernameSecretName": "shm-testc-aad-localsync-username"
+      }
+    }
+  }
+}
