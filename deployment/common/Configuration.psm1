@@ -27,7 +27,7 @@ function Get-SreConfig {
     # Set default Nexus usage
     $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false
     $config = [ordered]@{
-        shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
+        shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
             id               = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
             rgPrefix         = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
@@ -477,7 +477,7 @@ function Get-BaseConfigHashtable {
 
 # Get SHM configuration
 # ---------------------
-function Get-ShmFullConfig {
+function Get-ShmConfig {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID")]
         $shmId
@@ -908,7 +908,7 @@ function Get-ShmFullConfig {
 
     return (ConvertTo-SortedHashtable -Sortable $shm)
 }
-Export-ModuleMember -Function Get-ShmFullConfig
+Export-ModuleMember -Function Get-ShmConfig
 
 # Show SRE or SHM full config
 # ---------------------
@@ -921,7 +921,7 @@ function Show-FullConfig {
     )
     # Generate and return the full config for the SHM or SRE
     if ($sreId -eq "") {
-        $config = Get-ShmFullConfig -shmId $shmId
+        $config = Get-ShmConfig -shmId $shmId
     } else {
         $config = Get-SreConfig -configId "${shmId}${sreId}"
     }
