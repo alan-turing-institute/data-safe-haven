@@ -5,7 +5,7 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted")]
+        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline=$True)]
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )
