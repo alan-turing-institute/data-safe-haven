@@ -1,0 +1,96 @@
+#cloud-config
+apt:
+  update: true
+
+packages:
+  - docker.io
+  - docker-compose
+  - python3-requests
+
+write_files:
+  - path: "/root/docker-compose.yaml"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      ---
+      version: '3'
+      services:
+        mongo:
+          image: mongo:4.2
+          volumes:
+            - /graylog/mongo_data:/data/db
+        elasticsearch:
+          image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
+          environment:
+            - "http.host=0.0.0.0"
+            - "transport.host=localhost"
+            - "network.host=0.0.0.0"
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          volumes:
+            - /graylog/es_data:/usr/share/elasticsearch/data
+          ulimits:
+            memlock:
+              soft: -1
+              hard: -1
+        graylog:
+          image: graylog/graylog:4.0
+          environment:
+            - "GRAYLOG_PASSWORD_SECRET=<graylog-password-secret>"
+            - "GRAYLOG_ROOT_PASSWORD_SHA2=<graylog-admin-password-sha256-hash>"
+            - "GRAYLOG_HTTP_EXTERNAL_URI=http://<graylog-ip>:9000/"
+          volumes:
+            - /graylog/graylog_data:/usr/share/graylog/data
+          restart: always
+          depends_on:
+            - mongo
+            - elasticsearch
+          ports:
+            # Graylog web interface and REST API
+            - 9000:9000
+            # Syslog TCP
+            - 1514:1514
+            # Syslog UDP
+            # - 1514:1514/udp
+            # GELF TCP
+            # - 12201:12201
+            # GELF UDP
+            # - 12201:12201/udp
+  - path: "/root/configure_graylog.py"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <configure_graylog.py>
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - <ntp-server>
+
+runcmd:
+  # Ensure that Docker will run on restart
+  - systemctl enable docker
+  - systemctl start docker
+  - systemctl status docker
+  # Create directory for docker volumes
+  - echo "Creating Graylog data directory"
+  - mkdir /graylog
+  # Start/Enable the Graylog services
+  - echo "Starting/enabling Graylog services"
+  - docker-compose -f /root/docker-compose.yaml up -d
+  # Give Graylog some time to initialise
+  - echo "Waiting for Grayloy to initialise (3 minutes)"
+  - sleep 3m
+  # Configure Graylog
+  - echo "Configuring Graylog"
+  - python3 /root/configure_graylog.py --url http://localhost --port 9000 --admin-password <graylog-admin-password>
+
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True
