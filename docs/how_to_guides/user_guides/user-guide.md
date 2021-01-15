@@ -197,8 +197,11 @@ Please follow these steps carefully.
     + :capital_abcd: uppercase character
     + :abcd: lowercase character
     + :1234: number
+  + you should choose a unique password for the SRE to ensure it is secure
 
-   We recommend using this [Secure Password Generator](<https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1>) to create a password that meets these requirements.
+   We recommend using this [Secure Password Generator](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1) to create a password that meets these requirements. This will ensure that the password is different from any others that you might use and that it is unlikely to be on any list of commonly used passwords.
+
+  :information_source: Note that when setting your password, the [Microsoft Azure AD password requirements](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-policy) will be enforced - any password which fulfils the requirements above will pass this validation.
 
    > :warning: Do not use special characters or symbols in your password.
    > The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
