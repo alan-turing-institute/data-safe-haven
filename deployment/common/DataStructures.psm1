@@ -5,7 +5,7 @@ Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted")]
+        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline=$True)]
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )
@@ -72,28 +72,27 @@ function Find-AllMatchingKeys {
 }
 Export-ModuleMember -Function Find-AllMatchingKeys
 
-
 # Retrieve value for a (possibly) multilevel key
 # ----------------------------------------------
-function Find-MultilevelKey {
+function Get-MultilevelKey {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Input hashtable")]
         [System.Collections.IDictionary]$Hashtable,
         [Parameter(Mandatory = $true, HelpMessage = "Key to look for")]
         [String]$Key
     )
-    if ($Hashtable.ContainsKey($Key)) {
+    if ($Hashtable.Contains($Key)) {
         return $Hashtable[$Key]
     } elseif ($Key.Contains(".")) {
         $keyPrefix = $Key.Split(".")[0]
-        if ($Hashtable.ContainsKey($keyPrefix)) {
+        if ($Hashtable.Contains($keyPrefix)) {
             $keySuffix = $Key.Split(".") | Select-Object -Skip 1 | Join-String -Separator "."
-            return Find-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
+            return Get-MultilevelKey -Hashtable $Hashtable[$keyPrefix] -Key $keySuffix
         }
     }
     return $null
 }
-Export-ModuleMember -Function Find-MultilevelKey
+Export-ModuleMember -Function Get-MultilevelKey
 
 
 # Truncate string at a given length

@@ -18,7 +18,6 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy firewall](#deploy-firewall)
 + [Deploy logging](#deploy-logging)
 + [Deploy Python/R package repositories](#deploy-PythonR-package-repositories)
-+ [Tear down the SHM](#tearing-down-the-shm)
 
 ## Prerequisites
 
@@ -49,7 +48,7 @@ Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa
 
 ### Create configuration file
 
-The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder.
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs` folder.
 These are also used when deploying an SRE environment.
 
 > :pencil: You should decide on an `<SHM ID>` at this point. This should be 7 characters or fewer.
@@ -167,7 +166,7 @@ From your **deployment machine**
     + :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
     + Pick the Azure account that you are building the environment with when asked to log in
     + **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
-+ This will take **a few minutes** to run.
++ This will take **around 10 minutes** to run.
 
 The User who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role. Users with this role have access to all administrative features in Azure Active Directory). You will use this account for almost all administration of the Safe Haven Azure AD.
 
@@ -443,7 +442,9 @@ From your **deployment machine**
 + Click `Add Desktop` / `Add PC`
   + On Mac, first click the `+`
 + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
++ Copy the Private IP address and enter it in the `PC name` field on remote desktop.
++ Enter `DC1-SHM-<SHM ID>` in the Friendly name field
++ Click Add
 + Double click on the desktop that appears under `saved desktops` or `PCs`.
   + Ensure you are connected the virtual network you set up via the VPN, or this will not work
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
@@ -633,7 +634,9 @@ Once you're certain that you're adding a new user, make sure that the following 
   + Click `Add Desktop` / `Add PC`
     + On Mac, first click the `+`
   + In the Azure portal, navigate to the `RG_SHM_<SHM ID>_NPS` resource group and then to the `NPS-SHM-<SHM ID>` virtual machine (VM), where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-  + Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
+  + Copy the Private IP address and enter it in the `PC name` field on remote desktop.
+  + Enter `NPS-SHM-<SHM ID>` in the Friendly name field
+  + Click Add
   + Double click on the desktop that appears under `saved desktops` or `PCs`.
     + Ensure you are connected the virtual network you set up via the VPN, or this will not work
   + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
