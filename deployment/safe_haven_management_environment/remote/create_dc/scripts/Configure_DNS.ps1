@@ -7,7 +7,7 @@
 param(
     [Parameter(HelpMessage = "IP address for the external (Azure) DNS resolver")]
     [ValidateNotNullOrEmpty()]
-    [string]$ExternalDnsResolver
+    [string]$ExternalDnsResolver,
     [Parameter(HelpMessage = "IP addresses for the domain controllers")]
     [ValidateNotNullOrEmpty()]
     [string]$IdentitySubnetCidr
