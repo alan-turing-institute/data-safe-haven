@@ -164,6 +164,7 @@ if ($requestCertificate) {
         $testDomain = "dnstest.${BaseFqdn}"
         Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
+            Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
             $null = Publish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         } else {
             $null = Publish-Challenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
@@ -175,6 +176,7 @@ if ($requestCertificate) {
         }
         Add-LogMessage -Level Info "[ ] Attempting to delete a DNS record for $testDomain..."
         if ($UnpublishCommandName -eq "Unpublish-DnsChallenge") {
+            Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
             $null = Unpublish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         } else {
             $null = Unpublish-Challenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
@@ -189,6 +191,7 @@ if ($requestCertificate) {
         # -----------------------------------------------
         Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
+            Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
             $null = Publish-DnsChallenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         } else {
             $null = Publish-Challenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
