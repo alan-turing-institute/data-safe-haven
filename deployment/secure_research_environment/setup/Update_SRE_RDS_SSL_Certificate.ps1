@@ -153,19 +153,32 @@ if ($requestCertificate) {
             AZAccessToken    = $AZAccessToken
         }
 
+        # Get the names for the publish and unpublish commands
+        # ----------------------------------------------------
+        $PublishCommandName = Get-Command -Module Posh-ACME -Name "Publish-*Challenge" | ForEach-Object { $_.Name }
+        $UnpublishCommandName = Get-Command -Module Posh-ACME -Name "Unpublish-*Challenge" | ForEach-Object { $_.Name }
+
         # Test DNS record creation
         # ------------------------
         Add-LogMessage -Level Info "Test that we can interact with DNS records..."
         $testDomain = "dnstest.${BaseFqdn}"
         Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
-        $null = Publish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        if ($PublishCommandName -eq "Publish-DnsChallenge") {
+            $null = Publish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        } else {
+            $null = Publish-Challenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        }
         if ($?) {
             Add-LogMessage -Level Success "DNS record creation succeeded"
         } else {
             Add-LogMessage -Level Fatal "DNS record creation failed!"
         }
         Add-LogMessage -Level Info "[ ] Attempting to delete a DNS record for $testDomain..."
-        $null = Unpublish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        if ($UnpublishCommandName -eq "Unpublish-DnsChallenge") {
+            $null = Unpublish-DnsChallenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        } else {
+            $null = Unpublish-Challenge $testDomain -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        }
         if ($?) {
             Add-LogMessage -Level Success "DNS record deletion succeeded"
         } else {
@@ -175,7 +188,11 @@ if ($requestCertificate) {
         # Send a certificate-signing-request to be signed
         # -----------------------------------------------
         Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
-        $null = Publish-DnsChallenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        if ($PublishCommandName -eq "Publish-DnsChallenge") {
+            $null = Publish-DnsChallenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        } else {
+            $null = Publish-Challenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+        }
         $success = $?
         Add-LogMessage -Level Info "[ ] Creating certificate for ${BaseFqdn}..."
         $null = New-PACertificate -CSRPath $CsrPath -AcceptTOS -Contact $EmailAddress -DnsPlugin Azure -PluginArgs $PoshAcmeParams -Verbose
