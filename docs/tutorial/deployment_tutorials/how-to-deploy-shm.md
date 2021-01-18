@@ -758,7 +758,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 + This will take **several minutes** to run.
 
 ### Troubleshooting
-The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
 If so, try re-running the logging set up script.
 In most cases the extensions have actually been successfully installed.
 
