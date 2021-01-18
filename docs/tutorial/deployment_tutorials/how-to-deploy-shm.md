@@ -770,8 +770,6 @@ We currently support two different types of package repositories:
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
 
-:warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
-
 ### How to deploy a Nexus package repository
 
 From your **deployment machine**
@@ -785,6 +783,8 @@ From your **deployment machine**
 + This will take **around 30 minutes** to run.
 
 ### How to deploy a local package mirror
+
+> :warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
 From your **deployment machine**
 
