@@ -18,6 +18,7 @@ Import-Module Az.Compute
 Import-Module Az.KeyVault
 Import-Module $PSScriptRoot/../../common/Configuration -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 
 
 # Check that we are authenticated in Azure
@@ -62,6 +63,7 @@ if ($null -eq $kvCertificate) {
     if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$($config.sre.keyVault.name)'..."
         $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -Force -ErrorAction SilentlyContinue
+        Start-Sleep 5
         $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force -ErrorAction SilentlyContinue
         $requestCertificate = $true
     }
