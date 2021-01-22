@@ -482,8 +482,6 @@ function Get-SreConfig {
         [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
         [string]$configId
     )
-    Add-LogMessage -Level Info "Generating/updating config file for '$configId'"
-
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-CoreConfigHashtable -configType "sre" -configName $configId
 
