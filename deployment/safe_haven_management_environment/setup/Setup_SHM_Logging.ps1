@@ -27,13 +27,53 @@ $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceN
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 
 
-# Ensure logging is active on all SHM VMs
-# ---------------------------------------
-$rgFilter = "RG_SHM_$($config.id)*"
-$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-foreach ($shmResourceGroup in $shmResourceGroups) {
-    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
-        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+# Enable the collection of syslog logs from Linux hosts
+# -----------------------------------------------------
+$facilityNames = @(
+    "kern",
+    "user",
+    "mail",
+    "daemon",
+    "auth",
+    "syslog",
+    "lpr",
+    "news",
+    "uucp",
+    "cron",
+    "authpriv",
+    "ftp",
+    "ntp",
+    "security",
+    "console",
+    "solaris-cron",
+    "local0",
+    "local1",
+    "local2",
+    "local3",
+    "local4",
+    "local5",
+    "local6",
+    "local7"
+)
+foreach ($facilityName in $facilityNames) {
+    $null = New-AzOperationalInsightsLinuxSyslogDataSource `
+    -ResourceGroupName $config.logging.rg
+    -WorkspaceName $config.logging.workspaceName `
+    -Name "Linux-syslog-$($facilityName)" `
+    -Facility $facilityName `
+    -CollectEmergency `
+    -CollectAlert `
+    -CollectCritical `
+    -CollectError `
+    -CollectWarning `
+    -CollectNotice `
+    -CollectDebug `
+    -CollectInformational
+
+    if ($?) {
+        Add-LogMessage -Level Success "Logging activated for '$facilityName' syslog facility."
+    } else {
+        Add-LogMessage -Level Fatal "Failed to activate logging for '$facilityName' syslog facility!"
     }
 }
 
@@ -153,6 +193,18 @@ foreach ($packName in $packNames) {
         }
     }
 }
+
+
+# Ensure logging is active on all SHM VMs
+# ---------------------------------------
+$rgFilter = "RG_SHM_$($config.id)*"
+$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
+foreach ($shmResourceGroup in $shmResourceGroups) {
+    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
+        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+    }
+}
+
 
 # Switch back to original subscription
 # ------------------------------------
