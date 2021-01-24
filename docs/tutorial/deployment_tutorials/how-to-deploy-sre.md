@@ -350,6 +350,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 On your **deployment machine**.
 
++ Ensure that you are connecting from one of the **permitted IP ranges** specified in the `inboundAccessFrom` section of the SRE config file. For example, if you have authorised a corporate VPN, check that you have correctly configured you client to connect to it.
 + Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`, where the first part  of the `<safe haven domain>` is the `<SHM ID>`) and log in with the user name and password you set up for the non-privileged user account.
 + You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 + **NOTE:** The apps will not work until the other servers have been deployed.
@@ -386,6 +387,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Run the `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ The deployment will take **around 30 minutes**.
 
 ### :microscope: Test GitLab and HackMD servers
 
