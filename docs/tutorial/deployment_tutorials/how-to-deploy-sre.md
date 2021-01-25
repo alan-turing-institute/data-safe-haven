@@ -114,7 +114,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
-    "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the name of the key vault secret containing the MSSQL admin password, you could use something like: 'sre: { databases: { dbmssql: { adminPasswordSecretName: my-password-name } } }'"
+    "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the name of the Key Vault secret containing the MSSQL admin password, you could use something like: 'sre: { databases: { dbmssql: { adminPasswordSecretName: my-password-name } } }'"
 }
 ```
 
@@ -164,8 +164,8 @@ On your **deployment machine**.
 
 On your **deployment machine**.
 
-+ Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
-+ This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS -> kv-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
++ Register service accounts with the SHM by running `./Setup_SRE_Key Vault_And_Users.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ This step also creates a Key Vault in the SRE subscription in `Resource Groups -> RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS -> kv-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this Key Vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :station: Deploy networking components
 
@@ -223,7 +223,7 @@ On your **deployment machine**.
   + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for OSX.
 + The private IP address can be found using the Azure portal by navigating to the Virtual Machine `RDG-SRE-<SRE ID>`
 + Set the PC name to be the IP address and the Friendly name to `RDG-SRE-<SRE ID>`
-+ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets` . as follows:
++ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` Key Vault, under `Secrets` . as follows:
   + The username is the `shm-<SHM ID>-domain-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
@@ -280,7 +280,7 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE Config ID> -emailAddress <email>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 + **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
-+ **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
++ **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 </details>
 
@@ -298,7 +298,7 @@ Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Rem
 
 + Double click on the desktop named `DC1-SHM-<SHM ID>`
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
-  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel.
   + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
   + The password is the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
@@ -427,7 +427,7 @@ On your **deployment machine**.
   + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
     + If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
   + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
-  + :warning: This can happen if the NPS secret stored in the key vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
+  + :warning: This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 
 </details>
 
@@ -489,8 +489,8 @@ On your **deployment machine**.
 + Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 + Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 + If you are not prompted with `login:` , hit enter until the prompt appears
-+ Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE key vault.
-+ Enter the password from the `sre-<SRE ID>-vm-admin-password-compute` secret in the SRE key vault.
++ Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE Key Vault.
++ Enter the password from the `sre-<SRE ID>-vm-admin-password-compute` secret in the SRE Key Vault.
 + To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt` . You should see the contents of the `deployment/secure_research_environment/cloud_init/cloud-init-compute-vm.template.yaml` file in the Safe Haven git repository.
 + To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 

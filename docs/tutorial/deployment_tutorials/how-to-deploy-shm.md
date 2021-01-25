@@ -8,7 +8,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Safe Haven Management configuration](#safe-haven-management-configuration)
 + [Configure DNS for the custom domain](#configure-dns-for-the-custom-domain)
 + [Setup Azure Active Directory (AAD)](#setup-azure-active-directory-aad)
-+ [Deploy key vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
++ [Deploy Key Vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [Enable MFA and self-service password reset](#enable-mfa-and-self-service-password-reset)
 + [Configure internal administrator accounts](#configure-internal-administrator-accounts)
 + [Deploy virtual network and VPN gateway](#deploy-virtual-network-and-vpn-gateway)
@@ -153,7 +153,7 @@ From your **deployment machine**
     + :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
   + Pick the Azure account that you are building the environment with when asked to log in
 
-## Deploy key vault for SHM secrets and create emergency admin account
+## Deploy Key Vault for SHM secrets and create emergency admin account
 
 From your **deployment machine**
 
@@ -162,7 +162,7 @@ From your **deployment machine**
 + Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + Pick the Azure account that you are building the environment with when asked to log in
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  + Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+  + Run `pwsh { ./Setup_SHM_Key Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     + :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
     + Pick the Azure account that you are building the environment with when asked to log in
     + **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
@@ -219,14 +219,14 @@ Click the heading that applies to you to expand the instructions for that scenar
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Subscriptions"
   + Click on the Safe Haven SHM subscription
   + Click on `Resource Groups` in the left hand sidebar then `RG_SHM_<SHM ID>_SECRETS`
-  + Click on the `kv-shm-<shm id>` key vault
+  + Click on the `kv-shm-<shm id>` Key Vault
   + Click on `Secrets` in the left hand sidebar
   + Click on the `shm-<shm id>-aad-emergency-admin-password` secret
   + Click on the entry in the `Current version` section
   + Click on the clipboard icon next to the `Secret value` field
   + The emergency admin account password in now in your clipboard
   + Switch back to the browser tab with the Azure login page
-  + Paste the password you copied from the key vault
+  + Paste the password you copied from the Key Vault
   + Click the `Sign in` button
 + Click the `Purchase services` link in the information panel above the trial options.
 + In the "Microsoft 365 Admin Centre" portal that opens:
@@ -384,7 +384,7 @@ From your **deployment machine**
 
 ### Download a client VPN certificate for the Safe Haven Management network
 
-+ Navigate to the SHM key vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`
++ Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_<SHM ID>_SECRETS -> kv-shm-<SHM ID>`
   + NB. `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + Once there open the `Certificates` page under the `Settings` section in the left hand sidebar.
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert` and select the `CURRENT VERSION`
@@ -448,7 +448,7 @@ From your **deployment machine**
 + Double click on the desktop that appears under `saved desktops` or `PCs`.
   + Ensure you are connected the virtual network you set up via the VPN, or this will not work
 + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
-  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel.
   + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
   + The password in the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
@@ -640,7 +640,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   + Double click on the desktop that appears under `saved desktops` or `PCs`.
     + Ensure you are connected the virtual network you set up via the VPN, or this will not work
   + Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
-    + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+    + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel.
     + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
     + The password in the `shm-<SHM ID>-domain-admin-password` secret.
   + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
