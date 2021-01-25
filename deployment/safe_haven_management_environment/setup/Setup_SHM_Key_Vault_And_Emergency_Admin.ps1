@@ -41,13 +41,13 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
-# Ensure the keyvault exists and set its access policies
+# Ensure the Key Vault exists and set its access policies
 # ------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
 Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
 
 
-# Ensure that secrets exist in the keyvault
+# Ensure that secrets exist in the Key Vault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 $emergencyAdminUsername = "aad.admin.emergency.access"

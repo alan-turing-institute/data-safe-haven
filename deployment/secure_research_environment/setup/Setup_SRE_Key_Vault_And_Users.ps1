@@ -23,14 +23,14 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.location
 
 
-# Ensure the keyvault exists
+# Ensure the Key Vault exists
 # --------------------------
 $null = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
 Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.azureAdminGroupName
 Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
 
 
-# Ensure that secrets exist in the keyvault
+# Ensure that secrets exist in the Key Vault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
 # :: Admin usernames

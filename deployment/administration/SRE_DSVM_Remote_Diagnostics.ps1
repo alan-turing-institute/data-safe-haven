@@ -36,7 +36,7 @@ if ($?) {
 Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
 
 
-# Get LDAP secret from the KeyVault
+# Get LDAP secret from the Key Vault
 # ---------------------------------
 Add-LogMessage -Level Info "[ ] Loading LDAP secret from key vault '$($config.sre.keyVault.name)'"
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext

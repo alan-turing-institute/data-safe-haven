@@ -58,7 +58,7 @@ $null = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $confi
 $null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 
 
-# Ensure the keyvault exists and set its access policies
+# Ensure the Key Vault exists and set its access policies
 # ------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.azureAdminGroupName

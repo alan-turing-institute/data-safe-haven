@@ -169,7 +169,7 @@ if ($?) {
 }
 
 
-# Retrieve passwords from the keyvault
+# Retrieve passwords from the Key Vault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20 -AsPlaintext

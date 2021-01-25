@@ -19,7 +19,7 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Retrieve passwords from the keyvault
+# Retrieve passwords from the Key Vault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext

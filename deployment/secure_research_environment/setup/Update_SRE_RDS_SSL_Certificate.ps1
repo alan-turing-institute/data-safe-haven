@@ -41,7 +41,7 @@ $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
 
-# Check for existing certificate in KeyVault
+# Check for existing certificate in Key Vault
 # ------------------------------------------
 Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in key vault..."
 $kvCertificate = Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName

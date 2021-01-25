@@ -23,7 +23,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
-# Retrieve passwords from the keyvault
+# Retrieve passwords from the Key Vault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
 $domainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
