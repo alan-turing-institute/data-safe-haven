@@ -491,9 +491,9 @@ From your **deployment machine**
     + On the `AD forest account` pop-up:
       + Select `Use existing AD account`
       + Enter the details for the `localadsync` user.
-        + Username: use the `shm-<SHM ID>-aad-localsync-username` secret in the SHM Key Vault prepended with `<domain name>\`
-          + :information_source: For example, if the *domain name* is `testa.turingsafehaven.ac.uk` and the *username* is `testalocaladsync` then you would use `testa.turingsafehaven.ac.uk\testalocaladsync` here.
-        + Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM Key Vault.
+        + Username: use the value of the `shm-<SHM ID>-aad-localsync-username` secret in the SHM key vault prepended with `<Domain ID>\` where the `Domain ID` is the capitalised form of the `<SHM ID>`.
+          + For example, if the *SHM ID* is `testa` and the *username* is `testalocaladsync` then you would use `TESTA\testalocaladsync` here.
+        + Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM key vault.
       + Click `OK`
       + **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user in the **Domain Controller** Active Directory to the value in the secret listed above.
         + In Server Manager click `Tools > Active Directory Users and Computers`
@@ -747,21 +747,6 @@ Once you're certain that you're adding a new user, make sure that the following 
 + Deploy and configure the firewall by running `./Setup_SHM_Firewall.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **about 10 minutes** to run.
 
-## Deploy logging
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  + Pick the Azure account that you are building the environment with when asked to log in
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure logging by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ This will take **several minutes** to run.
-
-### Troubleshooting
-The API call that installs the logging extesnions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
-If so, try re-running the logging set up script.
-In most cases the extensions have actually been successfully installed.
-
 ## Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
@@ -769,8 +754,6 @@ We currently support two different types of package repositories:
 + Local mirror (Tier-2 and Tier-3)
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
-
-:warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
 ### How to deploy a Nexus package repository
 
@@ -786,6 +769,8 @@ From your **deployment machine**
 
 ### How to deploy a local package mirror
 
+> :warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+
 From your **deployment machine**
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -794,3 +779,18 @@ From your **deployment machine**
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the package mirrors by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 30 minutes** to run.
+
+## Deploy logging
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  + Pick the Azure account that you are building the environment with when asked to log in
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Deploy and configure logging by running `./Setup_SHM_Logging.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **several minutes** to run.
+
+### Troubleshooting
+The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
+If so, try re-running the logging set up script.
+In most cases the extensions have actually been successfully installed.
