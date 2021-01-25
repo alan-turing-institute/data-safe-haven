@@ -29,6 +29,36 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 
 # Enable the collection of syslog logs from Linux hosts
 # -----------------------------------------------------
+# Syslog facilities:
+#   See
+#     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
+#     - https://tools.ietf.org/html/rfc5424 (page 10)
+#     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
+#
+#   kern:     kernel messages
+#   user:     user: level messages
+#   mail:     mail system
+#   daemon:   system daemons
+#   auth:     security/authorization messages
+#   syslog:   messages generated internally by syslogd
+#   lpr:      line printer subsystem
+#   news:     network news subsystem
+#   uucp:     UUCP subsystem
+#   cron:     clock daemon
+#   security: security/authorization messages (the same as auth)
+#   ftp:      FTP daemon
+#   ntp:      NTP subsystem
+#   logaudit: log audit
+#   logalert: log alert
+#   clock:    clock daemon
+#   local0:   local use 0
+#   local1:   local use 1
+#   local2:   local use 2
+#   local3:   local use 3
+#   local4:   local use 4
+#   local5:   local use 5
+#   local6:   local use 6
+#   local7:   local use 7
 $facilityNames = @(
     "kern",
     "user",
@@ -40,12 +70,13 @@ $facilityNames = @(
     "news",
     "uucp",
     "cron",
+    "security",
     "authpriv",
     "ftp",
     "ntp",
-    "security",
-    "console",
-    "solaris-cron",
+    "logaudit",
+    "logalert",
+    "clock",
     "local0",
     "local1",
     "local2",
@@ -55,6 +86,19 @@ $facilityNames = @(
     "local6",
     "local7"
 )
+# Syslog severities:
+#   See
+#     - https://wiki.gentoo.org/wiki/Rsyslog#Severity
+#     - https://tools.ietf.org/html/rfc5424 (page 11)
+#
+#   Emergency:     system is unusable
+#   Alert:         action must be taken immediately
+#   Critical:      critical conditions
+#   Error:         error conditions
+#   Warning:       warning conditions
+#   Notice:        normal but significant condition
+#   Informational: informational messages
+#   Debug:         debug-level messages
 foreach ($facilityName in $facilityNames) {
     $null = New-AzOperationalInsightsLinuxSyslogDataSource `
     -ResourceGroupName $config.logging.rg
@@ -67,8 +111,8 @@ foreach ($facilityName in $facilityNames) {
     -CollectError `
     -CollectWarning `
     -CollectNotice `
-    -CollectDebug `
-    -CollectInformational
+    -CollectInformational `
+    -CollectDebug
 
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$facilityName' syslog facility."
