@@ -34,20 +34,20 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
 #     - https://tools.ietf.org/html/rfc5424 (page 10)
 #     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
-$facilityNames = @(
-    "auth",     # security/authorization messages
-    "authpriv", # non-system authorization messages
-    "cron",     # clock daemon
-    "daemon",   # system daemons
-    "ftp",      # FTP daemon
-    "kern",     # kernel messages
-    "lpr",      # line printer subsystem
-    "mail",     # mail system
-    "news",     # network news subsystem
-    "syslog",   # messages generated internally by syslogd
-    "user",     # user: level messages
-    "uucp"      # UUCP subsystem
-)
+$facilities = @{
+    "auth"     = "security/authorization messages";
+    "authpriv" = "non-system authorization messages";
+    "cron"     = "clock daemon";
+    "daemon"   = "system daemons";
+    "ftp"      = "FTP daemon";
+    "kern"     = "kernel messages";
+    "lpr"      = "line printer subsystem";
+    "mail"     = "mail system";
+    "news"     = "network news subsystem";
+    "syslog"   = "messages generated internally by syslogd";
+    "user"     = "user-level messages";
+    "uucp"     = "UUCP subsystem";
+}
 # Syslog severities:
 #   See
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Severity
@@ -61,12 +61,12 @@ $facilityNames = @(
 #   Notice:        normal but significant condition
 #   Informational: informational messages
 #   Debug:         debug-level messages
-foreach ($facilityName in $facilityNames) {
+foreach ($facility in $facilities.GetEnumerator()) {
     $null = New-AzOperationalInsightsLinuxSyslogDataSource `
             -ResourceGroupName $config.logging.rg `
             -WorkspaceName $config.logging.workspaceName `
-            -Name "Linux-syslog-$($facilityName)" `
-            -Facility $facilityName `
+            -Name "Linux-syslog-$($facility.Key)" `
+            -Facility $facility.Key `
             -CollectEmergency `
             -CollectAlert `
             -CollectCritical `
@@ -76,11 +76,10 @@ foreach ($facilityName in $facilityNames) {
             -CollectInformational `
             -CollectDebug `
             -Force
-
     if ($?) {
-        Add-LogMessage -Level Success "Logging activated for '$facilityName' syslog facility."
+        Add-LogMessage -Level Success "Logging activated for '$($facility.Key)' syslog facility [$($facility.Value)]."
     } else {
-        Add-LogMessage -Level Fatal "Failed to activate logging for '$facilityName' syslog facility!"
+        Add-LogMessage -Level Fatal "Failed to activate logging for '$($facility.Key)' syslog facility [$($facility.Value)]!"
     }
 }
 
@@ -100,19 +99,18 @@ $eventLogNames = @(
 
 foreach ($eventLogName in $eventLogNames) {
     $sourceName = "windows-event-$eventLogName".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
-                                                  -ResourceGroupName $config.logging.rg `
-                                                  -WorkspaceName $config.logging.workspaceName
+    $source = Get-AzOperationalInsightsDataSource -Name $sourceName -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
     if ($source) {
         Add-LogMessage -Level InfoSuccess "Logging already active for '$eventLogName'."
     } else {
-        $null = New-AzOperationalInsightsWindowsEventDataSource -Name $sourceName `
-                                                                -ResourceGroupName $config.logging.rg `
-                                                                -WorkspaceName $config.logging.workspaceName `
-                                                                -EventLogName $eventLogName `
-                                                                -CollectErrors `
-                                                                -CollectWarnings `
-                                                                -CollectInformation
+        $null = New-AzOperationalInsightsWindowsEventDataSource `
+                -Name $sourceName `
+                -ResourceGroupName $config.logging.rg `
+                -WorkspaceName $config.logging.workspaceName `
+                -EventLogName $eventLogName `
+                -CollectErrors `
+                -CollectWarnings `
+                -CollectInformation
         if ($?) {
             Add-LogMessage -Level Success "Logging activated for '$eventLogName'."
         } else {
@@ -141,19 +139,18 @@ $counters = @(
 )
 foreach ($counter in $counters) {
     $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource -Name $sourceName `
-                                                  -ResourceGroupName $config.logging.rg `
-                                                  -WorkspaceName $config.logging.workspaceName
+    $source = Get-AzOperationalInsightsDataSource -Name $sourceName -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
     if ($source) {
         Add-LogMessage -Level InfoSuccess "Logging already active for '$($counter.setName)/$($counter.counterName)'"
     } else {
-        $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource -Name $sourceName `
-                                                                             -ResourceGroupName $config.logging.rg `
-                                                                             -WorkspaceName $config.logging.workspaceName `
-                                                                             -ObjectName $counter.setName `
-                                                                             -InstanceName "*" `
-                                                                             -CounterName $counter.counterName `
-                                                                             -IntervalSeconds 60
+        $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
+                -Name $sourceName `
+                -ResourceGroupName $config.logging.rg `
+                -WorkspaceName $config.logging.workspaceName `
+                -ObjectName $counter.setName `
+                -InstanceName "*" `
+                -CounterName $counter.counterName `
+                -IntervalSeconds 60
         if ($?) {
             Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
         } else {
@@ -189,10 +186,7 @@ foreach ($packName in $packNames) {
     if ($pack.Enabled) {
         Add-LogMessage -Level InfoSuccess "'$packName' Intelligence Pack already enabled."
     } else {
-        $pack = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $packName `
-                                                          -WorkspaceName $config.logging.workspaceName `
-                                                          -ResourceGroupName $config.logging.rg `
-                                                          -Enabled $true
+        $pack = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $packName -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $true
         if ($?) {
             Add-LogMessage -Level Success "'$packName' Intelligence Pack enabled."
         } else {
