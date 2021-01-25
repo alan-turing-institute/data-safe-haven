@@ -42,7 +42,7 @@ if ($dryRun) { $certificateName += "-dryrun" }
 
 
 # Check for existing certificate in Key Vault
-# ------------------------------------------
+# -------------------------------------------
 Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in Key Vault..."
 $kvCertificate = Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName
 $requestCertificate = $false
@@ -91,7 +91,7 @@ if ($requestCertificate) {
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
     # Generate a certificate signing request in the Key Vault
-    # ------------------------------------------------------
+    # -------------------------------------------------------
     Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."
     $SubjectName = "CN=$($baseFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
     $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$rdsFqdn"
@@ -245,7 +245,7 @@ if ($doInstall) {
     if (1 -eq [int]$config.sre.tier) {
 
         # Add signed Key Vault certificate to the compute VM
-        # -------------------------------------------------
+        # --------------------------------------------------
         Add-LogMessage -Level Info "Adding SSL certificate to compute VM"
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
         $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
@@ -273,7 +273,7 @@ if ($doInstall) {
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
         # Add signed Key Vault certificate to the gateway VM
-        # -------------------------------------------------
+        # --------------------------------------------------
         Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
         $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL

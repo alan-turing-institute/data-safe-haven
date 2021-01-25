@@ -63,14 +63,14 @@ foreach ($keyName in $config.sre.databases.Keys) {
     $deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $virtualNetwork -Verbose
 
     # Retrieve domain join details from SHM Key Vault
-    # ----------------------------------------------
+    # -----------------------------------------------
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
     Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.shm.keyVault.name)'..."
     $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.databaseServers.passwordSecretName -DefaultLength 20 -AsPlaintext
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
     # Retrieve usernames/passwords from SRE Key Vault
-    # ----------------------------------------------
+    # -----------------------------------------------
     Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
     $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsernameSecretName -AsPlaintext
     $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext

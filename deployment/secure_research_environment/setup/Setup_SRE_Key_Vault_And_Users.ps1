@@ -24,7 +24,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre
 
 
 # Ensure the Key Vault exists
-# --------------------------
+# ---------------------------
 $null = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
 Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.azureAdminGroupName
 Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
@@ -78,7 +78,7 @@ try {
 # ------------------------------------------------------------
 if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     # Retrieve passwords from the Key Vault
-    # ------------------------------------
+    # -------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
     # Load SRE groups
     $groups = $config.sre.domain.securityGroups

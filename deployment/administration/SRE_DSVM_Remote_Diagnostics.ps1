@@ -37,7 +37,7 @@ Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_envi
 
 
 # Get LDAP secret from the Key Vault
-# ---------------------------------
+# ----------------------------------
 Add-LogMessage -Level Info "[ ] Loading LDAP secret from Key Vault '$($config.sre.keyVault.name)'"
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 if ($ldapSearchPassword) {

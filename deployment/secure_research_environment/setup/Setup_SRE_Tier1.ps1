@@ -98,7 +98,7 @@ $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet 
 
 
 # Retrieve credentials from the Key Vault
-# --------------------------------------
+# ---------------------------------------
 $keyVault = $config.sre.keyVault.name
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 

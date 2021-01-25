@@ -42,13 +42,13 @@ $null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.locatio
 
 
 # Ensure the Key Vault exists and set its access policies
-# ------------------------------------------------------
+# -------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
 Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that secrets exist in the Key Vault
-# -----------------------------------------
+# ------------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.keyVault.name)'..."
 $emergencyAdminUsername = "aad.admin.emergency.access"
 $emergencyAdminDisplayName = "AAD Admin - EMERGENCY ACCESS"
@@ -252,7 +252,7 @@ try {
         }
 
         # Upload the CA key + cert bundle to the Key Vault
-        # -----------------------------------------------
+        # ------------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading CA private key + certificate bundle as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
         $null = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath $caPfxPath -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
         if ($?) {
@@ -263,7 +263,7 @@ try {
 
         # # NB. this is not working at present - OSX reports that the CA certificate "is not standards compliant"
         # # Generate a self-signed CA certificate in the Key Vault
-        # # -----------------------------------------------------
+        # # ------------------------------------------------------
         # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' Key Vault"
         # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeyUsage @("KeyCertSign", "CrlSign") -Ekus @("1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "2.5.29.37.0") -KeySize 2048 -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
         # $caPolicy.Exportable = $true
@@ -281,7 +281,7 @@ try {
         # }
 
         # Store plain CA certificate as a Key Vault secret
-        # -----------------------------------------------
+        # ------------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading the plain CA certificate as secret $($config.keyVault.secretNames.vpnCaCertificatePlain) (without private key)"
         $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
         # Extract the public certificate and encode it as a Base64 string, without the header and footer lines and with a space every 64 characters
@@ -344,7 +344,7 @@ try {
         }
 
         # Generate a CSR in the Key Vault
-        # ------------------------------
+        # -------------------------------
         Add-LogMessage -Level Info "[ ] Creating new certificate signing request to be signed by the CA certificate..."
         if ($status -ne "inProgress") {
             $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=$clientStem" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
