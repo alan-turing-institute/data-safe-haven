@@ -47,30 +47,30 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
     # RDS gateway
     Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
     Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 
     # RDS sesssion hosts
     Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
     Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 
     # Database servers
     Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
     $databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
-    $databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"]
+    $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    $databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"] -ErrorAction Stop
 
     # Webapp servers
     Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg -WarnOnFailure
-    Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg -WarnOnFailure
-    $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg
+    $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    $webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
 
     # Compute VMs
     Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
     $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
-    $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"]
+    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
 
     # Update NSG rules
     # ----------------
