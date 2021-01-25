@@ -45,7 +45,7 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 #   news:     network news subsystem
 #   uucp:     UUCP subsystem
 #   cron:     clock daemon
-#   security: security/authorization messages (the same as auth)
+#   security: security/authorization messages (the same as auth, not used)
 #   ftp:      FTP daemon
 #   ntp:      NTP subsystem
 #   logaudit: log audit
@@ -70,7 +70,6 @@ $facilityNames = @(
     "news",
     "uucp",
     "cron",
-    "security",
     "authpriv",
     "ftp",
     "ntp",
