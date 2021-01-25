@@ -101,7 +101,7 @@ $facilityNames = @(
 #   Debug:         debug-level messages
 foreach ($facilityName in $facilityNames) {
     $null = New-AzOperationalInsightsLinuxSyslogDataSource `
-    -ResourceGroupName $config.logging.rg
+    -ResourceGroupName $config.logging.rg `
     -WorkspaceName $config.logging.workspaceName `
     -Name "Linux-syslog-$($facilityName)" `
     -Facility $facilityName `
