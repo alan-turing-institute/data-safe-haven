@@ -34,52 +34,19 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
 #     - https://tools.ietf.org/html/rfc5424 (page 10)
 #     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
-#
-#   kern:     kernel messages
-#   user:     user: level messages
-#   mail:     mail system
-#   daemon:   system daemons
-#   auth:     security/authorization messages
-#   syslog:   messages generated internally by syslogd
-#   lpr:      line printer subsystem
-#   news:     network news subsystem
-#   uucp:     UUCP subsystem
-#   cron:     clock daemon
-#   security: security/authorization messages (the same as auth, not used)
-#   ftp:      FTP daemon
-#   ntp:      NTP subsystem
-#   logaudit: log audit
-#   logalert: log alert
-#   clock:    clock daemon
-#   local0:   local use 0
-#   local1:   local use 1
-#   local2:   local use 2
-#   local3:   local use 3
-#   local4:   local use 4
-#   local5:   local use 5
-#   local6:   local use 6
-#   local7:   local use 7
 $facilityNames = @(
-    "kern",
-    "user",
-    "mail",
-    "daemon",
-    "auth",
-    "syslog",
-    "lpr",
-    "news",
-    "uucp",
-    "cron",
-    "authpriv",
-    "ftp",
-    "local0",
-    "local1",
-    "local2",
-    "local3",
-    "local4",
-    "local5",
-    "local6",
-    "local7"
+    "auth",     # security/authorization messages
+    "authpriv", # non-system authorization messages
+    "cron",     # clock daemon
+    "daemon",   # system daemons
+    "ftp",      # FTP daemon
+    "kern",     # kernel messages
+    "lpr",      # line printer subsystem
+    "mail",     # mail system
+    "news",     # network news subsystem
+    "syslog",   # messages generated internally by syslogd
+    "user",     # user: level messages
+    "uucp"      # UUCP subsystem
 )
 # Syslog severities:
 #   See
@@ -96,19 +63,19 @@ $facilityNames = @(
 #   Debug:         debug-level messages
 foreach ($facilityName in $facilityNames) {
     $null = New-AzOperationalInsightsLinuxSyslogDataSource `
-    -ResourceGroupName $config.logging.rg `
-    -WorkspaceName $config.logging.workspaceName `
-    -Name "Linux-syslog-$($facilityName)" `
-    -Facility $facilityName `
-    -CollectEmergency `
-    -CollectAlert `
-    -CollectCritical `
-    -CollectError `
-    -CollectWarning `
-    -CollectNotice `
-    -CollectInformational `
-    -CollectDebug `
-    -Force
+            -ResourceGroupName $config.logging.rg `
+            -WorkspaceName $config.logging.workspaceName `
+            -Name "Linux-syslog-$($facilityName)" `
+            -Facility $facilityName `
+            -CollectEmergency `
+            -CollectAlert `
+            -CollectCritical `
+            -CollectError `
+            -CollectWarning `
+            -CollectNotice `
+            -CollectInformational `
+            -CollectDebug `
+            -Force
 
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$facilityName' syslog facility."
@@ -241,7 +208,7 @@ $rgFilter = "RG_SHM_$($config.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
 foreach ($shmResourceGroup in $shmResourceGroups) {
     foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
-        $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+        $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
 
