@@ -59,8 +59,8 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
                                             -ValidityYears 1
 
         # As we want to ensure that the SAS token is valid for 1 year from *now* we do not want to re-use old tokens
-        # We therefore always generate a new token and store it in the keyvault (note that old tokens will still be valid and will still be stored as old versions of the secret)
-        # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the key vault
+        # We therefore always generate a new token and store it in the Key Vault (note that old tokens will still be valid and will still be stored as old versions of the secret)
+        # Note that this also protects us against the case when a SAS token corresponding to an old storage receptacle has been stored in the Key Vault
         $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
 
@@ -69,7 +69,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
         # Deploy the share
         $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $persistentStorageAccount -StorageType "Share"
 
-        # Ensure that the appropriate storage key is stored in the SRE keyvault
+        # Ensure that the appropriate storage key is stored in the SRE Key Vault
         $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
         $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name | Where-Object { $_.KeyName -eq "key1" }).Value
         $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop

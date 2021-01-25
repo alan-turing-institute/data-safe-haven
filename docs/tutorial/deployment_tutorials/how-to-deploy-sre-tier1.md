@@ -49,7 +49,7 @@ Follow the steps [here](./how-to-deploy-sre.md#clipboard-define-sre-configuratio
 
 On your **deployment machine**.
 
-+ Create a key vault in the SRE subscription by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using.
++ Create a Key Vault in the SRE subscription by running `./Setup_SRE_Key_Vault_And_Users.ps1 -configId <SRE config ID>` , where the `<SRE config ID>` is `<SHM ID><SRE ID>` for the full config file you are using.
   + For example, the full config file `sre_testcsandbox_full_config` will have `<SRE config ID>` equal to `testcsandbox` .
 
 ## :clubs: Create SRE DNS Zone

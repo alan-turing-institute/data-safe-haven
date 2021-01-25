@@ -97,8 +97,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet -NetworkSecurityGroup $nsg
 
 
-# Retrieve credentials from the keyvault
-# --------------------------------------
+# Retrieve credentials from the Key Vault
+# ---------------------------------------
 $keyVault = $config.sre.keyVault.name
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
@@ -146,7 +146,7 @@ $vmNic = Deploy-VirtualMachineNIC -Name "${vmName}-NIC" -ResourceGroupName $conf
 $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "${vmName}-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
 
 
-# Ensure that SSH keys exist in the key vault
+# Ensure that SSH keys exist in the Key Vault
 # -------------------------------------------
 $publicKeySecretName = "sre-tier1-key-public"
 $privateKeySecretName = "sre-tier1-key-private"
@@ -182,7 +182,7 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         } else {
             Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
-        # Upload keys to key vault
+        # Upload keys to Key Vault
         $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw) -AsPlaintext
         $success = $?
         $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw) -AsPlaintext
@@ -197,8 +197,8 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         Remove-Item "${vmName}.pem*" -Force -ErrorAction SilentlyContinue
     }
 }
-# Fetch SSH keys from key vault
-Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
+# Fetch SSH keys from Key Vault
+Add-LogMessage -Level Info "Retrieving SSH keys from Key Vault"
 $sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -AsPlaintext
 $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -AsPlaintext
 
