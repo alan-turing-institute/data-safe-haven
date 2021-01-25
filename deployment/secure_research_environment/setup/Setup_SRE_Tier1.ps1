@@ -182,7 +182,7 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         } else {
             Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
-        # Upload keys to key vault
+        # Upload keys to Key Vault
         $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw) -AsPlaintext
         $success = $?
         $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw) -AsPlaintext
@@ -198,7 +198,7 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
     }
 }
 # Fetch SSH keys from Key Vault
-Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
+Add-LogMessage -Level Info "Retrieving SSH keys from Key Vault"
 $sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -AsPlaintext
 $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -AsPlaintext
 

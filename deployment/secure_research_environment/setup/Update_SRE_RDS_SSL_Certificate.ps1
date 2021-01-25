@@ -43,7 +43,7 @@ if ($dryRun) { $certificateName += "-dryrun" }
 
 # Check for existing certificate in Key Vault
 # ------------------------------------------
-Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in key vault..."
+Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in Key Vault..."
 $kvCertificate = Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName
 $requestCertificate = $false
 
@@ -51,17 +51,17 @@ $requestCertificate = $false
 # Determine whether a certificate request is needed
 # -------------------------------------------------
 if ($null -eq $kvCertificate) {
-    Add-LogMessage -Level Info "No certificate found in key vault '$($config.sre.keyVault.name)'"
+    Add-LogMessage -Level Info "No certificate found in Key Vault '$($config.sre.keyVault.name)'"
     $requestCertificate = $true
 } else {
     try {
         $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
-        Add-LogMessage -Level Success "Loaded certificate from key vault '$($config.sre.keyVault.name)' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
+        Add-LogMessage -Level Success "Loaded certificate from Key Vault '$($config.sre.keyVault.name)' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
     } catch [System.Management.Automation.MethodInvocationException] {
         $renewalDate = $null
     }
     if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
-        Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$($config.sre.keyVault.name)'..."
+        Add-LogMessage -Level Warning "Removing outdated certificate from Key Vault '$($config.sre.keyVault.name)'..."
         $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -Force -ErrorAction SilentlyContinue
         Start-Sleep 5  # ensure that the removal command has registered before attempting to purge
         $null = Remove-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -InRemovedState -Force -ErrorAction SilentlyContinue
@@ -90,7 +90,7 @@ if ($requestCertificate) {
     }
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
-    # Generate a certificate signing request in the KeyVault
+    # Generate a certificate signing request in the Key Vault
     # ------------------------------------------------------
     Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."
     $SubjectName = "CN=$($baseFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
@@ -213,7 +213,7 @@ if ($requestCertificate) {
 
     # Import signed certificate
     # -------------------------
-    Add-LogMessage -Level Info "Importing signed certificate into KeyVault '$($config.sre.keyVault.name)'..."
+    Add-LogMessage -Level Info "Importing signed certificate into Key Vault '$($config.sre.keyVault.name)'..."
     $kvCertificate = Import-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -FilePath $certificateFilePath
     if ($?) {
         Add-LogMessage -Level Success "Certificate import succeeded"
@@ -244,7 +244,7 @@ if ($doInstall) {
 
     if (1 -eq [int]$config.sre.tier) {
 
-        # Add signed KeyVault certificate to the compute VM
+        # Add signed Key Vault certificate to the compute VM
         # -------------------------------------------------
         Add-LogMessage -Level Info "Adding SSL certificate to compute VM"
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
@@ -272,7 +272,7 @@ if ($doInstall) {
 
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
 
-        # Add signed KeyVault certificate to the gateway VM
+        # Add signed Key Vault certificate to the gateway VM
         # -------------------------------------------------
         Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret

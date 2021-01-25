@@ -30,7 +30,7 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 
 # Retrieve variables from SHM Key Vault
 # -------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.shm.keyVault.name)'..."
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -AsPlaintext
 $domainJoinGatewayPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.rdsGatewayServers.passwordSecretName -DefaultLength 20 -AsPlaintext
@@ -40,7 +40,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Retrieve variables from SRE Key Vault
 # -------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext

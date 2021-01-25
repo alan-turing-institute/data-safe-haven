@@ -32,7 +32,7 @@ Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupNa
 
 # Ensure that secrets exist in the Key Vault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.sre.keyVault.name)'..."
 # :: Admin usernames
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
@@ -77,7 +77,7 @@ try {
 # Tier-2 and above need to register service users with the SHM
 # ------------------------------------------------------------
 if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
-    # Retrieve passwords from the keyvault
+    # Retrieve passwords from the Key Vault
     # ------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
     # Load SRE groups

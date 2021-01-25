@@ -49,7 +49,7 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdmi
 
 # Ensure that secrets exist in the Key Vault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.keyVault.name)'..."
 $emergencyAdminUsername = "aad.admin.emergency.access"
 $emergencyAdminDisplayName = "AAD Admin - EMERGENCY ACCESS"
 
@@ -220,10 +220,10 @@ try {
     $clientCsrPath = Join-Path $certFolderPath "${clientStem}.csr"
     $clientPkcs7Path = Join-Path $certFolderPath "${clientStem}.p7b"
 
-    # Ensure that CA certificate exists in the key vault
+    # Ensure that CA certificate exists in the Key Vault
     # --------------------------------------------------
-    Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove and purge any existing certificate with this name
+    Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' Key Vault..."
+    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
     $newCertRequired = $True
     $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate
     if ($existingCert) {
@@ -251,7 +251,7 @@ try {
             Add-LogMessage -Level Fatal "Generating self-signed certificate failed!"
         }
 
-        # Upload the CA key + cert bundle to the KeyVault
+        # Upload the CA key + cert bundle to the Key Vault
         # -----------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading CA private key + certificate bundle as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
         $null = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath $caPfxPath -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
@@ -262,9 +262,9 @@ try {
         }
 
         # # NB. this is not working at present - OSX reports that the CA certificate "is not standards compliant"
-        # # Generate a self-signed CA certificate in the KeyVault
+        # # Generate a self-signed CA certificate in the Key Vault
         # # -----------------------------------------------------
-        # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' KeyVault"
+        # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' Key Vault"
         # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeyUsage @("KeyCertSign", "CrlSign") -Ekus @("1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2", "2.5.29.37.0") -KeySize 2048 -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
         # $caPolicy.Exportable = $true
         # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
@@ -280,7 +280,7 @@ try {
         #     Add-LogMessage -Level Fatal "Generating self-signed certificate failed!"
         # }
 
-        # Store plain CA certificate as a KeyVault secret
+        # Store plain CA certificate as a Key Vault secret
         # -----------------------------------------------
         Add-LogMessage -Level Info "[ ] Uploading the plain CA certificate as secret $($config.keyVault.secretNames.vpnCaCertificatePlain) (without private key)"
         $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
@@ -297,8 +297,8 @@ try {
 
     # Generate or retrieve client certificate
     # ---------------------------------------
-    Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    # Check whether a certificate with a valid private key already exists in the key vault. If not, then remove and purge any existing certificate with this name
+    Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' Key Vault..."
+    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
     $newCertRequired = $True
     $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
     if ($existingCert) {
@@ -316,7 +316,7 @@ try {
 
         # Load CA certificate into local PFX file and extract the private key
         # -------------------------------------------------------------------
-        Add-LogMessage -Level Info "[ ] Loading CA private key from key vault..."
+        Add-LogMessage -Level Info "[ ] Loading CA private key from Key Vault..."
         $caPfxBase64 = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificate -AsPlaintext
         [IO.File]::WriteAllBytes($caPfxPath, [System.Convert]::FromBase64String($caPfxBase64))
         $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
@@ -343,7 +343,7 @@ try {
             Add-LogMessage -Level Fatal "Failed to validate CA certificate retrieval using MD5!"
         }
 
-        # Generate a CSR in the KeyVault
+        # Generate a CSR in the Key Vault
         # ------------------------------
         Add-LogMessage -Level Info "[ ] Creating new certificate signing request to be signed by the CA certificate..."
         if ($status -ne "inProgress") {
