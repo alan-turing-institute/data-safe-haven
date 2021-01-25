@@ -111,7 +111,8 @@ foreach ($facilityName in $facilityNames) {
     -CollectWarning `
     -CollectNotice `
     -CollectInformational `
-    -CollectDebug
+    -CollectDebug `
+    -Force
 
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$facilityName' syslog facility."
