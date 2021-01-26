@@ -33,10 +33,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
     + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
     + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
 + `Microsoft Remote Desktop`
-  + On OSX this can be installed from the [Apple store](https://apps.apple.com)
+  + On macOS this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
   + To install manually follow the [instructions on Github](https://github.com/openssl/openssl)
-  + To install a pre-compiled version on OSX use Homebrew: `brew install openssl`
+  + To install a pre-compiled version on macOS use Homebrew: `brew install openssl`
   + To install a pre-compiled version on Windows use [one of these](https://wiki.openssl.org/index.php/Binaries).
     + **Windows:** OpenSSL is used in the Powershell scripts. If Powershell cannot find OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path, as follows: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
@@ -389,7 +389,7 @@ From your **deployment machine**
 + Once there open the `Certificates` page under the `Settings` section in the left hand sidebar.
 + Click on the certificate named `shm-<SHM ID>-vpn-client-cert` and select the `CURRENT VERSION`
 + Click the `Download in PFX/PEM format` link at the top of the page and save the `*.pfx` certificate file locally
-+ To install, double click on the downloaded certificate (or on OSX you can manually drag it into the `login` keychain), leaving the password field blank.
++ To install, double click on the downloaded certificate (or on macOS you can manually drag it into the `login` keychain), leaving the password field blank.
 
 **Make sure to securely delete the local "\*.pfx" certificate file that you downloaded after you have installed it.**
 
@@ -410,8 +410,8 @@ From your **deployment machine**
     + **Do not** rename the VPN client as this will break it
     + **Troubleshooting:** you may get a `Windows protected your PC` pop up. If so, click `More info -> Run anyway`.
     + **Troubleshooting:** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
-  + **OSX:**
-    + Start from step 3 of the OSX instructions.
+  + **macOS:**
+    + Start from step 3 of the macOS instructions.
     + Use IKEv2 for the VPN type
     + Name the VPN connection `Safe Haven Management Gateway (<SHM ID>)`
     + You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.

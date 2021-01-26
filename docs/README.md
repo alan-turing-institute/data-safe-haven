@@ -36,7 +36,7 @@ The easiest way to make shareable PDF files from the Markdown documents included
   + Install `pretty-markdown-pdf` with `npm install pretty-markdown-pdf` with the -g flag if you want it installed globally
   + Run `./markdown2pdf.sh <file name>.md npm`
 + `LaTeX` method
-  + Install [`XeLaTex`](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [`TexLive`](http://www.tug.org/texlive/) (Windows / Linux) or [`MacTex`](http://www.tug.org/mactex/) (OSX).
+  + Install [`XeLaTex`](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [`TexLive`](http://www.tug.org/texlive/) (Windows / Linux) or [`MacTex`](http://www.tug.org/mactex/) (macOS).
   + Install [`Pandoc`](https://pandoc.org/installing.html)`
   + Install the `Symbola` font (https://fontlibrary.org/en/font/symbola)
   + Run `./markdown2pdf.sh <file name>.md latex`
