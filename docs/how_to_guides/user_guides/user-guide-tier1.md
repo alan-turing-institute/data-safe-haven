@@ -147,9 +147,9 @@ To generate an SSH key with `PuTTYgen` , follow these steps:
     + Use a name that matches the public key but with the `ppk` extension
     + :information_source: Our example user Ada Lovelace might call hers `apr20_ada_lovelace_rsa.ppk`
 
-#### Generate an SSH key on Linux/OSX
+#### Generate an SSH key on Linux/macOS
 
-On Linux or OSX you can generate a key with `ssh-keygen` with the following steps:
+On Linux or macOS you can generate a key with `ssh-keygen` with the following steps:
 
 + Choose the name for your key.
   + We recommend using a name like `<usage>_<your name>_<type>.pub`
@@ -263,7 +263,7 @@ To connect over SSH with `PuTTY` , follow these steps:
       <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login"/>
     </p>
 
-#### Connect via SSH on Linux/OSX
+#### Connect via SSH on Linux/macOS
 
 To connect over SSH simply do the following:
 

@@ -58,7 +58,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
   + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 + `Microsoft Remote Desktop`
-  + On OSX this can be installed from the [Apple store](https://apps.apple.com)
+  + On macOS this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
   + Install using your package manager of choice
 
@@ -220,7 +220,7 @@ On your **deployment machine**.
 ### :satellite: Configure RDS webclient
 
 + Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
-  + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for OSX.
+  + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for macOS.
 + The private IP address can be found using the Azure portal by navigating to the Virtual Machine `RDG-SRE-<SRE ID>`
 + Set the PC name to be the IP address and the Friendly name to `RDG-SRE-<SRE ID>`
 + Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` Key Vault, under `Secrets` . as follows:

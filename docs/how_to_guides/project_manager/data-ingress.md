@@ -143,7 +143,7 @@ This transferred version of the data is the **golden copy** and can not be edite
 
 ### Web Interface
 
-Available using OSX/Windows/GNU/Linux.
+Available using macOS/Windows/GNU/Linux.
 
 The Turing staff member who is transferring the data can log in and move datasets and files from the staging area to the secure data area.
 

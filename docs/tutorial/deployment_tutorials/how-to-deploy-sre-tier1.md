@@ -15,7 +15,7 @@
 
 ## :seedling: Prerequisites
 
-:warning: As the deployment process depends on [`Ansible`](https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, OSX, BSD, Solaris).
+:warning: As the deployment process depends on [`Ansible`](https://www.ansible.com) you must be on a [system supported by ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (Linux, macOS, BSD, Solaris).
 
 The following packages are required
 
@@ -27,10 +27,10 @@ The following packages are required
 + `Python`
   + Install a version `> 3.6`
 + `qrencode`
-  + :apple: Install using [Homebrew](https://formulae.brew.sh/formula/qrencode) on OSX
+  + :apple: Install using [Homebrew](https://formulae.brew.sh/formula/qrencode) on macOS
   + :penguin: Install through your package manager on Linux
 + `oathtool`
-  + :apple: Install `oath-toolkit` using [Homebrew](https://formulae.brew.sh/formula/oath-toolkit) on OSX
+  + :apple: Install `oath-toolkit` using [Homebrew](https://formulae.brew.sh/formula/oath-toolkit) on macOS
   + :penguin: Install through your package manager on Linux
 + `ssh-keygen`
   + Should be available out-of-the-box for all systems supported by Ansible
