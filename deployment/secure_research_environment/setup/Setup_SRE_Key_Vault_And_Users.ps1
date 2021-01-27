@@ -23,16 +23,16 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.location
 
 
-# Ensure the keyvault exists
-# --------------------------
+# Ensure the Key Vault exists
+# ---------------------------
 $null = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
 Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.azureAdminGroupName
 Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
 
 
-# Ensure that secrets exist in the keyvault
+# Ensure that secrets exist in the Key Vault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.sre.keyVault.name)'..."
 # :: Admin usernames
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
@@ -53,13 +53,12 @@ try {
 }
 # :: Databases
 try {
-    foreach ($dbConfigName in $config.sre.databases.Keys) {
-        if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
-        $dbAdminUsername = "sre$($config.sre.id)dbadmin".ToLower()
-        if ($dbConfigName -eq "dbpostgresql") { $dbAdminUsername = "postgres" } # This is recorded for auditing purposes - changing it will not change the username of the admin account
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminUsernameSecretName $dbAdminUsername -AsPlaintext
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    foreach ($keyName in $config.sre.databases.Keys) {
+        if ($config.sre.databases[$keyName] -isnot [System.Collections.IDictionary]) { continue }
+        $dbAdminUsername = ($keyName -eq "dbpostgresql") ? "postgres" : "sre$($config.sre.id)dbadmin".ToLower() # The postgres admin username is hardcoded as 'postgres' but we save it to the keyvault to ensure a consistent record structure
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].dbAdminUsernameSecretName $dbAdminUsername -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
@@ -78,8 +77,8 @@ try {
 # Tier-2 and above need to register service users with the SHM
 # ------------------------------------------------------------
 if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
-    # Retrieve passwords from the keyvault
-    # ------------------------------------
+    # Retrieve passwords from the Key Vault
+    # -------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
     # Load SRE groups
     $groups = $config.sre.domain.securityGroups

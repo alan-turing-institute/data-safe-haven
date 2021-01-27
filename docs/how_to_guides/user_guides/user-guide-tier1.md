@@ -123,7 +123,7 @@ To generate an SSH key with `PuTTYgen` , follow these steps:
   + for `Number of bits in generated key` , enter `4096`
   + click the `Generate` button.
   <p align="center">
-    <img src="images/user_guide/tier1_puttygen_main.png" width="80%" title="tier1_puttygen_main">
+    <img src="images/user_guide/tier1_puttygen_main.png" width="80%" title="tier1_puttygen_main"/>
   </p>
 
 + Generate a random key
@@ -135,7 +135,7 @@ To generate an SSH key with `PuTTYgen` , follow these steps:
   + Type the same passphrase in the `Confirm passphrase` field.
   + :warning: You can use a key without a passphrase, but this is not recommended.
   <p align="center">
-    <img src="images/user_guide/tier1_puttygen_generated.png" width="80%" title="tier1_puttygen_generated">
+    <img src="images/user_guide/tier1_puttygen_generated.png" width="80%" title="tier1_puttygen_generated"/>
   </p>
 
 + Save the key
@@ -147,9 +147,9 @@ To generate an SSH key with `PuTTYgen` , follow these steps:
     + Use a name that matches the public key but with the `ppk` extension
     + :information_source: Our example user Ada Lovelace might call hers `apr20_ada_lovelace_rsa.ppk`
 
-#### Generate an SSH key on Linux/OSX
+#### Generate an SSH key on Linux/macOS
 
-On Linux or OSX you can generate a key with `ssh-keygen` with the following steps:
+On Linux or macOS you can generate a key with `ssh-keygen` with the following steps:
 
 + Choose the name for your key.
   + We recommend using a name like `<usage>_<your name>_<type>.pub`
@@ -161,9 +161,7 @@ On Linux or OSX you can generate a key with `ssh-keygen` with the following step
    ```
 
    <p align="center">
-
-      <img src="images/user_guide/tier1_sshkeygen.png" width="80%" title="tier1_sshkeygen">
-
+      <img src="images/user_guide/tier1_sshkeygen.png" width="80%" title="tier1_sshkeygen"/>
    </p>
 
 + Secure your key
@@ -192,13 +190,13 @@ This additional security verification is to make it harder for people to imperso
 
 + Once you have been assigned to a particular SRE, you will be sent a QR code which will look something like this:
    <p align="center">
-      <img src="images/user_guide/tier1_qrcode.png" width="40%" title="tier1_qrcode">
+      <img src="images/user_guide/tier1_qrcode.png" width="40%" title="tier1_qrcode"/>
    </p>
 
 + You should follow the instructions in your preferred app for adding a new account by scanning a QR code.
 + At this point your authenticator app should be generating time-limited 6-digit codes like the following
    <p align="center">
-      <img src="images/user_guide/tier1_totpcode.png" width="40%" title="tier1_totpcode">
+      <img src="images/user_guide/tier1_totpcode.png" width="40%" title="tier1_totpcode"/>
    </p>
 
 ## :unlock: Access the Secure Research Environment
@@ -228,7 +226,7 @@ To connect over SSH with `PuTTY` , follow these steps:
   + under `Host name` enter the `<SRE URL>` and leave `Port` set to `22`
   + :information_source: Our example user Ada Lovelace will use `apr20.turingsafehaven.ac.uk` here
   <p align="center">
-    <img src="images/user_guide/tier1_putty_setup_01.png" width="80%" title="tier1_putty_setup_01">
+    <img src="images/user_guide/tier1_putty_setup_01.png" width="80%" title="tier1_putty_setup_01"/>
   </p>
 
 + Setup authentication
@@ -236,7 +234,7 @@ To connect over SSH with `PuTTY` , follow these steps:
   + Click on `Browse...` and select the **private** SSH key that you generated earlier
   + :information_source: Our example user Ada Lovelace will use the `apr20_ada_lovelace_rsa.ppk` key here
   <p align="center">
-    <img src="images/user_guide/tier1_putty_setup_02.png" width="80%" title="tier1_putty_setup_02">
+    <img src="images/user_guide/tier1_putty_setup_02.png" width="80%" title="tier1_putty_setup_02"/>
   </p>
 
 + Setup SSH forwarding
@@ -245,7 +243,7 @@ To connect over SSH with `PuTTY` , follow these steps:
   + In the `Destination` box put `127.0.0.1:443` (note the `:` )
   + Click the `Add` button to add the new forwarded port
   <p align="center">
-    <img src="images/user_guide/tier1_putty_setup_03.png" width="80%" title="tier1_putty_setup_03">
+    <img src="images/user_guide/tier1_putty_setup_03.png" width="80%" title="tier1_putty_setup_03"/>
   </p>
 
 + Save the session
@@ -257,15 +255,15 @@ To connect over SSH with `PuTTY` , follow these steps:
   + Now click `Open` and the SSH connection window will open
   + :pencil2: Note that you might get a connection warning like the one below. If you do, please select `Yes`
     <p align="center">
-        <img src="images/user_guide/tier1_putty_connection_warning.png" width="80%" title="tier1_putty_connection_warning">
+      <img src="images/user_guide/tier1_putty_connection_warning.png" width="80%" title="tier1_putty_connection_warning"/>
     </p>
   + You will be prompted for the passphrase for your key: enter the passphrase you set earlier
   + You will be prompted for a `One-time password (OATH) for <your username>` : enter the six digits from your authenticator app with no spaces
     <p align="center">
-        <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login">
+      <img src="images/user_guide/tier1_putty_login.png" width="80%" title="tier1_putty_login"/>
     </p>
 
-#### Connect via SSH on Linux/OSX
+#### Connect via SSH on Linux/macOS
 
 To connect over SSH simply do the following:
 
@@ -292,13 +290,13 @@ https://localhost:8443
 
 You will probably find that your browser warns you that the secure certificate is invalid
 <p align="center">
-   <img src="images/user_guide/tier1_browser_invalid_certificate.png" width="80%" title="tier1_browser_invalid_certificate">
+   <img src="images/user_guide/tier1_browser_invalid_certificate.png" width="80%" title="tier1_browser_invalid_certificate"/>
 </p>
 
 This is because the certificate was generated for `<SRE URL>` but you are trying to connect to `localhost` .
 In order to check that the certificate is correct, open it from your browser and check its validity and issuer.
 <p align="center">
-   <img src="images/user_guide/tier1_browser_invalid_certificate_check.png" width="80%" title="tier1_browser_invalid_certificate">
+   <img src="images/user_guide/tier1_browser_invalid_certificate_check.png" width="80%" title="tier1_browser_invalid_certificate"/>
 </p>
 
 + The `Issued to` field should be your `<SRE URL>`
@@ -322,7 +320,7 @@ You will need to provide the following information:
 This is not connected to the account you used to connect via SSH - you can set these details to whatever you want to.
 
 <p align="center">
-   <img src="images/user_guide/tier1_cocalc_signup.png" width="80%" title="tier1_cocalc_signup">
+   <img src="images/user_guide/tier1_cocalc_signup.png" width="80%" title="tier1_cocalc_signup"/>
 </p>
 
 #### Creating a CoCalc project
@@ -331,7 +329,7 @@ You will probably want to create a personal `CoCalc` project at this point.
 You can do so by filling out the name of the new project as shown:
 
 <p align="center">
-   <img src="images/user_guide/tier1_cocalc_project.png" width="80%" title="tier1_cocalc_project">
+   <img src="images/user_guide/tier1_cocalc_project.png" width="80%" title="tier1_cocalc_project"/>
 </p>
 
 You can invite other users to collaborate on your project and, in fact, you will probably do the majority of your work as part of a collaborative project.

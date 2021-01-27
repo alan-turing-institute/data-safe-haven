@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
@@ -54,7 +54,7 @@ Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 Add-LogMessage -Level Info "Deprovisioning VM: $($vm.Name)..."
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*$($vm.Name)-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
-Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.name)' key vault"
+Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.name)' Key Vault"
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | sudo tee /opt/verification/deprovision.log'
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"

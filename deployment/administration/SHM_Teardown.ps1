@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig -shmId $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
@@ -53,7 +53,9 @@ if ($shmResourceGroups) {
 # ---------------------------------------------
 $suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.shm.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
 if ($suspiciousResourceGroups) {
-    Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SHM`n$suspiciousResourceGroups"
+    Add-LogMessage -Level Warning "Subscription '$($config.subscriptionName)' contains $($suspiciousResourceGroups.Length) resource group(s) which were not deleted:"
+    $suspiciousResourceGroups | ForEach-Object { Add-LogMessage -Level Warning "... $($_.ResourceGroupName)" }
+    Add-LogMessage -Level Warning "Please check that these were not associated with this SHM."
 }
 
 
