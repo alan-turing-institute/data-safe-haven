@@ -153,10 +153,10 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.ods.opinsights.azure.com",
-                            "*.oms.opinsights.azure.com",
-                            "*.blob.core.windows.net",
-                            "*.azure-automation.net"
+                            "<logging-workspace-id>.ods.opinsights.azure.com",
+                            "<logging-workspace-id>.oms.opinsights.azure.com",
+                            "<logging-workspace-id>.blob.core.windows.net",
+                            "<logging-workspace-id>.agentsvc.azure-automation.net"
                         ],
                         "sourceAddresses": [
                             "*"
