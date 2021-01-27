@@ -34,6 +34,7 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
 #     - https://tools.ietf.org/html/rfc5424 (page 10)
 #     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
+Enable-AzOperationalInsightsLinuxSyslogCollection -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
 $facilities = @{
     "auth"     = "security/authorization messages";
     "authpriv" = "non-system authorization messages";
