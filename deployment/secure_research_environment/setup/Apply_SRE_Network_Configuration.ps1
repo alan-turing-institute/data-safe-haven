@@ -149,7 +149,9 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Block external DNS queries
 # --------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Block_External_DNS_Queries.ps1) -configId $configId"
+if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+    Invoke-Expression -Command "$(Join-Path $PSScriptRoot Block_External_DNS_Queries.ps1) -configId $configId"
+}
 
 
 # Switch back to original subscription
