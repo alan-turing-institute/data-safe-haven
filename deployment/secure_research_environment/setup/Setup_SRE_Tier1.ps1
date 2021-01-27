@@ -105,14 +105,14 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $conf
 
 # Ensure that the persistent data storage account exists
 # ------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
 $dataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistentdata.account.name `
                                             -AccessTier $config.sre.storage.persistentdata.account.accessTier `
-                                            -ResourceGroupName $config.sre.dataserver.rg `
+                                            -ResourceGroupName $config.sre.storage.artifacts.rg `
                                             -Kind $config.sre.storage.persistentdata.account.storageKind `
                                             -SkuName $config.sre.storage.persistentdata.account.performance `
                                             -Location $config.sre.location
-$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
+$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.storage.artifacts.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
 
 
 # Deploy storage shares for data ingress and egress
