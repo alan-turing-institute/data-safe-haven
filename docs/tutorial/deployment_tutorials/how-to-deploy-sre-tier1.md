@@ -104,8 +104,6 @@ On your **deployment machine**.
 + If you are creating new TOTP hashes for new users there are **expected failures** in the Ansible play.
   + In particular, looking up the existing TOTP hashes for these users will fail.
   + This is expected and not a problem as it prompts the next task to create a TOTP hash for those users.
-+ The CoCalc container is large and pulling it may take some time (~20 minutes).
-+ To add, or disable user accounts, edit the users file and re-run `./Setup_SRE_Tier1.ps1 -usersYAMLPath <YAML file>` .
 
 ## :closed_lock_with_key: Generate SSL certificate
 
