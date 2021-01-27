@@ -129,7 +129,7 @@ runcmd:
   # Deploy HackMD using Docker
   - echo "Deploying HackMD with Docker..."
   - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
-  - sleep 2m
+  - sleep 5m
   # Check current status
   - echo "Current HackMD status..."
   - docker-compose -f /opt/hackmd/docker-compose.yml ps
