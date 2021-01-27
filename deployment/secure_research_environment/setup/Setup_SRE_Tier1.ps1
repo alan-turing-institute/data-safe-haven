@@ -45,7 +45,7 @@ $subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -Vir
 
 # Ensure that NSG exists
 # ----------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name $outboundInternetAccessRuleName `
