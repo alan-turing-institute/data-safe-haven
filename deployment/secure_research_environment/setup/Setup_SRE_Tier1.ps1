@@ -303,9 +303,6 @@ Add-LogMessage -Level Info -Message `
 @"
 To connect to this VM please do the following:
   ssh <username>@$($config.sre.domain.fqdn) -L<local-port>:localhost:<remote-port>
-For example, to use CoCalc on port 443 you could do the following
-  ssh <username>@$($config.sre.domain.fqdn) -L8443:localhost:443
-You can then open a browser locally and go to https://localhost:8443
 "@
 
 
