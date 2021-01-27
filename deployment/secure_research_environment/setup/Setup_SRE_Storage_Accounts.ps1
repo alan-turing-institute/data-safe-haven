@@ -40,8 +40,8 @@ if (-not $persistentStorageAccount.PrimaryEndpoints.Blob) {
     Add-LogMessage -Level Fatal "Storage account '$($config.sre.storage.userdata.account.name)' does not support blob storage! If you attempted to override this setting in your config file, please remove this change."
 }
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
-    if ($config.sre.storage.userdata.containers[$receptacleName].mountType -notlike "*SMB*") {
-        Add-LogMessage -Level Fatal "Currently only file-storage mounted over SMB is supported for the '$receptacleName' container! If you attempted to override this setting in your config file, please remove this change."
+    if ($config.sre.storage.persistentdata.containers[$receptacleName].mountType -notlike "*SMB*") {
+        Add-LogMessage -Level Fatal "Currently only file storage mounted over SMB is supported for the '$receptacleName' container! If you attempted to override this setting in your config file, please remove this change."
     }
 
     # When using blob storage we need to mount using a SAS token
