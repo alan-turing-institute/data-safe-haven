@@ -60,7 +60,7 @@ $finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vn
 
 # Check whether this IP address has been used.
 # --------------------------------------------
-$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
+$existingNic = Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
 if (($existingNic.VirtualMachine.Id) -and -not $Upgrade) {
     Add-LogMessage -Level InfoSuccess "A VM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
     $null = Set-AzContext -Context $originalContext -ErrorAction Stop
