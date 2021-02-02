@@ -15,7 +15,6 @@ write_files:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
             - CMD_DB_URL=postgres://codimd:<codimd-postgres-password>@database:5432/codimd
-            - CMD_DOMAIN=<codimd-fqdn>
             - CMD_EMAIL=false
             - CMD_IMAGE_UPLOAD_TYPE=filesystem
             - CMD_LDAP_BINDCREDENTIALS=<codimd-bind-creds>
@@ -122,7 +121,7 @@ runcmd:
   - systemctl status docker
   # Set up the codimddaemon user
   - echo "Configuring codimddaemon user..."
-  - groupadd docker
+  - groupadd docker 2> /dev/null
   - usermod -aG docker codimddaemon
   - newgrp docker
   - chown -R codimddaemon:codimddaemon /opt/codimd
