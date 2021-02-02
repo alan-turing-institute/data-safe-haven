@@ -29,9 +29,9 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:microscope: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
 + [:floppy_disk: Deploy storage accounts](#floppy_disk-deploy-storage-accounts)
 + [:baseball: Deploy databases](#baseball-deploy-databases)
-+ [:snowflake: Deploy web applications (GitLab and HackMD)](#snowflake-deploy-web-applications-gitlab-and-hackmd)
++ [:snowflake: Deploy web applications (GitLab and CodiMD)](#snowflake-deploy-web-applications-gitlab-and-CodiMD)
   + [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
-  + [:microscope: Test HackMD Server](#microscope-test-hackmd-server)
+  + [:microscope: Test CodiMD Server](#microscope-test-codimd-server)
 + [:computer: Deploy data science VMs](#computer-deploy-data-science-vms)
   + [:fast_forward: Optional: Customise the deployed VM](#fast_forward-optional-customise-the-deployed-vm)
   + [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
@@ -92,7 +92,7 @@ The core properties for the new SRE environment must be present in the `environm
 
 > :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer
 
-This also gives you the `<SRE Config ID>`, which is the combination: `<SHM ID><SRE ID>`
+This also gives you the `<SRE Config ID>`, which is the combination: `<SHM ID><SRE ID>` (eg. `testcsandbox` for SRE `sandbox` in SHM `testc`).
 
 The following core SRE properties must be defined in a JSON file named `sre_<SRE Config ID>_core_config.json`.
 
@@ -378,7 +378,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 </details>
 
-## :snowflake: Deploy web applications (GitLab and HackMD)
+## :snowflake: Deploy web applications (GitLab and CodiMD)
 
 On your **deployment machine**.
 
@@ -389,7 +389,7 @@ On your **deployment machine**.
 + Run the `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + The deployment will take **around 30 minutes**.
 
-### :microscope: Test GitLab and HackMD servers
+### :microscope: Test GitLab and CodiMD servers
 
 On your **deployment machine**.
 
@@ -398,11 +398,11 @@ On your **deployment machine**.
   + You should receive an MFA request to your phone or authentication app.
   + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-+ Test `HackMD` by clicking on the `HackMD` app icon.
++ Test `CodiMD` by clicking on the `CodiMD` app icon.
   + You should receive an MFA request to your phone or authentication app.
   + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-+ If you do not get an MFA prompt or you cannot connect to the GitLab and HackMD servers, follow the **troubleshooting** instructions below.
++ If you do not get an MFA prompt or you cannot connect to the `GitLab` and `CodiMD` servers, follow the **troubleshooting** instructions below.
 
 <details>
 <summary><strong>Troubleshooting</strong></summary>

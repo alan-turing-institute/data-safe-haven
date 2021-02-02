@@ -777,7 +777,7 @@ function Get-SreConfig {
     }
 
 
-    # HackMD and Gitlab servers
+    # CodiMD and Gitlab servers
     # -------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
@@ -799,17 +799,17 @@ function Get-SreConfig {
                 }
             }
         }
-        hackmd = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
-            vmName                  = "HACKMD-SRE-$($config.sre.id)".ToUpper()
+        codimd = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
+            vmName                  = "CODIMD-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "18.04-LTS"
             codimd                  = [ordered]@{
-                dockerVersion = "2.2.0"
+                dockerVersion = "2.3.2"
             }
             postgres                = [ordered]@{
-                passwordSecretName = "$($config.sre.shortName)-other-hackmd-password-postgresdb"
+                passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
                 dockerVersion      = "13.1"
             }
             disks                   = [ordered]@{

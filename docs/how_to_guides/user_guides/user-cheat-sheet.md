@@ -23,13 +23,13 @@ The first time you use the safe haven, you’ll have to set up your user account
 
 ## Using the data safe haven
 
-The tool gives you access to a Linux virtual machine (VM), as well as to local copies of hackMD and gitlab, for collaborative report and code writing. You won’t be able to use the internet while working in the environment.
+The tool gives you access to a Linux virtual machine (VM), as well as to local copies of CodiMD and GitLab, for collaborative report and code writing. You won’t be able to use the internet while working in the environment.
 
 The data you’re going to be working on is stored in the R drive on a Windows VM inside the environment. You will probably want to copy this to the Linux VM, which you can do using the File Transfer WinSCP app. To access the data science VM’s file system, enter username username and password into the login mask, and confirm with "login". You can drag and drop any files between the Linux and Windows VMs.
 
 ## Using the data analytics virtual machine
 
-The Safe Haven contains a Linux VM for data analysis, with different packages installed on to it. The VM allows you to carry out data science research, completely isolated from the internet. You can access different applications from the terminal, including RStudio, Atom, jupyter notebook and Spider Integrated Development Environment. You can also access HackMD and Gitlab, using the browser in the VM.
+The Safe Haven contains a Linux VM for data analysis, with different packages installed on to it. The VM allows you to carry out data science research, completely isolated from the internet. You can access different applications from the terminal, including RStudio, Atom, jupyter notebook and Spider Integrated Development Environment. You can also access CodiMD and Gitlab, using the browser in the VM.
 
 <p align="center">
     <img src="../../images/cheat_sheet/DSH_linux_vm.png" width="80%" title="DSH_linux_vm"/>
@@ -51,14 +51,14 @@ Gitlab can allow you and your team to write code collaboratively. GitLab is an o
 
 You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop. Make all your repositories public so they are easy to share within your group. (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
-## Accessing HackMD and writing reports
+## Accessing CodiMD and writing reports
 
-HackMD is a tool that allows you to collaboratively write the data study group challenge report. It uses markdown which is a simple way to format your text so that it renders nicely in full html.
+CodiMD is a tool that allows you to collaboratively write the data study group challenge report. It uses markdown which is a simple way to format your text so that it renders nicely in full html.
 
-You can find a really great markdown cheat sheet at https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet. You can access the Safe Haven installation of HackMD from the Work Resources page.
+You can find a really great markdown cheat sheet at https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet. You can access the Safe Haven installation of CodiMD from the Work Resources page.
 
 <p align="center">
-    <img src="../../images/cheat_sheet/DSH_hackmd.png" width="80%" title="DSH_hackmd"/>
+    <img src="../../images/cheat_sheet/DSH_codimd.png" width="80%" title="DSH_codimd"/>
 </p>
 
 ## Finishing the project

@@ -141,7 +141,7 @@ $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Depl
 $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<dsvmInitialIpAddress>", $dsvmInitialIpAddress).
           Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
-          Replace("<hackmdIpAddress>", $config.sre.webapps.hackmd.ip).
+          Replace("<codimdIpAddress>", $config.sre.webapps.codimd.ip).
           Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
           Replace("<rdsGatewayVmName>", $config.sre.rds.gateway.vmName).
           Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn).
