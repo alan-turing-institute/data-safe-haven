@@ -1,4 +1,4 @@
-{   
+{
     "name": "Turing DSH TL TEST",
     "shmId": "testtl",
     "domain": "testtl.dsgroupdev.co.uk",
@@ -21,6 +21,6 @@
     "vmImages": {
         "subscriptionName": "[Prod] Safe Haven VM Images",
         "location": "uksouth",
-        "buildIpAddresses": ["188.214.11.75", "193.60.220.240", "193.60.220.253"]
+        "buildIpAddresses": ["193.60.220.240", "193.60.220.253"]
     }
 }
