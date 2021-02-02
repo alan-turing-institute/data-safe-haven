@@ -22,7 +22,7 @@ The infrastructure for each SRE is hosted in a separate Azure subscription. This
 + One or more compute VMs with a range of data science software preinstalled
 + A file server to host the project data
 + A Gitlab server to provide source code management and version control
-+ A HackMD server for collaborative writing
++ A CodiMD server for collaborative writing
 + Remote Desktop Services Gateway and Session Host servers to provide secure remote desktop access to the SRE resources.
 + A local Active Directory Domain Controller server to support the management of the Windows servers within the SRE.
 

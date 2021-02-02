@@ -84,51 +84,51 @@ $params = @{
     Subnet                 = $deploymentSubnet
 }
 $gitlabVm = Deploy-UbuntuVirtualMachine @params
-# Change subnets and IP address while HackMD VM is off
+# Change subnets and IP address while CodiMD VM is off
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
 
 
-# Deploy and configure HackMD VM
+# Deploy and configure CodiMD VM
 # ------------------------------
-Add-LogMessage -Level Info "Constructing HackMD cloud-init from template..."
-$hackmdCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-hackmd.template.yaml") -Raw
+Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
+$codimdCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Raw
 # Expand placeholders in the cloud-init template
-$hackmdCloudInitTemplate = $hackmdCloudInitTemplate.
-    Replace("<docker-hackmd-version>", $config.sre.webapps.hackmd.codimd.dockerVersion).
-    Replace("<docker-postgres-version>", $config.sre.webapps.hackmd.postgres.dockerVersion).
-    Replace("<hackmd-bind-creds>", $ldapSearchUserPassword).
-    Replace("<hackmd-bind-dn>", $ldapSearchUserDn).
-    Replace("<hackmd-fqdn>", "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)").
-    Replace("<hackmd-hostname>", $config.sre.webapps.hackmd.hostname).
-    Replace("<hackmd-ip>", $config.sre.webapps.hackmd.ip).
-    Replace("<hackmd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<hackmd-ldap-netbios>", $config.shm.domain.netbiosName).
-    Replace("<hackmd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
-    Replace("<hackmd-postgres-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)).
-    Replace("<hackmd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))").
+$codimdCloudInitTemplate = $codimdCloudInitTemplate.
+    Replace("<docker-codimd-version>", $config.sre.webapps.codimd.codimd.dockerVersion).
+    Replace("<docker-postgres-version>", $config.sre.webapps.codimd.postgres.dockerVersion).
+    Replace("<codimd-bind-creds>", $ldapSearchUserPassword).
+    Replace("<codimd-bind-dn>", $ldapSearchUserDn).
+    Replace("<codimd-fqdn>", "$($config.sre.webapps.codimd.hostname).$($config.sre.domain.fqdn)").
+    Replace("<codimd-hostname>", $config.sre.webapps.codimd.hostname).
+    Replace("<codimd-ip>", $config.sre.webapps.codimd.ip).
+    Replace("<codimd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
+    Replace("<codimd-ldap-netbios>", $config.shm.domain.netbiosName).
+    Replace("<codimd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
+    Replace("<codimd-postgres-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)).
+    Replace("<codimd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))").
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
-# Deploy HackMD VM
-$hackmdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.hackmd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.hackmd.disks.data.sizeGb -Type $config.sre.webapps.hackmd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
+# Deploy CodiMD VM
+$codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml          = $hackmdCloudInitTemplate
-    DataDiskIds            = @($hackmdDataDisk.Id)
-    ImageSku               = $config.sre.webapps.hackmd.osVersion
+    CloudInitYaml          = $codimdCloudInitTemplate
+    DataDiskIds            = @($codimdDataDisk.Id)
+    ImageSku               = $config.sre.webapps.codimd.osVersion
     Location               = $config.sre.location
-    Name                   = $config.sre.webapps.hackmd.vmName
-    OsDiskSizeGb           = $config.sre.webapps.hackmd.disks.os.sizeGb
-    OsDiskType             = $config.sre.webapps.hackmd.disks.os.type
+    Name                   = $config.sre.webapps.codimd.vmName
+    OsDiskSizeGb           = $config.sre.webapps.codimd.disks.os.sizeGb
+    OsDiskType             = $config.sre.webapps.codimd.disks.os.type
     PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
     ResourceGroupName      = $config.sre.webapps.rg
-    Size                   = $config.sre.webapps.hackmd.vmSize
+    Size                   = $config.sre.webapps.codimd.vmSize
     Subnet                 = $deploymentSubnet
 }
-$hackmdVm = Deploy-UbuntuVirtualMachine @params
-# Change subnets and IP address while HackMD VM is off then restart
-Update-VMIpAddress -Name $hackmdVm.Name -ResourceGroupName $hackmdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.hackmd.ip
+$codimdVm = Deploy-UbuntuVirtualMachine @params
+# Change subnets and IP address while CodiMD VM is off then restart
+Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.codimd.ip
 
 
 # Switch back to original subscription

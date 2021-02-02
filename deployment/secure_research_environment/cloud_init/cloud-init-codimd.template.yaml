@@ -2,7 +2,7 @@
 
 # Create files
 write_files:
-  - path: "/opt/hackmd/docker-compose.yml"
+  - path: "/opt/codimd/docker-compose.yml"
     permissions: "0400"
     content: |
       version: '3'
@@ -10,20 +10,20 @@ write_files:
         codimd:
           depends_on:
             - database
-          image: nabo.codimd.dev/hackmdio/hackmd:<docker-hackmd-version>
+          image: nabo.codimd.dev/hackmdio/hackmd:<docker-codimd-version>
           environment:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
-            - CMD_DB_URL=postgres://hackmd:<hackmd-postgres-password>@database:5432/hackmd
-            - CMD_DOMAIN=<hackmd-fqdn>
+            - CMD_DB_URL=postgres://codimd:<codimd-postgres-password>@database:5432/codimd
+            - CMD_DOMAIN=<codimd-fqdn>
             - CMD_EMAIL=false
             - CMD_IMAGE_UPLOAD_TYPE=filesystem
-            - CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
-            - CMD_LDAP_BINDDN=<hackmd-bind-dn>
-            - CMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
-            - CMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
-            - CMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
-            - CMD_LDAP_URL=<hackmd-ldap-url>
+            - CMD_LDAP_BINDCREDENTIALS=<codimd-bind-creds>
+            - CMD_LDAP_BINDDN=<codimd-bind-dn>
+            - CMD_LDAP_PROVIDERNAME=<codimd-ldap-netbios>
+            - CMD_LDAP_SEARCHBASE=<codimd-ldap-base>
+            - CMD_LDAP_SEARCHFILTER=<codimd-user-filter>
+            - CMD_LDAP_URL=<codimd-ldap-url>
             - CMD_LDAP_USERIDFIELD=sAMAccountName
             - CMD_USECDN=false
           ports:
@@ -33,13 +33,13 @@ write_files:
             dockernet:
           restart: always
           volumes:
-            - /data/hackmd:/hackmd/public/uploads
+            - /data/codimd:/codimd/public/uploads
         database:
           image: postgres:<docker-postgres-version>
           environment:
-            - POSTGRES_USER=hackmd
-            - POSTGRES_PASSWORD=<hackmd-postgres-password>
-            - POSTGRES_DB=hackmd
+            - POSTGRES_USER=codimd
+            - POSTGRES_PASSWORD=<codimd-postgres-password>
+            - POSTGRES_DB=codimd
           networks:
             dockernet:
           restart: always
@@ -85,13 +85,13 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
-fqdn: <hackmd-fqdn>
-hostname: <hackmd-fqdn>
+fqdn: <codimd-fqdn>
+hostname: <codimd-fqdn>
 
-# Add the SRE admin (default) and hackmddaemon users
+# Add the SRE admin (default) and codimddaemon users
 users:
   - default
-  - name: hackmddaemon
+  - name: codimddaemon
     lock_passwd: True # Lock the password to disable password login
     sudo: False       # This user will not have sudo privileges
 
@@ -112,38 +112,38 @@ runcmd:
   # Configuring attached disks
   - echo ">=== Configuring attached disks... ===<"
   - mkdir -p /data/postgresql
-  - mkdir -p /data/hackmd
-  - chown -R 1500:1500 /data/hackmd # allow the 'hackmd' user inside the docker container to access this volume
+  - mkdir -p /data/codimd
+  - chown -R 1500:1500 /data/codimd # allow the 'codimd' user inside the docker container to access this volume
   - ls -alh /data/
   # Ensure that Docker is running
   - echo "Current Docker status..."
   - systemctl start docker
   - systemctl enable docker
   - systemctl status docker
-  # Set up the hackmddaemon user
-  - echo "Configuring hackmddaemon user..."
+  # Set up the codimddaemon user
+  - echo "Configuring codimddaemon user..."
   - groupadd docker
-  - usermod -aG docker hackmddaemon
+  - usermod -aG docker codimddaemon
   - newgrp docker
-  - chown -R hackmddaemon:hackmddaemon /opt/hackmd
-  - ls -alh /opt/hackmd
-  # Deploy HackMD using Docker
-  - echo "Deploying HackMD with Docker..."
-  - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
+  - chown -R codimddaemon:codimddaemon /opt/codimd
+  - ls -alh /opt/codimd
+  # Deploy CodiMD using Docker
+  - echo "Deploying CodiMD with Docker..."
+  - su codimddaemon -c "docker-compose -f /opt/codimd/docker-compose.yml up -d"
   # Wait for deployment to finish
   - |
     while true; do
-      HACKMD_STATUS=$(docker-compose -f /opt/hackmd/docker-compose.yml logs codimd | grep "HTTP Server listening at 0.0.0.0:3000")
-      POSTGRES_STATUS=$(docker-compose -f /opt/hackmd/docker-compose.yml logs database | grep "ready to accept connections")
-      if [ "$HACKMD_STATUS" != "" ] && [ "$POSTGRES_STATUS" != "" ]; then
+      CODIMD_STATUS=$(docker-compose -f /opt/codimd/docker-compose.yml logs codimd | grep "HTTP Server listening at 0.0.0.0:3000")
+      POSTGRES_STATUS=$(docker-compose -f /opt/codimd/docker-compose.yml logs database | grep "ready to accept connections")
+      if [ "$CODIMD_STATUS" != "" ] && [ "$POSTGRES_STATUS" != "" ]; then
         break
       fi
       sleep 5
     done
-  - docker-compose -f /opt/hackmd/docker-compose.yml logs
+  - docker-compose -f /opt/codimd/docker-compose.yml logs
   # Print a final message
-  - echo "Deploying HackMD with Docker is complete:"
-  - docker-compose -f /opt/hackmd/docker-compose.yml ps
+  - echo "Deploying CodiMD with Docker is complete:"
+  - docker-compose -f /opt/codimd/docker-compose.yml ps
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
