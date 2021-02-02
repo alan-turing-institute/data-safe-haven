@@ -18,3 +18,8 @@ deployment/administration/.dependency_cache.json
 docs/*.pdf
 # Except the tiers flowchart, as we have not source for this
 !docs/tiersflowchart.pdf
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform
