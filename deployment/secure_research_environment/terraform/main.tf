@@ -6,6 +6,13 @@ terraform {
       version = ">= 2.26"
     }
   }
+  backend "azurerm" {
+      subscription_id = "813e99a0-5c7c-4c43-afd3-2a9566880854"
+      resource_group_name = "RG_T1_TERRAFORM"
+      storage_account_name = "terraformstorage9876"
+      container_name = "terraformcontainer"
+      key = "terraform.tfstate"
+  }
 }
 
 # Declare Azure provider
