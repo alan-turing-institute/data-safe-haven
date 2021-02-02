@@ -15,6 +15,7 @@ write_files:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
             - CMD_DB_URL=postgres://hackmd:<hackmd-postgres-password>@database:5432/hackmd
+            - CMD_DOMAIN=<hackmd-fqdn>
             - CMD_EMAIL=false
             - CMD_IMAGE_UPLOAD_TYPE=filesystem
             - CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
@@ -67,7 +68,6 @@ packages:
   - docker-compose
   - ldap-utils
   - software-properties-common
-  - wait-for-it
 package_update: true
 package_upgrade: true
 
@@ -130,12 +130,20 @@ runcmd:
   # Deploy HackMD using Docker
   - echo "Deploying HackMD with Docker..."
   - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
-  - wait-for-it -h localhost -p 80 -s -t 0 --
-  # Check current status
-  - echo "Current HackMD Docker status:"
+  # Wait for deployment to finish
+  - |
+    while true; do
+      HACKMD_STATUS=$(docker-compose -f /opt/hackmd/docker-compose.yml logs codimd | grep "HTTP Server listening at 0.0.0.0:3000")
+      POSTGRES_STATUS=$(docker-compose -f /opt/hackmd/docker-compose.yml logs database | grep "ready to accept connections")
+      if [ "$HACKMD_STATUS" != "" ] && [ "$POSTGRES_STATUS" != "" ]; then
+        break
+      fi
+      sleep 5
+    done
+  - docker-compose -f /opt/hackmd/docker-compose.yml logs
+  # Print a final message
+  - echo "Deploying HackMD with Docker is complete:"
   - docker-compose -f /opt/hackmd/docker-compose.yml ps
-  - echo "HackMD Docker logs:"
-  - docker-compose -f /opt/hackmd/docker-compose.yml logs --tail=50
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
