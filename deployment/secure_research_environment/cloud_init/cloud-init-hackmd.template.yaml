@@ -67,6 +67,7 @@ packages:
   - docker-compose
   - ldap-utils
   - software-properties-common
+  - wait-for-it
 package_update: true
 package_upgrade: true
 
@@ -129,10 +130,12 @@ runcmd:
   # Deploy HackMD using Docker
   - echo "Deploying HackMD with Docker..."
   - su hackmddaemon -c "docker-compose -f /opt/hackmd/docker-compose.yml up -d"
-  - sleep 5m
+  - wait-for-it -h localhost -p 80 -s -t 0 --
   # Check current status
-  - echo "Current HackMD status..."
+  - echo "Current HackMD Docker status:"
   - docker-compose -f /opt/hackmd/docker-compose.yml ps
+  - echo "HackMD Docker logs:"
+  - docker-compose -f /opt/hackmd/docker-compose.yml logs --tail=50
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

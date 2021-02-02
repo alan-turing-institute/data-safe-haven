@@ -806,7 +806,7 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "18.04-LTS"
             codimd                  = [ordered]@{
-                dockerVersion = "2.2.0"
+                dockerVersion = "2.3.2"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-hackmd-password-postgresdb"
