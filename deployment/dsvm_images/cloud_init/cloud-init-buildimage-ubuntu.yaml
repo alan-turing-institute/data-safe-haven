@@ -17,39 +17,39 @@ apt:
   sources:
     atom.list:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
-      keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09
+      keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09 # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
     microsoft-azure-cli.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     microsoft-prod.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     microsoft-vscode.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     postgresql.list:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
-      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8 # PostgreSQL Debian Repository
 
     mono-project.list:
       source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
-      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
 
     nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
-      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
-      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
 
-    rproject-cran35.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
-      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9
+    # rproject-cran35.list:
+    #   source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+    #   keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
 
 
 write_files:
@@ -68,37 +68,37 @@ write_files:
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
-      hash: adac4b0e2efda32f538039d9d2e7f66e2898f3244e21da4b8dacf34d7b0e5415
-      version: 1.19.0
+      hash: 37de7ecb1ff7c5e10c8cd3a929e4aa9185d6f7494fdb4fbd896d8cc496590645
+      version: 1.25.2
       debfile: azuredatastudio-linux-|VERSION|.deb
-      remote: https://sqlopsbuilds.azureedge.net/stable/4095037f2578c23033867e611e82c13de114ca5a/|DEBFILE|
+      remote: https://sqlopsbuilds.azureedge.net/stable/4d4917d328ab7a7526817a0f0ef03237a79aa54d/|DEBFILE|
   - path: "/opt/build/dbeaver.debinfo"
     permissions: "0400"
     content: |
-      hash: 1689bc56b6e7fe9c4e9b725013877a0616512ffd5846ea3c8378f7da6e827939
-      version: 7.1.2
+      hash: b4ee4da401072d8eedc95c725d5f6319e2628d2f710cb64a37514b10a2bcb12c
+      version: 7.3.4
       debfile: dbeaver-ce_|VERSION|_amd64.deb
       remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 411ab50019aa8a08db99b092769b4a552c39f78ce518f9cdb81bda92e98a6f79
-      version: 1.3.959
+      hash: 768643499ffeef393915998cb141f404db15f4a59f42293ed3f830f9171e323a
+      version: 1.4.1103
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
   - path: "/opt/build/julia.tarinfo"
     permissions: "0400"
     content: |
-      hash: d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28
-      version_major: 1.4
-      version: |VERSION_MAJOR|.2
+      hash: f190c938dd6fed97021953240523c9db448ec0a6760b574afd4e9924ab5615f1
+      version_major: 1.5
+      version: |VERSION_MAJOR|.3
       tarfile: julia-|VERSION|-linux-x86_64.tar.gz
       remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
   - path: "/opt/build/spark.tarinfo"
     permissions: "0400"
     content: |
-      hash: 3c9bef2d002d706b5331415884d3f890ecfdd7c6a692f36ed7a981ad120b2482
-      version: 3.0.0
+      hash: e2d05efa1c657dd5180628a83ea36c97c00f972b4aee935b7affa2e1058b0279
+      version: 3.0.1
       tarfile: spark-|VERSION|-bin-hadoop3.2.tgz
       remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
   - path: "/opt/verification/analyse_build.py"
@@ -217,9 +217,12 @@ runcmd:
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
+  # - apt-get install -y --no-install-recommends nvidia-driver-450
+  # - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
+  # - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
   - apt-get install -y --no-install-recommends nvidia-driver-450
-  - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
-  - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
+  - apt-get install -y --no-install-recommends cuda-11-0 libcudnn8=8.0.4.30-1+cuda11.0 libcudnn8-dev=8.0.4.30-1+cuda11.0
+  - apt-get install -y --no-install-recommends libnvinfer7=7.1.3-1+cuda11.0 libnvinfer-dev=7.1.3-1+cuda11.0 libnvinfer-plugin7=7.1.3-1+cuda11.0
 
   # Clean up unneeded apt packages
   # Remove xscreensaver (unnecessary)
@@ -245,7 +248,7 @@ runcmd:
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers from maven
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
-  - MSSQL_JDBC_VERSION="8.2.2.jre8"
+  - MSSQL_JDBC_VERSION="9.2.0.jre8"
   - PGJDBC_VERSION="1.1.6"
   - POSTGIS_JDBC_VERSION="2.5.0"
   - POSTGRESQL_VERSION="42.2.9"

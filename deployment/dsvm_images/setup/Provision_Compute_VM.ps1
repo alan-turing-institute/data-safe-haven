@@ -78,8 +78,9 @@ $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -
 $allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
 $existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Priority -eq 1000 }
 if ($existingRule) {
-    $allowedIpAddresses += $existingRule.SourceAddressPrefix
+    $allowedIpAddresses += @($existingRule.SourceAddressPrefix)
 }
+$allowedIpAddresses = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
 # Add the necessary rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Allow `
