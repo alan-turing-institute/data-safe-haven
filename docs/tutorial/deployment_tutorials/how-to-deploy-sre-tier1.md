@@ -109,7 +109,7 @@ On your **deployment machine**.
 
 ## :closed_lock_with_key: Generate SSL certificate
 
-+ Follow the steps under the **Update SSL certificate** dropdown [here](./how-to-deploy-sre.md#closed_lock_with_key-secure-rds-webclient) to generate an SSL certificate for the SRE domain
++ Follow the steps [here](./how-to-deploy-sre.md#closed_lock_with_key-update-ssl-certificate) to generate an SSL certificate for the SRE domain
 
 ## :lock: Apply Network Configuration
 
