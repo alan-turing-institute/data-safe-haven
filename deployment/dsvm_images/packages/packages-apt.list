@@ -31,6 +31,8 @@ git
 git-core
 jags
 jupyter
+jupyter-nbconvert
+jupyter-notebook
 krb5-user
 ldap-utils
 libboost-all-dev
