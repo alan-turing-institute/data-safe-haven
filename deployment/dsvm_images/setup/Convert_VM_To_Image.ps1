@@ -101,6 +101,9 @@ if ($image) {
     $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... public IP address: ${vmName}-NIC-PIP"
     $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
+    $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${vmName}"
+    Add-LogMessage -Level Info "... KeyVault password: ${adminPasswordName}"
+    Remove-AndPurgeKeyVaultSecret -VaultName $keyVault -SecretName $adminPasswordName
 } else {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be created!"
 }

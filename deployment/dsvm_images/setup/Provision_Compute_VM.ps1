@@ -151,6 +151,7 @@ $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyV
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
+$adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${buildVmName}"
 
 
 # Check cloud-init size
@@ -170,7 +171,7 @@ Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
     Name                   = $buildVmName
     Size                   = $vmSize
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $adminPasswordName -DefaultLength 20)
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
@@ -197,7 +198,7 @@ $null = New-AzTag -ResourceId $resource.Id -Tag $tags
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*${buildVmName}-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
-Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
+Add-LogMessage -Level Info "  The password for this account can be found in the '${adminPasswordName}' secret in the Azure Key Vault at:"
 Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
 Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/verification/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
