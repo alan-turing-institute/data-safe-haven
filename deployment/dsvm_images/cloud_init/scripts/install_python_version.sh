@@ -85,6 +85,7 @@ if [ $DEBUG -eq 1 ]; then cat pyproject.toml | awk '{print "[DEBUG] "$1}'; fi
 echo "Installed packages:"
 poetry show
 poetry show > /opt/verification/python-package-versions-${PYTHON_VERSION}.log
+poetry show --tree >> /opt/verification/python-package-versions-${PYTHON_VERSION}.log
 rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
