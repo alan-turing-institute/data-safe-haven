@@ -16,16 +16,12 @@ apt:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09 # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
-    microsoft-azure-cli.list:
+    azure-cli.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
-    microsoft-prod.list:
+    microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
-
-    microsoft-vscode.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     postgresql.list:
@@ -47,6 +43,11 @@ apt:
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
+
+    vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
 
 write_files:
   - path: "/etc/jaas.conf"
@@ -217,7 +218,6 @@ runcmd:
   - echo "Installing Microsoft ODBC tools"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
-  - rm -rf /etc/apt/sources.list.d/vscode.list # this is unnecessary added
   - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
