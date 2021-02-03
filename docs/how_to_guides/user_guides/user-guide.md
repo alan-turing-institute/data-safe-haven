@@ -946,6 +946,7 @@ head(df, 3)
 
 ``` R
 library(DBI)
+library(RPostgres)
 
 # Connect to the databases
 cnxn <- DBI::dbConnect(
