@@ -80,7 +80,7 @@ If you want to update the version of one of the packages we install from a `.deb
 + Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 + Begin the provisioning and configuration of a new compute VM image using `./Provision_Compute_VM.ps1 -shmId <SHM ID>` , where the SHM ID is the one specified in the config
-+ The build (based on Ubuntu 18.04) takes approximately 6 hours of which 4 hours(!) is taken up with installing the Python 2.7 environment.
++ The build (based on Ubuntu 18.04) takes approximately 6 hours.
 
 Once you have launched a new build by running the `./Provision_Compute_VM.ps1` script, the build will take several hours to complete.
 During this time, you can monitor the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py` .

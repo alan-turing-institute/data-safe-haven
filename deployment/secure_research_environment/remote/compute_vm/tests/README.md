@@ -45,7 +45,7 @@ All functionality tests passed
 
 ## Python
 The list of available Python versions can be seen by typing `pyenv versions`
-For each of the three Python versions that we want to test (2.7.X, 3.6.X, 3.7.X), activate the appropriate version with `pyenv shell <version number>`.
+For each of the three Python versions that we want to test (3.6.x, 3.7.x, 3.8.x), activate the appropriate version with `pyenv shell <version number>`.
 
 ### Testing whether all packages are installed
 Run the tests with:

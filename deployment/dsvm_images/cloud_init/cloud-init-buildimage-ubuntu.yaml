@@ -133,10 +133,6 @@ write_files:
     permissions: "0444"
     content: |
       <packages-r-cran.list>
-  - path: "/opt/build/python-requirements-py27.txt"
-    permissions: "0444"
-    content: |
-      <python-requirements-py27.txt>
   - path: "/opt/build/python-requirements-py36.txt"
     permissions: "0444"
     content: |
@@ -145,6 +141,10 @@ write_files:
     permissions: "0444"
     content: |
       <python-requirements-py37.txt>
+  - path: "/opt/build/python-requirements-py38.txt"
+    permissions: "0444"
+    content: |
+      <python-requirements-py38.txt>
   - path: "/opt/build/performance_log.csv"
     permissions: "0644"
     content: |
@@ -324,7 +324,7 @@ runcmd:
 
   # Install python versions
   - |
-    for python_version in "27" "36" "37"; do
+    for python_version in "36" "37" "38"; do
       # Create simple package list from requirements file
       sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
       chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
@@ -342,7 +342,7 @@ runcmd:
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $(ls /opt/pyenv/versions/ | grep 3.7)" >> /etc/bash.bashrc
+  - echo "pyenv global $(ls /opt/pyenv/versions/ | grep 3.8)" >> /etc/bash.bashrc
   # Make the global environment setting file live in each user's home directory
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
   - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
@@ -404,7 +404,7 @@ runcmd:
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
   - export JULIA_COPY_STACKS=1
-  - export PYTHON="$(ls /opt/pyenv/versions/3.7*/bin/python)"
+  - export PYTHON="/opt/pyenv/versions/$(grep "pyenv global" /etc/bash.bashrc | rev | cut -d ' ' -f 1 | rev)/bin/python"
   - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot
@@ -427,7 +427,7 @@ runcmd:
   - mv /root/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
   # Add the python kernels
   - |
-    for python_version in "27" "36" "37"; do
+    for python_version in "36" "37" "38"; do
       jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || exit 1
     done
   # Add the R kernel
