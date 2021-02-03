@@ -109,36 +109,24 @@ $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -Ne
 
 # Insert scripts into the cloud-init template
 # -------------------------------------------
-$indent = "      "
-foreach ($scriptName in @("analyse_build.py",
-                          "dbeaver_drivers_config.xml",
-                          "deprovision_vm.sh",
-                          "download_and_install_deb.sh",
-                          "download_and_install_tar.sh",
-                          "install_python_version.sh")) {
-    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
-    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+$resources = Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
+$resources += Get-ChildItem (Join-Path $PSScriptRoot ".." "packages")
+foreach ($resource in $resources) {
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
 }
 
 
 # Insert apt packages into the cloud-init template
 # ------------------------------------------------
-$indent = "  - "
-$raw_script = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw
-$indented_script = $raw_script -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indented_script)
+$indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<apt packages>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+$indentedContent = (Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indentedContent)
 
 
-# Insert Julia package details into the cloud-init template
-# ---------------------------------------------------------
-$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-julia.list")
-$juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQuote -Separator ', ')]'"
-$cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $juliaPackageText)
-
-
-# Insert PyPI package lists (plus versions) into cloud-init template
-# ------------------------------------------------------------------
+# Convert PyPI package lists into requirements files and add to cloud-init template
+# ---------------------------------------------------------------------------------
 $packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
 foreach ($pythonVersion in @("27", "36", "37")) {
     $packageListFileName = "packages-python-pypi-${pythonVersion}.list"
@@ -148,15 +136,6 @@ foreach ($pythonVersion in @("27", "36", "37")) {
     $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
 }
-
-
-# Insert R package details into the cloud-init template
-# -----------------------------------------------------
-$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
-$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
-$rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
-             "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
-$cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
 # Make any other cloud-init template replacements
@@ -172,6 +151,14 @@ $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyV
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
+
+
+# Check cloud-init size
+# ---------------------
+$CloudInitEncodedLength = ([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($cloudInitTemplate))).Length
+if ($CloudInitEncodedLength / 87380 -gt 0.9) {
+    Add-LogMessage -Level Warning "The current cloud-init size ($CloudInitEncodedLength Base64 characters) is more than 90% of the limit of 87380 characters!"
+}
 
 
 # Deploy the VM

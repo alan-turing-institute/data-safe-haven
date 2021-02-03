@@ -54,9 +54,9 @@ while read LINE; do
         # If the package has a version specifier then use it
         REQUIREMENT=$LINE
     else
-        # ... otherwise use the highest available version
-        # ... otherwise use the full available range
-        VERSIONS=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E -e 's|.*: ([^)]*).*|\1|' -e 's/[[:space:]]*//g' | tr ',' '\n' | grep -v "macosx")
+        # Otherwise use the full available range
+        # NB. the option to use the legacy solver will be removed in pip 21: https://github.com/pypa/pip/issues/9139
+        VERSIONS=$(pip install --use-deprecated=legacy-resolver $LINE==any 2>&1 | grep "Could not find a version" | sed -E -e 's|.*: ([^)]*).*|\1|' -e 's/[[:space:]]*//g' | tr ',' '\n' | grep -v "macosx")
         MIN_VERSION=$(echo $VERSIONS | cut -d ' ' -f 1)
         MAX_VERSION=$(echo $VERSIONS | rev | cut -d ' ' -f 1 | rev)
         REQUIREMENT="$LINE>=$MIN_VERSION,<=$MAX_VERSION"

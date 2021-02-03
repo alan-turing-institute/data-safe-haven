@@ -1,16 +1,13 @@
 #cloud-config
 
-
-# Update package database on first boot (ie. run `apt-get update`)
+# Update package database on first boot
 package_update: true
 
-
-# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
+# Upgrade installed packages on first boot
 package_upgrade: true
 
-
 apt:
-  # Preserves the existing /etc/apt/sources.list
+  # Append to the existing /etc/apt/sources.list
   preserve_sources_list: true
 
   # Add repositories
@@ -47,11 +44,6 @@ apt:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
 
-    # rproject-cran35.list:
-    #   source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
-    #   keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
-
-
 write_files:
   - path: "/etc/jaas.conf"
     owner: root:root
@@ -64,7 +56,7 @@ write_files:
           renewTGT=true
           doNotPrompt=true;
       };
-  # NB. the string is the commit this release was made from
+  # NB. the URL contains the commit this release was made from
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
@@ -129,6 +121,18 @@ write_files:
     permissions: "0500"
     content: |
       <download_and_install_tar.sh>
+  - path: "/opt/build/packages/packages-julia.list"
+    permissions: "0444"
+    content: |
+      <packages-julia.list>
+  - path: "/opt/build/packages/packages-r-bioconductor.list"
+    permissions: "0444"
+    content: |
+      <packages-r-bioconductor.list>
+  - path: "/opt/build/packages/packages-r-cran.list"
+    permissions: "0444"
+    content: |
+      <packages-r-cran.list>
   - path: "/opt/build/python-requirements-py27.txt"
     permissions: "0444"
     content: |
@@ -179,7 +183,6 @@ write_files:
       Icon=/snap/pycharm-community/current/meta/gui/icon.png
       Categories=Utility;TextEditor;Development;IDE;
 
-
 # List of packages to install with apt-get
 packages:
   - <apt packages>
@@ -188,13 +191,11 @@ packages:
 locale: en_GB.UTF-8
 timezone: <timezone>
 
-
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   pool:
     - <ntp-server>
-
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.
@@ -212,14 +213,11 @@ runcmd:
   - echo "Installing Microsoft ODBC tools"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
-  - rm -rf /etc/apt/sources.list.d/vscode.list  # this is unnecessary added
+  - rm -rf /etc/apt/sources.list.d/vscode.list # this is unnecessary added
   - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
-  # - apt-get install -y --no-install-recommends nvidia-driver-450
-  # - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
-  # - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
   - apt-get install -y --no-install-recommends nvidia-driver-450
   - apt-get install -y --no-install-recommends cuda-11-0 libcudnn8=8.0.4.30-1+cuda11.0 libcudnn8-dev=8.0.4.30-1+cuda11.0
   - apt-get install -y --no-install-recommends libnvinfer7=7.1.3-1+cuda11.0 libnvinfer-dev=7.1.3-1+cuda11.0 libnvinfer-plugin7=7.1.3-1+cuda11.0
@@ -232,7 +230,7 @@ runcmd:
   - apt-get remove -y netcat-openbsd xscreensaver
   - apt-get autoremove -y --purge
   - apt-get clean
-  - sleep 60  # mitigate against 'dpkg frontend is locked by another process' errors
+  - sleep 60 # mitigate against 'dpkg frontend is locked by another process' errors
 
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
@@ -325,11 +323,16 @@ runcmd:
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 
   # Install python versions
-  - /opt/build/install_python_version.sh py27 || exit 1
-  - /opt/build/install_python_version.sh py36 || exit 1
-  - /opt/build/install_python_version.sh py37 || exit 1
+  - |
+    for python_version in "27" "36" "37"; do
+      # Create simple package list from requirements file
+      sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
+      chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
+      # Install python versions
+      /opt/build/install_python_version.sh py${python_version} || exit 1
+    done
   - echo "Installed python versions"
-  - rm -rf /root/.cache /tmp/*  # clean up cached files from the python builds
+  - rm -rf /root/.cache /tmp/* # clean up cached files from the python builds
   - du --si -d 1 /opt/pyenv/versions
 
   # Add pyenv to global settings
@@ -344,8 +347,7 @@ runcmd:
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
   - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
 
-  # Set 'other' permissions on the pyenv directory to be equal to that of the owner
-  # We then remove write access so that site-packages can be used but not altered
+  # To ensure site-packages can be used but not alteredm give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
   # Finally, make the shims directory writeable so that users can create new shims
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
@@ -353,7 +355,8 @@ runcmd:
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
-  - <R package list>
+  - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
+  - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
   # Install packages that are not directly installable under 3.6.3 using 'remotes'
   - Rscript -e "options('Ncpus' = parallel::detectCores()); print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
   # NB. rPython cannot be installed this way as it does not compile
@@ -394,7 +397,7 @@ runcmd:
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
-  - <Julia package list>
+  - export JULIA_PACKAGES="'[\"$(sed '/^$/d' /opt/build/packages/packages-julia.list | paste -s -d '|' | sed 's/|/", "/g')\"]'"
   - export JULIA_DEPOT_PATH="${JULIA_BASE_DIR}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
@@ -423,9 +426,10 @@ runcmd:
   # Add the Julia kernel
   - mv /root/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
   # Add the python kernels
-  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py27 || exit 1
-  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py36 || exit 1
-  - jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py37 || exit 1
+  - |
+    for python_version in "27" "36" "37"; do
+      jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || exit 1
+    done
   # Add the R kernel
   - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
@@ -493,10 +497,7 @@ runcmd:
   # Data Science tools
   - if [ "$(which weka)" ]; then echo "\n\n*weka*\n\n$(which weka)\n$(weka -c weka.core.Version | head -n 1)"; else echo "ERROR weka not found!"; exit 1; fi
 
-
-final_message:
-  "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
-
+final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown at the end of the job to save on running costs
 power_state:
