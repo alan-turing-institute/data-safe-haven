@@ -7,7 +7,6 @@ csv
 data.table
 dataCompareR
 DataExplorer
-dbConnect
 DBI
 devtools
 diffobj
@@ -29,7 +28,6 @@ janitor
 knitr
 leaflet
 MASS
-mlr
 mlr3
 mssqlR
 odbc

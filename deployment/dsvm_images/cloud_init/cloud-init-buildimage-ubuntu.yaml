@@ -363,19 +363,6 @@ runcmd:
   - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
   # Install packages that are not directly installable under 3.6.3 using 'remotes'
   - Rscript -e "options('Ncpus' = parallel::detectCores()); print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
-  # NB. rPython cannot be installed this way as it does not compile
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='XML'; print(paste('Installing', pkg)); install_version(pkg, '3.99-0.3', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='mnormt'; print(paste('Installing', pkg)); install_version(pkg, '1.5-7', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='DPpackage'; print(paste('Installing', pkg)); install_version(pkg, '1.1-7', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='mlr'; print(paste('Installing', pkg)); install_version(pkg, '2.17.0', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='pomp'; print(paste('Installing', pkg)); install_version(pkg, '2.8', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='Scale'; print(paste('Installing', pkg)); install_version(pkg, '1.0.4', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='tmap'; print(paste('Installing', pkg)); install_version(pkg, '3.0', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='topicmodels'; print(paste('Installing', pkg)); install_version(pkg, '0.2-9', quiet = TRUE)"
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='traj'; print(paste('Installing', pkg)); install_version(pkg, '1.1', quiet = TRUE)"
-  # Install R packages from custom repos
-  - Rscript -e "pkg='INLA'; print(paste('Installing', pkg)); install.packages(pkg, repos='https://inla.r-inla-download.org/R/testing', dep=TRUE, quiet = TRUE)"
-  # BiocManager 3.10 (1.30.9) is required for compatibility with R 3.6
   - Rscript -e "options('Ncpus' = parallel::detectCores()); library(remotes); pkg='BiocManager'; print(paste('Installing', pkg)); install_version(pkg, '1.30.9', quiet = TRUE)"
   # CRAN
   - echo "Already installed CRAN packages:"

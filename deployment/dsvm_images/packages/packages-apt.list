@@ -54,6 +54,7 @@ libpoppler-cpp-dev
 libpq-dev
 libreadline-dev
 libreoffice
+libsodium-dev
 libsqlite3-dev
 libssl-dev
 libtool
