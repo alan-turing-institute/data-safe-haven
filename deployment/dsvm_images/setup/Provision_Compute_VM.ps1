@@ -131,7 +131,7 @@ $packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-
 $packageLists = Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")
 foreach ($packageList in $packageLists) {
     $pythonVersion = ($packageList.BaseName -split "-")[-1]
-    $pythonPackageVersions = Get-Content $packageList | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Keys.Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
+    $pythonPackageVersions = Get-Content $packageList | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<python-requirements-py${pythonVersion}.txt>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
     $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
