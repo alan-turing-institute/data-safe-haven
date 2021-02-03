@@ -44,6 +44,10 @@ apt:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
 
+    rproject-updates.list:
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
+
 write_files:
   - path: "/etc/jaas.conf"
     owner: root:root
