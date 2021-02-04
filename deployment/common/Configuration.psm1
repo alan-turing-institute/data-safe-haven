@@ -915,7 +915,7 @@ function Show-FullConfig {
     param(
         [Parameter(Mandatory = $false, HelpMessage = "Enter SHM ID")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE Config ID")]
         [string]$configId
     )
     # Generate and return the full config for the SHM or SRE
