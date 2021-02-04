@@ -139,7 +139,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 + Show the full configuration for the new SRE or the SHM using the following commands.
   + `Import-Module ./deployment/common/Configuration -Force`
-  + SRE: `Show-FullConfig -shmId <SHM ID> -sreId <SRE ID>`
+  + SRE: `Show-FullConfig -configId <SRE Config ID>`
   + SHM: `Show-FullConfig -shmId <SHM ID>`
 
 ## :cop: Prepare SHM environment

@@ -913,16 +913,16 @@ Export-ModuleMember -Function Get-SreConfig
 # ---------------------
 function Show-FullConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SHM ID")]
         [string]$shmId,
         [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
-        [string]$sreId
+        [string]$configId
     )
     # Generate and return the full config for the SHM or SRE
-    if ($sreId -eq "") {
+    if ($configId -ne "") {
+        $config = Get-SreConfig -configId $configId
+    } elseif ($shmId -ne "") {
         $config = Get-ShmConfig -shmId $shmId
-    } else {
-        $config = Get-SreConfig -configId "${shmId}${sreId}"
     }
     Write-Output ($config | ConvertTo-JSON -depth 10)
 }

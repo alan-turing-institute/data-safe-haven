@@ -92,6 +92,18 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 > - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
 > - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
+### :full_moon: Optional: View full SHM configuration
+
+A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can view a nested printout of the full SHM config by doing the following:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
++ Show the full configuration for the new SRE or the SHM using the following commands.
+  + `Import-Module ./deployment/common/Configuration -Force`
+  + `Show-FullConfig -shmId <SHM ID>`
+
 ## Configure DNS for the custom domain
 
 From your **deployment machine**
