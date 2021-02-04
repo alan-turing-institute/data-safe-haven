@@ -312,8 +312,9 @@ runcmd:
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; fi
 
   # Install python versions
+  - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//')"
   - |
-    for python_version in "36" "37" "38"; do
+    for python_version in $PYTHON_VERSIONS; do
       # Create simple package list from requirements file
       sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
       chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
@@ -336,7 +337,7 @@ runcmd:
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
   - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
 
-  # To ensure site-packages can be used but not alteredm give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
+  # To ensure site-packages can be used but not altered give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
   # Finally, make the shims directory writeable so that users can create new shims
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
@@ -344,10 +345,10 @@ runcmd:
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
+  - export HOME=/root # note that this is needed for the installation of the 'credentials' package
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
-  # Install packages that are not directly installable under 3.6 using 'remotes'
-  - export HOME=/root # note that this is needed for the installation of the 'credentials' package
+  # Use 'remotes' to install any packages whose current version requires R 4.0
   - Rscript -e "print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
   - Rscript -e "print('Installing BiocManager'); library(remotes); install_version('BiocManager', '1.30.9', quiet = TRUE)"
   # CRAN
@@ -404,7 +405,7 @@ runcmd:
   - mv /root/.local/share/jupyter/kernels/julia-* /usr/share/jupyter/kernels/
   # Add the python kernels
   - |
-    for python_version in "36" "37" "38"; do
+    for python_version in $PYTHON_VERSIONS; do
       jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || exit 1
     done
   # Add the R kernel
