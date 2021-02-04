@@ -164,7 +164,7 @@ if ($CloudInitEncodedLength / 87380 -gt 0.9) {
 
 # Deploy the VM
 # -------------
-Add-LogMessage -Level Info "Provisioning a new VM image in $($config.dsvmImage.build.rg) [$($config.dsvmImage.subscription)]..."
+Add-LogMessage -Level Info "Provisioning a new VM image in $($config.dsvmImage.build.rg) '$($config.dsvmImage.subscription)'..."
 Add-LogMessage -Level Info "  VM name: $buildVmName"
 Add-LogMessage -Level Info "  VM size: $vmSize"
 Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"

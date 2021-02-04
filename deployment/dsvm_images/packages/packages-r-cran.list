@@ -24,6 +24,7 @@ glue
 gmodels
 here
 Hmisc
+IRkernel
 janitor
 knitr
 leaflet
