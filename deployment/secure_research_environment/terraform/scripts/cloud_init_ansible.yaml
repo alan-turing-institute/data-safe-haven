@@ -1,0 +1,38 @@
+#cloud-config
+
+
+# Update package database on first boot (ie. run `apt-get update`)
+package_update: true
+
+
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
+package_upgrade: true
+
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    atom.list:
+      source: "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main"
+      keyid: 6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367 # Launchpad PPA for Ansible, Inc.
+
+
+write_files:
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
+
+packages:
+  - software-properties-common
+  - ansible

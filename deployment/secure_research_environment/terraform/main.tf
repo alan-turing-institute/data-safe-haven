@@ -53,14 +53,14 @@ resource "azurerm_public_ip" "publicip" {
 }
 
 # Create Network Security Group
-resource "azurerm_network_security_group" "nsg" {
+resource "azurerm_network_security_group" "authentication" {
   name                = "${var.resource_groups["authentication"]}_${var.const_nsg}"
   location            = var.location
   resource_group_name = azurerm_virtual_network.this.resource_group_name
 }
 
 # Create network interface
-resource "azurerm_network_interface" "nic" {
+resource "azurerm_network_interface" "authentication" {
   name                = "${var.resource_groups["authentication"]}_${var.const_nic}"
   location            = var.location
   resource_group_name = azurerm_resource_group.this["authentication"].name
@@ -71,5 +71,58 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.1.0.4"
     public_ip_address_id          = azurerm_public_ip.publicip.id
+  }
+}
+
+# Associate subnet with network security group
+resource "azurerm_subnet_network_security_group_association" "authentication" {
+  subnet_id                 = azurerm_subnet.authentication.id
+  network_security_group_id = azurerm_network_security_group.authentication.id
+}
+
+
+data "azurerm_key_vault_secret" "guacamole_admin_username" {
+  name         = "adminusername"
+  key_vault_id = var.const_keyvault_id
+}
+
+data "azurerm_key_vault_secret" "guacamole_admin_password" {
+  name         = "adminpasswordguacamole"
+  key_vault_id = var.const_keyvault_id
+}
+
+
+data "template_file" "ansible_yaml" {
+  template = file("scripts/cloud_init_ansible.yaml")
+}
+
+
+# Create a Linux virtual machine
+resource "azurerm_linux_virtual_machine" "authentication" {
+  name                  = "${var.resource_groups["authentication"]}_${var.const_vm}1"
+  location              = var.location
+  resource_group_name   = azurerm_resource_group.this["authentication"].name
+  network_interface_ids = [azurerm_network_interface.authentication.id]
+  size                  = var.vm_size
+  computer_name         = "${var.resource_groups["authentication"]}${var.const_vm}"
+  
+  admin_username        = data.azurerm_key_vault_secret.guacamole_admin_username.value
+  admin_password        = data.azurerm_key_vault_secret.guacamole_admin_password.value
+  disable_password_authentication = false
+
+  custom_data = base64encode(data.template_file.ansible_yaml.rendered)
+
+  os_disk {
+    name                 = "OsDisk"
+    caching              = "ReadWrite"
+    storage_account_type = var.storage_type
+    disk_size_gb         = 30
+  }
+
+  source_image_reference {
+    publisher = var.vm_image.publisher
+    offer     = var.vm_image.offer
+    sku       = var.vm_image.sku
+    version   = var.vm_image.version
   }
 }
