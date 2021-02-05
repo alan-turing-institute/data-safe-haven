@@ -1,0 +1,12 @@
+---
+
+# ssh_hardening role variables
+sftp_enabled: true
+ssh_print_last_log: true
+ssh_print_pam_motd: true
+
+# fail2ban role variables
+fail2ban_services:
+  - name: sshd
+    maxretry: 5
+    bantime: 1h

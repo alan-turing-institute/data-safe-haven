@@ -1,0 +1,34 @@
+---
+
+- name: Configure Guacamole VM
+  hosts: guacamole
+
+  collections:
+    - devsec.hardening
+
+  pre_tasks:
+    - name: Wait for cloud init to finish
+      wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+    - name: Update apt cache
+      become: yes
+      apt:
+        update_cache: yes
+        cache_valid_time: 600
+
+  roles:
+    - role: devsec.hardening.ssh_hardening
+      become: yes
+    - role: oefenweb.fail2ban
+      become: yes
+    - role: geerlingguy.docker
+      become: yes
+      vars:
+        docker_users:
+          - "{{ ansible_user }}"
+    - role: geerlingguy.pip
+      become: yes
+      vars:
+        pip_install_packages:
+          - docker
+          - docker-compose
