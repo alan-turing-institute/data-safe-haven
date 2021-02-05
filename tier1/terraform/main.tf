@@ -115,3 +115,18 @@ resource "azurerm_linux_virtual_machine" "authentication" {
     version   = var.vm_image.version
   }
 }
+
+# Write Ansible inventory
+resource "local_file" "ansible_inventory" {
+  filename        = "../ansible/inventory.yaml"
+  file_permission = "0644"
+  content         = <<-DOC
+    ---
+    all:
+      hosts:
+        guacamole:
+          ansible_host: ${azurerm_public_ip.guacamole.ip_address}
+          ansible_user: ${var.admin_username.guacamole}
+          ansible_ssh_private_key_file: ${local_file.guacamole_admin_private_key.filename}
+    DOC
+}
