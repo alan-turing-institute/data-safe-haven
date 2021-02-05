@@ -92,6 +92,12 @@ data "azurerm_key_vault_secret" "guacamole_admin_password" {
 }
 
 
+resource "tls_private_key" "admin" {
+  algorithm = "RSA"
+  rsa_bits  = "4096"
+}
+
+
 data "template_file" "ansible_yaml" {
   template = file("scripts/cloud_init_ansible.yaml")
 }
@@ -126,3 +132,19 @@ resource "azurerm_linux_virtual_machine" "authentication" {
     version   = var.vm_image.version
   }
 }
+
+resource "azurerm_linux_virtual_machine" "authentication" {
+  connection {
+    type     = "ssh"
+    user     = data.azurerm_key_vault_secret.guacamole_admin_username.value
+    password = data.azurerm_key_vault_secret.guacamole_admin_password.value
+    host     = var.azurerm_linux_virtual_machine.authentication.public_ip_address
+  }
+  
+  provisioner "remote-exec" {
+    inline = [
+      "ssh-keygen"
+    ]
+  }
+}
+
