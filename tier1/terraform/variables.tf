@@ -7,30 +7,29 @@ variable "sre_name" {
   type = string
 }
 
-variable "resource_tag" {
-  type = object
-  default = {
-    resource_group         = "RG_${var.sre_name}"
-    virtual_network        = "VNET_${var.sre_name}"
-    subnet                 = "SUBNET_${var.sre_name}"
-    public_ip              = "PUBIP_${var.sre_name}"
-    network_security_group = "NSG_${var.sre_name}"
-    network_interface      = "NIC_${var.sre_name}"
-    virtual_machine        = "VM_${var.sre_name}"
-  }
+locals {
+    resource_tag = {
+      resource_group         = "RG_${var.sre_name}"
+      virtual_network        = "VNET_${var.sre_name}"
+      subnet                 = "SUBNET_${var.sre_name}"
+      public_ip              = "PUBIP_${var.sre_name}"
+      network_security_group = "NSG_${var.sre_name}"
+      network_interface      = "NIC_${var.sre_name}"
+      virtual_machine        = "VM_${var.sre_name}"
+    }
 }
 
 variable "vm_size" {
-  type    = object
+  type    = map(string)
   default = {
-    gaucamole = "Standard_B2s"
+    guacamole = "Standard_B2s"
   }
 }
 
 variable "admin_username" {
-  type = object
+  type = map(string)
   default = {
-    gaucamole = "gaucamole_admin"
+    guacamole = "guacamole_admin"
   }
 }
 
