@@ -42,6 +42,21 @@ resource "azurerm_network_security_group" "this" {
   resource_group_name = azurerm_resource_group.this.name
 }
 
+# Create SSH NSG rule
+resource "azurerm_network_security_rule" "ssh" {
+  name                        = "SSH"
+  priority                    = 1001
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this.name
+}
+
 # Associate subnet with network security group
 resource "azurerm_subnet_network_security_group_association" "this" {
   subnet_id                 = azurerm_subnet.this.id
