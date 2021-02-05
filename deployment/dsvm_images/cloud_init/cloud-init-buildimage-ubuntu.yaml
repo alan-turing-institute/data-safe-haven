@@ -310,7 +310,6 @@ runcmd:
   - PATH="$PYENV_ROOT/bin:$PATH" # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; fi
-
   # Install python versions
   - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//')"
   - |
@@ -324,7 +323,6 @@ runcmd:
   - echo "Installed python versions"
   - rm -rf /root/.cache /tmp/* # clean up cached files from the python builds
   - du --si -d 1 /opt/pyenv/versions
-
   # Add pyenv to global settings
   - echo "Configuring pyenv global settings"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
@@ -332,11 +330,10 @@ runcmd:
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $(ls /opt/pyenv/versions/ | grep 3.8)" >> /etc/bash.bashrc
+  - echo "pyenv global $(ls /opt/pyenv/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
   # Make the global environment setting file live in each user's home directory
   - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
   - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
-
   # To ensure site-packages can be used but not altered give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
   # Finally, make the shims directory writeable so that users can create new shims
   - echo "Updating ${PYENV_ROOT} permissions"
