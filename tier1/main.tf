@@ -6,117 +6,103 @@ terraform {
       version = ">= 2.26"
     }
   }
-  backend "azurerm" {
-      subscription_id = "813e99a0-5c7c-4c43-afd3-2a9566880854"
-      resource_group_name = "RG_T1_TERRAFORM"
-      storage_account_name = "terraformstorage9876"
-      container_name = "terraformcontainer"
-      key = "terraform.tfstate"
-  }
 }
 
 # Declare Azure provider
 provider "azurerm" {
-  subscription_id = "813e99a0-5c7c-4c43-afd3-2a9566880854"
   features {}
 }
 
 # Create resource group
 resource "azurerm_resource_group" "this" {
   for_each = var.resource_groups
-  name     = "${var.const_rg}_${var.const_tier1}_${each.value}"
+  name     = "${var.resource_tag.resource_group}"
   location = var.location
 }
 
 # Create virtual network
 resource "azurerm_virtual_network" "this" {
-  name                = "${var.const_vnet}_${var.const_tier1}"
+  name                = "${var.resource_tag.virtual_network}"
   address_space       = ["10.1.0.0/16"]
   location            = var.location
-  resource_group_name = azurerm_resource_group.this["networking"].name
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 # Create subnet
-resource "azurerm_subnet" "authentication" {
-  name                 = "${var.resource_groups["authentication"]}_${var.const_subnet}"
-  resource_group_name  = azurerm_virtual_network.this.resource_group_name
+resource "azurerm_subnet" "this" {
+  name                 = "${var.resource_tag.subnet}"
+  resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.1.0.0/24"]
-}
-
-# Create public IP
-resource "azurerm_public_ip" "publicip" {
-  name                = "${var.resource_groups["authentication"]}_${var.const_publicip}"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this["authentication"].name
-  allocation_method   = "Dynamic"
+  address_prefixes     = ["10.1.0.0/16"]
 }
 
 # Create Network Security Group
-resource "azurerm_network_security_group" "authentication" {
-  name                = "${var.resource_groups["authentication"]}_${var.const_nsg}"
+resource "azurerm_network_security_group" "this" {
+  name                = "${var.resource_tag.network_security_group}"
   location            = var.location
-  resource_group_name = azurerm_virtual_network.this.resource_group_name
-}
-
-# Create network interface
-resource "azurerm_network_interface" "authentication" {
-  name                = "${var.resource_groups["authentication"]}_${var.const_nic}"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this["authentication"].name
-
-  ip_configuration {
-    name                          = "${var.resource_groups["authentication"]}_${var.const_nic}_${var.const_ip_config}"
-    subnet_id                     = azurerm_subnet.authentication.id
-    private_ip_address_allocation = "Static"
-    private_ip_address            = "10.1.0.4"
-    public_ip_address_id          = azurerm_public_ip.publicip.id
-  }
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 # Associate subnet with network security group
-resource "azurerm_subnet_network_security_group_association" "authentication" {
-  subnet_id                 = azurerm_subnet.authentication.id
-  network_security_group_id = azurerm_network_security_group.authentication.id
+resource "azurerm_subnet_network_security_group_association" "this" {
+  subnet_id                 = azurerm_subnet.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
 }
 
-
-data "azurerm_key_vault_secret" "guacamole_admin_username" {
-  name         = "adminusername"
-  key_vault_id = var.const_keyvault_id
+# Create public IP
+resource "azurerm_public_ip" "guacamole" {
+  name                = "${var.resource_tag.public_ip_address}_guacamole"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  allocation_method   = "Dynamic"
 }
 
-data "azurerm_key_vault_secret" "guacamole_admin_password" {
-  name         = "adminpasswordguacamole"
-  key_vault_id = var.const_keyvault_id
+# Create network interface
+resource "azurerm_network_interface" "guacamole" {
+  name                = "${var.resource_tag.virtual_machine}_guacamole"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+
+  ip_configuration {
+    name                          = "guacamole"
+    subnet_id                     = azurerm_subnet.this.id
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "10.1.0.4"
+    public_ip_address_id          = azurerm_public_ip.guacamole.id
+  }
 }
 
-
-resource "tls_private_key" "admin" {
+# Create Guacamole admin key pair
+resource "tls_private_key" "guacamole_admin" {
   algorithm = "RSA"
   rsa_bits  = "4096"
 }
 
-
-data "template_file" "ansible_yaml" {
-  template = file("scripts/cloud_init_ansible.yaml")
+# Write admin account private key to a file
+resource "local_file" "guacamole_admin_private_key" {
+  filename        = "../ansible/guacamole_admin_id_rsa.pem"
+  file_permission = "0600"
+  content         = tls_private_key.guacamole_admin.private_key_pem
 }
-
 
 # Create a Linux virtual machine
 resource "azurerm_linux_virtual_machine" "authentication" {
-  name                  = "${var.resource_groups["authentication"]}_${var.const_vm}1"
+  name                  = "${var.resource_tag.virtual_machine}_guacamole"
   location              = var.location
-  resource_group_name   = azurerm_resource_group.this["authentication"].name
-  network_interface_ids = [azurerm_network_interface.authentication.id]
-  size                  = var.vm_size
-  computer_name         = "${var.resource_groups["authentication"]}${var.const_vm}"
-  
-  admin_username        = data.azurerm_key_vault_secret.guacamole_admin_username.value
-  admin_password        = data.azurerm_key_vault_secret.guacamole_admin_password.value
-  disable_password_authentication = false
+  resource_group_name   = azurerm_resource_group.this.name
+  network_interface_ids = [azurerm_network_interface.guacamole.id]
+  size                  = var.vm_size.guacamole
+  computer_name         = "${var.resource_tag.virtual_machine}_guacamole"
 
-  custom_data = base64encode(data.template_file.ansible_yaml.rendered)
+  admin_username        = var.admin_username.guacamole
+  admin_password        = data.azurerm_key_vault_secret.guacamole_admin_password.value
+
+  disable_password_authentication = true
+
+  admin_ssh_key {
+    username   = var.admin_username.guacamole
+    public_key = tls_private_key.guacamole_admin.public_key_openssh
+  }
 
   os_disk {
     name                 = "OsDisk"
@@ -132,19 +118,3 @@ resource "azurerm_linux_virtual_machine" "authentication" {
     version   = var.vm_image.version
   }
 }
-
-resource "azurerm_linux_virtual_machine" "authentication" {
-  connection {
-    type     = "ssh"
-    user     = data.azurerm_key_vault_secret.guacamole_admin_username.value
-    password = data.azurerm_key_vault_secret.guacamole_admin_password.value
-    host     = var.azurerm_linux_virtual_machine.authentication.public_ip_address
-  }
-  
-  provisioner "remote-exec" {
-    inline = [
-      "ssh-keygen"
-    ]
-  }
-}
-
