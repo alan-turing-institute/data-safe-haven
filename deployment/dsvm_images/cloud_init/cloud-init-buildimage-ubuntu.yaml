@@ -345,9 +345,6 @@ runcmd:
   - export HOME=/root # note that this is needed for the installation of the 'credentials' package
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
-  # Use 'remotes' to install any packages whose current version requires R 4.0
-  - Rscript -e "print('Installing remotes'); install.packages('remotes', quiet = TRUE)"
-  - Rscript -e "print('Installing BiocManager'); library(remotes); install_version('BiocManager', '1.30.9', quiet = TRUE)"
   # CRAN
   - echo "Already installed CRAN packages:"
   - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
