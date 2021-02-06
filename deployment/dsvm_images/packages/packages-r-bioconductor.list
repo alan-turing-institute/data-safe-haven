@@ -11,10 +11,16 @@ genefilter
 GenomeInfoDb
 GenomicRanges
 graph
+Icens
+impute
 IRanges
 limma
+mixOmics
+phyloseq
+RBGL
 Rsamtools
 S4Vectors
 SummarizedExperiment
+sva
 XVector
 zlibbioc

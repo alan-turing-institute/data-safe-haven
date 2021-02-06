@@ -40,9 +40,11 @@ libbz2-dev
 libcurl4-openssl-dev
 libeccodes-dev
 libffi-dev
+libfftw3-dev
 libgdal-dev
 libgmp-dev
 libgsl-dev
+libgtk2.0-dev
 liblapack-dev
 liblzma-dev
 libmagick++-dev
@@ -54,6 +56,7 @@ libpoppler-cpp-dev
 libpq-dev
 libreadline-dev
 libreoffice
+libsasl2-dev
 libsodium-dev
 libsqlite3-dev
 libssl-dev
@@ -61,6 +64,7 @@ libtool
 libudunits2-dev
 libv8-dev
 libxml2-dev
+libzmq3-dev
 llvm
 lyx
 m4
