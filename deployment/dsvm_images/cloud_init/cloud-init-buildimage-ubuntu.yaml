@@ -352,26 +352,20 @@ runcmd:
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
-  - export HOME=/root # note that this is needed for the installation of the 'credentials' package
+  - export HOME=/root # this is needed for the installation of the 'credentials' package
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc # this ensures that all users will pick up system R when running RStudio
+  # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
+  - echo "Preparing to install $(echo $CRAN_PACKAGES | wc -w) CRAN packages\n${CRAN_PACKAGES}"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_pkgs <- c($CRAN_PACKAGES); remaining_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; if(length(remaining_pkgs)) { print(paste('Installing', paste(remaining_pkgs, collapse=', '))); install.packages(remaining_pkgs, quiet = TRUE) } else { print('No packages left to install') }"
+  - MISSING_CRAN_PACKAGES=$(Rscript -e "requested_pkgs <- c($CRAN_PACKAGES); missing_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; print(missing_pkgs)" | sed "s/character(0)//")
+  - if [ "$MISSING_CRAN_PACKAGES" ]; then echo "Could not install CRAN packages\n${MISSING_CRAN_PACKAGES}"; exit 1; fi
+  # Install BioConductor packages and terminate if any are missing
   - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
-  # CRAN
-  - echo "Already installed CRAN packages:"
-  - Rscript -e "requested_packages <- c($CRAN_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
-  - echo "Installing remaining CRAN packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($CRAN_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); install.packages(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
-  # Bioconductor
-  - echo "Already installed BioConductor packages:"
-  - Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); existing_packages <- requested_packages[(requested_packages %in% installed.packages()[,'Package'])]; print(paste(existing_packages, collapse=', '));"
-  - echo "Installing remaining BioConductor packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_packages <- c($BIOCONDUCTOR_PACKAGES); remaining_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; if(length(remaining_packages)) { print(paste('Installing', paste(remaining_packages, collapse=', '))); BiocManager::install(remaining_packages, quiet = TRUE) } else { print('No packages left to install') }"
-  # Ensure that all users will pick up system R when running RStudio
-  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  # Check for missing packages
-  - MISSING_CRAN_PACKAGES=$(Rscript -e "requested_packages <- c($CRAN_PACKAGES); missing_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(missing_packages)" | sed "s/character(0)//")
-  - if [ "$MISSING_CRAN_PACKAGES" ]; then echo "Could not install CRAN packages\n$MISSING_CRAN_PACKAGES"; exit 1; fi
-  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "requested_packages <- c($BIOCONDUCTOR_PACKAGES); missing_packages <- requested_packages[!(requested_packages %in% installed.packages()[,'Package'])]; print(missing_packages)" | sed "s/character(0)//")
-  - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n$MISSING_BIOCONDUCTOR_PACKAGES"; exit 1; fi
+  - echo "Preparing to install $(echo $BioConductor | wc -w) BioConductor packages\n${BIOCONDUCTOR_PACKAGES}"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); remaining_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; if(length(remaining_pkgs)) { print(paste('Installing', paste(remaining_pkgs, collapse=', '))); BiocManager::install(remaining_pkgs, quiet = TRUE) } else { print('No packages left to install') }"
+  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); missing_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; print(missing_pkgs)" | sed "s/character(0)//")
+  - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n${MISSING_BIOCONDUCTOR_PACKAGES}"; exit 1; fi
 
   # Configure jupyter kernels
   - echo ">=== $(date +%s) Configuring Jupyter with Julia, Python and R kernels ===<"
