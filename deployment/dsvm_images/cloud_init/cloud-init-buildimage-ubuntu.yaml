@@ -20,6 +20,11 @@ apt:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
+    # Official DBeaver PPA (from https://dbeaver.io/download/)
+    dbeaver.list:
+      source: "deb http://ppa.launchpad.net/serge-rider/dbeaver-ce/ubuntu bionic main"
+      keyid: 30ECE32520D438C21E16BF884A71B51882788FD2
+
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
@@ -69,13 +74,6 @@ write_files:
       version: 1.25.2
       debfile: azuredatastudio-linux-|VERSION|.deb
       remote: https://sqlopsbuilds.azureedge.net/stable/4d4917d328ab7a7526817a0f0ef03237a79aa54d/|DEBFILE|
-  - path: "/opt/build/dbeaver.debinfo"
-    permissions: "0400"
-    content: |
-      hash: b4ee4da401072d8eedc95c725d5f6319e2628d2f710cb64a37514b10a2bcb12c
-      version: 7.3.4
-      debfile: dbeaver-ce_|VERSION|_amd64.deb
-      remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
@@ -197,7 +195,7 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
-  pool:
+  pools:
     - <ntp-server>
 
 # List of commands to run using `/bin/sh`
@@ -229,8 +227,7 @@ runcmd:
   - /opt/build/download_and_install_deb.sh azuredatastudio
   - if [ "$(which azuredatastudio)" = "" ]; then echo "Could not install Azure Data Studio!"; exit 1; fi
   # DBeaver and drivers
-  - echo "Installing DBeaver..."
-  - /opt/build/download_and_install_deb.sh dbeaver
+  - echo "Installing and configuring DBeaver..."
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers from maven
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
