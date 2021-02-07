@@ -301,14 +301,12 @@ runcmd:
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
   - export JULIA_COPY_STACKS=1
-  - export PYTHON="/opt/pyenv/versions/$(grep "pyenv global" /etc/bash.bashrc | rev | cut -d ' ' -f 1 | rev)/bin/python"
-  - export TF_USE_GPU=1
+  - export PYTHON="$(which python3)" # link Julia against system Python
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
   - echo "export JULIA_COPY_STACKS=${JULIA_COPY_STACKS}" >> /etc/bash.bashrc
-  - echo "export PYTHON="${PYTHON}"" >> /etc/bash.bashrc
-  - echo "export TF_USE_GPU=${TF_USE_GPU}" >> /etc/bash.bashrc
+  - echo "export PYTHON=${PYTHON}" >> /etc/bash.bashrc
   # Ensure that the first thing on each user's DEPOT_PATH will be the usual default (~/.julia) followed by the global depot
   - echo "export JULIA_DEPOT_PATH=~/.julia:${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
   # Check for missing packages

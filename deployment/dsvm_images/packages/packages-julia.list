@@ -44,5 +44,4 @@ ScikitLearn
 StaticArrays
 StatsBase
 StatsFuns
-TensorFlow
 Zygote
