@@ -495,11 +495,9 @@ This will give output like:
 
 ``` bash
   system
-  2.7.18
   3.6.11
-
-* 3.7.8 (set by /home/ada.lovelace/.pyenv_version)
-
+  3.7.8
+* 3.8.3 (set by /home/ada.lovelace/.pyenv_version)
 ```
 
 You can change your preferred Python version globally or on a folder-by-folder basis using
@@ -948,6 +946,7 @@ head(df, 3)
 
 ``` R
 library(DBI)
+library(RPostgres)
 
 # Connect to the databases
 cnxn <- DBI::dbConnect(

@@ -113,7 +113,7 @@ function Get-ShmConfig {
             rg     = "RG_SH_BUILD_CANDIDATES"
             nsg    = [ordered]@{
                 name               = "NSG_IMAGE_BUILD"
-                allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @(193.60.220.240, 193.60.220.253)
+                allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
             }
             vnet   = [ordered]@{
                 name = "VNET_IMAGE_BUILD"

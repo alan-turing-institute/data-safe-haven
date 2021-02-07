@@ -3,7 +3,9 @@ param(
     [ValidateSet("pypi", "cran")]
     [string]$MirrorType,
     [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
-    [string]$ApiKey
+    [string]$ApiKey,
+    [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
+    [int]$NVersions = -1
 )
 
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
@@ -21,7 +23,7 @@ function Test-PackageExistence {
         $ApiKey
     )
     try {
-        $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
+        $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
         return $response
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
@@ -35,32 +37,36 @@ function Test-PackageExistence {
 function Get-Dependencies {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of package repository")]
-        $Repository,
+        [string]$Repository,
         [Parameter(Mandatory = $true, HelpMessage = "Name of package to get dependencies for")]
-        $Package,
+        [string]$Package,
         [Parameter(Mandatory = $true, HelpMessage = "Versions of package to get dependencies for")]
         $Versions,
         [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
-        $ApiKey,
+        [string]$ApiKey,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable containing cached dependencies")]
-        $Cache
+        $Cache,
+        [Parameter(Mandatory = $true, HelpMessage = "Only consider the most recent NVersions. Set to -1 to consider all versions.")]
+        [int]$NVersions
+
     )
     $dependencies = @()
-    if ($Package -NotIn $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
-    Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
+    if ($Package -notin $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
+    Add-LogMessage -Level Info "... found $($Versions.Count) versions of $Package"
+    $MostRecentVersions = ($NVersions -gt 0) ? ($Versions | Select-Object -Last $NVersions) : $Versions
     try {
-        foreach ($version in $Versions) {
-            if ($version -NotIn $Cache[$Repository][$Package].Keys) {
-                $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
-                $Cache[$Repository][$Package][$version] = @($response.dependencies | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name }) | Sort-Object | Uniq
+        foreach ($Version in $MostRecentVersions) {
+            if ($Version -notin $Cache[$Repository][$Package].Keys) {
+                $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
+                $Cache[$Repository][$Package][$Version] = @($response.dependencies | Where-Object { $_.requirements -ne "extra" } | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name.Replace(";", "") }) | Sort-Object -Unique
             }
-            $dependencies += $Cache[$Repository][$Package][$version]
+            $dependencies += $Cache[$Repository][$Package][$Version]
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... could not load dependencies for all versions of $Package"
     }
-    if (-Not $dependencies) { return @() }
-    return $($dependencies | Sort-Object | Uniq)
+    if (-not $dependencies) { return @() }
+    return $($dependencies | Where-Object { $_ } | Sort-Object -Unique)
 }
 
 
@@ -74,10 +80,10 @@ $dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
 # Combine base image package lists with the core whitelist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
 $corePackageList = Get-Content $coreWhitelistPath
-foreach ($packageWhitelist in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
-    $corePackageList += $packageWhitelist
+foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
+    $corePackageList += $buildtimePackageList
 }
-$corePackageList = $corePackageList | Sort-Object | Uniq
+$corePackageList = $corePackageList | Sort-Object -Unique
 
 
 # Initialise the package queue
@@ -92,9 +98,9 @@ $dependencyCache = [ordered]@{}
 if (Test-Path $dependencyCachePath -PathType Leaf) {
     $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
 }
-if ($MirrorType -NotIn $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
-if ("unavailable_packages" -NotIn $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
-if ($MirrorType -NotIn $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$MirrorType] = @() }
+if ($MirrorType -notin $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
+if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
+if ($MirrorType -notin $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$MirrorType] = @() }
 
 
 # Resolve packages iteratively until the queue is empty
@@ -112,9 +118,9 @@ while ($queue.Count) {
         # Look for dependencies and add them to the queue
         if ($versions) {
             Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
-            $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache
+            $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
             Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-            $newPackages = $dependencies | Where-Object { $_ -NotIn $packageWhitelist } | Where-Object { $_ -NotIn $allDependencies } | Where-Object { $_ -NotIn $dependencyCache["unavailable_packages"][$MirrorType] }
+            $newPackages = $dependencies | Where-Object { $_ -notin $packageWhitelist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
             $newPackages | ForEach-Object { $queue.Enqueue($_) }
             $allDependencies += $dependencies
         } else {
@@ -123,7 +129,7 @@ while ($queue.Count) {
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then mark it as unavailable
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"
-        $dependencyCache["unavailable_packages"][$MirrorType] += @($unverifiedName) | Where-Object { $_ -NotIn $dependencyCache["unavailable_packages"][$MirrorType] }
+        $dependencyCache["unavailable_packages"][$MirrorType] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
     }
     Add-LogMessage -Level Info "... there are $($packageWhitelist.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -139,20 +145,20 @@ foreach ($repoName in $($dependencyCache.Keys | Sort-Object)) {
     foreach ($pkgName in $($dependencyCache[$repoName].Keys | Sort-Object)) {
         $sortedDependencies[$repoName][$pkgName] = [ordered]@{}
         foreach ($version in $($dependencyCache[$repoName][$pkgName].Keys | Sort-Object)) {
-            $sortedDependencies[$repoName][$pkgName][$version] = @($dependencyCache[$repoName][$pkgName][$version] | Sort-Object | Uniq)
+            $sortedDependencies[$repoName][$pkgName][$version] = @($dependencyCache[$repoName][$pkgName][$version] | Sort-Object -Unique)
         }
     }
 }
 foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Object)) {
     $sortedDependencies["unavailable_packages"][$repoName] = @()
-    $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object | Uniq
+    $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object -Unique
 }
 $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 
 
 # Add a log message for any problematic packages
 # ----------------------------------------------
-$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies } | Sort-Object | Uniq
+$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies } | Sort-Object -Unique
 if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }
@@ -165,4 +171,4 @@ if ($unavailablePackages) {
 # Write the full package list to the expanded whitelist
 # -----------------------------------------------------
 Add-LogMessage -Level Info "Writing $($packageWhitelist.Count) packages to the expanded whitelist..."
-$packageWhitelist | Sort-Object | Uniq | Out-File $fullWhitelistPath
+$packageWhitelist | Sort-Object -Unique | Out-File $fullWhitelistPath

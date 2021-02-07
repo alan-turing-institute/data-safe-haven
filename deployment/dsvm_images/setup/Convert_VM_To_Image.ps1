@@ -52,9 +52,10 @@ Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 # Deprovision the VM over SSH
 # ---------------------------
 Add-LogMessage -Level Info "Deprovisioning VM: $($vm.Name)..."
+$adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${vmName}"
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*$($vm.Name)-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
-Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.name)' Key Vault"
+Add-LogMessage -Level Info "... the password for this account is in the '${adminPasswordName}' secret in the '$($config.dsvmImage.keyVault.name)' Key Vault"
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | sudo tee /opt/verification/deprovision.log'
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
@@ -101,6 +102,8 @@ if ($image) {
     $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... public IP address: ${vmName}-NIC-PIP"
     $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
+    Add-LogMessage -Level Info "... KeyVault password: ${adminPasswordName}"
+    Remove-AndPurgeKeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $adminPasswordName
 } else {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be created!"
 }
