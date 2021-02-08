@@ -71,6 +71,15 @@ resource "azurerm_public_ip" "guacamole" {
   allocation_method   = "Dynamic"
 }
 
+# Register public IP address to write to Ansible inventory
+# (Azure does not assign public IPs until the IP object is attached to a
+# resource, hence the dependency on the virtual machine)
+data "azurerm_public_ip" "guacamole" {
+  name                = azurerm_public_ip.guacamole.name
+  resource_group_name = azurerm_resource_group.this.name
+  depends_on          = [azurerm_linux_virtual_machine.guacamole]
+}
+
 # Create network interface
 resource "azurerm_network_interface" "guacamole" {
   name                = "${local.resource_tag.virtual_machine}_guacamole"
@@ -100,7 +109,7 @@ resource "local_file" "guacamole_admin_private_key" {
 }
 
 # Create a Linux virtual machine
-resource "azurerm_linux_virtual_machine" "authentication" {
+resource "azurerm_linux_virtual_machine" "guacamole" {
   name                  = "${local.resource_tag.virtual_machine}_guacamole"
   location              = var.location
   resource_group_name   = azurerm_resource_group.this.name
@@ -140,7 +149,7 @@ resource "local_file" "ansible_inventory" {
     all:
       hosts:
         guacamole:
-          ansible_host: ${azurerm_public_ip.guacamole.ip_address}
+          ansible_host: ${data.azurerm_public_ip.guacamole.ip_address}
           ansible_user: ${var.admin_username.guacamole}
           ansible_ssh_private_key_file: ${local_file.guacamole_admin_private_key.filename}
     DOC
