@@ -1,0 +1,25 @@
+---
+
+# Pip packages
+pip_install_packages:
+  - docker
+  - docker-compose
+
+# Docker users
+docker_users:
+  - "{{ ansible_user }}"
+
+# Docker compose variables
+guac_db_name: guacamole
+guac_db_user: guacamole
+guac_db_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66356439616435343964626335623662646534653165653635383762383861613665633164633564
+          3836303734346336353861613465656161613965383730320a316336306462393936366237343935
+          34663833356634393734306439663132383035353833356632373735633035633064363465333035
+          3934633135616431630a663136336232333062616634643333323161616335643336643532346365
+          65633662386662343262656462363835313532343039396638363536633261363631
+guac_version: "1.3.0"
+postgres_version: "13.1"
+init_db_file: "{{ ansible_user_dir }}/initdb.sql"
+postgres_volume: "{{ ansible_user_dir }}/postgres"

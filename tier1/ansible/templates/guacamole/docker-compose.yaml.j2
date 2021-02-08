@@ -1,0 +1,29 @@
+---
+
+version: "3.0"
+
+services:
+  database:
+    image: postgres:{{ postgres_version }}
+    container_name: postgres
+    environment:
+      - POSTGRES_DB={{ guac_db_name }}
+      - POSTGRES_USER={{ guac_db_user }}
+      - POSTGRES_PASSWORD={{ guac_db_password }}
+    volumes:
+      - {{ postgres_volume }}:/var/lib/postgresql/data
+      - {{ init_db_file }}:/docker-entrypoint-initdb.d/init.sql
+  guacd:
+    image: guacamole/guacd:{{ guac_version }}
+    container_name: guacd
+  guacamole:
+    image: guacamole/guacamole:{{ guac_version }}
+    container_name: guacamole
+    ports:
+      - 8080:8080
+    environment:
+      - GUACD_HOSTNAME=guacd
+      - POSTGRES_HOSTNAME=database
+      - POSTGRES_DATABASE={{ guac_db_name }}
+      - POSTGRES_USER={{ guac_db_user }}
+      - POSTGRES_PASSWORD={{ guac_db_password }}

@@ -42,13 +42,60 @@
   roles:
     - role: geerlingguy.docker
       become: yes
-      vars:
-        docker_users:
-          - "{{ ansible_user }}"
 
     - role: geerlingguy.pip
       become: yes
-      vars:
-        pip_install_packages:
-          - docker
-          - docker-compose
+
+  tasks:
+    - name: Reset connection so that group changes take effect
+      meta: reset_connection
+
+    - name: Check if database initialisation script exists
+      ansible.builtin.stat:
+        path: "{{ ansible_user_dir }}/init.sql"
+      register: init_file
+
+    - name: Get database initialisation script
+      community.docker.docker_container:
+        name: guacamole
+        image: "guacamole/guacamole:{{ guac_version }}"
+        command: /opt/guacamole/bin/initdb.sh --postgres
+        cleanup: yes
+        detach: no
+      register: init_script
+      when: not init_file.stat.exists
+
+    - name: Write database initialisation script
+      ansible.builtin.copy:
+        dest: "{{ init_db_file }}"
+        content: "{{ init_script.container.Output }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0644
+      when: not init_file.stat.exists
+
+    - name: Template docker-compose file
+      ansible.builtin.template:
+        src: guacamole/docker-compose.yaml.j2
+        dest: "{{ ansible_user_dir }}/docker-compose.yaml"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0644
+
+    - name: Run docker services
+      community.general.docker_compose:
+        project_src: "{{ ansible_user_dir }}"
+        project_name: guacamole
+        pull: yes
+      register: compose_output
+
+    - name: Print docker compose output
+      debug:
+        var: compose_output
+
+    - name: Ensure that containers are running
+      ansible.builtin.assert:
+        that:
+          - database.postgres.state.running
+          - guacamole.guacamole.state.running
+          - guacd.guacd.state.running
