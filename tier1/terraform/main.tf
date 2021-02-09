@@ -97,7 +97,7 @@ data "azurerm_public_ip" "guacamole" {
 
 # Create network interface
 resource "azurerm_network_interface" "guacamole" {
-  name                = "${local.resource_tag.virtual_machine}_guacamole"
+  name                = "${local.resource_tag.network_interface}_guacamole"
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
 
@@ -153,6 +153,21 @@ resource "azurerm_linux_virtual_machine" "guacamole" {
     sku       = var.vm_image.sku
     version   = var.vm_image.version
   }
+}
+
+# Create DNS zone
+resource "azurerm_dns_zone" "this" {
+  name                = var.domain
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+# Create A record for Guacamole
+resource "azurerm_dns_a_record" "login" {
+  name                = "login"
+  zone_name           = azurerm_dns_zone.this.name
+  resource_group_name = azurerm_resource_group.this.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.guacamole.id
 }
 
 # Write Ansible inventory

@@ -7,6 +7,10 @@ variable "sre_name" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 locals {
     resource_tag = {
       resource_group         = "RG_${var.sre_name}"
