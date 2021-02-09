@@ -20,6 +20,7 @@ locals {
       network_security_group = "NSG_${var.sre_name}"
       network_interface      = "NIC_${var.sre_name}"
       virtual_machine        = "VM_${var.sre_name}"
+      os_disk                = "OSDISK_${var.sre_name}"
     }
 
     guacamole_nsg_rules = {
@@ -27,12 +28,18 @@ locals {
       http  = var.nsg_rule_http
       https = var.nsg_rule_https
     }
+
+    dsvm_nsg_rules = {
+      ssh = var.nsg_rule_ssh
+      rdp = var.nsg_rule_rdp
+    }
 }
 
 variable "vm_size" {
   type    = map(string)
   default = {
     guacamole = "Standard_B2s"
+    dsvm      = "Standard_D4s_v3"
   }
 }
 
@@ -40,6 +47,7 @@ variable "admin_username" {
   type = map(string)
   default = {
     guacamole = "guacamole_admin"
+    dsvm = "dsvm_admin"
   }
 }
 
@@ -108,6 +116,21 @@ variable "nsg_rule_https" {
     source_port_range           = "*"
     destination_port_range      = "443"
     source_address_prefix       = "*"
+    destination_address_prefix  = "*"
+  }
+}
+
+variable "nsg_rule_rdp" {
+  type = map(string)
+  default = {
+    name                        = "RDP"
+    priority                    = 1004
+    direction                   = "Inbound"
+    access                      = "Allow"
+    protocol                    = "Tcp"
+    source_port_range           = "*"
+    destination_port_range      = "3389"
+    source_address_prefix       = "VirtualNetwork"
     destination_address_prefix  = "*"
   }
 }
