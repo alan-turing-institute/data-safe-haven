@@ -184,3 +184,13 @@ resource "local_file" "ansible_inventory" {
           ansible_ssh_private_key_file: ${local_file.guacamole_admin_private_key.filename}
     DOC
 }
+
+# Write variables for Ansible to access
+resource "local_file" "terraform_vars" {
+  filename = "../ansible/terraform_vars.yaml"
+  file_permission = "0644"
+  content         = <<-DOC
+    ---
+    domain: ${var.domain}
+    DOC
+}

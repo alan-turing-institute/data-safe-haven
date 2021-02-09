@@ -1,3 +1,4 @@
 vault_password.txt
 *.pem
 inventory.yaml
+terraform_vars.yaml
