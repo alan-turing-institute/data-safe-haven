@@ -57,15 +57,30 @@ resource "azurerm_network_security_rule" "ssh" {
   network_security_group_name = azurerm_network_security_group.this.name
 }
 
-# Create HTTP 8080 NSG rule
-resource "azurerm_network_security_rule" "guacamole" {
-  name                        = "GUACAMOLEHTTP"
+# Create HTTP NSG rule
+resource "azurerm_network_security_rule" "http" {
+  name                        = "HTTP"
   priority                    = 1002
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  destination_port_range      = "8080"
+  destination_port_range      = "80"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this.name
+}
+
+# Create HTTPS NSG rule
+resource "azurerm_network_security_rule" "https" {
+  name                        = "HTTPS"
+  priority                    = 1003
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "443"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.this.name

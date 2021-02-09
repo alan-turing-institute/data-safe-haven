@@ -21,8 +21,6 @@ services:
   guacamole:
     image: guacamole/guacamole:{{ guac_version }}
     container_name: guacamole
-    ports:
-      - 8080:8080
     environment:
       - GUACD_HOSTNAME=guacd
       - POSTGRES_HOSTNAME=database
@@ -30,3 +28,24 @@ services:
       - POSTGRES_USER={{ guac_db_user }}
       - POSTGRES_PASSWORD={{ guac_db_password }}
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.guacamole.rule=Host(`{{ guacamole_domain }}`)"
+      - "traefik.http.routers.guacamole.tls=true"
+      - "traefik.http.middlewares.add-guacamole.addprefix.prefix=/guacamole"
+  reverse_proxy:
+    image: traefik:{{ traefik_version }}
+    container_name: traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"

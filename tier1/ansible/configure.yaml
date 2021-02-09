@@ -28,6 +28,9 @@
 - name: Install and configure Docker
   hosts: guacamole
 
+  vars_files:
+    - terraform_vars.yaml
+
   pre_tasks:
     - name: Wait for cloud init to finish
       wait_for:
@@ -99,3 +102,4 @@
           - database.postgres.state.running
           - guacamole.guacamole.state.running
           - guacd.guacd.state.running
+          - reverse_proxy.traefik.state.running
