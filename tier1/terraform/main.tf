@@ -192,5 +192,6 @@ resource "local_file" "terraform_vars" {
   content         = <<-DOC
     ---
     domain: ${var.domain}
+    guacamole_domain: ${azurerm_dns_a_record.login.fqdn}
     DOC
 }
