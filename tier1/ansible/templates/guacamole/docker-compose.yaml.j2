@@ -30,8 +30,11 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
+      # Routers
       - "traefik.http.routers.guacamole.rule=Host(`{{ guacamole_domain }}`)"
       - "traefik.http.routers.guacamole.tls=true"
+      - "traefik.http.routers.guacamole.middlewares=add-guacamole"
+      # Middlewares
       - "traefik.http.middlewares.add-guacamole.addprefix.prefix=/guacamole"
   reverse_proxy:
     image: traefik:{{ traefik_version }}
