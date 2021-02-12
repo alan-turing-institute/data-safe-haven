@@ -8,6 +8,6 @@ Risk | Description | Likelihood | Severity | Score |
 ---- |------------ |----------- |--------- |------ |
 Azure Platform Compromise | A malicious actor gained access to an administrative account on the  Azure platform, compromising the data and infrastructure | 1 | 5 | 5 |
 Configuration Error | A DSH is configured incorrectly, leaving access to the internet on a higher=level tier | 3 | 1 | 3 |
-Authorised Malicious User | An authorised malicious user decided to try and remove from data from the data safe haven. | 1 | 3 | 3 |
+Authorised Malicious User | An authorised malicious user decided to try and remove from data from the data safe haven | 1 | 3 | 3 |
 Compromising of a user account | A malicious actor compromised a user account, by compromising both their log-in and 2FA, and gaining access to account with intent to steal personal information | 1 | 3 | 3 |
 Egress check failure | An accidental removal of sensitive data from the DSH due to user error, with sensitive data being incorrectly released, or data being given to the incorrect person or people | 1 | 2 | 2 |
