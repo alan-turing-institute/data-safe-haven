@@ -8,12 +8,12 @@
 
   pre_tasks:
     - name: Wait for cloud init to finish
-      wait_for:
+      ansible.builtin.wait_for:
         path: /var/lib/cloud/instance/boot-finished
 
     - name: Update apt cache
       become: yes
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         cache_valid_time: 600
 
@@ -25,7 +25,7 @@
       become: yes
 
 
-- name: Install and configure Docker
+- name: Configure Guacamole VM
   hosts: guacamole
 
   vars_files:
@@ -33,12 +33,12 @@
 
   pre_tasks:
     - name: Wait for cloud init to finish
-      wait_for:
+      ansible.builtin.wait_for:
         path: /var/lib/cloud/instance/boot-finished
 
     - name: Update apt cache
       become: yes
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         cache_valid_time: 600
 
@@ -92,10 +92,6 @@
         pull: yes
       register: compose_output
 
-    - name: Print docker compose output
-      debug:
-        var: compose_output
-
     - name: Ensure that containers are running
       ansible.builtin.assert:
         that:
@@ -103,3 +99,92 @@
           - guacamole.guacamole.state.running
           - guacd.guacd.state.running
           - reverse_proxy.traefik.state.running
+
+- name: Configure DSVM
+  hosts: dsvm
+
+  vars_files:
+    - terraform_vars.yaml
+
+  pre_tasks:
+    - name: Wait for cloud init to finish
+      ansible.builtin.wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+
+    - name: Update apt cache
+      become: yes
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 600
+
+  tasks:
+    - name: Install and configure RDP
+      block:
+        - name: Install xrdp
+          become: yes
+          ansible.builtin.apt:
+            name: xrdp
+            state: present
+
+        - name: Start and enable xrdp service
+          become: yes
+          ansible.builtin.systemd:
+            name: xrdp
+            state: started
+            enabled: yes
+
+        - name: Set xrdp encryption level to high
+          become: yes
+          ansible.builtin.lineinfile:
+            path: /etc/xrdp/xrdp.ini
+            state: present
+            regexp: '^(.*)encrypt_level=.*$'
+            line: '\1encrypt_level=high'
+            backrefs: yes
+            backup: yes
+
+        - name: Write startwm.sh script
+          become: yes
+          ansible.builtin.copy:
+            dest: /etc/xrdp/startwm.sh
+            owner: root
+            group: root
+            mode: 0755
+            content: |
+              #!/bin/sh
+              if [ -r /etc/default/locale ]; then
+                  . /etc/default/locale
+                  export LANG LANGUAGE
+              fi
+              # Start xfce4
+              startxfce4
+            backup: yes
+
+        - name: Ensure xrdp users is in the ssl-cert group
+          # This is required to let xrdp access
+          # `/etc/ssl/private/ssl-cert-snakeoil.key` which is symlinked to
+          # `/etc/xrdp/key.pem`
+          become: yes
+          ansible.builtin.user:
+            name: xrdp
+            groups: ssl-cert
+            append: yes
+          register: xrdp_groups
+
+        - name: Restart xrdp service
+          become: yes
+          ansible.builtin.systemd:
+            name: xrdp
+            state: restarted
+          when: xrdp_groups.changed
+
+    - name: Install and configure desktop
+      block:
+        - name: Install xfce desktop
+          become: yes
+          ansible.builtin.apt:
+            name:
+              - xubuntu-desktop
+              - xubuntu-core
+              - xfce4-terminal
+            state: present
