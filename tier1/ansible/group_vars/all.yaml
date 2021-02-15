@@ -10,3 +10,7 @@ fail2ban_services:
   - name: sshd
     maxretry: 5
     bantime: 1h
+
+# Lets encrypt variables
+lets_encrypt: false
+lets_encrypt_email: user@example.com

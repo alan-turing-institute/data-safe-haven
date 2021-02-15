@@ -35,9 +35,12 @@ services:
       # Routers
       - "traefik.http.routers.guacamole.rule=Host(`{{ guacamole_domain }}`)"
       - "traefik.http.routers.guacamole.tls=true"
-      - "traefik.http.routers.guacamole.middlewares=add-guacamole"
+{% if lets_encrypt %}
+      - "traefik.http.routers.guacamole.tls.certResolver=le"
+{% endif %}
+      - "traefik.http.routers.guacamole.middleWares=add-guacamole"
       # Middlewares
-      - "traefik.http.middlewares.add-guacamole.addprefix.prefix=/guacamole"
+      - "traefik.http.middleWares.add-guacamole.addPrefix.prefix=/guacamole"
   reverse_proxy:
     image: traefik:{{ traefik_version }}
     container_name: traefik
@@ -46,11 +49,19 @@ services:
       - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+{% if lets_encrypt %}
+      - {{ traefik_acme_volume }}:/acme
+{% endif %}
     command:
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
-      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entryPoints.web.http.redirections.entryPoint.permanent=true"
+      - "--entryPoints.websecure.address=:443"
+{% if lets_encrypt %}
+      - "--certificatesResolvers.le.acme.email={{ lets_encrypt_email }}"
+      - "--certificatesResolvers.le.acme.storage=/acme/acme.json"
+      - "--certificatesResolvers.le.acme.httpChallenge.entryPoint=web"
+{% endif %}

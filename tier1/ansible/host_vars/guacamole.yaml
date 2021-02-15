@@ -24,6 +24,7 @@ postgres_version: "13.1"
 init_db_file: "{{ ansible_user_dir }}/initdb.sql"
 postgres_volume: "{{ ansible_user_dir }}/postgres"
 traefik_version: "v2.3"
+traefik_acme_volume: "{{ ansible_user_dir }}/acme"
 
 # Guacamole webapp variables
 guac_admin_user: guacadmin
