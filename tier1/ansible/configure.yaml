@@ -188,3 +188,5 @@
               - xubuntu-core
               - xfce4-terminal
             state: present
+          async: 600
+          poll: 5
