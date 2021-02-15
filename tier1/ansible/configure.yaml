@@ -34,7 +34,7 @@
   vars:
     API_root: http://localhost:8080/guacamole/api
     data_source: postgresql
-    guacadmin_file: "{{ ansible_user_dir }}/guacadmin"
+    guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
 
   pre_tasks:
     - name: Wait for cloud init to finish
@@ -112,7 +112,7 @@
     - name: Check if password has been changed
       tags: guacamole
       ansible.builtin.stat:
-        path: "{{ guacadmin_file }}"
+        path: "{{ guacadmin_file_path }}"
       register: guacadmin_file
 
     - name: Set Guacamole admin password
@@ -140,8 +140,6 @@
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ guac_admin_user }}/password?token={{ token.json.authToken }}"
             method: PUT
-            # headers:
-            #   Content-Type: application/json
             body:
               oldPassword: guacadmin
               newPassword: "{{ guac_admin_password }}"
@@ -155,11 +153,10 @@
             method: DELETE
             status_code: "204"
             remote_src: yes
-          register: a
 
         - name: Create guacadmin file
           ansible.builtin.file:
-            path: "{{ guacadmin_file }}"
+            path: "{{ guacadmin_file_path }}"
             state: touch
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
