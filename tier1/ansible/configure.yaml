@@ -31,6 +31,11 @@
   vars_files:
     - terraform_vars.yaml
 
+  vars:
+    API_root: http://localhost:8080/guacamole/api
+    data_source: postgresql
+    guacadmin_file: "{{ ansible_user_dir }}/guacadmin"
+
   pre_tasks:
     - name: Wait for cloud init to finish
       ansible.builtin.wait_for:
@@ -53,52 +58,118 @@
     - name: Reset connection so that group changes take effect
       meta: reset_connection
 
-    - name: Check if database initialisation script exists
+    - name: Create database initialisation script
+      block:
+        - name: Check if database initialisation script exists
+          ansible.builtin.stat:
+            path: "{{ ansible_user_dir }}/init.sql"
+          register: init_file
+
+        - name: Get database initialisation script
+          community.docker.docker_container:
+            name: guacamole
+            image: "guacamole/guacamole:{{ guac_version }}"
+            command: /opt/guacamole/bin/initdb.sh --postgres
+            cleanup: yes
+            detach: no
+          register: init_script
+          when: not init_file.stat.exists
+
+        - name: Write database initialisation script
+          ansible.builtin.copy:
+            dest: "{{ init_db_file }}"
+            content: "{{ init_script.container.Output }}"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+          when: not init_file.stat.exists
+
+    - name: Docker services
+      block:
+        - name: Template docker-compose file
+          ansible.builtin.template:
+            src: guacamole/docker-compose.yaml.j2
+            dest: "{{ ansible_user_dir }}/docker-compose.yaml"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+
+        - name: Run docker services
+          community.general.docker_compose:
+            project_src: "{{ ansible_user_dir }}"
+            project_name: guacamole
+            pull: yes
+          register: compose_output
+
+        - name: Ensure that containers are running
+          ansible.builtin.assert:
+            that:
+              - database.postgres.state.running
+              - guacamole.guacamole.state.running
+              - guacd.guacd.state.running
+              - reverse_proxy.traefik.state.running
+
+    - name: Check if password has been changed
+      tags: guacamole
       ansible.builtin.stat:
-        path: "{{ ansible_user_dir }}/init.sql"
-      register: init_file
+        path: "{{ guacadmin_file }}"
+      register: guacadmin_file
 
-    - name: Get database initialisation script
-      community.docker.docker_container:
-        name: guacamole
-        image: "guacamole/guacamole:{{ guac_version }}"
-        command: /opt/guacamole/bin/initdb.sh --postgres
-        cleanup: yes
-        detach: no
-      register: init_script
-      when: not init_file.stat.exists
+    - name: Set Guacamole admin password
+      when: not guacadmin_file.stat.exists
+      tags: guacamole
+      # See https://github.com/ridvanaltun/guacamole-rest-api-documentation
+      # and https://github.com/apache/guacamole-manual/pull/123/files
+      block:
+        - name: Get API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens"
+            method: POST
+            user: "{{ guac_admin_user }}"
+            password: guacadmin
+            force_basic_auth: yes
+            body_format: form-urlencoded
+            remote_src: yes
+          register: token
 
-    - name: Write database initialisation script
-      ansible.builtin.copy:
-        dest: "{{ init_db_file }}"
-        content: "{{ init_script.container.Output }}"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: 0644
-      when: not init_file.stat.exists
+        - name: Print token
+          debug:
+            var: token.json
 
-    - name: Template docker-compose file
-      ansible.builtin.template:
-        src: guacamole/docker-compose.yaml.j2
-        dest: "{{ ansible_user_dir }}/docker-compose.yaml"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: 0644
+        - name: Change guacadmin password
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ guac_admin_user }}/password?token={{ token.json.authToken }}"
+            method: PUT
+            # headers:
+            #   Content-Type: application/json
+            body:
+              oldPassword: guacadmin
+              newPassword: "{{ guac_admin_password }}"
+            body_format: json
+            status_code: "204"
+            remote_src: yes
 
-    - name: Run docker services
-      community.general.docker_compose:
-        project_src: "{{ ansible_user_dir }}"
-        project_name: guacamole
-        pull: yes
-      register: compose_output
+        - name: Delete API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: "204"
+            remote_src: yes
+          register: a
 
-    - name: Ensure that containers are running
-      ansible.builtin.assert:
-        that:
-          - database.postgres.state.running
-          - guacamole.guacamole.state.running
-          - guacd.guacd.state.running
-          - reverse_proxy.traefik.state.running
+        - name: Create guacadmin file
+          ansible.builtin.file:
+            path: "{{ guacadmin_file }}"
+            state: touch
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: 0644
+
+    # - name: Configure guacamole using API
+    #   tags: guacamole
+    #   # See https://github.com/ridvanaltun/guacamole-rest-api-documentation
+    #   # and https://github.com/apache/guacamole-manual/pull/123/files
+    #   block:
 
 - name: Configure DSVM
   hosts: dsvm
