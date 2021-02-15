@@ -21,6 +21,8 @@ services:
   guacamole:
     image: guacamole/guacamole:{{ guac_version }}
     container_name: guacamole
+    ports:
+      - 127.0.0.1:8080:8080
     environment:
       - GUACD_HOSTNAME=guacd
       - POSTGRES_HOSTNAME=database
