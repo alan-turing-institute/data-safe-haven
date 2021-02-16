@@ -132,10 +132,6 @@
             remote_src: yes
           register: token
 
-        - name: Print token
-          debug:
-            var: token.json
-
         - name: Change guacadmin password
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ guac_admin_user }}/password?token={{ token.json.authToken }}"
@@ -147,13 +143,6 @@
             status_code: "204"
             remote_src: yes
 
-        - name: Delete API token
-          ansible.builtin.uri:
-            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
-            method: DELETE
-            status_code: "204"
-            remote_src: yes
-
         - name: Create guacadmin file
           ansible.builtin.file:
             path: "{{ guacadmin_file_path }}"
@@ -162,11 +151,63 @@
             group: "{{ ansible_user }}"
             mode: 0644
 
-    # - name: Configure guacamole using API
-    #   tags: guacamole
-    #   # See https://github.com/ridvanaltun/guacamole-rest-api-documentation
-    #   # and https://github.com/apache/guacamole-manual/pull/123/files
-    #   block:
+      always:
+        - name: Delete API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: "204"
+            remote_src: yes
+
+    - name: Configure guacamole using API
+      tags: guacamole
+      # See https://github.com/ridvanaltun/guacamole-rest-api-documentation
+      # and https://github.com/apache/guacamole-manual/pull/123/files
+      block:
+        - name: Get API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens"
+            method: POST
+            user: "{{ guac_admin_user }}"
+            password: "{{ guac_admin_password }}"
+            force_basic_auth: yes
+            body_format: form-urlencoded
+            remote_src: yes
+          register: token
+
+        - name: Check if RDP connection for DSVM exists
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ dsvm_connection_identifier }}?token={{ token.json.authToken }}"
+            method: GET
+            status_code: [200, 404]
+          register: dsvm_connection
+
+        - name: Create RDP connection for DSVM
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/connections?token={{ token.json.authToken }}"
+            method: POST
+            body: "{{ dsvm_connection_params }}"
+            body_format: json
+            remote_src: yes
+          when: dsvm_connection.status == 404
+
+        - name: Update RDP connection for DSVM
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ dsvm_connection_identifier }}?token={{ token.json.authToken }}"
+            method: PUT
+            body: "{{ dsvm_connection_params }}"
+            body_format: json
+            remote_src: yes
+            status_code: 204
+          when: dsvm_connection.status == 200
+
+      always:
+        - name: Delete API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: "204"
+            remote_src: yes
 
 - name: Configure DSVM
   hosts: dsvm

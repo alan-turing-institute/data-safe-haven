@@ -290,6 +290,7 @@ resource "local_file" "terraform_vars" {
     ---
     domain: ${var.domain}
     guacamole_domain: ${azurerm_dns_a_record.login.fqdn}
+    dsvm_private_ip: ${azurerm_network_interface.dsvm.private_ip_address}
     DOC
 }
 

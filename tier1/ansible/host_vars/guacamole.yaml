@@ -35,3 +35,23 @@ guac_admin_password: !vault |
           35633039333132363334313332373632363966316333376466666561316135363436646233646566
           3830643464323863320a616339306261333533656533633533373864393437373465323766646539
           34666230363863376264313537346439613636353361626131636332396439383664
+dsvm_connection_identifier: 1
+dsvm_connection_params:
+  name: dsvm
+  parentIdentifier: ROOT
+  protocol: rdp
+  parameters:
+    hostname: "{{ dsvm_private_ip }}"
+    port: "3389"
+    security: Any
+    ignore-cert: "true"
+    server-layout: en-gb-qwerty
+    timezone: Etc/GMT+0
+  attributes:
+    max-connections:
+    max-connections-per-user:
+    weight:
+    failover-only:
+    guacd-port:
+    guacd-encryption:
+    guacd-hostname:
