@@ -912,10 +912,11 @@ Export-ModuleMember -Function Get-SreConfig
 # Show SRE or SHM full config
 # ---------------------
 function Show-FullConfig {
+    [CmdletBinding(DefaultParameterSetName="configId")]
     param(
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID", ParameterSetName = "shmId")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE Config ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE Config ID", ParameterSetName = "configId")]
         [string]$configId
     )
     # Generate and return the full config for the SHM or SRE
