@@ -7,10 +7,6 @@
     - devsec.hardening
 
   pre_tasks:
-    - name: Wait for cloud init to finish
-      ansible.builtin.wait_for:
-        path: /var/lib/cloud/instance/boot-finished
-
     - name: Update apt cache
       become: yes
       ansible.builtin.apt:
@@ -18,6 +14,8 @@
         cache_valid_time: 600
 
   roles:
+    - role: wait_for_cloud_init
+
     - role: devsec.hardening.ssh_hardening
       become: yes
 
@@ -37,10 +35,6 @@
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
 
   pre_tasks:
-    - name: Wait for cloud init to finish
-      ansible.builtin.wait_for:
-        path: /var/lib/cloud/instance/boot-finished
-
     - name: Update apt cache
       become: yes
       ansible.builtin.apt:
@@ -48,6 +42,8 @@
         cache_valid_time: 600
 
   roles:
+    - role: wait_for_cloud_init
+
     - role: geerlingguy.docker
       become: yes
 
