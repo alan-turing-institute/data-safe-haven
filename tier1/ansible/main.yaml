@@ -6,22 +6,17 @@
   collections:
     - devsec.hardening
 
-  pre_tasks:
-    - name: Update apt cache
-      become: yes
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 600
-
   roles:
     - role: wait_for_cloud_init
+
+    - role: apt_cache
+      become: yes
 
     - role: devsec.hardening.ssh_hardening
       become: yes
 
     - role: oefenweb.fail2ban
       become: yes
-
 
 - name: Configure Guacamole VM
   hosts: guacamole
@@ -34,15 +29,11 @@
     data_source: postgresql
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
 
-  pre_tasks:
-    - name: Update apt cache
-      become: yes
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 600
-
   roles:
     - role: wait_for_cloud_init
+
+    - role: apt_cache
+      become: yes
 
     - role: geerlingguy.docker
       become: yes
