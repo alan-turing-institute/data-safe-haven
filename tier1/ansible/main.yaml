@@ -241,7 +241,7 @@
             src: "{{ data_disk.disk.dev }}1"
             fstype: ext4
             opts: defaults,nofail
-            passno: 2
+            passno: "2"
 
         - name: Create group for shared data
           become: yes
