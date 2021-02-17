@@ -275,6 +275,37 @@
             state: present
       when: shared_data_disk
 
+    - name: Configure ingress and egress shares
+      block:
+        - name: Write share credentials to (unreadable) file
+          become: yes
+          ansible.builtin.copy:
+            dest: /root/share_credentials.txt
+            content: |
+              username={{ share_username }}
+              password={{ share_password }}
+            owner: root
+            group: root
+            mode: 0400
+
+        - name: Mount shares
+          become: yes
+          ansible.posix.mount:
+            state: mounted
+            path: "{{ item.path }}"
+            src: "{{ item.url }}"
+            fstype: cifs
+            opts: "_netdev,credentials=/root/share_credentials.txt,vers=3.0,file_mode={{ item.file_mode }},dir_mode={{ item.dir_mode }},serverino"
+          loop:
+            - path: /ingress
+              url: "{{ ingress_unc }}"
+              file_mode: "0744"
+              dir_mode: "0755"
+            - path: /egress
+              url: "{{ egress_unc }}"
+              file_mode: "0777"
+              dir_mode: "0777"
+
     - name: Install and configure RDP
       block:
         - name: Install xrdp

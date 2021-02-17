@@ -323,6 +323,7 @@ resource "local_file" "ansible_inventory" {
   file_permission = "0644"
   content         = <<-DOC
     ---
+
     all:
       hosts:
         guacamole:
@@ -342,10 +343,15 @@ resource "local_file" "terraform_vars" {
   file_permission = "0644"
   content         = <<-DOC
     ---
+
     domain: ${var.domain}
     guacamole_domain: ${azurerm_dns_a_record.login.fqdn}
     dsvm_private_ip: ${azurerm_network_interface.dsvm.private_ip_address}
     shared_data_disk: ${var.shared_disk_size_gb > 0 ? true : false}
+    ingress_unc: ${replace(azurerm_storage_share.this["ingress"].url, "https://", "//")}
+    egress_unc: ${replace(azurerm_storage_share.this["egress"].url, "https://", "//")}
+    share_username: ${azurerm_storage_account.this.name}
+    share_password: ${azurerm_storage_account.this.primary_access_key}
     DOC
 }
 
