@@ -314,6 +314,7 @@ resource "local_file" "terraform_vars" {
     domain: ${var.domain}
     guacamole_domain: ${azurerm_dns_a_record.login.fqdn}
     dsvm_private_ip: ${azurerm_network_interface.dsvm.private_ip_address}
+    shared_data_disk: ${var.shared_disk_size_gb > 0 ? true : false}
     DOC
 }
 

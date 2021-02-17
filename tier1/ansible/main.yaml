@@ -103,7 +103,6 @@
       register: guacadmin_file
 
     - name: Set Guacamole admin password
-      when: not guacadmin_file.stat.exists
       tags: guacamole
       # See https://github.com/ridvanaltun/guacamole-rest-api-documentation
       # and https://github.com/apache/guacamole-manual/pull/123/files
@@ -137,7 +136,6 @@
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
             mode: 0644
-
       always:
         - name: Delete API token
           ansible.builtin.uri:
@@ -145,6 +143,7 @@
             method: DELETE
             status_code: "204"
             remote_src: yes
+      when: not guacadmin_file.stat.exists
 
     - name: Configure guacamole using API
       tags: guacamole
@@ -199,6 +198,9 @@
 - name: Configure DSVM
   hosts: dsvm
 
+  collections:
+    - community.general
+
   vars_files:
     - terraform_vars.yaml
 
@@ -214,6 +216,65 @@
         cache_valid_time: 600
 
   tasks:
+    - name: Configure shared data disk and directory
+      block:
+        - name: Partition disk
+          become: yes
+          community.general.parted:
+            device: /dev/disk/azure/scsi1/lun0
+            label: gpt
+            number: 1
+            state: present
+          register: data_disk
+
+        - name: Create ext4 file system
+          become: yes
+          community.general.filesystem:
+            device: "{{ data_disk.disk.dev }}1"
+            fstype: ext4
+
+        - name: Mount shared data partition
+          become: yes
+          ansible.posix.mount:
+            path: /shared
+            state: mounted
+            src: "{{ data_disk.disk.dev }}1"
+            fstype: ext4
+            opts: defaults,nofail
+            passno: 2
+
+        - name: Create group for shared data
+          become: yes
+          ansible.builtin.group:
+            name: shared
+            system: yes
+            state: present
+
+        - name: Set shared directory permissions
+          become: yes
+          ansible.builtin.file:
+            path: /shared
+            state: directory
+            owner: root
+            group: shared
+            mode: u=rwx,g=rwx,o=,g+s
+
+        - name: Install ACL tools
+          become: yes
+          ansible.builtin.apt:
+            name: acl
+            state: present
+
+        - name: Set group permissions for new files
+          become: yes
+          ansible.posix.acl:
+            path: /shared
+            etype: group
+            default: yes
+            permissions: rw
+            state: present
+      when: shared_data_disk
+
     - name: Install and configure RDP
       block:
         - name: Install xrdp
