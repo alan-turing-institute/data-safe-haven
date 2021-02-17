@@ -58,11 +58,17 @@ variable "admin_username" {
   }
 }
 
-variable "share_names" {
-  type = map(string)
+variable "shares" {
+  type = map(map(string))
   default = {
-    ingress = "ingress"
-    egress = "egress"
+    ingress = {
+      name = "ingress"
+      size_gb = 100
+    }
+    egress = {
+      name = "egress"
+      size_gb = 100
+    }
   }
 }
 
