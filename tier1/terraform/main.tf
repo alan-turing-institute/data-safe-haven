@@ -271,6 +271,36 @@ resource "azurerm_virtual_machine_data_disk_attachment" "this" {
   count = var.shared_disk_size_gb > 0 ? 1 : 0
 }
 
+resource "random_string" "storage_suffix" {
+  length = 24
+  special = false
+}
+
+# Create storage account
+resource "azurerm_storage_account" "this" {
+  # Storage account names must
+  #  - be all lower case
+  #  - be between 3 and 24 characters
+  #  - only contain numbers and letters
+  #  - be globally unique
+  name                = substr(lower("${local.resource_tag.storage_account}${random_string.storage_suffix.result}"), 0, 24)
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+
+  # Only FileStorage accounts support SMB/NFS shares on Premium (SSD) storage
+  account_kind             = "FileStorage"
+  account_tier             = "Premium"
+  account_replication_type = "LRS"
+  access_tier              = "Hot"
+}
+
+# Create ingress and egress shares
+resource "azurerm_storage_share" "this" {
+  for_each             = var.share_names
+  name                 = each.value
+  storage_account_name = azurerm_storage_account.this.name
+}
+
 # Create DNS zone
 resource "azurerm_dns_zone" "this" {
   name                = var.domain

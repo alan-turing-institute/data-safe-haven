@@ -26,6 +26,8 @@ locals {
       virtual_machine        = "VM_${var.sre_name}"
       os_disk                = "OSDISK_${var.sre_name}"
       data_disk              = "DATADISK_${var.sre_name}"
+      storage_account        = "STORAGE${var.sre_name}"
+      storage_share          = "SHARE_${var.sre_name}"
     }
 
     guacamole_nsg_rules = {
@@ -53,6 +55,14 @@ variable "admin_username" {
   default = {
     guacamole = "guacamole_admin"
     dsvm = "dsvm_admin"
+  }
+}
+
+variable "share_names" {
+  type = map(string)
+  default = {
+    ingress = "ingress"
+    egress = "egress"
   }
 }
 
