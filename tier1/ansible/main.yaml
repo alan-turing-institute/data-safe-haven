@@ -49,7 +49,7 @@
       block:
         - name: Check if database initialisation script exists
           ansible.builtin.stat:
-            path: "{{ ansible_user_dir }}/init.sql"
+            path: "{{ ansible_user_dir }}/initdb.sql"
           register: init_file
 
         - name: Get database initialisation script
