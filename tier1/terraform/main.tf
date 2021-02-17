@@ -110,7 +110,7 @@ resource "local_file" "guacamole_admin_private_key" {
   content         = tls_private_key.guacamole_admin.private_key_pem
 }
 
-# Create a Linux virtual machine
+# Create Guacamole virtual machine
 resource "azurerm_linux_virtual_machine" "guacamole" {
   name                  = "${local.resource_tag.virtual_machine}_guacamole"
   location              = var.location
@@ -203,7 +203,7 @@ resource "azurerm_network_interface" "dsvm" {
   }
 }
 
-# Create Guacamole admin key pair
+# Create DSVM admin key pair
 resource "tls_private_key" "dsvm_admin" {
   algorithm = "RSA"
   rsa_bits  = "4096"
@@ -216,7 +216,7 @@ resource "local_file" "dsvm_admin_private_key" {
   content         = tls_private_key.dsvm_admin.private_key_pem
 }
 
-# Create a Linux virtual machine
+# Create DSVM virtual machine
 resource "azurerm_linux_virtual_machine" "dsvm" {
   name                  = "${local.resource_tag.virtual_machine}_dsvm"
   location              = var.location
@@ -246,6 +246,29 @@ resource "azurerm_linux_virtual_machine" "dsvm" {
     sku       = var.vm_image.sku
     version   = var.vm_image.version
   }
+}
+
+# Create shared data disk
+resource "azurerm_managed_disk" "this" {
+  name                = "${local.resource_tag.data_disk}_shared"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+
+  storage_account_type = var.storage_type
+  create_option        = "Empty"
+  disk_size_gb         = var.shared_disk_size_gb
+
+  count = var.shared_disk_size_gb > 0 ? 1 : 0
+}
+
+# Attach shared data disk to DSVM
+resource "azurerm_virtual_machine_data_disk_attachment" "this" {
+  managed_disk_id    = azurerm_managed_disk.this[count.index].id
+  virtual_machine_id = azurerm_linux_virtual_machine.dsvm.id
+  lun                = "0"
+  caching            = "ReadWrite"
+
+  count = var.shared_disk_size_gb > 0 ? 1 : 0
 }
 
 # Create DNS zone

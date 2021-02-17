@@ -25,6 +25,7 @@ locals {
       network_interface      = "NIC_${var.sre_name}"
       virtual_machine        = "VM_${var.sre_name}"
       os_disk                = "OSDISK_${var.sre_name}"
+      data_disk              = "DATADISK_${var.sre_name}"
     }
 
     guacamole_nsg_rules = {
@@ -61,6 +62,14 @@ variable "storage_type" {
   validation {
     condition     = can(contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.storage_type))
     error_message = "The storage type must be one of Standard_LRS, StandardSSD_LRS and Premium_LRS."
+  }
+}
+
+variable "shared_disk_size_gb" {
+  type    = number
+  validation {
+    condition     = var.shared_disk_size_gb >= 0
+    error_message = "The shared disk size must be a positive integer or 0."
   }
 }
 
