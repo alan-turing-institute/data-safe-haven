@@ -7,9 +7,10 @@ language: minimal
 jobs:
   include:
     - name: Lint Ansible
-      language: python
-      python: 3.9
-      before_script: pip install ansible-lint
+      addons:
+        apt:
+          packages:
+            ansible
       script: ansible-lint
 
     - name: Lint JSON
