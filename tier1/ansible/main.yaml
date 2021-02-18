@@ -228,6 +228,18 @@
             status_code: 204
           loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
 
+        - name: Assign users to dsvm connection
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
+            method: PATCH
+            body:
+              - op: add
+                path: /connectionPermissions/1
+                value: READ
+            body_format: json
+            status_code: 204
+          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+
         - name: Disable deleted users
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
