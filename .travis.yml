@@ -7,9 +7,10 @@ language: minimal
 jobs:
   include:
     - name: Lint Ansible
-      language: python
-      python: 3.9
-      before_script: pip install ansible-lint
+      addons:
+        apt:
+          packages:
+            ansible-lint
       script: ansible-lint
 
     - name: Lint JSON
@@ -56,3 +57,7 @@ jobs:
       node_js: node
       before_script: npm install -g markdown-link-check
       script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
+      env: ALLOWED_FAILURE=true
+
+  allow_failures:
+    - env: ALLOWED_FAILURE=true

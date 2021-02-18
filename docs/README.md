@@ -38,5 +38,5 @@ The easiest way to make shareable PDF files from the Markdown documents included
 + `LaTeX` method
   + Install [`XeLaTex`](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [`TexLive`](http://www.tug.org/texlive/) (Windows / Linux) or [`MacTex`](http://www.tug.org/mactex/) (macOS).
   + Install [`Pandoc`](https://pandoc.org/installing.html)`
-  + Install the `Symbola` font (https://fontlibrary.org/en/font/symbola)
+  + Install the `Symbola` font (https://dn-works.com/ufas/)
   + Run `./markdown2pdf.sh <file name>.md latex`
