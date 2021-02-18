@@ -186,7 +186,6 @@
             remote_src: yes
             status_code: 204
           when: dsvm_connection.status == 200
-
       always:
         - name: Delete API token
           ansible.builtin.uri:
@@ -204,16 +203,14 @@
   vars_files:
     - terraform_vars.yaml
 
-  pre_tasks:
-    - name: Wait for cloud init to finish
-      ansible.builtin.wait_for:
-        path: /var/lib/cloud/instance/boot-finished
+  roles:
+    - role: wait_for_cloud_init
 
-    - name: Update apt cache
+    - role: apt_cache
       become: yes
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 600
+
+    - role: singleplatform-eng.users
+      become: yes
 
   tasks:
     - name: Configure shared data disk and directory
@@ -273,6 +270,14 @@
             default: yes
             permissions: rw
             state: present
+
+        - name: Add all local users to shared group
+          become: yes
+          ansible.builtin.user:
+            name: "{{ item.username }}"
+            groups: shared
+            append: yes
+          loop: "{{ users | default([]) }}"
       when: shared_data_disk
 
     - name: Configure ingress and egress shares
@@ -348,7 +353,7 @@
               startxfce4
             backup: yes
 
-        - name: Ensure xrdp users is in the ssl-cert group
+        - name: Ensure xrdp user is in the ssl-cert group
           # This is required to let xrdp access
           # `/etc/ssl/private/ssl-cert-snakeoil.key` which is symlinked to
           # `/etc/xrdp/key.pem`
