@@ -205,6 +205,12 @@
             url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
           register: guac_users
 
+        - name: Create lists of Guacamole users
+          ansible.builtin.set_fact:
+            guac_users_existing: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+            guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list )}}"
+            guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+
         - name: Create users that do not exist, set passwords to expired
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
@@ -215,7 +221,7 @@
               attributes:
                 expired: "true"
             body_format: json
-          loop: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list )}}"
+          loop: "{{ guac_users_missing }}"
 
         - name: Ensure existing users are enabled
           ansible.builtin.uri:
@@ -226,7 +232,7 @@
                 disabled: "false"
             body_format: json
             status_code: 204
-          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+          loop: "{{ guac_users_existing }}"
 
         - name: Allow users to change their own passwords
           ansible.builtin.uri:
@@ -238,7 +244,7 @@
                 value: UPDATE
             body_format: json
             status_code: 204
-          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+          loop: "{{ guac_users_existing }}"
 
         - name: Assign users to dsvm connection
           ansible.builtin.uri:
@@ -250,7 +256,7 @@
                 value: READ
             body_format: json
             status_code: 204
-          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+          loop: "{{ guac_users_existing }}"
 
         - name: Disable deleted users
           ansible.builtin.uri:
@@ -261,7 +267,7 @@
                 disabled: "true"
             body_format: json
             status_code: 204
-          loop: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+          loop: "{{ guac_users_deleted }}"
       always:
         - name: Delete API token
           ansible.builtin.uri:
