@@ -125,7 +125,7 @@
               oldPassword: guacadmin
               newPassword: "{{ guac_admin_password }}"
             body_format: json
-            status_code: "204"
+            status_code: 204
 
         - name: Create guacadmin file
           ansible.builtin.file:
@@ -139,7 +139,7 @@
           ansible.builtin.uri:
             url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
             method: DELETE
-            status_code: "204"
+            status_code: 204
       when: not guacadmin_file.stat.exists
 
     - name: Configure guacamole using API
@@ -228,6 +228,18 @@
             status_code: 204
           loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
 
+        - name: Allow users to change their own passwords
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
+            method: PATCH
+            body:
+              - op: add
+                path: "/userPermissions/{{ item }}"
+                value: UPDATE
+            body_format: json
+            status_code: 204
+          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+
         - name: Assign users to dsvm connection
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
@@ -255,7 +267,7 @@
           ansible.builtin.uri:
             url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
             method: DELETE
-            status_code: "204"
+            status_code: 204
 
 
 - name: Configure DSVM
