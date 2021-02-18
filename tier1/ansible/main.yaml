@@ -96,7 +96,7 @@
               - guacd.guacd.state.running
               - reverse_proxy.traefik.state.running
 
-    - name: Check if password has been changed
+    - name: Check if password has been changed from default
       tags: guacamole
       ansible.builtin.stat:
         path: "{{ guacadmin_file_path }}"
@@ -115,7 +115,6 @@
             password: guacadmin
             force_basic_auth: yes
             body_format: form-urlencoded
-            remote_src: yes
           register: token
 
         - name: Change guacadmin password
@@ -127,7 +126,6 @@
               newPassword: "{{ guac_admin_password }}"
             body_format: json
             status_code: "204"
-            remote_src: yes
 
         - name: Create guacadmin file
           ansible.builtin.file:
@@ -142,7 +140,6 @@
             url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
             method: DELETE
             status_code: "204"
-            remote_src: yes
       when: not guacadmin_file.stat.exists
 
     - name: Configure guacamole using API
@@ -158,7 +155,6 @@
             password: "{{ guac_admin_password }}"
             force_basic_auth: yes
             body_format: form-urlencoded
-            remote_src: yes
           register: token
 
         - name: Check if RDP connection for DSVM exists
@@ -174,7 +170,6 @@
             method: POST
             body: "{{ dsvm_connection_params }}"
             body_format: json
-            remote_src: yes
           when: dsvm_connection.status == 404
 
         - name: Update RDP connection for DSVM
@@ -183,7 +178,6 @@
             method: PUT
             body: "{{ dsvm_connection_params }}"
             body_format: json
-            remote_src: yes
             status_code: 204
           when: dsvm_connection.status == 200
       always:
@@ -191,8 +185,66 @@
           ansible.builtin.uri:
             url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
             method: DELETE
+            status_code: 204
+
+    - name: Create Guacamole users
+      tags: guacamole
+      block:
+        - name: Get API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens"
+            method: POST
+            user: "{{ guac_admin_user }}"
+            password: "{{ guac_admin_password }}"
+            force_basic_auth: yes
+            body_format: form-urlencoded
+          register: token
+
+        - name: Get existing users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
+          register: guac_users
+
+        - name: Create users that do not exist, set passwords to expired
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
+            method: POST
+            body:
+              username: "{{ item }}"
+              password: pass
+              attributes:
+                expired: "true"
+            body_format: json
+          loop: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list )}}"
+
+        - name: Ensure existing users are enabled
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
+            method: PUT
+            body:
+              attributes:
+                disabled: "false"
+            body_format: json
+            status_code: 204
+          loop: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+
+        - name: Disable deleted users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
+            method: PUT
+            body:
+              attributes:
+                disabled: "true"
+            body_format: json
+            status_code: 204
+          loop: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+      always:
+        - name: Delete API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
+            method: DELETE
             status_code: "204"
-            remote_src: yes
+
 
 - name: Configure DSVM
   hosts: dsvm

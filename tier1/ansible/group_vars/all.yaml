@@ -21,9 +21,11 @@ lets_encrypt_email: user@example.com
 #   - username: example
 #     name: Example User
 #     password: $6$ux7q/CYQ3IDrpmRa$7EiSCwv9b5CQ9kRx34.k0kX.N45ouWnigMC2oJjmofgryGplA2QzCK.k5CAfd8M1KPO8S5.DsE6uv8N6p2Awz0
+users: []
 
 # Local users to disable/remove
 # Set remove to yes to delete user data and home directory
 # users_deleted:
 #   - username: example
 #     remove: no
+users_deleted: []
