@@ -25,10 +25,10 @@
   + [:unlock: Access GitLab](#unlock-access-gitlab)
   + [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
   + [:construction_worker: Support for GitLab use](#construction_worker-support-for-gitlab-use)
-+ [:book: Collaborate on documents using HackMD](#book-collaborate-on-documents-using-hackmd)
-  + [:unlock: Access HackMD](#unlock-access-hackmd)
++ [:book: Collaborate on documents using CodiMD](#book-collaborate-on-documents-using-codimd)
+  + [:unlock: Access CodiMD](#unlock-access-codimd)
   + [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
-  + [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
+  + [:microscope: Troubleshooting CodiMD](#microscope-troubleshooting-codimd)
 + [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
 + [:green_book: Access databases](#green_book-access-databases)
   + [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
@@ -495,11 +495,9 @@ This will give output like:
 
 ``` bash
   system
-  2.7.18
   3.6.11
-
-* 3.7.8 (set by /home/ada.lovelace/.pyenv_version)
-
+  3.7.8
+* 3.8.3 (set by /home/ada.lovelace/.pyenv_version)
 ```
 
 You can change your preferred Python version globally or on a folder-by-folder basis using
@@ -683,7 +681,7 @@ You can also access GitLab from an internet browser from the Linux Data cience D
 > :point_right: Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 > You do not have to return to the "All Resources" tab ever time you want to launch GitLab (although you can do if that's easiest!)
 
-+ Point Firefox to the url provided by the resource dashboard for GitLab/HackMD.
++ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD.
 + If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
 
    <p align="center">
@@ -709,36 +707,36 @@ If you have not used GitLab before:
 + Ask the designated contact for your SRE.
 + There may be a dedicated discussion channel, for example during Turing Data Study Groups you can ask in the Slack channel.
 
-## :book: Collaborate on documents using HackMD
+## :book: Collaborate on documents using CodiMD
 
-HackMD is a locally installed tool that allows you to collaboratively write reports.
-It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
+CodiMD is a locally installed tool that allows you to collaboratively write reports.
+It uses Markdown which is a simple way to format your text so that it renders nicely in full HTML.
 
-> :earth_africa: Although we colloquially refer to this tool as HackMD, it is actually an installation of CodiMD: a fully open source version of the HackMD software.
+> :earth_africa: CodiMD is a fully open source version of the HackMD software.
 >
-> This information doesn't matter at all for how you use HackMD within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
-> You can read more about CodiMD at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd---the-open-source-hackmd>).
+> This information doesn't matter at all for how you use CodiMD within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
+> You can read more about CodiMD at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
 
 We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](<https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet>)
 
-### :unlock: Access HackMD
+### :unlock: Access CodiMD
 
-You can access HackMD from the `HackMD` icon on the Work Resources page.
+You can access CodiMD from the `CodiMD` icon on the Work Resources page.
 
 Login with your short-form username `firstname.lastname` and `password`.
 
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_logon.png" width="80%" title="hackmd_logon"/>
+      <img src="../../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
    </p>
 
-You can also access HackMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access HackMD from the Work Resources page.
+You can also access CodiMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access CodiMD from the Work Resources page.
 
-> :point_right: Accessing HackMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the `All Resources` tab ever time you want to launch HackMD.
+> :point_right: Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
+> You do not have to return to the `All Resources` tab ever time you want to launch CodiMD.
 
-+ Point Firefox to the url provided by the resource dashboard for GitLab/HackMD
++ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD
 + Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
 
    <p align="center">
@@ -747,15 +745,15 @@ You can also access HackMD from an internet browser from the Linux Data Science 
 
 ### :busts_in_silhouette: Editing other people's documents
 
-The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
+The CodiMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
 When you make a markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
-They will have the right to change the file if they are signed into the HackMD instance.
+They will have the right to change the file if they are signed into the CodiMD instance.
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_access_options.png" width="80%" title="hackmd_logon"/>
+      <img src="../../images/user_guide/codimd_access_options.png" width="80%" title="codimd_logon"/>
    </p>
 
 > :handshake: We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
@@ -768,7 +766,7 @@ Click the `Publish` button to publish the document and generate the short URL.
 Click the pen button (shown in the image below) to return to the editable markdown view.
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_screenshot.png" width="80%" title="hackmd_screenshot"/>
+      <img src="../../images/user_guide/codimd_screenshot.png" width="80%" title="codimd_screenshot"/>
    </p>
 
 > :pencil2: We recommend **publishing** the document to get a much shorter URL to share with your team.
@@ -776,11 +774,11 @@ Click the pen button (shown in the image below) to return to the editable markdo
 > Remember that the document is not published to the internet, it is only available to others within the SRE.
 >
 > :point_right: If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
-> Store a copy of the HackMD url in a text file in the outputs folder.
+> Store a copy of the CodiMD url in a text file in the outputs folder.
 > You will find some example report templates that outline the recommended structure.
-> We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
+> We recommend writing the report in CodiMD - rather than GitLab - so that everyone can edit and contribute quickly.
 
-### :microscope: Troubleshooting HackMD
+### :microscope: Troubleshooting CodiMD
 
 We have noticed that a lower case `L` and an upper case `I` look the same and often trip up users in the SRE.
 
@@ -948,6 +946,7 @@ head(df, 3)
 
 ``` R
 library(DBI)
+library(RPostgres)
 
 # Connect to the databases
 cnxn <- DBI::dbConnect(
