@@ -24,11 +24,14 @@ services:
     ports:
       - 127.0.0.1:8080:8080
     environment:
+      - GUACAMOLE_HOME={{ guacamole_home_container }}
       - GUACD_HOSTNAME=guacd
       - POSTGRES_HOSTNAME=database
       - POSTGRES_DATABASE={{ guac_db_name }}
       - POSTGRES_USER={{ guac_db_user }}
       - POSTGRES_PASSWORD={{ guac_db_password }}
+    volumes:
+      - {{ guacamole_home_host }}:{{ guacamole_home_container }}
     restart: always
     labels:
       - "traefik.enable=true"

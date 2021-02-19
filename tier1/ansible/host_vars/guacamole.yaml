@@ -10,6 +10,9 @@ docker_users:
   - "{{ ansible_user }}"
 
 # Docker compose variables
+guacamole_home_container: /guacamole_home
+guacamole_home_host: "{{ ansible_user_dir }}/guacamole_home"
+guacamole_extensions_dir: "{{ guacamole_home_host }}/extensions"
 guac_db_name: guacamole
 guac_db_user: guacamole
 guac_db_password: !vault |
