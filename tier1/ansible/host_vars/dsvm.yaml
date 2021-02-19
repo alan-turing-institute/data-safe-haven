@@ -1,0 +1,18 @@
+---
+
+apt_packages_development:
+  - git
+  - julia
+  - octave
+  - gfortran
+  - build-essential
+  - jupyter
+  - r-base
+
+apt_packages_editors:
+  - vim
+  - emacs
+
+apt_packages_latex:
+  - texlive-full
+  - texstudio

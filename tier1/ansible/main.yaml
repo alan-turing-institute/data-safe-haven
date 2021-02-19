@@ -545,3 +545,32 @@
             state: present
           async: 600
           poll: 5
+
+    - name: Install apt packages
+      become: yes
+      ansible.builtin.apt:
+        name: "{{ apt_packages_development | union(apt_packages_editors) | union(apt_packages_latex) }}"
+        state: present
+      async: 1800
+      poll: 10
+
+    - name: Install snaps
+      become: yes
+      block:
+        - name: Install Visual Studio Code
+          community.general.snap:
+            name: code
+            classic: yes
+            state: present
+
+        - name: Install Atom
+          community.general.snap:
+            name: atom
+            classic: yes
+            state: present
+
+        - name: Install Sublime Text
+          community.general.snap:
+            name: sublime-text
+            classic: yes
+            state: present
