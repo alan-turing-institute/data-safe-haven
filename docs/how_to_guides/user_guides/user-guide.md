@@ -599,7 +599,7 @@ The `/shared/` folder should be used for any work that you want to share with yo
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
 The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`
 
