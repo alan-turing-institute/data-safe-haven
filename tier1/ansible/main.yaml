@@ -158,6 +158,8 @@
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
             mode: 0644
+            modification_time: preserve
+            access_time: preserve
       always:
         - name: Delete API token
           ansible.builtin.uri:
