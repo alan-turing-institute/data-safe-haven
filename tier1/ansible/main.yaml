@@ -272,7 +272,7 @@
             body_format: json
           loop: "{{ guac_users_missing | zip(guac_initial_passwords) }}"
 
-        - name: Ensure existing users are enabled
+        - name: Ensure new and existing users are enabled
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
             method: PUT
@@ -281,9 +281,9 @@
                 disabled: "false"
             body_format: json
             status_code: 204
-          loop: "{{ guac_users_existing }}"
+          loop: "{{ guac_users_existing | union(guac_users_missing) }}"
 
-        - name: Allow users to change their own passwords and set TOTP
+        - name: Allow new and existing users to change their own passwords and set TOTP
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
             method: PATCH
@@ -293,9 +293,9 @@
                 value: UPDATE
             body_format: json
             status_code: 204
-          loop: "{{ guac_users_existing }}"
+          loop: "{{ guac_users_existing | union(guac_users_missing)  }}"
 
-        - name: Assign users to dsvm connection
+        - name: Assign new and existing users to dsvm connection
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
             method: PATCH
@@ -305,7 +305,7 @@
                 value: READ
             body_format: json
             status_code: 204
-          loop: "{{ guac_users_existing }}"
+          loop: "{{ guac_users_existing | union(guac_users_missing) }}"
 
         - name: Disable deleted users
           ansible.builtin.uri:
