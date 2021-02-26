@@ -92,10 +92,10 @@
         - name: Ensure that containers are running
           ansible.builtin.assert:
             that:
-              - database.postgres.state.running
-              - guacamole.guacamole.state.running
-              - guacd.guacd.state.running
-              - reverse_proxy.traefik.state.running
+              - compose_output.services.database.postgres.state.running
+              - compose_output.services.guacamole.guacamole.state.running
+              - compose_output.services.guacd.guacd.state.running
+              - compose_output.services.reverse_proxy.traefik.state.running
 
     - name: (Temporarily) disable TOTP to allow Guacamole configuration through API
       block:
@@ -352,10 +352,10 @@
         - name: Ensure that containers are running
           ansible.builtin.assert:
             that:
-              - database.postgres.state.running
-              - guacamole.guacamole.state.running
-              - guacd.guacd.state.running
-              - reverse_proxy.traefik.state.running
+              - compose_output.services.database.postgres.state.running
+              - compose_output.services.guacamole.guacamole.state.running
+              - compose_output.services.guacd.guacd.state.running
+              - compose_output.services.reverse_proxy.traefik.state.running
 
 
 - name: Configure DSVM
