@@ -272,16 +272,6 @@
             body_format: json
           loop: "{{ guac_users_missing | zip(guac_initial_passwords) }}"
 
-        - name: Ensure new and existing users are enabled
-          ansible.builtin.uri:
-            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
-            method: PUT
-            body:
-              attributes:
-                disabled: "false"
-            body_format: json
-            status_code: 204
-          loop: "{{ guac_users_existing | union(guac_users_missing) }}"
 
         - name: Allow new and existing users to change their own passwords and set TOTP
           ansible.builtin.uri:
@@ -306,6 +296,19 @@
             body_format: json
             status_code: 204
           loop: "{{ guac_users_existing | union(guac_users_missing) }}"
+
+        - name: Enable existing users
+          # It is important to not include new users here as this will
+          # overwrite the expired password flag
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
+            method: PUT
+            body:
+              attributes:
+                disabled: "false"
+            body_format: json
+            status_code: 204
+          loop: "{{ guac_users_existing }}"
 
         - name: Disable deleted users
           ansible.builtin.uri:
