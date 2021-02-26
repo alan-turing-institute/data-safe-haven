@@ -317,6 +317,15 @@
             body_format: json
             status_code: 204
           loop: "{{ guac_users_deleted }}"
+
+        - name: Delete removed users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item.username }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: 204
+          when: item.remove | default(False) and item.username in guac_users_deleted
+          loop: "{{ users_deleted }}"
+
       always:
         - name: Delete API token
           ansible.builtin.uri:
