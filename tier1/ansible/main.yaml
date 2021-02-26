@@ -29,6 +29,7 @@
     API_root: http://localhost:8080/guacamole/api
     data_source: postgresql
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
+    guac_initial_passwords: []
 
   roles:
     - role: wait_for_cloud_init
@@ -238,17 +239,38 @@
             guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list )}}"
             guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
 
+        - name: Create initial Guacamole passwords for new users
+          ansible.builtin.set_fact:
+            guac_initial_passwords: "{{ guac_initial_passwords | union([lookup('password', '/dev/null chars=ascii_letters,digits length=12')]) }}"
+          loop: "{{ guac_users_missing }}"
+
+        - name: Print new users initial Guacamole passwords
+          debug:
+            var: guac_users_missing | zip(guac_initial_passwords)
+
+        - name: Write initial Guacamole passwords to file
+          ansible.builtin.copy:
+            content: |
+              {% for item in guac_users_missing | zip(guac_initial_passwords) %}
+              - username: {{ item.0 }}
+                password: {{ item.1 }}
+              {% endfor %}
+            dest: ./guac_new_users.yaml
+            mode: 0644
+          delegate_to: localhost
+          when: guac_users_missing | length > 0
+
         - name: Create users that do not exist, set passwords to expired
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
             method: POST
             body:
-              username: "{{ item }}"
-              password: pass
+              username: "{{ item.0 }}"
+              password: "{{ item.1 }}"
               attributes:
                 expired: "true"
             body_format: json
-          loop: "{{ guac_users_missing }}"
+          loop: "{{ guac_users_missing | zip(guac_initial_passwords) }}"
 
         - name: Ensure existing users are enabled
           ansible.builtin.uri:
