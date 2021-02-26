@@ -99,7 +99,8 @@
 
     - name: (Temporarily) disable TOTP to allow Guacamole configuration through API
       block:
-        - ansible.builtin.file:
+        - name: Remove Guacamole TOTP extension
+          ansible.builtin.file:
             path: "{{ guacamole_extensions_dir }}/guacamole-auth-totp-{{ guac_version }}.jar"
             state: absent
           register: guacamole_totp_extension
