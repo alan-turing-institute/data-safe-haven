@@ -255,6 +255,7 @@
               - username: {{ item.0 }}
                 password: {{ item.1 }}
               {% endfor %}
+            backup: yes
             dest: ./guac_new_users.yaml
             mode: 0644
           delegate_to: localhost
