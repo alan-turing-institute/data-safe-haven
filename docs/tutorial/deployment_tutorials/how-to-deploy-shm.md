@@ -27,11 +27,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + You will need to be a member of the relevant security group.
 + `PowerShell` with support for Azure and Azure Active Directory
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
-  + Install the **cross-platform** AzureAD Powershell module:
-    + :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
-    + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
-    + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
+  + Check that you have installed the required `Powershell` modules by doing the following:
+    + Open a Powershell terminal and navigate to the `deployment/` directory within the Safe Haven repository.
+    + Run `./CheckRequirements.ps1` which will print out the commands needed to install any required modules that you are missing
+      + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on **Windows**. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
 + `Microsoft Remote Desktop`
   + On macOS this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
