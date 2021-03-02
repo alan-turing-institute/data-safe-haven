@@ -155,11 +155,11 @@ $remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
-    remoteDir              = "$remoteInstallationDir"
-    pipeSeparatedBlobNames = "$($blobNames -join '|')"
-    storageAccountName     = "$($config.storage.artifacts.accountName)"
-    storageContainerName   = "$storageContainerName"
-    sasToken               = "$artifactSasToken"
+    blobNamesB64         = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($blobNames | ConvertTo-Json)))
+    installationDir      = $remoteInstallationDir
+    sasTokenB64          = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($artifactSasToken))
+    storageAccountName   = $config.storage.artifacts.accountName
+    storageContainerName = $storageContainerName
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
@@ -183,12 +183,12 @@ $script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.o
                           Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
                           Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 $params = @{
-    domainAdminUsername    = "$domainAdminUsername"
-    domainControllerVmName = "$($config.dc.vmName)"
-    domainOuBase           = "$($config.domain.dn)"
-    gpoBackupPath          = "C:\Installation\GPOs"
-    netbiosName            = "$($config.domain.netbiosName)"
-    shmFdqn                = "$($config.domain.fqdn)"
+    domainAdminUsername    = $domainAdminUsername
+    domainControllerVmName = $config.dc.vmName
+    domainOuBase           = $config.domain.dn
+    gpoBackupPath          = "${remoteInstallationDir}\GPOs"
+    netbiosName            = $config.domain.netbiosName
+    shmFdqn                = $config.domain.fqdn
     userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
     securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
 }

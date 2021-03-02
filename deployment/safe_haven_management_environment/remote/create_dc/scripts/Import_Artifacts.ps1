@@ -5,41 +5,41 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0, HelpMessage = "Absolute path to remote artifacts directory")]
+    [Parameter(HelpMessage = "Absolute path to remote artifacts directory")]
     [ValidateNotNullOrEmpty()]
-    [string]$remoteDir,
-    [Parameter(Position = 1, HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
+    [string]$installationDir,
+    [Parameter(HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
-    [string]$pipeSeparatedBlobNames,
-    [Parameter(Position = 2, HelpMessage = "Name of the artifacts storage account")]
+    [string]$blobNamesB64,
+    [Parameter(HelpMessage = "Name of the artifacts storage account")]
     [ValidateNotNullOrEmpty()]
     [string]$storageAccountName,
-    [Parameter(Position = 3, HelpMessage = "Name of the artifacts storage container")]
+    [Parameter(HelpMessage = "Name of the artifacts storage container")]
     [ValidateNotNullOrEmpty()]
     [string]$storageContainerName,
-    [Parameter(Position = 4, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
+    [Parameter(HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
-    [string]$sasToken
+    [string]$sasTokenB64
 )
 
-# Deserialise blob names
-$blobNames = $pipeSeparatedBlobNames.Split("|")
+# Deserialise Base-64 encoded variables
+$sasToken = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($sasTokenB64))
+$blobNames = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($blobNamesB64)) | ConvertFrom-Json
 
 # Clear any previously downloaded artifacts
-Write-Output "Clearing all pre-existing files and folders from '$remoteDir'"
-if (Test-Path -Path $remoteDir) {
-    Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
+Write-Output "Clearing all pre-existing files and folders from '$installationDir'"
+if (Test-Path -Path $installationDir) {
+    Get-ChildItem $installationDir -Recurse | Remove-Item -Recurse -Force
 } else {
-    New-Item -ItemType directory -Path $remoteDir
+    New-Item -ItemType directory -Path $installationDir
 }
 
 # Download artifacts
-$numBlobs = $blobNames.length
-Write-Output "Downloading $numBlobs files to '$remoteDir'..."
+Write-Output "Downloading $($blobNames.Length) files to '$installationDir'..."
 foreach ($blobName in $blobNames) {
     $fileName = Split-Path -Leaf $blobName
     $fileDirRel = Split-Path -Parent $blobName
-    $fileDirFull = Join-Path $remoteDir $fileDirRel
+    $fileDirFull = Join-Path $installationDir $fileDirRel
     if (-not (Test-Path -Path $fileDirFull)) {
         $null = New-Item -ItemType Directory -Path $fileDirFull
     }
@@ -49,8 +49,8 @@ foreach ($blobName in $blobNames) {
 }
 
 # Download AzureADConnect
-Write-Output "Downloading AzureADConnect to '$remoteDir'..."
-Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $remoteDir\AzureADConnect.msi;
+Write-Output "Downloading AzureADConnect to '$installationDir'..."
+Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $installationDir\AzureADConnect.msi;
 if ($?) {
     Write-Output " [o] Completed"
 } else {
@@ -59,7 +59,7 @@ if ($?) {
 
 # Extract GPOs
 Write-Output "Extracting zip files..."
-Expand-Archive $remoteDir\GPOs.zip -DestinationPath $remoteDir -Force
+Expand-Archive $installationDir\GPOs.zip -DestinationPath $installationDir -Force
 if ($?) {
     Write-Output " [o] Completed"
 } else {
@@ -67,5 +67,5 @@ if ($?) {
 }
 
 # List items
-Write-Output "Contents of '$remoteDir' are:"
-Write-Output (Get-ChildItem -Path $remoteDir)
+Write-Output "Contents of '$installationDir' are:"
+Write-Output (Get-ChildItem -Path $installationDir)
