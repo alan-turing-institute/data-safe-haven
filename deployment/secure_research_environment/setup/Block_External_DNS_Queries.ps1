@@ -25,8 +25,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
-    sreId              = "`"$($config.sre.id)`""
-    blockedCidrsList   = "`"$($config.sre.network.vnet.subnets.compute.cidr)`""
+    sreId              = "$($config.sre.id)"
+    blockedCidrsList   = "$($config.sre.network.vnet.subnets.compute.cidr)"
     exceptionCidrsList = ""
 }
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
@@ -53,9 +53,9 @@ if (-not $vmIpAddress) {
     $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
     $params = @{
-        SHM_DOMAIN_FQDN = "`"$($config.shm.domain.fqdn)`""
-        SHM_DC1_FQDN    = "`"$($config.shm.dc.fqdn)`""
-        SHM_DC2_FQDN    = "`"$($config.shm.dcb.fqdn)`""
+        SHM_DOMAIN_FQDN = "$($config.shm.domain.fqdn)"
+        SHM_DC1_FQDN    = "$($config.shm.dc.fqdn)"
+        SHM_DC2_FQDN    = "$($config.shm.dcb.fqdn)"
     }
     Add-LogMessage -Level Info "Testing external DNS resolution fails on VM '$vmName'..."
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params

@@ -155,11 +155,11 @@ $remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
-    remoteDir              = "`"$remoteInstallationDir`""
-    pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName   = "`"$storageContainerName`""
-    sasToken               = "`"$artifactSasToken`""
+    remoteDir              = "$remoteInstallationDir"
+    pipeSeparatedBlobNames = "$($blobNames -join '|')"
+    storageAccountName     = "$($config.storage.artifacts.accountName)"
+    storageContainerName   = "$storageContainerName"
+    sasToken               = "$artifactSasToken"
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
@@ -183,12 +183,12 @@ $script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.o
                           Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
                           Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 $params = @{
-    domainAdminUsername    = "`"$domainAdminUsername`""
-    domainControllerVmName = "`"$($config.dc.vmName)`""
-    domainOuBase           = "`"$($config.domain.dn)`""
-    gpoBackupPath          = "`"C:\Installation\GPOs`""
-    netbiosName            = "`"$($config.domain.netbiosName)`""
-    shmFdqn                = "`"$($config.domain.fqdn)`""
+    domainAdminUsername    = "$domainAdminUsername"
+    domainControllerVmName = "$($config.dc.vmName)"
+    domainOuBase           = "$($config.domain.dn)"
+    gpoBackupPath          = "C:\Installation\GPOs"
+    netbiosName            = "$($config.domain.netbiosName)"
+    shmFdqn                = "$($config.domain.fqdn)"
     userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
     securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
 }
@@ -200,8 +200,8 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
-    shmFqdn           = "`"$($config.domain.fqdn)`""
-    serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
+    shmFqdn           = "$($config.domain.fqdn)"
+    serverAdminSgName = "$($config.domain.securityGroups.serverAdmins.name)"
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 

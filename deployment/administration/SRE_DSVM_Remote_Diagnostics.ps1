@@ -52,7 +52,7 @@ if ($ldapSearchPassword) {
 Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '$($vm.Name)'"
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
 $params = @{
-    ldapPassword = "`"$ldapSearchPassword`""
+    ldapPassword = "$ldapSearchPassword"
 }
 $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 if ($?) {
@@ -67,8 +67,8 @@ if ($?) {
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
-    samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)`""
-    ldapPassword   = "`"$ldapSearchPassword`""
+    samAccountName = "$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)"
+    ldapPassword   = "$ldapSearchPassword"
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

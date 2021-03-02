@@ -58,10 +58,10 @@ foreach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
 # Remove all existing remote NPS servers
 $npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)
 foreach ($npsServerAddress in $npsServerAddresses ) {
-    $null = netsh nps delete remoteserver remoteservergroup = "`"$remoteNpsServerGroup`"" address = "`"$npsServerAddress`""
+    $null = netsh nps delete remoteserver remoteservergroup = "$remoteNpsServerGroup" address = "$npsServerAddress"
 }
 # Add SHM NPS server
-$null = netsh nps add remoteserver remoteServerGroup = "`"$remoteNpsServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$remoteNpsSecret`"" requireauthattrib = $remoteNpsRequireAuthAttrib acctsharedsecret = $remoteNpsAcctSharedSecret priority = $remoteNpsPriority timeout = $remoteNpsTimeout blackout = $remoteNpsBlackout
+$null = netsh nps add remoteserver remoteServerGroup = "$remoteNpsServerGroup" address = "$shmNpsIp" authsharedsecret = "$remoteNpsSecret" requireauthattrib = $remoteNpsRequireAuthAttrib acctsharedsecret = $remoteNpsAcctSharedSecret priority = $remoteNpsPriority timeout = $remoteNpsTimeout blackout = $remoteNpsBlackout
 # Check that the change has actually been made (the netsh nps command always returns "ok")
 $success = $true
 [array]$npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)

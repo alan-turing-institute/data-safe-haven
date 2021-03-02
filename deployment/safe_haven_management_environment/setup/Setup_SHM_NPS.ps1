@@ -89,7 +89,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $params = @{
-    remoteDir = "`"C:\Installation`""
+    remoteDir = "C:\Installation"
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
@@ -101,11 +101,11 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Impo
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    remoteDir              = "`"C:\Installation`""
-    pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName   = "`"$storageContainerName`""
-    sasToken               = "`"$artifactSasToken`""
+    remoteDir              = "C:\Installation"
+    pipeSeparatedBlobNames = "$($blobNames -join '|')"
+    storageAccountName     = "$($config.storage.artifacts.accountName)"
+    storageContainerName   = "$storageContainerName"
+    sasToken               = "$artifactSasToken"
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 

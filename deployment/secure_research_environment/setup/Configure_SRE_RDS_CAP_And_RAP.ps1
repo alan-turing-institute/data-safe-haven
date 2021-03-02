@@ -28,7 +28,7 @@ $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -Secret
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Configure_CAP_And_RAP_Remote.ps1"
 Add-LogMessage -Level Info "[ ] Configuring CAP and RAP settings on RDS Gateway"
 $params = @{
-    sreResearchUserSecurityGroup = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+    sreResearchUserSecurityGroup = "$($config.sre.domain.securityGroups.researchUsers.name)"
     shmNetbiosName               = "$($config.shm.domain.netbiosName)"
     shmNpsIp                     = "$($config.shm.nps.ip)"
     remoteNpsPriority            = 1
@@ -37,7 +37,7 @@ $params = @{
     remoteNpsSecret              = "$npsSecret"
     remoteNpsRequireAuthAttrib   = "Yes"
     remoteNpsAcctSharedSecret    = "$npsSecret"
-    remoteNpsServerGroup         = "`"TS GATEWAY SERVER GROUP`"" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
+    remoteNpsServerGroup         = "TS GATEWAY SERVER GROUP" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 
@@ -49,10 +49,10 @@ Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 $params = @{
-    rdsGatewayIp   = "`"$($config.sre.rds.gateway.ip)`""
-    rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
+    rdsGatewayIp   = "$($config.sre.rds.gateway.ip)"
+    rdsGatewayFqdn = "$($config.sre.rds.gateway.fqdn)"
     npsSecret      = "$npsSecret"
-    sreId          = "`"$($config.sre.id)`""
+    sreId          = "$($config.sre.id)"
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop

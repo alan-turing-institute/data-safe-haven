@@ -241,11 +241,11 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
-        storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
+        storageAccountName           = "$($sreStorageAccount.StorageAccountName)"
         storageService               = "blob"
-        shareOrContainerName         = "`"$containerName`""
-        sasToken                     = "`"$sasToken`""
-        pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
+        shareOrContainerName         = "$containerName"
+        sasToken                     = "$sasToken"
+        pipeSeparatedRemoteFilePaths = "$($fileNames -join '|')"
         downloadDir                  = "$remoteUploadDir"
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
