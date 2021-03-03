@@ -244,10 +244,6 @@
             guac_initial_passwords: "{{ guac_initial_passwords | union([lookup('password', '/dev/null chars=ascii_letters,digits length=12')]) }}"
           loop: "{{ guac_users_missing }}"
 
-        - name: Print new users initial Guacamole passwords
-          debug:
-            var: guac_users_missing | zip(guac_initial_passwords)
-
         - name: Write initial Guacamole passwords to file
           ansible.builtin.copy:
             content: |
