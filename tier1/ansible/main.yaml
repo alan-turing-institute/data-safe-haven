@@ -47,14 +47,14 @@
     - name: Reset connection so that group changes take effect
       meta: reset_connection
 
+    - name: Check if database initialisation script exists
+      ansible.builtin.stat:
+        path: "{{ ansible_user_dir }}/initdb.sql"
+      register: init_file
+
     - name: Create database initialisation script
       block:
-        - name: Check if database initialisation script exists
-          ansible.builtin.stat:
-            path: "{{ ansible_user_dir }}/initdb.sql"
-          register: init_file
-
-        - name: Get database initialisation script
+        - name: Get database initialisation script contents
           community.docker.docker_container:
             name: guacamole
             image: "guacamole/guacamole:{{ guac_version }}"
@@ -62,7 +62,6 @@
             cleanup: yes
             detach: no
           register: init_script
-          when: not init_file.stat.exists
 
         - name: Write database initialisation script
           ansible.builtin.copy:
@@ -71,7 +70,7 @@
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
             mode: 0644
-          when: not init_file.stat.exists
+      when: not init_file.stat.exists
 
     - name: Docker services
       block:
