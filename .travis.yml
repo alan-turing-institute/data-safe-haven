@@ -11,7 +11,9 @@ jobs:
         apt:
           packages:
             ansible-lint
-      script: ansible-lint
+      script:
+        - ansible-lint --version
+        - ansible-lint
 
     - name: Lint JSON
       language: node_js
