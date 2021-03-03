@@ -83,7 +83,7 @@
             mode: 0644
 
         - name: Run docker services
-          community.general.docker_compose:
+          community.docker.docker_compose:
             project_src: "{{ ansible_user_dir }}"
             project_name: guacamole
             pull: yes
