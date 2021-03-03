@@ -235,9 +235,9 @@
 
         - name: Create lists of Guacamole users
           ansible.builtin.set_fact:
-            guac_users_existing: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
-            guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list )}}"
-            guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list )}}"
+            guac_users_existing: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
+            guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list ) }}"
+            guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
 
         - name: Create initial Guacamole passwords for new users
           ansible.builtin.set_fact:
@@ -398,7 +398,7 @@
               password: {{ item.password }}
 
               You will be asked to change your password and configure a TOTP authenticator app on your first login.
-            to: "{{item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
+            to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
             sender: "Safe Haven Admin <{{ email.address }}>"
             host: "{{ email.host }}"
             port: "{{ email.port }}"
