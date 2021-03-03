@@ -241,15 +241,15 @@
 
         - name: Create initial Guacamole passwords for new users
           ansible.builtin.set_fact:
-            guac_initial_passwords: "{{ guac_initial_passwords | union([lookup('password', '/dev/null chars=ascii_letters,digits length=12')]) }}"
+            guac_initial_passwords: "{{ guac_initial_passwords | union([{'username': item, 'password': lookup('password', '/dev/null chars=ascii_letters,digits length=12')}]) }}"
           loop: "{{ guac_users_missing }}"
 
         - name: Write initial Guacamole passwords to file
           ansible.builtin.copy:
             content: |
-              {% for item in guac_users_missing | zip(guac_initial_passwords) %}
-              - username: {{ item.0 }}
-                password: {{ item.1 }}
+              {% for item in guac_initial_passwords %}
+              - username: {{ item.username }}
+                password: {{ item.password }}
               {% endfor %}
             backup: yes
             dest: ./guac_new_users.yaml
@@ -262,12 +262,12 @@
             url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
             method: POST
             body:
-              username: "{{ item.0 }}"
-              password: "{{ item.1 }}"
+              username: "{{ item.username }}"
+              password: "{{ item.password }}"
               attributes:
                 expired: "true"
             body_format: json
-          loop: "{{ guac_users_missing | zip(guac_initial_passwords) }}"
+          loop: "{{ guac_initial_passwords }}"
 
         - name: Allow new and existing users to change their own passwords and set TOTP
           ansible.builtin.uri:
@@ -394,11 +394,11 @@
             body: |
               To connect to the safe haven navigate to https://{{ guacamole_domain }}.
 
-              username: {{ item.0 }}
-              password: {{ item.1 }}
+              username: {{ item.username }}
+              password: {{ item.password }}
 
               You will be asked to change your password and configure a TOTP authenticator app on your first login.
-            to: "{{item.0 }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.0] }}>"
+            to: "{{item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
             sender: "Safe Haven Admin <{{ email.address }}>"
             host: "{{ email.host }}"
             port: "{{ email.port }}"
@@ -406,7 +406,7 @@
             password: "{{ email.password }}"
           delegate_to: localhost
           when: email.enabled
-          loop: "{{ guac_users_missing | zip(guac_initial_passwords) }}"
+          loop: "{{ guac_initial_passwords }}"
 
 
 - name: Configure DSVM
