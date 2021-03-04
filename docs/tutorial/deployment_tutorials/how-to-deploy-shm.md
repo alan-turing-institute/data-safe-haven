@@ -541,7 +541,7 @@ This step validates that your local Active Directory users are correctly synchro
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
-  We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
+  We suggest naming this `YYYYMMDD-HHMM_user_details.csv` but this is up to you
   + Add your details to create a researcher account for yourself.
     + `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
     + `GivenName`: User's first / given name
@@ -559,15 +559,14 @@ This step validates that your local Active Directory users are correctly synchro
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
     + Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
-    + This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
+    + This script will add the users and trigger a sync with Azure Active Directory
++ Wait a few minutes for the changes to propagate
 + Go to the Azure Active Directory in `portal.azure.com`
   + Click `Users > All users` and confirm that the new user is shown in the user list.
-  + It may take a few minutes for the synchronisation to fully propagate in Azure.
-  + The new user account should have `source` as `Windows Server AD`
-  + This may take a few minutes for the synchronisation to fully propagate in Azure.
+  + The new user account should have the `Directory synced` field set to `Yes`
 
 #### Troubleshooting: Account already exists
-If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+If you get the message `New-ADUser:  The specified account already exists` you should first check to see whether that user actually does already exist!
 Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
 
 + `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
@@ -621,7 +620,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the network policy server (NPS) by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 20 minutes** to run.
-  + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
+  + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure the network policy server (NPS) via Remote Desktop
 
