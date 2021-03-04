@@ -166,7 +166,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Run the scripted SQL Server lockdown
     # ------------------------------------
     Write-Output "Running T-SQL lockdown script on: '$serverName'..."
-    $sqlCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($ServerLockdownCommandB64))
+    $sqlCommand = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($ServerLockdownCommandB64))
     Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"

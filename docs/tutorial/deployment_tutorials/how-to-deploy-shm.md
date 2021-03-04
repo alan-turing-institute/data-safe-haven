@@ -506,6 +506,7 @@ From your **deployment machine**
     + Click `Exit`
 
 #### Troubleshooting:
+
 + :pencil: Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering any usernames or passwords
 + If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration` for Microsoft domains such as `https://login.microsoft.com` or `https://aadcdn.msftauth.net` then you can safely add these as exceptions:
   + Click `Add`

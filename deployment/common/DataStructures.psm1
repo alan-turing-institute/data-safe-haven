@@ -1,11 +1,37 @@
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Convert an object from a Base-64 string
+# -------------------------------------
+function ConvertFrom-Base64 {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Base-64 to be converted to an object", ValueFromPipeline = $true)]
+        [AllowEmptyString()]
+        [string]$InputString
+    )
+    return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($InputString))
+}
+Export-ModuleMember -Function ConvertFrom-Base64
+
+
+# Convert an object to a Base-64 string
+# -------------------------------------
+function ConvertTo-Base64 {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "String to be converted to Base-64", ValueFromPipeline = $true)]
+        [AllowEmptyString()]
+        [string]$InputString
+    )
+    return [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($InputString))
+}
+Export-ModuleMember -Function ConvertTo-Base64
+
+
 # Convert a nested, sortable object into a sorted hashtable
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline=$True)]
+        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline = $true)]
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )

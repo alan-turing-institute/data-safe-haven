@@ -5,26 +5,26 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(HelpMessage = "Base-64 encoded array of blob names to dowload from artifacts storage blob container")]
+    [ValidateNotNullOrEmpty()]
+    [string]$blobNameArrayB64,
     [Parameter(HelpMessage = "Absolute path to remote artifacts directory")]
     [ValidateNotNullOrEmpty()]
     [string]$installationDir,
-    [Parameter(HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
+    [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
-    [string]$blobNamesB64,
+    [string]$sasTokenB64,
     [Parameter(HelpMessage = "Name of the artifacts storage account")]
     [ValidateNotNullOrEmpty()]
     [string]$storageAccountName,
     [Parameter(HelpMessage = "Name of the artifacts storage container")]
     [ValidateNotNullOrEmpty()]
-    [string]$storageContainerName,
-    [Parameter(HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
-    [ValidateNotNullOrEmpty()]
-    [string]$sasTokenB64
+    [string]$storageContainerName
 )
 
 # Deserialise Base-64 encoded variables
-$sasToken = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($sasTokenB64))
-$blobNames = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($blobNamesB64)) | ConvertFrom-Json
+$blobNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($blobNameArrayB64)) | ConvertFrom-Json
+$sasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sasTokenB64))
 
 # Clear any previously downloaded artifacts
 Write-Output "Clearing all pre-existing files and folders from '$installationDir'"

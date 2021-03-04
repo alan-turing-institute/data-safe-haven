@@ -12,6 +12,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
@@ -156,7 +157,7 @@ $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${
 
 # Check cloud-init size
 # ---------------------
-$CloudInitEncodedLength = ([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($cloudInitTemplate))).Length
+$CloudInitEncodedLength = ($cloudInitTemplate | ConvertTo-Base64).Length
 if ($CloudInitEncodedLength / 87380 -gt 0.9) {
     Add-LogMessage -Level Warning "The current cloud-init size ($CloudInitEncodedLength Base64 characters) is more than 90% of the limit of 87380 characters!"
 }

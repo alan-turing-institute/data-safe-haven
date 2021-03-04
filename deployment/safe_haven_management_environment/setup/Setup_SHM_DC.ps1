@@ -6,6 +6,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
@@ -155,9 +156,9 @@ $remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
-    blobNamesB64         = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($blobNames | ConvertTo-Json)))
+    blobNamesB64         = $blobNames | ConvertTo-Json | ConvertTo-Base64
     installationDir      = $remoteInstallationDir
-    sasTokenB64          = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($artifactSasToken))
+    sasTokenB64          = $artifactSasToken | ConvertTo-Base64
     storageAccountName   = $config.storage.artifacts.accountName
     storageContainerName = $storageContainerName
 }
@@ -189,8 +190,8 @@ $params = @{
     gpoBackupPath          = "${remoteInstallationDir}\GPOs"
     netbiosName            = $config.domain.netbiosName
     shmFdqn                = $config.domain.fqdn
-    userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
-    securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
+    userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
+    securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
