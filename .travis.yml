@@ -10,10 +10,10 @@ jobs:
       language: python
       python: 3.9
       before_script:
-        - pip install "ansible-lint[community,yamllint]"
+        - pip install "ansible-lint[core]"
       script:
         - ansible-lint --version
-        - ansible-lint
+        - ansible-lint ./tier1/ansible
 
     - name: Lint JSON
       language: node_js
