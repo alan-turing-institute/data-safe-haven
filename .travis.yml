@@ -7,10 +7,10 @@ language: minimal
 jobs:
   include:
     - name: Lint Ansible
-      addons:
-        apt:
-          packages:
-            ansible-lint
+      language: python
+      python: 3.9
+      before_script:
+        - pip install "ansible-lint[community,yamllint]"
       script:
         - ansible-lint --version
         - ansible-lint
