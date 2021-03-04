@@ -339,6 +339,7 @@ function Get-ShmConfig {
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        installationDirectory      = "C:\Installation"
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
             data = [ordered]@{
@@ -383,6 +384,7 @@ function Get-ShmConfig {
         vmSize                  = "Standard_D2s_v3"
         hostname                = $hostname
         ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
+        installationDirectory   = "C:\Installation"
         disks                   = [ordered]@{
             data = [ordered]@{
                 sizeGb = "20"

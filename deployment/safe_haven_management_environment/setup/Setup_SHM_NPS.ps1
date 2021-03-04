@@ -89,7 +89,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $params = @{
-    remoteDir = "C:\Installation"
+    installationDir = $config.nps.installationDirectory
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 

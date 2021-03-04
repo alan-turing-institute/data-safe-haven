@@ -15,6 +15,7 @@
       "external_dns_resolver": "168.63.129.16",
       "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
       "hostname": "DC1-SHM-TESTB",
+      "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.4",
       "rg": "RG_SHM_TESTB_DC",
       "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
@@ -277,6 +278,7 @@
         }
       },
       "hostname": "NPS-SHM-TESTB",
+      "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.6",
       "rg": "RG_SHM_TESTB_NPS",
       "vmName": "NPS-SHM-TESTB",
@@ -663,30 +665,10 @@
       }
     },
     "webapps": {
-      "gitlab": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
-        "disks": {
-          "data": {
-            "sizeGb": "512",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "32",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.5.5",
-        "osVersion": "18.04-LTS",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3"
-      },
       "codimd": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.2.0"
+          "dockerVersion": "2.3.2"
         },
         "disks": {
           "data": {
@@ -707,6 +689,26 @@
           "passwordSecretName": "sre-sandbox-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-SANDBOX",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "gitlab": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SRE-SANDBOX",
+        "ip": "10.151.5.5",
+        "osVersion": "18.04-LTS",
+        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3"
       },
       "rg": "RG_SHM_TESTB_SRE_SANDBOX_WEBAPPS"

@@ -152,12 +152,11 @@ Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.dc.
 $storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
-$remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
     blobNamesB64         = $blobNames | ConvertTo-Json | ConvertTo-Base64
-    installationDir      = $remoteInstallationDir
+    installationDir      = $config.dc.installationDirectory
     sasTokenB64          = $artifactSasToken | ConvertTo-Base64
     storageAccountName   = $config.storage.artifacts.accountName
     storageContainerName = $storageContainerName
@@ -187,7 +186,7 @@ $params = @{
     domainAdminUsername    = $domainAdminUsername
     domainControllerVmName = $config.dc.vmName
     domainOuBase           = $config.domain.dn
-    gpoBackupPath          = "${remoteInstallationDir}\GPOs"
+    gpoBackupPath          = "$($config.dc.installationDirectory)\GPOs"
     netbiosName            = $config.domain.netbiosName
     shmFdqn                = $config.domain.fqdn
     userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
