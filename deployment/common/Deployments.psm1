@@ -1137,8 +1137,8 @@ function Invoke-RemoteScript {
         [string]$Shell = "PowerShell",
         [Parameter(Mandatory = $false, HelpMessage = "Suppress script output on success")]
         [switch]$SuppressOutput,
-        [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
-        $Parameter = $null
+        [Parameter(Mandatory = $false, HelpMessage = "(Optional) hashtable of script parameters")]
+        [System.Collections.IDictionary]$Parameter = $null
     )
     # If we're given a script then create a file from it
     $tmpScriptFile = $null
@@ -1147,10 +1147,22 @@ function Invoke-RemoteScript {
         $Script | Out-File -FilePath $tmpScriptFile.FullName
         $ScriptPath = $tmpScriptFile.FullName
     }
-    # Run the remote command
+    # Validate any external parameters as non-string arguments or arguments containing special characters will cause Invoke-AzVMRunCommand to fail
     $params = @{}
     if ($Parameter) { $params["Parameter"] = $Parameter }
     $params["CommandId"] = ($Shell -eq "PowerShell") ? "RunPowerShellScript" : "RunShellScript"
+    if ($params.Contains("Parameter")) {
+        foreach ($kv in $params["Parameter"].GetEnumerator()) {
+            if ($kv.Value -isnot [string]) {
+                Add-LogMessage -Level Fatal "$($kv.Key) argument ('$($kv.Value)') must be a string!"
+            }
+            foreach ($unsafeCharacter in @("|", "&")) {
+                if ($kv.Value.Contains($unsafeCharacter)) {
+                    Add-LogMessage -Level Fatal "$($kv.Key) argument ('$($kv.Value)') contains '$unsafeCharacter' which will cause Invoke-AzVMRunCommand to fail. Consider encoding this variable in Base-64."
+                }
+            }
+        }
+    }
     try {
         # Catch failures from running two commands in close proximity and rerun
         while ($true) {
