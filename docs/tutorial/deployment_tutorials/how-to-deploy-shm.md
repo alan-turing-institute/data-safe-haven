@@ -467,40 +467,20 @@ From your **deployment machine**
     + Ensure that `Password Hash Synchronization` is selected
     + Click `Next`
   + On the `Connect to Azure AD` screen:
-    + On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
-      + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
-    + If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
-      + Click `Add`
-      + Click `Add`
-      + Click `Close`
-      + Repeat for the same dialog with `https://aadcdn.msftauth.net`
-    + If you receive an error box `We can't sign you in. Javascript is required to sign you in....` and then in the Script Error: ` Do you want to continue running scripts on this page`
-      + Click `Yes`
-      + Close the dialog by clicking `X`
+    + Provide credentials for the Azure Active Directory **global administrator** account you set up earlier (`aad.admin.<first name>.<last name>@<SHM domain>`) when prompted
+    + On the webpage pop-up, provide the password you chose for this account when prompted
     + Back on the `Connect to Azure AD` screen, click `Next`
-    + If you receive another Internet Explorer pop-up dialog:
-      + Click `Add`
-      + Click `Add`
-      + Click `Close`
-    + Enter the password for the global administrator account you set up earlier (`aad.admin.<first name>.<last name>`) when prompted
     + Approve the login with MFA if required
-      + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   + On the `Connect your directories` screen:
     + Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
     + On the `AD forest account` pop-up:
       + Select `Use existing AD account`
       + Enter the details for the `localadsync` user.
-        + Username: use the value of the `shm-<SHM ID>-aad-localsync-username` secret in the SHM key vault prepended with `<Domain ID>\` where the `Domain ID` is the capitalised form of the `<SHM ID>`.
-          + For example, if the *SHM ID* is `testa` and the *username* is `testalocaladsync` then you would use `TESTA\testalocaladsync` here.
-        + Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM key vault.
+        + **Username**: use the value of the `shm-<SHM ID>-aad-localsync-username` secret in the SHM key vault:
+          + EITHER prepended with `<Domain ID>\`, where the `Domain ID` is the capitalised form of the `<SHM ID>`, so if the *SHM ID* is `testa` and the *username* is `testalocaladsync` then you would use `TESTA\testalocaladsync` here.
+          + OR suffixed with `<SHM domain>`, so if the *SHM domain* is `testa.dsgroupdev.co.uk` and the *username* is `testalocaladsync` then you would use `testalocaladsync@testa.dsgroupdev.co.uk` here.
+        + **Password**: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM key vault.
       + Click `OK`
-      + **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user in the **Domain Controller** Active Directory to the value in the secret listed above.
-        + In Server Manager click `Tools > Active Directory Users and Computers`
-        + Expand the domain in the left hand panel
-        + Expand the `Safe Haven Service Accounts` OU
-        + Right click on the "<SHM ID> Local AD Sync Administrator" user and select "reset password"
-        + Set the password to the value in the secret listed above.
-        + Leave the other settings as is and click `OK`
     + Click `Next`
   + On the `Azure AD sign-in configuration` screen:
     + Verify that the `User Principal Name` is set to `userPrincipalName`
@@ -519,12 +499,31 @@ From your **deployment machine**
     + Select `Password Writeback`
     + Click `Next`
   + On the `Ready to configure` screen:
+    + Ensure that the `Start the synchronisation process when configuration completes` option is ticked.
     + Click `Install`
     + This may take a few minutes to complete
   + On the `Configuration complete` screen:
     + Click `Exit`
 
-**Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
+#### Troubleshooting:
++ :pencil: Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering any usernames or passwords
++ If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration` for Microsoft domains such as `https://login.microsoft.com` or `https://aadcdn.msftauth.net` then you can safely add these as exceptions:
+  + Click `Add`
+  + Click `Close`
++ If you receive an error message on the login webpage pop-ups saying `We can't sign you in. Javascript is required to sign you in....` followed by the Script Error: `Do you want to continue running scripts on this page` you can safely allow Javascript:
+  + Click `Yes`
+  + Close the dialog by clicking `X`
++ If you see a Windows Security Warning, related to the MFA login:
+  + Check `Don't show this message again`
+  + Click `Yes` to close the dialog.
++ If you get an error that the username/password is incorrect or that the domain/directory could not be found when entering the details for the `localadsync` user, try resetting the password for this user in the **Domain Controller** Active Directory so that it matches the value stored in the Key Vault
+  + In Server Manager click `Tools > Active Directory Users and Computers`
+  + Expand the domain in the left hand panel
+  + Expand the `Safe Haven Service Accounts` OU
+  + Right click on the `<SHM ID> Local AD Sync Administrator` user and select `reset password`
+  + Set the password to the value from the appropriate Key Vault secret.
+  + Leave the other settings alone and click `OK`
++ The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
 #### Update Azure Active Directory Connect rules
 
