@@ -8,7 +8,7 @@ param(
     [Parameter(HelpMessage = "Base-64 encoded array of blob names to dowload from artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$blobNameArrayB64,
-    [Parameter(HelpMessage = "Absolute path to remote artifacts directory")]
+    [Parameter(HelpMessage = "Absolute path to directory which artifacts should be downloaded to")]
     [ValidateNotNullOrEmpty()]
     [string]$installationDir,
     [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the artifacts storage blob container")]
@@ -23,10 +23,13 @@ param(
 )
 
 # Deserialise Base-64 encoded variables
+# -------------------------------------
 $blobNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($blobNameArrayB64)) | ConvertFrom-Json
 $sasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sasTokenB64))
 
+
 # Clear any previously downloaded artifacts
+# -----------------------------------------
 Write-Output "Clearing all pre-existing files and folders from '$installationDir'"
 if (Test-Path -Path $installationDir) {
     Get-ChildItem $installationDir -Recurse | Remove-Item -Recurse -Force
@@ -34,7 +37,9 @@ if (Test-Path -Path $installationDir) {
     New-Item -ItemType directory -Path $installationDir
 }
 
+
 # Download artifacts
+# ------------------
 Write-Output "Downloading $($blobNames.Length) files to '$installationDir'..."
 foreach ($blobName in $blobNames) {
     $fileName = Split-Path -Leaf $blobName
@@ -48,7 +53,9 @@ foreach ($blobName in $blobNames) {
     $null = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
 }
 
+
 # Download AzureADConnect
+# -----------------------
 Write-Output "Downloading AzureADConnect to '$installationDir'..."
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $installationDir\AzureADConnect.msi;
 if ($?) {
@@ -57,7 +64,9 @@ if ($?) {
     Write-Output " [x] Failed to download AzureADConnect"
 }
 
+
 # Extract GPOs
+# ------------
 Write-Output "Extracting zip files..."
 Expand-Archive $installationDir\GPOs.zip -DestinationPath $installationDir -Force
 if ($?) {
@@ -67,5 +76,6 @@ if ($?) {
 }
 
 # List items
+# ----------
 Write-Output "Contents of '$installationDir' are:"
 Write-Output (Get-ChildItem -Path $installationDir)

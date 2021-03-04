@@ -101,11 +101,11 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Impo
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    remoteDir              = "C:\Installation"
-    pipeSeparatedBlobNames = "$($blobNames -join '|')"
-    storageAccountName     = "$($config.storage.artifacts.accountName)"
-    storageContainerName   = "$storageContainerName"
-    sasToken               = "$artifactSasToken"
+    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    installationDir      = $config.nps.installationDirectory
+    sasTokenB64          = $artifactSasToken | ConvertTo-Base64
+    storageAccountName   = $config.storage.artifacts.accountName
+    storageContainerName = $storageContainerName
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 

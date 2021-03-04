@@ -201,8 +201,8 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
-    shmFqdn           = "$($config.domain.fqdn)"
-    serverAdminSgName = "$($config.domain.securityGroups.serverAdmins.name)"
+    shmFqdn           = $config.domain.fqdn
+    serverAdminSgName = $config.domain.securityGroups.serverAdmins.name
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
@@ -212,8 +212,8 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Configure DNS to forward requests to the Azure DNS resolver
     $params = @{
-        ExternalDnsResolver = "$($config.dc.external_dns_resolver)"
-        IdentitySubnetCidr  = "$($config.network.vnet.subnets.identity.cidr)"
+        ExternalDnsResolver = $config.dc.external_dns_resolver
+        IdentitySubnetCidr  = $config.network.vnet.subnets.identity.cidr
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
