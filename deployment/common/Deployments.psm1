@@ -1246,7 +1246,7 @@ function New-DNSZone {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName
     )
-    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
+    Add-LogMessage -Level Info "Ensuring that DNS zone '$($Name)' exists..."
     $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
@@ -1369,7 +1369,6 @@ function Set-DnsZoneAndParentNSRecords {
     $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
 
     # Create DNS Zone
-    Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
     New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
 
     # Get NS records from the new DNS Zone
