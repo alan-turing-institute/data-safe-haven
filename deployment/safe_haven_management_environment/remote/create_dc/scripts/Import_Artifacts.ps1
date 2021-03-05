@@ -5,19 +5,19 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Base-64 encoded array of blob names to dowload from artifacts storage blob container")]
+    [Parameter(HelpMessage = "Base-64 encoded array of blob names to download from storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$blobNameArrayB64,
-    [Parameter(HelpMessage = "Absolute path to directory which artifacts should be downloaded to")]
+    [Parameter(HelpMessage = "Absolute path to directory which blobs should be downloaded to")]
     [ValidateNotNullOrEmpty()]
-    [string]$installationDir,
-    [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the artifacts storage blob container")]
+    [string]$downloadDir,
+    [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$sasTokenB64,
-    [Parameter(HelpMessage = "Name of the artifacts storage account")]
+    [Parameter(HelpMessage = "Name of the storage account")]
     [ValidateNotNullOrEmpty()]
     [string]$storageAccountName,
-    [Parameter(HelpMessage = "Name of the artifacts storage container")]
+    [Parameter(HelpMessage = "Name of the storage container")]
     [ValidateNotNullOrEmpty()]
     [string]$storageContainerName
 )
@@ -30,34 +30,42 @@ $sasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64S
 
 # Clear any previously downloaded artifacts
 # -----------------------------------------
-Write-Output "Clearing all pre-existing files and folders from '$installationDir'"
-if (Test-Path -Path $installationDir) {
-    Get-ChildItem $installationDir -Recurse | Remove-Item -Recurse -Force
+Write-Output "Clearing all pre-existing files and folders from '$downloadDir'"
+if (Test-Path -Path $downloadDir) {
+    Get-ChildItem $downloadDir -Recurse | Remove-Item -Recurse -Force
 } else {
-    New-Item -ItemType directory -Path $installationDir
+    New-Item -ItemType directory -Path $downloadDir
 }
 
 
 # Download artifacts
 # ------------------
-Write-Output "Downloading $($blobNames.Length) files to '$installationDir'..."
+Write-Output "Downloading $($blobNames.Length) files to '$downloadDir'..."
 foreach ($blobName in $blobNames) {
-    $fileName = Split-Path -Leaf $blobName
-    $fileDirRel = Split-Path -Parent $blobName
-    $fileDirFull = Join-Path $installationDir $fileDirRel
-    if (-not (Test-Path -Path $fileDirFull)) {
-        $null = New-Item -ItemType Directory -Path $fileDirFull
+    # Ensure that local directory exists
+    $localDir = Join-Path $downloadDir $(Split-Path -Parent $blobName)
+    if (-not (Test-Path -Path $localDir)) {
+        $null = New-Item -ItemType Directory -Path $localDir
     }
-    $filePath = Join-Path $fileDirFull $fileName
-    $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken"
-    $null = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
+    $fileName = Split-Path -Leaf $blobName
+    $localFilePath = Join-Path $localDir $fileName
+
+    # Download file from blob storage
+    $blobUrl = "https://${storageAccountName}.blob.core.windows.net/${storageContainerName}/${blobName}${sasToken}"
+    Write-Output " [ ] Fetching $blobUrl..."
+    $null = Invoke-WebRequest -Uri $blobUrl -OutFile $localFilePath
+    if ($?) {
+        Write-Output " [o] Succeeded"
+    } else {
+        Write-Output " [x] Failed!"
+    }
 }
 
 
 # Download AzureADConnect
 # -----------------------
-Write-Output "Downloading AzureADConnect to '$installationDir'..."
-Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $installationDir\AzureADConnect.msi;
+Write-Output "Downloading AzureADConnect to '$downloadDir'..."
+Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "${downloadDir}\AzureADConnect.msi"
 if ($?) {
     Write-Output " [o] Completed"
 } else {
@@ -68,7 +76,7 @@ if ($?) {
 # Extract GPOs
 # ------------
 Write-Output "Extracting zip files..."
-Expand-Archive $installationDir\GPOs.zip -DestinationPath $installationDir -Force
+Expand-Archive "${downloadDir}\GPOs.zip" -DestinationPath $downloadDir -Force
 if ($?) {
     Write-Output " [o] Completed"
 } else {
@@ -77,5 +85,5 @@ if ($?) {
 
 # List items
 # ----------
-Write-Output "Contents of '$installationDir' are:"
-Write-Output (Get-ChildItem -Path $installationDir)
+Write-Output "Contents of '$downloadDir' are:"
+Write-Output (Get-ChildItem -Path $downloadDir)

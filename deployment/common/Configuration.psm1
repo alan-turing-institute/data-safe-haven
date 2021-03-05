@@ -710,6 +710,7 @@ function Get-SreConfig {
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
+            installationDirectory   = "C:\Installation"
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
                 rules = "sre-nsg-rules-gateway.json"

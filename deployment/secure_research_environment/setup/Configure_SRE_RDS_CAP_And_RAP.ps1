@@ -49,10 +49,10 @@ Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 $params = @{
-    rdsGatewayIp   = "$($config.sre.rds.gateway.ip)"
-    rdsGatewayFqdn = "$($config.sre.rds.gateway.fqdn)"
-    npsSecret      = "$npsSecret"
-    sreId          = "$($config.sre.id)"
+    npsSecretB64   = $npsSecret | ConvertTo-Base64
+    rdsGatewayIp   = $config.sre.rds.gateway.ip
+    rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
+    sreId          = $config.sre.id
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop

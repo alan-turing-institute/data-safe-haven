@@ -7,8 +7,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level data administrators group")]
     [string]$DataAdminGroup,
-    [Parameter(Mandatory = $true, HelpMessage = "Password for SQL AuthUpdate User")]
-    [string]$DbAdminPassword,
+    [Parameter(Mandatory = $true, HelpMessage = "Base-64 encoded password for SQL AuthUpdate User")]
+    [string]$DbAdminPasswordB64,
     [Parameter(Mandatory = $true, HelpMessage = "Name of SQL AuthUpdate User")]
     [string]$DbAdminUsername,
     [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
@@ -25,8 +25,12 @@ param(
 
 Import-Module SqlServer -ErrorAction Stop
 
+
+# Create SQL admin credentials object
+# -----------------------------------
 $serverName = $(hostname)
-$secureDbAdminPassword = (ConvertTo-SecureString $DbAdminPassword -AsPlainText -Force)
+$dbAdminPassword = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DbAdminPasswordB64))
+$secureDbAdminPassword = (ConvertTo-SecureString $dbAdminPassword -AsPlainText -Force)
 $sqlAdminCredentials = New-Object System.Management.Automation.PSCredential($DbAdminUsername, $secureDbAdminPassword)
 $connectionTimeoutInSeconds = 5
 $EnableSSIS = [System.Convert]::ToBoolean($EnableSSIS)

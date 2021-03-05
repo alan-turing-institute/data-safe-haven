@@ -53,12 +53,12 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # -----------------------------
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
 $params = @{
-    DOMAIN_CONTROLLER = "$($config.shm.dc.fqdn)"
+    DOMAIN_CONTROLLER = $config.shm.dc.fqdn
     DOMAIN_JOIN_OU    = "$($config.shm.domain.ous.linuxServers.path)"
-    DOMAIN_JOIN_USER  = "$($config.shm.users.computerManagers.linuxServers.samAccountName)"
-    DOMAIN_LOWER      = "$($config.shm.domain.fqdn)"
-    LDAP_SEARCH_USER  = "$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)"
-    LDAP_TEST_USER    = "$($config.shm.users.serviceAccounts.aadLocalSync.samAccountName)"
+    DOMAIN_JOIN_USER  = $config.shm.users.computerManagers.linuxServers.samAccountName
+    DOMAIN_LOWER      = $config.shm.domain.fqdn
+    LDAP_SEARCH_USER  = $config.sre.users.serviceAccounts.ldapSearch.samAccountName
+    LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
     SERVICE_PATH      = "$($config.shm.domain.ous.serviceAccounts.path)"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),

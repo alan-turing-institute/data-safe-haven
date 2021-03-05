@@ -289,9 +289,9 @@ if ($doInstall) {
         Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
         $params = @{
-            rdsFqdn         = "$rdsFqdn"
-            certThumbPrint  = "$($kvCertificate.Thumbprint)"
-            remoteDirectory = "$remoteDirectory"
+            rdsFqdn         = $rdsFqdn
+            certThumbPrint  = $kvCertificate.Thumbprint
+            remoteDirectory = $remoteDirectory
         }
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
     }

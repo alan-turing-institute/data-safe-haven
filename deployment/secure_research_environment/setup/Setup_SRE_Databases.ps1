@@ -124,13 +124,13 @@ foreach ($keyName in $config.sre.databases.Keys) {
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
             DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
-            DbAdminPassword          = "$dbAdminPassword"
-            DbAdminUsername          = "$dbAdminUsername"
-            EnableSSIS               = "$($databaseCfg.enableSSIS)"
+            DbAdminPasswordB64       = $dbAdminPassword | ConvertTo-Base64
+            DbAdminUsername          = $dbAdminUsername
+            EnableSSIS               = $databaseCfg.enableSSIS
             ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
             ServerLockdownCommandB64 = Get-Content $serverLockdownCommandPath -Raw | ConvertTo-Base64
             SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)"
-            VmAdminUsername          = "$vmAdminUsername"
+            VmAdminUsername          = $vmAdminUsername
         }
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
 
@@ -151,10 +151,10 @@ foreach ($keyName in $config.sre.databases.Keys) {
         Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
         $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
         $params = @{
-            Hostname       = "$($databaseCfg.vmName)"
+            Hostname       = $databaseCfg.vmName
             Name           = "$($dbServiceAccountName)"
-            SamAccountName = "$($dbServiceAccountSamAccountName)"
-            ShmFqdn        = "$($config.shm.domain.fqdn)"
+            SamAccountName = $dbServiceAccountSamAccountName
+            ShmFqdn        = $config.shm.domain.fqdn
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
