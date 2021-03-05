@@ -4,7 +4,7 @@
     "shmId": "testc",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
     "ipPrefix": "10.152.0",
-    "inboundAccessFrom": "193.60.220.253,193.60.220.240",
+    "inboundAccessFrom": ["193.60.220.253", "193.60.220.240"],
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",

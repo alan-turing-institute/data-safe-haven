@@ -566,6 +566,7 @@
         },
         "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-SANDBOX",
+        "installationDirectory": "C:\\Installation",
         "ip": "10.151.1.4",
         "networkRules": {
           "allowedSources": "Internet",
