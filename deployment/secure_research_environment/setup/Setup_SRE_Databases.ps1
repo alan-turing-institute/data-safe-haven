@@ -120,18 +120,18 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Lockdown SQL server
         Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
             DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
             DbAdminPasswordB64       = $dbAdminPassword | ConvertTo-Base64
             DbAdminUsername          = $dbAdminUsername
-            EnableSSIS               = $databaseCfg.enableSSIS
+            EnableSSIS               = "$($databaseCfg.enableSSIS)"
             ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
             ServerLockdownCommandB64 = Get-Content $serverLockdownCommandPath -Raw | ConvertTo-Base64
             SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)"
             VmAdminUsername          = $vmAdminUsername
         }
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
 
     # Deploy a PostgreSQL server
@@ -222,6 +222,8 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
+        # Update DNS records for this VM
+        Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $databaseCfg.vmName -VmIpAddress $databaseCfg.ip
     }
 }
 
