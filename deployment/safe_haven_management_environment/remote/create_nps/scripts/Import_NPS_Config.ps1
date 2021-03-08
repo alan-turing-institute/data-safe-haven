@@ -5,7 +5,7 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Base-64 encoded array of blob names to dowload from artifacts storage blob container")]
+    [Parameter(HelpMessage = "Base-64 encoded array of blob names to download from artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$blobNameArrayB64,
     [Parameter(HelpMessage = "Absolute path to directory which artifacts should be downloaded to")]
