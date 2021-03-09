@@ -518,7 +518,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -shmId $shmId -sreId $sreId`.
 + This will take **a few minutes** to run.
 + If configuration fails for one or more of the VMs, see the **troubleshooting** instructions below.
 
@@ -529,7 +529,7 @@ The API call that installs the logging extensions to the VMs will time out after
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
 You may also get this message for other failures in installation.
 
-In any case, re-running `./Setup_SRE_Logging.ps1 -configId <SRE Config ID>` will attempt to install the extensions again, skipping any VMs that already have the extensions installed.
+In any case, re-running `./Setup_SRE_Logging.ps1 -shmId $shmId -sreId $sreId` will attempt to install the extensions again, skipping any VMs that already have the extensions installed.
 Where the issue was an API timeout, these VMs will report that the extension is already installed when the logging set up script is run again.
 
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
