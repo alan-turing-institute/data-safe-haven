@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+    [string]$sreId
 )
 
 Import-Module Az -ErrorAction Stop
@@ -12,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -25,7 +27,7 @@ $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "********************************************************************************"
-    Add-LogMessage -Level Warning "*** SRE $configId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
+    Add-LogMessage -Level Warning "*** SRE $shmId $sreId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
     Add-LogMessage -Level Warning "********************************************************************************"
     Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
     Add-LogMessage -Level Warning " "

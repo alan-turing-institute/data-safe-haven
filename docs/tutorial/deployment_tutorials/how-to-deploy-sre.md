@@ -156,7 +156,7 @@ On your **deployment machine**.
 On your **deployment machine**.
 
 + :pencil: If the subscription is not empty, confirm that it is not being used before deleting any resources in it.
-+ Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 
 ### :registered: Register SRE with the SHM
 

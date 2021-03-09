@@ -20,12 +20,18 @@ function Get-ConfigRootDir {
 # --------------------------------------------------------------------------------
 function Get-CoreConfigHashtable {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
-        [ValidateSet("sre", "shm")]
-        $configType,
-        [Parameter(Mandatory = $true, HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
-        $configName
+        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+        [string]$shmId,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [string]$sreId
     )
+    if ($sreId -eq "") {
+        $configName = $shmId
+        $configType = "shm"
+    } else {
+        $configName = $shmId + $sreId
+        $configType = "sre"
+    }
     $configFilename = "${configType}_${configName}_core_config.json"
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
@@ -47,7 +53,7 @@ function Get-ShmConfig {
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-CoreConfigHashtable -configType "shm" -configName $shmId
+    $shmConfigBase = Get-CoreConfigHashtable -shmId $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
@@ -479,13 +485,16 @@ Export-ModuleMember -Function Get-ShmConfig
 # ---------------------------
 function Get-SreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-        [string]$configId
+        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+        [string]$shmId,
+        [Parameter(Mandatory = $true, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-CoreConfigHashtable -configType "sre" -configName $configId
+    $sreConfigBase = Get-CoreConfigHashtable -shmId $shmId -sreId $sreId
 
     # Ensure that naming structure is being adhered to
+    $configId = $shmId + $sreId
     if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
         Add-LogMessage -Level Fatal "Config file '$configId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
     }
@@ -922,7 +931,7 @@ function Show-FullConfig {
     if ($sreId -eq "") {
         $config = Get-ShmConfig -shmId $shmId
     } else {
-        $config = Get-SreConfig -configId "${shmId}${sreId}"
+        $config = Get-SreConfig -shmId $shmId -sreId $sreId
     }
     Write-Output ($config | ConvertTo-JSON -depth 10)
 }
