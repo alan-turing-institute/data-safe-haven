@@ -95,7 +95,7 @@ users:
 
 On your **deployment machine**.
 
-+ Deploy a Tier 1 VM by running `./Setup_SRE_Tier1.ps1 -configId <SRE config ID>` where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
++ Deploy a Tier 1 VM by running `./Setup_SRE_Tier1.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
   + If you have a users file pass its path with the `-usersYAMLPath` argument.
   + If not a VM with no additional user accounts will be created and you may add users later.
 + If you have not connected to the VM before, this script will ask you if you want to connect as the authenticity of the host cannot be established.
@@ -128,4 +128,4 @@ On your **deployment machine**.
 + Change the size of the compute VM to a suitable size with a GPU, e.g. NC6.
 + Start the compute VM in the Azure Portal.
 + Ensure you have the `774-tier1-cuda` branch checked out.
-+ Run `Setup_SRE_Tier1.ps1 -configId <SRE config ID> -usersYAMLPath <YAML file>` where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<YAML file>` is the path to the YAML file declaring the users.
++ Run `Setup_SRE_Tier1.ps1 -shmId <SHM ID> -sreId <SRE ID> -usersYAMLPath <YAML file>` where the `<YAML file>` is the path to the YAML file declaring the users.
