@@ -47,37 +47,14 @@ if ($ldapSearchPassword) {
 }
 
 
-# Set LDAP secret on the compute VM
-# ---------------------------------
-Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '$($vm.Name)'"
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
-$params = @{
-    ldapPassword = "$ldapSearchPassword"
-}
-$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-if ($?) {
-    Add-LogMessage -Level Success "Setting LDAP secret on compute VM $($vm.Name) was successful"
-} else {
-    Add-LogMessage -Level Fatal "Setting LDAP secret on compute VM $($vm.Name) failed!"
-}
+# Update LDAP secret on the compute VM
+# ------------------------------------
+Update-VMLdapSecret -Name $vm.Name -ResourceGroupName $config.sre.dsvm.rg -LdapSearchPassword $ldapSearchPassword
 
 
-# Set LDAP secret in local Active Directory on the SHM DC
-# -------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
-$params = @{
-    samAccountName = "$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)"
-    ldapPassword   = "$ldapSearchPassword"
-}
-Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-if ($?) {
-    Add-LogMessage -Level Success "Setting LDAP secret on SHM DC was successful"
-} else {
-    Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
-}
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# Update LDAP secret in local Active Directory on the SHM DC
+# ----------------------------------------------------------
+Update-AdLdapSecret -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -SubscriptionName $config.shm.subscriptionName -LdapSearchPassword $ldapSearchPassword -LdapSearchSamAccountName $config.sre.users.serviceAccounts.ldapSearch.samAccountName
 
 
 # Update DNS record on the SHM for this VM
