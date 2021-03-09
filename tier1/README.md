@@ -36,13 +36,14 @@ data.
 
 - 🚅 Quick and easy to deploy (leveraging [Terraform](https://www.terraform.io/)
   and [Ansible](https://www.ansible.com/))
-- 🥑 Guacamole for remote desktop in a browser
+- 🥑 [Guacamole](https://guacamole.apache.org/) for remote desktop in a browser
 - 🔐 Two factor authentication
 - 🤖 Automated account creation and deletion
 - 🖥️ Configurable Ubuntu VM pre-loaded with programming/data-science packages
-- ⛰️ Read-only input data
+- ⛰️ Read-only filesystem for input data
+- 🚪 Read/write filesystem to easily extract outputs
 - 🤝 Shared working directory backed (optionally) by SSD storage for
   collaborative work
 - 🌐 Bring your own domain
-- 🔑 Automatic HTTPS/SSL configuration using [Lets
+- 🔑 Automatic SSL/TLS configuration using [Lets
   Encrypt](https://letsencrypt.org/) and [Traefik](https://traefik.io/)
