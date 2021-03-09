@@ -82,17 +82,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Update DNS record on the SHM for this VM
 # ----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm. -ErrorAction Stop
-Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$($vm.Name)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
-$params = @{
-    Fqdn      = $config.shm.domain.fqdn
-    HostName  = $vm.Name
-    IpAddress = $vmIpAddress
-}
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vm.Name -VmIpAddress $vmIpAddress
 
 
 # Switch back to original subscription
