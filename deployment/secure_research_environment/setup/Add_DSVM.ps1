@@ -1,13 +1,15 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Last octet of IP address eg. '160'")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+    [string]$sreId,
+    [Parameter(Mandatory = $true, HelpMessage = "Last octet of IP address eg. '160'")]
     [string]$ipLastOctet = (Read-Host -Prompt "Last octet of IP address eg. '160'"),
-    [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
+    [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
-    [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
+    [Parameter(Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
     [switch]$Upgrade,
-    [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
+    [Parameter(Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
     [switch]$Force
 )
 
@@ -25,7 +27,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -295,7 +297,7 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -configId $configId -ipLastOctet $ipLastOctet }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
 
 
 # Switch back to original subscription
