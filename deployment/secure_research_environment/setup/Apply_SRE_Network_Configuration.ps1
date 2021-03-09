@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+    [string]$sreId
 )
 
 Import-Module Az -ErrorAction Stop
@@ -12,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -100,7 +102,7 @@ foreach ($nsgName in $nsgs.Keys) {
 # Ensure SRE is peered to correct mirror set
 # ------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -configId $configId"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -shmId $shmId -sreId $sreId"
 
 if (@(2, 3).Contains([int]$config.sre.tier)) {
     Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
