@@ -6,6 +6,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [Prerequisites](#prerequisites)
 + [Safe Haven Management configuration](#safe-haven-management-configuration)
+    + [View full SHM configuration](#optional-view-full-shm-configuration)
 + [Configure DNS for the custom domain](#configure-dns-for-the-custom-domain)
 + [Setup Azure Active Directory (AAD)](#setup-azure-active-directory-aad)
 + [Deploy Key Vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
@@ -91,6 +92,18 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 > - Turing production: we use `<SHM ID>.turingsafehaven.ac.uk` as the domain
 > - Turing testing: we use `<SHM ID>.dsgroupdev.co.uk` as the domain
 > - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
+
+### Optional: View full SHM configuration
+
+A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can view a nested printout of the full SHM config by doing the following:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
++ Show the full configuration for the new SRE or the SHM using the following commands.
+  + `Import-Module ./deployment/common/Configuration -Force`
+  + `Show-FullConfig -shmId <SHM ID>`
 
 ## Configure DNS for the custom domain
 
