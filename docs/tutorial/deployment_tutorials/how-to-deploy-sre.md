@@ -171,7 +171,7 @@ On your **deployment machine**.
 
 On your **deployment machine**.
 
-+ Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ Run `./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>` .
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
   <details>
