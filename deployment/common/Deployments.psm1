@@ -1154,11 +1154,19 @@ function Invoke-RemoteScript {
     if ($params.Contains("Parameter")) {
         foreach ($kv in $params["Parameter"].GetEnumerator()) {
             if ($kv.Value -isnot [string]) {
-                Add-LogMessage -Level Fatal "$($kv.Key) argument ('$($kv.Value)') must be a string!"
+                Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) must be a string!"
             }
             foreach ($unsafeCharacter in @("|", "&")) {
                 if ($kv.Value.Contains($unsafeCharacter)) {
-                    Add-LogMessage -Level Fatal "$($kv.Key) argument ('$($kv.Value)') contains '$unsafeCharacter' which will cause Invoke-AzVMRunCommand to fail. Consider encoding this variable in Base-64."
+                    Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$unsafeCharacter' which will cause Invoke-AzVMRunCommand to fail. Consider encoding this variable in Base-64."
+                }
+            }
+            foreach ($whitespaceCharacter in @(" ", "`t")) {
+                if (($Shell -eq "UnixShell") -and ($kv.Value.Contains($whitespaceCharacter))) {
+                    if (-not (($kv.Value[0] -eq "'") -or ($kv.Value[0] -eq '"'))) {
+                        Write-Host $kv.Value[0]
+                        Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$whitespaceCharacter' which will cause the shell script to fail. Consider wrapping this variable in single quotes."
+                    }
                 }
             }
         }
