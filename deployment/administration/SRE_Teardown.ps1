@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+    [string]$sreId
 )
 
 Import-Module Az -ErrorAction Stop
@@ -11,7 +13,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -61,7 +63,7 @@ if ($suspiciousResourceGroups) {
 # -------------------------------------
 if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
-    Invoke-Expression -Command "$scriptPath -configId $configId"
+    Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
 }
 
 
