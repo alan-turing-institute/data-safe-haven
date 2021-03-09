@@ -449,7 +449,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_Databases.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ Run the `./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 + This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
   + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
   + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
