@@ -92,9 +92,7 @@ The core properties for the new SRE environment must be present in the `environm
 
 > :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer
 
-This also gives you the `<SRE Config ID>`, which is the combination: `<SHM ID><SRE ID>` (eg. `testcsandbox` for SRE `sandbox` in SHM `testc`).
-
-The following core SRE properties must be defined in a JSON file named `sre_<SRE Config ID>_core_config.json`.
+The following core SRE properties must be defined in a JSON file named `sre_<SHM ID><SRE ID>_core_config.json`.
 
 ``` json
 {
