@@ -1,6 +1,8 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+    [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
     [string]$emailAddress = "dsgbuild@turing.ac.uk",
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
@@ -30,7 +32,7 @@ if (-not $azProfile.Accounts.Count) {
 
 # Get config and original context
 # -------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
