@@ -162,7 +162,7 @@ On your **deployment machine**.
 
 On your **deployment machine**.
 
-+ Register service accounts with the SHM by running `./Setup_SRE_Key_Vault_And_Users.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
++ Register service accounts with the SHM by running `./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 + This step also creates a Key Vault in the SRE subscription in `Resource Groups -> RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS -> kv-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this Key Vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :station: Deploy networking components
