@@ -509,7 +509,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE Config ID>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
++ Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 + This will take **a few minutes** to run.
 
 ## :chart_with_upwards_trend: Configure logging
