@@ -27,11 +27,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + You will need to be a member of the relevant security group.
 + `PowerShell` with support for Azure and Azure Active Directory
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
-  + Install the **cross-platform** AzureAD Powershell module:
-    + :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
-    + Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/`
-    + Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
+  + Check that you have installed the required `Powershell` modules by doing the following:
+    + Open a Powershell terminal and navigate to the `deployment/` directory within the Safe Haven repository.
+    + Run `./CheckRequirements.ps1` which will print out the commands needed to install any required modules that you are missing
+      + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on **Windows**. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
 + `Microsoft Remote Desktop`
   + On macOS this can be installed from the [Apple store](https://apps.apple.com)
 + `OpenSSL`
@@ -468,40 +467,20 @@ From your **deployment machine**
     + Ensure that `Password Hash Synchronization` is selected
     + Click `Next`
   + On the `Connect to Azure AD` screen:
-    + On the webpage pop-up, provide credentials for your **internal** Global Administrator for the SHM Azure AD
-      + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
-    + If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
-      + Click `Add`
-      + Click `Add`
-      + Click `Close`
-      + Repeat for the same dialog with `https://aadcdn.msftauth.net`
-    + If you receive an error box `We can't sign you in. Javascript is required to sign you in....` and then in the Script Error: ` Do you want to continue running scripts on this page`
-      + Click `Yes`
-      + Close the dialog by clicking `X`
+    + Provide credentials for the Azure Active Directory **global administrator** account you set up earlier (`aad.admin.<first name>.<last name>@<SHM domain>`) when prompted
+    + On the webpage pop-up, provide the password you chose for this account when prompted
     + Back on the `Connect to Azure AD` screen, click `Next`
-    + If you receive another Internet Explorer pop-up dialog:
-      + Click `Add`
-      + Click `Add`
-      + Click `Close`
-    + Enter the password for the global administrator account you set up earlier (`aad.admin.<first name>.<last name>`) when prompted
     + Approve the login with MFA if required
-      + If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   + On the `Connect your directories` screen:
     + Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
     + On the `AD forest account` pop-up:
       + Select `Use existing AD account`
       + Enter the details for the `localadsync` user.
-        + Username: use the value of the `shm-<SHM ID>-aad-localsync-username` secret in the SHM key vault prepended with `<Domain ID>\` where the `Domain ID` is the capitalised form of the `<SHM ID>`.
-          + For example, if the *SHM ID* is `testa` and the *username* is `testalocaladsync` then you would use `TESTA\testalocaladsync` here.
-        + Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM key vault.
+        + **Username**: use the value of the `shm-<SHM ID>-aad-localsync-username` secret in the SHM key vault:
+          + EITHER prepended with `<Domain ID>\`, where the `Domain ID` is the capitalised form of the `<SHM ID>`, so if the *SHM ID* is `testa` and the *username* is `testalocaladsync` then you would use `TESTA\testalocaladsync` here.
+          + OR suffixed with `<SHM domain>`, so if the *SHM domain* is `testa.dsgroupdev.co.uk` and the *username* is `testalocaladsync` then you would use `testalocaladsync@testa.dsgroupdev.co.uk` here.
+        + **Password**: use the `shm-<SHM ID>-aad-localsync-password` secret in the SHM key vault.
       + Click `OK`
-      + **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user in the **Domain Controller** Active Directory to the value in the secret listed above.
-        + In Server Manager click `Tools > Active Directory Users and Computers`
-        + Expand the domain in the left hand panel
-        + Expand the `Safe Haven Service Accounts` OU
-        + Right click on the "<SHM ID> Local AD Sync Administrator" user and select "reset password"
-        + Set the password to the value in the secret listed above.
-        + Leave the other settings as is and click `OK`
     + Click `Next`
   + On the `Azure AD sign-in configuration` screen:
     + Verify that the `User Principal Name` is set to `userPrincipalName`
@@ -520,12 +499,32 @@ From your **deployment machine**
     + Select `Password Writeback`
     + Click `Next`
   + On the `Ready to configure` screen:
+    + Ensure that the `Start the synchronisation process when configuration completes` option is ticked.
     + Click `Install`
     + This may take a few minutes to complete
   + On the `Configuration complete` screen:
     + Click `Exit`
 
-**Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
+#### Troubleshooting:
+
++ :pencil: Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering any usernames or passwords
++ If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration` for Microsoft domains such as `https://login.microsoft.com` or `https://aadcdn.msftauth.net` then you can safely add these as exceptions:
+  + Click `Add`
+  + Click `Close`
++ If you receive an error message on the login webpage pop-ups saying `We can't sign you in. Javascript is required to sign you in....` followed by the Script Error: `Do you want to continue running scripts on this page` you can safely allow Javascript:
+  + Click `Yes`
+  + Close the dialog by clicking `X`
++ If you see a Windows Security Warning, related to the MFA login:
+  + Check `Don't show this message again`
+  + Click `Yes` to close the dialog.
++ If you get an error that the username/password is incorrect or that the domain/directory could not be found when entering the details for the `localadsync` user, try resetting the password for this user in the **Domain Controller** Active Directory so that it matches the value stored in the Key Vault
+  + In Server Manager click `Tools > Active Directory Users and Computers`
+  + Expand the domain in the left hand panel
+  + Expand the `Safe Haven Service Accounts` OU
+  + Right click on the `<SHM ID> Local AD Sync Administrator` user and select `reset password`
+  + Set the password to the value from the appropriate Key Vault secret.
+  + Leave the other settings alone and click `OK`
++ The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
 #### Update Azure Active Directory Connect rules
 
@@ -542,7 +541,7 @@ This step validates that your local Active Directory users are correctly synchro
 
 + Generating user CSV file
   + Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
-  We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
+  We suggest naming this `YYYYMMDD-HHMM_user_details.csv` but this is up to you
   + Add your details to create a researcher account for yourself.
     + `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts. Maximum length is 20 characters.
     + `GivenName`: User's first / given name
@@ -560,15 +559,14 @@ This step validates that your local Active Directory users are correctly synchro
   + On the **SHM domain controller (DC1)**.
     + Open a PowerShell command window with elevated privileges.
     + Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
-    + This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
+    + This script will add the users and trigger a sync with Azure Active Directory
++ Wait a few minutes for the changes to propagate
 + Go to the Azure Active Directory in `portal.azure.com`
   + Click `Users > All users` and confirm that the new user is shown in the user list.
-  + It may take a few minutes for the synchronisation to fully propagate in Azure.
-  + The new user account should have `source` as `Windows Server AD`
-  + This may take a few minutes for the synchronisation to fully propagate in Azure.
+  + The new user account should have the `Directory synced` field set to `Yes`
 
 #### Troubleshooting: Account already exists
-If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+If you get the message `New-ADUser:  The specified account already exists` you should first check to see whether that user actually does already exist!
 Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
 
 + `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
@@ -622,7 +620,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Deploy and configure the network policy server (NPS) by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **around 20 minutes** to run.
-  + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
+  + **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure the network policy server (NPS) via Remote Desktop
 

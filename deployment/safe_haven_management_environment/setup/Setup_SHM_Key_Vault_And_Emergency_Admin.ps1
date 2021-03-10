@@ -50,11 +50,9 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdmi
 # Ensure that secrets exist in the Key Vault
 # ------------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.keyVault.name)'..."
-$emergencyAdminUsername = "aad.admin.emergency.access"
-$emergencyAdminDisplayName = "AAD Admin - EMERGENCY ACCESS"
 
 # :: AAD Emergency Administrator username
-$null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue $emergencyAdminUsername -AsPlaintext
+$null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "aad.admin.emergency.access" -AsPlaintext
 if ($?) {
     Add-LogMessage -Level Success "AAD emergency administrator account username exists"
 } else {
@@ -129,7 +127,7 @@ $passwordProfile.EnforceChangePasswordPolicy = $false
 $passwordProfile.ForceChangePasswordNextLogin = $false
 $params = @{
     MailNickName     = $username
-    DisplayName      = $emergencyAdminDisplayName
+    DisplayName      = "AAD Admin - EMERGENCY ACCESS"
     PasswordProfile  = $passwordProfile
     UserType         = "Member"
     AccountEnabled   = $true
