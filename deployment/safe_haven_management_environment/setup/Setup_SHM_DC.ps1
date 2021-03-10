@@ -153,7 +153,6 @@ $storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
     blobNamesB64         = $blobNames | ConvertTo-Json | ConvertTo-Base64
     downloadDir          = $config.dc.installationDirectory
@@ -161,6 +160,7 @@ $params = @{
     storageAccountName   = $config.storage.artifacts.accountName
     storageContainerName = $storageContainerName
 }
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
@@ -198,11 +198,11 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.
 # Configure group policies
 # ------------------------
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
     shmFqdn           = $config.domain.fqdn
     serverAdminSgName = $config.domain.securityGroups.serverAdmins.name
 }
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 

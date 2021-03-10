@@ -226,12 +226,12 @@ function Update-VMDnsRecords {
     try {
         $null = Set-AzContext -SubscriptionId $ShmSubscriptionName -ErrorAction Stop
         Add-LogMessage -Level Info "[ ] Resetting DNS record for VM '$VmHostname'..."
-        $scriptPath = Join-Path $PSScriptRoot "remote" "ResetDNSRecord.ps1"
         $params = @{
             Fqdn      = $ShmFqdn
             HostName  = ($VmHostname | Limit-StringLength -MaximumLength 15)
             IpAddress = $VMIpAddress
         }
+        $scriptPath = Join-Path $PSScriptRoot "remote" "ResetDNSRecord.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $DcName -ResourceGroupName $DcResourceGroupName -Parameter $params
         if ($?) {
             Add-LogMessage -Level Success "Resetting DNS record for VM '$VmHostname' was successful"

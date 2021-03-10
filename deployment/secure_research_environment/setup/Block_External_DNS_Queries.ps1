@@ -23,11 +23,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Block external DNS resolution for DSVMs via SHM DNS servers
 # -----------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 $params = @{
     sreId                          = $config.sre.id
     blockedCidrsCommaSeparatedList = $config.sre.network.vnet.subnets.compute.cidr
 }
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
     Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -50,13 +50,13 @@ if (-not $vmIpAddress) {
     Add-LogMessage -Level Fatal "No DSVM found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
 } else {
     $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
+    Add-LogMessage -Level Info "Testing external DNS resolution fails on VM '$vmName'..."
     $params = @{
         SHM_DOMAIN_FQDN = $config.shm.domain.fqdn
         SHM_DC1_FQDN    = $config.shm.dc.fqdn
         SHM_DC2_FQDN    = $config.shm.dcb.fqdn
     }
-    Add-LogMessage -Level Info "Testing external DNS resolution fails on VM '$vmName'..."
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 }
 

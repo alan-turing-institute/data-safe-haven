@@ -48,8 +48,8 @@ foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("SSSD service", "restart_sssd_service.sh"),
                              ("xrdp service", "restart_xrdp_service.sh"))) {
     $name, $diagnostic_script = $scriptNamePair
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
     Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$vmName'"
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
     if ($?) {
         Add-LogMessage -Level Success "Configuring $name on $vmName was successful"

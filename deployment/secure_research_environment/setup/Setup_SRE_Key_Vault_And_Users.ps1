@@ -93,7 +93,6 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     # -------------------------------
     Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
     $params = @{
         shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
         groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
@@ -101,6 +100,7 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
         securityOuPath               = $config.shm.domain.ous.securityGroups.path
         serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
     }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 }
