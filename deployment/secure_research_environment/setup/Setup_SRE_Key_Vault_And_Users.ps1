@@ -95,11 +95,11 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
     $params = @{
-        shmSystemAdministratorSgName = "$($config.shm.domain.securityGroups.serverAdmins.name)"
+        shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
         groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
         serviceUsersB64              = $serviceUsers | ConvertTo-Json | ConvertTo-Base64
-        securityOuPath               = "$($config.shm.domain.ous.securityGroups.path)"
-        serviceOuPath                = "$($config.shm.domain.ous.serviceAccounts.path)"
+        securityOuPath               = $config.shm.domain.ous.securityGroups.path
+        serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop

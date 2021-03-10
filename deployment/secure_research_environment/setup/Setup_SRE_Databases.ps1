@@ -125,7 +125,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
             DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
             DbAdminPasswordB64       = $dbAdminPassword | ConvertTo-Base64
             DbAdminUsername          = $dbAdminUsername
-            EnableSSIS               = "$($databaseCfg.enableSSIS)"
+            EnableSSIS               = [string]($databaseCfg.enableSSIS)
             ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
             ServerLockdownCommandB64 = Get-Content $serverLockdownCommandPath -Raw | ConvertTo-Base64
             SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)"
@@ -152,7 +152,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
         $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
         $params = @{
             Hostname       = $databaseCfg.vmName
-            Name           = "$($dbServiceAccountName)"
+            Name           = $dbServiceAccountName
             SamAccountName = $dbServiceAccountSamAccountName
             ShmFqdn        = $config.shm.domain.fqdn
         }

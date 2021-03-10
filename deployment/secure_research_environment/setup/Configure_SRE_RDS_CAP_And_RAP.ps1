@@ -35,7 +35,7 @@ $params = @{
     remoteNpsTimeout             = "60"
     shmNetbiosName               = $config.shm.domain.netbiosName
     shmNpsIp                     = $config.shm.nps.ip
-    sreResearchUserSecurityGroup = "$($config.sre.domain.securityGroups.researchUsers.name)"
+    sreResearchUserSecurityGroup = $config.sre.domain.securityGroups.researchUsers.name
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Configure_CAP_And_RAP_Remote.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
