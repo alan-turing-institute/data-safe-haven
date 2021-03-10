@@ -6,7 +6,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [Prerequisites](#prerequisites)
 + [Safe Haven Management configuration](#safe-haven-management-configuration)
-    + [View full SHM configuration](#optional-view-full-shm-configuration)
+  + [View full SHM configuration](#optional-view-full-shm-configuration)
 + [Configure DNS for the custom domain](#configure-dns-for-the-custom-domain)
 + [Setup Azure Active Directory (AAD)](#setup-azure-active-directory-aad)
 + [Deploy Key Vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
