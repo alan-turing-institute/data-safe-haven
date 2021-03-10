@@ -32,9 +32,12 @@ Describe "SRE configuration file check" {
         # Load reference config and convert it to a sorted hashtable
         $referenceConfig = Get-Content -Path $FilePath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable | ConvertTo-SortedHashtable
 
+        # Get the shmId from ConfigId, given that all test configs have sreId "sandbox"
+        $sreId = "sandbox"
+        $shmId = $ConfigId.Split($sreId)[0]
         # Load test config
         Mock Write-Host {} # we mock Write-Host here as we expect output from the `Get-SreConfig` call
-        $testConfig = Get-SreConfig -configId $configId
+        $testConfig = Get-SreConfig -shmId $shmId -sreId $sreId
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are
