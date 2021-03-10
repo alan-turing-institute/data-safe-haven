@@ -15,33 +15,6 @@ variable "domain" {
   type = string
 }
 
-locals {
-    resource_tag = {
-      resource_group         = "RG_${var.sre_name}"
-      virtual_network        = "VNET_${var.sre_name}"
-      subnet                 = "SUBNET_${var.sre_name}"
-      public_ip              = "PUBIP_${var.sre_name}"
-      network_security_group = "NSG_${var.sre_name}"
-      network_interface      = "NIC_${var.sre_name}"
-      virtual_machine        = "VM_${var.sre_name}"
-      os_disk                = "OSDISK_${var.sre_name}"
-      data_disk              = "DATADISK_${var.sre_name}"
-      storage_account        = "STORAGE${var.sre_name}"
-      storage_share          = "SHARE_${var.sre_name}"
-    }
-
-    guacamole_nsg_rules = {
-      ssh   = var.nsg_rule_ssh
-      http  = var.nsg_rule_http
-      https = var.nsg_rule_https
-    }
-
-    dsvm_nsg_rules = {
-      ssh = var.nsg_rule_ssh
-      rdp = var.nsg_rule_rdp
-    }
-}
-
 variable "vm_size" {
   type    = map(string)
   default = {
@@ -55,20 +28,6 @@ variable "admin_username" {
   default = {
     guacamole = "guacamole_admin"
     dsvm = "dsvm_admin"
-  }
-}
-
-variable "shares" {
-  type = map(map(string))
-  default = {
-    ingress = {
-      name = "ingress"
-      size_gb = 100
-    }
-    egress = {
-      name = "egress"
-      size_gb = 100
-    }
   }
 }
 
@@ -101,6 +60,22 @@ variable "vm_image" {
     offer     = "0001-com-ubuntu-server-focal"
     sku       = "20_04-lts"
     version   = "latest"
+  }
+}
+
+variable "ingress_share_size_gb" {
+  type    = number
+  validation {
+    condition     = var.ingress_share_size_gb > 0
+    error_message = "The shared disk size must be a positive integer."
+  }
+}
+
+variable "egress_share_size_gb" {
+  type    = number
+  validation {
+    condition     = var.egress_share_size_gb > 0
+    error_message = "The shared disk size must be a positive integer."
   }
 }
 
@@ -163,3 +138,42 @@ variable "nsg_rule_rdp" {
     destination_address_prefix  = "*"
   }
 }
+
+locals {
+    resource_tag = {
+      resource_group         = "RG_${var.sre_name}"
+      virtual_network        = "VNET_${var.sre_name}"
+      subnet                 = "SUBNET_${var.sre_name}"
+      public_ip              = "PUBIP_${var.sre_name}"
+      network_security_group = "NSG_${var.sre_name}"
+      network_interface      = "NIC_${var.sre_name}"
+      virtual_machine        = "VM_${var.sre_name}"
+      os_disk                = "OSDISK_${var.sre_name}"
+      data_disk              = "DATADISK_${var.sre_name}"
+      storage_account        = "STORAGE${var.sre_name}"
+      storage_share          = "SHARE_${var.sre_name}"
+    }
+
+    shares = {
+      ingress = {
+        name = "ingress"
+        size_gb = var.ingress_share_size_gb
+      }
+      egress = {
+        name = "egress"
+        size_gb = var.egress_share_size_gb
+      }
+    }
+
+    guacamole_nsg_rules = {
+      ssh   = var.nsg_rule_ssh
+      http  = var.nsg_rule_http
+      https = var.nsg_rule_https
+    }
+
+    dsvm_nsg_rules = {
+      ssh = var.nsg_rule_ssh
+      rdp = var.nsg_rule_rdp
+    }
+}
+
