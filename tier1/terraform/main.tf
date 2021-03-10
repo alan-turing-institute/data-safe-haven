@@ -272,7 +272,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "this" {
 }
 
 resource "random_string" "storage_suffix" {
-  length = 24
+  length  = 24
   special = false
 }
 
@@ -339,7 +339,7 @@ resource "local_file" "ansible_inventory" {
 
 # Write variables for Ansible to access
 resource "local_file" "terraform_vars" {
-  filename = "../ansible/terraform_vars.yaml"
+  filename        = "../ansible/terraform_vars.yaml"
   file_permission = "0644"
   content         = <<-DOC
     ---
@@ -363,6 +363,6 @@ data "azurerm_dns_zone" "this" {
 
 
 output "nameservers" {
-  value = azurerm_dns_zone.this.name_servers
+  value       = azurerm_dns_zone.this.name_servers
   description = "Ensure that your authorative DNS points your domain to these nameservers"
 }
