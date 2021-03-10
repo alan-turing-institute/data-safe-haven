@@ -5,9 +5,17 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Mandatory = $false, HelpMessage = "Additional Powershell modules")]
-    [string]$PipeSeparatedModules = ""
+    [Parameter(Mandatory = $false, HelpMessage = "Base-64 encoding Powershell modules to install")]
+    [string]$ModuleNamesB64 = $null
 )
+
+
+# Deserialise Base-64 encoded variables
+# -------------------------------------
+$moduleNames = @()
+if ($ModuleNamesB64) {
+    $moduleNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($ModuleNamesB64)) | ConvertFrom-Json
+}
 
 
 # Get existing modules
@@ -17,7 +25,7 @@ $existingModuleNames = Get-Module -ListAvailable | ForEach-Object { $_.Name }
 
 # Install additional modules
 # --------------------------
-foreach ($moduleName in $PipeSeparatedModules.Split("|")) {
+foreach ($moduleName in $moduleNames) {
     Write-Output "Installing $moduleName..."
     Install-Module -Name $moduleName -AllowClobber -Force -AcceptLicense 2>&1 3>&1 | Out-Null
     Update-Module -Name $moduleName -Force 2>&1 3>&1 | Out-Null

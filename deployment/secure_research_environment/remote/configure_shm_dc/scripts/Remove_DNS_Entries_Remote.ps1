@@ -5,13 +5,18 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "FQDN for the SHM", Mandatory = $false)]
+    [Parameter(Mandatory = $false, HelpMessage = "FQDN for the SHM")]
     [string]$ShmFqdn,
-    [Parameter(HelpMessage = "SRE ID", Mandatory = $false)]
+    [Parameter(Mandatory = $false, HelpMessage = "SRE ID")]
     [string]$SreId,
-    [Parameter(HelpMessage = "Fragment to match any private DNS zones", Mandatory = $false)]
-    [string]$PipeSeparatedPrivateEndpoints
+    [Parameter(Mandatory = $false, HelpMessage = "Base-64 encoded list of private DNS zone name-fragments to remove")]
+    [string]$PrivateEndpointFragmentsB64
 )
+
+# Deserialise Base-64 encoded variables
+# -------------------------------------
+$PrivateEndpointFragments = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($PrivateEndpointFragmentsB64)) | ConvertFrom-Json
+
 
 # Remove records for domain-joined SRE VMs
 # ----------------------------------------
@@ -25,11 +30,12 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$ShmFqdn" | Where
     }
 }
 
+
 # Remove private endpoint DNS Zone
 # --------------------------------
-foreach ($PrivateEndpointMatch in $PipeSeparatedPrivateEndpoints.Split("|")) {
-    Write-Output " [ ] Ensuring that DNS zones matching '$PrivateEndpointMatch' are removed"
-    $DnsZones = Get-DnsServerZone | Where-Object { $_.ZoneName -like "${PrivateEndpointMatch}*.core.windows.net" }
+foreach ($PrivateEndpointFragment in $PrivateEndpointFragments) {
+    Write-Output " [ ] Ensuring that DNS zones matching '$PrivateEndpointFragment' are removed"
+    $DnsZones = Get-DnsServerZone | Where-Object { $_.ZoneName -like "${PrivateEndpointFragment}*.core.windows.net" }
     if ($DnsZones) {
         foreach ($DnsZone in $DnsZones) {
             try {
@@ -40,6 +46,6 @@ foreach ($PrivateEndpointMatch in $PipeSeparatedPrivateEndpoints.Split("|")) {
             }
         }
     } else {
-        Write-Output " [o] No DNS zones matching '$PrivateEndpointMatch' were found"
+        Write-Output " [o] No DNS zones matching '$PrivateEndpointFragment' were found"
     }
 }

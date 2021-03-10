@@ -8,9 +8,9 @@ param(
     [Parameter(HelpMessage = "SRE ID")]
     $sreId,
     [Parameter(HelpMessage = "Comma separated list of CIDR ranges to block external DNS resolution for.")]
-    $blockedCidrsList,
-    [Parameter(HelpMessage = "Comma separated list of CIDR ranges within the blocked ranges to exceptionally allow default DNS resolution rules for.")]
-    $exceptionCidrsList
+    $blockedCidrsCommaSeparatedList,
+    [Parameter(Mandatory = $false, HelpMessage = "Comma separated list of CIDR ranges within the blocked ranges to exceptionally allow default DNS resolution rules for.")]
+    $exceptionCidrsCommaSeparatedList = $null
 )
 
 
@@ -79,13 +79,13 @@ $srePrefix = "sre-${sreId}"
 
 # Create configurations containing CIDR and corresponding name stem
 # -----------------------------------------------------------------
-if ($blockedCidrsList) {
-    $blockedConfigs = @($blockedCidrsList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
+if ($blockedCidrsCommaSeparatedList) {
+    $blockedConfigs = @($blockedCidrsCommaSeparatedList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
 } else {
     $blockedConfigs = @()
 }
-if ($exceptionCidrsList) {
-    $exceptionConfigs = @($exceptionCidrsList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
+if ($exceptionCidrsCommaSeparatedList) {
+    $exceptionConfigs = @($exceptionCidrsCommaSeparatedList.Split(",") | ForEach-Object { @{ Cidr = $_; Name = Get-DnsClientSubnetNameFromCidr -srePrefix $srePrefix -cidr $_ } })
 } else {
     $exceptionConfigs = @()
 }

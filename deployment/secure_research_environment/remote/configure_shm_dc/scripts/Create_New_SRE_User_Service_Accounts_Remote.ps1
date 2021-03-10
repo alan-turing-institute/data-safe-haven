@@ -106,9 +106,9 @@ function Add-SreUserToGroup {
 
 
 # Unserialise JSON and read into PSCustomObject
-$groups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
-# $computerManagers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($computerManagersB64)) | ConvertFrom-Json
-$serviceUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
+$groups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
+# $computerManagers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($computerManagersB64)) | ConvertFrom-Json
+$serviceUsers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
 
 # Create SRE Security Groups
 foreach ($group in $groups.PSObject.Members) {

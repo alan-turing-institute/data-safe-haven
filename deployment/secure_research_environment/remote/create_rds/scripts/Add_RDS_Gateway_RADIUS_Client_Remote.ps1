@@ -5,11 +5,24 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    $rdsGatewayIp,
-    $rdsGatewayFqdn,
-    $npsSecret,
-    $sreId
+    [Parameter(HelpMessage = "Base-64 encoded NPS secret")]
+    [ValidateNotNullOrEmpty()]
+    [string]$npsSecretB64,
+    [Parameter(HelpMessage = "IP address of RDS gateway")]
+    [ValidateNotNullOrEmpty()]
+    [string]$rdsGatewayIp,
+    [Parameter(HelpMessage = "FQDN of RDS gateway")]
+    [ValidateNotNullOrEmpty()]
+    [string]$rdsGatewayFqdn,
+    [Parameter(HelpMessage = "SRE ID")]
+    [ValidateNotNullOrEmpty()]
+    [string]$sreId
 )
+
+
+# Deserialise Base-64 encoded variables
+# -------------------------------------
+$npsSecret = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($npsSecretB64))
 
 
 # Ensure that RADIUS client is registered

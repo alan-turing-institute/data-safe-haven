@@ -5,42 +5,42 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0, HelpMessage = "Absolute path to remote artifacts directory")]
+    [Parameter(HelpMessage = "Base-64 encoded array of blob names to download from artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
-    [string]$remoteDir,
-    [Parameter(Position = 1, HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
+    [string]$blobNameArrayB64,
+    [Parameter(HelpMessage = "Absolute path to directory which artifacts should be downloaded to")]
     [ValidateNotNullOrEmpty()]
-    [string]$pipeSeparatedBlobNames,
-    [Parameter(Position = 2, HelpMessage = "Name of the artifacts storage account")]
+    [string]$installationDir,
+    [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the artifacts storage blob container")]
+    [ValidateNotNullOrEmpty()]
+    [string]$sasTokenB64,
+    [Parameter(HelpMessage = "Name of the artifacts storage account")]
     [ValidateNotNullOrEmpty()]
     [string]$storageAccountName,
-    [Parameter(Position = 3, HelpMessage = "Name of the artifacts storage container")]
+    [Parameter(HelpMessage = "Name of the artifacts storage container")]
     [ValidateNotNullOrEmpty()]
-    [string]$storageContainerName,
-    [Parameter(Position = 4, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
-    [ValidateNotNullOrEmpty()]
-    [string]$sasToken
+    [string]$storageContainerName
 )
 
 
-# Deserialise blob names
-# ----------------------
-$blobNames = $pipeSeparatedBlobNames.Split("|")
+# Deserialise Base-64 encoded variables
+# -------------------------------------
+$blobNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($blobNameArrayB64)) | ConvertFrom-Json
+$sasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sasTokenB64))
 
 
 # Download artifacts from blob storage
 # ------------------------------------
 $numBlobs = $blobNames.length
-Write-Output "Downloading $numBlobs files to '$remoteDir'..."
+Write-Output "Downloading $numBlobs files to '$installationDir'..."
 foreach ($blobName in $blobNames) {
     $fileName = Split-Path -Leaf $blobName
-    $fileDirRel = Split-Path -Parent $blobName
-    $fileDirFull = Join-Path $remoteDir $fileDirRel
-    if (-not (Test-Path -Path $fileDirFull)) {
-        $null = New-Item -ItemType directory -Path $fileDirFull
+    $fileDirectory = Join-Path $installationDir $(Split-Path -Parent $blobName)
+    if (-not (Test-Path -Path $fileDirectory)) {
+        $null = New-Item -ItemType directory -Path $fileDirectory
     }
-    $filePath = Join-Path $fileDirFull $fileName
-    $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken"
+    $filePath = Join-Path $fileDirectory $fileName
+    $blobUrl = "https://${storageAccountName}.blob.core.windows.net/${storageContainerName}/${blobName}${sasToken}"
     $null = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
 }
 
@@ -48,4 +48,4 @@ foreach ($blobName in $blobNames) {
 # Import the NPS configuration
 # ----------------------------
 Write-Output "Importing NPS configuration for RDG_CAP policy..."
-Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml")
+Import-NpsConfiguration -Path (Join-Path $installationDir "nps_config.xml")

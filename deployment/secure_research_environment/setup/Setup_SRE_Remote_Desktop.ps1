@@ -23,7 +23,6 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Set constants used in this script
 # ---------------------------------
-$remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
@@ -147,7 +146,7 @@ $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<rdsGatewayVmFqdn>", $config.sre.rds.gateway.fqdn).
           Replace("<rdsGatewayVmName>", $config.sre.rds.gateway.vmName).
           Replace("<rdsAppSessionHostFqdn>", $config.sre.rds.appSessionHost.fqdn).
-          Replace("<remoteUploadDir>", $remoteUploadDir).
+          Replace("<remoteUploadDir>", $config.sre.rds.gateway.installationDirectory).
           Replace("<researchUserSgName>", $config.sre.domain.securityGroups.researchUsers.name).
           Replace("<shmNetbiosName>", $config.shm.domain.netbiosName).
           Replace("<sreDomain>", $config.sre.domain.fqdn) | Out-File $deployScriptLocalFilePath
@@ -243,12 +242,12 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
-        storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
-        storageService               = "blob"
-        shareOrContainerName         = "`"$containerName`""
-        sasToken                     = "`"$sasToken`""
-        pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
-        downloadDir                  = "$remoteUploadDir"
+        blobNameArrayB64     = $fileNames | ConvertTo-Json | ConvertTo-Base64
+        downloadDir          = $config.sre.rds.gateway.installationDirectory
+        sasTokenB64          = $sasToken | ConvertTo-Base64
+        shareOrContainerName = $containerName
+        storageAccountName   = $sreStorageAccount.StorageAccountName
+        storageService       = "blob"
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 }

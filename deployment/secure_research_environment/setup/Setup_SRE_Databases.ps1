@@ -10,6 +10,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
@@ -123,13 +124,13 @@ foreach ($keyName in $config.sre.databases.Keys) {
         Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
-            DataAdminGroup           = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)`""
-            DbAdminPassword          = $dbAdminPassword
+            DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+            DbAdminPasswordB64       = $dbAdminPassword | ConvertTo-Base64
             DbAdminUsername          = $dbAdminUsername
-            EnableSSIS               = $databaseCfg.enableSSIS
-            ResearchUsersGroup       = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)`""
-            ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-            SysAdminGroup            = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)`""
+            EnableSSIS               = [string]($databaseCfg.enableSSIS)
+            ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
+            ServerLockdownCommandB64 = Get-Content $serverLockdownCommandPath -Raw | ConvertTo-Base64
+            SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)"
             VmAdminUsername          = $vmAdminUsername
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
@@ -152,10 +153,10 @@ foreach ($keyName in $config.sre.databases.Keys) {
         Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
         $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
         $params = @{
-            Hostname       = "`"$($databaseCfg.vmName)`""
-            Name           = "`"$($dbServiceAccountName)`""
-            SamAccountName = "`"$($dbServiceAccountSamAccountName)`""
-            ShmFqdn        = "`"$($config.shm.domain.fqdn)`""
+            Hostname       = $databaseCfg.vmName
+            Name           = $dbServiceAccountName
+            SamAccountName = $dbServiceAccountSamAccountName
+            ShmFqdn        = $config.shm.domain.fqdn
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -223,6 +224,8 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
+        # Update DNS records for this VM
+        Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $databaseCfg.vmName -VmIpAddress $databaseCfg.ip
     }
 }
 

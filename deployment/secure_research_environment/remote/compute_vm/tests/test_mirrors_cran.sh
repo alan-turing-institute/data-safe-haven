@@ -1,5 +1,5 @@
 #! /bin/bash
-# Take packages which are alphabetically early and late on our whitelist but are not installed by default
+# Test "ahaz" and "yum" which are alphabetically early and late in the Tier-3 list and are not pre-installed
 packages=("ahaz" "yum")
 
 # Create local user library directory (not present by default)
