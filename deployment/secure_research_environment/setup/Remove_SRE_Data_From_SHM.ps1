@@ -83,8 +83,8 @@ if ($sreResources -or $sreResourceGroups) {
         Where-Object { $_ } |
         ForEach-Object { $_.Context.Name }
     $params = @{
-        ShmFqdn                    = $config.shm.domain.fqdn
-        SreId                      = $config.sre.id
+        ShmFqdn                     = $config.shm.domain.fqdn
+        SreId                       = $config.sre.id
         PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
