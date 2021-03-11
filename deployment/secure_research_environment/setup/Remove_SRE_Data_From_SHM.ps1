@@ -22,8 +22,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Look for resources in this subscription
 # ---------------------------------------
-$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
-$sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+$sreResourceGroups = Get-SreResourceGroups -shmId $config.shm.id -sreId $config.sre.id
+$sreResources = Get-SreResources -shmId $config.shm.id -sreId $config.sre.id
 
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
@@ -34,10 +34,15 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning " "
     Add-LogMessage -Level Warning "Resource Groups present in SRE subscription:"
     Add-LogMessage -Level Warning "--------------------------------------------"
-    $sreResourceGroups
+    foreach ($resourceGroup in $sreResourceGroups) {
+        Add-LogMessage -Level Warning $resourceGroup.ResourceGroupName
+    }
+    Add-LogMessage -Level Warning "--------------------------------------"
     Add-LogMessage -Level Warning "Resources present in SRE subscription:"
     Add-LogMessage -Level Warning "--------------------------------------"
-    $sreResources
+    foreach ($sreResource in $sreResources) {
+        Add-LogMessage -Level Warning "$($sreResource.Name) - $($sreResource.ResourceType)"
+    }
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
