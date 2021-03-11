@@ -24,5 +24,3 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
   + Build and publish our "batteries included" Data Science Compute virtual machine image. Customise if necessary.
 + [Secure Research Environment (SRE) deployment guide](deployment_tutorials/how-to-deploy-sre.md)
   + Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
-+ [Secure Research Environment (SRE) Tier-1 deployment guide](deployment_tutorials/how-to-deploy-sre-tier1.md)
-  + How to deploy a single Tier-1 Secure Research Environment (SRE) **NB. this will be merged into the main SRE documentation in future**

@@ -262,6 +262,7 @@ $null = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
 Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vmHostname -VmIpAddress $finalIpAddress
 
 
 # Restart after the networking switch

@@ -8,7 +8,7 @@
         "direction": "Inbound",
         "priority": 100,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.rds.gateway.networkRules.allowedSources}}",
+        "sourceAddressPrefix": ["{{sre.rds.gateway.networkRules.allowedSources}}"],
         "sourcePortRange": "*"
     },
     {

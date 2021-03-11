@@ -339,6 +339,7 @@ function Get-ShmConfig {
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        installationDirectory      = "C:\Installation"
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
             data = [ordered]@{
@@ -383,6 +384,7 @@ function Get-ShmConfig {
         vmSize                  = "Standard_D2s_v3"
         hostname                = $hostname
         ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
+        installationDirectory   = "C:\Installation"
         disks                   = [ordered]@{
             data = [ordered]@{
                 sizeGb = "20"
@@ -708,6 +710,7 @@ function Get-SreConfig {
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
+            installationDirectory   = "C:\Installation"
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
                 rules = "sre-nsg-rules-gateway.json"
@@ -924,6 +927,6 @@ function Show-FullConfig {
     } else {
         $config = Get-SreConfig -configId "${shmId}${sreId}"
     }
-    Write-Output ($config | ConvertTo-JSON -depth 10)
+    Write-Output ($config | ConvertTo-Json -Depth 10)
 }
 Export-ModuleMember -Function Show-FullConfig

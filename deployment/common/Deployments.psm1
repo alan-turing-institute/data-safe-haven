@@ -1137,8 +1137,8 @@ function Invoke-RemoteScript {
         [string]$Shell = "PowerShell",
         [Parameter(Mandatory = $false, HelpMessage = "Suppress script output on success")]
         [switch]$SuppressOutput,
-        [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
-        $Parameter = $null
+        [Parameter(Mandatory = $false, HelpMessage = "(Optional) hashtable of script parameters")]
+        [System.Collections.IDictionary]$Parameter = $null
     )
     # If we're given a script then create a file from it
     $tmpScriptFile = $null
@@ -1147,10 +1147,30 @@ function Invoke-RemoteScript {
         $Script | Out-File -FilePath $tmpScriptFile.FullName
         $ScriptPath = $tmpScriptFile.FullName
     }
-    # Run the remote command
+    # Validate any external parameters as non-string arguments or arguments containing special characters will cause Invoke-AzVMRunCommand to fail
     $params = @{}
     if ($Parameter) { $params["Parameter"] = $Parameter }
     $params["CommandId"] = ($Shell -eq "PowerShell") ? "RunPowerShellScript" : "RunShellScript"
+    if ($params.Contains("Parameter")) {
+        foreach ($kv in $params["Parameter"].GetEnumerator()) {
+            if ($kv.Value -isnot [string]) {
+                Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) must be a string!"
+            }
+            foreach ($unsafeCharacter in @("|", "&")) {
+                if ($kv.Value.Contains($unsafeCharacter)) {
+                    Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$unsafeCharacter' which will cause Invoke-AzVMRunCommand to fail. Consider encoding this variable in Base-64."
+                }
+            }
+            foreach ($whitespaceCharacter in @(" ", "`t")) {
+                if (($Shell -eq "UnixShell") -and ($kv.Value.Contains($whitespaceCharacter))) {
+                    if (-not (($kv.Value[0] -eq "'") -or ($kv.Value[0] -eq '"'))) {
+                        Write-Host $kv.Value[0]
+                        Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$whitespaceCharacter' which will cause the shell script to fail. Consider wrapping this variable in single quotes."
+                    }
+                }
+            }
+        }
+    }
     try {
         # Catch failures from running two commands in close proximity and rerun
         while ($true) {
@@ -1213,7 +1233,7 @@ function Invoke-WindowsConfigureAndUpdate {
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|") }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json | ConvertTo-Base64) }
     }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting time/locale and installing updates on '$VMName'"
@@ -1234,7 +1254,7 @@ function New-DNSZone {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName
     )
-    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
+    Add-LogMessage -Level Info "Ensuring that DNS zone '$($Name)' exists..."
     $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
@@ -1357,7 +1377,6 @@ function Set-DnsZoneAndParentNSRecords {
     $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
 
     # Create DNS Zone
-    Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
     New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
 
     # Get NS records from the new DNS Zone
@@ -1832,6 +1851,61 @@ function Set-VnetPeering {
     }
 }
 Export-ModuleMember -Function Set-VnetPeering
+
+
+# Update LDAP secret in the local Active Directory
+# ------------------------------------------------
+function Update-AdLdapSecret {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DC that holds the local Active Directory")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group for DC that holds the local Active Directory")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription name for DC that holds the local Active Directory")]
+        [string]$SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Password for LDAP search account")]
+        [string]$LdapSearchPassword,
+        [Parameter(Mandatory = $true, HelpMessage = "SAM account name for LDAP search account")]
+        [string]$LdapSearchSamAccountName
+    )
+    # Get original subscription
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -SubscriptionId $SubscriptionName -ErrorAction Stop
+        Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD (${Name})"
+        $params = @{
+            ldapSearchSamAccountName = $LdapSearchSamAccountName
+            ldapSearchPasswordB64    = $LdapSearchPassword | ConvertTo-Base64
+        }
+        $scriptPath = Join-Path $PSScriptRoot "remote" "ResetLdapPasswordOnAD.ps1"
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $Name -ResourceGroupName $ResourceGroupName -Parameter $params
+    } finally {
+        # Switch back to original subscription
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+}
+Export-ModuleMember -Function Update-AdLdapSecret
+
+
+# Update LDAP secret for a VM
+# ---------------------------
+function Update-VMLdapSecret {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "VM name")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "VM resource group")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Password for LDAP search account")]
+        [string]$LdapSearchPassword
+    )
+    Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '${Name}'"
+    $params = @{
+        ldapSearchPasswordB64 = $LdapSearchPassword | ConvertTo-Base64
+    }
+    $scriptPath = Join-Path $PSScriptRoot "remote" "ResetLdapPasswordOnVm.sh"
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $Name -ResourceGroupName $ResourceGroupName -Parameter $params
+}
+Export-ModuleMember -Function Update-VMLdapSecret
 
 
 # Wait for cloud-init provisioning to finish

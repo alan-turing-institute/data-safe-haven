@@ -599,7 +599,7 @@ The `/shared/` folder should be used for any work that you want to share with yo
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
 The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`
 
@@ -723,7 +723,7 @@ We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/ad
 
 You can access CodiMD from the `CodiMD` icon on the Work Resources page.
 
-Login with your short-form username `firstname.lastname` and `password`.
+Login with your long-form username `firstname.lastname@<username domain>` and `password`.
 
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 

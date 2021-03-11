@@ -1,4 +1,7 @@
 #! /bin/bash
+# This script is designed to be deployed to an Azure Linux VM via
+# the Powershell Invoke-AzVMRunCommand, which sets all variables
+# passed in its -Parameter argument as environment variables
 
 # Update file permissions
 chmod -R 644 /opt/verification/smoke_tests/

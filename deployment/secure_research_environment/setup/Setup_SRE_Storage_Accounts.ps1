@@ -146,8 +146,8 @@ foreach ($storageAccount in @($persistentStorageAccount, $userdataStorageAccount
     $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
     Add-LogMessage -Level Info "Setting up DNS zones for: $privateEndpointFqdns"
     $params = @{
-        PipeSeparatedFqdns = ($privateEndpointFqdns -join "|")
-        IpAddress          = $privateEndpointIp
+        privateEndpointFqdnsB64 = $privateEndpointFqdns | ConvertTo-Json | ConvertTo-Base64
+        IpAddress               = $privateEndpointIp
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "Set_DNS_Zone.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -vmName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
