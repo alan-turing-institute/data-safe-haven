@@ -47,3 +47,26 @@ data.
 - 🌐 Bring your own domain
 - 🔑 Automatic SSL/TLS configuration using [Lets
   Encrypt](https://letsencrypt.org/) and [Traefik](https://traefik.io/)
+- 🤝 [Permissively licensed](./LICENSE) (you are free to copy, use and modify this
+  code as well as to merge it with your own)
+
+## 🏗️ How to deploy
+
+### 📦 Requirements and prerequisites
+
+Before you start, you will need to install some dependencies,
+
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+You will also need,
+
+- A domain where you are able to modify or create new DNS records
+
+And ideally
+
+- An email address to receive [Lets Encrypt](https://letsencrypt.org/)
+  certificate expiry alerts
+- An email account with SMTP access to send users their initial login
+  credentials
