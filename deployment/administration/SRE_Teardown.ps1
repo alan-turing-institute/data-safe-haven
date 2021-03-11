@@ -69,7 +69,7 @@ if (-Not $dryRun.IsPresent) {
 
     # Warn if any suspicious resource groups remain
     # ---------------------------------------------
-    $suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.shm.id)_SRE_$($config.sre.id)*" })
+    $suspiciousResourceGroups = Get-SreResourceGroups -shmId $config.shm.id -sreId $config.sre.id
     if ($suspiciousResourceGroups) {
         Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SRE`n$suspiciousResourceGroups"
     }
