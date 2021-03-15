@@ -49,6 +49,10 @@ apt:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
 
+    sbt.list:
+      source: "deb https://dl.bintray.com/sbt/debian /"
+      keyid: 2EE0EA64E40A89B84B2DF73499E82A75642AC823 # sbt build tool <scalasbt@gmail.com>
+
     vscode.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
