@@ -1,5 +1,15 @@
 ---
 
+# SSH server settings
+ssh_challengeresponseauthentication: yes
+ssh_server_match_address:
+  - address: "{{ guacamole_private_ip }}"
+    rules:
+      - PasswordAuthentication yes
+      - AuthenticationMethods password
+      - DenyUsers guacamole_admin
+
+# Packages
 apt_packages_development:
   - git
   - julia

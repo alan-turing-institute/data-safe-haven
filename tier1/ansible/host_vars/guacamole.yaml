@@ -1,5 +1,8 @@
 ---
 
+# SSH client settings
+ssh_client_password_login: yes
+
 # Pip packages
 pip_install_packages:
   - docker

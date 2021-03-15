@@ -17,8 +17,13 @@
 - name: Basic hardening for all hosts
   hosts: all
 
+  tags: hardening
+
   collections:
     - devsec.hardening
+
+  vars_files:
+    - terraform_vars.yaml
 
   roles:
     - role: wait_for_cloud_init
@@ -36,14 +41,14 @@
 - name: Configure Guacamole VM
   hosts: guacamole
 
-  vars_files:
-    - terraform_vars.yaml
-
   vars:
     API_root: http://localhost:8080/guacamole/api
     data_source: postgresql
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
     guac_initial_passwords: []
+
+  vars_files:
+    - terraform_vars.yaml
 
   roles:
     - role: wait_for_cloud_init
