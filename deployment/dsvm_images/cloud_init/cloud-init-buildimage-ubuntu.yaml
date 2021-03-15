@@ -81,13 +81,6 @@ write_files:
       version: 1.4.1103
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
-  - path: "/opt/build/spark.tarinfo"
-    permissions: "0400"
-    content: |
-      hash: e2d05efa1c657dd5180628a83ea36c97c00f972b4aee935b7affa2e1058b0279
-      version: 3.0.1
-      tarfile: spark-|VERSION|-bin-hadoop3.2.tgz
-      remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
   - path: "/opt/verification/analyse_build.py"
     permissions: "0755"
     content: |
@@ -112,10 +105,6 @@ write_files:
     permissions: "0500"
     content: |
       <download_and_install_deb.sh>
-  - path: "/opt/build/download_and_install_tar.sh"
-    permissions: "0500"
-    content: |
-      <download_and_install_tar.sh>
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
@@ -257,12 +246,6 @@ runcmd:
   - echo "Installing RStudio..."
   - /opt/build/download_and_install_deb.sh rstudio
   - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; fi
-  # Install spark
-  - echo "Installing spark..."
-  - /opt/build/download_and_install_tar.sh spark
-  - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
-  - PATH=$PATH:${SPARK_BASE_DIR}/bin
-  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
   # Install bats
   - echo "Installing bats..."
   - git clone https://github.com/bats-core/bats-core /opt/bats/bats-core
@@ -287,6 +270,14 @@ runcmd:
   # Update unofficial signatures (strangely this gives no output in the cloud-init logs)
   - clamav-unofficial-sigs 2>&1
   - clamav-unofficial-sigs -i
+
+  # Install Spark and Hadoop - approximately 10 minutes
+  - echo ">=== $(date +%s) Installing Spark/Hadoop ===<"
+  - pip3 install shui
+  - shui install --latest --target /opt/spark
+  - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
+  - PATH=$PATH:${SPARK_BASE_DIR}/bin
+  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
   # Install Julia and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing Julia and packages ===<"
