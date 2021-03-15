@@ -33,7 +33,6 @@ Requirements:
 + 1.6.2: There are technical controls that prevent information from being inappropriately copied or downloaded
 
     Any dataset that is rated as Tier 2 or above (which would include personal data that is not publicly available or commercially/politically/legally sensitive data) have technical controls in place to ensure data can’t be incorrectly removed from the DSH.
-  
     These cover three main areas:
         + There are technical controls that ensures you can’t copy and paste between the environment and outside
         + You can’t connect to the internet from inside the environment
@@ -66,4 +65,3 @@ Requirements:
     As the Data Safe Haven is not the canonical source of data a decision has been made to not back-up the data stored in the DSH.
 
     The data safe haven is a secure environment to store the data in, and the risk of needing to reimport the data is minimal. As any backup copy of the data would decrease the security of the data, a security decision has been taken that it is preferable to have to reimport the data from the original source in the event that it would need to be restored.
-
