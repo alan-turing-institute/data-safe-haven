@@ -25,7 +25,7 @@ function Get-CoreConfigHashtable {
         [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
         [string]$sreId
     )
-    if ($sreId -eq "") {
+    if (!$sreId) {
         $configName = $shmId
         $configType = "shm"
     } else {
@@ -925,7 +925,7 @@ function Show-FullConfig {
         [string]$sreId
     )
     # Generate and return the full config for the SHM or SRE
-    if ($sreId -eq "") {
+    if (!$sreId) {
         $config = Get-ShmConfig -shmId $shmId
     } else {
         $config = Get-SreConfig -shmId $shmId -sreId $sreId
