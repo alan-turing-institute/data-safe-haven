@@ -495,12 +495,6 @@ function Get-SreConfig {
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-CoreConfigHashtable -shmId $shmId -sreId $sreId
 
-    # Ensure that naming structure is being adhered to
-    $configId = $shmId + $sreId
-    if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
-        Add-LogMessage -Level Fatal "Config file '$configId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
-    }
-
     # Secure research environment config
     # ----------------------------------
     # Set default Nexus usage
