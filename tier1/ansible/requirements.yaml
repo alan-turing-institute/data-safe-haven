@@ -4,7 +4,6 @@ roles:
   - name: geerlingguy.docker
   - name: geerlingguy.pip
   - name: oefenweb.fail2ban
-  - name: singleplatform-eng.users
 
 collections:
   - name: devsec.hardening
