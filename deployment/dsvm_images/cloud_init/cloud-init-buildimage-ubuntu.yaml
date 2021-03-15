@@ -74,15 +74,15 @@ write_files:
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 37de7ecb1ff7c5e10c8cd3a929e4aa9185d6f7494fdb4fbd896d8cc496590645
-      version: 1.25.2
+      hash: 063ef01c23fbcab4a34d18c0acf0e504ecda03f80e3502761945075ec87f1102
+      version: 1.26.1
       debfile: azuredatastudio-linux-|VERSION|.deb
-      remote: https://sqlopsbuilds.azureedge.net/stable/4d4917d328ab7a7526817a0f0ef03237a79aa54d/|DEBFILE|
+      remote: https://sqlopsbuilds.azureedge.net/stable/796abbdf5fdd341e3528e30a6b777c93e115eb02/|DEBFILE|
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 768643499ffeef393915998cb141f404db15f4a59f42293ed3f830f9171e323a
-      version: 1.4.1103
+      hash: 3b5d38351d27868b1829b07471c0f5d883c0b1449e682634029a57afb96539a8
+      version: 1.4.1106
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
   - path: "/opt/verification/analyse_build.py"
