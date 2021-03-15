@@ -37,7 +37,7 @@ Requirements:
     These cover three main areas:
         + There are technical controls that ensures you can’t copy and paste between the environment and outside
         + You can’t connect to the internet from inside the environment
-        + You can’t connect to Azure services (e.g Azure file storage) apart from the one which are secured inside the environment. 
+        + You can’t connect to Azure services (e.g Azure file storage) apart from the one which are secured inside the environment.
 
 + 7.1.2: Do you have a business continuity plan in place to ensure continuity of services in event of data security incident, failure or compromise?
 
