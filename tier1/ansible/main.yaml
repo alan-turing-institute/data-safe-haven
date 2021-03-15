@@ -203,29 +203,32 @@
             body_format: form-urlencoded
           register: token
 
-        - name: Check if RDP connection for DSVM exists
+        - name: Check if connections for DSVM exist
           ansible.builtin.uri:
-            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ dsvm_connection_identifier }}?token={{ token.json.authToken }}"
+            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ item.identifier }}?token={{ token.json.authToken }}"
             method: GET
             status_code: [200, 404]
-          register: dsvm_connection
+          loop: "{{ guac_connections }}"
+          register: dsvm_connections
 
-        - name: Create RDP connection for DSVM
+        - name: Create connections for DSVM
           ansible.builtin.uri:
             url: "{{ API_root }}/session/data/{{ data_source }}/connections?token={{ token.json.authToken }}"
             method: POST
-            body: "{{ dsvm_connection_params }}"
+            body: "{{ item.item.params }}"
             body_format: json
-          when: dsvm_connection.status == 404
+          when: item.status == 404
+          loop: "{{ dsvm_connections.results }}"
 
         - name: Update RDP connection for DSVM
           ansible.builtin.uri:
-            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ dsvm_connection_identifier }}?token={{ token.json.authToken }}"
+            url: "{{ API_root }}/session/data/{{ data_source }}/connections/{{ item.item.identifier }}?token={{ token.json.authToken }}"
             method: PUT
-            body: "{{ dsvm_connection_params }}"
+            body: "{{ item.item.params }}"
             body_format: json
             status_code: 204
-          when: dsvm_connection.status == 200
+          when: item.status == 200
+          loop: "{{ dsvm_connections.results }}"
       always:
         - name: Delete API token
           ansible.builtin.uri:
@@ -306,6 +309,9 @@
             body:
               - op: add
                 path: /connectionPermissions/1
+                value: READ
+              - op: add
+                path: /connectionPermissions/2
                 value: READ
             body_format: json
             status_code: 204
