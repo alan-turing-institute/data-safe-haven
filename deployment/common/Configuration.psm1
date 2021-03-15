@@ -1,3 +1,4 @@
+Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.RecoveryServices -ErrorAction Stop # Note that this contains TimeZoneConverter
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
@@ -92,20 +93,24 @@ function Get-ShmConfig {
 
     # DSVM build images
     # -----------------
-    # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
-    $originalContext = Get-AzContext
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
-    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
-    $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
-    if ($locations.Count -gt 1) {
-        Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
-    } elseif ($locations.Count -eq 1) {
-        if ($vmImagesLocation -ne $locations) {
-            Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
+    # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
+    $originalContext = Get-AzContext
+    if ($originalContext) {
+        $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
+        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
+        if ($locations.Count -gt 1) {
+            Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
+        } elseif ($locations.Count -eq 1) {
+            if ($vmImagesLocation -ne $locations) {
+                Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
+            }
         }
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    } else {
+        Add-LogMessage -Level Warning "Skipping check for image building location as you are not logged in to Azure! Run Connect-AzAccount to log in."
     }
-    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     # Construct build images config
     $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
     $shm.dsvmImage = [ordered]@{
