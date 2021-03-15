@@ -29,7 +29,7 @@ function Get-CoreConfigHashtable {
         $configName = $shmId
         $configType = "shm"
     } else {
-        $configName = $shmId + $sreId
+        $configName = "${shmId}${sreId}"
         $configType = "sre"
     }
     $configFilename = "${configType}_${configName}_core_config.json"
