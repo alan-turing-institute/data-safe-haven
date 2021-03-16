@@ -19,21 +19,18 @@ function Get-ConfigRootDir {
 
 # Load minimal management config parameters from JSON config file into a hashtable
 # --------------------------------------------------------------------------------
-function Get-CoreConfigHashtable {
+function Get-CoreConfig {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
         [string]$shmId,
         [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
         [string]$sreId
     )
-    if (!$sreId) {
-        $configName = $shmId
-        $configType = "shm"
+    if (-not $sreId) {
+        $configFilename = "shm_${shmId}_core_config.json"
     } else {
-        $configName = "${shmId}${sreId}"
-        $configType = "sre"
+        $configFilename = "sre_${shmId}${sreId}_core_config.json"
     }
-    $configFilename = "${configType}_${configName}_core_config.json"
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
         $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
@@ -54,7 +51,7 @@ function Get-ShmConfig {
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-CoreConfigHashtable -shmId $shmId
+    $shmConfigBase = Get-CoreConfig -shmId $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
@@ -498,7 +495,7 @@ function Get-SreConfig {
         [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-CoreConfigHashtable -shmId $shmId -sreId $sreId
+    $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
     # Secure research environment config
     # ----------------------------------
