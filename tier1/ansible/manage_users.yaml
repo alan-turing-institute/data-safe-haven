@@ -17,243 +17,247 @@
         fail_msg: "User {{ item }} does not have all required variables defined!"
       loop: "{{ users }}"
 
-- name: Manage users
-  hosts: all
+
+- name: Manage Guacamole users
+  hosts: guacamole
 
   vars:
     guac_initial_passwords: []
-    initial_passwords: {}
 
   vars_files:
     - terraform_vars.yaml
     - user_vars.yaml
 
   tasks:
+    - name: (Temporarily) disable TOTP to allowd Guacamole configuration through the API
+      import_role:
+        name: disable_guacamole_totp
 
-    - name: Configure Guacamole users
-      when: inventory_hostname == "guacamole"
+    - name: Create users using Guacamole API
       block:
-        - name: (Temporarily) disable TOTP to allowd Guacamole configuration through the API
-          import_role:
-            name: disable_guacamole_totp
+        - name: Get API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens"
+            method: POST
+            user: "{{ guac_admin_user }}"
+            password: "{{ guac_admin_password }}"
+            force_basic_auth: yes
+            body_format: form-urlencoded
+          register: token
 
-        - name: Create users using Guacamole API
-          block:
-            - name: Get API token
-              ansible.builtin.uri:
-                url: "{{ API_root }}/tokens"
-                method: POST
-                user: "{{ guac_admin_user }}"
-                password: "{{ guac_admin_password }}"
-                force_basic_auth: yes
-                body_format: form-urlencoded
-              register: token
+        - name: Get existing users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
+          register: guac_users
 
-            - name: Get existing users
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
-              register: guac_users
+        - name: Create lists of Guacamole users
+          ansible.builtin.set_fact:
+            guac_users_existing: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
+            guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list ) }}"
+            guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
 
-            - name: Create lists of Guacamole users
-              ansible.builtin.set_fact:
-                guac_users_existing: "{{ (users | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
-                guac_users_missing: "{{ (users | map(attribute='username')) | difference(guac_users.json.keys() | list ) }}"
-                guac_users_deleted: "{{ (users_deleted | map(attribute='username')) | intersect(guac_users.json.keys() | list ) }}"
+        - name: Create initial Guacamole passwords for new users
+          ansible.builtin.set_fact:
+            guac_initial_passwords: "{{ guac_initial_passwords | union([{'username': item, 'password': lookup('password', '/dev/null chars=ascii_letters,digits length=12')}]) }}"
+          loop: "{{ guac_users_missing }}"
 
-            - name: Create initial Guacamole passwords for new users
-              ansible.builtin.set_fact:
-                guac_initial_passwords: "{{ guac_initial_passwords | union([{'username': item, 'password': lookup('password', '/dev/null chars=ascii_letters,digits length=12')}]) }}"
-              loop: "{{ guac_users_missing }}"
-
-            - name: Create users that do not exist, set passwords to expired
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
-                method: POST
-                body:
-                  username: "{{ item.username }}"
-                  password: "{{ item.password }}"
-                  attributes:
-                    expired: "true"
-                body_format: json
-              loop: "{{ guac_initial_passwords }}"
-
-            - name: Allow new and existing users to change their own passwords and set TOTP
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
-                method: PATCH
-                body:
-                  - op: add
-                    path: "/userPermissions/{{ item }}"
-                    value: UPDATE
-                body_format: json
-                status_code: 204
-              loop: "{{ guac_users_existing | union(guac_users_missing)  }}"
-
-            - name: Assign new and existing users to dsvm connection
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
-                method: PATCH
-                body:
-                  - op: add
-                    path: /connectionPermissions/1
-                    value: READ
-                  - op: add
-                    path: /connectionPermissions/2
-                    value: READ
-                body_format: json
-                status_code: 204
-              loop: "{{ guac_users_existing | union(guac_users_missing) }}"
-
-            - name: Enable existing users
-              # It is important to not include new users here as this will
-              # overwrite the expired password flag
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
-                method: PUT
-                body:
-                  attributes:
-                    disabled: "false"
-                body_format: json
-                status_code: 204
-              loop: "{{ guac_users_existing }}"
-
-            - name: Disable deleted users
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
-                method: PUT
-                body:
-                  attributes:
-                    disabled: "true"
-                body_format: json
-                status_code: 204
-              loop: "{{ guac_users_deleted }}"
-
-            - name: Delete removed users
-              ansible.builtin.uri:
-                url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item.username }}?token={{ token.json.authToken }}"
-                method: DELETE
-                status_code: 204
-              when: item.remove | default(no) and item.username in guac_users_deleted
-              loop: "{{ users_deleted }}"
-          always:
-            - name: Delete API token
-              ansible.builtin.uri:
-                url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
-                method: DELETE
-                status_code: 204
-
-        - name: Install and enable Guacamole TOTP extension
-          import_role:
-            name: enable_guacamole_totp
-
-        - name: Write initial Guacamole passwords to file
-          ansible.builtin.copy:
-            content: |
-              {% for item in guac_initial_passwords %}
-              - username: {{ item.username }}
-                password: {{ item.password }}
-              {% endfor %}
-            backup: yes
-            dest: ./guac_new_users.yaml
-            mode: 0644
-          delegate_to: localhost
-          when: guac_users_missing | length > 0 and (not email.enabled or force_write_initial_passwords)
-
-        - name: Email new users their initial Guacamole passwords
-          community.general.mail:
-            subject: Tier1 Safe Haven Web Portal Credentials
-            body: |
-              Dear {{ (users | items2dict(key_name='username', value_name='name'))[item.username]  }},
-
-              To connect to the safe haven navigate to https://{{ guacamole_domain }}.
-
-              username: {{ item.username }}
-              password: {{ item.password }}
-
-              !!! IMPORTANT !!!
-              The first time your login you will be asked to 1. change your password and 2. configure a TOTP authenticator app. After your change your password you must refresh the page and log in again (using your new password) before configuring TOTP.
-              !!! IMPORTANT !!!
-            to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
-            sender: "Safe Haven Admin <{{ email.address }}>"
-            host: "{{ email.host }}"
-            port: "{{ email.port }}"
-            username: "{{ email.username }}"
-            password: "{{ email.password }}"
-          delegate_to: localhost
-          when: email.enabled
+        - name: Create users that do not exist, set passwords to expired
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users?token={{ token.json.authToken }}"
+            method: POST
+            body:
+              username: "{{ item.username }}"
+              password: "{{ item.password }}"
+              attributes:
+                expired: "true"
+            body_format: json
           loop: "{{ guac_initial_passwords }}"
 
-    - name: Create login accounts
-      when: inventory_hostname == "dsvm"
-      block:
-        - name: Create initial passwords for new users
-          ansible.builtin.set_fact:
-            initial_passwords: "{{ initial_passwords | combine({item.username: lookup('password', '/dev/null chars=ascii_letters,digits length=12')}) }}"
-          loop: "{{ users }}"
+        - name: Allow new and existing users to change their own passwords and set TOTP
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
+            method: PATCH
+            body:
+              - op: add
+                path: "/userPermissions/{{ item }}"
+                value: UPDATE
+            body_format: json
+            status_code: 204
+          loop: "{{ guac_users_existing | union(guac_users_missing)  }}"
 
-        - name: Create users
-          become: yes
-          ansible.builtin.user:
-            name: "{{ item.username }}"
-            comment: "{{ item.name }}"
-            password: "{{ initial_passwords[item.username] | password_hash('sha512', lookup('password', '/dev/null chars=ascii_letters,digits length=16'))  }}"
-            update_password: on_create
-            groups: shared
-            append: yes
-          loop: "{{ users }}"
-          register: accounts
+        - name: Assign new and existing users to dsvm connection
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}/permissions?token={{ token.json.authToken }}"
+            method: PATCH
+            body:
+              - op: add
+                path: /connectionPermissions/1
+                value: READ
+              - op: add
+                path: /connectionPermissions/2
+                value: READ
+            body_format: json
+            status_code: 204
+          loop: "{{ guac_users_existing | union(guac_users_missing) }}"
 
-        - name: Set initial passwords as expired
-          become: yes
-          ansible.builtin.command:
-            cmd: "passwd -e {{ item.name }}"
-          when: item.changed
-          loop: "{{ accounts.results }}"
+        - name: Enable existing users
+          # It is important to not include new users here as this will
+          # overwrite the expired password flag
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
+            method: PUT
+            body:
+              attributes:
+                disabled: "false"
+            body_format: json
+            status_code: 204
+          loop: "{{ guac_users_existing }}"
 
-        - name: Remove users
-          become: yes
-          ansible.builtin.user:
-            name: "{{ item.username }}"
-            state: absent
-            force: yes
-            remove: "{{ item.remove | default(omit) }}"
+        - name: Disable deleted users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item }}?token={{ token.json.authToken }}"
+            method: PUT
+            body:
+              attributes:
+                disabled: "true"
+            body_format: json
+            status_code: 204
+          loop: "{{ guac_users_deleted }}"
+
+        - name: Delete removed users
+          ansible.builtin.uri:
+            url: "{{ API_root }}/session/data/{{ data_source }}/users/{{ item.username }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: 204
+          when: item.remove | default(no) and item.username in guac_users_deleted
           loop: "{{ users_deleted }}"
+      always:
+        - name: Delete API token
+          ansible.builtin.uri:
+            url: "{{ API_root }}/tokens/{{ token.json.authToken }}?token={{ token.json.authToken }}"
+            method: DELETE
+            status_code: 204
 
-        - name: Write initial passwords to file
-          ansible.builtin.copy:
-            content: |
-              {% for item in accounts.results %}
-              {% if item.changed %}
-              - username: {{ item.name }}
-                password: {{ initial_passwords[item.name] }}
-              {% endif %}
-              {% endfor %}
-            backup: yes
-            dest: ./new_users.yaml
-            mode: 0644
-          delegate_to: localhost
-          when: accounts.changed and (not email.enabled or force_write_initial_passwords)
+    - name: Install and enable Guacamole TOTP extension
+      import_role:
+        name: enable_guacamole_totp
 
-        - name: Email created users their initial passwords
-          community.general.mail:
-            subject: Tier1 Safe Haven VM Credentials
-            body: |
-              Dear {{ item.item.name }},
+    - name: Write initial Guacamole passwords to file
+      ansible.builtin.copy:
+        content: |
+          {% for item in guac_initial_passwords %}
+          - username: {{ item.username }}
+            password: {{ item.password }}
+          {% endfor %}
+        backup: yes
+        dest: ./guac_new_users.yaml
+        mode: 0644
+      delegate_to: localhost
+      when: guac_users_missing | length > 0 and (not email.enabled or force_write_initial_passwords)
 
-              After you connect to the safe haven web portal you will see two connections, "DSVM RDP" and "DSVM SSH" which allow you to connect to the data science virtual machine with a remote desktop or command line interface respectively.
+    - name: Email new users their initial Guacamole passwords
+      community.general.mail:
+        subject: Tier1 Safe Haven Web Portal Credentials
+        body: |
+          Dear {{ (users | items2dict(key_name='username', value_name='name'))[item.username]  }},
 
-              !!! IMPORTANT !!!
-              For your first connection, please select "DSVM SSH". You will be prompted for your username and password (below) and then asked to set a new password. After setting your new password you will be logged out and can now connect to either the remote desktop or command line using your new password.
-              !!! IMPORTANT !!!
+          To connect to the safe haven navigate to https://{{ guacamole_domain }}.
 
-              username: {{ item.name }}
-              password: {{ initial_passwords[item.name] }}
-            to: "{{ item.item.name }} <{{ item.item.email }}>"
-            sender: "Safe Haven Admin <{{ email.address }}>"
-            host: "{{ email.host }}"
-            port: "{{ email.port }}"
-            username: "{{ email.username }}"
-            password: "{{ email.password }}"
-          delegate_to: localhost
-          when: email.enabled and item.changed
-          loop: "{{ accounts.results }}"
+          username: {{ item.username }}
+          password: {{ item.password }}
+
+          !!! IMPORTANT !!!
+          The first time your login you will be asked to 1. change your password and 2. configure a TOTP authenticator app. After your change your password you must refresh the page and log in again (using your new password) before configuring TOTP.
+          !!! IMPORTANT !!!
+        to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
+        sender: "Safe Haven Admin <{{ email.address }}>"
+        host: "{{ email.host }}"
+        port: "{{ email.port }}"
+        username: "{{ email.username }}"
+        password: "{{ email.password }}"
+      delegate_to: localhost
+      when: email.enabled
+      loop: "{{ guac_initial_passwords }}"
+
+
+- name: Manage DSVM users
+  hosts: dsvm
+
+  vars:
+    initial_passwords: {}
+
+  vars_files:
+    - user_vars.yaml
+
+  tasks:
+    - name: Create initial passwords for new users
+      ansible.builtin.set_fact:
+        initial_passwords: "{{ initial_passwords | combine({item.username: lookup('password', '/dev/null chars=ascii_letters,digits length=12')}) }}"
+      loop: "{{ users }}"
+
+    - name: Create users
+      become: yes
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        comment: "{{ item.name }}"
+        password: "{{ initial_passwords[item.username] | password_hash('sha512', lookup('password', '/dev/null chars=ascii_letters,digits length=16'))  }}"
+        update_password: on_create
+        groups: shared
+        append: yes
+      loop: "{{ users }}"
+      register: accounts
+
+    - name: Set initial passwords as expired
+      become: yes
+      ansible.builtin.command:
+        cmd: "passwd -e {{ item.name }}"
+      when: item.changed
+      loop: "{{ accounts.results }}"
+
+    - name: Remove users
+      become: yes
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        state: absent
+        force: yes
+        remove: "{{ item.remove | default(omit) }}"
+      loop: "{{ users_deleted }}"
+
+    - name: Write initial passwords to file
+      ansible.builtin.copy:
+        content: |
+          {% for item in accounts.results %}
+          {% if item.changed %}
+          - username: {{ item.name }}
+            password: {{ initial_passwords[item.name] }}
+          {% endif %}
+          {% endfor %}
+        backup: yes
+        dest: ./new_users.yaml
+        mode: 0644
+      delegate_to: localhost
+      when: accounts.changed and (not email.enabled or force_write_initial_passwords)
+
+    - name: Email created users their initial passwords
+      community.general.mail:
+        subject: Tier1 Safe Haven VM Credentials
+        body: |
+          Dear {{ item.item.name }},
+
+          After you connect to the safe haven web portal you will see two connections, "DSVM RDP" and "DSVM SSH" which allow you to connect to the data science virtual machine with a remote desktop or command line interface respectively.
+
+          !!! IMPORTANT !!!
+          For your first connection, please select "DSVM SSH". You will be prompted for your username and password (below) and then asked to set a new password. After setting your new password you will be logged out and can now connect to either the remote desktop or command line using your new password.
+          !!! IMPORTANT !!!
+
+          username: {{ item.name }}
+          password: {{ initial_passwords[item.name] }}
+        to: "{{ item.item.name }} <{{ item.item.email }}>"
+        sender: "Safe Haven Admin <{{ email.address }}>"
+        host: "{{ email.host }}"
+        port: "{{ email.port }}"
+        username: "{{ email.username }}"
+        password: "{{ email.password }}"
+      delegate_to: localhost
+      when: email.enabled and item.changed
+      loop: "{{ accounts.results }}"
