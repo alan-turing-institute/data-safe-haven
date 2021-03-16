@@ -73,6 +73,7 @@
       become: yes
 
   tasks:
+    # Ensure ansible_user has docker-group privileges
     - name: Reset connection so that group changes take effect
       meta: reset_connection
 
