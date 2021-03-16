@@ -14,6 +14,12 @@ An overview of our security controls is shown here
     <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
 </p>
 
+## How to check the list off for a release
+
+1. Deploy SHM and both a tier 2 and 3 SRE from your release code
+2. Create an issue called `Carry out security evaluation checklist for release x.x.x`
+3. Using [#932](https://github.com/alan-turing-institute/data-safe-haven/issues/932) as a guide, create the checklist as per this document and check it off, adding screenshots of your evidence to comments as you go
+
 ## Contents
 
 + [1. Multifactor Authentication and Password strength](#1.-multifactor-authentication-and-password-strength)
