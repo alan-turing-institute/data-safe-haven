@@ -127,29 +127,9 @@
               - compose_output.services.guacd.guacd.state.running
               - compose_output.services.reverse_proxy.traefik.state.running
 
-    - name: (Temporarily) disable TOTP to allow Guacamole configuration through API
-      block:
-        - name: Remove Guacamole TOTP extension
-          ansible.builtin.file:
-            path: "{{ guacamole_extensions_dir }}/guacamole-auth-totp-{{ guac_version }}.jar"
-            state: absent
-          register: guacamole_totp_extension
-
-        - name: Stop Traefik to prevent access from the internet
-          community.docker.docker_compose:
-            project_src: "{{ ansible_user_dir }}"
-            project_name: guacamole
-            services: reverse_proxy
-            stopped: yes
-          when: guacamole_totp_extension.changed
-
-        - name: Restart Guacamole
-          community.docker.docker_compose:
-            project_src: "{{ ansible_user_dir }}"
-            project_name: guacamole
-            services: guacamole
-            restarted: yes
-          when: guacamole_totp_extension.changed
+    - name: (Temporarily) disable TOTP to allowd Guacamole configuration through the API
+      import_role:
+        name: disable_guacamole_totp
 
     - name: Check if password has been changed from default
       tags: guacamole
@@ -368,60 +348,8 @@
             status_code: 204
 
     - name: Install and enable Guacamole TOTP extension
-      block:
-        - name: Get TOTP extension archive
-          ansible.builtin.get_url:
-            url: "https://downloads.apache.org/guacamole/{{ guac_version }}/binary/guacamole-auth-totp-{{ guac_version }}.tar.gz"
-            dest: "{{ ansible_user_dir }}"
-            checksum: "sha256:https://www.apache.org/dist/guacamole/{{ guac_version }}/binary/guacamole-auth-totp-{{ guac_version }}.tar.gz.sha256"
-          register: totp_extension_archive
-
-        - name: Create Guacamole extensions directory
-          ansible.builtin.file:
-            path: "{{ guacamole_extensions_dir }}"
-            state: directory
-            owner: "{{ ansible_user }}"
-            group: "{{ ansible_user }}"
-            mode: 0755
-
-        - name: Unarchive TOTP extension
-          ansible.builtin.unarchive:
-            src: "{{ totp_extension_archive.dest }}"
-            remote_src: yes
-            dest: "{{ ansible_user_dir }}"
-
-        - name: Copy TOTP extension to extensions directory
-          ansible.builtin.copy:
-            src: "{{ ansible_user_dir }}/guacamole-auth-totp-{{ guac_version }}/guacamole-auth-totp-{{ guac_version }}.jar"
-            remote_src: yes
-            dest: "{{ guacamole_extensions_dir }}"
-            owner: "{{ ansible_user }}"
-            group: "{{ ansible_user }}"
-            mode: 0644
-          register: guacamole_totp_extension
-
-        - name: Restart Guacamole
-          community.docker.docker_compose:
-            project_src: "{{ ansible_user_dir }}"
-            project_name: guacamole
-            services: guacamole
-            restarted: yes
-          when: guacamole_totp_extension.changed
-
-        - name: Start Traefik
-          community.docker.docker_compose:
-            project_src: "{{ ansible_user_dir }}"
-            project_name: guacamole
-            services: reverse_proxy
-          when: guacamole_totp_extension.changed
-
-        - name: Ensure that containers are running
-          ansible.builtin.assert:
-            that:
-              - compose_output.services.database.postgres.state.running
-              - compose_output.services.guacamole.guacamole.state.running
-              - compose_output.services.guacd.guacd.state.running
-              - compose_output.services.reverse_proxy.traefik.state.running
+      import_role:
+        name: enable_guacamole_totp
 
     - name: Email new users their initial Guacamole passwords
       community.general.mail:

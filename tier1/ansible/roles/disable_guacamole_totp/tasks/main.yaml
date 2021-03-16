@@ -1,0 +1,23 @@
+---
+
+- name: Remove Guacamole TOTP extension
+  ansible.builtin.file:
+    path: "{{ guacamole_extensions_dir }}/guacamole-auth-totp-{{ guac_version }}.jar"
+    state: absent
+  register: guacamole_totp_extension
+
+- name: Stop Traefik to prevent access from the internet
+  community.docker.docker_compose:
+    project_src: "{{ ansible_user_dir }}"
+    project_name: guacamole
+    services: reverse_proxy
+    stopped: yes
+  when: guacamole_totp_extension.changed
+
+- name: Restart Guacamole
+  community.docker.docker_compose:
+    project_src: "{{ ansible_user_dir }}"
+    project_name: guacamole
+    services: guacamole
+    restarted: yes
+  when: guacamole_totp_extension.changed
