@@ -1,13 +1,15 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Last octet of IP address eg. '160'")]
-    [string]$ipLastOctet = (Read-Host -Prompt "Last octet of IP address eg. '160'"),
-    [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
-    [string]$vmSize = "",
-    [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId,
+    [Parameter(Mandatory = $true, HelpMessage = "Last octet of IP address (eg. '160')")]
+    [string]$ipLastOctet,
+    [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
+    [string]$vmSize = "default",
+    [Parameter(Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
     [switch]$Upgrade,
-    [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
+    [Parameter(Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
     [switch]$Force
 )
 
@@ -25,7 +27,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -33,7 +35,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Set VM name and size
 # We need to define a unique hostname of no more than 15 characters
 # -----------------------------------------------------------------
-if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
+if ($vmSize -eq "default") { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
 $vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
@@ -158,7 +160,7 @@ if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$IPs = Get-MirrorIPs $config
+$IPs = Get-MirrorIPs -config $config
 $addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
 if ($?) {
     Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
@@ -296,7 +298,7 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -configId $configId -ipLastOctet $ipLastOctet }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
 
 
 # Switch back to original subscription

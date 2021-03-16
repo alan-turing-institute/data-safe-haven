@@ -1,3 +1,4 @@
+Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.RecoveryServices -ErrorAction Stop # Note that this contains TimeZoneConverter
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
@@ -18,15 +19,18 @@ function Get-ConfigRootDir {
 
 # Load minimal management config parameters from JSON config file into a hashtable
 # --------------------------------------------------------------------------------
-function Get-CoreConfigHashtable {
+function Get-CoreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
-        [ValidateSet("sre", "shm")]
-        $configType,
-        [Parameter(Mandatory = $true, HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
-        $configName
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [string]$shmId,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [string]$sreId = $null
     )
-    $configFilename = "${configType}_${configName}_core_config.json"
+    if (-not $sreId) {
+        $configFilename = "shm_${shmId}_core_config.json"
+    } else {
+        $configFilename = "sre_${shmId}${sreId}_core_config.json"
+    }
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
         $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
@@ -43,11 +47,11 @@ function Get-CoreConfigHashtable {
 # ---------------------
 function Get-ShmConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-CoreConfigHashtable -configType "shm" -configName $shmId
+    $shmConfigBase = Get-CoreConfig -shmId $shmId
     $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
@@ -86,20 +90,24 @@ function Get-ShmConfig {
 
     # DSVM build images
     # -----------------
-    # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
-    $originalContext = Get-AzContext
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
-    $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
-    $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
-    if ($locations.Count -gt 1) {
-        Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
-    } elseif ($locations.Count -eq 1) {
-        if ($vmImagesLocation -ne $locations) {
-            Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
+    # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
+    $originalContext = Get-AzContext
+    if ($originalContext) {
+        $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
+        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
+        if ($locations.Count -gt 1) {
+            Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
+        } elseif ($locations.Count -eq 1) {
+            if ($vmImagesLocation -ne $locations) {
+                Add-LogMessage -Level Fatal "Image building location ($vmImagesLocation) must be set to ${locations}!"
+            }
         }
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    } else {
+        Add-LogMessage -Level Warning "Skipping check for image building location as you are not logged in to Azure! Run Connect-AzAccount to log in."
     }
-    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     # Construct build images config
     $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
     $shm.dsvmImage = [ordered]@{
@@ -481,16 +489,13 @@ Export-ModuleMember -Function Get-ShmConfig
 # ---------------------------
 function Get-SreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-        [string]$configId
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [string]$shmId,
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-CoreConfigHashtable -configType "sre" -configName $configId
-
-    # Ensure that naming structure is being adhered to
-    if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
-        Add-LogMessage -Level Fatal "Config file '$configId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
-    }
+    $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
     # Secure research environment config
     # ----------------------------------
@@ -916,16 +921,16 @@ Export-ModuleMember -Function Get-SreConfig
 # ---------------------
 function Show-FullConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
-        [string]$sreId
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [string]$sreId = $null
     )
     # Generate and return the full config for the SHM or SRE
-    if ($sreId -eq "") {
+    if (-not $sreId) {
         $config = Get-ShmConfig -shmId $shmId
     } else {
-        $config = Get-SreConfig -configId "${shmId}${sreId}"
+        $config = Get-SreConfig -shmId $shmId -sreId $sreId
     }
     Write-Output ($config | ConvertTo-Json -Depth 10)
 }

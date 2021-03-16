@@ -2,17 +2,17 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Name of the test (proposed) subscription")]
     [string]$Subscription,
-    [Parameter(ParameterSetName="BenchmarkSubscription", Mandatory = $true, HelpMessage = "Name of the benchmark subscription to compare against")]
+    [Parameter(ParameterSetName = "BenchmarkSubscription", Mandatory = $true, HelpMessage = "Name of the benchmark subscription to compare against")]
     [string]$BenchmarkSubscription,
-    [Parameter(ParameterSetName="BenchmarkConfig", Mandatory = $true, HelpMessage = "Path to the benchmark config to compare against")]
+    [Parameter(ParameterSetName = "BenchmarkConfig", Mandatory = $true, HelpMessage = "Path to the benchmark config to compare against")]
     [string]$BenchmarkConfig,
     [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
     [switch]$VerboseLogging = $false
 )
 
 # Install required modules
-if (-Not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force}
-if (-Not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force}
+if (-not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force }
+if (-not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force }
 
 # Import modules
 Import-Module Az -ErrorAction Stop
@@ -21,12 +21,14 @@ Import-Module $PSScriptRoot/../deployment/common/Logging -Force -ErrorAction Sto
 
 function Select-ClosestMatch {
     param (
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [string] $Value,
-        [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
-        [System.Array] $Array
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Value,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.Array]$Array
     )
-    $Array | Sort-Object @{Expression={ Get-PasmScore -String1 $Value -String2 $_ -Algorithm "LevenshteinDistance" }; Ascending=$false} | Select-Object -First 1
+    $Array | Sort-Object @{Expression = { Get-PasmScore -String1 $Value -String2 $_ -Algorithm "LevenshteinDistance" }; Ascending = $false } | Select-Object -First 1
 }
 
 # Compare two NSG rule sets
@@ -35,9 +37,9 @@ function Select-ClosestMatch {
 function Compare-NSGRules {
     param (
         [Parameter()]
-        [System.Array] $BenchmarkRules,
+        [System.Array]$BenchmarkRules,
         [Parameter()]
-        [System.Array] $TestRules
+        [System.Array]$TestRules
     )
     $nMatched = 0
     $unmatched = @()
@@ -86,21 +88,24 @@ function Compare-NSGRules {
 
 function Test-OutboundConnection {
     param (
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine] $VM,
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [string] $DestinationAddress,
-        [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
-        [string] $DestinationPort
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$DestinationAddress,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$DestinationPort
     )
     # Get the network watcher, creating a new one if required
     $networkWatcher = Get-AzNetworkWatcher | Where-Object { $_.Location -eq $VM.Location }
-    if (-Not $networkWatcher) {
+    if (-not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
     # Ensure that the VM has the extension installed (if we have permissions for this)
     $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { ($_.Publisher -eq "Microsoft.Azure.NetworkWatcher") -and ($_.ProvisioningState -eq "Succeeded") }
-    if (-Not $networkWatcherExtension) {
+    if (-not $networkWatcherExtension) {
         Add-LogMessage -Level Info "... registering the Azure NetworkWatcher extension on $($VM.Name). "
         # Add the Windows extension
         if ($VM.OSProfile.WindowsConfiguration) {
@@ -235,10 +240,10 @@ if ($BenchmarkSubscription) {
         Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($VM.Name)"
         $JsonConfig[$benchmarkVM.Name] = [ordered]@{
             InternetFromPort = [ordered]@{
-                "80" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80)
+                "80"  = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80)
                 "443" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 443)
             }
-            Rules = Get-NSGRules -VM $benchmarkVM
+            Rules            = Get-NSGRules -VM $benchmarkVM
         }
     }
     $OutputFile = New-TemporaryFile

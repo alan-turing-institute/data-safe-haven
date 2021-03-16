@@ -518,7 +518,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
++ Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 
 ## :fire: Tearing down the SHM
 

@@ -1,7 +1,7 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [Parameter(Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
     [ValidateSet("2", "3")]
     [string]$tier
 )
@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
@@ -161,14 +161,14 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 # -----------------------------------------------------------
 function Resolve-CloudInit {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Type of mirror to set up")]
+        [Parameter(Mandatory = $true, HelpMessage = "Type of mirror to set up")]
         $MirrorType,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
         [ValidateSet("Internal", "External")]
         $MirrorDirection,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Path to cloud init file")]
+        [Parameter(Mandatory = $true, HelpMessage = "Path to cloud init file")]
         $CloudInitPath,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Path to package whitelist (if any)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Path to package whitelist (if any)")]
         $WhitelistPath
     )
 
@@ -215,9 +215,9 @@ function Resolve-CloudInit {
 # ------------------------------
 function Deploy-PackageMirror {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
         $MirrorType,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
         [ValidateSet("Internal", "External")]
         $MirrorDirection
     )
