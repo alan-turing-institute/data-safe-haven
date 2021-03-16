@@ -1,12 +1,12 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $true, HelpMessage = "Last octet of IP address eg. '160'")]
-    [string]$ipLastOctet = (Read-Host -Prompt "Last octet of IP address eg. '160'"),
+    [Parameter(Mandatory = $true, HelpMessage = "Last octet of IP address (eg. '160')")]
+    [string]$ipLastOctet,
     [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
-    [string]$vmSize = "",
+    [string]$vmSize = "default",
     [Parameter(Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
     [switch]$Upgrade,
     [Parameter(Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
@@ -35,7 +35,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Set VM name and size
 # We need to define a unique hostname of no more than 15 characters
 # -----------------------------------------------------------------
-if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
+if ($vmSize -eq "default") { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
 $vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")

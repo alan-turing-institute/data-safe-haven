@@ -21,9 +21,9 @@ function Get-ConfigRootDir {
 # --------------------------------------------------------------------------------
 function Get-CoreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
         [string]$sreId = $null
     )
     if (-not $sreId) {
@@ -47,7 +47,7 @@ function Get-CoreConfig {
 # ---------------------
 function Get-ShmConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -489,9 +489,9 @@ Export-ModuleMember -Function Get-ShmConfig
 # ---------------------------
 function Get-SreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
         [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -921,9 +921,9 @@ Export-ModuleMember -Function Get-SreConfig
 # ---------------------
 function Show-FullConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
         [string]$sreId = $null
     )
     # Generate and return the full config for the SHM or SRE
