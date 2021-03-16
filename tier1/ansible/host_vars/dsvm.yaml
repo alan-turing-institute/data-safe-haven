@@ -1,5 +1,10 @@
 ---
 
+# Fail2ban settings
+# Ignore attempts from guacamole VM to prevent locking users out
+fail2ban_ignoreips:
+  - "{{ guacamole_private_ip }}"
+
 # SSH server settings
 ssh_allow_users: "{{ dsvm_admin_user }}"
 ssh_server_match_address:
