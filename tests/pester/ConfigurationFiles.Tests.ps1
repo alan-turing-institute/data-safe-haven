@@ -36,7 +36,7 @@ Describe "SRE configuration file check" {
         $referenceConfig = Get-Content -Path $FilePath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable | ConvertTo-SortedHashtable
 
         # Split the ConfigId into shmId and sreId by matching to the list of known shmIds
-        $shmId = $ShmIds | Where-Object { $ConfigId.Split($_)[0] -ne $ConfigId} | Select-Object -First 1
+        $shmId = $ShmIds | Where-Object { $ConfigId.Split($_)[0] -ne $ConfigId } | Select-Object -First 1
         $sreId = $ConfigId.Split($shmId)[1]
         # Load test config
         Mock Write-Host {} # we mock Write-Host here as we expect output from the `Get-SreConfig` call
