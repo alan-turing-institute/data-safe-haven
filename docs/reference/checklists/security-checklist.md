@@ -45,6 +45,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 + Create a new user without MFA and check that the user cannot access the environment regardless of other credentials.
   + a) Follow the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account
+      - Note: if you haven't already you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop)
   + b) Attempt to sign in to the remote desktop web client using the user account.
   + c) **Verify:** access fails
 + Check that the user is able to successfully set up MFA with the right credentials
