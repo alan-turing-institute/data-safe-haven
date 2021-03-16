@@ -160,7 +160,7 @@ if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$IPs = Get-MirrorIPs $config
+$IPs = Get-MirrorIPs -config $config
 $addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
 if ($?) {
     Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"

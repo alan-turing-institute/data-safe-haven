@@ -9,7 +9,7 @@ Import-Module AzureAD.Standard.Preview -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $shmDomain = $config.domain.fqdn
 
 # Connect to the Azure AD

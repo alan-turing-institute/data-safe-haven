@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction Stop
 

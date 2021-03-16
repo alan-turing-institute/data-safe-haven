@@ -47,7 +47,7 @@ function Get-CoreConfig {
 # ---------------------
 function Get-ShmConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these

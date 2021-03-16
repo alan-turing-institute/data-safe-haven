@@ -5,11 +5,11 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0, HelpMessage = "Fully qualified domain name for RDS broker")]
+    [Parameter(HelpMessage = "Fully qualified domain name for RDS broker")]
     [string]$rdsFqdn,
-    [Parameter(Position = 1, HelpMessage = "Thumbprint for the relevant certificate")]
+    [Parameter(HelpMessage = "Thumbprint for the relevant certificate")]
     [string]$certThumbPrint,
-    [Parameter(Position = 2, HelpMessage = "Remote folder to write SSL certificate to")]
+    [Parameter(HelpMessage = "Remote folder to write SSL certificate to")]
     [string]$remoteDirectory
 )
 
