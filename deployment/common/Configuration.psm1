@@ -24,7 +24,7 @@ function Get-CoreConfig {
         [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
         [string]$shmId,
         [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
-        [string]$sreId
+        [string]$sreId = $null
     )
     if (-not $sreId) {
         $configFilename = "shm_${shmId}_core_config.json"
@@ -921,13 +921,13 @@ Export-ModuleMember -Function Get-SreConfig
 # ---------------------
 function Show-FullConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter <SHM ID> e.g. 'testa'")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
-        [string]$sreId
+        [Parameter(Mandatory = $false, HelpMessage = "Enter <SRE ID> e.g. 'sandbox'")]
+        [string]$sreId = $null
     )
     # Generate and return the full config for the SHM or SRE
-    if (!$sreId) {
+    if (-not $sreId) {
         $config = Get-ShmConfig -shmId $shmId
     } else {
         $config = Get-SreConfig -shmId $shmId -sreId $sreId
