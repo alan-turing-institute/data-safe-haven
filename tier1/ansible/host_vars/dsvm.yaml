@@ -1,13 +1,14 @@
 ---
 
 # SSH server settings
-ssh_challengeresponseauthentication: yes
+ssh_allow_users: "{{ dsvm_admin_user }}"
 ssh_server_match_address:
   - address: "{{ guacamole_private_ip }}"
     rules:
+      - AllowUsers *
+      - DenyUsers "{{ dsvm_admin_user }}"
       - PasswordAuthentication yes
       - AuthenticationMethods password
-      - DenyUsers guacamole_admin
 
 # Packages
 apt_packages_development:
