@@ -14,29 +14,5 @@ fail2ban_services:
 # Lets encrypt variables
 lets_encrypt: false
 lets_encrypt_email: user@example.com
-
-# Email variables
-email:
-  enabled: no
-  host: smtp.example.com
-  port: 465
-  address: admin@example.com
-  username: admin@example.com
-  password: password
-
-# Force writing initial passwords to file
-force_write_initial_passwords: no
-
-# Local users
-# See https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module for advice on generating encrypted Linux passwords
-# users:
-#   - username: example
-#     name: Example User
-#     email: user@example.com
-
-# Local users to disable/remove
-# Set remove to yes to delete user data and home directory
-# users_deleted:
-#   - username: example
-#     remove: no
-users_deleted: []
+lets_encrypt: true
+lets_encrypt_email: jmadge@turing.ac.uk

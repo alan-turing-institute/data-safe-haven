@@ -1,0 +1,27 @@
+---
+
+# Email variables
+email:
+  enabled: no
+  host: smtp.example.com
+  port: 465
+  address: admin@example.com
+  username: admin@example.com
+  password: password
+
+# Force writing initial passwords to file
+force_write_initial_passwords: no
+
+# Local users
+# users:
+#   - username: example
+#     name: Example User
+#     email: user@example.com
+users: []
+
+# Local users to disable/remove
+# Set remove to yes to delete user data and home directory
+# users_deleted:
+#   - username: example
+#     remove: no
+users_deleted: []
