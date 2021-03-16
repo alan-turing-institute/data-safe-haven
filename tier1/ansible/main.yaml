@@ -422,27 +422,27 @@
               - compose_output.services.guacd.guacd.state.running
               - compose_output.services.reverse_proxy.traefik.state.running
 
-        - name: Email new users their initial Guacamole passwords
-          community.general.mail:
-            subject: Tier1 Safe Haven Web Portal Credentials
-            body: |
-              Dear {{ (users | items2dict(key_name='username', value_name='name'))[item.username]  }},
+    - name: Email new users their initial Guacamole passwords
+      community.general.mail:
+        subject: Tier1 Safe Haven Web Portal Credentials
+        body: |
+          Dear {{ (users | items2dict(key_name='username', value_name='name'))[item.username]  }},
 
-              To connect to the safe haven navigate to https://{{ guacamole_domain }}.
+          To connect to the safe haven navigate to https://{{ guacamole_domain }}.
 
-              username: {{ item.username }}
-              password: {{ item.password }}
+          username: {{ item.username }}
+          password: {{ item.password }}
 
-              You will be asked to change your password and configure a TOTP authenticator app on your first login.
-            to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
-            sender: "Safe Haven Admin <{{ email.address }}>"
-            host: "{{ email.host }}"
-            port: "{{ email.port }}"
-            username: "{{ email.username }}"
-            password: "{{ email.password }}"
-          delegate_to: localhost
-          when: email.enabled
-          loop: "{{ guac_initial_passwords }}"
+          You will be asked to change your password and configure a TOTP authenticator app on your first login.
+        to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
+        sender: "Safe Haven Admin <{{ email.address }}>"
+        host: "{{ email.host }}"
+        port: "{{ email.port }}"
+        username: "{{ email.username }}"
+        password: "{{ email.password }}"
+      delegate_to: localhost
+      when: email.enabled
+      loop: "{{ guac_initial_passwords }}"
 
 
 - name: Configure DSVM
@@ -464,68 +464,12 @@
       become: yes
 
   tasks:
-    - name: Create login accounts
-      block:
-        - name: Create initial passwords for new users
-          ansible.builtin.set_fact:
-            initial_passwords: "{{ initial_passwords | combine({item.username: lookup('password', '/dev/null chars=ascii_letters,digits length=12')}) }}"
-          loop: "{{ users }}"
-
-        - name: Create users
-          become: yes
-          ansible.builtin.user:
-            name: "{{ item.username }}"
-            comment: "{{ item.name }}"
-            password: "{{ initial_passwords[item.username] | password_hash('sha512', lookup('password', '/dev/null chars=ascii_letters,digits length=16'))  }}"
-            update_password: on_create
-          loop: "{{ users }}"
-          register: accounts
-
-        - name: Set initial passwords as expired
-          become: yes
-          ansible.builtin.command:
-            cmd: "passwd -e {{ item.name }}"
-          when: item.changed
-          loop: "{{ accounts.results }}"
-
-        - name: Write initial passwords to file
-          ansible.builtin.copy:
-            content: |
-              {% for item in accounts.results %}
-              {% if item.changed %}
-              - username: {{ item.name }}
-                password: {{ initial_passwords[item.name] }}
-              {% endif %}
-              {% endfor %}
-            backup: yes
-            dest: ./new_users.yaml
-            mode: 0644
-          delegate_to: localhost
-          when: accounts.changed and (not email.enabled or force_write_initial_passwords)
-
-        - name: Email created users their initial passwords
-          community.general.mail:
-            subject: Tier1 Safe Haven VM Credentials
-            body: |
-              Dear {{ item.item.name }},
-
-              After you connect to the safe haven web portal you will see two connections, "DSVM RDP" and "DSVM SSH" which allow you to connect to the data science virtual machine with a remote desktop or command line interface respectively.
-
-              !!! IMPORTANT !!!
-              For your first connection, please select "DSVM SSH". You will be prompted for your username and password (below) and then asked to set a new password. After setting your new password you will be logged out and can now connect to either the remote desktop or command line using your new password.
-              !!! IMPORTANT !!!
-
-              username: {{ item.name }}
-              password: {{ initial_passwords[item.name] }}
-            to: "{{ item.item.name }} <{{ item.item.email }}>"
-            sender: "Safe Haven Admin <{{ email.address }}>"
-            host: "{{ email.host }}"
-            port: "{{ email.port }}"
-            username: "{{ email.username }}"
-            password: "{{ email.password }}"
-          delegate_to: localhost
-          when: email.enabled and item.changed
-          loop: "{{ accounts.results }}"
+    - name: Create group for shared data
+      become: yes
+      ansible.builtin.group:
+        name: shared
+        system: yes
+        state: present
 
     - name: Configure shared data disk and directory
       block:
@@ -554,13 +498,6 @@
             opts: defaults,nofail
             passno: "2"
 
-        - name: Create group for shared data
-          become: yes
-          ansible.builtin.group:
-            name: shared
-            system: yes
-            state: present
-
         - name: Set shared directory permissions
           become: yes
           ansible.builtin.file:
@@ -584,14 +521,6 @@
             default: yes
             permissions: rw
             state: present
-
-        - name: Add all local users to shared group
-          become: yes
-          ansible.builtin.user:
-            name: "{{ item.username }}"
-            groups: shared
-            append: yes
-          loop: "{{ users | default([]) }}"
       when: shared_data_disk
 
     - name: Configure ingress and egress shares
@@ -725,3 +654,68 @@
             name: sublime-text
             classic: yes
             state: present
+
+    - name: Create login accounts
+      block:
+        - name: Create initial passwords for new users
+          ansible.builtin.set_fact:
+            initial_passwords: "{{ initial_passwords | combine({item.username: lookup('password', '/dev/null chars=ascii_letters,digits length=12')}) }}"
+          loop: "{{ users }}"
+
+        - name: Create users
+          become: yes
+          ansible.builtin.user:
+            name: "{{ item.username }}"
+            comment: "{{ item.name }}"
+            password: "{{ initial_passwords[item.username] | password_hash('sha512', lookup('password', '/dev/null chars=ascii_letters,digits length=16'))  }}"
+            update_password: on_create
+            groups: shared
+            append: yes
+          loop: "{{ users }}"
+          register: accounts
+
+        - name: Set initial passwords as expired
+          become: yes
+          ansible.builtin.command:
+            cmd: "passwd -e {{ item.name }}"
+          when: item.changed
+          loop: "{{ accounts.results }}"
+
+        - name: Write initial passwords to file
+          ansible.builtin.copy:
+            content: |
+              {% for item in accounts.results %}
+              {% if item.changed %}
+              - username: {{ item.name }}
+                password: {{ initial_passwords[item.name] }}
+              {% endif %}
+              {% endfor %}
+            backup: yes
+            dest: ./new_users.yaml
+            mode: 0644
+          delegate_to: localhost
+          when: accounts.changed and (not email.enabled or force_write_initial_passwords)
+
+        - name: Email created users their initial passwords
+          community.general.mail:
+            subject: Tier1 Safe Haven VM Credentials
+            body: |
+              Dear {{ item.item.name }},
+
+              After you connect to the safe haven web portal you will see two connections, "DSVM RDP" and "DSVM SSH" which allow you to connect to the data science virtual machine with a remote desktop or command line interface respectively.
+
+              !!! IMPORTANT !!!
+              For your first connection, please select "DSVM SSH". You will be prompted for your username and password (below) and then asked to set a new password. After setting your new password you will be logged out and can now connect to either the remote desktop or command line using your new password.
+              !!! IMPORTANT !!!
+
+              username: {{ item.name }}
+              password: {{ initial_passwords[item.name] }}
+            to: "{{ item.item.name }} <{{ item.item.email }}>"
+            sender: "Safe Haven Admin <{{ email.address }}>"
+            host: "{{ email.host }}"
+            port: "{{ email.port }}"
+            username: "{{ email.username }}"
+            password: "{{ email.password }}"
+          delegate_to: localhost
+          when: email.enabled and item.changed
+          loop: "{{ accounts.results }}"
