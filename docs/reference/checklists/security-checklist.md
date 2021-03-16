@@ -54,7 +54,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
       - Note: if you haven't already you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop)
   + b) Attempt to sign in to the remote desktop web client using the user account.
   + c) **Verify:** access fails
-+ Check that the user is able to successfully set up MFA with the right credentials
++ Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
   + a) Visit https://aka.ms/mfasetup
   + b) Attempt to login and reset password
   + c) **Verify:** user guided to set up MFA
