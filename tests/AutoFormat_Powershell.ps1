@@ -26,30 +26,22 @@ $PowershellFilePaths = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensi
 foreach ($PowershellFilePath in $PowershellFilePaths) {
     $Unformatted = Get-Content -Path $PowershellFilePath -Raw
 
-
     # Detect the end-of-line marker and strip empty lines
-    # ---------------------------------------------------
     $EOLMarker = $Unformatted -match "\r\n$" ? "`r`n" : "`n"
     $Formatted = $Unformatted -replace "(?s)$EOLMarker\s*$"
 
-
     # Call formatter
-    # --------------
     if (-not $EncodingOnly) {
         $Formatted = Invoke-Formatter -ScriptDefinition $Formatted -Settings $SettingsPath
     }
 
-
     # Set correct line endings and correct encoding.
     # Omitting the Byte Order Mark gives better cross-platform compatibility but Windows scripts need it
     # We use Set-Content instead of Out-File so that we can write line-endings that are not the platform default
-    # ----------------------------------------------------------------------------------------------------------
     $Encoding = $EOLMarker -eq "`r`n" ? "UTF8BOM" : "UTF8NoBOM"
     $Formatted.Replace("`r`n", "`r`r").Replace("`n", "`r`r").Replace("`r`r", $EOLMarker) | Set-Content -Path $PowershellFilePath -Encoding $Encoding
 
-
     # Check whether any changes were made to the file
-    # -----------------------------------------------
     $Formatted = Get-Content -Path $PowershellFilePath -Raw
     if ($Formatted -ne $Unformatted) {
         Add-LogMessage -Level Info "Formatting ${PowershellFilePath}..."

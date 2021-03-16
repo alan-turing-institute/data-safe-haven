@@ -25,7 +25,6 @@ $LicencesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLi
 $LicencesToAssign.AddLicenses = $Licence
 Add-LogMessage -Level Info "Preparing to add licence '$licenceSku' ($($Licence.SkuId)) to unlicenced users"
 
-
 # Find all users without assigned licences who have an OnPremisesSecurityIdentifier (indicating that they were synched from a local AD)
 $unlicensedUsers = Get-AzureADUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }
 Add-LogMessage -Level Info "Assigning licences to $($unlicensedUsers.Count) unlicenced users"

@@ -1,24 +1,28 @@
 @{
     IncludeRules = @(
-        "PSPlaceOpenBrace",
-        "PSPlaceCloseBrace",
-        "PSUseConsistentWhitespace",
-        "PSUseConsistentIndentation",
         "PSAlignAssignmentStatement",
+        "PSPlaceCloseBrace",
+        "PSPlaceOpenBrace",
+        "PSUseConsistentIndentation",
+        "PSUseConsistentWhitespace",
         "PSUseCorrectCasing"
     )
     Rules = @{
-        PSPlaceOpenBrace = @{
-            Enable             = $true
-            OnSameLine         = $true
-            NewLineAfter       = $true
-            IgnoreOneLineBlock = $true
+        PSAlignAssignmentStatement = @{
+            Enable         = $true
+            CheckHashtable = $true
         }
         PSPlaceCloseBrace = @{
             Enable             = $true
             NewLineAfter       = $false
             IgnoreOneLineBlock = $true
             NoEmptyLineBefore  = $false
+        }
+        PSPlaceOpenBrace = @{
+            Enable             = $true
+            OnSameLine         = $true
+            NewLineAfter       = $true
+            IgnoreOneLineBlock = $true
         }
         PSUseConsistentIndentation = @{
             Enable              = $false
@@ -36,10 +40,6 @@
             CheckPipeForRedundantWhitespace = $true
             CheckSeparator                  = $true
             CheckParameter                  = $true
-        }
-        PSAlignAssignmentStatement = @{
-            Enable         = $true
-            CheckHashtable = $true
         }
         PSUseCorrectCasing = @{
             Enable = $true

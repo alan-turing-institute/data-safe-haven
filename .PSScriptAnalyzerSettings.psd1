@@ -16,7 +16,6 @@
         "PSDSCDscExamplesPresent",
         "PSDSCUseVerboseMessageInDSCResource",
         # TODO: stop ignoring these
-        "PSUseShouldProcessForStateChangingFunctions",
         "PSAvoidUsingPositionalParameters",
         "PSProvideCommentHelp",
         "PSUseOutputTypeCorrectly"
