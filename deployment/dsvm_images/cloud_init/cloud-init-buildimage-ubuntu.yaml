@@ -297,6 +297,7 @@ runcmd:
   # Set some Julia environment variables before installing/building the packages
   - export JULIA_COPY_STACKS=1
   - export PYTHON="$(which python3)" # link Julia against system Python
+  - pip3 install matplotlib # install Python dependencies for Julia packages
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
@@ -357,7 +358,7 @@ runcmd:
   - if [ "$MISSING_CRAN_PACKAGES" ]; then echo "Could not install CRAN packages\n${MISSING_CRAN_PACKAGES}"; exit 1; fi
   # Install BioConductor packages and terminate if any are missing
   - export BIOCONDUCTOR_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-bioconductor.list | paste -s -d '|' | sed 's/|/", "/g')\""
-  - echo "Preparing to install $(echo $BioConductor | wc -w) BioConductor packages\n${BIOCONDUCTOR_PACKAGES}"
+  - echo "Preparing to install $(echo $BIOCONDUCTOR_PACKAGES | wc -w) BioConductor packages\n${BIOCONDUCTOR_PACKAGES}"
   - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); remaining_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; if(length(remaining_pkgs)) { print(paste('Installing', paste(remaining_pkgs, collapse=', '))); BiocManager::install(remaining_pkgs, quiet = TRUE) } else { print('No packages left to install') }"
   - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); missing_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; print(missing_pkgs)" | sed "s/character(0)//")
   - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n${MISSING_BIOCONDUCTOR_PACKAGES}"; exit 1; fi
@@ -368,7 +369,7 @@ runcmd:
   - |
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
   # Add the Julia kernel
-  - mv /root/.local/share/jupyter/kernels/julia-* /usr/share/jupyter/kernels/
+  - mv /root/.local/share/jupyter/kernels/julia-* /usr/share/jupyter/kernels/ || exit 1
   # Add the python kernels
   - |
     for python_version in $PYTHON_VERSIONS; do
@@ -387,7 +388,7 @@ runcmd:
   # Clean up any build artifacts
   - echo ">=== $(date +%s) Cleaning up the build environment ===<"
   - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
-  - rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
+  - rm -rf /root/* /root/.[a-zA-Z0-9_]* /tmp/* /tmp/.[a-zA-Z0-9_]*
   # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
   # Remove xscreensaver (unnecessary)
   - apt-get remove -y netcat-openbsd xscreensaver
