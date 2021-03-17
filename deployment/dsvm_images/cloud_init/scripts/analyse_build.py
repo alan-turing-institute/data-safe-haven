@@ -32,8 +32,8 @@ def main():
     bash_process = subprocess.run(["/bin/bash", "-c", "cloud-init analyze dump"], stdout=subprocess.PIPE, check=True)
     cloud_init_log_events = json.loads(bash_process.stdout.decode("utf8"))
 
-    # Get build start time
-    initial_timestamp = min([entry["timestamp"] for entry in cloud_init_log_events])
+    # Get build start time from the media connect/disconnect time
+    initial_timestamp = min([entry["timestamp"] for entry in cloud_init_log_events if entry["name"] == "azure-ds/wait-for-media-disconnect-connect" and entry["event_type"] == "finish"])
     events.append({"timestamp": datetime.fromtimestamp(initial_timestamp), "level": "SUCCESS", "message": "Started build"})
 
     # Get initial cloud-init setup time
@@ -41,9 +41,9 @@ def main():
         _ = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "azure-ds/write_files", cloud_init_log_events))[0]
         end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "azure-ds/write_files", cloud_init_log_events))
         if end_entries:
-            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "File creation"})
+            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Writing local files"})
         else:
-            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "File creation"})
+            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Writing local files"})
 
     # Get initial cloud-init setup time
     with suppress(IndexError):
