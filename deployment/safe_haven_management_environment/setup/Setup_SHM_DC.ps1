@@ -154,7 +154,7 @@ $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storag
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script
 $params = @{
-    blobNamesB64         = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
     downloadDir          = $config.dc.installationDirectory
     sasTokenB64          = $artifactSasToken | ConvertTo-Base64
     storageAccountName   = $config.storage.artifacts.accountName
