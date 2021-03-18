@@ -49,35 +49,34 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 ### Verify by (BB):
 
-+ Create a new user without MFA and check that the user cannot access the environment regardless of other credentials.
-  + a) Follow the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account
-      - Note: if you haven't already you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop)
-  + b) Attempt to sign in to the remote desktop web client using the user account.
-  + c) **Verify:** access fails
-  + f) **Verify**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) using the user account is prevented
-+ Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
+1. Create a new user without MFA and check that the user cannot access the environment regardless of other credentials.
+ + a) Follow the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account.
+    + Note: if you haven't already you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop)
+ + b) Attempt to sign in to the remote desktop web client using the user account.
+ + c) **Verify:** access fails
+ + d) **Verify**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) using the user account is prevented
+2.  Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
   + a) Visit https://aka.ms/mfasetup
   + b) Attempt to login and reset password
   + c) **Verify:** user guided to set up MFA
   + d) Set up MFA
   + e) **Verify:** successfully set up MFA
-+ Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
+3. Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
   + a) **Verify**: login to the portal using the user account and check that MFA is requested
   + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that MFA is requested
-+ Check that the user is unable to view apps when not in the correct group
+4. Check that the user is unable to view apps when not in the correct group
   + a) Login into the remote desktop web client successfully and remove the user you created from the group: `SG <SRE ID> Research User`, which you should have added them to previously
   + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that you can no longer see the apps
 
 ### Verify by (WB):
 
-+ Users are required to set up MFA before they can access the environment
+5. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
   + b) **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
   + c) **Verify**: No trusted ips (this means that no one can skip MFA)
   + d) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
-+ Users require a license before they can access the environment
-  + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments`
-         and add a P1 license to the account you just set up
+6. Users require a license before they can access the environment
+  + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments` and add a P1 license to the account you just set up
   + b) **Verify**: Login to the web client using the user account is prevented
   + c) Remove the license from the user account
   + d) **Verify**: unable to login to the web client anymore.
@@ -98,7 +97,7 @@ SREs in the same SHM are still isolated from one another.
 
 ### Verify by:
 
-+ Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
+1. Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + a) Connect to the SHM VPN
   + b) Connect to the SHM DC. IP details in RG_SHM_DC, login details in SHM secrets as domain admin
   + c) Connect to the SHM NPS. IP details in RG_SHM_NPS, same login
@@ -106,18 +105,18 @@ SREs in the same SHM are still isolated from one another.
   + e) Disconnect from the SHM VPN
   + f) Attempt to connect to the SHM DC and NPS again
   + g) **Verify:** Connection fails
-+ Be unable to connect to the internet from within a DSVM on the SRE network.
+2. Be unable to connect to the internet from within a DSVM on the SRE network.
   + a) Login as a user to a DSVM from within the SRE by using the web client.
   + b) Choose your favourite three websites and attempt to access the internet using a browser
   + c) **Verify**: Connection fails
   + d) Alternative if using terminal **Verify**: type `curl <website>` and check that you get the following response `<insert firewall message denying the connection as it matched the default rule>`
-+ Check that users cannot connect beween two SREs within the same SHM, even if they have access to both SREs
+3. Check that users cannot connect beween two SREs within the same SHM, even if they have access to both SREs
   + a) Ensure you have two SREs managed by the same SHM
   + b) Connect to a DSVM in SRE A as a user by using the web client.
   + c) Attempt to connect to a DSVM SRE B via remote desktop or SSH
   + d) **Verify:** Connection fails
   + e) Repeat the test, this time trying to connect from a DSVM in SRE B to a DSVM in SRE A
-+ Check that one can connect between the SHM->SRE and SRE->SHM
+4. Check that one can connect between the SHM->SRE and SRE->SHM
   + a) Connect to the SHM DC (using the SHM VPN) as domain admin
   + b) Connect to an SRE DSVM using remote desktop or SSH
   + c) **Verify:** Connection succeeds
@@ -128,7 +127,7 @@ SREs in the same SHM are still isolated from one another.
 
 ### Verify by (WB):
 
-+ Check that the network rules are set appropriately to block outgoing traffic
+5. Check that the network rules are set appropriately to block outgoing traffic
   + a) Check `RG_SRE_NETWORKING -> NSG_SRE_SANDBOX_COMPUTE`
   + b) **Verify:** There exists an OutboundDenyInternet rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet.
 
@@ -150,28 +149,28 @@ Network rules for the higher tier Environments can permit access only from Restr
 
 For tier 2:
 
-+ One can connect regardless of device as long as one has the correct VPN and credentials
+1. One can connect regardless of device as long as one has the correct VPN and credentials
   + a) Using a personal device, connect to the environment using the correct VPN and credentials
   + b) **Verify**: Connection suceeds
   + c) Using a managed device, connect to the environment using the correct VPN and credentials.
   + d) **Verify**: Connection suceeds
-+ There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
+2. There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
   + a) Check network rules
   + b) **Verify**: The `RDS` NSG has network rules allowing **inbound** access from `<insert Turing Tier 2 and Tier 3 IP addresses here>`
   + c) **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
 
-+ A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
+3. A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
   + a) Check that the device is managed by the partner institution IT team
   + b) **Verify**: The user lacks root access
-+ A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
+4. A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
   + a) Using a personal device, attempt to connect to the environment using the correct VPN and credentials
   + b) **Verify**: Connection fails
   + c) Using a managed device, attempt to connect to the environment using the correct VPN and credentials
   + d) **Verify**: Connection suceeds
-+ We can check that a managed device is within a specific IP range and that the environment firewall accepts it.
-+ We can check that the firewall blocks any device with an IP outside of the specified range
+5. We can check that a managed device is within a specific IP range and that the environment firewall accepts it.
+6. We can check that the firewall blocks any device with an IP outside of the specified range
 
 ## 4. Physical security
 
@@ -189,14 +188,14 @@ Firewall rules for the Environments can permit access only from Restricted netwo
 
 For tier 3:
 
-+ Connection outside of the research office space is not possible.
+1. Connection outside of the research office space is not possible.
   + a) Attempt to connect from home using a managed device and the correct VPN connection and credentials
   + b) **Verify:** connection fails
-+ Connection from within the research office space is possible.
+2. Connection from within the research office space is possible.
   + a) Attempt to connect from research office using a managed device and the correct VPN connection and credentials
   + b) **Verify:** connection suceeds
-+ Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
-+ Physically confirm that measures such as screen adapations or desk partitions are present.
+3. Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
+4. Physically confirm that measures such as screen adapations or desk partitions are present.
   + Non technical implementation
 
 ## 5. Remote connections
@@ -211,10 +210,10 @@ User can connect via remote desktop but cannot connect through other means such 
 
 ### Verify by:
 
-+ Connect as a user to the DSVM via the remote desktop web client
+1. Connect as a user to the DSVM via the remote desktop web client
   + a) login as a user via the remote desktop web client (without using VPN)
   + b) **Verify:** login succeeds
-+ Unable to connect as a user to the DSVM via SSH
+2. Unable to connect as a user to the DSVM via SSH
   + a) Download Putty and attempt to SSH to a DSVM (without using VPN)
   + b) **Verify:** login fails
   + c) **Verify:** The RDS server and Firewall are the **only** resources with public IP addresses
@@ -231,7 +230,7 @@ One cannot copy something from outside the network and paste it into the network
 
 ### Verify by:
 
-+ One is unable to copy some text from outside the network, into a DSVM and vice versa
+1. One is unable to copy some text from outside the network, into a DSVM and vice versa
   + a) Copy some text from your deployment device
   + b) Login to a DSVM via the remote desktop web client
   + c) Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
@@ -239,7 +238,7 @@ One cannot copy something from outside the network and paste it into the network
   + e) Write some next in the note pad or terminal of the DSVM and copy it
   + f) Attempt to copy the text externally to deployment device (e.g. into URL of browser)
   + g) **Verify:** paste fails
-+ One can copy between VMs inside the network
+2. One can copy between VMs inside the network
   + a) Login to a DSVM via the remote desktop web client
   + b) Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
   + c) Connect to another DSVM via the remote desktop web client (as a second tab)
@@ -273,11 +272,11 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 First identify a select list of IP addresses and an email for which the data will be uploaded and a secure upload token sent. Open the data ingress volume.
 
-+ Ensure that the secure upload token is sent only to the email address provided and via a secure email system
+1. Ensure that the secure upload token is sent only to the email address provided and via a secure email system
   + a) **Verify:** that email system is secure
   + b) **Verify:** that a secure upload token can be created with write-only permissions
 
-+ Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
+2. Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
   + a) Identify a test device that will have a whitelisted IP address
   + b) Generate a secure upload token with write-only permissions with limited time period
   + c) Attempt to write to the ingress volume via the test device
@@ -287,12 +286,12 @@ First identify a select list of IP addresses and an email for which the data wil
   + g) Attempt to write to the ingress volume via the test device
   + h) **Verify:** that the access token fails.
 
-+ Check the token duration and ensure that the upload fails if the duration has expired.
+3. Check the token duration and ensure that the upload fails if the duration has expired.
   + a) Create a write-only token with short duration
   + b) **Verify:** you can connect and write with the token during the duration
   + c) **Verify:** you cannot connect and write with the token after the duration has expired
 
-+ Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
+4. Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 
 ## 8. Storage volumes and egress
 
@@ -320,13 +319,13 @@ A domain administrator can view these volumes by logging into the Data Server.
 
 ### Verify by:
 
-+ Confirm that a user is able to read the different storage volumes and write to Output and Home
+1. Confirm that a user is able to read the different storage volumes and write to Output and Home
   + a) Login to a DSVM as a non privileged user account via the remote desktop web client
   + b) Open up a file explorer and search for the various storage volumes
   + c) **Verify:** that the different storage volumes exist and can be read (opened)
   + d) **Verify:** that one can write (move files to) Output and Home
   + e) **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
-+ Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions
+2. Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions
   + a) Login as domain admin to the SRE Data Server. IP address can be found `RG_SRE_DATA` -> `DAT-SRE-<sreID>`
   + b) Go to `This PC`
   + c) **Verify:** the volumes exist
@@ -356,21 +355,21 @@ For lower tier environments, outbound internet access means users can directly i
 
 During deployment:
 
-+ Check that one can install software during deployment by using outbound internet
-+ Check that outbound internet is closed before adding any project data
+1. Check that one can install software during deployment by using outbound internet
+2. Check that outbound internet is closed before adding any project data
 
 After deployment:
 
-+ Check that outbound internet access on the DSVM is closed off with the following tests:
-  + Check the network rules block
-  + Attempt to access some of your favourite websites (and fail)
-  + Attempt to download some software via terminal (and fail)
-+ Check that the software ingress volume works correctly:
-  + Check that the volume can be changed to external mode and that the researcher can write (but not read) the volume
-  + Check that we can revoke write access successfully
-  + Check that we can view software that has been written to the volume and that only administrators can read the volume
-  + Check that the volume can be changed to internal mode so that other researchers can read it (but not write)
-  + Check that software that requires administraor rights to install, can only be run by a System manager.
+3. Check that outbound internet access on the DSVM is closed off with the following tests:
+  + a) Check the network rules block
+  + b) Attempt to access some of your favourite websites (and fail)
+  + c) Attempt to download some software via terminal (and fail)
+4. Check that the software ingress volume works correctly:
+  + a) Check that the volume can be changed to external mode and that the researcher can write (but not read) the volume
+  + b) Check that we can revoke write access successfully
+  + c) Check that we can view software that has been written to the volume and that only administrators can read the volume
+  + d) Check that the volume can be changed to internal mode so that other researchers can read it (but not write)
+  + e) Check that software that requires administraor rights to install, can only be run by a System manager.
 
 ## 10. Package mirrors
 
@@ -390,14 +389,14 @@ Tier 3: The user can only access a specific set of packages that we have agreed 
 
 Tier 2:
 
-+ Download packages from the full mirror.
+1. Download packages from the full mirror.
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Open up a terminal
   + c) Attempt to install any package that is not included at base
 
 Tier 3:
 
-+ Download packages on the whitelist
+2. Download packages on the whitelist
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + c) Attempt to download the package
@@ -418,11 +417,11 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
 
 ### Verify by:
 
-+ Admin has limited access to the internet
+1. Admin has limited access to the internet
   + a) Connect to an administrator VM such as the SHM-DC
   + b) Attempt to connect to your favourite non standard site
   + c) **Verify:** connection fails
-+ Admin can download Windows updates
+2. Admin can download Windows updates
   + a) Connect to an administrator VM such as the SHM-DC
   + b) Attempt to download a Windows update
   + c) **Verify:** download and update successful
