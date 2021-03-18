@@ -57,6 +57,7 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
  + c) Attempt to login and reset password, **do not complete MFA**
  + d) **Verify before**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
  + e) **Verify after**: Login again and check that apps can now be viewed
+ + f) **Verify**: attempt to login to GitLab or DSVM fails
 2.  Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
   + a) Visit https://aka.ms/mfasetup
   + b) Attempt to login and reset password
@@ -66,9 +67,6 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
 3. Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
   + a) **Verify**: login to the portal using the user account and check that MFA is requested
   + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested**
-4. Check that the user is unable to view apps when not in the correct group
-  + a) Login into the remote desktop web client successfully and remove the user you created from the group: `SG <SRE ID> Research User`, which you should have added them to previously
-  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that you can no longer see the apps
 
 ### Verify by (WB):
 
