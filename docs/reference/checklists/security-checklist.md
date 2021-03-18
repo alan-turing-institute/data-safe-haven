@@ -77,9 +77,8 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
   + d) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
 6. Users require a license before they can access the environment
   + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments` and add a P1 license to the account you just set up
-  + b) **Verify**: Login to the web client using the user account is prevented
-  + c) Remove the license from the user account
-  + d) **Verify**: unable to login to the web client anymore.
+  + b) Login to the web client using the user account
+  + c) **Verify**: attempt to login to GitLab or DSVM succeeds
 
 ## 2. Isolated Network
 
