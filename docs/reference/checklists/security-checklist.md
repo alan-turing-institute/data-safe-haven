@@ -61,7 +61,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + e) **Verify:** successfully set up MFA
 3. Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
   + a) **Verify**: login to the portal using the user account and check that MFA is requested
-  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that MFA is requested
+  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested**
 4. Check that the user is unable to view apps when not in the correct group
   + a) Login into the remote desktop web client successfully and remove the user you created from the group: `SG <SRE ID> Research User`, which you should have added them to previously
   + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that you can no longer see the apps
