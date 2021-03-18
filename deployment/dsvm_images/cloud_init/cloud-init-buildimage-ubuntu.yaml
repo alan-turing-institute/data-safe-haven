@@ -306,7 +306,7 @@ runcmd:
   - export JULIA_COPY_STACKS=1
   - export PYTHON="$(which python3)" # link Julia against system Python 3
   - pip3 install matplotlib # install Python dependencies for Julia packages
-  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
+  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   # Move the locally-installed Julia kernel to the main directory
   - mv /root/.local/share/jupyter ${JULIA_BASE_DIR}/share || exit 1
   # Ensure that Julia depot is globally readable
@@ -316,7 +316,7 @@ runcmd:
   - echo "export JULIA_DEPOT_PATH=~/.julia:${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc  # ensure that each user's DEPOT_PATH will be the usual default (~/.julia) followed by the global depot
   - echo "export PYTHON=${PYTHON}" >> /etc/bash.bashrc
   # Check for missing packages
-  - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); catch e; println(package); end; end;")
+  - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); @eval using \$(Symbol(package)); catch e; println(package); end; end;")
   - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; fi
 
   # Install python versions
