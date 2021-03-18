@@ -54,6 +54,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
       - Note: if you haven't already you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop)
   + b) Attempt to sign in to the remote desktop web client using the user account.
   + c) **Verify:** access fails
+  + f) **Verify**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) using the user account is prevented
 + Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
   + a) Visit https://aka.ms/mfasetup
   + b) Attempt to login and reset password
@@ -62,22 +63,24 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + e) **Verify:** successfully set up MFA
 + Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
   + a) **Verify**: login to the portal using the user account and check that MFA is requested
-  + b) **Verify**: login into the remote desktop web client successfully and check that MFA is requested
+  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that MFA is requested
++ Check that the user is unable to view apps when not in the correct group
+  + a) Login into the remote desktop web client successfully and remove the user you created from the group: `SG <SRE ID> Research User`, which you should have added them to previously
+  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and check that you can no longer see the apps
 
 ### Verify by (WB):
 
 + Users are required to set up MFA before they can access the environment
-  + 1) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
-  + 2) **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
-  + 3) **Verify**: No trusted ips (this means that no one can skip MFA)
-  + 4) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
+  + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
+  + b) **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
+  + c) **Verify**: No trusted ips (this means that no one can skip MFA)
+  + d) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
 + Users require a license before they can access the environment
-  + 1) Create a user account, add a license and then set up MFA
-  + 2) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments`
-         and add a P1 license
-  + 3) Login to the web client using the user account
-  + 4) Remove the license from the user account
-  + 5) **Verify**: unable to login to the web client anymore.
+  + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments`
+         and add a P1 license to the account you just set up
+  + b) **Verify**: Login to the web client using the user account is prevented
+  + c) Remove the license from the user account
+  + d) **Verify**: unable to login to the web client anymore.
 
 ## 2. Isolated Network
 
