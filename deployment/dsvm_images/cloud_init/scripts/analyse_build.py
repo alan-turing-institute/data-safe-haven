@@ -93,13 +93,12 @@ def main():
     # Log all events
     # --------------
     events.sort(key=lambda x: x["timestamp"])
-    initial_timestamp = events[0]["timestamp"]
     previous_event_time = None
     for event in events:
         time_elapsed = ""
         if previous_event_time:
             if event["message"] == "Finished build":
-                time_elapsed = event["timestamp"] - datetime.fromtimestamp(initial_timestamp)
+                time_elapsed = event["timestamp"] - events[0]["timestamp"]
             else:
                 time_elapsed = event["timestamp"] - previous_event_time
         if isinstance(time_elapsed, timedelta):
