@@ -8,6 +8,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
@@ -99,6 +100,7 @@ while ($registrationState -ne "Registered") {
     Write-Progress -Activity "Registering NFS feature in '$((Get-AzContext).Subscription.Name)' subscription" -Status $registrationState -PercentComplete $progress
     Start-Sleep 30
 }
+$null = Deploy-ResourceGroup -Name $config.sre.storage.userdata.account.rg -Location $config.sre.location
 # Note that we disable the https requirement as per the Azure documentation:
 #   "Double encryption is not supported for NFS shares yet. Azure provides a
 #   layer of encryption for all data in transit between Azure datacenters
