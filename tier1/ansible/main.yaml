@@ -41,6 +41,8 @@
 - name: Configure Guacamole VM
   hosts: guacamole
 
+  tags: guacamole
+
   vars:
     API_root: http://localhost:8080/guacamole/api
     data_source: postgresql
@@ -221,6 +223,8 @@
 - name: Configure DSVM
   hosts: dsvm
 
+  tags: dsvm
+
   collections:
     - community.general
 
@@ -395,6 +399,13 @@
             state: present
           async: 600
           poll: 5
+
+        - name: Configure default terminal globally
+          become: yes
+          ansible.builtin.lineinfile:
+            path: /etc/xdg/xfce4/helpers.rc
+            regex: '^TerminalEmulator='
+            line: 'TerminalEmulator=xfce4-terminal'
 
     - name: Install apt packages
       become: yes
