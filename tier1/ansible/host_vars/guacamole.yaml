@@ -12,6 +12,10 @@ pip_install_packages:
 docker_users:
   - "{{ ansible_user }}"
 
+# Lets encrypt variables
+lets_encrypt: false
+lets_encrypt_email: user@example.com
+
 # Docker compose variables
 guacamole_home_container: /guacamole_home
 guacamole_home_host: "{{ ansible_user_dir }}/guacamole_home"
