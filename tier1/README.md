@@ -70,3 +70,49 @@ And ideally
   certificate expiry alerts
 - An email account with SMTP access to send users their initial login
   credentials
+
+### 🤖 Deploy the infrastructure with Terraform
+
+Change to the terraform directory
+
+```
+$ cd terraform
+```
+
+Initialise terraform
+
+```
+$ terraform init
+```
+
+Complete the appropriate variables in
+[`terraform.tfvars`](terraform/terraform.tfvars). These should be fairly
+self-explanatory. If you do not complete any required variables you will be
+prompted to enter them in the command line when running Terraform.
+
+Plan your deployment
+
+```
+$ terraform plan -out myplan
+```
+
+Check the output to ensure the changes make sense. If all is well you can now
+apply the plan with
+
+```
+$ terraform apply myplan
+```
+
+Terraform will print a message giving the address of the name servers of the
+Azure DNS Zone for your deployment. You will need to add these addresses as NS
+records to your domain (the same domain that your specified in
+[`terraform.tfvars`](terraform/terraform.tfvars)). This way requests to your
+domain will be forwarded to the DNS managed by terraform.
+
+## 📖 User guide
+
+### 🥑 Using Guacamole
+
+See the [Guacamole user
+guide](https://guacamole.apache.org/doc/gug/using-guacamole.html). Note that
+file transfer is disabled by default.

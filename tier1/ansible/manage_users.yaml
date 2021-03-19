@@ -169,6 +169,8 @@
           !!! IMPORTANT !!!
           The first time your login you will be asked to 1. change your password and 2. configure a TOTP authenticator app. After your change your password you must refresh the page and log in again (using your new password) before configuring TOTP.
           !!! IMPORTANT !!!
+
+          Please read the Guacamole user guide (https://guacamole.apache.org/doc/gug/using-guacamole.html) for further information.
         to: "{{ item.username }} <{{ (users | items2dict(key_name='username', value_name='email'))[item.username] }}>"
         sender: "Safe Haven Admin <{{ email.address }}>"
         host: "{{ email.host }}"
