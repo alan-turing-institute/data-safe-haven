@@ -258,7 +258,8 @@ $params = @{
     DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$vm = Deploy-UbuntuVirtualMachine @params
+$null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
 # Change subnets and IP address while the VM is off
