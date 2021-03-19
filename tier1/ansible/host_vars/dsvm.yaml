@@ -18,11 +18,14 @@ ssh_server_match_address:
 # Packages
 apt_packages_development:
   - git
+  - python3-venv
+  - python3.9
+  - python3.9-venv
   - julia
-  - octave
-  - gfortran
   - build-essential
+  - octave
   - jupyter
+  - gfortran
   - r-base
 
 apt_packages_shells:
