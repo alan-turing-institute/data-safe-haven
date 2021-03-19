@@ -442,3 +442,9 @@
             name: sublime-text
             classic: yes
             state: present
+
+        - name: Install PyCharm community edition
+          community.general.snap:
+            name: pycharm-community
+            classic: yes
+            state: present
