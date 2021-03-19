@@ -32,27 +32,24 @@ def main():
     bash_process = subprocess.run(["/bin/bash", "-c", "cloud-init analyze dump"], stdout=subprocess.PIPE, check=True)
     cloud_init_log_events = json.loads(bash_process.stdout.decode("utf8"))
 
-    # Get build start time
-    initial_timestamp = min([entry["timestamp"] for entry in cloud_init_log_events])
-    events.append({"timestamp": datetime.fromtimestamp(initial_timestamp), "level": "SUCCESS", "message": "Started build"})
-
-    # Get initial cloud-init setup time
+    # Use the time at which write_files runs as an indication of when cloud-init started
+    # This avoids possible clock-skew issues that occurred when trying to use earlier timestamps
     with suppress(IndexError):
         _ = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "azure-ds/write_files", cloud_init_log_events))[0]
         end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "azure-ds/write_files", cloud_init_log_events))
         if end_entries:
-            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "File creation"})
+            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Build started"})
         else:
-            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "File creation"})
+            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Build started"})
 
     # Get initial cloud-init setup time
     with suppress(IndexError):
         _ = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "modules-config", cloud_init_log_events))[0]
         end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-config", cloud_init_log_events))
         if end_entries:
-            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Cloud-init initial setup"})
+            events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Running cloud-init modules"})
         else:
-            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Cloud-init initial setup"})
+            events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Running cloud-init modules"})
 
     # Get package install/update time
     with suppress(IndexError):
@@ -101,7 +98,7 @@ def main():
         time_elapsed = ""
         if previous_event_time:
             if event["message"] == "Finished build":
-                time_elapsed = event["timestamp"] - datetime.fromtimestamp(initial_timestamp)
+                time_elapsed = event["timestamp"] - events[0]["timestamp"]
             else:
                 time_elapsed = event["timestamp"] - previous_event_time
         if isinstance(time_elapsed, timedelta):

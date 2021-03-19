@@ -116,6 +116,7 @@ while ($job.State -ne "Completed") {
     Write-Progress -Activity "Replication status" -Status $job.State -PercentComplete $progress
     Start-Sleep 60
 }
+$null = New-AzTag -ResourceId $imageVersion.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
 # Create the image as a new version of the appropriate existing registered version

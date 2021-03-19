@@ -91,6 +91,7 @@ r-base-core
 r-base-dev
 realmd
 ristretto
+sbt
 scala
 sssd
 sssd-tools
@@ -98,6 +99,7 @@ sysstat
 texlive-full
 texstudio
 tk-dev
+tmpreaper
 unixodbc-dev
 unzip
 weka
@@ -108,3 +110,4 @@ xfce4-terminal
 xrdp
 xz-utils
 zlib1g-dev
+zsh

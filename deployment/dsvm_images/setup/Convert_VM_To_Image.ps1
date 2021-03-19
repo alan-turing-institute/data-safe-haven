@@ -40,7 +40,6 @@ if ($notExists) {
     }
     Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
-$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"] }
 
 
 # Ensure that the VM is running
@@ -90,7 +89,7 @@ $vm = Get-AzVM -Name $vm.Name -ResourceGroupName $config.dsvmImage.build.rg
 $imageConfig = New-AzImageConfig -Location $config.dsvmImage.location -SourceVirtualMachineId $vm.ID
 $image = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.dsvmImage.images.rg
 # Apply VM tags to the image
-$null = New-AzTag -ResourceId $image.id -Tag $vmTags
+$null = New-AzTag -ResourceId $image.Id -Tag @{"Build commit hash" = $vm.Tags["Build commit hash"] }
 # If the image has been successfully created then remove build artifacts
 if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
