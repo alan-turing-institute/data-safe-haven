@@ -121,6 +121,10 @@ write_files:
     permissions: "0444"
     content: |
       <packages-r-cran.list>
+  - path: "/opt/build/performance_log.csv"
+    permissions: "0644"
+    content: |
+      # Performance log
   - path: "/opt/build/python-requirements-py36.txt"
     permissions: "0444"
     content: |
@@ -133,10 +137,6 @@ write_files:
     permissions: "0444"
     content: |
       <python-requirements-py38.txt>
-  - path: "/opt/build/performance_log.csv"
-    permissions: "0644"
-    content: |
-      # Performance log
   - path: "/opt/build/python-pyproject-template.toml"
     permissions: "0400"
     content: |
@@ -148,6 +148,12 @@ write_files:
 
       [tool.poetry.dependencies]
       python = "<PYTHON_VERSION>"
+  - path: "/opt/build/python-system-packages.txt"
+    permissions: "0444"
+    content: |
+      jill       # for installing Julia
+      matplotlib # for PyPlot Julia package
+      shui       # for installing Spark/Hadoop
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     permissions: "0644"
     content: |
@@ -196,6 +202,8 @@ runcmd:
   - sleep 1 # ensure that run commands are cleanly time-separated from other cloud-init commands
 
   - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
+  # Install python packages used in the rest of the build
+  - pip3 install -r /opt/build/python-system-packages.txt
   # NVidia setup (necessary packages from https://www.tensorflow.org/install/gpu are in our apt install list)
   - echo "Checking NVidia requirements for tensorflow..."
   - if [ "$(which nvidia-smi)" = "" ]; then echo "Could not install NVidia tools!"; exit 1; else echo "... successfully installed NVidia requirements"; fi
@@ -284,7 +292,6 @@ runcmd:
 
   # Install Spark and Hadoop - approximately 10 minutes
   - echo ">=== $(date +%s) Installing Spark/Hadoop ===<"
-  - pip3 install shui
   - shui install --latest --target /opt/spark
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
@@ -292,7 +299,6 @@ runcmd:
 
   # Install Julia and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing Julia and packages ===<"
-  - pip3 install jill
   - jill install stable --confirm --install_dir /opt/julia
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
@@ -305,7 +311,6 @@ runcmd:
   # Set some Julia environment variables before installing/building the packages
   - export JULIA_COPY_STACKS=1
   - export PYTHON="$(which python3)" # link Julia against system Python 3
-  - pip3 install matplotlib # install Python dependencies for Julia packages
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   # Move the locally-installed Julia kernel to the main directory
   - mv /root/.local/share/jupyter ${JULIA_BASE_DIR}/share || exit 1
