@@ -49,3 +49,16 @@ apt_packages_latex:
   - texstudio
 
 apt_packages: "{{ apt_packages_development | union(apt_packages_shells) | union(apt_packages_editors) | union(apt_packages_latex) }}"
+
+snap_packages:
+  - name: code
+    classic: yes
+  - name: atom
+    classic: yes
+  - name: sublime-text
+    classic: yes
+  - name: pycharm-community
+    classic: yes
+  - name: gitkraken
+    classic: yes
+  - name: dbeaver-ce
