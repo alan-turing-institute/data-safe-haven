@@ -45,7 +45,7 @@ data.
 - 🤝 Shared working directory backed (optionally) by SSD storage for
   collaborative work
 - 🌐 Bring your own domain
-- 🔑 Automatic SSL/TLS configuration using [Lets
+- 🔑 Automatic SSL/TLS configuration using [Let's
   Encrypt](https://letsencrypt.org/) and [Traefik](https://traefik.io/)
 - 🤝 [Permissively licensed](./LICENSE) (you are free to copy, use and modify this
   code as well as to merge it with your own)
@@ -66,7 +66,7 @@ You will also need,
 
 And ideally
 
-- An email address to receive [Lets Encrypt](https://letsencrypt.org/)
+- An email address to receive [Let's Encrypt](https://letsencrypt.org/)
   certificate expiry alerts
 - An email account with SMTP access to send users their initial login
   credentials
@@ -108,6 +108,36 @@ Azure DNS Zone for your deployment. You will need to add these addresses as NS
 records to your domain (the same domain that your specified in
 [`terraform.tfvars`](terraform/terraform.tfvars)). This way requests to your
 domain will be forwarded to the DNS managed by terraform.
+
+### ⚙️ Configure the virtual machines with Ansible
+
+Change to the ansible directory
+
+```
+$ cd ../ansible
+```
+
+Terraform will have written some files to this directory,
+
+- `inventory.yaml` - The Ansible inventory, which tells Ansible how to connect to
+  the virtual machines
+- `terraform_vars.yaml` - Some variables exported for Terraform that will be used
+  by Ansible
+- `{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the dsvm and
+  guacamole machines respectively
+
+Ensure the required Ansible roles and collections are installed
+
+```
+$ ansible-galaxy install -r requirements.yaml
+```
+
+If you want to use [Let's Encrypt](https://letsencrypt.org/) to generate SSL
+certificates automatically (highly recommended!) open
+[`host_vars/guacamole.yaml`](ansible/host_vars/guacamole.yaml) and change
+`lets_encrypt` to `true` and `lets_encrypt_email` to a suitable email address.
+This address will receive warnings if your certificates are due to expire and
+have not been updated (which should happen automatically).
 
 ## 📖 User guide
 
