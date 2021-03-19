@@ -410,7 +410,7 @@
     - name: Install apt packages
       become: yes
       ansible.builtin.apt:
-        name: "{{ apt_packages_development | union(apt_packages_editors) | union(apt_packages_latex) }}"
+        name: "{{ apt_packages }}"
         state: present
       async: 1800
       poll: 10

@@ -25,6 +25,13 @@ apt_packages_development:
   - jupyter
   - r-base
 
+apt_packages_shells:
+  - bash
+  - zsh
+  - zsh-syntax-highlighting
+  - zsh-autosuggestions
+  - fish
+
 apt_packages_editors:
   - vim
   - emacs
@@ -32,3 +39,5 @@ apt_packages_editors:
 apt_packages_latex:
   - texlive-full
   - texstudio
+
+apt_packages: "{{ apt_packages_development | union(apt_packages_shells) | union(apt_packages_editors) | union(apt_packages_latex) }}"
