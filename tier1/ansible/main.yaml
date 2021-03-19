@@ -362,6 +362,10 @@
             mode: 0755
             content: |
               #!/bin/sh
+              if [ -r /etc/profile ]; then
+                  . /etc/profile
+              fi
+
               if [ -r /etc/default/locale ]; then
                   . /etc/default/locale
                   export LANG LANGUAGE
