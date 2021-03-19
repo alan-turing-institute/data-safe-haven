@@ -407,6 +407,13 @@
             regex: '^TerminalEmulator='
             line: 'TerminalEmulator=xfce4-terminal'
 
+        - name: Disable light-locker
+          # light-locker starts with an error when lightdm has not run. As we connect with xrdp this is the case.
+          become: yes
+          ansible.builtin.lineinfile:
+            path: /etc/xdg/autostart/light-locker.desktop
+            line: 'Hidden=true'
+
     - name: Install apt packages
       become: yes
       ansible.builtin.apt:
