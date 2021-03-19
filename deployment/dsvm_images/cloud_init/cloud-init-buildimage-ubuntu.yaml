@@ -395,11 +395,13 @@ runcmd:
   # Clean up any build artifacts
   - echo ">=== $(date +%s) Cleaning up the build environment ===<"
   - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
-  - rm -rf /root/* /root/.[a-zA-Z0-9_]* /tmp/* /tmp/.[a-zA-Z0-9_]*
+  - find /root/ -mindepth 1 -delete # remove all files from root's home directory
+  - tmpreaper 10m /tmp/ /var/tmp/   # remove temporary files that have not been accessed in 10 minutes
   # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
   # Remove xscreensaver (unnecessary)
   - apt-get remove -y netcat-openbsd xscreensaver
   # Remove any unused auto-installed packages
+  - apt-get autoclean -y
   - apt-get autoremove -y --purge
   - apt-get clean
   # Log space saved
