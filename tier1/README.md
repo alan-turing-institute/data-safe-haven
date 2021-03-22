@@ -123,8 +123,8 @@ Terraform will have written some files to this directory,
   the virtual machines
 - `terraform_vars.yaml` - Some variables exported for Terraform that will be used
   by Ansible
-- `{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the dsvm and
-  guacamole machines respectively
+- `{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the DSVM and
+  Guacamole machines respectively
 
 Ensure the required Ansible roles and collections are installed
 
@@ -138,6 +138,42 @@ certificates automatically (highly recommended!) open
 `lets_encrypt` to `true` and `lets_encrypt_email` to a suitable email address.
 This address will receive warnings if your certificates are due to expire and
 have not been updated (which should happen automatically).
+
+Enter a password for the Postgres database as the value of the key
+`guac_db_password` in
+[`host_vars/guacamole.yaml`](ansible/host_vars/guacamole.yaml).
+
+Configure the Guacamole and DSVM machines
+
+```
+$ ansible-playbook -i inventory.yaml main.yaml
+```
+
+### 👥 Manage users with Ansible
+
+Users are configured in [`user_vars.yaml`](ansible/user_vars.yaml). If you want
+the user management role to automatically email users their initial login
+credentials, complete enter your email's SMTP settings into the `email` dict.
+
+If you also want to write the initial passwords to a file on your local machine,
+change `force_write_initial_passwords` to `yes`.
+
+To declare users that should exist, add their name, username and email address
+to the `users` dict following the example.
+
+To declare users that should not exist, add their username to the
+`users_deleted` dict.
+
+To create or remove users run
+
+```
+$ ansible-playbook -i inventory.yaml manage_users.yaml
+```
+
+If you have configured SMTP settings, newly created users will be send their
+initial credentials from that email address. If the Guacamole and Linux
+credentials are written to file they can be found in `guac_new_users.yaml` and
+`new_users.yaml` respectively.
 
 ## 📖 User guide
 
