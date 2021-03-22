@@ -73,6 +73,12 @@ And ideally
 
 ### 🤖 Deploy the infrastructure with Terraform
 
+Make sure you are authenticated with Azure CLI
+
+```
+$ az login
+```
+
 Change to the terraform directory
 
 ```
