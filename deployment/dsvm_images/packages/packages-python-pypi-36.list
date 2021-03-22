@@ -1,3 +1,4 @@
+aesara
 arviz
 beautifulsoup4
 black
@@ -52,7 +53,6 @@ sympy
 tables
 tensorboard
 tensorflow
-Theano
 thinc
 torch
 torchvision
