@@ -209,7 +209,7 @@
       loop: "{{ users }}"
       register: accounts
 
-    - name: Set initial passwords as expired
+    - name: Set initial passwords as expired  # noqa no-handler
       become: yes
       ansible.builtin.command:
         cmd: "passwd -e {{ item.name }}"
@@ -225,7 +225,7 @@
         remove: "{{ item.remove | default(omit) }}"
       loop: "{{ users_deleted }}"
 
-    - name: Write initial passwords to file
+    - name: Write initial passwords to file  # noqa no-handler
       ansible.builtin.copy:
         content: |
           {% for item in accounts.results %}
@@ -240,7 +240,7 @@
       delegate_to: localhost
       when: accounts.changed and (not email.enabled or force_write_initial_passwords)
 
-    - name: Email created users their initial passwords
+    - name: Email created users their initial passwords  # noqa no-handler
       community.general.mail:
         subject: Tier1 Safe Haven VM Credentials
         body: |

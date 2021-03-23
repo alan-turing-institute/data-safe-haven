@@ -38,7 +38,6 @@
     services: guacamole
     restarted: yes
   register: compose_guacamole
-  when: guacamole_totp_extension.changed
 
 - name: Start Traefik
   community.docker.docker_compose:
@@ -46,7 +45,6 @@
     project_name: guacamole
     services: reverse_proxy
   register: compose_traefik
-  when: guacamole_totp_extension.changed
 
 - name: Ensure that containers are running
   ansible.builtin.assert:
