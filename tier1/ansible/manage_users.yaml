@@ -17,6 +17,15 @@
         fail_msg: "User {{ item }} does not have all required variables defined!"
       loop: "{{ users }}"
 
+    - name: Check all required variables are defined
+      ansible.builtin.assert:
+        that: item is defined
+        success_msg: "Required variable {{ item }} is defined"
+        fail_msg: "Required variable {{ item }} is not defined!"
+      loop:
+        - guac_admin_password
+
+
 
 - name: Manage Guacamole users
   hosts: guacamole
