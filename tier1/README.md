@@ -47,8 +47,8 @@ data.
 - 🌐 Bring your own domain
 - 🔑 Automatic SSL/TLS configuration using [Let's
   Encrypt](https://letsencrypt.org/) and [Traefik](https://traefik.io/)
-- 🤝 [Permissively licensed](./LICENSE) (you are free to copy, use and modify this
-  code as well as to merge it with your own)
+- 🤝 Permissively licensed (you are free to copy, use and modify this code as
+  well as to merge it with your own)
 
 ## 🏗️ How to deploy
 
