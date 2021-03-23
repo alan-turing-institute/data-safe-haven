@@ -155,7 +155,7 @@ Configure the Guacamole and DSVM machines
 $ ansible-playbook -i inventory.yaml main.yaml
 ```
 
-### 👥 Manage users with Ansible
+## 👥 Manage users with Ansible
 
 Users are configured in [`user_vars.yaml`](ansible/user_vars.yaml). If you want
 the user management role to automatically email users their initial login
@@ -181,6 +181,26 @@ If you have configured SMTP settings, newly created users will be send their
 initial credentials from that email address. If the Guacamole and Linux
 credentials are written to file they can be found in `guac_new_users.yaml` and
 `new_users.yaml` respectively.
+
+## ↕️ Resizing
+
+To change the size of either of the virtual machines, for example to handle an
+increased number of users or support GPU computing, you can simply update the
+Terraform configuration.
+
+Open [`terraform/terraform.tfvars`](terraform/terraform.tfvars) and edit the
+dict `vm_sizes`. `guacamole` defines the size of the Guacamole VM and `dsvm`
+defines the size of the DSVM. See the [Azure
+documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes)
+for a list of possible values. Ensure that your selected VM size is available in
+your selected location (`location` in
+[`terraform/terraform.tfvars`](terraform/terraform.tfvars)).
+
+You can apply the new VM sizes using the plan/apply workflow
+[above](#-deploy-the-infrastructure-with-terraform). Plan your changes using
+`terraform plan -out resizeplan` and ensure that the changes printed to your
+console are what you expect. You can then apply the changes with `terraform
+apply resizeplan`.
 
 ## 📖 User guide
 

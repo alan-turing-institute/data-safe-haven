@@ -1,6 +1,9 @@
 # Azure subscription ID
 # subscription_id = ""
 
+# Azure data centre location to deploy resources in
+# location = "uksouth"
+
 # SRE name
 # sre_name = ""
 
