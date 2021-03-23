@@ -202,6 +202,15 @@ You can apply the new VM sizes using the plan/apply workflow
 console are what you expect. You can then apply the changes with `terraform
 apply resizeplan`.
 
+## 💣 Tear down the environment
+
+To tear down all of the resources you have deployment, ensure you are in the
+terraform directory and run
+
+```
+$ terraform destroy
+```
+
 ## 📖 User guide
 
 ### 🥑 Using Guacamole
