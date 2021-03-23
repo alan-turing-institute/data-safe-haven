@@ -218,3 +218,62 @@ $ terraform destroy
 See the [Guacamole user
 guide](https://guacamole.apache.org/doc/gug/using-guacamole.html). Note that
 file transfer is disabled by default.
+
+### 🌱 First login
+
+Before your first login, you will receive two sets of credentials. The 'Web
+Portal' credentials are for connecting to the Gaucamole portal. After you have
+logged in to Guacamole you will be able to select a SSH (text based) or RDP
+(graphical desktop) interface to the virtual machine.
+
+You will use the 'VM credentials' to authenticate with the virtual machine
+whether using the SSH or RDP connection.
+
+When you have both sets of credentials, open your browser and navigate to the
+Guacamole portal and enter your username and password.
+
+![](.images/guacamole_login.png)
+
+You will be asked to create a new password. Enter your new, secure password into
+the text boxes and click 'continue'.
+
+![](.images/guacamole_reset_password.png)
+
+When you click 'continue' you will be taken to the multi-factor authentication
+setup. **However**, at this point you must refresh the page and login again with
+your **new** password.
+
+After you login with your new password, you will again be directed to setup
+multi-factor authentication. Scan the QR code using an authenticator app such as
+[andOTP](https://github.com/andOTP/andOTP). Produce a one time password, enter
+it into the text box and click 'continue'.
+
+![](.images/guacamole_totp_setup.png)
+
+You will now be taken to the Guacamole home page and presented with the
+available connections, 'DSVM RDP' and 'DSVM SSH'. For your first login, you
+**must** use the SSH connection to be able to reset your vm password. Click on
+the 'DSVM SSH' connection.
+
+Enter your vm username and press enter.
+
+![](.images/guacamole_ssh_username.png)
+
+Next, enter your vm password and press enter.
+
+![](.images/guacamole_ssh_password.png)
+
+You will be prompted to change your vm password. Enter the current password, and
+press enter. Then enter your new, secure password and press enter. Repeat your
+new password to confirm it is correct.
+
+![](.images/guacamole_ssh_reset_password.png)
+
+If you successfully update your password, the message `passwd: password updated
+successfully` will be printed and you will be disconnected. Click on 'Home' to
+go back to the Guacamole home page.
+
+![](.images/guacamole_ssh_disconnected.png)
+
+You will now be able to connect to the vm in either an SSH or RDP connection
+using your new vm password.
