@@ -319,11 +319,11 @@
             fstype: cifs
             opts: "_netdev,credentials=/root/share_credentials.txt,vers=3.0,file_mode={{ item.file_mode }},dir_mode={{ item.dir_mode }},serverino"
           loop:
-            - path: /ingress
+            - path: /data
               url: "{{ ingress_unc }}"
               file_mode: "0744"
               dir_mode: "0755"
-            - path: /egress
+            - path: /output
               url: "{{ egress_unc }}"
               file_mode: "0777"
               dir_mode: "0777"
