@@ -65,7 +65,7 @@ data.
 
 ### 🏗️ How to deploy
 
-#### 📦 Requirements and prerequisites
+#### 📦 Required software and other prerequisites
 
 Before you start, you will need to install some dependencies,
 
@@ -227,6 +227,28 @@ You may use whatever methods you think are best, including using the azure
 portal. However, from past experience we have found [Azure Storage
 Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to be a
 convenient and secure for both data ingress and egress.
+
+### 🎁 Adding software
+
+The Ansible variables file [`host_vars/dsvm.yaml`](ansible/host_vars/dsvm.yaml)
+has a number of DSVM packages predefined. You can also edit this file to install
+additional apt packages (from the default repositories) or
+[snaps](https://snapcraft.io/).
+
+To install additional packages using `apt` (Ubuntu's package manager), add the
+names of the packages to the list `apt_packages_extra`. You can find the names
+of packages for the default Ubuntu 20.04 LTS image on the [the Ubuntu packages
+website](https://packages.ubuntu.com/focal/).
+
+To add new snap packages add them to the list `snap_packages`. Each item on this
+list must have the key `name` which is the name of the snap as you would use to
+install on the command line. You can find the names of snaps on the [snap
+store](https://snapcraft.io/store) by selecting a snap and clicking the green
+install button. If the snap should be installed with classic confinement (this
+is also made apparent when clicking 'install' in the snap store) you should also
+add the key `classic` with value `yes`. Look at
+[`host_vars/dsvm.yaml`](ansible/host_vars/dsvm.yaml) for examples of both
+classic and standard snaps.
 
 ### 💣 Tear down the environment
 
