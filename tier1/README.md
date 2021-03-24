@@ -277,3 +277,31 @@ go back to the Guacamole home page.
 
 You will now be able to connect to the VM in either an SSH or RDP connection
 using your new VM password.
+
+
+### 🗄️ Data
+
+#### Input data
+
+The input data for your project will be brought into the environment by an
+administrator. You will be able to find it in the `/data` directory. This
+directory is visible to all users and is read-only.
+
+If you need to modify the data, for example to clean the data, create derivative
+data sets or combine data sets you should first copy the data to your home
+directory or the [shared working directory](####shared-working-space).
+
+#### Shared working space
+
+The directory `/shared` can be used when multiple users will need to edit files
+or directories. New files and directories created here will belong to the
+`shared` group, which all users are members of, and members of the `shared`
+group will be given read and write privileges. This means that *anyone* will be
+able to read, edit and delete files and directories created here.
+
+#### Output data
+
+The output directory, `/output`, provides a convenient place to put the products
+of your work. This directory is writable by all users. At the end of a project,
+data stored here can be reviewed, and extracted from the environment by an
+administrator.
