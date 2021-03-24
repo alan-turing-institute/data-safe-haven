@@ -8,11 +8,12 @@
   register: totp_extension_archive
 
 - name: Create Guacamole extensions directory
+  become: yes
   ansible.builtin.file:
     path: "{{ guacamole_extensions_dir }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: root
+    group: root
     mode: 0755
 
 - name: Unarchive TOTP extension
@@ -22,12 +23,13 @@
     dest: "{{ ansible_user_dir }}"
 
 - name: Copy TOTP extension to extensions directory
+  become: yes
   ansible.builtin.copy:
     src: "{{ ansible_user_dir }}/guacamole-auth-totp-{{ guac_version }}/guacamole-auth-totp-{{ guac_version }}.jar"
     remote_src: yes
     dest: "{{ guacamole_extensions_dir }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: root
+    group: root
     mode: 0644
   register: guacamole_totp_extension
 

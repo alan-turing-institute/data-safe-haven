@@ -8,6 +8,7 @@
     stopped: yes
 
 - name: Remove Guacamole TOTP extension
+  become: yes
   ansible.builtin.file:
     path: "{{ guacamole_extensions_dir }}/guacamole-auth-totp-{{ guac_version }}.jar"
     state: absent
