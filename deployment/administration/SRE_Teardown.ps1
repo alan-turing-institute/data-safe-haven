@@ -84,7 +84,7 @@ if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
     if (-Not $dryRun.IsPresent) {
         Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
     } else {
-        Add-LogMessage -Level Info "A script will be executed to remove SRE data from SHM: $($scriptPath)"
+        Add-LogMessage -Level Info "A script would be executed to remove SRE data from SHM: $($scriptPath)"
     }
 }
 
