@@ -296,8 +296,8 @@ directory or the [shared working directory](####shared-working-space).
 The directory `/shared` can be used when multiple users will need to edit files
 or directories. New files and directories created here will belong to the
 `shared` group, which all users are members of, and members of the `shared`
-group will be given read and write privileges. This means that *anyone* will be
-able to read, edit and delete files and directories created here.
+group will be given read and write privileges. This means that *any user* will
+be able to read, edit and delete files and directories created here.
 
 #### Output data
 
