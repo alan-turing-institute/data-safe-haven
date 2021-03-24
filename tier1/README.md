@@ -252,18 +252,18 @@ it into the text box and click 'continue'.
 
 You will now be taken to the Guacamole home page and presented with the
 available connections, 'DSVM RDP' and 'DSVM SSH'. For your first login, you
-**must** use the SSH connection to be able to reset your vm password. Click on
+**must** use the SSH connection to be able to reset your VM password. Click on
 the 'DSVM SSH' connection.
 
-Enter your vm username and press enter.
+Enter your VM username and press enter.
 
 ![](.images/guacamole_ssh_username.png)
 
-Next, enter your vm password and press enter.
+Next, enter your VM password and press enter.
 
 ![](.images/guacamole_ssh_password.png)
 
-You will be prompted to change your vm password. Enter the current password, and
+You will be prompted to change your VM password. Enter the current password, and
 press enter. Then enter your new, secure password and press enter. Repeat your
 new password to confirm it is correct.
 
@@ -275,5 +275,5 @@ go back to the Guacamole home page.
 
 ![](.images/guacamole_ssh_disconnected.png)
 
-You will now be able to connect to the vm in either an SSH or RDP connection
-using your new vm password.
+You will now be able to connect to the VM in either an SSH or RDP connection
+using your new VM password.
