@@ -50,9 +50,11 @@ data.
 - 🤝 Permissively licensed (you are free to copy, use and modify this code as
   well as to merge it with your own)
 
-## 🏗️ How to deploy
+## 💼 Administrator's guide
 
-### 📦 Requirements and prerequisites
+### 🏗️ How to deploy
+
+#### 📦 Requirements and prerequisites
 
 Before you start, you will need to install some dependencies,
 
@@ -71,7 +73,7 @@ And ideally
 - An email account with SMTP access to send users their initial login
   credentials
 
-### 🤖 Deploy the infrastructure with Terraform
+#### 🤖 Deploy the infrastructure with Terraform
 
 Make sure you are authenticated with Azure CLI
 
@@ -115,7 +117,7 @@ records to your domain (the same domain that your specified in
 [`terraform.tfvars`](terraform/terraform.tfvars)). This way requests to your
 domain will be forwarded to the DNS managed by terraform.
 
-### ⚙️ Configure the virtual machines with Ansible
+#### ⚙️ Configure the virtual machines with Ansible
 
 Change to the ansible directory
 
@@ -155,7 +157,7 @@ Configure the Guacamole and DSVM machines
 $ ansible-playbook -i inventory.yaml main.yaml
 ```
 
-## 👥 Manage users with Ansible
+### 👥 Manage users with Ansible
 
 Users are configured in [`user_vars.yaml`](ansible/user_vars.yaml). If you want
 the user management role to automatically email users their initial login
@@ -182,7 +184,7 @@ initial credentials from that email address. If the Guacamole and Linux
 credentials are written to file they can be found in `guac_new_users.yaml` and
 `new_users.yaml` respectively.
 
-## ↕️ Resizing
+### ↕️ Resizing
 
 To change the size of either of the virtual machines, for example to handle an
 increased number of users or support GPU computing, you can simply update the
@@ -202,7 +204,7 @@ You can apply the new VM sizes using the plan/apply workflow
 console are what you expect. You can then apply the changes with `terraform
 apply resizeplan`.
 
-## 🚚 Ingress and egress
+### 🚚 Ingress and egress
 
 Both input and output data are held on [Azure file
 shares](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction)
@@ -215,7 +217,7 @@ portal. However, from past experience we have found [Azure Storage
 Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to be a
 convenient and secure for both data ingress and egress.
 
-## 💣 Tear down the environment
+### 💣 Tear down the environment
 
 To tear down all of the resources you have deployment, ensure you are in the
 terraform directory and run
