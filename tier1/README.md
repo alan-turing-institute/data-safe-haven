@@ -32,6 +32,17 @@ data.
 > particular, users can copy/paste to and from the remote machine and make
 > outbound internet connections.
 
+> ⚠️ Important
+>
+> This environment relies on trust in both the administrators and users and
+> should not be used in a situation where you do not have reasonable confidence
+> that either the administrators or users will not misuse the data.
+>
+> Administrators have a very high level of access and control including, but not
+> limited to, reading private data, extracting data and imitating other users.
+> Normal users may release data from the environment to the internet or copy it
+> from the environment to their local machines.
+
 ## 🚀 Features
 
 - 🚅 Quick and easy to deploy (leveraging [Terraform](https://www.terraform.io/)
