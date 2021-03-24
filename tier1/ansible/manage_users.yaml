@@ -26,7 +26,6 @@
         - guac_admin_password
 
 
-
 - name: Manage Guacamole users
   hosts: guacamole
 
