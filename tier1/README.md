@@ -202,6 +202,19 @@ You can apply the new VM sizes using the plan/apply workflow
 console are what you expect. You can then apply the changes with `terraform
 apply resizeplan`.
 
+## 🚚 Ingress and egress
+
+Both input and output data are held on [Azure file
+shares](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction)
+configured as SMB shares. Both shares will be belong to the same storage
+account, which you will be able to see in the resource group you choose when
+deploying the infrastructure using Terraform.
+
+You may use whatever methods you think are best, including using the azure
+portal. However, from past experience we have found [Azure Storage
+Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to be a
+convenient and secure for both data ingress and egress.
+
 ## 💣 Tear down the environment
 
 To tear down all of the resources you have deployment, ensure you are in the
