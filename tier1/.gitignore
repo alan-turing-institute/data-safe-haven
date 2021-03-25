@@ -3,3 +3,5 @@ vault_password.txt
 inventory.yaml
 terraform_vars.yaml
 *new_users.yaml*
+terraform.tfvars
+ansible_vars.yaml

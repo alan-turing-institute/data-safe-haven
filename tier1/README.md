@@ -137,7 +137,7 @@ DNS managed by terraform.
 
 #### ⚙️ Configure the virtual machines with Ansible
 
-Change to the ansible directory
+Change to the Ansible directory
 
 ```
 $ cd ../ansible
@@ -158,16 +158,29 @@ Ensure the required Ansible roles and collections are installed
 $ ansible-galaxy install -r requirements.yaml
 ```
 
+Make a copy of the example variables file
+
+```
+$ cp ansible_vars.yaml.example ansible_vars.yaml
+```
+
+Open your copy with your text editor and ensure the values are correct and
+complete any undefined variables.
+
 If you want to use [Let's Encrypt](https://letsencrypt.org/) to generate SSL
-certificates automatically (highly recommended!) open
-[`host_vars/guacamole.yaml`](ansible/host_vars/guacamole.yaml) and change
-`lets_encrypt` to `true` and `lets_encrypt_email` to a suitable email address.
-This address will receive warnings if your certificates are due to expire and
-have not been updated (which should happen automatically).
+certificates automatically (highly recommended!) change `lets_encrypt` to `true`
+and `lets_encrypt_email` to a suitable email address.  This address will receive
+warnings if your certificates are due to expire and have not been updated (which
+should happen automatically).
 
 Enter a password for the Postgres database as the value of the key
-`guac_db_password` in
-[`host_vars/guacamole.yaml`](ansible/host_vars/guacamole.yaml).
+`guac_db_password`.
+
+Enter a password for the guacamole admin account as the value of the key
+`guac_admin_password`.
+
+You can also define additional apt and snap packages here. See [Adding
+software](#-adding-software) for details.
 
 Configure the Guacamole and DSVM machines
 
@@ -240,18 +253,20 @@ convenient and secure for both data ingress and egress.
 ### 🎁 Adding software
 
 The Ansible variables file [`host_vars/dsvm.yaml`](ansible/host_vars/dsvm.yaml)
-has a number of DSVM packages predefined. You can also edit this file to install
-additional apt packages (from the default repositories) or
-[snaps](https://snapcraft.io/).
+has a number of DSVM packages predefined. You can also install additional apt
+packages (from the default repositories) or [snaps](https://snapcraft.io/) by
+editing your [`ansible_vars.yaml`](ansible/ansible_vars.yaml.example) file.
 
 To install additional packages using `apt` (Ubuntu's package manager), add the
-names of the packages to the list `apt_packages_extra`. You can find the names
+names of the packages to the list `apt_packages_extra` in
+[`ansible_vars.yaml`](ansible/ansible_vars.yaml.example). You can find the names
 of packages for the default Ubuntu 20.04 LTS image on the [the Ubuntu packages
 website](https://packages.ubuntu.com/focal/).
 
-To add new snap packages add them to the list `snap_packages_extra`. Each item
-on this list must have the key `name` which is the name of the snap as you would
-use to install on the command line. You can find the names of snaps on the [snap
+To add new snap packages add them to the list `snap_packages_extra` in
+[`ansible_vars.yaml`](ansible/ansible_vars.yaml.example). Each item on this list
+must have the key `name` which is the name of the snap as you would use to
+install on the command line. You can find the names of snaps on the [snap
 store](https://snapcraft.io/store) by selecting a snap and clicking the green
 install button. If the snap should be installed with classic confinement (this
 is also made apparent when clicking 'install' in the snap store) you should also

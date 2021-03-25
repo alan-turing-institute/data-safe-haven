@@ -1,0 +1,17 @@
+---
+
+# Lets encrypt configuration
+lets_encrypt: false
+lets_encrypt_email: user@example.com
+
+# Guacamole webapp admin account (guacadmin) password
+guac_admin_password:
+
+# Guacamole database password
+guac_db_password:
+
+# Additional apt packages
+apt_packages_extra: []
+
+# Additional snap packages
+snap_packages_extra: []

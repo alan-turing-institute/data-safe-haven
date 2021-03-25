@@ -3,6 +3,9 @@
 - name: Check all required variables are defined
   hosts: localhost
 
+  vars_files:
+    - ansible_vars.yaml
+
   tasks:
     - name: Check all required variables are defined
       ansible.builtin.assert:
@@ -49,6 +52,7 @@
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
 
   vars_files:
+    - ansible_vars.yaml
     - terraform_vars.yaml
 
   roles:
@@ -229,6 +233,7 @@
     - community.general
 
   vars_files:
+    - ansible_vars.yaml
     - terraform_vars.yaml
 
   roles:
