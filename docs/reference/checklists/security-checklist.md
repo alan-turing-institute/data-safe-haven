@@ -22,17 +22,17 @@ An overview of our security controls is shown here
 
 ## Contents
 
-+ [1. Multifactor Authentication and Password strength](#1.-multifactor-authentication-and-password-strength)
-+ [2. Isolated Network](#2.-isolated-network)
-+ [3. User devices](#3.-user-devices)
-+ [4. Physical security](#4.-physical-security)
-+ [5. Remote connections](#5.-remote-connections)
-+ [6. Copy-and-paste](#6.-copy-and-paste)
-+ [7. Data ingress](#7.-data-ingress)
-+ [8. Storage volumes and egress](#8.-storage-volumes-and-egress)
-+ [9. Software Ingress](#9.-software-ingress)
-+ [10. Package mirrors](#10.-package-mirrors)
-+ [11. Azure Firewalls](#11.-azure-firewalls)
++ [1. Multifactor Authentication and Password strength](#1-multifactor-authentication-and-password-strength)
++ [2. Isolated Network](#2-isolated-network)
++ [3. User devices](#3-user-devices)
++ [4. Physical security](#4-physical-security)
++ [5. Remote connections](#5-remote-connections)
++ [6. Copy-and-paste](#6-copy-and-paste)
++ [7. Data ingress](#7-data-ingress)
++ [8. Storage volumes and egress](#8-storage-volumes-and-egress)
++ [9. Software Ingress](#9-software-ingress)
++ [10. Package mirrors](#10-package-mirrors)
++ [11. Azure Firewalls](#11-azure-firewalls)
 + [12. Non technical security implementation](#12.-non-technical-security-implementation)
 
 ## 1. Multifactor Authentication and Password strength
