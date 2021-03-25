@@ -51,21 +51,21 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 If you haven't already, you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop).
 
-1. Create a new user without MFA and check that the user cannot access the environment regardless of other credentials.
+1. Create a new user without MFA and check that the user cannot access the apps
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
  + b) Visit https://aka.ms/mfasetup in an incognito browser
  + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
  + d) **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
  + e) **Verify after adding to group**: Login again and check that apps can now be viewed
  + f) **Verify**: attempt to login to GitLab or DSVM fails
-2.  Check that the user is able to successfully set up MFA with the right credentials]
+2. Check that the user is able to successfully set up MFA
   + a) Visit https://aka.ms/mfasetup again
   + b) Attempt to login and reset password
   + c) **Verify:** user guided to set up MFA
   + d) Set up MFA
   + e) **Verify:** successfully set up MFA
-3. Check that the user is able to successfully login to the environment once MFA is set up and using the right credentials
-  + a) **Verify**: login to the portal using the user account and check that MFA is requested
+3. Check that the user is able to successfully login to the apps once MFA is set up
+  + a) **Verify**: login to the portal using the user account
   + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested**
 
 ### Verify by (WB):
