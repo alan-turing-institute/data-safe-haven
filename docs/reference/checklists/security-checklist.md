@@ -22,6 +22,7 @@ An overview of our security controls is shown here
 
 ## Contents
 
++ [Prerequisites](#prerequisites)
 + [1. Multifactor Authentication and Password strength](#1-multifactor-authentication-and-password-strength)
 + [2. Isolated Network](#2-isolated-network)
 + [3. User devices](#3-user-devices)
@@ -34,6 +35,10 @@ An overview of our security controls is shown here
 + [10. Package mirrors](#10-package-mirrors)
 + [11. Azure Firewalls](#11-azure-firewalls)
 + [12. Non technical security implementation](#12.-non-technical-security-implementation)
+
+## Prerequisites
+
+If you haven't already, you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop).
 
 ## 1. Multifactor Authentication and Password strength
 
@@ -48,8 +53,6 @@ Passwords are strong
 Users must set up MFA before accessing the secure analysis environment. Users cannot access the environment without MFA. Users are strongly advised to create passwords of a certain strength.
 
 ### Verify by (BB):
-
-If you haven't already, you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop).
 
 **Important:** In the steps below where we visit the remote desktop (RDP) web client, make sure you are not connected to the management VPN. We need to test the publicly accessible RDP gateway.
 
@@ -96,7 +99,7 @@ SREs in the same SHM are still isolated from one another.
 
 1. Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + a) Connect to the SHM VPN
-  + b) Connect to the SHM DC. IP details in RG_SHM_DC, login details in SHM secrets as domain admin
+  + b) Connect to the SHM DC
   + c) Connect to the SHM NPS. IP details in RG_SHM_NPS, same login
   + d) **Verify:** Connection works
   + e) Disconnect from the SHM VPN
