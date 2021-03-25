@@ -273,7 +273,7 @@
           ansible.posix.mount:
             path: /shared
             state: mounted
-            src: "{{ data_disk.disk.dev }}1"
+            src: /dev/disk/azure/scsi1/lun0-part1
             fstype: ext4
             opts: defaults,nofail
             passno: "2"
