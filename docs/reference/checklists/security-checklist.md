@@ -66,7 +66,7 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
   + e) **Verify:** successfully set up MFA
 3. Check that the user is able to successfully login to the apps once MFA is set up
   + a) **Verify**: login to the portal using the user account
-  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested**
+  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested on first attempt**
 
 ### Verify by (WB):
 
