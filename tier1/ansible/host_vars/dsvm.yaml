@@ -55,7 +55,7 @@ apt_packages_extra: []
 
 apt_packages: "{{ apt_packages_development | union(apt_packages_shells) | union(apt_packages_editors) | union(apt_packages_latex) | union(apt_packages_extra) }}"
 
-snap_packages:
+snap_packages_default:
   - name: codium
     classic: yes
   - name: atom
@@ -67,3 +67,7 @@ snap_packages:
   - name: gitkraken
     classic: yes
   - name: dbeaver-ce
+
+snap_packages_extra: []
+
+snap_packages: "{{ snap_packages_default | union(snap_packages_extra) }}"

@@ -241,15 +241,21 @@ names of the packages to the list `apt_packages_extra`. You can find the names
 of packages for the default Ubuntu 20.04 LTS image on the [the Ubuntu packages
 website](https://packages.ubuntu.com/focal/).
 
-To add new snap packages add them to the list `snap_packages`. Each item on this
-list must have the key `name` which is the name of the snap as you would use to
-install on the command line. You can find the names of snaps on the [snap
+To add new snap packages add them to the list `snap_packages_extra`. Each item
+on this list must have the key `name` which is the name of the snap as you would
+use to install on the command line. You can find the names of snaps on the [snap
 store](https://snapcraft.io/store) by selecting a snap and clicking the green
 install button. If the snap should be installed with classic confinement (this
 is also made apparent when clicking 'install' in the snap store) you should also
 add the key `classic` with value `yes`. Look at
 [`host_vars/dsvm.yaml`](ansible/host_vars/dsvm.yaml) for examples of both
-classic and standard snaps.
+classic and standard snaps in the list `snap_packages_default`.
+
+After making changes you can ensure the packages are installed with
+
+```
+$ ansible-playbook -i inventory.yaml main.yaml --tags dsvm
+```
 
 ### 💣 Tear down the environment
 
