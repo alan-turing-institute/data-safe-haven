@@ -86,6 +86,7 @@
             command: /opt/guacamole/bin/initdb.sh --postgres
             cleanup: yes
             detach: no
+            container_default_behavior: compatibility
           register: init_script
 
         - name: Write database initialisation script
