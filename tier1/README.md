@@ -190,9 +190,15 @@ $ ansible-playbook -i inventory.yaml main.yaml
 
 ### 👥 Manage users with Ansible
 
-Users are configured in [`user_vars.yaml`](ansible/user_vars.yaml). If you want
-the user management role to automatically email users their initial login
-credentials, complete enter your email's SMTP settings into the `email` dict.
+Make a copy of the users variables file
+
+```
+$ cp user_vars.yaml.example user_vars.yaml
+```
+
+Open your copy with your editor.  If you want the user management role to
+automatically email users their initial login credentials, complete enter your
+email's SMTP settings into the `email` dict.
 
 If you also want to write the initial passwords to a file on your local machine,
 change `force_write_initial_passwords` to `yes`.

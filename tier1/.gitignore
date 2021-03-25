@@ -5,3 +5,4 @@ terraform_vars.yaml
 *new_users.yaml*
 terraform.tfvars
 ansible_vars.yaml
+user_vars.yaml

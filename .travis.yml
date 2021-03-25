@@ -13,6 +13,7 @@ jobs:
         - pip install "ansible-lint[core]"
       script:
         - cp ./tier1/ansible/ansible_vars.yaml.example ./tier1/ansible/ansible_vars.yaml
+        - cp ./tier1/ansible/user_vars.yaml.example ./tier1/ansible/user_vars.yaml
         - ansible-lint --version
         - ansible-lint -x yaml ./tier1/ansible{main.yaml, manage_users.yaml}
 
