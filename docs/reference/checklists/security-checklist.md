@@ -38,7 +38,7 @@ An overview of our security controls is shown here
 
 ## Prerequisites
 
-If you haven't already, you'll need download a VPN certificate and configure [VPN access](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop).
+If you haven't already, you'll need download a VPN certificate and configure [VPN access](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can log in to the [domain controller (DC1) via Remote Desktop](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop), as well as the [network policy server (NPS)](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#log-in-to the-nps-vm-using-microsoft-remote-desktop).
 
 ## 1. Multifactor Authentication and Password strength
 
@@ -100,7 +100,7 @@ SREs in the same SHM are still isolated from one another.
 1. Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + a) Connect to the SHM VPN
   + b) Connect to the SHM DC
-  + c) Connect to the SHM NPS. IP details in RG_SHM_NPS, same login
+  + c) Connect to the SHM NPS
   + d) **Verify:** Connection works
   + e) Disconnect from the SHM VPN
   + f) Attempt to connect to the SHM DC and NPS again
