@@ -55,8 +55,8 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
  + b) Visit https://aka.ms/mfasetup
  + c) Attempt to login and reset password, **do not complete MFA**
- + d) **Verify before**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
- + e) **Verify after**: Login again and check that apps can now be viewed
+ + d) **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
+ + e) **Verify after adding to group**: Login again and check that apps can now be viewed
  + f) **Verify**: attempt to login to GitLab or DSVM fails
 2.  Check that the [user is able to successfully set up MFA with the right credentials](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password)
   + a) Visit https://aka.ms/mfasetup
