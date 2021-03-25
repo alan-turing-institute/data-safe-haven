@@ -57,7 +57,7 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
  + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
  + d) **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
  + e) **Verify after adding to group**: Login again and check that apps can now be viewed
- + f) **Verify**: attempt to login to GitLab or DSVM fails
+ + f) **Verify**: attempt to login to DSVM Main (Desktop) fails
 2. Check that the user is able to successfully set up MFA
   + a) Visit https://aka.ms/mfasetup again
   + b) Attempt to login and reset password
@@ -78,7 +78,7 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
 6. Users require a license before they can access the environment
   + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments` and add a P1 license to the account you just set up
   + b) Login to the web client using the user account
-  + c) **Verify**: attempt to login to GitLab or DSVM succeeds
+  + c) **Verify**: attempt to login to DSVM Main (Desktop) succeeds
 
 ## 2. Isolated Network
 
