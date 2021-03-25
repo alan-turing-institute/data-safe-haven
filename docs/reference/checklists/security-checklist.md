@@ -51,6 +51,8 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 If you haven't already, you'll need download a VPN certificate and configure [VPN access](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can connect to the domain controller (DC1) [via Remote Desktop](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-dc1-via-remote-desktop).
 
+**Important:** In the steps below where we visit the remote desktop (RDP) web client, make sure you are not connected to the management VPN. We need to test the publicly accessible RDP gateway.
+
 1. Create a new user without MFA and check that the user cannot access the apps
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
  + b) Visit https://aka.ms/mfasetup in an incognito browser
