@@ -77,10 +77,6 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
   + b) **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
   + c) **Verify**: No trusted ips (this means that no one can skip MFA)
   + d) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
-6. Users require a license before they can access the environment
-  + a) To add a license, login using an AAD admin account, go to `AAD -> Users -> <select user> -> Licenses -> Assignments` and add a P1 license to the account you just set up
-  + b) Login to the web client using the user account
-  + c) **Verify**: attempt to login to DSVM Main (Desktop) succeeds
 
 ## 2. Isolated Network
 
