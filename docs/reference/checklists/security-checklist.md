@@ -67,8 +67,8 @@ If you haven't already, you'll need download a VPN certificate and configure [VP
   + d) Set up MFA
   + e) **Verify:** successfully set up MFA
 3. Check that the user is able to successfully login to the apps once MFA is set up
-  + a) **Verify**: login to the portal using the user account
-  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) successfully and **check that MFA is requested on first attempt**
+  + a) **Verify**: login to the portal using the user account and check that MFA requested
+  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) and **check that MFA is requested on first attempt** when you log in to DSVM Main (Desktop)
 
 ### Verify by (WB):
 
