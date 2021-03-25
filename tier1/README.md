@@ -104,10 +104,17 @@ Initialise terraform
 $ terraform init
 ```
 
-Complete the appropriate variables in
-[`terraform.tfvars`](terraform/terraform.tfvars). These should be fairly
-self-explanatory. If you do not complete any required variables you will be
-prompted to enter them in the command line when running Terraform.
+Make a copy of the example Terraform variables file
+[`terraform.tfvars.example`](terraform/terraform.tfvars.example).
+
+```
+$ cp terraform.tfvars.example terraform.tfvars
+```
+
+Edit your copy using your text editor, completing the appropriate variables.
+These should be fairly self-explanatory. If you do not complete any required
+variables you will be prompted to enter them in the command line when running
+Terraform.
 
 Plan your deployment
 
@@ -125,8 +132,8 @@ $ terraform apply myplan
 Terraform will print a message giving the address of the name servers of the
 Azure DNS Zone for your deployment. You will need to add these addresses as NS
 records to your domain (the same domain that your specified in
-[`terraform.tfvars`](terraform/terraform.tfvars)). This way requests to your
-domain will be forwarded to the DNS managed by terraform.
+`terraform.tfvars`). This way requests to your domain will be forwarded to the
+DNS managed by terraform.
 
 #### ⚙️ Configure the virtual machines with Ansible
 
@@ -201,14 +208,15 @@ To change the size of either of the virtual machines, for example to handle an
 increased number of users or support GPU computing, you can simply update the
 Terraform configuration.
 
-Open [`terraform/terraform.tfvars`](terraform/terraform.tfvars) and edit the
-dict `vm_sizes`. `guacamole` defines the size of the Guacamole VM and `dsvm`
+Open [`terraform/terraform.tfvars`](terraform/terraform.tfvars.example) and edit
+the dict `vm_sizes`. `guacamole` defines the size of the Guacamole VM and `dsvm`
 defines the size of the DSVM. See the [Azure
 documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes)
 for a list of possible values. Ensure that your selected VM size is available in
 your selected location (`location` in
-[`terraform/terraform.tfvars`](terraform/terraform.tfvars)). You can check the 
-available VM sizes for a location by running `az vm list-sizes --location "<location>"`.
+[`terraform/terraform.tfvars`](terraform/terraform.tfvars.example)). You can
+check the available VM sizes for a location by running `az vm list-sizes
+--location "<location>"`.
 
 You can apply the new VM sizes using the plan/apply workflow
 [above](#-deploy-the-infrastructure-with-terraform). Plan your changes using
