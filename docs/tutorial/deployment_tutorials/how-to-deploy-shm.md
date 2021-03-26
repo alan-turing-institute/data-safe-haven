@@ -280,7 +280,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Check `Global Administrator`
   + Click the `Add` button
 
-## :closed_lock_with_key: 6. Enable MFA and self-service password reset
+## :iphone: 6. Enable MFA and self-service password reset
 
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
@@ -834,7 +834,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
   + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
 
-## :iphone: 11. Require MFA for all users
+## :closed_lock_with_key: 11. Require MFA for all users
 
 :warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
