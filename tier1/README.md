@@ -372,7 +372,7 @@ directory is visible to all users and is read-only.
 
 If you need to modify the data, for example to clean the data, create derivative
 data sets or combine data sets you should first copy the data to your home
-directory or the [shared working directory](####shared-working-space).
+directory or the [shared working directory](#shared-working-space).
 
 #### Shared working space
 
