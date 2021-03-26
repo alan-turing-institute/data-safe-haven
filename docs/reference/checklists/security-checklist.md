@@ -98,7 +98,7 @@ Whilst in the network, one cannot use the internet to connect outside the networ
 
 SREs in the same SHM are still isolated from one another.
 
-### Verify by:
+### Verify by (BB):
 
 1. Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + a) Connect to the SHM VPN
