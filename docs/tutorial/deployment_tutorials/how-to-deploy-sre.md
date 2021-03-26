@@ -69,11 +69,15 @@ These instructions will walk you through deploying a Secure Research Environment
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
-:pencil: Notes
+:pencil: **Notes**
 + This indicates some explanatory notes or examples that provide additional context for the current step.
 
-:warning: Troubleshooting
+:warning: **Troubleshooting**
 + This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
+
+![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white)
++ These indicate steps that depend on the OS that you are using to deploy the SRE
+
 
 ## :seedling: Prerequisites
 
@@ -163,9 +167,7 @@ This will verify that you are on the correct branch and up to date with `origin`
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SRE config by running the following Powershell command:
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment`
 
 ```pwsh
 ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -181,9 +183,7 @@ In `./deployment` run
 
 If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM. If the subscription is not empty, confirm that it is not being used before deleting any resources in it. Clear any remaining SRE data from the SHM by running
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -194,9 +194,7 @@ In `./deployment/secure_research_environment/setup` run
 
 ### :registered: Register SRE with the SHM
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -211,9 +209,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ### :clubs: Create SRE DNS Zone
 
-![Powershell](https://img.shields.io/badge/local-one%20minute-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-one%20minute-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -240,9 +236,7 @@ In `./deployment/secure_research_environment/setup` run
 
 ### :ghost: Deploy the virtual network
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -258,9 +252,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 
 ### :tropical_fish: Deploy the remote desktop servers
 
-![Powershell](https://img.shields.io/badge/local-fifty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-fifty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -294,9 +286,7 @@ This script cannot be run remotely since remote `Powershell` runs as a local adm
 
 ### :closed_lock_with_key: Secure RDS webclient
 
-![Powershell](https://img.shields.io/badge/local-fifteen%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-fifteen%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -310,9 +300,7 @@ This will perform the following actions, which can be run individually if desire
 <details>
 <summary><strong>Disable insecure TLS connections</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -329,9 +317,7 @@ If additional TLS protocols become available (or existing ones are found to be i
 <details>
 <summary><strong>Configure RDS CAP and RAP settings</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -345,9 +331,7 @@ In `./deployment/secure_research_environment/setup` run
 <details>
 <summary><strong>Update SSL certificate</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>
@@ -455,9 +439,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 ## :snowflake: Deploy web applications (GitLab and CodiMD)
 
-![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -507,9 +489,7 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 
 ## :floppy_disk: Deploy storage accounts
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -522,9 +502,7 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 
 ## :baseball: Deploy databases
 
-![Powershell](https://img.shields.io/badge/local-depends%20on%20settings-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-depends%20on%20settings-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -549,9 +527,7 @@ On your **deployment machine**.
 
 ### :computer: Deploy a single data science VM (DSVM)
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>
@@ -571,9 +547,7 @@ This will deploy a new compute VM into the SRE environment
 
 ## :lock: Apply network configuration
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -586,9 +560,7 @@ In `./deployment/secure_research_environment/setup` run
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -599,9 +571,7 @@ In `./deployment/secure_research_environment/setup` run
 
 ## :chart_with_upwards_trend: Configure logging
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/secure_research_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>

@@ -48,11 +48,14 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
-:pencil: Notes
+:pencil: **Notes**
 + This indicates some explanatory notes or examples that provide additional context for the current step.
 
-:warning: Troubleshooting
+:warning: **Troubleshooting**
 + This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
+
+![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white)
++ These indicate steps that depend on the OS that you are using to deploy the SHM
 
 ## Prerequisites
 
@@ -139,9 +142,7 @@ This will verify that you are on the correct branch and up to date with `origin`
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SHM config by running the following Powershell command:
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment`
 
 ```pwsh
 ./ShowConfigFile.ps1 -shmId <SHM ID>
@@ -151,9 +152,7 @@ In `./deployment` run
 
 ## Configure DNS for the custom domain
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
@@ -218,9 +217,7 @@ In `./deployment/safe_haven_management_environment/setup` run
 
 ### Add the SHM domain to the Azure Active Directory
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
@@ -239,9 +236,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 
 ## Deploy Key Vault for SHM secrets and create emergency admin account
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
@@ -464,9 +459,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 ## Deploy virtual network and VPN gateway
 
-![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
@@ -530,9 +523,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ## Deploy and configure domain controllers
 
-![Powershell](https://img.shields.io/badge/local-one%20hour-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-one%20hour-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_DC.ps1 -shmId <SHM ID>
@@ -687,6 +678,7 @@ C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 + Wait a few minutes for the changes to propagate
 
 ![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+
 + Click `Users > All users` and confirm that the new user is shown in the user list.
 + The new user account should have the `Directory synced` field set to `Yes`
 
@@ -739,9 +731,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 ## Deploy and configure network policy server
 
-![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
@@ -867,9 +857,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 ## Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
@@ -887,9 +875,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 
 ### How to deploy a Nexus package repository
 
-![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
@@ -903,9 +889,7 @@ In `./deployment/safe_haven_management_environment/setup` run
 
 > :warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
-![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
@@ -917,9 +901,7 @@ In `./deployment/safe_haven_management_environment/setup` run
 
 ## Deploy logging
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
-
-In `./deployment/safe_haven_management_environment/setup` run
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
