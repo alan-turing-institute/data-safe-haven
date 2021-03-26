@@ -306,7 +306,7 @@ file transfer is disabled by default.
 ### 🌱 First login
 
 Before your first login, you will receive two sets of credentials. The 'Web
-Portal' credentials are for connecting to the Gaucamole portal. After you have
+Portal' credentials are for connecting to the Guacamole portal. After you have
 logged in to Guacamole you will be able to select a SSH (text based) or RDP
 (graphical desktop) interface to the virtual machine.
 
@@ -382,9 +382,18 @@ or directories. New files and directories created here will belong to the
 group will be given read and write privileges. This means that *any user* will
 be able to read, edit and delete files and directories created here.
 
+If you want to give files created outside of `/shared` equivalent permissions
+(for example something you created in your home directory then copied to
+`/shared`) to files created in `/shared` you can run
+
+```
+$ chgrp shared myfile
+$ chmod u=rw,g=rw,o= myfile
+```
+
 #### Output data
 
 The output directory, `/output`, provides a convenient place to put the products
-of your work. This directory is writable by all users. At the end of a project,
+of your work. This directory is writeable by all users. At the end of a project,
 data stored here can be reviewed, and extracted from the environment by an
 administrator.
