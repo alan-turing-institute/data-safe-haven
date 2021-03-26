@@ -18,7 +18,9 @@ An overview of our security controls is shown here
 
 1. Deploy SHM and both a tier 2 and 3 SRE from your release code
 2. Create an issue called `Carry out security evaluation checklist for release x.x.x`
-3. Using [#932](https://github.com/alan-turing-institute/data-safe-haven/issues/932) as a guide, create the checklist as per this document and check it off, adding screenshots of your evidence to comments as you go
+3. Using [#977](https://github.com/alan-turing-institute/data-safe-haven/issues/977) as a guide, create the checklist as per this document and check it off as
+    - The :camera: indicates that you should **Verify** by adding a screenshot(s) of your evidence to the issue comments, which you can use the numbering to reference
+    - The :white_check_mark: means that you should **Verify** by ticking a box to say you've done this, but that a screenshot is not needed
 
 ## Contents
 
@@ -60,26 +62,27 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
  + b) Visit https://aka.ms/mfasetup in an incognito browser
  + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
- + d) **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
- + e) **Verify after adding to group**: Login again and check that apps can now be viewed
- + f) **Verify**: attempt to login to DSVM Main (Desktop) fails
+ + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
+ + e) :camera: **Verify after adding to group**: Login again and check that apps can now be viewed
+ + f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails
 2. Check that the user is able to successfully set up MFA
   + a) Visit https://aka.ms/mfasetup again
   + b) Attempt to login and reset password
-  + c) **Verify:** user guided to set up MFA
+  + c) :camera: **Verify:** user guided to set up MFA
   + d) Set up MFA
-  + e) **Verify:** successfully set up MFA
+  + e) :camera: **Verify:** successfully set up MFA
 3. Check that the user is able to successfully login to the apps once MFA is set up
-  + a) **Verify**: login to the portal using the user account and check that MFA requested
-  + b) **Verify**: login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) and **check that MFA is requested on first attempt** when you log in to DSVM Main (Desktop)
+  + a) :camera: **Verify**: login to the portal using the user account and check that MFA requested
+  + b) Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + c) :camera: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
 
 ### Verify by (WB):
 
 5. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
-  + b) **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
-  + c) **Verify**: No trusted ips (this means that no one can skip MFA)
-  + d) **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
+  + b) :camera: **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
+  + c) :camera: **Verify**: No trusted ips (this means that no one can skip MFA)
+  + d) :camera: **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
 
 ## 2. Isolated Network
 
@@ -101,29 +104,29 @@ SREs in the same SHM are still isolated from one another.
   + a) Connect to the SHM VPN
   + b) Connect to the SHM DC
   + c) Connect to the SHM NPS
-  + d) **Verify:** Connection works
+  + d) :white_check_mark: **Verify:** Connection works
   + e) Disconnect from the SHM VPN
   + f) Attempt to connect to the SHM DC and NPS again
-  + g) **Verify:** Connection fails
+  + g) :white_check_mark: **Verify:** Connection fails
 2. Be unable to connect to the internet from within a DSVM on the SRE network.
   + a) Login as a user to a DSVM from within the SRE by using the web client.
   + b) Choose your favourite three websites and attempt to access the internet using a browser
-  + c) **Verify**: Connection fails
+  + c) :white_check_mark: **Verify**: Connection fails
   + d) Alternative if using terminal **Verify**: type `curl <website>` and check that you get the following response `<insert firewall message denying the connection as it matched the default rule>`
 3. Check that users cannot connect beween two SREs within the same SHM, even if they have access to both SREs
   + a) Ensure you have two SREs managed by the same SHM
   + b) Connect to a DSVM in SRE A as a user by using the web client.
   + c) Attempt to connect to a DSVM SRE B via remote desktop or SSH
-  + d) **Verify:** Connection fails
+  + d) :white_check_mark: **Verify:** Connection fails
   + e) Repeat the test, this time trying to connect from a DSVM in SRE B to a DSVM in SRE A
 4. Check that one can connect between the SHM->SRE and SRE->SHM
   + a) Connect to the SHM DC (using the SHM VPN) as domain admin
   + b) Connect to an SRE DSVM using remote desktop or SSH
-  + c) **Verify:** Connection succeeds
+  + c) :white_check_mark: **Verify:** Connection succeeds
   + d) Disconnect from both
   + e) Connect to the SRE DSVM
   + f) Connect to the SHM DC using remote desktop or SSH
-  + g **Verify:** Connection suceeds [MOR: Ideally it should not be possible to log into any SHM VMs from any SRE VMs, even with admin credentials due to network rules forbidding the connection]
+  + g :white_check_mark: **Verify:** Connection suceeds [MOR: Ideally it should not be possible to log into any SHM VMs from any SRE VMs, even with admin credentials due to network rules forbidding the connection]
 
 ### Verify by (WB):
 
