@@ -362,7 +362,6 @@ go back to the Guacamole home page.
 You will now be able to connect to the VM in either an SSH or RDP connection
 using your new VM password.
 
-
 ### 🗄️ Data
 
 #### Input data
