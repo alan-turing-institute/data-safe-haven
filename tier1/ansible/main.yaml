@@ -342,13 +342,6 @@
             name: xrdp
             state: present
 
-        - name: Start and enable xrdp service
-          become: yes
-          ansible.builtin.systemd:
-            name: xrdp
-            state: started
-            enabled: yes
-
         - name: Set xrdp encryption level to high
           become: yes
           ansible.builtin.lineinfile:
@@ -358,6 +351,7 @@
             line: '\1encrypt_level=high'
             backrefs: yes
             backup: yes
+          notify: Restart xrdp
 
         - name: Write startwm.sh script
           become: yes
@@ -379,6 +373,7 @@
               # Start xfce4
               startxfce4
             backup: yes
+          notify: Restart xrdp
 
         - name: Ensure xrdp user is in the ssl-cert group
           # This is required to let xrdp access
@@ -389,14 +384,15 @@
             name: xrdp
             groups: ssl-cert
             append: yes
-          register: xrdp_groups
+          notify: Restart xrdp
 
-        - name: Restart xrdp service
+        - name: Start and enable xrdp service
           become: yes
           ansible.builtin.systemd:
             name: xrdp
-            state: restarted
-          when: xrdp_groups.changed
+            state: started
+            enabled: yes
+
 
     - name: Install and configure desktop
       block:
@@ -441,3 +437,10 @@
       loop: "{{ snap_packages }}"
       async: 1800
       poll: 1
+
+  handlers:
+    - name: Restart xrdp
+      become: yes
+      ansible.builtin.systemd:
+        name: xrdp
+        state: restarted
