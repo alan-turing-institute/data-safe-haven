@@ -353,6 +353,7 @@ You should have already set up a non-privileged user account upon setting up the
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 + This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
+
 </details>
 
 #### Ensure that your non-privileged user account is in the correct Security Group

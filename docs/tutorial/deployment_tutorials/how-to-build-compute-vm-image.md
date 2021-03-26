@@ -62,21 +62,21 @@ These instructions will walk you through creating a new VM image for use in the 
 + SHM configuration file
   + The core properties for the environment must be present in the `environment_configs/core` folder as described in [the Safe Haven Management deployment instructions](how-to-deploy-shm.md).
 
-
 ## :gift: 2. (Optional) Customising the build image
 
 Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages. The cloud-init file used here is in the `deployment/dsvm_images/cloud-init` folder. The most common changes to this image that you are likely to want to make are to add a new package or to update the version of an existing package.
 
-#### Adding a new apt package
+### Adding a new apt package
 
 + Add the name of the package to `deployment/dsvm_images/packages/packages-apt.list`
 + If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
   + For example, to check for `Azure Data Studio` , the following line was added:
+
   ```bash
   if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which azuredatastudio)"; else echo "ERROR azuredatastudio not found!"; exit 1; fi
   ```
 
-#### Adding a new Python package
+### Adding a new Python package
 
 + Add the name of the package as it appears on `PyPI` to each of the package lists (supported Python versions only):
   + `deployment/dsvm_images/packages/packages-python-pypi-36.list`
@@ -85,7 +85,7 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
 + If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/dsvm_images/packages/python-requirements.json`
 + You should also add this package to the **whitelist** used by Tier-3 package mirrors in `environment_configs/package_lists/whitelist-core-python-pypi-tier3.list`
 
-#### Adding a new R package
+### Adding a new R package
 
 + Add the name of the package as it appears on `CRAN` or `Bioconductor` to the appropriate package list:
   + `deployment/dsvm_images/packages/packages-r-bioconductor.list`
@@ -100,7 +100,7 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
   + **PyPI:** `environment_configs/package_lists/whitelist-full-python-pypi-tier3.list`
   + **CRAN:** `environment_configs/package_lists/whitelist-full-r-cran-tier3.list`
 
-#### Changing the version of a package
+### Changing the version of a package
 
 If you want to update the version of one of the packages we install from a `.deb` file (eg. `dbeaver` ), you will need to edit `deployment/dsvm_images/cloud-init`
 
