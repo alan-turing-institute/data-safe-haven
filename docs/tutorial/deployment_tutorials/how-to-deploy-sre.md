@@ -11,9 +11,10 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:key: VPN connection to the SHM VNet](#key-vpn-connection-to-the-shm-vnet)
   + [:name_badge: SRE domain name](#name_badge-sre-domain-name)
   + [:arrow_double_up: Deploying multiple SREs in parallel](#arrow_double_up-deploying-multiple-sres-in-parallel)
-+ [:clipboard: Define SRE configuration](#clipboard-define-sre-configuration)
++ [:clipboard: Secure Research Environment configuration](#clipboard-secure-research-environment-configuration)
   + [:apple: SHM configuration properties](#apple-shm-configuration-properties)
   + [:green_apple: SRE configuration properties](#green_apple-sre-configuration-properties)
+  + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
   + [:full_moon: View full SRE configuration](#full_moon-optional-view-full-sre-configuration)
 + [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
@@ -40,27 +41,52 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
 + [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
 + [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
-+ [:bomb: Tearing down the SRE](#bomb-tearing-down-the-sre)
+
+## Explanation of symbols used in this guide
+
+![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
++ This indicates a `Powershell` command which you will need to run locally on your machine
++ Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a `Powershell` terminal and navigate to the indicated directory of your locally checked-out version of the Safe Haven repository
++ Ensure that you are logged into Azure by running the `Connect-AzAccount` command
+  + :pencil: If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ This command will give you a URL and a short alphanumeric code.
+  + You will need to visit that URL in a web browser, enter the code and log in to your account on Azure
+  + :pencil: If you have several Azure accounts, make sure you use one that has permissions to make changes to the subscription you are using
+
+![Remote](https://img.shields.io/badge/remote-estimate%20of%20time%20needed-blue?logo=microsoft-onedrive&style=for-the-badge)
++ This indicates a command which you will need to run remotely on an Azure virtual machine (VM) using `Microsoft Remote Desktop`
++ Open `Microsoft Remote Desktop` and click `Add Desktop` / `Add PC`
++ Enter the private IP address of the VM that you need to connect to in the `PC name` field (this can be found by looking in the Azure portal)
++ Enter the name of the VM (for example `DC1-SHM-TESTA`) in the `Friendly name` field
++ Click `Add`
++ Ensure you are connected to the SHM VPN that you have set up
++ Double click on the desktop that appears under `Saved Desktops` or `PCs`.
++ Use the `username` and `password` specified by the appropriate section of the guide
++ :pencil: If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
+
+![Azure Portal](https://img.shields.io/badge/portal-estimate%20of%20time%20needed-blue?logo=microsoft-azure&style=for-the-badge)
++ This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
++ You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
+
+:pencil: Notes
++ This indicates some explanatory notes or examples that provide additional context for the current step.
+
+:warning: Troubleshooting
++ This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
 
 ## :seedling: Prerequisites
 
-+ An SHM environment that has already been deployed in Azure - follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
-+ An Azure subscription with sufficient credits to build the SRE.
-  + :notebook: Our convention is to name these `Turing SRE - <SRE ID> (SHM <SHM ID>)`
-  + :information_source: We recommend allowing at least **$1,000** in Azure credits for setting up each SRE
-+ **Owner** access to the SRE and SHM Azure subscriptions
-  + :information_source: We recommend using security groups to control access (eg. our subscriptions belong to `Safe Haven Test Admins` or `Safe Haven Production Admins` )
++ An `SHM environment` that has already been deployed in Azure
+  + Follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
++ All [prerequisites needed for deploying the SHM](how-to-deploy-shm.md#prerequisites)
++ An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
+  + This can be the same or different from the one where the SHM is deployed
+  + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
+  + :maple_leaf: We recommend around $1,000 as a reasonable starting point.
+  + :maple_leaf: We recommend using separate Azure Active Directories for users and administrators
 + Access to a global administrator account on the SHM Azure Active Directory
 
-### :beginner: Software
-
-+ `PowerShell` with support for Azure
-  + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-  + Install the [Azure PowerShell Module](<https://docs.microsoft.com/en-us/powershell/azure/install-az-ps>) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
-+ `Microsoft Remote Desktop`
-  + On macOS this can be installed from the [Apple store](https://apps.apple.com)
-+ `OpenSSL`
-  + Install using your package manager of choice
 
 ### :key: VPN connection to the SHM VNet
 
@@ -74,25 +100,20 @@ You will need access to a public routable domain name for the SRE and its name s
 
 > :warning: You can only deploy to **one SRE at a time** from a given computer as the `Az` Powershell module can only work within one Azure subscription at a time.
 
-If you need to deploy multiple SREs in parallel you will need to use multiple computers. One option here is to provision dedicated deployment VMs on Azure - we have had success in doing so when using both Ubuntu and Windows VMs.
+If you need to deploy multiple SREs in parallel you will need to use multiple computers. These can be different physical computers or you can provision dedicated deployment VMs - this is beyond the scope of this guide.
 
-## :clipboard: Define SRE configuration
+## :clipboard: Secure Research Environment configuration
 
 The full configuration details for a new SRE are generated by defining a few "core" properties for the new SRE and the management environment in which it will be deployed.
 
-### :apple: SHM configuration properties
+### Secure research environment ID
 
-The core properties for the relevant pre-existing Safe Haven Management (SHM) environment must be present in the `environment_configs` folder. The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json`.
+Choose a short ID `<SRE ID>` to identify the secure research environment (e.g. `sandbox`). This can have a **maximum of seven alphanumeric characters**.
 
-Please [read the instructions](how-to-deploy-shm.md#create-configuration-file) to find out what to put in this file.
+The core properties for the relevant pre-existing Safe Haven Management (SHM) environment must be defined in a JSON file named `shm_<SHM ID>_core_config.json` in the `environment_configs/core` folder.
+The core properties for the secure research environment (SRE) must be defined in a JSON file named `sre_<SHM ID><SRE ID>_core_config.json` in the `environment_configs/core` folder.
 
-### :green_apple: SRE configuration properties
-
-The core properties for the new SRE environment must be present in the `environment_configs` folder.
-
-> :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer
-
-The following core SRE properties must be defined in a JSON file named `sre_<SHM ID><SRE ID>_core_config.json`.
+The following core SRE properties are required - look at `sre_testasandbox_core_config.json` to see an example.
 
 ``` json
 {
@@ -116,169 +137,231 @@ The following core SRE properties must be defined in a JSON file named `sre_<SHM
 }
 ```
 
-> :pencil: When deciding on what to set the `inboundAccessFrom` field to, we recommend the following settings:
-> - Tier 0/1 SREs: this can be set to 'Internet', allowing access from anywhere.
-> - Tier 2 SREs: this should correspond to the **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organsiation, such as `EduRoam`, `Turing Guest`, `Turing Secure` etc)
-> - Tier 3 SREs: this should correspond to the **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
-> Setting this to 'default' will use the default Turing network ranges.
->
-> :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
-> Each SRE should use a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.21.0.0` to cleanly avoid the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.20.2.0-10.20.3.255`).
-> It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
-> This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
+#### :pencil: Notes
++ When deciding on what to set the `inboundAccessFrom` field to, we recommend the following settings:
+  + Tier 0/1 SREs: this can be set to 'Internet', allowing access from anywhere.
+  + Tier 2 SREs: this should correspond to the **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organsiation, such as `EduRoam`, `Turing Guest`, `Turing Secure` etc)
+  + Tier 3 SREs: this should correspond to the **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
++ Setting `inboundAccessFrom` to 'default' will use the default Turing network ranges.
++ The `ipPrefix` must be unique for each SRE attached to the same SHM.
++ Each SRE should use a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.21.0.0` to cleanly avoid the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.20.2.0-10.20.3.255`).
+  + It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
+  + This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
+
+### :bouquet: (Optional) Verify code version
+In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
+
+![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
+
+```pwsh
+git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
+```
+
+This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
 ### :full_moon: Optional: View full SRE configuration
 
-A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can view a nested printout of the full SRE (or full SHM) config by doing the following:
+A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SRE config by running the following Powershell command:
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
-+ Show the full configuration for the new SRE or the SHM using the following commands.
-  + `Import-Module ./deployment/common/Configuration -Force`
-  + SRE: `Show-FullConfig -shmId <SHM ID> -sreId <SRE ID>`
-  + SHM: `Show-FullConfig -shmId <SHM ID>`
+In `./deployment` run
+
+```pwsh
+./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
 
 ## :cop: Prepare SHM environment
 
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account belongs to multiple Azure tenants (for example, as a guest), you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-
 ### :fast_forward: Optional: Remove data from previous deployments
 
-> :warning: If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM.
+If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM. If the subscription is not empty, confirm that it is not being used before deleting any resources in it. Clear any remaining SRE data from the SHM by running
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ :pencil: If the subscription is not empty, confirm that it is not being used before deleting any resources in it.
-+ Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :registered: Register SRE with the SHM
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Register service accounts with the SHM by running `./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ This step also creates a Key Vault in the SRE subscription in `Resource Groups -> RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS -> kv-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this Key Vault and you will need to access some of these for some of the manual configuration steps later.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This step will register service accounts with the SHM and also create a Key Vault in the SRE subscription (at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS > kv-<SHM ID>-sre-<SRE ID>`).
 
 ## :station: Deploy networking components
 
 ### :clubs: Create SRE DNS Zone
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-one%20minute-blue?logo=powershell&style=for-the-badge)
 
-+ Run `./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>` .
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+#### :warning: Troubleshooting
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
-  <details>
-  <summary><b>Instructions for manually creating SRE DNS records</b></summary>
+<details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
 
-  + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
-
-    <p align="center">
-      <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record"/>
-    </p>
-
-  + Duplicate these records to the parent DNS system as follows:
-    + If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-      + The name should be set to the subdomain (e.g. `sandbox` ) or `@` if using a custom domain, and the values duplicated from above.
-      + For example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk` , duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk` , by creating a record set with name `sandbox` .
-    + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
-
-  </details>
++ To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
+  <p align="center">
+    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record"/>
+  </p>
++ Duplicate these records to the parent DNS system as follows:
+  + If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
+    + The name should be set to the subdomain (e.g. `sandbox` ) or `@` if using a custom domain, and the values duplicated from above.
+    + For example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk` , duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk` , by creating a record set with name `sandbox` .
+  + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+</details>
 
 ### :ghost: Deploy the virtual network
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ The deployment will take **around 5 minutes**.
-+ The VNet peerings may take a few minutes to provision after the script completes.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+#### :pencil: Notes
+The VNet peerings may take a few minutes to provision after the script completes.
 
 ## :fishing_pole_and_fish: Deploy remote desktop
 
 ### :tropical_fish: Deploy the remote desktop servers
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-fifty%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ The deployment will take **around 50 minutes**.
-+ **Troubleshooting** If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+#### :warning: Troubleshooting
+If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
 ### :satellite: Configure RDS webclient
 
-+ Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
-  + :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**. This is not true for macOS.
-+ The private IP address can be found using the Azure portal by navigating to the Virtual Machine `RDG-SRE-<SRE ID>`
-+ Set the PC name to be the IP address and the Friendly name to `RDG-SRE-<SRE ID>`
-+ Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk` ) using the username and password obtained from the Azure portal. They are in the `RG_SHM_<SHM ID>_SECRETS` resource group, in the `kv-shm-<SHM ID>` Key Vault, under `Secrets` . as follows:
-  + The username is the `shm-<SHM ID>-domain-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
-  + The password in the `shm-<SHM ID>-domain-admin-password` secret.
+![Remote](https://img.shields.io/badge/remote-twenty%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
 
-On the **SRE RDS Gateway**.
++ Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
++ Log into the **RDS Gateway** (`RDG-SRE-<SRE ID>`) VM using this `private IP address` together with the same `<admin login>` and `<admin password>` that you used to [log into the SHM domain controller](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
 
-+ Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
-+ Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-+ This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
+you used for logging into the **SHM domain controller**
++ Run the following command on the RDS VM to configure the remote desktop environment
+
+```pwsh
+C:\Installation\Deploy_RDS_Environment.ps1
+```
+
+#### :pencil: Notes
+This script cannot be run remotely since remote `Powershell` runs as a local admin but this script has to be run as a domain admin.
+
+#### :warning: Troubleshooting
+![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**.
 
 ### :closed_lock_with_key: Secure RDS webclient
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-fifteen%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ This will perform the following actions, which can be run individually if desired:
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This will perform the following actions, which can be run individually if desired:
 
 <details>
 <summary><strong>Disable insecure TLS connections</strong></summary>
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ The deployment will take **less than 5 minutes**.
-  + NB. If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+#### :pencil: Notes
+If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
 
 </details>
 
 <details>
 <summary><strong>Configure RDS CAP and RAP settings</strong></summary>
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
 
 <details>
 <summary><strong>Update SSL certificate</strong></summary>
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>`.
-+ **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
-+ **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+- where `<email>` is an email address that you want to be notified when certificates are close to expiry
+
+#### :pencil: Notes
+This script should be run again whenever you want to update the certificate for this SRE.
+
+#### :warning: Troubleshooting
+Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 </details>
 
@@ -292,15 +375,9 @@ You should have already set up a non-privileged user account upon setting up the
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
 
-Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Remote Desktop (you deployed this when setting up the SHM):
+![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
 
-+ Double click on the desktop named `DC1-SHM-<SHM ID>`
-+ Log in as a **domain** user (ie. `<admin username>@<SHM domain>` rather than simply `<admin username>`) using the username and password obtained from the Azure portal as follows:
-  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel.
-  + The username is the `shm-<SHM ID>-domain-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHM domain>` rather than simply `<admin username>`.
-  + The password is the `shm-<SHM ID>-domain-admin-password` secret.
-+ If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
-
++ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
 + Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
@@ -309,6 +386,9 @@ This will create a user in the local Active Directory on the SHM domain controll
 
 #### Ensure that your non-privileged user account is in the correct Security Group
 
+![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+
++ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
 + In Server Manager click `Tools > Active Directory Users and Computers`
 + In `Active Directory Users and Computers`, expand the domain in the left hand panel click `Safe Haven Security Groups`
 + Right click the `SG <SRE ID> Research Users` security group and select `Properties`
@@ -318,27 +398,27 @@ This will create a user in the local Active Directory on the SHM domain controll
   + Enter the start of your username and click `Check names`
   + Select your username and click `Ok`
   + Click `Ok` again to exit the `Add users` dialogue
-+ Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
++ Synchronise with Azure Active Directory by running following `Powershell` command on the SHM primary domain controller
+
+```pwsh
+C:\Installation\Deploy_RDS_Environment.ps1
+```
 
 #### Ensure that your user account has MFA enabled
 
 Please ensure that your account is fully set-up (including MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)).
-In order to verify this switch to your custom Azure Active Directory in the Azure portal:
-
-+ Go to `portal.azure.com` and click on your username in the top-right
-+ Select `Switch directory` and then click on `All Directories`
-+ Select your custom Azure Active Directory in the list of directories
-+ This should cause the portal to reload
-
-</details>
+In order to verify this switch to your custom Azure Active Directory in the Azure portal and make the following checks:
 
 <details>
 <summary><strong>Verify non-privileged user account is set up</strong></summary>
 
+![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+
++ From the Azure portal, navigate to the AAD you have created.
 + The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
-  + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account), and ensure that `Settings` -> `Usage Location` is set.
+  + Navigate to `Azure Active Directory > Manage / Users > (user account)`, and ensure that `Settings > Usage Location` is set.
 + A licence must be assigned to the user.
-  + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
+  + Navigate to `Azure Active Directory > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 + MFA must be enabled for the user.
   + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication).
 
@@ -346,20 +426,19 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 ### :microscope: Test the RDS using a non-privileged user account
 
-On your **deployment machine**.
-
-+ Ensure that you are connecting from one of the **permitted IP ranges** specified in the `inboundAccessFrom` section of the SRE config file. For example, if you have authorised a corporate VPN, check that you have correctly configured you client to connect to it.
-+ Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`, where the first part  of the `<safe haven domain>` is the `<SHM ID>`) and log in with the user name and password you set up for the non-privileged user account.
++ Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
+  + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
 + You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
-+ **NOTE:** The apps will not work until the other servers have been deployed.
 
   <p align="center">
     <img src="../../images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop"/>
   </p>
 
-<details>
-<summary><strong>Troubleshooting</strong></summary>
+#### :pencil: Notes
++ Ensure that you are connecting from one of the **permitted IP ranges** specified in the `inboundAccessFrom` section of the SRE config file. For example, if you have authorised a corporate VPN, check that you have correctly configured you client to connect to it.
++ Note that clicking on the apps will not work until the other servers have been deployed.
 
+#### :warning: Troubleshooting
 If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
 
 + Go back to the previous section and rerun the `C:\Installation\Deploy_RDS_Environment.ps1` script on the RDS gateway.
@@ -374,25 +453,24 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 + Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
 
-</details>
-
 ## :snowflake: Deploy web applications (GitLab and CodiMD)
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ The deployment will take **around 30 minutes**.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :microscope: Test GitLab and CodiMD servers
 
-On your **deployment machine**.
-
-+ Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/` ) and log in.
-+ Test `GitLab` by clicking on the `GitLab` app icon.
++ Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
+  + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
+  + Test `GitLab` by clicking on the `GitLab` app icon.
   + You should receive an MFA request to your phone or authentication app.
   + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
@@ -402,57 +480,62 @@ On your **deployment machine**.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 + If you do not get an MFA prompt or you cannot connect to the `GitLab` and `CodiMD` servers, follow the **troubleshooting** instructions below.
 
-<details>
-<summary><strong>Troubleshooting</strong></summary>
+#### :warning: Troubleshooting
 
-  If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
+If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
 
-  + Ensure that both the SHM NPS server and the RDS Gateway are running
-  + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the configuration of the RDS gateway and NPS VMs.
-  + Ensure that the default UDP ports `1812` , `1813` , `1645` and `1646` are all open on the SHM NPS network security group ( `NSG_SHM_SUBNET_IDENTITY` ). [This documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)) gives further details.
++ Ensure that both the SHM NPS server and the RDS Gateway are running
++ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the configuration of the RDS gateway and NPS VMs.
++ Ensure that the default UDP ports `1812` , `1813` , `1645` and `1646` are all open on the SHM NPS network security group ( `NSG_SHM_SUBNET_IDENTITY` ). [This documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)) gives further details.
 
-  If this does not resolve the issue, trying checking the Windows event logs
+If this does not resolve the issue, trying checking the Windows event logs
 
-    + Use `Event Viewer` on the SRE RDS Gateway ( `Custom views > Server roles > Network Policy and Access Services` ) to check whether the NPS server is contactable and whether it is discarding requests
-    + Use `Event Viewer` on the SHM NPS server ( `Custom views > Server roles > Network Policy and Access Services` ) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
-      + Ensure that the requests are being received from the **private** IP address of the RDS Gateway and **not** its public one.
-    + One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x` . [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
-      + This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
-    + Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
+  + Use `Event Viewer` on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
+  + Use `Event Viewer` on the SHM NPS server (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
+    + Ensure that the requests are being received from the **private** IP address of the RDS Gateway and **not** its public one.
+  + One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x` . [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
+    + This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
+  + Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
 
-  If you get a `We couldn't connect to the gateway because of an error` message, it's likely that the `Remote RADIUS Server` authentication timeouts have not been set correctly.
+If you get a `We couldn't connect to the gateway because of an error` message, it's likely that the `Remote RADIUS Server` authentication timeouts have not been set correctly.
 
-  + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
-    + If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
-  + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
-  + :warning: This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
++ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
+  + If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
++ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
++ :warning: This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 
-</details>
 
 ## :floppy_disk: Deploy storage accounts
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy an SRE storage account using `./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>`
-  + This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
-+ The deployment will take **around 5 minutes** to complete.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
 ## :baseball: Deploy databases
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-depends%20on%20settings-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
-  + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
-  + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
++ The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
++ The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
 
 ## :computer: Deploy data science VMs
 
@@ -466,64 +549,68 @@ On your **deployment machine**.
 
 ### :computer: Deploy a single data science VM (DSVM)
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-+ Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>`.
-  + The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
-  + The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
-  + You can also provide a VM size by passing the optional `-vmSize` parameter.
-+ After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
-+ The deployment will take around 10 minutes to complete
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+- where `<IP last octet>` is last octet of the IP address
+- you can also provide a VM size by passing the optional `-vmSize` parameter.
+
+This will deploy a new compute VM into the SRE environment
+
+#### :pencil: Notes
++ The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
++ ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
 + If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
-
-### :microscope: Test DSVM deployment
-
-+ Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
-+ Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
-+ If you are not prompted with `login:` , hit enter until the prompt appears
-+ Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE Key Vault.
-+ Enter the password from the `sre-<SRE ID>-vm-admin-password-compute` secret in the SRE Key Vault.
-+ To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt` . You should see the contents of the `deployment/secure_research_environment/cloud_init/cloud-init-compute-vm.template.yaml` file in the Safe Haven git repository.
-+ To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## :lock: Apply network configuration
 
-On your **deployment machine**.
+![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :fire_engine: Configure firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-+ This will take **a few minutes** to run.
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
+
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :chart_with_upwards_trend: Configure logging
 
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -shmId $shmId -sreId $sreId`.
-+ This will take **a few minutes** to run.
-+ If configuration fails for one or more of the VMs, see the **troubleshooting** instructions below.
+![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
 
-<details>
-<summary><strong>Troubleshooting</strong></summary>
+In `./deployment/secure_research_environment/setup` run
+
+```pwsh
+./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+#### :warning: Troubleshooting
 
 The API call that installs the logging extensions to the VMs will time out after a few minutes, so you may get some extension installation failure messages if installation of the loggin agent takes longer than this to complete.
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
@@ -535,30 +622,24 @@ Where the issue was an API timeout, these VMs will report that the extension is 
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
 If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
 
-</details>
 
 ## :fire: Run smoke tests on DSVM
 
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
 
+![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
++ Navigate to the **compute VM** that you have just deployed in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE > SRE-<SRE ID>-<IP last octet>-<version number>` and note the `Private IP address` for this VM
++ Next, navigate to the `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS` resource group and then the `kv-<SHM ID>-sre-<SRE ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
++ `<admin username>` is in the `sre-<SRE ID>-vm-admin-username` secret.
++ `<admin password>` is in the `sre-<SRE ID>-vm-admin-password-compute` secret.
+
+
 To run the smoke tests:
 
-+ Connect to the DSVM using the remote desktop URL (eg. `https://sandbox.dsgroupdev.co.uk/` ) and selecting the the `DSVM Main (Desktop)` app
-
-On the **DSVM**.
-
+![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
++ Log into the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) VM that you just deployed using the credentials that you just retrieved from the portal.
 + Open a terminal session
 + Enter the test directory using `cd /opt/verification/smoke_tests`
 + Run `bats run_all_tests.bats` .
 + If all test results are expected you are done! Otherwise check the `README.md` in this folder for help diagnosing test failures.
-
-## :bomb: Tearing down the SRE
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.

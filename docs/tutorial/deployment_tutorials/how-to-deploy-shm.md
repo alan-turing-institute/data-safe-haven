@@ -5,8 +5,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 ## Contents
 
 + [Prerequisites](#prerequisites)
-+ [Safe Haven Management configuration](#safe-haven-management-configuration)
-  + [View full SHM configuration](#optional-view-full-shm-configuration)
++ [:clipboard: Safe Haven Management configuration](#clipboard-safe-haven-management-configuration)
+  + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
+  + [:full_moon: View full SHM configuration](#full_moon-optional-view-full-shm-configuration)
 + [Configure DNS for the custom domain](#configure-dns-for-the-custom-domain)
 + [Setup Azure Active Directory (AAD)](#setup-azure-active-directory-aad)
 + [Deploy Key Vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
@@ -20,33 +21,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [Deploy logging](#deploy-logging)
 + [Deploy Python/R package repositories](#deploy-PythonR-package-repositories)
 
-## Prerequisites
-
-+ An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
-  + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
-  + :maple_leaf: We recommend around $3,000 as a reasonable starting point.
-  + :maple_leaf: We recommend using separate Azure Active Directories for users and administrators
-+ `PowerShell`
-  + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
-+ `Powershell` cross-platform modules
-  + :maple_leaf: You can run `./deployment/CheckRequirements.ps1` to print out the commands needed to install any missing modules
-  + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on **Windows**. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
-+ `Microsoft Remote Desktop`
-  + ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
-  + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
-+ `OpenSSL`
-  + ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
-  + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
-    + :warning: If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
-  + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
-
-
 ## Explanation of symbols used in this guide
 
 ![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
 + This indicates a `Powershell` command which you will need to run locally on your machine
 + Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a `Powershell` terminal and navigate to the base directory of your locally checked-out version of the Safe Haven repository
++ Open a `Powershell` terminal and navigate to the indicated directory of your locally checked-out version of the Safe Haven repository
 + Ensure that you are logged into Azure by running the `Connect-AzAccount` command
   + :pencil: If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + This command will give you a URL and a short alphanumeric code.
@@ -74,9 +54,28 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 :warning: Troubleshooting
 + This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
 
+## Prerequisites
+
++ An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
+  + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
+  + :maple_leaf: We recommend around $3,000 as a reasonable starting point.
+  + :maple_leaf: We recommend using separate Azure Active Directories for users and administrators
++ `PowerShell`
+  + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
++ `Powershell` cross-platform modules
+  + :maple_leaf: You can run `./deployment/CheckRequirements.ps1` to print out the commands needed to install any missing modules
+  + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on **Windows**. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
++ `Microsoft Remote Desktop`
+  + ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
+  + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
++ `OpenSSL`
+  + ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
+  + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
+    + :warning: If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
+  + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
 
 
-## Safe Haven Management configuration
+## :clipboard: Safe Haven Management configuration
 
 ### Management environment ID
 
@@ -125,13 +124,27 @@ The following core SHM properties are required - look at `shm_testa_core_config.
   + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **development** uses `<SHM ID>.dsgroupdev.co.uk`
 
 
-### Optional: View full SHM configuration
+### :bouquet: (Optional) Verify code version
+In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
+
+![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
+
+```pwsh
+git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
+```
+
+This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
+
+### :full_moon: (Optional) View full SHM configuration
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SHM config by running the following Powershell command:
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
+
+In `./deployment` run
+
 ```pwsh
-./deployment/ShowConfigFile.ps1 -shmId <SHM ID>
+./ShowConfigFile.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -139,6 +152,9 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ## Configure DNS for the custom domain
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
+
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
 ```
@@ -149,14 +165,15 @@ A full configuration, which will be used in subsequent steps, will be automatica
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
 
 <details><summary><b>Manual DNS configuration instructions</b></summary>
-  + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain. The NS record will list four Azure name servers.
-  + Duplicate these records to the parent DNS system as follows:
-    + If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above
-      + For example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`
-    <p align="center">
-      <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record"/>
-    </p>
-    + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
++ To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain. The NS record will list four Azure name servers.
++ Duplicate these records to the parent DNS system as follows:
+  + If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above
+    + For example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`
+  <p align="center">
+    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record"/>
+  </p>
+  + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 </details>
 
 ## Setup Azure Active Directory (AAD)
@@ -203,6 +220,8 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
@@ -221,6 +240,8 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 ## Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
+
+In `./deployment/safe_haven_management_environment/setup` run
 
 ```pwsh
 pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
@@ -445,6 +466,8 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ```
@@ -509,6 +532,8 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ![Powershell](https://img.shields.io/badge/local-one%20hour-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 ```
@@ -527,13 +552,13 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 </details>
 
-### Configure the first domain controller (DC1) via Remote Desktop
+### Configure the first domain controller via Remote Desktop
 
 ![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
   + Navigate to the **SHM primary domain controller** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_DC > DC1-SHM-<SHM ID>` and note the `Private IP address` for this VM
-  + On the Azure portal navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel.
+  + Next, navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
   + `<admin username>` is in the `shm-<SHM ID>-domain-admin-username` secret.
-    + Add your custom AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
+    + Add the SHM AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
   + `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
 
@@ -716,6 +741,8 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
 ```
@@ -842,6 +869,8 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 ```
@@ -860,6 +889,8 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 
 ![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
@@ -874,6 +905,8 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 
 ![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge)
 
+In `./deployment/safe_haven_management_environment/setup` run
+
 ```pwsh
 ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
@@ -885,6 +918,8 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ## Deploy logging
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge)
+
+In `./deployment/safe_haven_management_environment/setup` run
 
 ```pwsh
 ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
