@@ -341,7 +341,7 @@ resource "local_file" "ansible_inventory" {
 
 # Write variables for Ansible to access
 resource "local_file" "terraform_vars" {
-  filename        = "../ansible/terraform_vars.yaml"
+  filename        = "../ansible/vars/terraform_vars.yaml"
   file_permission = "0644"
   content         = <<-DOC
     ---

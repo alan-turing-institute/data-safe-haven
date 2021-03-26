@@ -4,7 +4,7 @@
   hosts: localhost
 
   vars_files:
-    - ansible_vars.yaml
+    - vars/ansible_vars.yaml
 
   tasks:
     - name: Check all required variables are defined
@@ -26,7 +26,7 @@
     - devsec.hardening
 
   vars_files:
-    - terraform_vars.yaml
+    - vars/terraform_vars.yaml
 
   roles:
     - role: wait_for_cloud_init
@@ -52,8 +52,8 @@
     guacadmin_file_path: "{{ ansible_user_dir }}/guacadmin"
 
   vars_files:
-    - ansible_vars.yaml
-    - terraform_vars.yaml
+    - vars/ansible_vars.yaml
+    - vars/terraform_vars.yaml
 
   roles:
     - role: wait_for_cloud_init
@@ -234,8 +234,8 @@
     - community.general
 
   vars_files:
-    - ansible_vars.yaml
-    - terraform_vars.yaml
+    - vars/ansible_vars.yaml
+    - vars/terraform_vars.yaml
 
   roles:
     - role: wait_for_cloud_init

@@ -4,7 +4,7 @@
   hosts: localhost
 
   vars_files:
-    - user_vars.yaml
+    - var/user_vars.yaml
 
   tasks:
     - name: Check all required user variables are defined
@@ -33,8 +33,8 @@
     guac_initial_passwords: []
 
   vars_files:
-    - terraform_vars.yaml
-    - user_vars.yaml
+    - vars/terraform_vars.yaml
+    - vars/user_vars.yaml
 
   tasks:
     - name: (Temporarily) disable TOTP to allowd Guacamole configuration through the API
@@ -197,7 +197,7 @@
     initial_passwords: {}
 
   vars_files:
-    - user_vars.yaml
+    - vars/user_vars.yaml
 
   tasks:
     - name: Create initial passwords for new users

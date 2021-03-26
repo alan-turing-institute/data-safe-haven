@@ -147,7 +147,7 @@ Terraform will have written some files to this directory,
 
 - `inventory.yaml` - The Ansible inventory, which tells Ansible how to connect to
   the virtual machines
-- `terraform_vars.yaml` - Some variables exported for Terraform that will be used
+- `vars/terraform_vars.yaml` - Some variables exported for Terraform that will be used
   by Ansible
 - `{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the DSVM and
   Guacamole machines respectively
@@ -161,7 +161,7 @@ $ ansible-galaxy install -r requirements.yaml
 Make a copy of the example variables file
 
 ```
-$ cp ansible_vars.yaml.example ansible_vars.yaml
+$ cp vars/ansible_vars.yaml.example vars/ansible_vars.yaml
 ```
 
 Open your copy with your text editor and ensure the values are correct and
@@ -193,7 +193,7 @@ $ ansible-playbook -i inventory.yaml main.yaml
 Make a copy of the users variables file
 
 ```
-$ cp user_vars.yaml.example user_vars.yaml
+$ cp vars/user_vars.yaml.example vars/user_vars.yaml
 ```
 
 Open your copy with your editor.  If you want the user management role to
@@ -261,17 +261,17 @@ convenient and secure for both data ingress and egress.
 The Ansible variables file [`host_vars/dsvm.yaml`](ansible/host_vars/dsvm.yaml)
 has a number of DSVM packages predefined. You can also install additional apt
 packages (from the default repositories) or [snaps](https://snapcraft.io/) by
-editing your [`ansible_vars.yaml`](ansible/ansible_vars.yaml.example) file.
+editing your [`ansible_vars.yaml`](ansible/vars/ansible_vars.yaml.example) file.
 
 To install additional packages using `apt` (Ubuntu's package manager), add the
 names of the packages to the list `apt_packages_extra` in
-[`ansible_vars.yaml`](ansible/ansible_vars.yaml.example). You can find the names
-of packages for the default Ubuntu 20.04 LTS image on the [the Ubuntu packages
-website](https://packages.ubuntu.com/focal/).
+[`ansible_vars.yaml`](ansible/vars/ansible_vars.yaml.example). You can find the
+names of packages for the default Ubuntu 20.04 LTS image on the [the Ubuntu
+packages website](https://packages.ubuntu.com/focal/).
 
 To add new snap packages add them to the list `snap_packages_extra` in
-[`ansible_vars.yaml`](ansible/ansible_vars.yaml.example). Each item on this list
-must have the key `name` which is the name of the snap as you would use to
+[`ansible_vars.yaml`](ansible/vars/ansible_vars.yaml.example). Each item on this
+list must have the key `name` which is the name of the snap as you would use to
 install on the command line. You can find the names of snaps on the [snap
 store](https://snapcraft.io/store) by selecting a snap and clicking the green
 install button. If the snap should be installed with classic confinement (this
