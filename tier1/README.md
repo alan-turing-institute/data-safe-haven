@@ -143,13 +143,13 @@ Change to the Ansible directory
 $ cd ../ansible
 ```
 
-Terraform will have written some files to this directory,
+Terraform will have written some files needed by Ansible,
 
 - `inventory.yaml` - The Ansible inventory, which tells Ansible how to connect to
   the virtual machines
 - `vars/terraform_vars.yaml` - Some variables exported for Terraform that will be used
   by Ansible
-- `{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the DSVM and
+- `../keys/{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the DSVM and
   Guacamole machines respectively
 
 Ensure the required Ansible roles and collections are installed

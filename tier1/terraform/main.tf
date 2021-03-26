@@ -106,7 +106,7 @@ resource "tls_private_key" "guacamole_admin" {
 
 # Write admin account private key to a file
 resource "local_file" "guacamole_admin_private_key" {
-  filename        = "../ansible/guacamole_admin_id_rsa.pem"
+  filename        = "../keys/guacamole_admin_id_rsa.pem"
   file_permission = "0600"
   content         = tls_private_key.guacamole_admin.private_key_pem
 }
@@ -213,7 +213,7 @@ resource "tls_private_key" "dsvm_admin" {
 
 # Write admin account private key to a file
 resource "local_file" "dsvm_admin_private_key" {
-  filename        = "../ansible/dsvm_admin_id_rsa.pem"
+  filename        = "../keys/dsvm_admin_id_rsa.pem"
   file_permission = "0600"
   content         = tls_private_key.dsvm_admin.private_key_pem
 }
