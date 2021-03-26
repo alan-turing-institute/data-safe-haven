@@ -7,34 +7,34 @@ These instructions will walk you through deploying a Secure Research Environment
 ## Contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-  + [:key: VPN connection to the SHM VNet](#key-vpn-connection-to-the-shm-vnet)
-  + [:name_badge: SRE domain name](#name_badge-sre-domain-name)
-  + [:arrow_double_up: Deploying multiple SREs in parallel](#arrow_double_up-deploying-multiple-sres-in-parallel)
+  + [VPN connection to the SHM VNet](#vpn-connection-to-the-shm-vnet)
+  + [SRE domain name](#sre-domain-name)
+  + [Deploying multiple SREs in parallel](#deploying-multiple-sres-in-parallel)
 + [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
-  + [:apple: SHM configuration properties](#apple-shm-configuration-properties)
-  + [:green_apple: SRE configuration properties](#green_apple-sre-configuration-properties)
-  + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
-  + [:full_moon: View full SRE configuration](#full_moon-optional-view-full-sre-configuration)
+  + [SHM configuration properties](#shm-configuration-properties)
+  + [SRE configuration properties](#sre-configuration-properties)
+  + [Verify code version](#optional-verify-code-version)
+  + [View full SRE configuration](#optional-view-full-sre-configuration)
 + [:cop: 3. Prepare SHM environment](#cop-3-prepare-shm-environment)
-  + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
-  + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
+  + [Optional: Remove data from previous deployments](#optional-remove-data-from-previous-deployments)
+  + [Register SRE with the SHM](#register-sre-with-the-shm)
 + [:station: 4. Deploy networking components](#station-4-deploy-networking-components)
-  + [:clubs: Create SRE DNS Zone](#clubs-create-sre-dns-zone)
-  + [:ghost: Deploy the virtual network](#ghost-deploy-the-virtual-network)
-+ [:fishing_pole_and_fish: 5. Deploy remote desktop](#fishing_pole_and_fish-5-deploy-remote-desktop)
-  + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
-  + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
-  + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
-  + [:bicyclist: Set up a non-privileged user account](#bicyclist-optional-set-up-a-non-privileged-user-account)
-  + [:microscope: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
+  + [Create SRE DNS Zone](#create-sre-dns-zone)
+  + [Deploy the virtual network](#deploy-the-virtual-network)
++ [:satellite: 5. Deploy remote desktop](#satellite-5-deploy-remote-desktop)
+  + [Deploy the remote desktop servers](#deploy-remote-desktop-servers)
+  + [Configure RDS webclient](#configure-rds-webclient)
+  + [Secure RDS webclient](#secure-rds-webclient)
+  + [Set up a non-privileged user account](#optional-set-up-a-non-privileged-user-account)
+  + [Test the RDS using a non-privileged user account](#test-the-rds-using-a-non-privileged-user-account)
 + [:snowflake: 6. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
-  + [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
-  + [:microscope: Test CodiMD Server](#microscope-test-codimd-server)
+  + [Test GitLab Server](#test-gitlab-server)
+  + [Test CodiMD Server](#test-codimd-server)
 + [:floppy_disk: 7. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
 + [:baseball: 8. Deploy databases](#baseball-8-deploy-databases)
 + [:computer: 9. Deploy data science VMs](#computer-9-deploy-data-science-vms)
-  + [:fast_forward: Optional: Customise the deployed VM](#fast_forward-optional-customise-the-deployed-vm)
-  + [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
+  + [Customise the deployed VM](#optional-customise-the-deployed-vm)
+  + [Deploy a single data science VM (DSVM)](#deploy-a-single-data-science-vm-dsvm)
 + [:lock: 10. Apply network configuration](#lock-10-apply-network-configuration)
 + [:fire_engine: 11. Deploy firewall](#fire_engine-11-deploy-firewall)
 + [:chart_with_upwards_trend: 12. Configure logging](#chart_with_upwards_trend-12-configure-logging)
@@ -94,15 +94,15 @@ These instructions will walk you through deploying a Secure Research Environment
   + :maple_leaf: We recommend using separate Azure Active Directories for users and administrators
 + Access to a global administrator account on the SHM Azure Active Directory
 
-### :key: VPN connection to the SHM VNet
+### VPN connection to the SHM VNet
 
 For some operations, you will need to log on to some of the VMs that you deploy and make manual changes. This is done using the VPN which should have been deployed [when setting up the SHM environment](how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network).
 
-### :name_badge: SRE domain name
+### SRE domain name
 
 You will need access to a public routable domain name for the SRE and its name servers. This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk` , or a top-level domain (eg. `dsgroup100.co.uk` ).
 
-### :arrow_double_up: Deploying multiple SREs in parallel
+### Deploying multiple SREs in parallel
 
 > :warning: You can only deploy to **one SRE at a time** from a given computer as the `Az` Powershell module can only work within one Azure subscription at a time.
 
@@ -155,7 +155,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
   + It is very important that address spaces do not overlap in the environment as this will cause network faults. This means that prefixes must differ by at least 8 in their third octet.
   + This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
-### :bouquet: (Optional) Verify code version
+### (Optional) Verify code version
 
 In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
 
@@ -167,7 +167,7 @@ git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
-### :full_moon: (Optional) View full SRE configuration
+### (Optional) View full SRE configuration
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SRE config by running the following Powershell command:
 
@@ -182,7 +182,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 ## :cop: 3. Prepare SHM environment
 
-### :fast_forward: Optional: Remove data from previous deployments
+### (Optional) Remove data from previous deployments
 
 If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM. If the subscription is not empty, confirm that it is not being used before deleting any resources in it. Clear any remaining SRE data from the SHM by running
 
@@ -195,7 +195,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-### :registered: Register SRE with the SHM
+### Register SRE with the SHM
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -210,7 +210,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ## :station: 4. Deploy networking components
 
-### :clubs: Create SRE DNS Zone
+### Create SRE DNS Zone
 
 ![Powershell](https://img.shields.io/badge/local-one%20minute-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -239,7 +239,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 </details>
 
-### :ghost: Deploy the virtual network
+### Deploy the virtual network
 
 ![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -254,9 +254,9 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 The VNet peerings may take a few minutes to provision after the script completes.
 
-## :fishing_pole_and_fish: 5. Deploy remote desktop
+## :satellite: 5. Deploy remote desktop
 
-### :tropical_fish: Deploy the remote desktop servers
+### Deploy the remote desktop servers
 
 ![Powershell](https://img.shields.io/badge/local-fifty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -271,7 +271,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
-### :satellite: Configure RDS webclient
+### Configure RDS webclient
 
 ![Remote](https://img.shields.io/badge/remote-twenty%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
 
@@ -291,7 +291,7 @@ This script cannot be run remotely since remote `Powershell` runs as a local adm
 
 ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**.
 
-### :closed_lock_with_key: Secure RDS webclient
+### Secure RDS webclient
 
 ![Powershell](https://img.shields.io/badge/local-fifteen%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -356,7 +356,7 @@ This will perform the following actions, which can be run individually if desire
 
 </details>
 
-### :bicyclist: Optional: Set up a non-privileged user account
+### Optional: Set up a non-privileged user account
 
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
@@ -415,7 +415,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 </details>
 
-### :microscope: Test the RDS using a non-privileged user account
+### Test the RDS using a non-privileged user account
 
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
@@ -457,7 +457,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-### :microscope: Test GitLab and CodiMD servers
+### Test GitLab and CodiMD servers
 
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
@@ -526,14 +526,14 @@ This will deploy any databases that you specified in the core config file. The t
 
 ## :computer: 9. Deploy data science VMs
 
-### :fast_forward: Optional: Customise the deployed VM
+### (Optional) Customise the deployed VM
 
 If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file on your **deployment machine**.
 
 + By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
 + If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
-### :computer: Deploy a single data science VM (DSVM)
+### Deploy a single data science VM (DSVM)
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 

@@ -6,14 +6,14 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
-  + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
-  + [:full_moon: View full SHM configuration](#full_moon-optional-view-full-shm-configuration)
+  + [Verify code version](#optional-verify-code-version)
+  + [View full SHM configuration](#optional-view-full-shm-configuration)
 + [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [:passport_control: 6. Enable MFA and self-service password reset](#passport_control-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
-+ [:ghost: 8. Deploy virtual network and VPN gateway](#ghost-8-deploy-virtual-network-and-vpn-gateway)
++ [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:light_rail: 10. Deploy and configure network policy server](#light_rail-10-deploy-and-configure-network-policy-server)
 + [:iphone: 11. Require MFA for all users](#iphone-11-require-mfa-for-all-users)
@@ -132,7 +132,7 @@ The following core SHM properties are required - look at `shm_testa_core_config.
   + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **production** uses `<SHM ID>.turingsafehaven.ac.uk`
   + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **development** uses `<SHM ID>.dsgroupdev.co.uk`
 
-### :bouquet: (Optional) Verify code version
+### (Optional) Verify code version
 
 In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
 
@@ -144,7 +144,7 @@ git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
-### :full_moon: (Optional) View full SHM configuration
+### (Optional) View full SHM configuration
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SHM config by running the following Powershell command:
 
@@ -469,7 +469,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 </details>
 
-## :ghost: 8. Deploy virtual network and VPN gateway
+## :station: 8. Deploy network and VPN gateway
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
