@@ -288,7 +288,7 @@ $ ansible-playbook -i inventory.yaml main.yaml --tags dsvm
 
 ### 💣 Tear down the environment
 
-To tear down all of the resources you have deployment, ensure you are in the
+To tear down all of the resources you have deployed, ensure you are in the
 terraform directory and run
 
 ```
