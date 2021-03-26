@@ -4,22 +4,22 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 ## Contents
 
-+ [Prerequisites](#prerequisites)
-+ [:clipboard: Safe Haven Management configuration](#clipboard-safe-haven-management-configuration)
++ [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
++ [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
   + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
   + [:full_moon: View full SHM configuration](#full_moon-optional-view-full-shm-configuration)
-+ [Configure DNS for the custom domain](#configure-dns-for-the-custom-domain)
-+ [Setup Azure Active Directory (AAD)](#setup-azure-active-directory-aad)
-+ [Deploy Key Vault for SHM secrets and create emergency admin account](#deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
-+ [Enable MFA and self-service password reset](#enable-mfa-and-self-service-password-reset)
-+ [Configure internal administrator accounts](#configure-internal-administrator-accounts)
-+ [Deploy virtual network and VPN gateway](#deploy-virtual-network-and-vpn-gateway)
-+ [Deploy and configure domain controllers](#deploy-and-configure-domain-controllers)
-+ [Deploy and configure network policy server](#deploy-and-configure-network-policy-server)
-+ [Require MFA for all users](#require-mfa-for-all-users)
-+ [Deploy firewall](#deploy-firewall)
-+ [Deploy logging](#deploy-logging)
-+ [Deploy Python/R package repositories](#deploy-PythonR-package-repositories)
++ [:clubs: 3. Configure DNS for the custom domain](#clubs-3-configure-dns-for-the-custom-domain)
++ [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
++ [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
++ [:passport_control: 6. Enable MFA and self-service password reset](#passport_control-6-enable-mfa-and-self-service-password-reset)
++ [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
++ [:door: 8. Deploy virtual network and VPN gateway](#door-8-deploy-virtual-network-and-vpn-gateway)
++ [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
++ [:light_rail: 10. Deploy and configure network policy server](#light_rail-10-deploy-and-configure-network-policy-server)
++ [:iphone: 11. Require MFA for all users](#iphone-11-require-mfa-for-all-users)
++ [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
++ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
 
 ## Explanation of symbols used in this guide
 
@@ -57,7 +57,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white)
 + These indicate steps that depend on the OS that you are using to deploy the SHM
 
-## Prerequisites
+## :seedling: 1. Prerequisites
 
 + An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
   + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
@@ -78,7 +78,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
 
 
-## :clipboard: Safe Haven Management configuration
+## :clipboard: 2. Safe Haven Management configuration
 
 ### Management environment ID
 
@@ -150,7 +150,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 - where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## Configure DNS for the custom domain
+## :clubs: 3. Configure DNS for the custom domain
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -175,7 +175,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
   + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 </details>
 
-## Setup Azure Active Directory (AAD)
+## :file_folder: 4. Setup Azure Active Directory (AAD)
 
 ### Create a new Azure Active Directory
 
@@ -234,7 +234,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 + Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 
-## Deploy Key Vault for SHM secrets and create emergency admin account
+## :key: 5. Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -251,7 +251,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 #### :warning: Troubleshooting
 + If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
 
-## Configure emergency admin account
+### Configure emergency admin account
 
 The User who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role. Users with this role have access to all administrative features in Azure Active Directory). You will use this account for almost all administration of the Safe Haven Azure AD.
 
@@ -270,7 +270,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Check `Global Administrator`
   + Click the `Add` button
 
-## Enable MFA and self-service password reset
+## :passport_control: 6. Enable MFA and self-service password reset
 
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
@@ -363,7 +363,7 @@ Click the heading that applies to you to expand the instructions for that scenar
       </p>
     </details>
 
-## Configure internal administrator accounts
+## :id: 7. Configure internal administrator accounts
 
 The emergency access admin account should not be used except in a genuine emergency. In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
 
@@ -457,7 +457,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 </details>
 
-## Deploy virtual network and VPN gateway
+## :door: 8. Deploy virtual network and VPN gateway
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -521,7 +521,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may get a `Windows protected your PC` pop up. If so, click `More info -> Run anyway`.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
 
-## Deploy and configure domain controllers
+## :house_with_garden: 9. Deploy and configure domain controllers
 
 ![Powershell](https://img.shields.io/badge/local-one%20hour-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -729,7 +729,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 </details>
 
-## Deploy and configure network policy server
+## :light_rail: 10. Deploy and configure network policy server
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -818,7 +818,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
   + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
 
-## Require MFA for all users
+## :iphone: 11. Require MFA for all users
 
 :warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
@@ -854,7 +854,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## Deploy firewall
+## :fire_engine: 12. Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
@@ -865,7 +865,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 
 - where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## Deploy Python/R package repositories
+## :package: 13. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
@@ -899,7 +899,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 - where `<desired tier>` is either `2` or `3`
 
 
-## Deploy logging
+## :chart_with_upwards_trend: 14. Deploy logging
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 

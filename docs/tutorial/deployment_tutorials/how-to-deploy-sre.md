@@ -6,41 +6,40 @@ These instructions will walk you through deploying a Secure Research Environment
 
 ## Contents
 
-+ [:seedling: Prerequisites](#seedling-prerequisites)
++ [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
   + [:beginner: Software](#beginner-software)
   + [:key: VPN connection to the SHM VNet](#key-vpn-connection-to-the-shm-vnet)
   + [:name_badge: SRE domain name](#name_badge-sre-domain-name)
   + [:arrow_double_up: Deploying multiple SREs in parallel](#arrow_double_up-deploying-multiple-sres-in-parallel)
-+ [:clipboard: Secure Research Environment configuration](#clipboard-secure-research-environment-configuration)
++ [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
   + [:apple: SHM configuration properties](#apple-shm-configuration-properties)
   + [:green_apple: SRE configuration properties](#green_apple-sre-configuration-properties)
   + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
   + [:full_moon: View full SRE configuration](#full_moon-optional-view-full-sre-configuration)
-+ [:cop: Prepare SHM environment](#cop-prepare-shm-environment)
++ [:cop: 3. Prepare SHM environment](#cop-3-prepare-shm-environment)
   + [:fast_forward: Optional: Remove data from previous deployments](#fast_forward-optional-remove-data-from-previous-deployments)
   + [:registered: Register SRE with the SHM](#registered-register-sre-with-the-shm)
-+ [:station: Deploy networking components](#station-deploy-networking-components)
++ [:station: 4. Deploy networking components](#station-4-deploy-networking-components)
   + [:clubs: Create SRE DNS Zone](#clubs-create-sre-dns-zone)
   + [:ghost: Deploy the virtual network](#ghost-deploy-the-virtual-network)
-+ [:fishing_pole_and_fish: Deploy remote desktop](#fishing_pole_and_fish-deploy-remote-desktop)
++ [:fishing_pole_and_fish: 5. Deploy remote desktop](#fishing_pole_and_fish-5-deploy-remote-desktop)
   + [:tropical_fish: Deploy the remote desktop servers](#tropical_fish-deploy-remote-desktop-servers)
   + [:satellite: Configure RDS webclient](#satellite-configure-rds-webclient)
   + [:closed_lock_with_key: Secure RDS webclient](#closed_lock_with_key-secure-rds-webclient)
   + [:bicyclist: Set up a non-privileged user account](#bicyclist-optional-set-up-a-non-privileged-user-account)
   + [:microscope: Test the RDS using a non-privileged user account](#mountain_bicyclist-test-the-rds-using-a-non-privileged-user-account)
-+ [:floppy_disk: Deploy storage accounts](#floppy_disk-deploy-storage-accounts)
-+ [:baseball: Deploy databases](#baseball-deploy-databases)
-+ [:snowflake: Deploy web applications (GitLab and CodiMD)](#snowflake-deploy-web-applications-gitlab-and-CodiMD)
++ [:snowflake: 6. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
   + [:microscope: Test GitLab Server](#microscope-test-gitlab-server)
   + [:microscope: Test CodiMD Server](#microscope-test-codimd-server)
-+ [:computer: Deploy data science VMs](#computer-deploy-data-science-vms)
++ [:floppy_disk: 7. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
++ [:baseball: 8. Deploy databases](#baseball-8-deploy-databases)
++ [:computer: 9. Deploy data science VMs](#computer-9-deploy-data-science-vms)
   + [:fast_forward: Optional: Customise the deployed VM](#fast_forward-optional-customise-the-deployed-vm)
   + [:computer: Deploy a single data science VM (DSVM)](#computer-deploy-a-single-data-science-vm-dsvm)
-  + [:microscope: Test DSVM deployment](#microscope-test-dsvm-deployment)
-+ [:lock: Apply network configuration](#lock-apply-network-configuration)
-+ [:fire_engine: Deploy firewall](#fire_engine-deploy-firewall)
-+ [:chart_with_upwards_trend: Configure logging](#chart_with_upwards_trend-configure-logging)
-+ [:fire: Run smoke tests on DSVM](#fire-run-smoke-tests-on-dsvm)
++ [:lock: 10. Apply network configuration](#lock-10-apply-network-configuration)
++ [:fire_engine: 11. Deploy firewall](#fire_engine-11-deploy-firewall)
++ [:chart_with_upwards_trend: 12. Configure logging](#chart_with_upwards_trend-12-configure-logging)
++ [:fire: 13. Run smoke tests on DSVM](#fire-13-run-smoke-tests-on-dsvm)
 
 ## Explanation of symbols used in this guide
 
@@ -79,7 +78,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + These indicate steps that depend on the OS that you are using to deploy the SRE
 
 
-## :seedling: Prerequisites
+## :seedling: 1. Prerequisites
 
 + An `SHM environment` that has already been deployed in Azure
   + Follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
@@ -106,7 +105,7 @@ You will need access to a public routable domain name for the SRE and its name s
 
 If you need to deploy multiple SREs in parallel you will need to use multiple computers. These can be different physical computers or you can provision dedicated deployment VMs - this is beyond the scope of this guide.
 
-## :clipboard: Secure Research Environment configuration
+## :clipboard: 2. Secure Research Environment configuration
 
 The full configuration details for a new SRE are generated by defining a few "core" properties for the new SRE and the management environment in which it will be deployed.
 
@@ -177,7 +176,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 - where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 
-## :cop: Prepare SHM environment
+## :cop: 3. Prepare SHM environment
 
 ### :fast_forward: Optional: Remove data from previous deployments
 
@@ -205,7 +204,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 
 This step will register service accounts with the SHM and also create a Key Vault in the SRE subscription (at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS > kv-<SHM ID>-sre-<SRE ID>`).
 
-## :station: Deploy networking components
+## :station: 4. Deploy networking components
 
 ### :clubs: Create SRE DNS Zone
 
@@ -248,7 +247,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 #### :pencil: Notes
 The VNet peerings may take a few minutes to provision after the script completes.
 
-## :fishing_pole_and_fish: Deploy remote desktop
+## :fishing_pole_and_fish: 5. Deploy remote desktop
 
 ### :tropical_fish: Deploy the remote desktop servers
 
@@ -437,7 +436,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 + Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
 
-## :snowflake: Deploy web applications (GitLab and CodiMD)
+## :snowflake: 6. Deploy web applications (GitLab and CodiMD)
 
 ![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -487,7 +486,7 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 + :warning: This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 
 
-## :floppy_disk: Deploy storage accounts
+## :floppy_disk: 7. Deploy storage accounts
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -500,7 +499,7 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 
 This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
-## :baseball: Deploy databases
+## :baseball: 8. Deploy databases
 
 ![Powershell](https://img.shields.io/badge/local-depends%20on%20settings-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -515,7 +514,7 @@ This will deploy any databases that you specified in the core config file. The t
 + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
 + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
 
-## :computer: Deploy data science VMs
+## :computer: 9. Deploy data science VMs
 
 ### :fast_forward: Optional: Customise the deployed VM
 
@@ -545,7 +544,7 @@ This will deploy a new compute VM into the SRE environment
 + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
 + If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
 
-## :lock: Apply network configuration
+## :lock: 10. Apply network configuration
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -556,7 +555,7 @@ This will deploy a new compute VM into the SRE environment
 - where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 - where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-## :fire_engine: Configure firewall
+## :fire_engine: 11. Configure firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
@@ -569,7 +568,7 @@ This will deploy a new compute VM into the SRE environment
 - where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 - where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-## :chart_with_upwards_trend: Configure logging
+## :chart_with_upwards_trend: 12. Configure logging
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -593,7 +592,7 @@ Where there was a genuine failure in the installation of a VM extension, the scr
 If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
 
 
-## :fire: Run smoke tests on DSVM
+## :fire: 13. Run smoke tests on DSVM
 
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
