@@ -7,36 +7,16 @@ These instructions will walk you through deploying a Secure Research Environment
 ## Contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-  + [VPN connection to the SHM VNet](#vpn-connection-to-the-shm-vnet)
-  + [SRE domain name](#sre-domain-name)
-  + [Deploying multiple SREs in parallel](#deploying-multiple-sres-in-parallel)
 + [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
-  + [SHM configuration properties](#shm-configuration-properties)
-  + [SRE configuration properties](#sre-configuration-properties)
-  + [Verify code version](#optional-verify-code-version)
-  + [View full SRE configuration](#optional-view-full-sre-configuration)
 + [:cop: 3. Prepare SHM environment](#cop-3-prepare-shm-environment)
-  + [Optional: Remove data from previous deployments](#optional-remove-data-from-previous-deployments)
-  + [Register SRE with the SHM](#register-sre-with-the-shm)
 + [:station: 4. Deploy networking components](#station-4-deploy-networking-components)
-  + [Create SRE DNS Zone](#create-sre-dns-zone)
-  + [Deploy the virtual network](#deploy-the-virtual-network)
 + [:satellite: 5. Deploy remote desktop](#satellite-5-deploy-remote-desktop)
-  + [Deploy the remote desktop servers](#deploy-remote-desktop-servers)
-  + [Configure RDS webclient](#configure-rds-webclient)
-  + [Secure RDS webclient](#secure-rds-webclient)
-  + [Set up a non-privileged user account](#optional-set-up-a-non-privileged-user-account)
-  + [Test the RDS using a non-privileged user account](#test-the-rds-using-a-non-privileged-user-account)
 + [:snowflake: 6. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
-  + [Test GitLab Server](#test-gitlab-server)
-  + [Test CodiMD Server](#test-codimd-server)
 + [:floppy_disk: 7. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
 + [:baseball: 8. Deploy databases](#baseball-8-deploy-databases)
 + [:computer: 9. Deploy data science VMs](#computer-9-deploy-data-science-vms)
-  + [Customise the deployed VM](#optional-customise-the-deployed-vm)
-  + [Deploy a single data science VM (DSVM)](#deploy-a-single-data-science-vm-dsvm)
-+ [:lock: 10. Apply network configuration](#lock-10-apply-network-configuration)
-+ [:fire_engine: 11. Deploy firewall](#fire_engine-11-deploy-firewall)
++ [:lock: 10. Configure network lockdown](#lock-10-configure-network-lockdown)
++ [:fire_engine: 11. Configure firewall](#fire_engine-11-configure-firewall)
 + [:chart_with_upwards_trend: 12. Configure logging](#chart_with_upwards_trend-12-configure-logging)
 + [:fire: 13. Run smoke tests on DSVM](#fire-13-run-smoke-tests-on-dsvm)
 
@@ -554,7 +534,7 @@ This will deploy a new compute VM into the SRE environment
 + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
 + If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
 
-## :lock: 10. Apply network configuration
+## :lock: 10. Configure network lockdown
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -564,6 +544,8 @@ This will deploy a new compute VM into the SRE environment
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This will apply the locked-down network settings which will restrict access into/out of this SRE.
 
 ## :fire_engine: 11. Configure firewall
 

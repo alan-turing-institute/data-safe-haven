@@ -6,17 +6,15 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
-  + [Verify code version](#optional-verify-code-version)
-  + [View full SHM configuration](#optional-view-full-shm-configuration)
 + [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
-+ [:passport_control: 6. Enable MFA and self-service password reset](#passport_control-6-enable-mfa-and-self-service-password-reset)
++ [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
 + [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
-+ [:light_rail: 10. Deploy and configure network policy server](#light_rail-10-deploy-and-configure-network-policy-server)
-+ [:iphone: 11. Require MFA for all users](#iphone-11-require-mfa-for-all-users)
++ [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
++ [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
 + [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
 + [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
 + [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
@@ -282,7 +280,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Check `Global Administrator`
   + Click the `Add` button
 
-## :passport_control: 6. Enable MFA and self-service password reset
+## :closed_lock_with_key: 6. Enable MFA and self-service password reset
 
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
@@ -745,7 +743,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 </details>
 
-## :light_rail: 10. Deploy and configure network policy server
+## :police_car: 10. Deploy and configure network policy server
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
