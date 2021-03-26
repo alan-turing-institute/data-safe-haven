@@ -8,12 +8,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
   + [:bouquet: Verify code version](#bouquet-optional-verify-code-version)
   + [:full_moon: View full SHM configuration](#full_moon-optional-view-full-shm-configuration)
-+ [:clubs: 3. Configure DNS for the custom domain](#clubs-3-configure-dns-for-the-custom-domain)
++ [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [:passport_control: 6. Enable MFA and self-service password reset](#passport_control-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
-+ [:door: 8. Deploy virtual network and VPN gateway](#door-8-deploy-virtual-network-and-vpn-gateway)
++ [:ghost: 8. Deploy virtual network and VPN gateway](#ghost-8-deploy-virtual-network-and-vpn-gateway)
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:light_rail: 10. Deploy and configure network policy server](#light_rail-10-deploy-and-configure-network-policy-server)
 + [:iphone: 11. Require MFA for all users](#iphone-11-require-mfa-for-all-users)
@@ -24,6 +24,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 ## Explanation of symbols used in this guide
 
 ![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
+
 + This indicates a `Powershell` command which you will need to run locally on your machine
 + Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a `Powershell` terminal and navigate to the indicated directory of your locally checked-out version of the Safe Haven repository
@@ -34,6 +35,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + :pencil: If you have several Azure accounts, make sure you use one that has permissions to make changes to the subscription you are using
 
 ![Remote](https://img.shields.io/badge/remote-estimate%20of%20time%20needed-blue?logo=microsoft-onedrive&style=for-the-badge)
+
 + This indicates a command which you will need to run remotely on an Azure virtual machine (VM) using `Microsoft Remote Desktop`
 + Open `Microsoft Remote Desktop` and click `Add Desktop` / `Add PC`
 + Enter the private IP address of the VM that you need to connect to in the `PC name` field (this can be found by looking in the Azure portal)
@@ -45,16 +47,20 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + :pencil: If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ![Azure Portal](https://img.shields.io/badge/portal-estimate%20of%20time%20needed-blue?logo=microsoft-azure&style=for-the-badge)
+
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
 :pencil: **Notes**
+
 + This indicates some explanatory notes or examples that provide additional context for the current step.
 
 :warning: **Troubleshooting**
+
 + This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
 
 ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white)
+
 + These indicate steps that depend on the OS that you are using to deploy the SHM
 
 ## :seedling: 1. Prerequisites
@@ -76,7 +82,6 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
     + :warning: If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
   + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
-
 
 ## :clipboard: 2. Safe Haven Management configuration
 
@@ -120,14 +125,15 @@ The following core SHM properties are required - look at `shm_testa_core_config.
 ```
 
 #### :pencil: Notes
+
 + This configuration file is also used when deploying an SRE environment.
 + :maple_leaf: We recommend that you set the fully qualified domain name to `<SHM ID>.<some domain that you control>`.
   + This may require purchasing a dedicated domain so follow your organisation's guidance.
   + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **production** uses `<SHM ID>.turingsafehaven.ac.uk`
   + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **development** uses `<SHM ID>.dsgroupdev.co.uk`
 
-
 ### :bouquet: (Optional) Verify code version
+
 In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
@@ -148,9 +154,9 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ./ShowConfigFile.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## :clubs: 3. Configure DNS for the custom domain
+## :door: 3. Configure DNS for the custom domain
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -158,10 +164,11 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-#### :warning: Troubleshooting
-+ If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
+### :warning: Troubleshooting
+
+If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
 
 <details><summary><b>Manual DNS configuration instructions</b></summary>
 
@@ -173,6 +180,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
     <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record"/>
   </p>
   + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
 </details>
 
 ## :file_folder: 4. Setup Azure Active Directory (AAD)
@@ -223,13 +231,15 @@ A full configuration, which will be used in subsequent steps, will be automatica
 pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-- where `<AAD tenant ID>` is the `Tenant ID` that you copied from the AAD above
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<AAD tenant ID>` is the `Tenant ID` that you copied from the AAD above
 
 #### :pencil: Notes
+
 Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
 
 #### :warning: Troubleshooting
+
 + If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
 + Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
@@ -242,14 +252,16 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-- where `<AAD tenant ID>` is the `Tenant ID` that you copied from the AAD above
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<AAD tenant ID>` is the `Tenant ID` that you copied from the AAD above
 
-#### :pencil: Notes
+### :pencil: Notes
+
 Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
 
-#### :warning: Troubleshooting
-+ If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
+### :warning: Troubleshooting
+
+If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
 
 ### Configure emergency admin account
 
@@ -457,7 +469,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 </details>
 
-## :door: 8. Deploy virtual network and VPN gateway
+## :ghost: 8. Deploy virtual network and VPN gateway
 
 ![Powershell](https://img.shields.io/badge/local-twenty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -465,7 +477,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 <details><summary><b>Sanity check</b></summary>
 
@@ -477,6 +489,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
+
 </details>
 
 ### Download a client VPN certificate for the Safe Haven Management network
@@ -518,6 +531,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
 #### :warning: Troubleshooting
+
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may get a `Windows protected your PC` pop up. If so, click `More info -> Run anyway`.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
 
@@ -529,7 +543,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 <details><summary><b>Sanity check</b></summary>
 
@@ -541,17 +555,18 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
+
 </details>
 
 ### Configure the first domain controller via Remote Desktop
 
 ![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
-  + Navigate to the **SHM primary domain controller** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_DC > DC1-SHM-<SHM ID>` and note the `Private IP address` for this VM
-  + Next, navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
-  + `<admin username>` is in the `shm-<SHM ID>-domain-admin-username` secret.
-    + Add the SHM AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
-  + `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
++ Navigate to the **SHM primary domain controller** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_DC > DC1-SHM-<SHM ID>` and note the `Private IP address` for this VM
++ Next, navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
++ `<admin username>` is in the `shm-<SHM ID>-domain-admin-username` secret.
+  + Add the SHM AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
++ `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
 #### Install Azure Active Directory Connect
 
@@ -610,6 +625,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     + Click `Exit`
 
 #### :pencil: Notes
+
 Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering any usernames or passwords
 
 #### :warning: Troubleshooting
@@ -737,17 +753,17 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 #### :warning: Troubleshooting
 If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
-
 ### Configure the network policy server (NPS) via Remote Desktop
 
 ![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
-  + Navigate to the **network policy server** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_NPS > NPS-SHM-<SHM ID>` and note the `Private IP address` for this VM
-  + Use the same `<admin login>` and `<admin password>` as for the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`)
+
++ Navigate to the **network policy server** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_NPS > NPS-SHM-<SHM ID>` and note the `Private IP address` for this VM
++ Use the same `<admin login>` and `<admin password>` as for the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`)
 
 #### Configure NPS logging
 
@@ -792,9 +808,11 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 #### :pencil: notes
+
 + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
 
 #### :warning: Troubleshooting
+
 + If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
   + Click `Yes`
   + Close the dialog by clicking `X`
@@ -821,7 +839,6 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 ## :iphone: 11. Require MFA for all users
 
 :warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
-
 
 ![Azure Portal](https://img.shields.io/badge/portal-a%20few%20minutes-blue?logo=microsoft-azure&style=for-the-badge)
 
@@ -863,7 +880,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 ## :package: 13. Deploy Python/R package repositories
 We currently support two different types of package repositories:
@@ -881,9 +898,8 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-- where `<desired tier>` is either `2` or `3`
-
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<desired tier>` is either `2` or `3`
 
 ### How to deploy a local package mirror
 
@@ -895,9 +911,8 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-- where `<desired tier>` is either `2` or `3`
-
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<desired tier>` is either `2` or `3`
 
 ## :chart_with_upwards_trend: 14. Deploy logging
 
@@ -907,7 +922,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 #### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.

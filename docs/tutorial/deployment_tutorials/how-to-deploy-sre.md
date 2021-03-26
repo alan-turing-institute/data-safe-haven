@@ -7,7 +7,6 @@ These instructions will walk you through deploying a Secure Research Environment
 ## Contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-  + [:beginner: Software](#beginner-software)
   + [:key: VPN connection to the SHM VNet](#key-vpn-connection-to-the-shm-vnet)
   + [:name_badge: SRE domain name](#name_badge-sre-domain-name)
   + [:arrow_double_up: Deploying multiple SREs in parallel](#arrow_double_up-deploying-multiple-sres-in-parallel)
@@ -44,6 +43,7 @@ These instructions will walk you through deploying a Secure Research Environment
 ## Explanation of symbols used in this guide
 
 ![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
+
 + This indicates a `Powershell` command which you will need to run locally on your machine
 + Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a `Powershell` terminal and navigate to the indicated directory of your locally checked-out version of the Safe Haven repository
@@ -54,6 +54,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + :pencil: If you have several Azure accounts, make sure you use one that has permissions to make changes to the subscription you are using
 
 ![Remote](https://img.shields.io/badge/remote-estimate%20of%20time%20needed-blue?logo=microsoft-onedrive&style=for-the-badge)
+
 + This indicates a command which you will need to run remotely on an Azure virtual machine (VM) using `Microsoft Remote Desktop`
 + Open `Microsoft Remote Desktop` and click `Add Desktop` / `Add PC`
 + Enter the private IP address of the VM that you need to connect to in the `PC name` field (this can be found by looking in the Azure portal)
@@ -65,18 +66,21 @@ These instructions will walk you through deploying a Secure Research Environment
 + :pencil: If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ![Azure Portal](https://img.shields.io/badge/portal-estimate%20of%20time%20needed-blue?logo=microsoft-azure&style=for-the-badge)
+
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
 :pencil: **Notes**
+
 + This indicates some explanatory notes or examples that provide additional context for the current step.
 
 :warning: **Troubleshooting**
+
 + This indicates a set of troubleshooting instructions to help diagnose and fix common problems with the current step.
 
 ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white)
-+ These indicate steps that depend on the OS that you are using to deploy the SRE
 
++ These indicate steps that depend on the OS that you are using to deploy the SRE
 
 ## :seedling: 1. Prerequisites
 
@@ -89,7 +93,6 @@ These instructions will walk you through deploying a Secure Research Environment
   + :maple_leaf: We recommend around $1,000 as a reasonable starting point.
   + :maple_leaf: We recommend using separate Azure Active Directories for users and administrators
 + Access to a global administrator account on the SHM Azure Active Directory
-
 
 ### :key: VPN connection to the SHM VNet
 
@@ -141,6 +144,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
 ```
 
 #### :pencil: Notes
+
 + When deciding on what to set the `inboundAccessFrom` field to, we recommend the following settings:
   + Tier 0/1 SREs: this can be set to 'Internet', allowing access from anywhere.
   + Tier 2 SREs: this should correspond to the **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organsiation, such as `EduRoam`, `Turing Guest`, `Turing Secure` etc)
@@ -152,6 +156,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
   + This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
 ### :bouquet: (Optional) Verify code version
+
 In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
 
 ![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
@@ -162,7 +167,7 @@ git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
-### :full_moon: Optional: View full SRE configuration
+### :full_moon: (Optional) View full SRE configuration
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SRE config by running the following Powershell command:
 
@@ -172,9 +177,8 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :cop: 3. Prepare SHM environment
 
@@ -188,8 +192,8 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :registered: Register SRE with the SHM
 
@@ -199,8 +203,8 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This step will register service accounts with the SHM and also create a Key Vault in the SRE subscription (at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS > kv-<SHM ID>-sre-<SRE ID>`).
 
@@ -214,10 +218,11 @@ This step will register service accounts with the SHM and also create a Key Vaul
 ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 #### :warning: Troubleshooting
+
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
 <details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
@@ -231,6 +236,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
     + The name should be set to the subdomain (e.g. `sandbox` ) or `@` if using a custom domain, and the values duplicated from above.
     + For example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk` , duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk` , by creating a record set with name `sandbox` .
   + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
 </details>
 
 ### :ghost: Deploy the virtual network
@@ -241,10 +247,11 @@ This step will register service accounts with the SHM and also create a Key Vaul
 ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 #### :pencil: Notes
+
 The VNet peerings may take a few minutes to provision after the script completes.
 
 ## :fishing_pole_and_fish: 5. Deploy remote desktop
@@ -257,10 +264,11 @@ The VNet peerings may take a few minutes to provision after the script completes
 ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 #### :warning: Troubleshooting
+
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
 ### :satellite: Configure RDS webclient
@@ -269,8 +277,6 @@ If you encounter errors with the deployment of the remote desktop servers, re-ru
 
 + Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
 + Log into the **RDS Gateway** (`RDG-SRE-<SRE ID>`) VM using this `private IP address` together with the same `<admin login>` and `<admin password>` that you used to [log into the SHM domain controller](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
-
-you used for logging into the **SHM domain controller**
 + Run the following command on the RDS VM to configure the remote desktop environment
 
 ```pwsh
@@ -278,9 +284,11 @@ C:\Installation\Deploy_RDS_Environment.ps1
 ```
 
 #### :pencil: Notes
+
 This script cannot be run remotely since remote `Powershell` runs as a local admin but this script has to be run as a domain admin.
 
 #### :warning: Troubleshooting
+
 ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**.
 
 ### :closed_lock_with_key: Secure RDS webclient
@@ -291,10 +299,19 @@ This script cannot be run remotely since remote `Powershell` runs as a local adm
 ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This will perform the following actions, which can be run individually if desired:
+
+#### :pencil: Notes
+
++ If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run `./Disable_Legacy_TLS.ps1` to update the list of accepted protocols
++ `./Update_SRE_RDS_SSL_Certificate.ps1` should be run again whenever you want to update the certificate for this SRE.
+
+#### :warning: Troubleshooting
+
+`Let's Encrypt` will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 <details>
 <summary><strong>Disable insecure TLS connections</strong></summary>
@@ -305,11 +322,8 @@ This will perform the following actions, which can be run individually if desire
 ./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-
-#### :pencil: Notes
-If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
 
@@ -322,8 +336,8 @@ If additional TLS protocols become available (or existing ones are found to be i
 ./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
 
@@ -336,15 +350,9 @@ If additional TLS protocols become available (or existing ones are found to be i
 ./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-- where `<email>` is an email address that you want to be notified when certificates are close to expiry
-
-#### :pencil: Notes
-This script should be run again whenever you want to update the certificate for this SRE.
-
-#### :warning: Troubleshooting
-Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<email>` is an email address that you want to be notified when certificates are close to expiry
 
 </details>
 
@@ -418,10 +426,12 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
   </p>
 
 #### :pencil: Notes
+
 + Ensure that you are connecting from one of the **permitted IP ranges** specified in the `inboundAccessFrom` section of the SRE config file. For example, if you have authorised a corporate VPN, check that you have correctly configured you client to connect to it.
 + Note that clicking on the apps will not work until the other servers have been deployed.
 
 #### :warning: Troubleshooting
+
 If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
 
 + Go back to the previous section and rerun the `C:\Installation\Deploy_RDS_Environment.ps1` script on the RDS gateway.
@@ -444,8 +454,8 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :microscope: Test GitLab and CodiMD servers
 
@@ -485,7 +495,6 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
 + :warning: This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 
-
 ## :floppy_disk: 7. Deploy storage accounts
 
 ![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
@@ -494,8 +503,8 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
@@ -507,10 +516,11 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
+
 + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
 + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
 
@@ -518,8 +528,7 @@ This will deploy any databases that you specified in the core config file. The t
 
 ### :fast_forward: Optional: Customise the deployed VM
 
-If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file.
-On your **deployment machine**.
+If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file on your **deployment machine**.
 
 + By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
 + If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
@@ -532,14 +541,15 @@ On your **deployment machine**.
 ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-- where `<IP last octet>` is last octet of the IP address
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<IP last octet>` is last octet of the IP address
 - you can also provide a VM size by passing the optional `-vmSize` parameter.
 
 This will deploy a new compute VM into the SRE environment
 
 #### :pencil: Notes
+
 + The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
 + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
 + If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
@@ -552,8 +562,8 @@ This will deploy a new compute VM into the SRE environment
 ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :fire_engine: 11. Configure firewall
 
@@ -565,8 +575,8 @@ This will deploy a new compute VM into the SRE environment
 ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :chart_with_upwards_trend: 12. Configure logging
 
@@ -576,8 +586,8 @@ This will deploy a new compute VM into the SRE environment
 ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-- where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 #### :warning: Troubleshooting
 
@@ -591,22 +601,22 @@ Where the issue was an API timeout, these VMs will report that the extension is 
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
 If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
 
-
 ## :fire: 13. Run smoke tests on DSVM
 
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
 
 ![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+
 + Navigate to the **compute VM** that you have just deployed in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE > SRE-<SRE ID>-<IP last octet>-<version number>` and note the `Private IP address` for this VM
 + Next, navigate to the `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS` resource group and then the `kv-<SHM ID>-sre-<SRE ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
 + `<admin username>` is in the `sre-<SRE ID>-vm-admin-username` secret.
 + `<admin password>` is in the `sre-<SRE ID>-vm-admin-password-compute` secret.
 
-
 To run the smoke tests:
 
 ![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+
 + Log into the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) VM that you just deployed using the credentials that you just retrieved from the portal.
 + Open a terminal session
 + Enter the test directory using `cd /opt/verification/smoke_tests`
