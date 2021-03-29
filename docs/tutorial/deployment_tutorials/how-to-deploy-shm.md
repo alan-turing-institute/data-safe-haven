@@ -49,6 +49,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
+![Azure AD: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=estimate%20of%20time%20needed)
+
++ This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
++ You will need to login to the portal using an account with administrative privileges on the `Azure Active Directory` that you are altering.
++ Note that this might be different from the account which is able to create/alter resources in the Azure subscription where you are building the Safe Haven.
+
 :pencil: **Notes**
 
 + This indicates some explanatory notes or examples that provide additional context for the current step.
@@ -208,7 +214,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 ### Get the Azure Active Directory Tenant ID
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created. You can do this by:
   + Clicking the link displayed at the end of the initial AAD deployment.
@@ -269,7 +275,7 @@ However, there are rare operations that require you to be logged in as a **nativ
 
 To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script. However, this account must be manually assigned to the Global Administrator role.
 
-![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Click `Users` in the left hand sidebar and click on the `AAD Admin - EMERGENCY ACCESS` user.
@@ -291,7 +297,7 @@ To enable MFA and self-service password reset, you must have sufficient licences
 
 ### Add licences that support MFA
 
-![Portal: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=a%20few%20minutes)
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 Click the heading that applies to you to expand the instructions for that scenario.
 
@@ -349,6 +355,8 @@ Click the heading that applies to you to expand the instructions for that scenar
 
 ### Enable self-service password reset
 
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+
 + Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Password reset` in the left hand sidebar
@@ -363,7 +371,7 @@ Click the heading that applies to you to expand the instructions for that scenar
 
 ### Configure MFA on Azure Active Directory
 
-![Portal: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=a%20few%20minutes)
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Click `Users` in the left hand sidebar
@@ -399,7 +407,7 @@ Several later steps will require the use of a **native** administrator account w
 
 #### Create a new account for each administrator (including yourself)
 
-![Portal: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=a%20few%20minutes)
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
@@ -453,7 +461,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 :exclamation: Make sure you have activated your account and **successfully logged in** with the new **native** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 + Ensure you are logged in with the new **native** administrator account you have just created.
   + Click on your username at the top right corner of the screen, then `Sign in with a different user`.
@@ -469,6 +477,8 @@ The other administrators you have just set up can activate their accounts by fol
 Administrator accounts can use MFA and reset their passwords without a licence needing to be assigned. However, if any non-admin users are set up and are unable to reset their own password or set up MFA on their account, you can add a licence to enable them to do so:
 
 <details><summary><b>How to add MFA licenses</b></summary>
+
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 + Ensure you are logged in to the Azure Portal in with the **native** administrator account you created.
 + Ensure your  session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
@@ -495,6 +505,8 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 <details><summary><b>Sanity check</b></summary>
+
+![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
   <p align="center">
@@ -708,7 +720,7 @@ PS> C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 + This script will add the users and trigger a sync with Azure Active Directory
 + Wait a few minutes for the changes to propagate
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20seconds)
 
 + Click `Users > All users` and confirm that the new user is shown in the user list.
 + The new user account should have the `Directory synced` field set to `Yes`
@@ -721,7 +733,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 ### Configure AAD side of AD connect
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Select `Password reset` from the left hand menu
@@ -734,7 +746,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 #### Manually add an MFA licence for the user
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Select `Licences` from the left hand menu
@@ -855,7 +867,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 
 :exclamation: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
-![Portal: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=a%20few%20minutes)
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 + From the Azure portal, navigate to the AAD you have created.
 + Click `Properties` in the left hand sidebar and **disable** security defaults as shown in the screenshot [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults)

@@ -50,6 +50,12 @@ These instructions will walk you through deploying a Secure Research Environment
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 
+![Azure AD: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=estimate%20of%20time%20needed)
+
++ This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
++ You will need to login to the portal using an account with administrative privileges on the `Azure Active Directory` that you are altering.
++ Note that this might be different from the account which is able to create/alter resources in the Azure subscription where you are building the Safe Haven.
+
 :pencil: **Notes**
 
 + This indicates some explanatory notes or examples that provide additional context for the current step.
@@ -206,6 +212,8 @@ PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
 <details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
+
+![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
   <p align="center">
@@ -384,7 +392,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 <details>
 <summary><strong>Verify non-privileged user account is set up</strong></summary>
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created.
 + The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
