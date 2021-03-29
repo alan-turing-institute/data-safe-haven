@@ -22,7 +22,7 @@ These instructions will walk you through deploying a Secure Research Environment
 
 ## Explanation of symbols used in this guide
 
-![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
+![Powershell: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates a `Powershell` command which you will need to run locally on your machine
 + Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -33,7 +33,7 @@ These instructions will walk you through deploying a Secure Research Environment
   + You will need to visit that URL in a web browser, enter the code and log in to your account on Azure
   + :pencil: If you have several Azure accounts, make sure you use one that has permissions to make changes to the subscription you are using
 
-![Remote](https://img.shields.io/badge/remote-estimate%20of%20time%20needed-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates a command which you will need to run remotely on an Azure virtual machine (VM) using `Microsoft Remote Desktop`
 + Open `Microsoft Remote Desktop` and click `Add Desktop` / `Add PC`
@@ -45,7 +45,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + Use the `username` and `password` specified by the appropriate section of the guide
 + :pencil: If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-![Azure Portal](https://img.shields.io/badge/portal-estimate%20of%20time%20needed-blue?logo=microsoft-azure&style=for-the-badge)
+![Portal: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
@@ -139,7 +139,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
 
 In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge)
+![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
 ```pwsh
 git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
@@ -151,7 +151,7 @@ This will verify that you are on the correct branch and up to date with `origin`
 
 A full configuration, which will be used in subsequent steps, will be automatically generated from your core configuration. Should you wish to, you can print the full SRE config by running the following Powershell command:
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20seconds-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment`
+![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds) at :file_folder: `./deployment`
 
 ```pwsh
 ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -166,7 +166,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM. If the subscription is not empty, confirm that it is not being used before deleting any resources in it. Clear any remaining SRE data from the SHM by running
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -177,7 +177,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 
 ### Register SRE with the SHM
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -192,7 +192,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ### Create SRE DNS Zone
 
-![Powershell](https://img.shields.io/badge/local-one%20minute-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -221,7 +221,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ### Deploy the virtual network
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -238,7 +238,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 
 ### Deploy the remote desktop servers
 
-![Powershell](https://img.shields.io/badge/local-fifty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: fifty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=fifty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -253,7 +253,7 @@ If you encounter errors with the deployment of the remote desktop servers, re-ru
 
 ### Configure RDS webclient
 
-![Remote](https://img.shields.io/badge/remote-twenty%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=twenty%20minutes)
 
 + Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
 + Log into the **RDS Gateway** (`RDG-SRE-<SRE ID>`) VM using this `private IP address` together with the same `<admin login>` and `<admin password>` that you used to [log into the SHM domain controller](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
@@ -273,7 +273,7 @@ This script cannot be run remotely since remote `Powershell` runs as a local adm
 
 ### Secure RDS webclient
 
-![Powershell](https://img.shields.io/badge/local-fifteen%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: fifteen minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=fifteen%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -296,7 +296,7 @@ This will perform the following actions, which can be run individually if desire
 <details>
 <summary><strong>Disable insecure TLS connections</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -310,7 +310,7 @@ This will perform the following actions, which can be run individually if desire
 <details>
 <summary><strong>Configure RDS CAP and RAP settings</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -324,7 +324,7 @@ This will perform the following actions, which can be run individually if desire
 <details>
 <summary><strong>Update SSL certificate</strong></summary>
 
-![Powershell](https://img.shields.io/badge/local-five%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>
@@ -346,7 +346,7 @@ You should have already set up a non-privileged user account upon setting up the
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
 
-![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
 + Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
 + Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
@@ -358,7 +358,7 @@ You should have already set up a non-privileged user account upon setting up the
 
 #### Ensure that your non-privileged user account is in the correct Security Group
 
-![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
 + Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
 + In Server Manager click `Tools > Active Directory Users and Computers`
@@ -384,7 +384,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 <details>
 <summary><strong>Verify non-privileged user account is set up</strong></summary>
 
-![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + From the Azure portal, navigate to the AAD you have created.
 + The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
@@ -429,7 +429,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 ## :snowflake: 6. Deploy web applications (GitLab and CodiMD)
 
-![Powershell](https://img.shields.io/badge/local-thirty%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -478,7 +478,7 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 
 ## :floppy_disk: 7. Deploy storage accounts
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -491,7 +491,7 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 
 ## :baseball: 8. Deploy databases
 
-![Powershell](https://img.shields.io/badge/local-depends%20on%20settings-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: up to seventy minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=up%20to%20seventy%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -516,7 +516,7 @@ If this SRE needs additional software or settings that are not in your default V
 
 ### Deploy a single data science VM (DSVM)
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>
@@ -537,7 +537,7 @@ This will deploy a new compute VM into the SRE environment
 
 ## :lock: 10. Configure network lockdown
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -552,7 +552,7 @@ This will apply the locked-down network settings which will restrict access into
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -563,7 +563,7 @@ This will apply the locked-down network settings which will restrict access into
 
 ## :chart_with_upwards_trend: 12. Configure logging
 
-![Powershell](https://img.shields.io/badge/local-a%20few%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
 ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -589,7 +589,7 @@ If you get consistent failure messages after re-running the logging set up scrip
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
 
-![Azure Portal](https://img.shields.io/badge/portal-one%20minute-blue?logo=microsoft-azure&style=for-the-badge)
+![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + Navigate to the **compute VM** that you have just deployed in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE > SRE-<SRE ID>-<IP last octet>-<version number>` and note the `Private IP address` for this VM
 + Next, navigate to the `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS` resource group and then the `kv-<SHM ID>-sre-<SRE ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
@@ -598,7 +598,7 @@ They are automatically uploaded to the compute VM during the deployment step.
 
 To run the smoke tests:
 
-![Remote](https://img.shields.io/badge/remote-five%20minutes-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
 + Log into the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) VM that you just deployed using the credentials that you just retrieved from the portal.
 + Open a terminal session

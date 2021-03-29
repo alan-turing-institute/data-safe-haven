@@ -12,7 +12,7 @@ These instructions will walk you through creating a new VM image for use in the 
 
 ## Explanation of symbols used in this guide
 
-![Powershell](https://img.shields.io/badge/local-estimate%20of%20time%20needed-blue?logo=powershell&style=for-the-badge)
+![Powershell: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates a `Powershell` command which you will need to run locally on your machine
 + Ensure you have checked out the appropriate version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -23,7 +23,7 @@ These instructions will walk you through creating a new VM image for use in the 
   + You will need to visit that URL in a web browser, enter the code and log in to your account on Azure
   + :pencil: If you have several Azure accounts, make sure you use one that has permissions to make changes to the subscription you are using
 
-![Remote](https://img.shields.io/badge/remote-estimate%20of%20time%20needed-blue?logo=microsoft-onedrive&style=for-the-badge)
+![Remote: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates a command which you will need to run remotely on an Azure virtual machine (VM) using `Microsoft Remote Desktop`
 + Open `Microsoft Remote Desktop` and click `Add Desktop` / `Add PC`
@@ -35,7 +35,7 @@ These instructions will walk you through creating a new VM image for use in the 
 + Use the `username` and `password` specified by the appropriate section of the guide
 + :pencil: If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-![Azure Portal](https://img.shields.io/badge/portal-estimate%20of%20time%20needed-blue?logo=microsoft-azure&style=for-the-badge)
+![Portal: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=estimate%20of%20time%20needed)
 
 + This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
 + You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
@@ -112,7 +112,7 @@ If you want to update the version of one of the packages we install from a `.deb
 
 In order to provision a candidate VM you will need to do the following:
 
-![Powershell](https://img.shields.io/badge/local-two%20to%20three%20hours-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/dsvm_images/setup`
+![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
 ./Provision_Compute_VM.ps1 -shmId <SHM ID>
@@ -128,7 +128,7 @@ Note that the VM will automatically shutdown at the end of the cloud-init proces
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
-![Powershell](https://img.shields.io/badge/local-ten%20minutes-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/dsvm_images/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
 ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
@@ -143,7 +143,7 @@ This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus asso
 
 Once you have created an image, it can be registered in the image gallery using the `Register_Image_In_Gallery.ps1` script.
 
-![Powershell](https://img.shields.io/badge/local-one%20hour-blue?logo=powershell&style=for-the-badge) at :file_folder: `./deployment/dsvm_images/setup`
+![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
 ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
