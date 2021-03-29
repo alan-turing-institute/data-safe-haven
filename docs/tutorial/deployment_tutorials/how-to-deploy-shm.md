@@ -6,6 +6,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
++ [:cloud: 3. Configure Azure as the backend for Terraform](#cloud-3-configure-azure-as-the-backend-for-Terraform)
 + [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
@@ -142,23 +143,9 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
-<<<<<<< HEAD
-## 3. Configure Azure as the backend for Terraform
-
-![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
-
-```pwsh
-PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
-## Configure DNS for the custom domain
-=======
 ```pwsh
 PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
->>>>>>> e65d3658 (Improve deployment docs (#980))
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
@@ -173,6 +160,17 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
+## :cloud: 3. Configure Azure as the backend for Terraform
+
+![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```pwsh
+PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
 
 ## :door: 3. Configure DNS for the custom domain
 
