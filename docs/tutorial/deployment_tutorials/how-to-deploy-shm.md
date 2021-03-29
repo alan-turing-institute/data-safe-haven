@@ -104,6 +104,16 @@ On your **deployment machine**.
   + `Import-Module ./deployment/common/Configuration -Force`
   + `Show-FullConfig -shmId <SHM ID>`
 
+## 3. Configure Azure as the backend for Terraform
+
+![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```pwsh
+PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
 ## Configure DNS for the custom domain
 
 From your **deployment machine**
