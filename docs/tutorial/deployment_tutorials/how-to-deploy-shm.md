@@ -127,8 +127,8 @@ The following core SHM properties are required - look at `shm_testa_core_config.
 + This configuration file is also used when deploying an SRE environment.
 + :maple_leaf: We recommend that you set the fully qualified domain name to `<SHM ID>.<some domain that you control>`.
   + This may require purchasing a dedicated domain so follow your organisation's guidance.
-  + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **production** uses `<SHM ID>.turingsafehaven.ac.uk`
-  + ![Turing Institute](https://img.shields.io/badge/Turing%20Institute-555?&logo=canonical&logoColor=white) **development** uses `<SHM ID>.dsgroupdev.co.uk`
+  + ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) **production** uses `<SHM ID>.turingsafehaven.ac.uk`
+  + ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) **development** uses `<SHM ID>.dsgroupdev.co.uk`
 
 ### (Optional) Verify code version
 
