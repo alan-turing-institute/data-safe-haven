@@ -279,6 +279,11 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Search for `Global Administrator`
   + Check `Global Administrator`
   + Click the `Add` button
+    <details><summary><b>Screenshots</b></summary>
+      <p align="center">
+        <img src="../../images/deploy_shm/aad_global_admin.png" width="80%" title="AAD Global Admin"/>
+      </p>
+    </details>
 
 ## :iphone: 6. Enable MFA and self-service password reset
 
@@ -313,7 +318,7 @@ Click the heading that applies to you to expand the instructions for that scenar
   + Enter `aad.admin.emergency.access@<SHM domain>` as the username
   + Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
   + Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD). Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
-  + Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Subscriptions"
+  + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
   + Click on the Safe Haven SHM subscription
   + Click on `Resource Groups` in the left hand sidebar then `RG_SHM_<SHM ID>_SECRETS`
   + Click on the `kv-shm-<shm id>` Key Vault
@@ -345,11 +350,16 @@ Click the heading that applies to you to expand the instructions for that scenar
 ### Enable self-service password reset
 
 + Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-+ Click the "hamburger" menu in the top left corner (three horizontal lines) and select "Azure Active Directory"
++ Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Password reset` in the left hand sidebar
 + Set the `Self service password reset enabled` toggle to `All`
   + If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 + Click the `Save` icon
+  <details><summary><b>Screenshots</b></summary>
+    <p align="center">
+      <img src="../../images/deploy_shm/aad_sspr.png" width="80%" title="AAD self-service password reset"/>
+    </p>
+  </details>
 
 ### Configure MFA on Azure Active Directory
 
@@ -383,7 +393,7 @@ A default external administrator account was automatically created for the user 
 
 ### Add internal administrator accounts for yourself and others
 
-Several later steps will require the use of a **native** administrator account with a valid mobile phone and email address. You must therefore create and activate a **native** administrator account for yourself.
+Several later steps will require the use of a **native** administrator account with a valid mobile phone and email address. You must therefore create and activate a **native** administrator account for each person who will be acting as a system administrator.
 
 :maple_leaf: We strongly recommend that you delete the default external administrator account after creating the native account
 
@@ -415,6 +425,11 @@ Several later steps will require the use of a **native** administrator account w
   + Enter the user's institutional email address in the `Email` field
   + Note that you do **not** need to fill out either of the `Phone` fields here
   + Click the `Save` icon at the top of the panel
+    <details><summary><b>Screenshots</b></summary>
+      <p align="center">
+        <img src="../../images/deploy_shm/aad_create_admin.png" width="80%" title="AAD create admin account"/>
+      </p>
+    </details>
 
 ### Activate and configure your new internal admin account
 
