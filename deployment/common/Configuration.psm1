@@ -480,7 +480,7 @@ function Get-ShmConfig {
         rg = "$($shm.rgPrefix)_TERRAFORM".ToUpper()
         accountName = "${shmStoragePrefix}terraform${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         containerName = "tfcontainer"
-        keyName = "terraform.tfstate"
+        keyName = "shm.tfstate"
     }
 
     # Apply overrides (if any exist)

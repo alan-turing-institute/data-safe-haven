@@ -1,0 +1,28 @@
+# Configure the Microsoft Azure Provider
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 2.26"
+    }
+  }
+  backend "azurerm" {
+      subscription_id = "<<<tf_subscription_id>>>"
+      resource_group_name = "<<<tf_resource_group_name>>>"
+      storage_account_name = "<<<tf_storage_account_name>>>"
+      container_name = "<<<tf_container_name>>>"
+      key = "<<<tf_key>>>"
+  }
+}
+
+# Declare Azure provider
+provider "azurerm" {
+  subscription_id = "<<<tf_subscription_id>>>"
+  features {}
+}
+
+# module "dns" {
+#   source = "./modules/dns"
+#   name = var.dns_name
+#   location = var.dns_location
+# }
