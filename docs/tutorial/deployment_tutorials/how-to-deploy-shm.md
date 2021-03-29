@@ -137,7 +137,7 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
 ```pwsh
-git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
+PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
@@ -149,7 +149,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds) at :file_folder: `./deployment`
 
 ```pwsh
-./ShowConfigFile.ps1 -shmId <SHM ID>
+PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -159,7 +159,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -226,7 +226,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
+PS> pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -247,7 +247,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
+PS> pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -472,7 +472,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_Networking.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -538,7 +538,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_DC.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -656,7 +656,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 + Run the following command on the remote domain controller VM to update the AAD rules
 
 ```pwsh
-C:\Installation\UpdateAADSyncRule.ps1
+PS> C:\Installation\UpdateAADSyncRule.ps1
 ```
 
 ### Validate Active Directory synchronisation
@@ -685,7 +685,7 @@ This step validates that your local Active Directory users are correctly synchro
 + Run the following command on the remote domain controller VM to create and synchronise the users
 
 ```pwsh
-C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
+PS> C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 ```
 
 + This script will add the users and trigger a sync with Azure Active Directory
@@ -748,7 +748,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_NPS.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -875,7 +875,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -893,7 +893,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
+PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -906,7 +906,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
+PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
@@ -917,7 +917,7 @@ Each SRE can be configured to connect to either the local mirror or the Nexus pr
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
-./Setup_SHM_Logging.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM

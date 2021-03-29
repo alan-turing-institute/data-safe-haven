@@ -69,7 +69,7 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
 ```pwsh
-git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
+PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
@@ -127,7 +127,7 @@ In order to provision a candidate VM you will need to do the following:
 ![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
-./Provision_Compute_VM.ps1 -shmId <SHM ID>
+PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
@@ -143,7 +143,7 @@ Once you are happy with a particular candidate, you can convert it into an image
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
-./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
+PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
@@ -158,7 +158,7 @@ Once you have created an image, it can be registered in the image gallery using 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
-./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
+PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
