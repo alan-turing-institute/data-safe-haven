@@ -137,7 +137,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
 
 ### (Optional) Verify code version
 
-In order to confirm which version of the data safe haven you are currently using, you can run the following commands.
+If you have cloned/forked the code from our GitHub repository, you can confirm which version of the data safe haven you are currently using by running the following commands:
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 

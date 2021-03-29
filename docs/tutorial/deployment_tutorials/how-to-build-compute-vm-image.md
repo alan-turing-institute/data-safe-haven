@@ -62,6 +62,18 @@ These instructions will walk you through creating a new VM image for use in the 
 + SHM configuration file
   + The core properties for the environment must be present in the `environment_configs/core` folder as described in [the Safe Haven Management deployment instructions](how-to-deploy-shm.md).
 
+### (Optional) Verify code version
+
+If you have cloned/forked the code from our GitHub repository, you can confirm which version of the data safe haven you are currently using by running the following commands:
+
+![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
+
+```pwsh
+git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
+```
+
+This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
+
 ## :gift: 2. (Optional) Customising the build image
 
 Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages. The cloud-init file used here is in the `deployment/dsvm_images/cloud-init` folder. The most common changes to this image that you are likely to want to make are to add a new package or to update the version of an existing package.
