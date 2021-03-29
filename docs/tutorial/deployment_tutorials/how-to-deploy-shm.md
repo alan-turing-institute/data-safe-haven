@@ -71,7 +71,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + Install [PowerShell v7.0 or above](<https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell>)
 + `Powershell` cross-platform modules
   + :maple_leaf: You can run `./deployment/CheckRequirements.ps1` to print out the commands needed to install any missing modules
-  + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on **Windows**. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
+  + :warning: The version of the `AzureAD` module available from the standard Powershell Gallery only works on Windows. We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
 + `Microsoft Remote Desktop`
   + ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
   + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
@@ -379,11 +379,13 @@ The emergency access admin account should not be used except in a genuine emerge
 
 A default external administrator account was automatically created for the user you were logged in as when you initially created the Azure AD. This user should also not be used for administering the Azure AD, as it is not controlled by this AD. You will delete this user after creating a new **native** administrator account for yourself and the other administrators of the Safe Haven.
 
-:warning: In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
+:maple_leaf: In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
 
 ### Add internal administrator accounts for yourself and others
 
-:warning: You **must** create and activate a **native** administrator account for yourself. You will delete the default external administrator account in the next step. Later steps will also require use of a **native** admin account with mobile phone and alternate email address set.
+Several later steps will require the use of a **native** administrator account with a valid mobile phone and email address. You must therefore create and activate a **native** administrator account for yourself.
+
+:maple_leaf: We strongly recommend that you delete the default external administrator account after creating the native account
 
 #### Create a new account for each administrator (including yourself)
 
@@ -416,7 +418,7 @@ A default external administrator account was automatically created for the user 
 
 ### Activate and configure your new internal admin account
 
-:warning: In the next step we will delete the external admin account created for the user account you used to create the Azure AD. Before you do this, you **must** configure and log into the **native** admin account you have just created for yourself.
+:exclamation: In the next step we will delete the external admin account created for the user account you used to create the Azure AD. Before you do this, you **must** configure and log into the **native** admin account you have just created for yourself.
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
@@ -434,7 +436,7 @@ The other administrators you have just set up can activate their accounts by fol
 
 ### Remove the default external user that was used to create the Azure AD
 
-:warning: Make sure you have activated your account and **successfully logged in** with the new **native** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
+:exclamation: Make sure you have activated your account and **successfully logged in** with the new **native** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
@@ -836,7 +838,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 
 ## :closed_lock_with_key: 11. Require MFA for all users
 
-:warning: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
+:exclamation: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
 ![Portal: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=a%20few%20minutes)
 
@@ -901,7 +903,7 @@ PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 
 ### How to deploy a local package mirror
 
-> :warning: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+:exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
