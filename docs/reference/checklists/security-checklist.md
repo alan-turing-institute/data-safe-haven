@@ -57,9 +57,9 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 ### Verify by (BB):
 
 1. Create a new user without MFA and check that the user cannot access the apps
- + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
+ + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group (i.e. as described [here](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#ensure-that-your-non-privileged-user-account-is-in-the-correct-security-group))
  + b) Visit https://aka.ms/mfasetup in an incognito browser
- + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
+ + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
  + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
  + e) :camera: **Verify after adding to group**: Login again and check that apps can now be viewed
  + f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails
@@ -67,7 +67,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + a) Visit https://aka.ms/mfasetup again
   + b) Login as the user you set up
   + c) :white_check_mark: **Verify:** user guided to set up MFA
-  + d) Set up MFA as per [the user guide instructions](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
+  + d) Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
   + e) :camera: **Verify:** successfully set up MFA
 3. Check that MFA is working as we expect
   + a) :camera: **Verify**: login to the portal using the user account and check that MFA requested
