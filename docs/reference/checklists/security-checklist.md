@@ -56,8 +56,6 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 ### Verify by (BB):
 
-**Important:** In the steps below where we visit the remote desktop (RDP) web client, make sure you are not connected to the management VPN. We need to test the publicly accessible RDP gateway.
-
 1. Create a new user without MFA and check that the user cannot access the apps
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group
  + b) Visit https://aka.ms/mfasetup in an incognito browser
