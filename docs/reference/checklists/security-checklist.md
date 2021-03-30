@@ -65,8 +65,8 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
  + f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails
 2. Check that the user is able to successfully set up MFA
   + a) Visit https://aka.ms/mfasetup again
-  + b) Attempt to login and reset password
-  + c) :camera: **Verify:** user guided to set up MFA
+  + b) Login as the user you set up
+  + c) :white_check_mark: **Verify:** user guided to set up MFA
   + d) Set up MFA
   + e) :camera: **Verify:** successfully set up MFA
 3. Check that the user is able to successfully login to the apps once MFA is set up
