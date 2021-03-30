@@ -72,7 +72,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 3. Check that MFA is working as we expect
   + a) :camera: **Verify**: login to the portal using the user account and check that MFA requested
   + b) Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + c) :camera: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
+  + c) :white_check_mark: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
 
 ### Verify by (WB):
 
