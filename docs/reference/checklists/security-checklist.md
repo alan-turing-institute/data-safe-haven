@@ -76,7 +76,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 ### Verify by (WB):
 
-5. Users are required to set up MFA before they can access the environment
+4. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
   + b) :camera: **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
   + c) :camera: **Verify**: No trusted ips (this means that no one can skip MFA)
