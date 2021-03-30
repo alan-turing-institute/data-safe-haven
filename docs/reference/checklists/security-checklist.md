@@ -78,9 +78,11 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 4. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
-  + b) :camera: **Verify**: app passwords are unenabled (this stops any users bypassing MFA)
-  + c) :camera: **Verify**: No trusted ips (this means that no one can skip MFA)
-  + d) :camera: **Verify**: Option to remember trusted devices is unchecked (this means the user must authenticate each time)
+  + b) :camera: **Verify** all of the below with a single screenshot:
+        - `app passwords` set to "Do not allow users to create app passwords to sign in to non-browser apps
+" (this stops any users bypassing MFA)
+        - `trusted ips->Skip multi-factor authentication for requests from federated users on my intranet` is unchecked
+        - checkbox under `remember multi-factor authentication on trusted device` is unchecked (this means the user must authenticate each time)
 
 ## 2. Isolated Network
 
