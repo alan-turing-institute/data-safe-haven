@@ -69,7 +69,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + c) :white_check_mark: **Verify:** user guided to set up MFA
   + d) Set up MFA as per [the user guide instructions](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
   + e) :camera: **Verify:** successfully set up MFA
-3. Check that the user is able to successfully login to the apps once MFA is set up
+3. Check that MFA is working as we expect
   + a) :camera: **Verify**: login to the portal using the user account and check that MFA requested
   + b) Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + c) :camera: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
