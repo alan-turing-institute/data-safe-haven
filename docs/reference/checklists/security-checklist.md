@@ -111,7 +111,7 @@ SREs in the same SHM are still isolated from one another.
 2. Be unable to connect to the internet from within a DSVM on the SRE network.
   + a) Login as a user to a DSVM from within the SRE by using the web client.
   + b) Choose your favourite three websites and attempt to access the internet using a browser
-  + c) :white_check_mark: **Verify**: Connection fails
+  + c) :camera: **Verify**: Connection fails
   + d) Alternative if using terminal **Verify**: type `curl <website>` and check that you get the following response `<insert firewall message denying the connection as it matched the default rule>`
 3. Check that users cannot connect beween two SREs within the same SHM, even if they have access to both SREs
   + a) Ensure you have two SREs managed by the same SHM
