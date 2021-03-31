@@ -1063,22 +1063,21 @@ Export-ModuleMember -Function Show-FullConfig
 
 
 # Get a list of resource groups belonging to a particular SRE
-# ---------------------
+# -----------------------------------------------------------
 function Get-SreResourceGroups {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "SHM ID")]
         [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
+        [Parameter(Mandatory = $true, HelpMessage = "SRE ID")]
         [string]$sreId
     )
-    $resourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($shmId)_SRE_$($sreId)*" })
-    return $resourceGroups
+    return @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_${shmId}_SRE_${sreId}*" })
 }
 Export-ModuleMember -Function Get-SreResourceGroups
 
 
 # Get a list of resources belonging to a particular SRE
-# ---------------------
+# -----------------------------------------------------
 function Get-SreResources {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
@@ -1086,7 +1085,7 @@ function Get-SreResources {
         [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
         [string]$sreId
     )
-    $resourceGroups = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($shmId)_SRE_$($sreId)*" })
-    return $resourceGroups
+    $resourceGroups = Get-SreResourceGroups -shmId $shmId -sreId $sreId
+    return @(Get-AzResource | Where-Object { $resourceGroups.Contains($_.ResourceGroupName) })
 }
 Export-ModuleMember -Function Get-SreResources

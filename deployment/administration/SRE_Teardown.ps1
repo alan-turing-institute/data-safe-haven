@@ -2,8 +2,8 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
-    [string]$sreId
-    [Parameter(Mandatory=$false, HelpMessage="No-op mode which will not remove anything")]
+    [string]$sreId,
+    [Parameter(Mandatory = $false, HelpMessage = "No-op mode which will not remove anything")]
     [Switch]$dryRun
 )
 
@@ -47,18 +47,15 @@ for ($i = 0; $i -lt $noAttemps; $i++) {
     if (-not $sreResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
-        if (-Not $dryRun.IsPresent) {
-            Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
+        Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
+        if (-not $dryRun.IsPresent) {
             $null = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
             if ($?) {
                 Add-LogMessage -Level Success "Resource group removal succeeded"
             } else {
                 Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
             }
-        } else {
-            Add-LogMessage -Level Info "$($resourceGroup.ResourceGroupName)"
         }
-
     }
 }
 
