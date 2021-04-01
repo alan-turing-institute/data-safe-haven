@@ -78,11 +78,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 4. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
-  + b) :camera: **Verify** all of the below with a single screenshot:
-        - `app passwords` set to "Do not allow users to create app passwords to sign in to non-browser apps
-" (this stops any users bypassing MFA)
-        - `trusted ips->Skip multi-factor authentication for requests from federated users on my intranet` is unchecked
-        - checkbox under `remember multi-factor authentication on trusted device` is unchecked (this means the user must authenticate each time)
+  + b) :camera: **Verify** all of the following with a single screenshot: i) `app passwords` are set to "Do not allow users to create app passwords to sign in to non-browser apps" (this stops any users bypassing MFA). ii) `trusted ips->Skip multi-factor authentication for requests from federated users on my intranet` is unchecked. iii) Checkbox under `remember multi-factor authentication on trusted device` is unchecked (this means the user must authenticate each time)
 
 ## 2. Isolated Network
 
@@ -119,11 +115,11 @@ SREs in the same SHM are still isolated from one another.
   + c) Attempt to copy and paste a file from one SRE desktop to another
   + d) :white_check_mark: **Verify:** Copy and paste is not possible
   + e) Attempt to connect to SRE B's DSVM via SSH from SRE A:
-        - Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
-        - Right click on the PuTTY terminal and click `New Session...`
-        - Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
-        - Click `Open`
-  + f) :camera: **Verify:** Connection fails with `Network error: Connection timed out`
+  + f) Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
+  + g) Right click on the PuTTY terminal and click `New Session...`
+  + h) Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
+  + i) Click `Open`
+  + j) :camera: **Verify:** Connection fails with `Network error: Connection timed out`
 4. Check that one can connect between the SHM->SRE and SRE->SHM
   + a) Connect to the SHM DC (using the SHM VPN) as domain admin
   + b) Connect to an SRE DSVM using remote desktop or SSH
