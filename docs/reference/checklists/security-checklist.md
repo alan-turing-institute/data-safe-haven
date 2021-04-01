@@ -120,7 +120,7 @@ SREs in the same SHM are still isolated from one another.
   + h) Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + i) Click `Open`
   + j) :camera: **Verify:** Connection fails with `Network error: Connection timed out`
-4. Check that one can connect between the SHM->SRE and SRE->SHM
+4. (**EC: I'm not sure this check makes sense, check later or delete - perhaps we can chack what Martin suggests below instead**) Check that one can connect between the SHM->SRE and SRE->SHM
   + a) Connect to the SHM DC (using the SHM VPN) as domain admin
   + b) Connect to an SRE DSVM using remote desktop or SSH
   + c) :white_check_mark: **Verify:** Connection succeeds
