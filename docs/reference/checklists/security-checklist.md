@@ -113,12 +113,17 @@ SREs in the same SHM are still isolated from one another.
   + b) Choose your favourite three websites and attempt to access the internet using a browser
   + c) :camera: **Verify**: Connection fails
   + d) :camera: **Verify**: type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>`
-3. Check that users cannot connect beween two SREs within the same SHM, even if they have access to both SREs
+3. Check that users cannot connect between two SREs within the same SHM, even if they have access to both SREs
   + a) Ensure you have two SREs managed by the same SHM
-  + b) Connect to a DSVM in SRE A as a user by using the web client.
-  + c) Attempt to connect to a DSVM SRE B via remote desktop or SSH
-  + d) :white_check_mark: **Verify:** Connection fails
-  + e) Repeat the test, this time trying to connect from a DSVM in SRE B to a DSVM in SRE A
+  + b) Connect to a DSVM in SRE A as a user by using the web client. On a separate browser window, do the same for SRE B.
+  + c) Attempt to copy and paste a file from one SRE desktop to another
+  + d) :white_check_mark: **Verify:** Copy and paste is not possible
+  + e) Attempt to connect to SRE B's DSVM via SSH from SRE A:
+        - Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
+        - Right click on the PuTTY terminal and click `New Session...`
+        - Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
+        - Click `Open`
+  + f) :camera: **Verify:** Connection fails with `Network error: Connection timed out`
 4. Check that one can connect between the SHM->SRE and SRE->SHM
   + a) Connect to the SHM DC (using the SHM VPN) as domain admin
   + b) Connect to an SRE DSVM using remote desktop or SSH
