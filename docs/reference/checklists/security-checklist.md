@@ -132,8 +132,8 @@ SREs in the same SHM are still isolated from one another.
 ### Verify by (WB):
 
 5. Check that the network rules are set appropriately to block outgoing traffic
-  + a) Check `RG_SRE_NETWORKING -> NSG_SRE_SANDBOX_COMPUTE`
-  + b) **Verify:** There exists an OutboundDenyInternet rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet.
+  + a) Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
+  + b) :camera: **Verify:** There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet.
 
 ## 3. User devices
 
