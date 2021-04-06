@@ -38,3 +38,26 @@ module "keyvault" {
   tenant_id = data.azurerm_client_config.current.tenant_id
   security_group_id = var.kv_security_group_id
 }
+
+module "networking" {
+  source = "./modules/networking"
+  rg_name = var.net_rg_name
+  rg_location = var.net_rg_location
+  name = var.net_name
+  template_path = var.net_template_path
+  ipaddresses_externalntp = var.net_ipaddresses_externalntp
+  nsg_identity_name = var.net_nsg_identity_name
+  p2s_vpn_certificate = var.net_p2s_vpn_certificate
+  shm_id = var.net_shm_id
+  subnet_firewall_cidr = var.net_subnet_firewall_cidr
+  subnet_firewall_name = var.net_subnet_firewall_name
+  subnet_gateway_cidr = var.net_subnet_gateway_cidr
+  subnet_gateway_name = var.net_subnet_gateway_name
+  subnet_identity_cidr = var.net_subnet_identity_cidr
+  subnet_identity_name = var.net_subnet_identity_name
+  virtual_network_name = var.net_virtual_network_name
+  vnet_cidr = var.net_vnet_cidr
+  vnet_dns_dc1 = var.net_vnet_dns_dc1
+  vnet_dns_dc2 = var.net_vnet_dns_dc2
+  vpn_cidr = var.net_vpn_cidr
+}

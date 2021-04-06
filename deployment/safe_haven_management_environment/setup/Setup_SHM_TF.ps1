@@ -8,6 +8,7 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
@@ -43,18 +44,53 @@ $tfvars_file = '../terraform/terraform.tfvars'
 Copy-Item ../terraform/terraform.tfvars_template $tfvars_file
 
 # DNS
+# ------------------------------------------------------------
 # (Get-Content $tfvars_file).replace('<<<dns_rg_name>>>', $config.dns.rg) | Set-Content $tfvars_file
 # (Get-Content $tfvars_file).replace('<<<dns_rg_location>>>', $config.location) | Set-Content $tfvars_file
 
 # Key Vault
+# ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<kv_rg_name>>>', $config.keyVault.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_rg_location>>>', $config.location) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_name>>>', $config.keyVault.name) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_location>>>', $config.location) | Set-Content $tfvars_file
-
 $kvSecurityGroupId = (Get-AzADGroup -DisplayName $config.azureAdminGroupName)[0].Id
 (Get-Content $tfvars_file).replace('<<<kv_security_group_id>>>', $kvSecurityGroupId) | Set-Content $tfvars_file
 
+# Networking
+# ------------------------------------------------------------
+(Get-Content $tfvars_file).replace('<<<net_rg_name>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_rg_location>>>', $config.location) | Set-Content $tfvars_file
+$templatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json"
+(Get-Content $tfvars_file).replace('<<<net_template_path>>>', $templatePath) | Set-Content $tfvars_file
+$templateName = Split-Path -Path "$templatePath" -LeafBase
+(Get-Content $tfvars_file).replace('<<<net_name>>>', $templateName) | Set-Content $tfvars_file
+
+# Write-Output $config.time.ntp.serverAddresses
+# Write-Output $config.time.ntp.serverAddresses.GetType()
+# Write-Output "-----"
+# $b = $config.time.ntp.serverAddresses -join '", "'
+# Write-Output $b
+
+
+(Get-Content $tfvars_file).replace('<<<net_ipaddresses_externalntp>>>', $config.time.ntp.serverAddresses -join '", "') | Set-Content $tfvars_file
+
+(Get-Content $tfvars_file).replace('<<<net_nsg_identity_name>>>', $config.network.vnet.subnets.identity.nsg.name) | Set-Content $tfvars_file
+$p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<net_p2s_vpn_certificate>>>', $p2sVpnCertificate) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_shm_id>>>', ($config.id).ToLower()) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_firewall_cidr>>>', $config.network.vnet.subnets.firewall.cidr) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_firewall_name>>>', $config.network.vnet.subnets.firewall.name) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_gateway_cidr>>>', $config.network.vnet.subnets.gateway.cidr) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_gateway_name>>>', $config.network.vnet.subnets.gateway.name) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_identity_cidr>>>', $config.network.vnet.subnets.identity.cidr) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_subnet_identity_name>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_virtual_network_name>>>', $config.network.vnet.name) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_vnet_cidr>>>', $config.network.vnet.cidr) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_vnet_dns_dc1>>>', $config.dc.ip) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_vnet_dns_dc2>>>', $config.dcb.ip) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<net_vpn_cidr>>>', $config.network.vpn.cidr) | Set-Content $tfvars_file
+
 # Switch back to original subscription
-# ------------------------------------
+# ------------------------------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop

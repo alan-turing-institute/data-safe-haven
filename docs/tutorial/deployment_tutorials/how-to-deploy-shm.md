@@ -11,9 +11,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:door: 5. Configure DNS for the custom domain](#door-5-configure-dns-for-the-custom-domain)
 + [:file_folder: 6. Setup Azure Active Directory (AAD)](#file_folder-6-setup-azure-active-directory-aad)
 + [:key: 7. Create SHM secrets and emergency admin account](#key-7-create-shm-secrets-and-emergency-admin-account)
-+ [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
-+ [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
-+ [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
++ [:iphone: 8. Enable MFA and self-service password reset](#iphone-8-enable-mfa-and-self-service-password-reset)
++ [:id: 9. Configure internal administrator accounts](#id-9-configure-internal-administrator-accounts)
++ [:station: 10. Deploy network and VPN gateway](#station-10-deploy-network-and-vpn-gateway)
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
@@ -200,6 +200,8 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
   PS> terraform apply
   ```
 
+  When asked `Do you want to perform these actions?` type `yes` to approve the actions.
+
 ## :door: 5. Configure DNS for the custom domain
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
@@ -331,7 +333,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
       </p>
     </details>
 
-## :iphone: 6. Enable MFA and self-service password reset
+## :iphone: 8. Enable MFA and self-service password reset
 
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
@@ -431,7 +433,7 @@ Click the heading that applies to you to expand the instructions for that scenar
       </p>
     </details>
 
-## :id: 7. Configure internal administrator accounts
+## :id: 9. Configure internal administrator accounts
 
 The emergency access admin account should not be used except in a genuine emergency. In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
 
@@ -534,7 +536,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 </details>
 
-## :station: 8. Deploy network and VPN gateway
+## :station: 10. Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
