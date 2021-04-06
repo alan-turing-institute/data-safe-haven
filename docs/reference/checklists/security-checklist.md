@@ -155,12 +155,12 @@ For tier 2:
 
 1. One can connect regardless of device as long as one has the correct VPN and credentials
   + a) Using a personal device, connect to the environment using the correct VPN and credentials
-  + b) :white_check_mark: **Verify**: Connection suceeds
+  + b) :white_check_mark: **Verify**: Connection succeeds
   + c) Using a managed device, connect to the environment using the correct VPN and credentials.
-  + d) :white_check_mark: **Verify**: Connection suceeds
+  + d) :white_check_mark: **Verify**: Connection succeeds
 2. There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
-  + a) Check network rules **TODO:** replaces this with a line that says where to look
-  + b) :camera: **Verify**: The `RDS` NSG has network rules allowing **inbound** access from `<insert Turing Tier 2 and Tier 3 IP addresses here>`
+  + a) Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
+  + b) :camera: **Verify**: The `RDS` NSG has network rules allowing **inbound** access from the IP address of the tier 2 SRE
   + c) :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
