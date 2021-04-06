@@ -25,6 +25,7 @@
   + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
   + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 + [:anger: Tearing down SHM package mirrors](#anger-tearing-down-shm-package-mirrors)
++ [:boot: Reboot any SHM and SRE that was shut down](#boot-reboot-any-shm-and-sre-that-was-shut-down)
 
 ## :seedling: Prerequisites
 
@@ -573,3 +574,14 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
+
+## :boot: Reboot any SHM and SRE that was shut down
+
+Sometimes the SHM and SREs may get shut down unexpectedly. One reason could be the project Azure subscription running out of credits. When this happens, do the following:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Run `./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStarted -Group All` to restart the SHM
++ For each SRE, run `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStarted`
