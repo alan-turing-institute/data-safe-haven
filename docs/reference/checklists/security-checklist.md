@@ -155,24 +155,24 @@ For tier 2:
 
 1. One can connect regardless of device as long as one has the correct VPN and credentials
   + a) Using a personal device, connect to the environment using the correct VPN and credentials
-  + b) **Verify**: Connection suceeds
+  + b) :white_check_mark: **Verify**: Connection suceeds
   + c) Using a managed device, connect to the environment using the correct VPN and credentials.
-  + d) **Verify**: Connection suceeds
+  + d) :white_check_mark: **Verify**: Connection suceeds
 2. There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
-  + a) Check network rules
-  + b) **Verify**: The `RDS` NSG has network rules allowing **inbound** access from `<insert Turing Tier 2 and Tier 3 IP addresses here>`
-  + c) **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
+  + a) Check network rules **TODO:** replaces this with a line that says where to look
+  + b) :camera: **Verify**: The `RDS` NSG has network rules allowing **inbound** access from `<insert Turing Tier 2 and Tier 3 IP addresses here>`
+  + c) :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
 
 3. A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
   + a) Check that the device is managed by the partner institution IT team
-  + b) **Verify**: The user lacks root access
+  + b) :white_check_mark: **Verify**: The user lacks root access
 4. A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
   + a) Using a personal device, attempt to connect to the environment using the correct VPN and credentials
-  + b) **Verify**: Connection fails
+  + b) :white_check_mark: **Verify**: Connection fails
   + c) Using a managed device, attempt to connect to the environment using the correct VPN and credentials
-  + d) **Verify**: Connection suceeds
+  + d) :white_check_mark: **Verify**: Connection suceeds
 5. We can check that a managed device is within a specific IP range and that the environment firewall accepts it.
 6. We can check that the firewall blocks any device with an IP outside of the specified range
 
