@@ -6,10 +6,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
-+ [:cloud: 3. Configure Azure as the backend for Terraform](#cloud-3-configure-azure-as-the-backend-for-Terraform)
++ [:cloud: 3. Configure Azure as the backend for Terraform and establish infrastructure](#cloud-3-configure-azure-as-the-backend-for-Terraform-and-establish-infrastructure)
 + [:door: 4. Configure DNS for the custom domain](#door-4-configure-dns-for-the-custom-domain)
 + [:file_folder: 5. Setup Azure Active Directory (AAD)](#file_folder-5-setup-azure-active-directory-aad)
-+ [:key: 6. Deploy Key Vault for SHM secrets and create emergency admin account](#key-6-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
++ [:key: 6. Create SHM secrets and emergency admin account](#key-6-create-shm-secrets-and-emergency-admin-account)
 + [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
 + [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
@@ -87,6 +87,8 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
     + :warning: If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
   + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
++ `Terraform`
+  + Install [Terraform v0.14.5 or above](<https://learn.hashicorp.com/tutorials/terraform/install-cli>)
 
 ## :clipboard: 2. Safe Haven Management configuration
 
@@ -161,7 +163,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## :cloud: 3. Configure Azure as the backend for Terraform
+## :cloud: 3. Configure Azure as the backend for Terraform and establish infrastructure
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -171,6 +173,29 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
+![Powershell: unknown](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=unknown) at :file_folder: `./deployment/safe_haven_management_environment/terraform`
+
++ Initialise a working directory containing Terraform configuration files.
+
+  ```pwsh
+  PS> terraform init
+  ```
+
+  You should see the following message `Terraform has been successfully initialized!`
+
++ Create an execution plan to check if the set of changes matches your expectations without making any changes to real resources or to the state.
+
+  ```pwsh
+  PS> terraform plan
+  ```
+
+  You should see a message that starts with `Terraform will perform the following actions:` and then lists resources to be added/changed/destroyed.
+
++
+
+  ```pwsh
+  PS> terraform apply
+  ```
 
 ## :door: 4. Configure DNS for the custom domain
 
@@ -260,7 +285,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 + Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 
-## :key: 6. Deploy Key Vault for SHM secrets and create emergency admin account
+## :key: 6. Create SHM secrets and emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
