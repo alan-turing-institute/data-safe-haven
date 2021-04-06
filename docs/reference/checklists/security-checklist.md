@@ -423,11 +423,12 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
 1. Admin has limited access to the internet
   + a) Connect to an administrator VM such as the SHM-DC
   + b) Attempt to connect to your favourite non standard site
-  + c) **Verify:** connection fails
+  + c) :camera: **Verify:** connection fails
 2. Admin can download Windows updates
   + a) Connect to an administrator VM such as the SHM-DC
-  + b) Attempt to download a Windows update
-  + c) **Verify:** download and update successful
+  + b) Click on `Start -> Settings-> Update & Security`
+  + c) Click the `Download` button
+  + d) :camera: **Verify:** download and update successful
 
 ## 12. Non technical security implementation
 
