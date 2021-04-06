@@ -6,10 +6,11 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
-+ [:cloud: 3. Configure Azure as the backend for Terraform and establish infrastructure](#cloud-3-configure-azure-as-the-backend-for-Terraform-and-establish-infrastructure)
-+ [:door: 4. Configure DNS for the custom domain](#door-4-configure-dns-for-the-custom-domain)
-+ [:file_folder: 5. Setup Azure Active Directory (AAD)](#file_folder-5-setup-azure-active-directory-aad)
-+ [:key: 6. Create SHM secrets and emergency admin account](#key-6-create-shm-secrets-and-emergency-admin-account)
++ [:hammer: 3. Configure Terraform](#hammer-3-configure-terraform)
++ [:cloud: 4. Establish the infrastructure](#cloud-4-establish-the-infrastructure)
++ [:door: 5. Configure DNS for the custom domain](#door-5-configure-dns-for-the-custom-domain)
++ [:file_folder: 6. Setup Azure Active Directory (AAD)](#file_folder-6-setup-azure-active-directory-aad)
++ [:key: 7. Create SHM secrets and emergency admin account](#key-7-create-shm-secrets-and-emergency-admin-account)
 + [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
 + [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
@@ -163,7 +164,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## :cloud: 3. Configure Azure as the backend for Terraform and establish infrastructure
+## :hammer: 3. Configure Terraform
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -172,6 +173,8 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
+## :cloud: 4. Establish the infrastructure
 
 ![Powershell: unknown](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=unknown) at :file_folder: `./deployment/safe_haven_management_environment/terraform`
 
@@ -197,7 +200,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
   PS> terraform apply
   ```
 
-## :door: 4. Configure DNS for the custom domain
+## :door: 5. Configure DNS for the custom domain
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -224,7 +227,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 </details>
 
-## :file_folder: 5. Setup Azure Active Directory (AAD)
+## :file_folder: 6. Setup Azure Active Directory (AAD)
 
 ### Create a new Azure Active Directory
 
@@ -285,7 +288,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 + Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 
-## :key: 6. Create SHM secrets and emergency admin account
+## :key: 7. Create SHM secrets and emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
