@@ -31,11 +31,11 @@ $az_context = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorActio
 # ------------------------------------------------------------
 $main_file = '../terraform/main.tf'
 Copy-Item ../terraform/main.tf_template $main_file
-(Get-Content $main_file).replace('<<<tf_subscription_id>>>', $az_context.Subscription.Id) | Set-Content $main_file
-(Get-Content $main_file).replace('<<<tf_resource_group_name>>>', $config.terraform.rg) | Set-Content $main_file
-(Get-Content $main_file).replace('<<<tf_storage_account_name>>>', $config.terraform.accountName) | Set-Content $main_file
-(Get-Content $main_file).replace('<<<tf_container_name>>>', $config.terraform.containerName) | Set-Content $main_file
-(Get-Content $main_file).replace('<<<tf_key>>>', $config.terraform.keyName) | Set-Content $main_file
+(Get-Content $main_file).replace('<<<subscription_id>>>', $az_context.Subscription.Id) | Set-Content $main_file
+(Get-Content $main_file).replace('<<<resource_group_name>>>', $config.terraform.rg) | Set-Content $main_file
+(Get-Content $main_file).replace('<<<storage_account_name>>>', $config.terraform.accountName) | Set-Content $main_file
+(Get-Content $main_file).replace('<<<container_name>>>', $config.terraform.containerName) | Set-Content $main_file
+(Get-Content $main_file).replace('<<<key>>>', $config.terraform.keyName) | Set-Content $main_file
 
 # Prepare terraform.tfvars file
 # ------------------------------------------------------------
@@ -43,9 +43,17 @@ $tfvars_file = '../terraform/terraform.tfvars'
 Copy-Item ../terraform/terraform.tfvars_template $tfvars_file
 
 # DNS
-# (Get-Content $tfvars_file).replace('<<<dns_name>>>', $config.dns.rg) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<dns_location>>>', $config.location) | Set-Content $tfvars_file
+# (Get-Content $tfvars_file).replace('<<<dns_rg_name>>>', $config.dns.rg) | Set-Content $tfvars_file
+# (Get-Content $tfvars_file).replace('<<<dns_rg_location>>>', $config.location) | Set-Content $tfvars_file
 
+# Key Vault
+(Get-Content $tfvars_file).replace('<<<kv_rg_name>>>', $config.keyVault.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_rg_location>>>', $config.location) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_name>>>', $config.keyVault.name) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_location>>>', $config.location) | Set-Content $tfvars_file
+
+$kvSecurityGroupId = (Get-AzADGroup -DisplayName $config.azureAdminGroupName)[0].Id
+(Get-Content $tfvars_file).replace('<<<kv_security_group_id>>>', $kvSecurityGroupId) | Set-Content $tfvars_file
 
 # Switch back to original subscription
 # ------------------------------------

@@ -7,9 +7,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
 + [:clipboard: 2. Safe Haven Management configuration](#clipboard-2-safe-haven-management-configuration)
 + [:cloud: 3. Configure Azure as the backend for Terraform](#cloud-3-configure-azure-as-the-backend-for-Terraform)
-+ [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
-+ [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
-+ [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
++ [:door: 4. Configure DNS for the custom domain](#door-4-configure-dns-for-the-custom-domain)
++ [:file_folder: 5. Setup Azure Active Directory (AAD)](#file_folder-5-setup-azure-active-directory-aad)
++ [:key: 6. Deploy Key Vault for SHM secrets and create emergency admin account](#key-6-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
 + [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
 + [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
@@ -172,7 +172,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 
-## :door: 3. Configure DNS for the custom domain
+## :door: 4. Configure DNS for the custom domain
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -199,7 +199,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 </details>
 
-## :file_folder: 4. Setup Azure Active Directory (AAD)
+## :file_folder: 5. Setup Azure Active Directory (AAD)
 
 ### Create a new Azure Active Directory
 
@@ -260,7 +260,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 + Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 
-## :key: 5. Deploy Key Vault for SHM secrets and create emergency admin account
+## :key: 6. Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 

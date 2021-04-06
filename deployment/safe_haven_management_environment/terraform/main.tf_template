@@ -7,22 +7,34 @@ terraform {
     }
   }
   backend "azurerm" {
-      subscription_id = "<<<tf_subscription_id>>>"
-      resource_group_name = "<<<tf_resource_group_name>>>"
-      storage_account_name = "<<<tf_storage_account_name>>>"
-      container_name = "<<<tf_container_name>>>"
-      key = "<<<tf_key>>>"
+      subscription_id = "<<<subscription_id>>>"
+      resource_group_name = "<<<resource_group_name>>>"
+      storage_account_name = "<<<storage_account_name>>>"
+      container_name = "<<<container_name>>>"
+      key = "<<<key>>>"
   }
 }
 
 # Declare Azure provider
 provider "azurerm" {
-  subscription_id = "<<<tf_subscription_id>>>"
+  subscription_id = "<<<subscription_id>>>"
   features {}
+}
+
+data "azurerm_client_config" "current" {
 }
 
 # module "dns" {
 #   source = "./modules/dns"
-#   name = var.dns_name
-#   location = var.dns_location
+#   rg_name = var.dns_rg_name
+#   rg_location = var.dns_rg_location
 # }
+
+module "keyvault" {
+  source = "./modules/keyvault"
+  rg_name = var.kv_rg_name
+  rg_location = var.kv_rg_location
+  name = var.kv_name
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  security_group_id = var.kv_security_group_id
+}

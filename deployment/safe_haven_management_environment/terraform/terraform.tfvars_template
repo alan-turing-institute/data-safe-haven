@@ -1,2 +1,7 @@
-# dns_name = "<<<dns_name>>>"
-# dns_location = "<<<dns_location>>>"
+# dns_rg_name = "<<<dns_rg_name>>>"
+# dns_rg_location = "<<<dns_rg_location>>>"
+
+kv_rg_name = "<<<kv_rg_name>>>"
+kv_rg_location = "<<<kv_rg_location>>>"
+kv_name = "<<<kv_name>>>"
+kv_security_group_id = "<<<kv_security_group_id>>>"

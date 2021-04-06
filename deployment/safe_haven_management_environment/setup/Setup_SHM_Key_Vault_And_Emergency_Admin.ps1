@@ -38,13 +38,13 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Create secrets resource group if it does not exist
 # --------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
+# $null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
 # Ensure the Key Vault exists and set its access policies
 # -------------------------------------------------------
-$null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
-Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
+# $null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
+# Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that secrets exist in the Key Vault
