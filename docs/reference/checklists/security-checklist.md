@@ -127,7 +127,7 @@ SREs in the same SHM are still isolated from one another.
   + d) Disconnect from both
   + e) Connect to the SRE DSVM
   + f) Connect to the SHM DC using remote desktop or SSH
-  + g :white_check_mark: **Verify:** Connection suceeds [MOR: Ideally it should not be possible to log into any SHM VMs from any SRE VMs, even with admin credentials due to network rules forbidding the connection]
+  + g :white_check_mark: **Verify:** Connection succeeds [MOR: Ideally it should not be possible to log into any SHM VMs from any SRE VMs, even with admin credentials due to network rules forbidding the connection]
 
 ### Verify by (WB):
 
@@ -172,7 +172,7 @@ For tier 3:
   + a) Using a personal device, attempt to connect to the environment using the correct VPN and credentials
   + b) :white_check_mark: **Verify**: Connection fails
   + c) Using a managed device, attempt to connect to the environment using the correct VPN and credentials
-  + d) :white_check_mark: **Verify**: Connection suceeds
+  + d) :white_check_mark: **Verify**: Connection succeeds
 5. We can check that a managed device is within a specific IP range and that the environment firewall accepts it. **TODO:** Is this another verification check we should add?
 6. We can check that the firewall blocks any device with an IP outside of the specified range. **TODO:** Is this another verification check we should add?
 
@@ -197,7 +197,7 @@ For tier 3:
   + b) :white_check_mark: **Verify:** connection fails
 2. Connection from within the research office space is possible.
   + a) Attempt to connect from research office using a managed device and the correct VPN connection and credentials
-  + b) :white_check_mark: **Verify:** connection suceeds
+  + b) :white_check_mark: **Verify:** connection succeeds
 3. Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
 4. :white_check_mark: **Verify:** Physically confirm that measures such as screen adaptions or desk partitions are present.
 
@@ -283,7 +283,7 @@ First identify a select list of IP addresses and an email for which the data wil
   + a) Identify a test device that will have a whitelisted IP address
   + b) Generate a secure upload token with write-only permissions with limited time period
   + c) Attempt to write to the ingress volume via the test device
-  + d) **Verify:** that writing suceeds
+  + d) **Verify:** that writing succeeds
   + e) **Verify:** that one is unable to view or download from ingress
   + f) Switch to a device that lacks a whitelisted IP address
   + g) Attempt to write to the ingress volume via the test device
@@ -403,7 +403,7 @@ Tier 3:
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + c) Attempt to download the package
-  + d) **Verify:** the download suceeds
+  + d) **Verify:** the download succeeds
   + e) Take a package that is not included in the whitelist
   + f) Attempt to download the package
   + g) **Verify:** the download fails
