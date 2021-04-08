@@ -46,7 +46,6 @@ module "keyvault" {
   secret_value_shm_domain_admin_username = var.kv_secret_value_shm_domain_admin_username
   secret_name_shm_domain_admin_password = var.kv_secret_name_shm_domain_admin_password
   secret_value_shm_domain_admin_password = var.kv_secret_value_shm_domain_admin_password
-
   secret_name_shm_vm_safemode_password_dc = var.kv_secret_name_shm_vm_safemode_password_dc
   secret_value_shm_vm_safemode_password_dc = var.kv_secret_value_shm_vm_safemode_password_dc
 }
