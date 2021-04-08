@@ -89,6 +89,7 @@ Make sure you have all of the following in front of you when connecting to the S
 + :european_castle: The [domain name and URL](#domain-names) for the SRE, given in an email from your SRE administrator.
 + :computer: Your computer.
 + :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
++ :lock: [Data security training](#data-security-training-requirements) for those working on health datasets.
 + :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
 
 You should also know who the **designated contact** for your SRE is.
@@ -118,6 +119,26 @@ You will be told what these requirements are for your particular environment.
 
 > :point_right: Make sure you know the networks from which you must connect to your SRE.
 > This information will be available in the email you received with your connection information.
+
+#### Data security training requirements
+
+This only applies to DSH users working on health data.
+
+Users required to undertake data security awareness training:
+
++ Safe Haven code owners and those with admin access to the Safe Haven Github (including organisational admins). This is to ensure integrity of the Safe Haven supply chain.
++ Safe Haven administrators
++ IT Azure admin team, as they have admin access to all subscriptions
++ Safe Haven programme and project managers, as they can create a new project and request an SRE is created
++ All Researchers with access to data in scope of DSPT that is currently managed by Turing
++ Data Provider Representatives, Principal Investigators and Referees for data in scope of DSPT that is currently managed by Turing
+
+The requirement is documented proof of (within 1 year):
+
++ Organisational Data Protection training (or Turing's training)
++ Organisational Information Security training (or Turing's training)
++ [NHS Data Security Awareness training](https://www.e-lfh.org.uk/programmes/data-security-awareness)
++ We may accept equivalent qualifications from another organisations that meet their own DSPT requirements
 
 #### Your phone for multi-factor authentication
 
