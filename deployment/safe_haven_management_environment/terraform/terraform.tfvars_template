@@ -13,6 +13,8 @@ kv_secret_name_shm_domain_admin_username = "<<<kv_secret_name_shm_domain_admin_u
 kv_secret_value_shm_domain_admin_username = "<<<kv_secret_value_shm_domain_admin_username>>>"
 kv_secret_name_shm_domain_admin_password = "<<<kv_secret_name_shm_domain_admin_password>>>"
 kv_secret_value_shm_domain_admin_password = "<<<kv_secret_value_shm_domain_admin_password>>>"
+kv_secret_name_shm_vm_safemode_password_dc = "<<<kv_secret_name_shm_vm_safemode_password_dc>>>"
+kv_secret_value_shm_vm_safemode_password_dc = "<<<kv_secret_value_sh_vm_safemode_password_dc>>>"
 
 net_rg_name = "<<<net_rg_name>>>"
 net_rg_location = "<<<net_rg_location>>>"

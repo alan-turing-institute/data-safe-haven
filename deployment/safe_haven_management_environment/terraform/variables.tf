@@ -67,6 +67,15 @@ variable "kv_secret_value_shm_domain_admin_password" {
   sensitive = true
 }
 
+variable "kv_secret_name_shm_vm_safemode_password_dc" {
+  type = string
+}
+
+variable "kv_secret_value_shm_vm_safemode_password_dc" {
+  type = string
+  sensitive = true
+}
+
 ################################################
 # Networking
 ################################################

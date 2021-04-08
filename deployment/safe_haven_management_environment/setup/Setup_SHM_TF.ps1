@@ -64,7 +64,8 @@ $kvSecurityGroupId = (Get-AzADGroup -DisplayName $config.azureAdminGroupName)[0]
 (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_username>>>', "domain$($config.id)admin".ToLower()) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_domain_admin_password>>>', $config.keyVault.secretNames.domainAdminPassword) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-
+(Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_vm_safemode_password_dc>>>', $config.dc.safemodePasswordSecretName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_vm_safemode_password_dc>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
 
 
 # Networking

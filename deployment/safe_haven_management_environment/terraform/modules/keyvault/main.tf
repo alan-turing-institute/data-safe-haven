@@ -61,3 +61,8 @@ resource "azurerm_key_vault_secret" "shm_domain_admin_password" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
+resource "azurerm_key_vault_secret" "vm_safemode_password_dc" {
+  name         = var.secret_name_shm_vm_safemode_password_dc
+  value        = var.secret_value_shm_vm_safemode_password_dc
+  key_vault_id = azurerm_key_vault.kv.id
+}
