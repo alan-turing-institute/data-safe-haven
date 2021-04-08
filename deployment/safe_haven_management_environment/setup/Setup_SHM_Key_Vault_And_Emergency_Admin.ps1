@@ -49,27 +49,27 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Ensure that secrets exist in the Key Vault
 # ------------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.keyVault.name)'..."
+# Add-LogMessage -Level Info "Ensuring that secrets exist in Key Vault '$($config.keyVault.name)'..."
 
-# :: AAD Emergency Administrator username
-$null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "aad.admin.emergency.access" -AsPlaintext
-if ($?) {
-    Add-LogMessage -Level Success "AAD emergency administrator account username exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator username!"
-}
+# # :: AAD Emergency Administrator username
+# $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -DefaultValue "aad.admin.emergency.access" -AsPlaintext
+# if ($?) {
+#     Add-LogMessage -Level Success "AAD emergency administrator account username exists"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator username!"
+# }
 
-# :: AAD Emergency Administrator password
-$null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20 -AsPlaintext
-if ($?) {
-    Add-LogMessage -Level Success "AAD emergency administrator account password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
-}
+# # :: AAD Emergency Administrator password
+# $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -DefaultLength 20 -AsPlaintext
+# if ($?) {
+#     Add-LogMessage -Level Success "AAD emergency administrator account password exists"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to create AAD Emergency Global Administrator password!"
+# }
 
 # :: Admin usernames
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower() -AsPlaintext
+    # $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower() -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
@@ -78,7 +78,7 @@ try {
 }
 # :: VM admin passwords
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
+    # $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.adminPasswordSecretName -DefaultLength 20 -AsPlaintext

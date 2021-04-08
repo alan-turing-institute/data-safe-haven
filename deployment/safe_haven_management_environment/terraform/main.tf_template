@@ -32,11 +32,20 @@ data "azurerm_client_config" "current" {
 
 module "keyvault" {
   source = "./modules/keyvault"
+
   rg_name = var.kv_rg_name
   rg_location = var.kv_rg_location
   name = var.kv_name
   tenant_id = data.azurerm_client_config.current.tenant_id
   security_group_id = var.kv_security_group_id
+  secret_name_shm_aad_emergency_admin_username = var.kv_secret_name_shm_aad_emergency_admin_username
+  secret_value_shm_aad_emergency_admin_username = var.kv_secret_value_shm_aad_emergency_admin_username
+  secret_name_shm_aad_emergency_admin_password = var.kv_secret_name_shm_aad_emergency_admin_password
+  secret_value_shm_aad_emergency_admin_password = var.kv_secret_value_shm_aad_emergency_admin_password
+  secret_name_shm_domain_admin_username = var.kv_secret_name_shm_domain_admin_username
+  secret_value_shm_domain_admin_username = var.kv_secret_value_shm_domain_admin_username
+  secret_name_shm_domain_admin_password = var.kv_secret_name_shm_domain_admin_password
+  secret_value_shm_domain_admin_password = var.kv_secret_value_shm_domain_admin_password
 }
 
 module "networking" {
@@ -61,3 +70,14 @@ module "networking" {
   vnet_dns_dc2 = var.net_vnet_dns_dc2
   vpn_cidr = var.net_vpn_cidr
 }
+
+module "dc" {
+  source = "./modules/dc"
+  rg_name = var.dc_rg_name
+  rg_location = var.dc_rg_location
+  rg_name_bootdiagnostics = var.dc_rg_name_bootdiagnostics
+  sa_name_bootdiagnostics = var.dc_sa_name_bootdiagnostics
+  rg_name_artifacts = var.dc_rg_name_artifacts
+  sa_name_artifacts = var.dc_sa_name_artifacts
+}
+

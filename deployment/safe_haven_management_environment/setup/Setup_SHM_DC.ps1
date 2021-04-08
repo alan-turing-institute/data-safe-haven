@@ -21,22 +21,22 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Setup boot diagnostics resource group and storage account
 # ---------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
-$null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
+# $null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
+# $null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
 # Setup artifacts resource group and storage account
 # --------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-$storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
+# $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
+# $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
 
 # Create blob storage containers
 # ------------------------------
-Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
-    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
-}
+# Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
+# foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
+#     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
+# }
 
 
 # Upload artifacts
@@ -96,7 +96,7 @@ if ($success) {
 
 # Create SHM DC resource group if it does not exist
 # -------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
+# $null = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 
 
 # Retrieve usernames/passwords from the Key Vault

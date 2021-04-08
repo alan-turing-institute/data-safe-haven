@@ -56,6 +56,16 @@ Copy-Item ../terraform/terraform.tfvars_template $tfvars_file
 (Get-Content $tfvars_file).replace('<<<kv_location>>>', $config.location) | Set-Content $tfvars_file
 $kvSecurityGroupId = (Get-AzADGroup -DisplayName $config.azureAdminGroupName)[0].Id
 (Get-Content $tfvars_file).replace('<<<kv_security_group_id>>>', $kvSecurityGroupId) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_aad_emergency_admin_username>>>', $config.keyVault.secretNames.aadEmergencyAdminUsername) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_aad_emergency_admin_username>>>', "aad.admin.emergency.access") | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_aad_emergency_admin_password>>>', $config.keyVault.secretNames.aadEmergencyAdminPassword) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_aad_emergency_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_domain_admin_username>>>', $config.keyVault.secretNames.domainAdminUsername) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_username>>>', "domain$($config.id)admin".ToLower()) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_domain_admin_password>>>', $config.keyVault.secretNames.domainAdminPassword) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
+
+
 
 # Networking
 # ------------------------------------------------------------
@@ -65,16 +75,7 @@ $templatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.
 (Get-Content $tfvars_file).replace('<<<net_template_path>>>', $templatePath) | Set-Content $tfvars_file
 $templateName = Split-Path -Path "$templatePath" -LeafBase
 (Get-Content $tfvars_file).replace('<<<net_name>>>', $templateName) | Set-Content $tfvars_file
-
-# Write-Output $config.time.ntp.serverAddresses
-# Write-Output $config.time.ntp.serverAddresses.GetType()
-# Write-Output "-----"
-# $b = $config.time.ntp.serverAddresses -join '", "'
-# Write-Output $b
-
-
 (Get-Content $tfvars_file).replace('<<<net_ipaddresses_externalntp>>>', $config.time.ntp.serverAddresses -join '", "') | Set-Content $tfvars_file
-
 (Get-Content $tfvars_file).replace('<<<net_nsg_identity_name>>>', $config.network.vnet.subnets.identity.nsg.name) | Set-Content $tfvars_file
 $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<net_p2s_vpn_certificate>>>', $p2sVpnCertificate) | Set-Content $tfvars_file
@@ -90,6 +91,16 @@ $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Se
 (Get-Content $tfvars_file).replace('<<<net_vnet_dns_dc1>>>', $config.dc.ip) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_vnet_dns_dc2>>>', $config.dcb.ip) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_vpn_cidr>>>', $config.network.vpn.cidr) | Set-Content $tfvars_file
+
+# DC
+# ------------------------------------------------------------
+(Get-Content $tfvars_file).replace('<<<dc_rg_name>>>', $config.dc.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_rg_location>>>', $config.location) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_rg_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_sa_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_rg_name_artifacts>>>', $config.storage.artifacts.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_sa_name_artifacts>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
+
 
 # Switch back to original subscription
 # ------------------------------------------------------------

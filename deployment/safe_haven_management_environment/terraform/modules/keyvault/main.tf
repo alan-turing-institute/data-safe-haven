@@ -35,3 +35,29 @@ resource "azurerm_key_vault" "kv" {
 
   }
 }
+
+resource "azurerm_key_vault_secret" "shm_aad_emergency_admin_username" {
+  name         = var.secret_name_shm_aad_emergency_admin_username
+  value        = var.secret_value_shm_aad_emergency_admin_username
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "shm_aad_emergency_admin_password" {
+  name         = var.secret_name_shm_aad_emergency_admin_password
+  value        = var.secret_value_shm_aad_emergency_admin_password
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "shm_domain_admin_username" {
+  name         = var.secret_name_shm_domain_admin_username
+  value        = var.secret_value_shm_domain_admin_username
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+
+resource "azurerm_key_vault_secret" "shm_domain_admin_password" {
+  name         = var.secret_name_shm_domain_admin_password
+  value        = var.secret_value_shm_domain_admin_password
+  key_vault_id = azurerm_key_vault.kv.id
+}
+

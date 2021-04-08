@@ -14,7 +14,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:iphone: 8. Enable MFA and self-service password reset](#iphone-8-enable-mfa-and-self-service-password-reset)
 + [:id: 9. Configure internal administrator accounts](#id-9-configure-internal-administrator-accounts)
 + [:station: 10. Deploy network and VPN gateway](#station-10-deploy-network-and-vpn-gateway)
-+ [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
++ [:house_with_garden: 11. Deploy and configure domain controllers](#house_with_garden-11-deploy-and-configure-domain-controllers)
 + [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
 + [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
@@ -538,7 +538,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 ## :station: 10. Deploy network and VPN gateway
 
-![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+<!-- ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```pwsh
 PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
@@ -559,7 +559,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 
-</details>
+</details> -->
 
 ### Download a client VPN certificate for the Safe Haven Management network
 
@@ -604,7 +604,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may get a `Windows protected your PC` pop up. If so, click `More info -> Run anyway`.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
 
-## :house_with_garden: 9. Deploy and configure domain controllers
+## :house_with_garden: 11. Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
