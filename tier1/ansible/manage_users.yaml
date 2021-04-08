@@ -4,6 +4,7 @@
   hosts: localhost
 
   vars_files:
+    - vars/ansible_vars.yaml
     - vars/user_vars.yaml
 
   tasks:
@@ -33,6 +34,7 @@
     guac_initial_passwords: []
 
   vars_files:
+    - vars/ansible_vars.yaml
     - vars/terraform_vars.yaml
     - vars/user_vars.yaml
 
