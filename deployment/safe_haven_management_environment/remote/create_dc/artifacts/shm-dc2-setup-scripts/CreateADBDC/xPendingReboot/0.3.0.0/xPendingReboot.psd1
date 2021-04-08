@@ -1,4 +1,4 @@
-@{
+﻿@{
 # Version number of this module.
 ModuleVersion = '0.3.0.0'
 
@@ -53,5 +53,3 @@ PrivateData = @{
 
 } # End of PrivateData hashtable
 }
-
-

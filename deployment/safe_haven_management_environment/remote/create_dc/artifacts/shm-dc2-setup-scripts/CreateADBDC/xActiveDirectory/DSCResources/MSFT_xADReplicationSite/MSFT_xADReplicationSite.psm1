@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 <#
     .SYNOPSIS
         Returns the current state of the AD replication site.

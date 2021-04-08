@@ -1,31 +1,31 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be torn down")]
+    [Parameter(Mandatory = $true, HelpMessage = "Which tier of mirrors should be torn down")]
     [ValidateSet("2", "3")]
     [string]$tier
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Tear down a single package mirror
 # ---------------------------------
 function Remove-PackageMirror {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Mirror to tear down (PyPI, CRAN)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Mirror to tear down (PyPI, CRAN)")]
         $MirrorType,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
         [ValidateSet("Internal", "External")]
         $MirrorDirection
     )
@@ -56,4 +56,4 @@ if ($notExists) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

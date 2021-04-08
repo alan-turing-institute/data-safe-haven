@@ -1,4 +1,4 @@
-ConvertFrom-StringData @'
+﻿ConvertFrom-StringData @'
     GettingWaitForVolumeStatusMessage = Getting Wait for Volume status for volume '{0}'.
 
     SettingWaitForVolumeStatusMessage = Waiting for Volume status on volume '{0}'.
@@ -10,3 +10,4 @@ ConvertFrom-StringData @'
     TestingWaitForVolumeStatusMessage = Teting Wait for Volume status on volume '{0}'.
     VolumeNotFoundMessage = Volume '{0}' not found.
 '@
+

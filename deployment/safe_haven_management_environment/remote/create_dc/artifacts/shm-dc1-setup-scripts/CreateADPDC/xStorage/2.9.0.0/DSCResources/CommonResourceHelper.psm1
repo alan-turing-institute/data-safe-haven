@@ -161,3 +161,4 @@ function Get-LocalizedData
 
 Export-ModuleMember -Function @( 'Test-IsNanoServer', 'New-InvalidArgumentException',
     'New-InvalidOperationException', 'Get-LocalizedData' )
+

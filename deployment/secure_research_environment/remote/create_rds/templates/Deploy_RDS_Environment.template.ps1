@@ -2,22 +2,48 @@
 $null = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
 
 # Note that RemoteDesktopServices is installed by `Add-WindowsFeature -Name RDS-Gateway`
-Import-Module RemoteDesktop
-Import-Module RemoteDesktopServices
+Import-Module RemoteDesktop -ErrorAction Stop
+Import-Module RemoteDesktopServices -ErrorAction Stop
 
-# Initialise the data drives
-# --------------------------
-Write-Output "Initialising data drives..."
+# Configure attached disk drives
+# ------------------------------
 Stop-Service ShellHWDetection
-$CandidateRawDisks = Get-Disk | Where-Object {$_.PartitionStyle -eq 'raw'} | Sort -Property Number
-foreach ($RawDisk in $CandidateRawDisks) {
-    Write-Output "Configuring disk $($RawDisk.Number)"
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $RawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
-    $null = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
-    $Partition = New-Partition -DiskNumber $RawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $null = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "DATA-$LUN" -Confirm:$false
+# Initialise disks
+Write-Output "Initialising data drives..."
+$null = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | ForEach-Object { Initialize-Disk -PartitionStyle GPT -Number $_.Number }
+# Check that all disks are correctly partitioned
+Write-Output "Checking drive partitioning..."
+$DataDisks = Get-Disk | Where-Object { $_.Model -ne "Virtual HD" } | Sort -Property Number  # This excludes the OS and temp disks
+foreach ($DataDisk in $DataDisks) {
+    $existingPartitions = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })  # This selects normal partitions that are not system-reserved
+    # Remove all basic partitions if there is not exactly one
+    if ($existingPartitions.Count -gt 1) {
+        Write-Output " [ ] Found $($existingPartitions.Count) partitions on disk $($DataDisk.DiskNumber) but expected 1! Removing all of them."
+        $existingPartitions | ForEach-Object { Remove-Partition -DiskNumber $DataDisk.DiskNumber -PartitionNumber $_.PartitionNumber -Confirm:$false }
+    }
+    # Remove any non-lettered partitions
+    $existingPartition = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })[0]
+    if ($existingPartition -and (-not $existingPartition.DriveLetter)) {
+        Write-Output "Removing non-lettered partition $($existingPartition.PartitionNumber) from disk $($DataDisk.DiskNumber)!"
+        Remove-Partition -DiskNumber $DataDisk.DiskNumber -PartitionNumber $existingPartition.PartitionNumber -Confirm:$false
+    }
+    # Create a new partition if one does not exist
+    $existingPartition = @(Get-Partition -DiskNumber $DataDisk.Number | Where-Object { $_.Type -eq "Basic" })[0]
+    if ($existingPartition) {
+        Write-Output " [o] Partition $($existingPartition.PartitionNumber) of disk $($DataDisk.DiskNumber) is mounted at drive letter '$($existingPartition.DriveLetter)'"
+    } else {
+        $LUN = $(Get-WmiObject Win32_DiskDrive | Where-Object { $_.Index -eq $DataDisk.Number }).SCSILogicalUnit
+        $Label = "DATA-$LUN"
+        $Partition = New-Partition -DiskNumber $DataDisk.Number -UseMaximumSize -AssignDriveLetter
+        Write-Output " [o] Formatting partition $($Partition.PartitionNumber) of disk $($DataDisk.Number) with label '$Label' at drive letter '$($Partition.DriveLetter)'"
+        $null = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel $Label -Confirm:$false
+    }
 }
 Start-Service ShellHWDetection
+# Construct map of folders to disk labels
+$DiskLabelMap = @{
+    "AppFileShares" = "DATA-0"
+}
 
 
 # Remove any old RDS settings
@@ -50,8 +76,8 @@ Write-Output "Creating RDS Environment..."
 try {
     New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>") -ErrorAction Stop
     # Setup licensing server
-    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
-    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
+    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING -ErrorAction Stop
+    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser -Force -ErrorAction Stop
     # Setup gateway server
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreDomain>" -ErrorAction Stop
     Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
@@ -64,17 +90,16 @@ try {
 
 # Create collections
 # ------------------
-$driveLetters = Get-Volume | Where-Object { $_.FileSystemLabel -Like "DATA-[0-9]" } | ForEach-Object { $_.DriveLetter } | Sort
-foreach ($rdsConfiguration in @(,@("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"))) {
-    $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
+foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "AppFileShares"))) {
+    $collectionName, $sessionHost, $userGroup, $shareName = $rdsConfiguration
+    $sharePath = Join-Path "$((Get-Volume | Where-Object { $_.FileSystemLabel -eq $DiskLabelMap[$shareName] }).DriveLetter):" $shareName
 
     # Setup user profile disk shares
     Write-Output "Creating user profile disk shares..."
     $null = New-Item -ItemType Directory -Force -Path $sharePath
-    $shareName = $sharePath.Split("\")[1]
     $sessionHostComputerName = $sessionHost.Split(".")[0]
-    if ($null -eq $(Get-SmbShare | Where-Object -Property Path -eq $sharePath)) {
-        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$","<shmNetbiosName>\${sessionHostComputerName}$","<shmNetbiosName>\Domain Admins"
+    if ($null -eq $(Get-SmbShare | Where-Object -Property Path -EQ $sharePath)) {
+        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$", "<shmNetbiosName>\${sessionHostComputerName}$", "<shmNetbiosName>\Domain Admins"
     }
 
     # Create collections
@@ -96,12 +121,12 @@ foreach ($rdsConfiguration in @(,@("Applications", "<rdsAppSessionHostFqdn>", "<
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<hackmdIpAddress>:3000" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "DSVM Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -CollectionName "Applications" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -DisplayName "DSVM Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dsvmInitialIpAddress>" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "GitLab" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "CodiMD" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<codimdIpAddress>" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dsvmInitialIpAddress>" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "DSVM Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
@@ -147,7 +172,7 @@ try {
 # ---------------------------------------------------------------------------------------
 Write-Output "Setting up IIS redirect..."
 try {
-    Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\Default Web Site" -Value @{enabled="true";destination="/RDWeb/webclient/";httpResponseStatus="Permanent"} -ErrorAction Stop
+    Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\Default Web Site" -Value @{enabled = "true"; destination = "/RDWeb/webclient/"; httpResponseStatus = "Permanent" } -ErrorAction Stop
     Write-Output " [o] IIS redirection succeeded"
 } catch {
     Write-Output " [x] IIS redirection failed!"

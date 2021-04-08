@@ -33,7 +33,7 @@ if ($? -And $adUser) {
 
 # Set the service principal details
 Write-Output " [ ] Ensuring that '$Name' ($SamAccountName) is registered as a service principal"
-$adUser | Set-ADUser -ServicePrincipalNames @{Replace=$servicePrincipalName} -UserPrincipalName "$userPrincipalName"
+$adUser | Set-ADUser -ServicePrincipalNames @{Replace = $servicePrincipalName } -UserPrincipalName "$userPrincipalName"
 if ($?) {
     Write-Output " [o] Registered '$Name' ($SamAccountName) as '$servicePrincipalName'"
 } else {

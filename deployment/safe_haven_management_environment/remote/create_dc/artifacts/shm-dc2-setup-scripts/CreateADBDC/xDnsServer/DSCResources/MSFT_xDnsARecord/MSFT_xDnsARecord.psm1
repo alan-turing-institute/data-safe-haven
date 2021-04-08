@@ -1,4 +1,5 @@
-﻿function Get-TargetResource
+﻿## Import the common AD functions
+function Get-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]

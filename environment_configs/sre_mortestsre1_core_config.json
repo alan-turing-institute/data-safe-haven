@@ -1,0 +1,54 @@
+{
+    "sreId": "sre1",
+    "tier": "2",
+    "shmId": "mortest",
+    "subscriptionName": "Martin OReilly",
+    "ipPrefix": "10.150.0",
+    "inboundAccessFrom": "Internet",
+    "outboundInternetAccess": "default",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "0.3.2021032200"
+    },
+    "databases": ["MSSQL", "PostgreSQL"],
+    "dataAdminIpAddresses": ["193.60.220.253"],
+    "overrides": {
+        "sre": {
+            "nsgPrefix": "NSG_SRE_SRE1",
+            "rgPrefix": "RG_SRE_SRE1",
+            "network": {
+                "vnet": {
+                    "name": "VNET_SRE_SRE1",
+                    "subnets": {
+                        "compute": {
+                          "cidr": "10.150.2.0/24",
+                          "name": "SharedDataSubnet"
+                        },
+                        "data": {
+                            "cidr": "10.150.2.0/24"
+                        }
+                    }
+                }
+            },
+            "dataserver": {
+                "ip": "10.150.2.4"
+            },
+            "webapps": {
+                "gitlab": {
+                  "ip": "10.150.2.5"
+                },
+                "codimd": {
+                  "ip": "10.150.2.6"
+                }
+            },
+            "storage": {
+                "artifacts": {
+                  "accountName": "sresre1artifactsupbqzniv"
+                },
+                "bootdiagnostics": {
+                  "accountName": "sresre1bootdiagsupbqzniv"
+                }
+            }
+        }
+    }
+}

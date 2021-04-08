@@ -15,7 +15,31 @@
             }
         }
     ],
-    "networkRuleCollections": [],
+    "networkRuleCollections": [
+        {
+            "name": "shm-<shm-id>-allow",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "UDP:123"
+                        ],
+                        "targetAddresses": [
+                            "<ntp-server-ip-addresses>"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
     "applicationRuleCollections": [
         {
             "name": "shm-<shm-id>-allow",
@@ -30,7 +54,7 @@
                         "protocols": [
                             "http:80",
                             "https:443"
-                       ],
+                        ],
                         "fqdnTags": [],
                         "targetFqdns": [
                             "windowsupdate.microsoft.com",
@@ -54,6 +78,46 @@
                         ]
                     },
                     {
+                        "name": "AllowUbuntuUpdate",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "database.clamav.net",
+                            "packages.microsoft.com",
+                            "download.mono-project.com",
+                            "developer.download.nvidia.com",
+                            "packagecloud.io",
+                            "apt.postgresql.org",
+                            "cloud.r-project.org",
+                            "archive.ubuntu.com",
+                            "azure.archive.ubuntu.com",
+                            "changelogs.ubuntu.com",
+                            "security.ubuntu.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-mirror-tier2-cidr>",
+                            "<subnet-mirror-tier3-cidr>",
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowDocker",
+                        "protocols": [
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.docker.com",
+                            "*.docker.io"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
                         "name": "AllowCertificateStatusCheck",
                         "protocols": [
                             "http:80"
@@ -64,6 +128,19 @@
                             "crl3.digicert.com",
                             "crl4.digicert.com",
                             "crl.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowNTP",
+                        "protocols": [
+                            "http:123"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "<ntp-server-fqdns>"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -83,6 +160,33 @@
                         ],
                         "sourceAddresses": [
                             "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowPyPIPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "files.pythonhosted.org",
+                            "pypi.org"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowCRANPackageInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "cran.r-project.org"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-repository-cidr>"
                         ]
                     },
                     {
@@ -148,6 +252,20 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AllowPowershellModuleInstallation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "psg-prod-eastus.azureedge.net",
+                            "www.powershellgallery.com"
+                        ],
+                        "sourceAddresses": [
+                            "<dc1-ip-address>"
                         ]
                     },
                     {

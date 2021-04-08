@@ -1,0 +1,25 @@
+{
+    "name": "DECOVID Safe Haven",
+    "shmId": "decovid",
+    "domain": "decovid.turingsafehaven.ac.uk",
+    "timezone": "Europe/London",
+    "azure": {
+        "subscriptionName": "[Prod] DECOVID Safe Haven",
+        "adminGroupName" : "Safe Haven Test Admins",
+        "location": "uksouth"
+    },
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "dnsRecords": {
+        "subscriptionName": "[Prod] Safe Haven Domains",
+        "resourceGroupName": "RG_SHM_DNS_DECOVID"
+    },
+    "vmImages": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    }
+}

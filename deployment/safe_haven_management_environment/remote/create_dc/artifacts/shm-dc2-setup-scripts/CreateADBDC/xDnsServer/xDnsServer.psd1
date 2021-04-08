@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 @{
 # Version number of this module.
 ModuleVersion = '1.8.0.0'
@@ -56,7 +57,3 @@ PrivateData = @{
 
 } # End of PrivateData hashtable
 }
-
-
-
-

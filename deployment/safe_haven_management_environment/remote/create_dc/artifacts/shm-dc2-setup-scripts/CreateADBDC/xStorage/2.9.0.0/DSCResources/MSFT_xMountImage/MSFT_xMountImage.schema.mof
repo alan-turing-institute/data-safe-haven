@@ -1,3 +1,4 @@
+## Import the common AD functions
 
 [ClassVersion("1.0.0.0"), FriendlyName("xMountImage")]
 class MSFT_xMountImage : OMI_BaseResource

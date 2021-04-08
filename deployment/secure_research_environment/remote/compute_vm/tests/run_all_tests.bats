@@ -32,12 +32,6 @@ setup_python () {
 # Python
 # ------
 # Test Python packages
-@test "Python 2.7 packages" {
-    setup_python '2.7'
-    run python tests/test_packages_installed_python.py 2> /dev/null
-    assert_output --regexp 'All [0-9]+ packages are installed'
-    pyenv shell --unset
-}
 @test "Python 3.6 packages" {
     setup_python '3.6'
     run python tests/test_packages_installed_python.py 2> /dev/null
@@ -50,14 +44,14 @@ setup_python () {
     assert_output --regexp 'All [0-9]+ packages are installed'
     pyenv shell --unset
 }
-
-# Test Python functionality
-@test "Python 2.7 functionality" {
-    setup_python '2.7'
-    run python tests/test_functionality_python.py 2>&1
-    assert_output --partial 'All functionality tests passed'
+@test "Python 3.8 packages" {
+    setup_python '3.8'
+    run python tests/test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
     pyenv shell --unset
 }
+
+# Test Python functionality
 @test "Python 3.6 functionality" {
     setup_python '3.6'
     run python tests/test_functionality_python.py 2>&1
@@ -70,14 +64,14 @@ setup_python () {
     assert_output --partial 'All functionality tests passed'
     pyenv shell --unset
 }
-
-# Test Python package mirrors
-@test "Python 2.7 package mirrors" {
-    setup_python '2.7'
-    run bash tests/test_mirrors_pypi.sh 2>&1
-    assert_output --partial 'PyPI working OK'
+@test "Python 3.8 functionality" {
+    setup_python '3.8'
+    run python tests/test_functionality_python.py 2>&1
+    assert_output --partial 'All functionality tests passed'
     pyenv shell --unset
 }
+
+# Test Python package mirrors
 @test "Python 3.6 package mirrors" {
     setup_python '3.6'
     run bash tests/test_mirrors_pypi.sh 2>&1
@@ -90,7 +84,12 @@ setup_python () {
     assert_output --partial 'PyPI working OK'
     pyenv shell --unset
 }
-
+@test "Python 3.8 package mirrors" {
+    setup_python '3.8'
+    run bash tests/test_mirrors_pypi.sh 2>&1
+    assert_output --partial 'PyPI working OK'
+    pyenv shell --unset
+}
 
 # R
 # -
@@ -112,6 +111,7 @@ setup_python () {
     assert_output --partial 'CRAN working OK'
 }
 
+
 # Databases
 # ---------
 # Test MS SQL database
@@ -132,4 +132,28 @@ setup_python () {
 @test "Postgres database (R)" {
     run bash tests/test_databases.sh -d postgres -l R
     assert_output --partial 'All database tests passed'
+}
+
+
+# Mounted drives
+# --------------
+@test "Mounted drives (/data)" {
+    run bash tests/test_mounted_drives.sh -d data
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/home)" {
+    run bash tests/test_mounted_drives.sh -d home
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/output)" {
+    run bash tests/test_mounted_drives.sh -d output
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/shared)" {
+    run bash tests/test_mounted_drives.sh -d shared
+    assert_output --partial 'All tests passed'
+}
+@test "Mounted drives (/scratch)" {
+    run bash tests/test_mounted_drives.sh -d scratch
+    assert_output --partial 'All tests passed'
 }

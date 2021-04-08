@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 function Get-TargetResource
 {
     [OutputType([Hashtable])]

@@ -1,22 +1,22 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(HelpMessage = "Enter VM Size for all VMs")]
     [ValidateSet("Tiny", "Small")]
     [string]$Size = "Small"
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Set VM size
 if ($Size -eq "Tiny") {
@@ -55,4 +55,4 @@ foreach ($key in $vmsByRg.Keys) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

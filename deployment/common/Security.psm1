@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot/Logging.psm1
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 # Generate a random alphanumeric password
 # This gives a verifiably flat distribution across the characters in question
@@ -10,7 +10,7 @@ function New-Password {
     )
     # Construct allowed character set
     $alphaNumeric = [char[]](1..127) -match "[0-9A-Za-z]" -join ""
-    $rangeSize = $alphaNumeric.Length -1
+    $rangeSize = $alphaNumeric.Length - 1
 
     # Initialise common parameters
     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -54,7 +54,7 @@ function New-RandomLetters {
     if ($SeedPhrase -ne $null) {
         $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
     }
-    return (-join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % {[char]$_}))
+    return ( -join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % { [char]$_ }))
 
 }
 Export-ModuleMember -Function New-RandomLetters
@@ -73,31 +73,56 @@ function Resolve-KeyVaultSecret {
         [Parameter(Mandatory = $false, HelpMessage = "Default value for this secret")]
         [string]$DefaultValue,
         [Parameter(Mandatory = $false, HelpMessage = "Default number of random characters to be used when initialising this secret")]
-        [string]$DefaultLength
+        [string]$DefaultLength,
+        [Parameter(Mandatory = $false, HelpMessage = "Overwrite any existing secret with this name")]
+        [switch]$ForceOverwrite,
+        [Parameter(Mandatory = $false, HelpMessage = "Retrieve secret as plaintext instead of as a secure string")]
+        [switch]$AsPlaintext
     )
-    # Create a new secret if one does not exist in the key vault
-    if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
+    # Create a new secret if one does not exist in the key vault or if we are forcing an overwrite
+    if ($ForceOverwrite -or (-not (Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName))) {
         # If no default is provided then we cannot generate a secret
-        if ((-Not $DefaultValue) -And (-Not $DefaultLength)) {
+        if ((-not $DefaultValue) -and (-not $DefaultLength)) {
             Add-LogMessage -Level Fatal "Secret '$SecretName does not exist and no default value or length was provided!"
         }
         # If both defaults are provided then we do not know which to use
-        if ($DefaultValue -And $DefaultLength) {
+        if ($DefaultValue -and $DefaultLength) {
             Add-LogMessage -Level Fatal "Both a default value and a default length were provided. Please only use one of these options!"
         }
         # Generate a new password if there is no default value
-        if (-Not $DefaultValue) {
-            $DefaultValue = $(New-Password -length $DefaultLength)
+        if (-not $DefaultValue) {
+            $DefaultValue = $(New-Password -Length $DefaultLength)
         }
         # Store the password in the keyvault
         try {
-            $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop -ErrorVariable error
+            $null = Undo-AzKeyVaultSecretRemoval -Name $SecretName -VaultName $VaultName -ErrorAction SilentlyContinue # if the key has been soft-deleted we need to restore it before doing anything else
+            Start-Sleep 10
+            $null = Set-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force) -ErrorAction Stop
         } catch [Microsoft.Azure.KeyVault.Models.KeyVaultErrorException] {
-            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'"
+            Add-LogMessage -Level Fatal "Failed to create '$SecretName' in key vault '$VaultName'" -Exception $_.Exception
         }
     }
     # Retrieve the secret from the key vault and return its value
-    $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName
-    return $secret.SecretValueText
+    $secret = Get-AzKeyVaultSecret -Name $SecretName -VaultName $VaultName
+    if ($AsPlaintext) { return $secret.SecretValue | ConvertFrom-SecureString -AsPlainText }
+    return $secret.SecretValue
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
+
+
+# Purge a secret from the keyvault
+# --------------------------------
+function Remove-AndPurgeKeyVaultSecret {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [ValidateNotNullOrEmpty()]
+        [string]$SecretName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [ValidateNotNullOrEmpty()]
+        [string]$VaultName
+    )
+    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -Force -ErrorAction Stop
+    Start-Sleep -Seconds 10
+    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+}
+Export-ModuleMember -Function Remove-AndPurgeKeyVaultSecret

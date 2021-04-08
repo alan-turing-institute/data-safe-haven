@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -184,6 +185,3 @@ Get-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cr
 Test-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
 Set-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred -WhatIf
 #>
-
-
-

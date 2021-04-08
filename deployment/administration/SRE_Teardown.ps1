@@ -1,18 +1,21 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/DataStructures -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Make user confirm before beginning deletion
@@ -28,8 +31,9 @@ while ($confirmation -ne "y") {
 # Remove resource groups and the resources they contain
 # If there are still resources remaining after 10 loops then throw an exception
 # -----------------------------------------------------------------------------
-for ($i = 0; $i -le 10; $i++) {
-    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+$configResourceGroups = Find-AllMatchingKeys -Hashtable $config -Key "rg"
+for ($i = 0; $i -lt 10; $i++) {
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $configResourceGroups })
     if (-not $sreResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
@@ -47,12 +51,22 @@ if ($sreResourceGroups) {
 }
 
 
+# Warn if any suspicious resource groups remain
+# ---------------------------------------------
+$suspiciousResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+if ($suspiciousResourceGroups) {
+    Add-LogMessage -Level Warning "Found $($suspiciousResourceGroups.Length) undeleted resource group(s) which were possibly associated with this SRE`n$suspiciousResourceGroups"
+}
+
+
 # Remove residual SRE data from the SHM
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
-Invoke-Expression -Command "$scriptPath -configId $configId"
+if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+    $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
+    Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
+}
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

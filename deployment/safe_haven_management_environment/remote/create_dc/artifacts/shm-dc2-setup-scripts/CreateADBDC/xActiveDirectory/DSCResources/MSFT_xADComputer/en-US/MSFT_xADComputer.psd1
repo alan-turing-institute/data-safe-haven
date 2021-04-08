@@ -1,4 +1,4 @@
-# culture="en-US"
+﻿# culture="en-US"
 ConvertFrom-StringData @'
     RoleNotFoundError                 = Please ensure that the PowerShell module for role '{0}' is installed.
     RetrievingADComputerError         = Error looking up Active Directory computer '{0}'.

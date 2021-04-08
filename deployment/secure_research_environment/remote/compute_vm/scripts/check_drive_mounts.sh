@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
@@ -10,17 +10,23 @@ END="\033[0m"
 MOUNT_POINTS=("/data" "/home" "/scratch" "/shared" "/output")
 echo -e "${BLUE}Checking drives are mounted...${END}"
 for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
+    ls ${MOUNT_POINT}/* > /dev/null 2>&1
     if [ "$(mount | grep $MOUNT_POINT)" ]; then
         echo -e "${BLUE} [o] ${MOUNT_POINT} is mounted...${END}"
     else
         echo -e "${RED} [ ] ${MOUNT_POINT} not mounted. Attempting to mount...${END}"
-        mount $MOUNT_POINT
+        if [ -e /etc/systemd/system/${MOUNT_POINT}.mount ]; then
+            systemctl start $(echo $MOUNT_POINT | sed 's|/||').mount
+        else
+            mount $MOUNT_POINT
+        fi
     fi
 done
 sleep 30
 
 echo -e "${BLUE}Rechecking drives are mounted...${END}"
 for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
+    ls ${MOUNT_POINT}/* > /dev/null 2>&1
     if [ "$(mount | grep $MOUNT_POINT)" ]; then
         echo -e "${BLUE} [o] ${MOUNT_POINT} is mounted...${END}"
         df -h  | grep $MOUNT_POINT

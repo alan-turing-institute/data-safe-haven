@@ -1,43 +1,6 @@
 #cloud-config
-package_update: true
-package_upgrade: true
 
-# Install LDAP tools for debugging LDAP issues
-packages:
-  - apt-transport-https
-  - ca-certificates
-  - curl
-  - gitlab-ce
-  - gnupg
-  - ldap-utils
-  - openssh-server
-  - postfix
-
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
-
-  # Add repositories
-  sources:
-    gitlab.list:
-      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
-      keyid: 3F01618A51312F3F
-
-# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
-disk_setup:
-  /dev/disk/azure/scsi1/lun1:
-    table_type: gpt
-    layout: True
-    overwrite: True
-
-fs_setup:
-  - device: /dev/disk/azure/scsi1/lun1
-    partition: 1
-    filesystem: ext4
-
-mounts:
-  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
-
+# Create files
 write_files:
   - path: /etc/gitlab/gitlab.rb
     permissions: "0600"
@@ -65,19 +28,67 @@ write_files:
         first_name: 'givenName'
         last_name:  'sn'
       EOS
-      git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
+      git_data_dirs({ "default" => { "path" => "/data" } })
 
+# Set locale
+locale: en_GB.UTF-8
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    gitlab.list:
+      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
+      keyid: F6403F6544A38863DAA0B6E03F01618A51312F3F # GitLab B.V. (package repository signing key) <packages@gitlab.com>
+
+# Install necessary apt packages
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gitlab-ce
+  - gnupg
+  - ldap-utils
+  - openssh-server
+  - postfix
+package_update: true
+package_upgrade: true
+
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+
+# Set hostname
+fqdn: <gitlab-fqdn>
+hostname: <gitlab-fqdn>
+
+# Add the SRE admin (default) user
+users:
+  - default
+
+# Set the NTP server and timezone
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - <ntp-server>
+timezone: <timezone>
+
+# Run other commands
 runcmd:
-  # Configure server
-  - echo ">=== Configuring server... ===<"
-  - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
-  - timedatectl set-timezone Europe/London
-  - dpkg-reconfigure -f noninteractive tzdata
-  - echo "Timezone is $(date +%Z)"
-  # Set up the data disk
-  - echo ">=== Checking attached disks... ===<"
-  - mkdir -p /datadrive/gitdata
-  - cat /etc/fstab
+  # Check server settings
+  - echo ">=== Hostname ===<"
+  - hostnamectl
+  - echo ">=== Date/time ===<"
+  - timedatectl
   # Enable custom GitLab settings and run an initial configuration
   - echo "Running initial configuration"
   - gitlab-ctl reconfigure

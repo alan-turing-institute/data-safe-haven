@@ -1,3 +1,4 @@
+## Import the common AD functions
 
 [ClassVersion("1.0.0.0"), FriendlyName("xWaitForDisk")]
 class MSFT_xWaitForDisk : OMI_BaseResource

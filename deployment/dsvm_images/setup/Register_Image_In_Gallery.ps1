@@ -7,18 +7,18 @@ param(
     [string]$imageVersion = $null
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
 
 # Useful constants
@@ -102,7 +102,8 @@ $targetRegions = @(
 )
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
 Add-LogMessage -Level Info "Please note, this may take about 1 hour to complete"
-$imageVersion = New-AzGalleryImageVersion -GalleryImageDefinitionName $imageDefinition `
+$null = New-AzGalleryImageVersion `
+    -GalleryImageDefinitionName $imageDefinition `
     -GalleryImageVersionName "$imageVersion" `
     -GalleryName $config.dsvmImage.gallery.sig `
     -ResourceGroupName $config.dsvmImage.gallery.rg `
@@ -116,6 +117,8 @@ while ($job.State -ne "Completed") {
     Write-Progress -Activity "Replication status" -Status $job.State -PercentComplete $progress
     Start-Sleep 60
 }
+$resource = Get-AzResource -ResourceGroupName $config.dsvmImage.gallery.rg | Where-Object { $_.Name -match "${imageDefinition}/${imageVersion}" }
+$null = New-AzTag -ResourceId $resource.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
 # Create the image as a new version of the appropriate existing registered version
@@ -129,4 +132,4 @@ foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.ds
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

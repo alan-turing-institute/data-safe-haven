@@ -1,3 +1,4 @@
+## Import the common AD functions
 [ClassVersion("1.0.0.0"), FriendlyName("xDnsServerZoneTransfer")]
 class MSFT_xDnsServerZoneTransfer : OMI_BaseResource
 {

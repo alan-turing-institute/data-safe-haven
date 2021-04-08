@@ -2,31 +2,33 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Name of the test (proposed) subscription")]
     [string]$Subscription,
-    [Parameter(ParameterSetName="BenchmarkSubscription", Mandatory = $true, HelpMessage = "Name of the benchmark subscription to compare against")]
+    [Parameter(ParameterSetName = "BenchmarkSubscription", Mandatory = $true, HelpMessage = "Name of the benchmark subscription to compare against")]
     [string]$BenchmarkSubscription,
-    [Parameter(ParameterSetName="BenchmarkConfig", Mandatory = $true, HelpMessage = "Path to the benchmark config to compare against")]
+    [Parameter(ParameterSetName = "BenchmarkConfig", Mandatory = $true, HelpMessage = "Path to the benchmark config to compare against")]
     [string]$BenchmarkConfig,
     [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
     [switch]$VerboseLogging = $false
 )
 
 # Install required modules
-if (-Not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force}
-if (-Not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force}
+if (-not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force }
+if (-not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force }
 
 # Import modules
-Import-Module Az
-Import-Module Communary.PASM
-Import-Module $PSScriptRoot/../deployment/common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module Communary.PASM -ErrorAction Stop
+Import-Module $PSScriptRoot/../deployment/common/Logging -Force -ErrorAction Stop
 
 function Select-ClosestMatch {
     param (
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [string] $Value,
-        [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
-        [System.Array] $Array
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Value,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.Array]$Array
     )
-    $Array | Sort-Object @{Expression={ Get-PasmScore -String1 $Value -String2 $_ -Algorithm "LevenshteinDistance" }; Ascending=$false} | Select-Object -First 1
+    $Array | Sort-Object @{Expression = { Get-PasmScore -String1 $Value -String2 $_ -Algorithm "LevenshteinDistance" }; Ascending = $false } | Select-Object -First 1
 }
 
 # Compare two NSG rule sets
@@ -35,9 +37,9 @@ function Select-ClosestMatch {
 function Compare-NSGRules {
     param (
         [Parameter()]
-        [System.Array] $BenchmarkRules,
+        [System.Array]$BenchmarkRules,
         [Parameter()]
-        [System.Array] $TestRules
+        [System.Array]$TestRules
     )
     $nMatched = 0
     $unmatched = @()
@@ -86,21 +88,24 @@ function Compare-NSGRules {
 
 function Test-OutboundConnection {
     param (
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine] $VM,
-        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
-        [string] $DestinationAddress,
-        [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
-        [string] $DestinationPort
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$DestinationAddress,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$DestinationPort
     )
     # Get the network watcher, creating a new one if required
     $networkWatcher = Get-AzNetworkWatcher | Where-Object { $_.Location -eq $VM.Location }
-    if (-Not $networkWatcher) {
+    if (-not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
     # Ensure that the VM has the extension installed (if we have permissions for this)
     $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { ($_.Publisher -eq "Microsoft.Azure.NetworkWatcher") -and ($_.ProvisioningState -eq "Succeeded") }
-    if (-Not $networkWatcherExtension) {
+    if (-not $networkWatcherExtension) {
         Add-LogMessage -Level Info "... registering the Azure NetworkWatcher extension on $($VM.Name). "
         # Add the Windows extension
         if ($VM.OSProfile.WindowsConfiguration) {
@@ -224,7 +229,7 @@ $originalContext = Get-AzContext
 if ($BenchmarkSubscription) {
     $JsonConfig = [ordered]@{}
     # Get VMs in current subscription
-    $null = Set-AzContext -SubscriptionId $BenchmarkSubscription
+    $null = Set-AzContext -SubscriptionId $BenchmarkSubscription -ErrorAction Stop
     $benchmarkVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
     Add-LogMessage -Level Info "Found $($benchmarkVMs.Count) VMs in subscription: '$BenchmarkSubscription'"
     foreach ($VM in $benchmarkVMs) {
@@ -235,10 +240,10 @@ if ($BenchmarkSubscription) {
         Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($VM.Name)"
         $JsonConfig[$benchmarkVM.Name] = [ordered]@{
             InternetFromPort = [ordered]@{
-                "80" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80)
+                "80"  = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80)
                 "443" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 443)
             }
-            Rules = Get-NSGRules -VM $benchmarkVM
+            Rules            = Get-NSGRules -VM $benchmarkVM
         }
     }
     $OutputFile = New-TemporaryFile
@@ -270,7 +275,7 @@ foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
 
 # Get VMs in test SHM
 # -------------------
-$null = Set-AzContext -SubscriptionId $Subscription
+$null = Set-AzContext -SubscriptionId $Subscription -ErrorAction Stop
 $testVMs = Get-AzVM
 Add-LogMessage -Level Info "Found $($testVMs.Count) VMs in subscription: '$Subscription'"
 foreach ($VM in $testVMs) {
@@ -298,7 +303,7 @@ foreach ($testVM in $testVMs) {
 
     # Get parameters for new VM
     # -------------------------
-    $null = Set-AzContext -SubscriptionId $Subscription
+    $null = Set-AzContext -SubscriptionId $Subscription -ErrorAction Stop
     Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($testVM.Name)"
     $testRules = Get-NSGRules -VM $testVM
     # Check that each NSG rule has a matching equivalent (which might be named differently)
@@ -325,4 +330,4 @@ foreach ($testVM in $testVMs) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

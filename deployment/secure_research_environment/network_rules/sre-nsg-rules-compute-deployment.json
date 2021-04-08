@@ -1,0 +1,50 @@
+[
+    {
+        "name": "IgnoreRulesBelowHereInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyVirtualNetworkOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic to the virtual network.",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3000,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

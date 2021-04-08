@@ -1,4 +1,4 @@
-Configuration Example_xADRecycleBin
+﻿Configuration Example_xADRecycleBin
 {
 Param(
     [parameter(Mandatory = $true)]
@@ -7,7 +7,7 @@ Param(
 
     [parameter(Mandatory = $true)]
     [System.Management.Automation.PSCredential]
-    $EACredential 
+    $EACredential
 )
 
     Import-DscResource -Module xActiveDirectory

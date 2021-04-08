@@ -1,41 +1,75 @@
 #cloud-config
 package_upgrade: false
 
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    filesystem: ext4
+    partition: 1
+
+# Note that we do not include the blobfuse mounts here as these are controlled by systemd
+mounts:
+  - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec"]
+  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
+  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
+
 write_files:
-  - path: "/etc/xrdp/startwm.sh"
-    owner: root:root
-    permissions: "0755"
+  - path: "/etc/bash.bashrc"
+    permissions: "0644"
+    append: true
     content: |
-      #!/bin/sh
-      if [ -r /etc/default/locale ]; then
-        . /etc/default/locale
-        export LANG LANGUAGE
+      # enable bash completion in interactive shells
+      if [ ! $(shopt -oq posix) ]; then
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+              . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+              . /etc/bash_completion
+          fi
       fi
-      # Start xfce4
-      startxfce4
+
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      # Scan all local and remote mounts on access
+      OnAccessIncludePath /data
+      OnAccessIncludePath /home
+      OnAccessIncludePath /mnt
+      OnAccessIncludePath /output
+      OnAccessIncludePath /scratch
+      OnAccessIncludePath /shared
+      # Prevent access to infected files
+      OnAccessPrevention yes
+      OnAccessExcludeUname clamav
+      OnAccessExcludeRootUID yes
+
+  - path: /etc/crontab
+    append: true
+    content: |
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+
   - path: "/etc/domain-join.secret"
-    owner: root:root
     permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/etc/ldap.secret"
-    owner: root:root
-    permissions: "0400"
+
+  - path: "/etc/jaas.conf"
+    permissions: "0444"
     content: |
-      <ldap-search-user-password>
-  - path: "/opt/configuration/join_domain.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      <join_domain.sh>
-  - path: "/etc/smbcredentials.secret"
-    owner: root:root
-    permissions: "0600"
-    content: |
-      username=<datamount-username>
-      password=<datamount-password>
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
+
   - path: "/etc/ldap.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       # The distinguished name of the search base.
@@ -50,103 +84,50 @@ write_files:
       rootbinddn <ldap-search-user-dn>
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
+
+  - path: "/etc/ldap.secret"
+    permissions: "0400"
+    content: |
+      <ldap-search-user-password>
+
+  - path: "/etc/local/runonce.d/00-join-domain.sh"
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Waiting for realm availability... ===<"
+      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
+      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'"
+      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
+
+  - path: "/etc/local/runonce.d/01-remount-nfs.sh"
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Re-mounting nfs after domain join... ===<"
+      systemctl start home.mount
+      systemctl start shared.mount
+
   - path: "/etc/krb5.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       <krb5.conf>
-  - path: "/opt/configuration/kerberos_configuration.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      # Edit LDAP config
-      echo "Checking LDAP config"
-      echo ">=== /etc/ldap.conf ===<"
-      grep -v "^#" /etc/ldap.conf
-      echo ">=== end of /etc/ldap.conf ===<"
-      # Edit Kerberos config
-      echo "Checking Kerberos config"
-      echo ">=== /etc/krb5.conf ===<"
-      cat /etc/krb5.conf
-      echo ">=== end of /etc/krb5.conf ===<"
-  - path: "/opt/configuration/user_login_configuration.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      # Configure sssd logins
-      echo "Configuring sssd..."
-      sed -i -E 's|(use_fully_qualified_names = ).*|\1False|' /etc/sssd/sssd.conf
-      sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
-      sed -i -E 's|(access_provider = ).*|\1simple|' /etc/sssd/sssd.conf
-      echo ">=== /etc/sssd/sssd.conf ===<"
-      grep -v "^[#;]" /etc/sssd/sssd.conf | grep -v "^$"
-      echo ">=== end of /etc/sssd/sssd.conf ===<"
-      # Restart sssd to ensure that these settings get propagated
-      systemctl restart sssd
-      sleep 10
-      systemctl status sssd
-      # Edit the pam session configuration file
-      echo "Updating PAM configuration..."
-      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
-      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
-      mv /tmp/common-session /etc/pam.d/common-session
-      echo ">=== /etc/pam.d/common-session ===<"
-      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
-      echo ">=== end of /etc/pam.d/common-session ===<"
-  - path: "/opt/configuration/setup_disk.sh"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      #!/bin/sh
-      if [ $# -ne 2 ]; then echo "$(basename $0) requires two arguments!"; fi
-      DISK_LUN=$1
-      FOLDER_PATH=$2
-      # Create folder and grant appropriate access
-      echo ">=== Creating new mount at '$FOLDER_PATH'... ===<"
-      mkdir -p $FOLDER_PATH
-      DISK_PATH="/dev/disk/azure/scsi1/lun${DISK_LUN}"
-      DEVICE=$(readlink -f ${DISK_PATH})
-      PARTITION="${DEVICE}1"
-      echo "Using partition ${PARTITION} from disk ${DISK_PATH}"
-      # Get the partition table format of the disk
-      PARTITION_TABLE=$(parted $DEVICE print 2> /dev/null | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
-      # If the device has no partition table, then create one before partitioning the disk and making an ext4 file system
-      if [ "$PARTITION_TABLE" = "unknown" ]; then
-          echo "Formatting ${DEVICE}..."
-          yes | parted $DEVICE mklabel gpt > /dev/null 2>&1
-          parted $DEVICE mkpart primary ext4 0% 100% > /dev/null 2>&1
-          sleep 5
-          mkfs -t ext4 $PARTITION > /dev/null 2>&1
-          parted $DEVICE print
-      fi
-      # Ensure that there is exactly one fstab entry for the primary partition
-      cp /etc/fstab /tmp/fstab
-      grep -v "${FOLDER_PATH}" /tmp/fstab > /etc/fstab
-      echo "${DISK_PATH}-part1\t${FOLDER_PATH}\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
-      rm /tmp/fstab 2> /dev/null
-      tail -n 1 /etc/fstab
-  - path: "/etc/jaas.conf"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      pgjdbc {
-      com.sun.security.auth.module.Krb5LoginModule required
-          useTicketCache=true
-          debug=true
-          renewTGT=true
-          doNotPrompt=true;
-      };
+
   - path: "/etc/pip.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = <mirror-url-pypi>
-      index-url = <mirror-url-pypi>/simple
+      index = <mirror-index-pypi>
+      index-url = <mirror-index-url-pypi>
       trusted-host = <mirror-host-pypi>
+
+  - path: "/etc/realmd.conf"
+    permissions: "0400"
+    content: |
+      <realmd.conf>
+
   - path: "/etc/R/Rprofile.site"
-    owner: root:root
     permissions: "0444"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
@@ -155,36 +136,14 @@ write_files:
           r["CRAN"] <- "<mirror-url-cran>"
           options(repos = r)
       })
-  - path: "/etc/skel/.xsession"
-    owner: root:root
-    permissions: "0444"
-    content: |
-      xfce4-session
-  - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
-    owner: root:root
-    encoding: gz+b64
-    permissions: "0644"
-    content: |
-      <xrdpCustomLogoEncoded>
-  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <project.default.xml>
-  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <jdk.table.xml>
+
   - path: "/etc/skel/.bashrc"
-    owner: root:root
     permissions: "0644"
     content: |
       # determine if terminal has color support
       case "$TERM" in
           xterm-color|*-256color) color_prompt=yes;;
       esac
-
       # set prompt
       if [ "$color_prompt" = yes ]; then
           PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
@@ -192,7 +151,6 @@ write_files:
           PS1='\u:\W\$ '
       fi
       unset color_prompt
-
       # enable color support for ls and grep
       if [ -x /usr/bin/dircolors ]; then
           test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -201,61 +159,41 @@ write_files:
           alias fgrep='fgrep --color=auto'
           alias egrep='egrep --color=auto'
       fi
-  - path: "/etc/bash.bashrc"
-    owner: root:root
-    permissions: "0644"
-    append: true
+
+  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
+    permissions: "0400"
     content: |
-      # enable bash completion in interactive shells
-      if [ ! $(shopt -oq posix) ]; then
-          if [ -f /usr/share/bash-completion/bash_completion ]; then
-              . /usr/share/bash-completion/bash_completion
-          elif [ -f /etc/bash_completion ]; then
-              . /etc/bash_completion
-          fi
-      fi
-  - path: "/etc/clamav/clamd.conf"
-    owner: root:root
-    permissions: "0644"
-    append: true
+      <project.default.xml>
+
+  - path: "/etc/skel/.xsession"
+    permissions: "0444"
     content: |
-      # Scan on access settings
-      # Scan on access for locally mounted disks
-      OnAccessIncludePath /home
-      OnAccessIncludePath /scratch
-      OnAccessIncludePath /mnt
-      # Scan on access for samba shares
-      OnAccessIncludePath /shared
-      OnAccessIncludePath /data
-      OnAccessIncludePath /output
-      # Prevent access to infected files
-      OnAccessPrevention yes
-      OnAccessExcludeUname clamav
-      OnAccessExcludeRootUID yes
-  - path: "/lib/systemd/system/clamav-clamonacc.service"
-    owner: root:root
+      xfce4-session
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
       [Unit]
-      Description=Clamav on access scanning daemon
+      Description=ClamAV on access scanning daemon
       Requires=clamav-daemon.service
-      After=clamav-daemon.service
+      After=clamav-daemon.service syslog.target network.target
 
       [Service]
       Type=simple
       User=root
+      ExecStartPre=/bin/bash -c "while [ ! -S /var/run/clamav/clamd.ctl ]; do sleep 1; done"
       ExecStart=/usr/bin/clamonacc --foreground=true
       Restart=on-failure
       RestartSec=30
 
       [Install]
       WantedBy=multi-user.target
-  - path: "/lib/systemd/system/clamav-clamdscan.service"
-    owner: root:root
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
     permissions: "0644"
     content: |
       [Unit]
-      Description=Clamav full system scan
+      Description=ClamAV full system scan
       Requires=clamav-daemon.service
       After=clamav-daemon.service
 
@@ -263,12 +201,12 @@ write_files:
       Type=oneshot
       User=root
       ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
-  - path: "/lib/systemd/system/clamav-clamdscan.timer"
-    owner: root:root
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
     permissions: "0644"
     content: |
       [Unit]
-      Description=Run clamdscan every week
+      Description=Run ClamAV scan every week
 
       [Timer]
       # Will run on every Monday at 00:00:00
@@ -280,51 +218,233 @@ write_files:
       [Install]
       WantedBy=timers.target
 
+  - path: "/etc/systemd/system/data.mount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for ingress volume (via blobfuse)
+      Requires=network-online.target
+      After=network-online.target
+
+      [Mount]
+      What=/opt/configuration/mount-ingress.sh
+      Where=/data
+      Type=fuse
+      Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
+
+  - path: "/etc/systemd/system/data.automount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/data
+
+      [Automount]
+      Where=/data
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: "/etc/systemd/system/output.mount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for egress volume (via blobfuse)
+      Requires=network-online.target
+      After=network-online.target
+
+      [Mount]
+      What=/opt/configuration/mount-egress.sh
+      Where=/output
+      Type=fuse
+      Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
+
+  - path: "/etc/systemd/system/output.automount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/output
+
+      [Automount]
+      Where=/output
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: "/etc/xrdp/startwm.sh"
+    permissions: "0755"
+    content: |
+      #!/bin/sh
+      if [ -r /etc/default/locale ]; then
+          . /etc/default/locale
+          export LANG LANGUAGE
+      fi
+      # Start xfce4
+      startxfce4
+
+  - path: "/opt/configuration/configure_dns.sh"
+    permissions: "0500"
+    content: |
+      <configure_dns.sh>
+
+  - path: "/opt/configuration/configure_hostname.sh"
+    permissions: "0500"
+    content: |
+      <configure_hostname.sh>
+
+  - path: "/opt/configuration/configure_pam.sh"
+    permissions: "0500"
+    content: |
+      # Edit the PAM session configuration file
+      echo "Updating PAM configuration..."
+      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
+      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /etc/pam.d/common-session.tmp
+      mv /etc/pam.d/common-session.tmp /etc/pam.d/common-session
+      echo ">=== /etc/pam.d/common-session ===<"
+      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
+      echo ">=== end of /etc/pam.d/common-session ===<"
+
+  - path: "/opt/configuration/configure_pycharm.py"
+    permissions: "0500"
+    content: |
+      <configure_pycharm.py>
+
+  - path: "/opt/configuration/credentials-ingress.secret"
+    permissions: "0400"
+    content: |
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-ingress-sastoken>
+      authType SAS
+      containerName ingress
+
+  - path: "/opt/configuration/credentials-egress.secret"
+    permissions: "0400"
+    content: |
+      accountName <storage-account-persistentdata-name>
+      sasToken <storage-account-persistentdata-egress-sastoken>
+      authType SAS
+      containerName egress
+
+  - path: "/opt/configuration/jdk-template.xml"
+    permissions: "0400"
+    content: |
+      <jdk-template.xml>
+
+  - path: "/opt/configuration/join_domain.sh"
+    permissions: "0500"
+    content: |
+      <join_domain.sh>
+
+  - path: "/opt/configuration/mount-ingress.sh"
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
+        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+
+  - path: "/opt/configuration/mount-egress.sh"
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-egress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
+        /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+
+  - path: "/usr/local/bin/runonce"
+    permissions: "0500"
+    content: |
+      <runonce.sh>
+
+  - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
+    encoding: gz+b64
+    permissions: "0644"
+    content: |
+      <xrdpCustomLogoEncoded>
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: <timezone>
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - <ntp-server>
+
+# Install blobfuse for mounting Azure storage
+packages:
+  - blobfuse
+  - nfs-common
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
-  # Join this VM to the domain and allow domain users to log in
-  - /opt/configuration/kerberos_configuration.sh
-  - echo 'Running /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"'
-  - /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
-  - /opt/configuration/user_login_configuration.sh
-  # Set locale
-  - locale-gen en_GB.UTF-8
-  - update-locale LANG=en_GB.UTF-8
+  # Set permissions on scratch directory
+  - chmod ugo+rwx /scratch
+  # Configure services for realm joining
+  - echo ">=== Configuring domain joining settings... ===<"
+  - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
+  - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
+  - /opt/configuration/configure_dns.sh
+  - /opt/configuration/configure_hostname.sh
+  - /opt/configuration/configure_pam.sh
+  - systemctl enable sssd
+  # Check Kerberos settings
+  - echo "Checking LDAP config"
+  - echo ">=== /etc/ldap.conf ===<"
+  - grep -v "^#" /etc/ldap.conf | grep -v "^$"
+  - echo ">=== end of /etc/ldap.conf ===<"
+  - echo "Checking Kerberos config"
+  - echo ">=== /etc/krb5.conf ===<"
+  - cat /etc/krb5.conf | grep -v "^$"
+  - echo ">=== end of /etc/krb5.conf ===<"
+  # Check timezone and NTP server
+  - echo ">=== Current timezone... ===<"
+  - echo "Date     $(date)"
+  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+  - echo ">=== Current time synchronisation status... ===<"
+  - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # PyCharm configuration
-  - PY27_VERSION=$(/opt/pyenv/versions/2.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY36_VERSION=$(/opt/pyenv/versions/3.6.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY37_VERSION=$(/opt/pyenv/versions/3.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - sed -i "s/PY27_VERSION/$PY27_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
-  - sed -i "s/PY36_VERSION/$PY36_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
-  - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
+  - echo ">=== Configuring PyCharm... ===<"
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
+  - python3 /opt/configuration/configure_pycharm.py /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
   - grep -v "^[# ]" /etc/default/keyboard
   # Disable light-locker which can cause irritating error messages
-  - echo "Disabling screen lock..."
+  - echo ">=== Disabling screen lock... ===<"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default terminal and panel for xfce
-  - echo "Setting xfce default terminal and panel..."
+  - echo ">=== Setting xfce default terminal and panel... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
-  # Set xrdp defaults
-  - echo "Setting xrdp defaults..."
-  # Change colours
-  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                       # title bar (unselected)
-  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                 # title bar (selected)
-  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini # teal background
-  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                       # grey box
-  # Change window title
-  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini
-  # Change logo
-  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini
-  # Centre buttons
-  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini
-  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini
+  # Configure xrdp login window
+  - echo ">=== Setting xrdp defaults... ===<"
+  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                         # title bar colour (unselected)
+  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                                   # title bar colour (selected)
+  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini                   # teal background colour
+  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                                         # grey box colour
+  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini                                                 # window title
+  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini # logo
+  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini                                     # centre OK button
+  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini                            # centre cancel button
   # Remove all sessions except Xorg
   - sed -i '/\[X11rdp\]/,/^$/d' /etc/xrdp/xrdp.ini           # delete lines from [X11rdp] until next empty line
   - sed -i '/\[Xvnc\]/,/^$/d' /etc/xrdp/xrdp.ini             # delete lines from [Xvnc] until next empty line
@@ -333,49 +453,36 @@ runcmd:
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
   # Ensure that xrdp is running and enabled at startup
-  - echo ">=== Restart xrdp service... ===<"
+  - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
   - systemctl enable xrdp-sesman
-  - systemctl restart xrdp
-  - sleep 10
-  - systemctl status xrdp
-  # Configure disks
-  - echo ">=== Mount and configure disks... ===<"
-  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
-  - /opt/configuration/setup_disk.sh 1 /home
-  - /opt/configuration/setup_disk.sh 2 /scratch
-  # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount data folder using SMB... ===<"
-  - mkdir -p /data
-  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/etc/smbcredentials.secret\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /data  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Mount shared folder with full local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount output folder using SMB... ===<"
-  - mkdir -p /shared
-  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /shared  # NB. this initial mount might fail if the dataserver cannot be resolved yet
-  # Mount egress data folder with full local access [remote access is controlled by SMB rules]
-  - echo ">=== Mount output folder using SMB... ===<"
-  - mkdir -p /output
-  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/etc/smbcredentials.secret,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  - mount /output  # NB. this initial mount might fail if the dataserver cannot be resolved yet
+  # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
+  - echo ">=== Configure ingress and egress mounts ... ===<"
+  - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
+  - echo "user_allow_other" >> /etc/fuse.conf.tmp
+  - mv /etc/fuse.conf.tmp /etc/fuse.conf
+  - systemctl enable data.mount
+  - systemctl enable output.mount
+  - systemctl enable data.automount
+  - systemctl enable output.automount
+  # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
+  - echo ">=== /etc/fstab ===<"
+  - cat /etc/fstab
+  - echo ">=== end of /etc/fstab ===<"
+  - mount -fav
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
+  - echo ">=== Update ClamAV... ===<"
   - systemctl stop clamav-freshclam
   - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  - rm -f /var/lib/clamav/daily.cvd 2> /dev/null
   - freshclam
   # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
   - echo ">=== Enabling clamav services... ===<"
-  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
   - systemctl enable clamav-daemon
-  - systemctl status clamav-daemon
   - systemctl enable clamav-clamonacc
-  - systemctl status clamav-clamonacc
   - systemctl enable clamav-clamdscan.timer
-  - systemctl status clamav-clamdscan.timer
-
+  - systemctl enable clamav-freshclam
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

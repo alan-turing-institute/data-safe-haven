@@ -1,21 +1,21 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig ($shmId)
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Create resource group if it does not exist
@@ -23,13 +23,13 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName
 $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
-# Retrieve passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+# Retrieve passwords from the Key Vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.keyVault.name)'..."
 $domainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
-$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 
 
 # Ensure that artifacts resource group, storage account and storage container exist
@@ -87,37 +87,35 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Run configuration script remotely
 # ---------------------------------
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $params = @{
-    remoteDir = "`"C:\Installation`""
+    installationDir = $config.nps.installationDirectory
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
-Write-Output $result.Value
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Import conditional-access-policy settings
 # -----------------------------------------
 Add-LogMessage -Level Info "Importing NPS configuration '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+$artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    remoteDir              = "`"C:\Installation`""
-    pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName   = "`"$storageContainerName`""
-    sasToken               = "`"$artifactSasToken`""
+    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    installationDir      = $config.nps.installationDirectory
+    sasTokenB64          = $artifactSasToken | ConvertTo-Base64
+    storageAccountName   = $config.storage.artifacts.accountName
+    storageContainerName = $storageContainerName
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
-Write-Output $result.Value
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
+Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

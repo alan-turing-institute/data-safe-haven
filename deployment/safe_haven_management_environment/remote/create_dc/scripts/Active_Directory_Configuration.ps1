@@ -1,4 +1,4 @@
-﻿# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
 # and remote execution will stall waiting for the non-present user to enter the missing parameter on the
 # command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
 # C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
@@ -31,7 +31,7 @@ param(
     [string]$userAccountsB64
 )
 
-Import-Module ActiveDirectory
+Import-Module ActiveDirectory -ErrorAction Stop
 
 
 function Add-ShmUserToGroup {
@@ -81,6 +81,8 @@ function Grant-ComputerRegistrationPermissions {
     $success = $success -and $?
     $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;servicePrincipalName;computer"
     $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;userPrincipalName;computer"
+    $success = $success -and $?
     if ($success) {
         Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to '${UserPrincipalName}'"
     } else {
@@ -102,7 +104,7 @@ function New-ShmUser {
         [Parameter(Mandatory = $true, HelpMessage = "Password as secure string ")]
         [securestring]$AccountPassword
     )
-    if (Get-ADUser -Filter "Name -eq '$Name'") {
+    if (Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'") {
         Write-Output " [o] Account '$Name' ($SamAccountName) already exists"
     } else {
         New-ADUser -Name "$Name" `
@@ -166,8 +168,8 @@ Write-Output "Creating management OUs..."
 foreach ($ouName in ("<ou-research-users-name>",
                      "<ou-security-groups-name>",
                      "<ou-service-accounts-name>",
+                     "<ou-database-servers-name>",
                      "<ou-identity-servers-name>",
-                     "<ou-data-servers-name>",
                      "<ou-linux-servers-name>",
                      "<ou-rds-session-servers-name>",
                      "<ou-rds-gateway-servers-name>")
@@ -188,7 +190,7 @@ foreach ($ouName in ("<ou-research-users-name>",
 # Create security groups
 # ----------------------
 Write-Output "Creating security groups..."
-$securityGroups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
+$securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
 foreach ($groupCfg in $securityGroups.PSObject.Members) {
     if ($groupCfg.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
     $groupName = $groupCfg.Value.name
@@ -208,28 +210,25 @@ foreach ($groupCfg in $securityGroups.PSObject.Members) {
 
 # Decode user accounts and create them
 # ------------------------------------
-$userAccounts = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
+$userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
 $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 # Azure active directory synchronisation service account
 # NB. As of build 1.4.###.# it is no longer supported to use an enterprise admin or a domain admin account with AD Connect.
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-foreach ($serviceAccount in @("identityServers", "dataServers", "linuxServers", "rdsGatewayServers", "rdsSessionServers")) {
-    Write-Output "Creating $serviceAccount domain joining account $($userAccounts."$serviceAccount".samAccountName)..."
-    New-ShmUser -Name "$($userAccounts."$serviceAccount".name)" -SamAccountName "$($userAccounts."$serviceAccount".samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts."$serviceAccount".password -AsPlainText -Force) -Domain $shmFdqn
+foreach ($serviceAccountCfg in $($userAccounts.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } )) {
+    Write-Output "Creating $($serviceAccountCfg.Value.name) domain joining account $($serviceAccountCfg.Value.samAccountName)..."
+    New-ShmUser -Name "$($serviceAccountCfg.Value.name)" -SamAccountName "$($serviceAccountCfg.Value.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $serviceAccountCfg.Value.password -AsPlainText -Force) -Domain $shmFdqn
 }
-
 
 # Add users to security groups
 # ----------------------------
 Write-Output "Adding users to security groups..."
 Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $securityGroups.serverAdmins.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.identityServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.dataServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.linuxServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.rdsGatewayServers.samAccountName -GroupName $securityGroups.computerManagers.name
-Add-ShmUserToGroup -SamAccountName $userAccounts.rdsSessionServers.samAccountName -GroupName $securityGroups.computerManagers.name
+foreach ($serviceAccount in $userAccounts.Keys) {
+    Add-ShmUserToGroup -SamAccountName $userAccounts."$serviceAccount".samAccountName -GroupName $securityGroups.computerManagers.name
+}
 
 
 # Import GPOs onto domain controller
@@ -252,18 +251,18 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # Link GPO with OUs
 # -----------------
 Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity-servers-name>"),
-                            ("All servers - Local Administrators", "<ou-data-servers-name>"),
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-database-servers-name>"),
+                            ("All servers - Local Administrators", "<ou-identity-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
                             ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Services", "Domain Controllers"),
+                            ("All Servers - Windows Services", "<ou-database-servers-name>"),
                             ("All Servers - Windows Services", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Services", "<ou-data-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Update", "Domain Controllers"),
+                            ("All Servers - Windows Update", "<ou-database-servers-name>"),
                             ("All Servers - Windows Update", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Update", "<ou-data-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
                             ("Session Servers - Remote Desktop Control", "<ou-rds-session-servers-name>"))) {
@@ -271,17 +270,12 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-identity
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
     [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.Id -ReportType xml
-    $hasGPLink = $false
-    foreach ($existingGPLink in $gpoReportXML.GPO.LinksTo) {
-        if (($existingGPLink.SOMName -like "*$ouName*") -and ($existingGPLink.SOMPath -eq "$shmFdqn/$ouName")) {
-            $hasGPLink = $true
-        }
-    }
+    $hasGPLink = (@($gpoReportXML.GPO.LinksTo | Where-Object { ($_.SOMName -like "*${ouName}*") -and ($_.SOMPath -eq "${shmFdqn}/${ouName}") }).Count -gt 0)
     # Create a GP link if it doesn't already exist
     if ($hasGPLink) {
         Write-Output " [o] GPO '$gpoName' already linked to '$ouName'"
     } else {
-        New-GPLink -Guid $gpo.Id -Target "OU=$ouName,$domainOuBase" -LinkEnabled Yes
+        $null = New-GPLink -Guid $gpo.Id -Target "OU=${ouName},${domainOuBase}" -LinkEnabled Yes
         if ($?) {
             Write-Output " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
         } else {
@@ -347,10 +341,10 @@ if ($success) {
 # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
+# Allow the database server user to register computers in the '<ou-database-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-database-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.databaseServers.samAccountName)"
 # Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
-# Allow the data server user to register computers in the '<ou-data-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-data-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.dataServers.samAccountName)"
 # Allow the Linux server user to register computers in the '<ou-linux-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-linux-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
 # Allow the RDS gateway server user to register computers in the '<ou-rds-gateway-servers-name>' container

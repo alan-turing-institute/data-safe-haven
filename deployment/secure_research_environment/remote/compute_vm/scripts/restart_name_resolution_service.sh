@@ -1,9 +1,10 @@
-#!/bin/bash
-# $DOMAIN_CONTROLLER must be present as an environment variable
-# $DOMAIN_LOWER must be present as an environment variable
+#! /bin/bash
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
+# It expects the following parameters:
+#     DOMAIN_CONTROLLER
+#     DOMAIN_LOWER
 
 RED="\033[0;31m"
 BLUE="\033[0;36m"

@@ -5,19 +5,19 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0, HelpMessage = "Absolute path to remote artifacts directory")]
+    [Parameter(HelpMessage = "Absolute path to directory which artifacts should be downloaded to")]
     [ValidateNotNullOrEmpty()]
-    [string]$remoteDir
+    [string]$installationDir
 )
 
 
 # Clear any previously downloaded artifacts
 # -----------------------------------------
-Write-Output "Clearing all pre-existing files and folders from '$remoteDir'"
-if (Test-Path -Path $remoteDir) {
-    $null = Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
+Write-Output "Clearing all pre-existing files and folders from '$installationDir'"
+if (Test-Path -Path $installationDir) {
+    $null = Get-ChildItem $installationDir -Recurse | Remove-Item -Recurse -Force
 } else {
-    $null = New-Item -ItemType directory -Path $remoteDir
+    $null = New-Item -ItemType directory -Path $installationDir
 }
 
 
@@ -69,8 +69,8 @@ if ($?) {
 
 # Download and install the NPS Extension
 # --------------------------------------
-Write-Output "Downloading NPS extension to '$remoteDir'..."
-$npsExtnPath = Join-Path $remoteDir "NpsExtnForAzureMfaInstaller.exe"
+Write-Output "Downloading NPS extension to '$installationDir'..."
+$npsExtnPath = Join-Path $installationDir "NpsExtnForAzureMfaInstaller.exe"
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe -OutFile $npsExtnPath
 if ($?) {
     Write-Output " [o] Successfully downloaded NPS extension"
@@ -78,7 +78,7 @@ if ($?) {
     Write-Output " [x] Failed to download NPS extension"
 }
 Write-Output "Installing NPS extension..."
-Start-Process $npsExtnPath -ArgumentList '/install','/quiet'
+Start-Process $npsExtnPath -ArgumentList '/install', '/quiet'
 if ($?) {
     Write-Output " [o] Successfully installed NPS extension"
 } else {

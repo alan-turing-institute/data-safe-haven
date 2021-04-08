@@ -1,20 +1,23 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Look for resources in this subscription
@@ -22,11 +25,10 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 
-
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "********************************************************************************"
-    Add-LogMessage -Level Warning "*** SRE $configId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
+    Add-LogMessage -Level Warning "*** SRE $shmId $sreId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
     Add-LogMessage -Level Warning "********************************************************************************"
     Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
     Add-LogMessage -Level Warning " "
@@ -39,7 +41,7 @@ if ($sreResources -or $sreResourceGroups) {
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
-    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
@@ -66,26 +68,29 @@ if ($sreResources -or $sreResourceGroups) {
     $userNames += $config.sre.users.serviceAccounts.Values | ForEach-Object { $_.samAccountName }
     $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
     # Remove SRE users and groups from SHM DC
+    $params = @{
+        groupNamesJoined           = $groupNames -join "|"
+        userNamesJoined            = $userNames -join "|"
+        computerNamePatternsJoined = $computerNamePatterns -join "|"
+    }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
-    $params = @{
-        groupNamesJoined           = "`"$($groupNames -Join '|')`""
-        userNamesJoined            = "`"$($userNames -Join '|')`""
-        computerNamePatternsJoined = "`"$($computerNamePatterns -Join '|')`""
-    }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
-    # Remove SRE DNS records from SHM DC
-    # ----------------------------------
+    # Remove SRE DNS records and private endpoint DNS Zones from SHM DC
+    # ----------------------------------------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $privateEndpointNames = @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name) |
+        ForEach-Object { Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $_ -ErrorAction SilentlyContinue } |
+        Where-Object { $_ } |
+        ForEach-Object { $_.Context.Name }
     $params = @{
-        shmFqdn = "`"$($config.shm.domain.fqdn)`""
-        sreId   = "`"$($config.sre.id)`""
+        ShmFqdn                     = $config.shm.domain.fqdn
+        SreId                       = $config.sre.id
+        PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
@@ -93,20 +98,19 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
     $params = @{
-        rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
+        rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
     }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-    Write-Output $result.Value
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 
 
     # Remove RDS entries from SRE DNS Zone
     # ------------------------------------
-    $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
+    $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
-    Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue 
-    if($notExists) {
+    $null = Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
         Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
     } else {
         # RDS @ record
@@ -133,6 +137,7 @@ if ($sreResources -or $sreResourceGroups) {
     }
 }
 
+
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

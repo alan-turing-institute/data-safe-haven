@@ -1,8 +1,9 @@
-﻿# DSC configuration for Firewall
+﻿## Import the common AD functions
+# DSC configuration for Firewall
 
 configuration Sample_xFirewall_AddFirewallRule
 {
-    param 
+    param
     (
         [string[]]$NodeName = 'localhost'
     )
@@ -22,9 +23,9 @@ configuration Sample_xFirewall_AddFirewallRule
             Profile               = ("Domain", "Private")
             Direction             = "OutBound"
             RemotePort            = ("8080", "8081")
-            LocalPort             = ("9080", "9081")         
+            LocalPort             = ("9080", "9081")
             Protocol              = "TCP"
-            Description           = "Firewall Rule for Notepad.exe"  
+            Description           = "Firewall Rule for Notepad.exe"
             ApplicationPath       = "c:\windows\system32\notepad.exe"
             Service               =  "WinRM"
         }

@@ -1,3 +1,4 @@
+## Import the common AD functions
 [ClassVersion("1.0.0.0"), FriendlyName("xDnsRecord")]
 class MSFT_xDnsRecord : OMI_BaseResource
 {

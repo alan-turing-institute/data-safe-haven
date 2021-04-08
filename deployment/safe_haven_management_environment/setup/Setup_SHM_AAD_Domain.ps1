@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
     [string]$tenantId
@@ -13,7 +13,7 @@ if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
     $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
     $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
 }
-Import-Module AzureAD.Standard.Preview
+Import-Module AzureAD.Standard.Preview -ErrorAction Stop
 Write-Output "Connecting to Azure AD '$tenantId'..."
 try {
     $null = Connect-AzureAD -TenantId $tenantId
@@ -23,17 +23,17 @@ try {
 }
 
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -Subscription $config.dns.subscriptionName
+$null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction Stop
 
 
 # Add the SHM domain record to the Azure AD
@@ -129,4 +129,4 @@ if ($aadDomain.IsVerified) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

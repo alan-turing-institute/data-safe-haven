@@ -9,18 +9,20 @@ param(
     [string]$vmSize = "default"
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
 
 # Select which VM size to use
@@ -57,8 +59,8 @@ $null = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $confi
 $null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 
 
-# Ensure the keyvault exists and set its access policies
-# ------------------------------------------------------
+# Ensure the Key Vault exists and set its access policies
+# -------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.azureAdminGroupName
 
@@ -73,16 +75,24 @@ $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwor
 # --------------------
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
+# Get list of IP addresses which are allowed to connect to the VM candidates
+$allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
+$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Priority -eq 1000 }
+if ($existingRule) {
+    $allowedIpAddresses += @($existingRule.SourceAddressPrefix)
+}
+$allowedIpAddresses = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
+# Add the necessary rules
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Allow `
-                             -Name "AllowTuringSSH" `
+                             -Name "AllowBuildAdminSSH" `
                              -Description "Allow port 22 for management over ssh" `
                              -DestinationAddressPrefix * `
                              -DestinationPortRange 22 `
                              -Direction Inbound `
                              -Priority 1000 `
                              -Protocol TCP `
-                             -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
+                             -SourceAddressPrefix $allowedIpAddresses `
                              -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Access Deny `
@@ -100,75 +110,69 @@ $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -Ne
 
 # Insert scripts into the cloud-init template
 # -------------------------------------------
-$indent = "      "
-foreach ($scriptName in @("analyse_build.py",
-                          "dbeaver_drivers_config.xml",
-                          "deprovision_vm.sh",
-                          "download_and_install_deb.sh",
-                          "download_and_install_tar.sh",
-                          "install_python_version.sh")) {
-    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
-    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+$resources = Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
+$resources += Get-ChildItem (Join-Path $PSScriptRoot ".." "packages")
+foreach ($resource in $resources) {
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
 }
 
 
 # Insert apt packages into the cloud-init template
 # ------------------------------------------------
-$indent = "  - "
-$raw_script = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw
-$indented_script = $raw_script -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indented_script)
+$indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<apt packages>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
+$indentedContent = (Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indentedContent)
 
 
-# Insert Julia package details into the cloud-init template
-# ---------------------------------------------------------
-$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-julia.list")
-$juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQuote -Separator ', ')]'"
-$cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $juliaPackageText)
-
-
-# Insert PyPI package lists (plus versions) into cloud-init template
-# ------------------------------------------------------------------
+# Convert PyPI package lists into requirements files and add to cloud-init template
+# ---------------------------------------------------------------------------------
 $packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
-foreach ($pythonVersion in @("27", "36", "37")) {
-    $packageListFileName = "packages-python-pypi-${pythonVersion}.list"
-    $pythonPackageNames = Get-Content (Join-Path $PSScriptRoot ".." "packages" $packageListFileName)
-    $pythonPackageVersions = $pythonPackageNames | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Keys.Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
+$packageLists = Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")
+foreach ($packageList in $packageLists) {
+    $pythonVersion = ($packageList.BaseName -split "-")[-1]
+    $pythonPackageVersions = Get-Content $packageList | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<python-requirements-py${pythonVersion}.txt>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
     $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
 }
 
 
-# Insert R package details into the cloud-init template
-# -----------------------------------------------------
-$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
-$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
-$rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
-             "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
-$cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
+# Make any other cloud-init template replacements
+# -----------------------------------------------
+$cloudInitTemplate = $cloudInitTemplate.
+    Replace("<timezone>", $config.time.timezone.linux).
+    Replace("<ntp-server>", $config.time.ntp.poolFqdn)
 
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin"
-$buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminPassword -DefaultLength 20
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
+$adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${buildVmName}"
+
+
+# Check cloud-init size
+# ---------------------
+$CloudInitEncodedLength = ($cloudInitTemplate | ConvertTo-Base64).Length
+if ($CloudInitEncodedLength / 87380 -gt 0.9) {
+    Add-LogMessage -Level Warning "The current cloud-init size ($CloudInitEncodedLength Base64 characters) is more than 90% of the limit of 87380 characters!"
+}
 
 
 # Deploy the VM
 # -------------
-Add-LogMessage -Level Info "Provisioning a new VM image in $($config.dsvmImage.build.rg) [$($config.dsvmImage.subscription)]..."
+Add-LogMessage -Level Info "Provisioning a new VM image in $($config.dsvmImage.build.rg) '$($config.dsvmImage.subscription)'..."
 Add-LogMessage -Level Info "  VM name: $buildVmName"
 Add-LogMessage -Level Info "  VM size: $vmSize"
 Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
     Name                   = $buildVmName
     Size                   = $vmSize
-    AdminPassword          = $buildVmAdminPassword
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $adminPasswordName -DefaultLength 20)
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
@@ -179,15 +183,12 @@ $params = @{
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
 }
-$null = Deploy-UbuntuVirtualMachine @params -NoWait
+$vm = Deploy-UbuntuVirtualMachine @params -NoWait
 
 
 # Tag the VM with the git commit hash
 # -----------------------------------
-$hash = git rev-parse --verify HEAD
-$tags = @{"Commit hash" = $hash}
-$resource = Get-AzResource -Name $buildVmName -ResourceGroup $config.dsvmImage.build.rg
-$null = New-AzTag -ResourceId $resource.Id -Tag $tags
+$null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $(git rev-parse --verify HEAD) }
 
 
 # Log connection details for monitoring this build
@@ -195,7 +196,7 @@ $null = New-AzTag -ResourceId $resource.Id -Tag $tags
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*${buildVmName}-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
-Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
+Add-LogMessage -Level Info "  The password for this account can be found in the '${adminPasswordName}' secret in the Azure Key Vault at:"
 Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
 Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/verification/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
@@ -203,4 +204,4 @@ Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

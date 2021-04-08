@@ -36,7 +36,7 @@ function Add-LogMessage {
         }
         "Fatal" {
             Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
-            if($Exception) {
+            if ($Exception) {
                 throw $Exception
             } else {
                 throw "$Message"

@@ -1,0 +1,347 @@
+---
+- hosts: all
+
+  vars_files:
+    - ../setup/users.yaml
+
+  vars:
+    cocalc_variants:
+      cocalc:
+        repo: sagemathinc/cocalc
+      cucalc:
+        repo: turinginst/cucalc
+
+  tasks:
+    - name: Wait for cloud init to finish
+      wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+        timeout: 1800
+
+    - name: Enable public key authentication
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Disable password login
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Disable root login
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Create users
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        comment: "{{ item.name }}"
+        state: present
+      loop: "{{ users }}"
+      when: item.enabled
+
+    - name: Disable users
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        comment: "{{ item.name }}"
+        state: absent
+      loop: "{{ users }}"
+      when: not item.enabled
+
+    - name: Add users public keys
+      become: yes
+      authorized_key:
+        user: "{{ item.username }}"
+        key: "{{ lookup('file', item.keyfile) }}"
+        state: present
+      loop: "{{ users }}"
+      when: item.enabled
+
+    - name: Add admin users to the admin group
+      become: yes
+      user:
+        name: "{{ item.username }}"
+        append: true
+        groups: admin
+      loop: "{{ users }}"
+      when: item.admin and item.enabled
+
+    - name: Install PAM OATH packages for TOTP
+      become: yes
+      apt:
+        name:
+          - libpam-oath
+          - oathtool
+        state: present
+
+    - name: Look for existing TOTP seeds
+      become: yes
+      command: "grep {{ item.username }} /etc/users.oath"
+      loop: "{{ users }}"
+      register: totp_users
+      ignore_errors: yes
+      changed_when: no
+
+    - name: Create TOTP seeds for each user without one
+      become: yes
+      lineinfile:
+        path: /etc/users.oath
+        line: "HOTP/T30/6 {{ item.item.username }} - {{ lookup ('password', '/dev/null chars=hexdigits length=30') }}"
+        create: yes
+        owner: root
+        mode: 0600
+      loop: "{{ totp_users.results }}"
+      when: item.failed
+
+    - name: Require OATH for sudo
+      become: yes
+      lineinfile:
+        path: /etc/pam.d/sudo
+        state: present
+        line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6 nullok'
+        insertbefore: BOF
+        mode: 0644
+
+    - name: Enable PAM in sshd configuration
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?UsePAM'
+        line: 'UsePAM yes'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Enable challenge response authentication for SSH
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?ChallengeResponseAuthentication'
+        line: 'ChallengeResponseAuthentication yes'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Enable OATH for SSH login in PAM
+      become: yes
+      lineinfile:
+        path: /etc/pam.d/sshd
+        state: present
+        line: 'auth [success=done new_authtok_reqd=done default=die] pam_oath.so usersfile=/etc/users.oath window=30 digits=6'
+        insertbefore: BOF
+        mode: 0644
+
+    - name: Require OATH even when a valid key is provided
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?AuthenticationMethods"
+        line: 'AuthenticationMethods publickey,keyboard-interactive:pam'
+        mode: 0644
+      notify: Restart sshd
+
+    - name: Allow admin account to login without TOTP
+      become: yes
+      blockinfile:
+        path: /etc/ssh/sshd_config
+        block: |
+          Match User "{{ ansible_user }}"
+              AuthenticationMethods publickey
+
+    - name: Create shared data directory
+      become: yes
+      file:
+        path: /scratch/shared
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=rwx,o=rwx
+
+    - name: Set default group and other permissions for shared data directory
+      become: yes
+      acl:
+        path: /scratch/shared
+        etype: "{{ item }}"
+        default: yes
+        permissions: rwx
+        state: present
+      loop:
+        - group
+        - other
+
+    - name: Create symbolic link to shared data directory
+      become: yes
+      file:
+        src: /scratch/shared
+        path: /shared
+        state: link
+        owner: root
+        group: root
+
+    - name: Install docker
+      become: yes
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Enable docker service
+      become: yes
+      systemd:
+        name: docker.service
+        enabled: yes
+
+    - name: Add admin user to docker group
+      become: yes
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Reset connection so that adding admin user to docker group takes effect
+      meta: reset_connection
+
+    - name: Install pip3
+      become: yes
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Uninstall system docker-compose
+      become: yes
+      apt:
+        name: docker-compose
+        state: absent
+
+    - name: Install docker-compose
+      become: yes
+      pip:
+        name: docker-compose>1.19.0
+        state: present
+        executable: pip3
+
+    - name: Install Nvidia docker
+      block:
+        - name: Add Nvidia docker gpg key
+          become: yes
+          apt_key:
+            url: https://nvidia.github.io/nvidia-docker/gpgkey
+            state: present
+
+        - name: Add Nvidia docker apt repository
+          become: yes
+          apt_repository:
+            repo: "{{ item }}"
+            state: present
+            filename: nvidia-docker
+          loop:
+            # repositories from https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+            # following the nvidia-docker documentation https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+            - deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+            - deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
+
+        - name: Install Nvidia docker
+          become: yes
+          apt:
+            name: nvidia-docker2
+            update_cache: yes
+
+        - name: Restart docker service
+          become: yes
+          systemd:
+            name: docker.service
+            enabled: yes
+            state: restarted
+      when: variant == 'cucalc'
+
+    - name: Pull CoCalc/CuCalc docker image
+      docker_image:
+        name: "{{ cocalc_variants[variant].repo }}"
+        source: pull
+
+    - name: Pull nginx docker image
+      docker_image:
+        name: nginx
+        source: pull
+
+    - name: Template nginx configuration for CoCalc
+      template:
+        src: nginx_cocalc.conf.j2
+        dest: "{{ ansible_user_dir }}/nginx.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0600
+
+    - name: Run CoCalc/CuCalc with docker-compose
+      docker_compose:
+        project_name: cocalc
+        definition:
+          version: "2.3"
+          services:
+            cocalc:
+              runtime: nvidia
+              image: "{{ cocalc_variants[variant].repo }}"
+              expose:
+                - 443
+              volumes:
+                - /scratch/projects:/projects
+                - /scratch/shared:/shared
+                - /data:/data
+                - /output:/output
+              restart: always
+            nginx:
+              image: nginx
+              depends_on:
+                - cocalc
+              ports:
+                - 80:80
+                - 443:443
+              volumes:
+                - "{{ ansible_user_dir }}/nginx.conf:/etc/nginx/nginx.conf"
+                - /opt/ssl/:/etc/nginx/ssl/
+              restart: always
+      register: output
+
+    - debug:
+        var: output
+
+    - name: Assert that the CoCalc container is running
+      assert:
+        that:
+          - "cocalc.cocalc_cocalc_1.state.running"
+
+    - name: Fetch TOTP hashes
+      become: yes
+      shell: sed -E "s:HOTP/T30/6\s+(\S+)\s+-\s+([0-9a-fA-F]{30}).*:\1 \2:g" /etc/users.oath
+      args:
+        warn: false
+      when: users != []
+      register: totp_hashes
+      changed_when: no
+
+    - name: Write TOTP hashes to file
+      copy:
+        content: "{{ totp_hashes.stdout }}"
+        dest: ../setup/totp_hashes.txt
+        mode: 0644
+      delegate_to: localhost
+      when: users != []
+
+  handlers:
+    - name: Restart sshd
+      become: yes
+      systemd:
+        name: sshd.service
+        state: restarted

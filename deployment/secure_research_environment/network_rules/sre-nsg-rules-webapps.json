@@ -1,0 +1,98 @@
+[
+    {
+        "name": "AllowAdminVpnInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from admin VPN",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowRdsApplicationHostInbound",
+        "access": "Allow",
+        "description": "Allow inbound http(s) connections from application session host",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.rds.appSessionHost.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowComputeVMsInbound",
+        "access": "Allow",
+        "description": "Allow inbound http(s) connections from compute subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Inbound",
+        "priority": 3000,
+        "protocol": "Tcp",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllInbound",
+        "access": "Deny",
+        "description": "Deny inbound connections from anywhere",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowIdentityOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
+        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
+        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

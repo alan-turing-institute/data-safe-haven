@@ -1,21 +1,21 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing whitelist files (default: '<repo root>/environment_configs/package_lists')")]
     [string]$whitelistDirectory = $null
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
 # Common variable names
@@ -52,15 +52,14 @@ foreach ($mirrorType in $mirrorTypes) {
         # Run the script on the mirror VM
         $vmName = "$MirrorType-EXTERNAL-MIRROR-TIER-$tier".ToUpper()
         Add-LogMessage -Level Info "Updating whitelist on $vmName"
-        $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-        Write-Output $result.Value
+        $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
 
         # Restart the mirror to trigger a pull-then-push
-        Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        Start-VM -Name $vmName -ResourceGroupName $config.mirrors.rg -ForceRestart
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

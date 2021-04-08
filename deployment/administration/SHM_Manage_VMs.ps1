@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID.")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter action (EnsureStarted, EnsureStopped)")]
     [ValidateSet("EnsureStarted", "EnsureStopped")]
@@ -7,21 +7,21 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter VM group (Identity, Mirrors or All)")]
     [ValidateSet("Identity", "Mirrors", "All")]
     [string]$Group,
-    [Parameter(Mandatory = $false, HelpMessage = "Deallocate Firewall (only has an effect if Action is 'EnsureStopped'")]
-    [switch]$DeallocateFirewall
+    [Parameter(Mandatory = $false, HelpMessage = "Exclude Firewall (only has an effect if Action is 'EnsureStopped'")]
+    [switch]$ExcludeFirewall
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
+Import-Module Az -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Get all VMs in matching resource groups
 $vmsByRg = Get-VMsByResourceGroupPrefix -ResourceGroupPrefix $config.rgPrefix
@@ -44,7 +44,7 @@ switch ($Action) {
             # Ensure Identity VMs are started before any other VMs
             Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.dc.rg)' are started..."
             # Primary DC must be started before Secondary DC
-            $primaryDCAlreadyRunning = Confirm-AzVmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
+            $primaryDCAlreadyRunning = Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
             if ($primaryDCAlreadyRunning) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
                 # Start Secondary DC and NPS
@@ -85,8 +85,8 @@ switch ($Action) {
                 Stop-VM -VM $vm -NoWait
             }
         }
-        if ($DeallocateFirewall) {
-            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg
+        if (-not $ExcludeFirewall) {
+            $null = Stop-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -NoWait
         }
     }
 }
@@ -94,4 +94,4 @@ switch ($Action) {
 
 # Switch back to original subscription
 # ------------------------------------
-$null = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop

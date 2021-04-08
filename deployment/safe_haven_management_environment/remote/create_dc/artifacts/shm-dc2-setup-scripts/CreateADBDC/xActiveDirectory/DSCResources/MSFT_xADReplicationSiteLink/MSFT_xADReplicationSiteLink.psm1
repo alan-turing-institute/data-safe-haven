@@ -1,3 +1,4 @@
+﻿## Import the common AD functions
 Import-Module -Name (Join-Path -Path (Split-Path -Path $PSScriptRoot) -ChildPath CommonResourceHelper.psm1)
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADReplicationSiteLink'
 
