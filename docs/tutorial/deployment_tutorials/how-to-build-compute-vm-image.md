@@ -5,10 +5,10 @@ These instructions will walk you through creating a new VM image for use in the 
 ## Contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-+ [:gift: 2. (Optional) Customising the build image](#new-2-customising-the-build-image)
-+ [:gift: 3. Provisioning a VM](#gift-3-provision-a-vm-with-all-configured-software)
-+ [:camera: 4. Converting candidate VMs to images](#camera-4-converting-candidate-vms-to-images)
-+ [:art: 5. Registering images in the gallery](#art-5-registering-images-in-the-gallery)
++ [:gift: 2. (Optional) Customise the build configuration](#gift-2-optional-customise-the-build-configuration)
++ [:construction_worker: 3. Build a release candidate](#construction_worker-3-build-a-release-candidate)
++ [:camera: 4. Convert candidate VM to an image](#camera-4-convert-candidate-vm-to-an-image)
++ [:art: 5. Register image in the gallery](#art-5-register-image-in-the-gallery)
 
 ## Explanation of symbols used in this guide
 
@@ -80,9 +80,11 @@ PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
-## :gift: 2. (Optional) Customising the build image
+## :gift: 2. (Optional) Customise the build configuration
 
-Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages. The cloud-init file used here is in the `deployment/dsvm_images/cloud-init` folder. The most common changes to this image that you are likely to want to make are to add a new package or to update the version of an existing package.
+Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages.
+
+In general, this image should cover most use cases, but it's possible that you may want to customise it for your particular circumstances, for example if you want to add a new package or to update the version of an existing package.
 
 ### Adding a new apt package
 
@@ -120,13 +122,13 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
 
 ### Changing the version of a package
 
-If you want to update the version of one of the packages we install from a `.deb` file (eg. `dbeaver` ), you will need to edit `deployment/dsvm_images/cloud-init`
+If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
 
 + Find the appropriate `/installation/<package name>.debinfo` section under the `write_files:` key
 + Update the version number and the `sha256` hash for the file
 + Check that the file naming structure still matches the format described in this `.debinfo` file
 
-## :gift: 3. Provision a VM with all configured software
+## :construction_worker: 3. Build a release candidate
 
 In order to provision a candidate VM you will need to do the following:
 
@@ -138,11 +140,19 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 
-Once you have launched a new build by running the `./Provision_Compute_VM.ps1` script, the build will take several hours to complete (currently this is approximately **2h30**).
-During this time, you can monitor the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py` .
-Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the Azure portal.
+### :pencil: Notes
 
-## :camera: 4. Converting candidate VMs to images
++ Although the `./Provision_Compute_VM.ps1` script will finish running in a few minutes, the build itself will take several hours.
++ We recommend **monitoring** the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
++ Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the Azure portal.
+
+### :warning: Troubleshooting
+
++ If you are unable to access the VM over `ssh` please check whether you are trying to connect from one of the approved IP addresses that you defined under `vmImages > buildIpAddresses` in the SHM config file.
++ You can check which IP addresses are currently allowed by looking at the `AllowBuildAdminSSH` inbound connection rule in the `RG_SH_NETWORKING > NSG_IMAGE_BUILD` network security group in the subscription where you are building the candidate VM
+
+
+## :camera: 4. Convert candidate VM to an image
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
@@ -157,9 +167,14 @@ PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 
 This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
 
-## :art: 5. Registering images in the gallery
+### :pencil: Notes
 
-Once you have created an image, it can be registered in the image gallery using the `Register_Image_In_Gallery.ps1` script.
+The first step of this script will run the remote build analysis script. Please **check** that everything has built correctly before proceeding.
+
+
+## :art: 5. Register image in the gallery
+
+Once you have created an image, it can be registered in the image gallery for future use using the `Register_Image_In_Gallery.ps1` script.
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
 
