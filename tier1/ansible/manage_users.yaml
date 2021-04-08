@@ -19,7 +19,7 @@
 
     - name: Check all required variables are defined
       ansible.builtin.assert:
-        that: item is defined
+        that: "{{ item }} is defined"
         success_msg: "Required variable {{ item }} is defined"
         fail_msg: "Required variable {{ item }} is not defined!"
       loop:
