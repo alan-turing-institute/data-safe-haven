@@ -120,9 +120,9 @@ You will be told what these requirements are for your particular environment.
 > :point_right: Make sure you know the networks from which you must connect to your SRE.
 > This information will be available in the email you received with your connection information.
 
-#### Data security training requirements 
+#### Data security training requirements
 
-This only applies to DSH users working on health data. 
+This only applies to DSH users working on health data.
 
 Users required to undertake data security awareness training:
 
