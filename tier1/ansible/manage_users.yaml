@@ -4,7 +4,7 @@
   hosts: localhost
 
   vars_files:
-    - var/user_vars.yaml
+    - vars/user_vars.yaml
 
   tasks:
     - name: Check all required user variables are defined
