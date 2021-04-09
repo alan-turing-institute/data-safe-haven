@@ -3,15 +3,10 @@
 ## :mailbox_with_mail: Table of contents
 
 + [:seedling: Prerequisites](#seedling-prerequisites)
-+ [:beginner: Creating new users](#beginner-creating-new-users)
-  + [:scroll: Generating user details CSV file](#scroll-generating-user-details-csv-file)
-    + [:car: Using data classification app](#car-using-data-classification-app)
-    + [:hand: Manually edit CSV](#hand-manually-edit-CSV)
++ [:beginner: Create new users](#beginner-create-new-users)
+  + [:scroll: Generate user details CSV file](#scroll-generate-user-details-csv-file)
   + [:arrows_counterclockwise: Create and synchronise users](#arrows_counterclockwise-create-and-synchronise-users)
-  + [:microscope: Troubleshooting: Account already exists](#microscope-troubleshooting-account-already-exists)
-  + [:calling: Assign an MFA licence](#calling-assign-an-mfa-licence)
-    + [:hand: Manually add licence to each user](#hand-manually-add-licence-to-each-user)
-    + [:car: Automatically assign licences to users](#car-automatically-assign-licences-to-users)
+  + [:calling: Assign MFA licences](#calling-assign-mfa-licences)
   + [:running: User activation](#running-user-activation)
 + [:construction_worker: Common user problems](#construction_worker-common-user-problems)
   + [:waning_crescent_moon: Expired webclient certificate](#waning_crescent_moon-expired-webclient-certificate)
@@ -19,12 +14,13 @@
   + [:train: Unable to open any remote apps](#train-unable-to-open-any-remote-apps)
   + [:interrobang: xrdp login failure on the DSVM](#interrobang-xrdp-login-failure-on-the-dsvm)
   + [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
-+ [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
-+ [:fire: Tearing down an SRE](#fire-tearing-down-an-SRE)
-+ [:fire: Tearing down the SHM](#fire-tearing-down-the-SHM)
-  + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
-  + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
-+ [:anger: Tearing down SHM package mirrors](#anger-tearing-down-shm-package-mirrors)
++ [:dollar: Cost management](#dollar-cost-management)
+  + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
+  + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
+  + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
++ [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
+  + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
+  + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
 
 ## :seedling: Prerequisites
 
@@ -32,7 +28,7 @@ This document assumes that you have already deployed a [Safe Haven Management (S
 
 + You will need VPN access to the SHM as described in the deployment instructions
 
-## :beginner: Creating new users
+## :beginner: Create new users
 
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a CSV file in the appropriate format for it.
@@ -86,7 +82,7 @@ On the **SHM domain controller (DC1)**.
 + Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 + This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
-### :microscope: Troubleshooting: Account already exists
+### :warning: Troubleshooting
 
 If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
 Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
@@ -94,7 +90,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 + `SamAccountName` : Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
 + `DistinguishedName` : Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>` .
 
-## :calling: Assign an MFA licence
+## :calling: Assign MFA licences
 
 ### :hand: Manually add licence to each user
 
@@ -149,8 +145,7 @@ If the certificate for the SRE domain has expired, users will not be able to log
   <img src="../../images/administrator_guide/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
 </p>
 
-**Solution**:
-Replace the SSL certificate with a new one
+**Solution**: Replace the SSL certificate with a new one
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -165,8 +160,7 @@ If users give the wrong username or password they will not be able to progress p
   <img src="../../images/administrator_guide/login_password_login.png" width="80%" title="login_password_login">
 </p>
 
-**Solution**:
-Check user credentials, password may need to be reset.
+**Solution**: Check user credentials, password may need to be reset.
 
 ### :train: Unable to open any remote apps
 
@@ -175,7 +169,7 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
   <img src="../../images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
 </p>
 
-**Solution**:
+**Solution**: Check MFA setup
 
 + Ensure that the user has been assigned a license in Azure Active Directory
 + Check that the user has set up MFA (at `aka.ms/mfasetup` ) and is using the phone-call or app authentication method
@@ -197,14 +191,16 @@ but then see this error message:
 there are a couple of possible causes.
 
 **Problem**: the username or password was incorrectly entered
-**Solution**
+
+**Solution**: check username and password
 
 + Confirm that the username and password have been correctly typed
 + Confirm that there are no unsupported special characters in the password
 + Reset the account if there is no other solution
 
 **Problem**: the computer is unable to communicate with the login server
-**Solution**
+
+**Solution**: run diagnostics
 
 + This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 + Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1` , providing the group and last IP octet of the problematic compute VM
@@ -479,8 +475,9 @@ Safe Haven Management (1814d074-10fe-4...   jrobinson@turing.ac.uk   Safe Haven 
 If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
 
 **Problem**: Mirror VNet is not correctly peered
-**Solution**
-Re-run the network configuration script.
+
+**Solution**: Re-run the network configuration script.
+
 On your **deployment machine**.
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
@@ -490,7 +487,9 @@ On your **deployment machine**.
 + Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 **Problem**: Internal mirror does not have the required package
-**Solution**
+
+**Solution**: Check package availability
+
 To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
 Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
@@ -506,22 +505,59 @@ This will trigger the following actions:
 
 This may take an hour or two but should solve the missing package problem.
 
-## :fast_forward: Unpeering package mirrors
+## :dollar: Cost management
 
-The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
-However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
+When and SHM and/or SRE is not being used, it can be cost-efficient to shut it down in order to save on some of the ongoing running costs.
 
-> :warning: You will not normally need to do this - think carefully before doing so!
+## :point_down: Shut down an SHM or SRE
+
+Sometimes you may want to temporarily shut down an SHM or SRE, rather than tearing it down entirely. You can do that with these scripts:
 
 On your **deployment machine**.
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Then do one of the following:
 
-## :fire: Tearing down an SRE
+### Shut down SHM
+
+`./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStopped -Group All`
+
+### Shut down SRE
+
+`./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStopped`
+
+## :boot: Start up an SHM or SRE
+
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Run `./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStarted -Group All` to restart the SHM
++ For each SRE, run `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStarted`
+
+### :warning: Troubleshooting
+
+Note that if the Azure subscription that you have deployed into runs out of credit, the SHM and/or SRE will be shutdown automatically.
+
+## :anger: Tear down SHM package mirrors
+
+During normal usage of the SHM, you should not need to tear down the package mirrors. However, if you no longer have any SREs at a particular tier and you want to save on the costs of running the mirrors, you might decide to do so.
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **a few minutes** to run.
+
+## :end: Remove a deployed Safe Haven
+
+### :fire: Tear down an SRE
 
 In order to tear down an SRE, use the following procedure:
 
@@ -533,11 +569,11 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
 
-## :fire: Tearing down the SHM
+### :fire: Tear down the SHM
 
 In order to tear down the SHM, use the following procedure (you may skip the tearing down of package mirrors, unless this is the specific thing you wanted to do):
 
-### :unlock: Disconnect from the Azure Active Directory
+#### :unlock: Disconnect from the Azure Active Directory
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
@@ -549,7 +585,7 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
   + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 + Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 
-### :collision: Tear down any attached SREs then the SHM
+#### :collision: Tear down any attached SREs then the SHM
 
 On your **deployment machine**.
 
@@ -560,16 +596,3 @@ On your **deployment machine**.
 + For each SRE attached to the SHM, do the following:
   + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
 + Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-
-## :anger: Tearing down SHM package mirrors
-
-During normal usage of the SHM, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ This will take **a few minutes** to run.
