@@ -586,11 +586,11 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 + Then do one of the following:
 
-#### Shut down SHM
+### Shut down SHM
 
 `./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStopped -Group All`
 
-#### Shut down SRE
+### Shut down SRE
 
 `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStopped`
 
