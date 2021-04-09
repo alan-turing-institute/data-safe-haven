@@ -25,8 +25,8 @@
   + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
   + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 + [:anger: Tearing down SHM package mirrors](#anger-tearing-down-shm-package-mirrors)
++ [:point_down: Shut down SHM or SRE](#point_down-shut-down-shm-or-sre)
 + [:boot: Reboot any SHM and SRE that was shut down](#boot-reboot-any-shm-and-sre-that-was-shut-down)
-+ [:point_down: Shut down SHM or SRE](#point-down-shut-down-shm-or-sre)
 
 ## :seedling: Prerequisites
 
