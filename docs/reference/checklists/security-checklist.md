@@ -276,23 +276,23 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 First identify a select list of IP addresses and an email for which the data will be uploaded and a secure upload token sent. Open the data ingress volume.
 
 1. Ensure that the secure upload token is sent only to the email address provided and via a secure email system
-  + a) **Verify:** that email system is secure
-  + b) **Verify:** that a secure upload token can be created with write-only permissions
+  + a) :white_check_mark: **Verify:** that email system is secure
+  + b) :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions
 
 2. Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
   + a) Identify a test device that will have a whitelisted IP address
   + b) Generate a secure upload token with write-only permissions with limited time period
   + c) Attempt to write to the ingress volume via the test device
-  + d) **Verify:** that writing succeeds
-  + e) **Verify:** that one is unable to view or download from ingress
+  + d) :camera: **Verify:** that writing succeeds
+  + e) :camera: **Verify:** that one is unable to view or download from ingress
   + f) Switch to a device that lacks a whitelisted IP address
   + g) Attempt to write to the ingress volume via the test device
-  + h) **Verify:** that the access token fails.
+  + h) :camera: **Verify:** that the access token fails.
 
 3. Check the token duration and ensure that the upload fails if the duration has expired.
   + a) Create a write-only token with short duration
-  + b) **Verify:** you can connect and write with the token during the duration
-  + c) **Verify:** you cannot connect and write with the token after the duration has expired
+  + b) :white_check_mark: **Verify:** you can connect and write with the token during the duration
+  + c) :camera: **Verify:** you cannot connect and write with the token after the duration has expired
 
 4. Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 
@@ -325,15 +325,15 @@ A domain administrator can view these volumes by logging into the Data Server.
 1. Confirm that a user is able to read the different storage volumes and write to Output and Home
   + a) Login to a DSVM as a non privileged user account via the remote desktop web client
   + b) Open up a file explorer and search for the various storage volumes
-  + c) **Verify:** that the different storage volumes exist and can be read (opened)
-  + d) **Verify:** that one can write (move files to) Output and Home
-  + e) **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
+  + c) :white_check_mark: **Verify:** that the different storage volumes exist and can be read (opened)
+  + d) :white_check_mark: **Verify:** that one can write (move files to) Output and Home
+  + e) :white_check_mark: **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
 2. Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions
   + a) Login as domain admin to the SRE Data Server. IP address can be found `RG_SRE_DATA` -> `DAT-SRE-<sreID>`
   + b) Go to `This PC`
-  + c) **Verify:** the volumes exist
-  + d) **Verify:** that a user has written a file to the Output storage volume
-  + e) **Verify:** that a written file can be taken out of the environment
+  + c) :camera: **Verify:** the volumes exist
+  + d) :camera: **Verify:** that a user has written a file to the Output storage volume
+  + e) :camera: **Verify:** that a written file can be taken out of the environment
 
 ## 9. Software Ingress
 
@@ -403,10 +403,10 @@ Tier 3:
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + c) Attempt to download the package
-  + d) **Verify:** the download succeeds
+  + d) :white_check_mark: **Verify:** the download succeeds
   + e) Take a package that is not included in the whitelist
   + f) Attempt to download the package
-  + g) **Verify:** the download fails
+  + g) :white_check_mark: **Verify:** the download fails
 
 ## 11. Azure Firewalls
 
