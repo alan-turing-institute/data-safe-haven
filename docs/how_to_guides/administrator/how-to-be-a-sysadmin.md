@@ -26,6 +26,7 @@
   + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 + [:anger: Tearing down SHM package mirrors](#anger-tearing-down-shm-package-mirrors)
 + [:boot: Reboot any SHM and SRE that was shut down](#boot-reboot-any-shm-and-sre-that-was-shut-down)
++ [:point_down: Shut down SHM or SRE](#point-down-shut-down-shm-or-sre)
 
 ## :seedling: Prerequisites
 
@@ -575,9 +576,29 @@ On your **deployment machine**.
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
 
+## :point_down: Shut down SHM or SRE
+
+Sometimes you may want to temporarily shut down an SHM or SRE, rather than tearing it down entirely. You can do that with these scripts:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Then do one of the following:
+
+#### Shut down SHM
+
+`./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStopped -Group All`
+
+#### Shut down SRE
+
+`./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStopped`
+
 ## :boot: Reboot any SHM and SRE that was shut down
 
-Sometimes the SHM and SREs may get shut down unexpectedly. One reason could be the project Azure subscription running out of credits. When this happens, do the following:
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shit them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+
+Note: Sometimes the SHM and SREs may get shut down unexpectedly. One reason could be the project Azure subscription running out of credits.
 
 On your **deployment machine**.
 
