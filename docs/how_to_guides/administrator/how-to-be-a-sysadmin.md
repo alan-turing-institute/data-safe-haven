@@ -19,14 +19,16 @@
   + [:train: Unable to open any remote apps](#train-unable-to-open-any-remote-apps)
   + [:interrobang: xrdp login failure on the DSVM](#interrobang-xrdp-login-failure-on-the-dsvm)
   + [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
-+ [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
-+ [:fire: Tearing down an SRE](#fire-tearing-down-an-SRE)
-+ [:fire: Tearing down the SHM](#fire-tearing-down-the-SHM)
-  + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
-  + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
-+ [:anger: Tearing down SHM package mirrors](#anger-tearing-down-shm-package-mirrors)
-+ [:point_down: Shut down SHM or SRE](#point_down-shut-down-shm-or-sre)
-+ [:boot: Reboot any SHM and SRE that was shut down](#boot-reboot-any-shm-and-sre-that-was-shut-down)
++ [:dollar: Cost management](#dollar-cost-management)
+  + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
+  + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
+  + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
++ [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
+  + [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
+  + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
+  + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
+    + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
+    + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 
 ## :seedling: Prerequisites
 
@@ -508,75 +510,11 @@ This will trigger the following actions:
 
 This may take an hour or two but should solve the missing package problem.
 
-## :fast_forward: Unpeering package mirrors
+## :dollar: Cost management
 
-The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
-However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
+When and SHM and/or SRE is not being used, it can be cost-efficient to shut it down in order to save on some of the ongoing running costs.
 
-> :warning: You will not normally need to do this - think carefully before doing so!
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-
-## :fire: Tearing down an SRE
-
-In order to tear down an SRE, use the following procedure:
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
-+ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
-
-## :fire: Tearing down the SHM
-
-In order to tear down the SHM, use the following procedure (you may skip the tearing down of package mirrors, unless this is the specific thing you wanted to do):
-
-### :unlock: Disconnect from the Azure Active Directory
-
-Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
-
-+ Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
-+ If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
-+ Open Powershell as an administrator
-  + Navigate to `C:\Installation`
-  + Run `.\Disconnect_AD.ps1`
-  + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
-+ Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
-
-### :collision: Tear down any attached SREs then the SHM
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ For each SRE attached to the SHM, do the following:
-  + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
-+ Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-
-## :anger: Tearing down SHM package mirrors
-
-During normal usage of the SHM, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
-
-On your **deployment machine**.
-
-+ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
-+ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-+ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
-+ This will take **a few minutes** to run.
-
-## :point_down: Shut down SHM or SRE
+## :point_down: Shut down an SHM or SRE
 
 Sometimes you may want to temporarily shut down an SHM or SRE, rather than tearing it down entirely. You can do that with these scripts:
 
@@ -594,11 +532,9 @@ On your **deployment machine**.
 
 `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStopped`
 
-## :boot: Reboot any SHM and SRE that was shut down
+## :boot: Start up an SHM or SRE
 
 If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
-
-Note: Sometimes the SHM and SREs may get shut down unexpectedly. One reason could be the project Azure subscription running out of credits.
 
 On your **deployment machine**.
 
@@ -606,3 +542,62 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 + Run `./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStarted -Group All` to restart the SHM
 + For each SRE, run `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStarted`
+
+### :warning: Troubleshooting
+
+Note that if the Azure subscription that you have deployed into runs out of credit, the SHM and/or SRE will be shutdown automatically.
+
+## :anger: Tear down SHM package mirrors
+
+During normal usage of the SHM, you should not need to tear down the package mirrors. However, if you no longer have any SREs at a particular tier and you want to save on the costs of running the mirrors, you might decide to do so.
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **a few minutes** to run.
+
+## :end: Remove a deployed Safe Haven
+
+### :fire: Tear down an SRE
+
+In order to tear down an SRE, use the following procedure:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+  + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+
+### :fire: Tear down the SHM
+
+In order to tear down the SHM, use the following procedure (you may skip the tearing down of package mirrors, unless this is the specific thing you wanted to do):
+
+#### :unlock: Disconnect from the Azure Active Directory
+
+Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
+
++ Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
++ If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
++ Open Powershell as an administrator
+  + Navigate to `C:\Installation`
+  + Run `.\Disconnect_AD.ps1`
+  + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
++ Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
+
+#### :collision: Tear down any attached SREs then the SHM
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ For each SRE attached to the SHM, do the following:
+  + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
++ Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
