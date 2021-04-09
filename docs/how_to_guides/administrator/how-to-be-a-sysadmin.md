@@ -82,7 +82,7 @@ On the **SHM domain controller (DC1)**.
 + Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 + This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
 Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
@@ -145,8 +145,7 @@ If the certificate for the SRE domain has expired, users will not be able to log
   <img src="../../images/administrator_guide/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
 </p>
 
-**Solution**:
-Replace the SSL certificate with a new one
+**Solution**: Replace the SSL certificate with a new one
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -161,8 +160,7 @@ If users give the wrong username or password they will not be able to progress p
   <img src="../../images/administrator_guide/login_password_login.png" width="80%" title="login_password_login">
 </p>
 
-**Solution**:
-Check user credentials, password may need to be reset.
+**Solution**: Check user credentials, password may need to be reset.
 
 ### :train: Unable to open any remote apps
 
@@ -171,7 +169,7 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
   <img src="../../images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
 </p>
 
-**Solution**:
+**Solution**: Check MFA setup
 
 + Ensure that the user has been assigned a license in Azure Active Directory
 + Check that the user has set up MFA (at `aka.ms/mfasetup` ) and is using the phone-call or app authentication method
@@ -193,14 +191,16 @@ but then see this error message:
 there are a couple of possible causes.
 
 **Problem**: the username or password was incorrectly entered
-**Solution**
+
+**Solution**: check username and password
 
 + Confirm that the username and password have been correctly typed
 + Confirm that there are no unsupported special characters in the password
 + Reset the account if there is no other solution
 
 **Problem**: the computer is unable to communicate with the login server
-**Solution**
+
+**Solution**: run diagnostics
 
 + This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 + Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1` , providing the group and last IP octet of the problematic compute VM
@@ -475,8 +475,9 @@ Safe Haven Management (1814d074-10fe-4...   jrobinson@turing.ac.uk   Safe Haven 
 If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
 
 **Problem**: Mirror VNet is not correctly peered
-**Solution**
-Re-run the network configuration script.
+
+**Solution**: Re-run the network configuration script.
+
 On your **deployment machine**.
 
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
@@ -486,7 +487,9 @@ On your **deployment machine**.
 + Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 **Problem**: Internal mirror does not have the required package
-**Solution**
+
+**Solution**: Check package availability
+
 To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
 Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
