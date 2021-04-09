@@ -163,23 +163,114 @@ variable "net_vpn_cidr" {
 variable "dc_rg_name" {
   type = string
 }
-
 variable "dc_rg_location" {
   type = string
 }
-
 variable "dc_rg_name_bootdiagnostics" {
   type = string
 }
-
 variable "dc_sa_name_bootdiagnostics" {
   type = string
 }
-
 variable "dc_rg_name_artifacts" {
   type = string
 }
-
 variable "dc_sa_name_artifacts" {
+  type = string
+}
+variable "dc_name" {
+  type = string
+}
+variable "dc_template_path" {
+  type = string
+}
+variable "dc_administrator_password" {
+  type = string
+  sensitive = true
+}
+variable "dc_administrator_user" {
+  type = string
+}
+variable "dc_artifacts_location" {
+  type = string
+}
+variable "dc_artifacts_location_sas_token" {
+  type = string
+  sensitive = true
+}
+variable "dc_bootdiagnostics_account_name" {
+  type = string
+}
+variable "dc_dc1_data_disk_size_gb" {
+  type = number
+}
+variable "dc_dc1_data_disk_type" {
+  type = string
+}
+variable "dc_dc1_host_name" {
+  type = string
+}
+variable "dc_dc1_ip_address" {
+  type = string
+}
+variable "dc_dc1_os_disk_size_gb" {
+  type = number
+}
+variable "dc_dc1_os_disk_type" {
+  type = string
+}
+variable "dc_dc1_vm_name" {
+  type = string
+}
+variable "dc_dc1_vm_size" {
+  type = string
+}
+variable "dc_dc2_host_name" {
+  type = string
+}
+variable "dc_dc2_data_disk_size_gb" {
+  type = number
+}
+variable "dc_dc2_data_disk_type" {
+  type = string
+}
+variable "dc_dc2_ip_address" {
+  type = string
+}
+variable "dc_dc2_os_disk_size_gb" {
+  type = number
+}
+variable "dc_dc2_os_disk_type" {
+  type = string
+}
+variable "dc_dc2_vm_name" {
+  type = string
+}
+variable "dc_dc2_vm_size" {
+  type = string
+}
+variable "dc_domain_name" {
+  type = string
+}
+variable "dc_domain_netbios_name" {
+  type = string
+}
+variable "dc_external_dns_resolver" {
+  type = string
+}
+variable "dc_safemode_password" {
+  type = string
+  sensitive = true
+}
+variable "dc_shm_id" {
+  type = string
+}
+variable "dc_virtual_network_name" {
+  type = string
+}
+variable "dc_virtual_network_resource_group" {
+  type = string
+}
+variable "dc_virtual_network_subnet" {
   type = string
 }

@@ -81,5 +81,36 @@ module "dc" {
   sa_name_bootdiagnostics = var.dc_sa_name_bootdiagnostics
   rg_name_artifacts = var.dc_rg_name_artifacts
   sa_name_artifacts = var.dc_sa_name_artifacts
+  name = var.dc_name
+  template_path = var.dc_template_path
+  administrator_password = var.dc_administrator_password
+  administrator_user = var.dc_administrator_user
+  artifacts_location = var.dc_artifacts_location
+  artifacts_location_sas_token = var.dc_artifacts_location_sas_token
+  bootdiagnostics_account_name = var.dc_bootdiagnostics_account_name
+  dc1_data_disk_size_gb = var.dc_dc1_data_disk_size_gb
+  dc1_data_disk_type = var.dc_dc1_data_disk_type
+  dc1_host_name = var.dc_dc1_host_name
+  dc1_ip_address = var.dc_dc1_ip_address
+  dc1_os_disk_size_gb = var.dc_dc1_os_disk_size_gb
+  dc1_os_disk_type = var.dc_dc1_os_disk_type
+  dc1_vm_name = var.dc_dc1_vm_name
+  dc1_vm_size = var.dc_dc1_vm_size
+  dc2_host_name = var.dc_dc2_host_name
+  dc2_data_disk_size_gb = var.dc_dc2_data_disk_size_gb
+  dc2_data_disk_type = var.dc_dc2_data_disk_type
+  dc2_ip_address = var.dc_dc2_ip_address
+  dc2_os_disk_size_gb = var.dc_dc2_os_disk_size_gb
+  dc2_os_disk_type = var.dc_dc2_os_disk_type
+  dc2_vm_name = var.dc_dc2_vm_name
+  dc2_vm_size = var.dc_dc2_vm_size
+  domain_name = var.dc_domain_name
+  domain_netbios_name = var.dc_domain_netbios_name
+  external_dns_resolver = var.dc_external_dns_resolver
+  safemode_password = var.dc_safemode_password
+  shm_id = var.dc_shm_id
+  virtual_network_name = var.dc_virtual_network_name
+  virtual_network_resource_group = var.dc_virtual_network_resource_group
+  virtual_network_subnet = var.dc_virtual_network_subnet
 }
 
