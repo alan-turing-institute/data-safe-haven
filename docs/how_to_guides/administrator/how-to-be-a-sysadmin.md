@@ -596,7 +596,7 @@ On your **deployment machine**.
 
 ## :boot: Reboot any SHM and SRE that was shut down
 
-If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shit them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
 
 Note: Sometimes the SHM and SREs may get shut down unexpectedly. One reason could be the project Azure subscription running out of credits.
 
