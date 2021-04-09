@@ -151,7 +151,6 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 + If you are unable to access the VM over `ssh` please check whether you are trying to connect from one of the approved IP addresses that you defined under `vmImages > buildIpAddresses` in the SHM config file.
 + You can check which IP addresses are currently allowed by looking at the `AllowBuildAdminSSH` inbound connection rule in the `RG_SH_NETWORKING > NSG_IMAGE_BUILD` network security group in the subscription where you are building the candidate VM
 
-
 ## :camera: 4. Convert candidate VM to an image
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
@@ -170,7 +169,6 @@ This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus asso
 ### :pencil: Notes
 
 The first step of this script will run the remote build analysis script. Please **check** that everything has built correctly before proceeding.
-
 
 ## :art: 5. Register image in the gallery
 
