@@ -3,15 +3,10 @@
 ## :mailbox_with_mail: Table of contents
 
 + [:seedling: Prerequisites](#seedling-prerequisites)
-+ [:beginner: Creating new users](#beginner-creating-new-users)
-  + [:scroll: Generating user details CSV file](#scroll-generating-user-details-csv-file)
-    + [:car: Using data classification app](#car-using-data-classification-app)
-    + [:hand: Manually edit CSV](#hand-manually-edit-CSV)
++ [:beginner: Create new users](#beginner-create-new-users)
+  + [:scroll: Generate user details CSV file](#scroll-generate-user-details-csv-file)
   + [:arrows_counterclockwise: Create and synchronise users](#arrows_counterclockwise-create-and-synchronise-users)
-  + [:microscope: Troubleshooting: Account already exists](#microscope-troubleshooting-account-already-exists)
-  + [:calling: Assign an MFA licence](#calling-assign-an-mfa-licence)
-    + [:hand: Manually add licence to each user](#hand-manually-add-licence-to-each-user)
-    + [:car: Automatically assign licences to users](#car-automatically-assign-licences-to-users)
+  + [:calling: Assign MFA licences](#calling-assign-mfa-licences)
   + [:running: User activation](#running-user-activation)
 + [:construction_worker: Common user problems](#construction_worker-common-user-problems)
   + [:waning_crescent_moon: Expired webclient certificate](#waning_crescent_moon-expired-webclient-certificate)
@@ -24,11 +19,8 @@
   + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
   + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
 + [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
-  + [:fast_forward: Unpeering package mirrors](#fast_forward-unpeering-package-mirrors)
   + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
   + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
-    + [:unlock: Disconnect from the Azure Active Directory](#unlock-disconnect-from-the-azure-active-directory)
-    + [:collision: Tear down any attached SREs then the SHM](#collision-tear-down-any-attached-sres-then-the-shm)
 
 ## :seedling: Prerequisites
 
@@ -36,7 +28,7 @@ This document assumes that you have already deployed a [Safe Haven Management (S
 
 + You will need VPN access to the SHM as described in the deployment instructions
 
-## :beginner: Creating new users
+## :beginner: Create new users
 
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a CSV file in the appropriate format for it.
@@ -90,7 +82,7 @@ On the **SHM domain controller (DC1)**.
 + Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 + This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
-### :microscope: Troubleshooting: Account already exists
+#### :warning: Troubleshooting
 
 If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
 Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
@@ -98,7 +90,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 + `SamAccountName` : Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
 + `DistinguishedName` : Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>` .
 
-## :calling: Assign an MFA licence
+## :calling: Assign MFA licences
 
 ### :hand: Manually add licence to each user
 
