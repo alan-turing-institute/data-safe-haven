@@ -41,18 +41,18 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Upload artifacts
 # ----------------
-Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
-# Upload DSC scripts
-Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
-$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
-$success = $?
-$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
-$success = $success -and $?
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
-}
+# Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
+# # Upload DSC scripts
+# Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
+# $null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
+# $success = $?
+# $null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
+# $success = $success -and $?
+# if ($success) {
+#     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
+# }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
 $success = $true

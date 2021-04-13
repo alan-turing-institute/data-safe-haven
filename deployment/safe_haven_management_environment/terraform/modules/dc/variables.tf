@@ -30,6 +30,13 @@ variable "template_path" {
   type = string
 }
 
+variable "createadpdc_path" {
+  type = string
+}
+variable "createadbdc_path" {
+  type = string
+}
+
 variable "administrator_password" {
   type = string
   sensitive = true

@@ -33,22 +33,38 @@ resource "azurerm_storage_account" "dc_artifacts" {
   access_tier              = "Hot"
 }
 
-resource "azurerm_storage_container" "dc_artifacts_shm-dsc-dc" {
+resource "azurerm_storage_container" "dc_artifacts_shm_dsc_dc" {
   name                  = "shm-dsc-dc"
   storage_account_name  = azurerm_storage_account.dc_artifacts.name
   container_access_type = "private"
 }
 
-resource "azurerm_storage_container" "dc_artifacts_shm-configuration-dc" {
+resource "azurerm_storage_container" "dc_artifacts_shm_configuration_dc" {
   name                  = "shm-configuration-dc"
   storage_account_name  = azurerm_storage_account.dc_artifacts.name
   container_access_type = "private"
 }
 
-resource "azurerm_storage_container" "dc_artifacts_sre-rds-sh-packages" {
+resource "azurerm_storage_container" "dc_artifacts_sre_rds_sh_packages" {
   name                  = "sre-rds-sh-packages"
   storage_account_name  = azurerm_storage_account.dc_artifacts.name
   container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "CreateADPDC_zip" {
+  name                   = "CreateADPDC.zip"
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_shm_dsc_dc.name
+  type                   = "Block"
+  source                 = var.createadpdc_path
+}
+
+resource "azurerm_storage_blob" "CreateADBDC_zip" {
+  name                   = "CreateADBDC.zip"
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_shm_dsc_dc.name
+  type                   = "Block"
+  source                 = var.createadbdc_path
 }
 
 resource "azurerm_template_deployment" "dc" {
@@ -62,19 +78,19 @@ resource "azurerm_template_deployment" "dc" {
     Artifacts_Location             = var.artifacts_location
     Artifacts_Location_SAS_Token   = var.artifacts_location_sas_token
     BootDiagnostics_Account_Name   = var.bootdiagnostics_account_name
-    DC1_Data_Disk_Size_GB          = var.dc1_data_disk_size_gb
+    DC1_Data_Disk_Size_GB_str      = var.dc1_data_disk_size_gb
     DC1_Data_Disk_Type             = var.dc1_data_disk_type
     DC1_Host_Name                  = var.dc1_host_name
     DC1_IP_Address                 = var.dc1_ip_address
-    DC1_Os_Disk_Size_GB            = var.dc1_os_disk_size_gb
+    DC1_Os_Disk_Size_GB_str        = var.dc1_os_disk_size_gb
     DC1_Os_Disk_Type               = var.dc1_os_disk_type
     DC1_VM_Name                    = var.dc1_vm_name
     DC1_VM_Size                    = var.dc1_vm_size
     DC2_Host_Name                  = var.dc2_host_name
-    DC2_Data_Disk_Size_GB          = var.dc2_data_disk_size_gb
+    DC2_Data_Disk_Size_GB_str      = var.dc2_data_disk_size_gb
     DC2_Data_Disk_Type             = var.dc2_data_disk_type
     DC2_IP_Address                 = var.dc2_ip_address
-    DC2_Os_Disk_Size_GB            = var.dc2_os_disk_size_gb
+    DC2_Os_Disk_Size_GB_str        = var.dc2_os_disk_size_gb
     DC2_Os_Disk_Type               = var.dc2_os_disk_type
     DC2_VM_Name                    = var.dc2_vm_name
     DC2_VM_Size                    = var.dc2_vm_size

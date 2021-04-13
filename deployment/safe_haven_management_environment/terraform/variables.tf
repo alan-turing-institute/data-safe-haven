@@ -184,6 +184,12 @@ variable "dc_name" {
 variable "dc_template_path" {
   type = string
 }
+variable "dc_createadpdc_path" {
+  type = string
+}
+variable "dc_createadbdc_path" {
+  type = string
+}
 variable "dc_administrator_password" {
   type = string
   sensitive = true

@@ -83,6 +83,8 @@ module "dc" {
   sa_name_artifacts = var.dc_sa_name_artifacts
   name = var.dc_name
   template_path = var.dc_template_path
+  createadpdc_path = var.dc_createadpdc_path
+  createadbdc_path = var.dc_createadbdc_path
   administrator_password = var.dc_administrator_password
   administrator_user = var.dc_administrator_user
   artifacts_location = var.dc_artifacts_location

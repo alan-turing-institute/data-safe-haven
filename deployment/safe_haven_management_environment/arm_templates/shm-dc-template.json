@@ -32,8 +32,8 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "DC1_Data_Disk_Size_GB": {
-            "type": "int",
+        "DC1_Data_Disk_Size_GB_str": {
+            "type": "string",
             "metadata": {
                 "description": "Size of DC1 data disk in GB"
             }
@@ -47,8 +47,8 @@
         "DC1_IP_Address": {
             "type": "string"
         },
-        "DC1_Os_Disk_Size_GB": {
-            "type": "int",
+        "DC1_Os_Disk_Size_GB_str": {
+            "type": "string",
             "metadata": {
                 "description": "Size of DC1 OS disk in GB"
             }
@@ -62,8 +62,8 @@
         "DC1_VM_Size": {
             "type": "string"
         },
-        "DC2_Data_Disk_Size_GB": {
-            "type": "int",
+        "DC2_Data_Disk_Size_GB_str": {
+            "type": "string",
             "metadata": {
                 "description": "Size of DC2 data disk in GB"
             }
@@ -77,8 +77,8 @@
         "DC2_IP_Address": {
             "type": "string"
         },
-        "DC2_Os_Disk_Size_GB": {
-            "type": "int",
+        "DC2_Os_Disk_Size_GB_str": {
+            "type": "string",
             "metadata": {
                 "description": "Size of DC2 OS disk in GB"
             }
@@ -139,6 +139,10 @@
         }
     },
     "variables": {
+        "DC1_Data_Disk_Size_GB": "[int(parameters('DC1_Data_Disk_Size_GB_str'))]",
+        "DC1_Os_Disk_Size_GB": "[int(parameters('DC1_Os_Disk_Size_GB_str'))]",
+        "DC2_Data_Disk_Size_GB": "[int(parameters('DC2_Data_Disk_Size_GB_str'))]",
+        "DC2_Os_Disk_Size_GB": "[int(parameters('DC2_Os_Disk_Size_GB_str'))]",
         "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
         "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
         "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('Shm_Id')), '-VM-DC')]",
@@ -189,7 +193,7 @@
                         "managedDisk": {
                             "storageAccountType": "[parameters('DC1_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": "[parameters('DC1_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[variables('DC1_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -201,7 +205,7 @@
                             "managedDisk": {
                                 "storageAccountType": "[parameters('DC1_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": "[parameters('DC1_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[variables('DC1_Data_Disk_Size_GB')]"
                         }
                     ]
                 },
@@ -355,7 +359,7 @@
                         "managedDisk": {
                             "storageAccountType": "[parameters('DC2_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": "[parameters('DC2_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[variables('DC2_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -367,7 +371,7 @@
                             "managedDisk": {
                                 "storageAccountType": "[parameters('DC2_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": "[parameters('DC2_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[variables('DC2_Data_Disk_Size_GB')]"
                         }
                     ]
                 },
