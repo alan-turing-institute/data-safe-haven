@@ -217,8 +217,8 @@ User can connect via remote desktop but cannot connect through other means such 
   + a) login as a user via the remote desktop web client (without using VPN)
   + b) :white_check_mark: **Verify:** login succeeds
 2. Unable to connect as a user to the DSVM via SSH
-  + a) Download Putty and attempt to SSH to a DSVM (without using VPN)
-  + b) :camera: **Verify:** login fails
+  + a) Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
+  + b) :camera: **Verify:** ssh login fails: `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)
   + c) :camera: **Verify:** The RDS server and Firewall are the **only** resources with public IP addresses
 
 ## 6. Copy-and-paste
