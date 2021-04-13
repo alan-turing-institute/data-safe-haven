@@ -198,7 +198,7 @@ For tier 3:
 2. Connection from within the research office space is possible.
   + a) Attempt to connect from research office using a managed device and the correct VPN connection and credentials
   + b) :white_check_mark: **Verify:** connection succeeds
-3. Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
+3. :white_check_mark: **Verify:** Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
 4. :white_check_mark: **Verify:** Physically confirm that measures such as screen adaptions or desk partitions are present.
 
 ## 5. Remote connections
