@@ -237,16 +237,16 @@ One cannot copy something from outside the network and paste it into the network
   + a) Copy some text from your deployment device
   + b) Login to a DSVM via the remote desktop web client
   + c) Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
-  + d) :camera: **Verify:** paste fails
+  + d) :white_check_mark: **Verify:** paste fails
   + e) Write some next in the note pad or terminal of the DSVM and copy it
   + f) Attempt to copy the text externally to deployment device (e.g. into URL of browser)
-  + g) :camera: **Verify:** paste fails
+  + g) :white_check_mark: **Verify:** paste fails
 2. One can copy between VMs inside the network
   + a) Login to a DSVM via the remote desktop web client
   + b) Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
-  + c) Connect to another DSVM via the remote desktop web client (as a second tab)
+  + c) Connect to another DSVM (for example, the SSH connection) via the remote desktop web client (as a second tab)
   + d) Attempt to paste the text to it.
-  + e) :camera: **Verify:** paste succeeds
+  + e) :white_check_mark: **Verify:** paste succeeds
 
 ### Verify by:
 
