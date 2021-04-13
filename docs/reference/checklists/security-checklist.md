@@ -400,14 +400,14 @@ Tier 2:
 
 Tier 3:
 
-2. Download packages on the whitelist
+2. Download packages on the whitelist (see the lists in `environment_configs/package_lists`)
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + c) Attempt to download the package
-  + d) :white_check_mark: **Verify:** the download succeeds
+  + d) :camera: **Verify:** the download succeeds
   + e) Take a package that is not included in the whitelist
   + f) Attempt to download the package
-  + g) :white_check_mark: **Verify:** the download fails
+  + g) :camera: **Verify:** the download fails
 
 ## 11. Azure Firewalls
 
