@@ -395,7 +395,7 @@ Tier 2:
 1. Download packages from the full mirror.
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Open up a terminal
-  + c) Attempt to install any package that is not included at base
+  + c) :camera: **Verify:** You can install any package that is not included at base (for example, try `pip install sklearn`)
 
 Tier 3:
 
