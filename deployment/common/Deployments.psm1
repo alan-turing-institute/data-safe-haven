@@ -149,7 +149,7 @@ function Confirm-VmStopped {
         [string]$ResourceGroupName
     )
     if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
-        Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning stopped as a warning to non-paying subscription."
+        Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
     }
     $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
     return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
