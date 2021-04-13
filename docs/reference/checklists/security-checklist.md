@@ -14,10 +14,10 @@ An overview of our security controls is shown here
     <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
 </p>
 
-## How to check the list off for a release
+## How to use this check list
 
-1. Deploy an SHM and both a tier 2 and 3 SRE from your release code.
-    - or, if you are not testing a new release, choose an SHM with both a t2 and t3 SRE that have already been deployed - check the config files in `data-safe-haven/environment_configs`, for example, you could use `sandbox` (t2) and `t3test` from the `testa` SHM - If you need to start up SHM/SREs that have been shut down, see [here](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#boot-start-up-an-shm-or-sre)
+1. Ensure you have an SHM and attached SRE that you wish to test.
+    - Note: Some parts of the security checklist are only relevant to either a tier 2 or tier 3 SRE. Other parts are only relevant when there are multiple SREs attached to the same SHM
 2. Create an issue called `Carry out security evaluation checklist for release x.x.x`
 3. Using [#977](https://github.com/alan-turing-institute/data-safe-haven/issues/977) as a guide, create the checklist as per this document and check it off as
     - The :camera: indicates that you should **Verify** by adding a screenshot(s) of your evidence to the issue comments, which you can use the numbering to reference
