@@ -1,60 +1,65 @@
 #cloud-config
 
 write_files:
-  - path: "/src/guacamole/pg-ldap-sync.yaml"
+  - path: "/opt/guacamole/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
     content: |
-      # With this sample config the distinction between LDAP-synchronized
-      # groups/users from is done by the membership to ldap_user and
-      # ldap_group. These two roles has to be defined manally before
-      # pg_ldap_sync can run.
+      # LDAP-synchronized groups/users are identified through their
+      # membership of ldap_user and ldap_group. These two roles must
+      # therefore be manually defined before running pg_ldap_sync.
+
       # Connection parameters to LDAP server
       # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
       # TODO: get SSL working on port 636
       ldap_connection:
-        host: <shm-dc-ip-address>
+        host: {{shm-dc-hostname}}
         #port: 636
         port: 389
         auth:
           method: :simple
-          username: <ldap-search-bind-dn>
-          password: <ldap-search-bind-password>
+          username: {{ldap-search-user-dn}}
+          password: {{ldap-search-user-password}}
         #encryption:
         #  method: :simple_tls
+
       # Search parameters for LDAP users which should be synchronized
       ldap_users:
-        base: <ldap-user-base-dn>
+        base: {{ldap-user-base-dn}}
         # LDAP filter defining which LDAP users should be synchronized
-        filter: <ldap-user-filter>
-        # this attribute is used as PG role name
-        name_attribute: sAMAccountName
+        filter: {{ldap-user-filter}}
+        # this attribute is used as PG role name. It is 'sAMAccountName@domain'
+        name_attribute: mail
         # lowercase name for use as PG role name
         lowercase_name: false
+
       # Search parameters for LDAP groups which should be synchronized
       ldap_groups:
-        base: <ldap-groups-base-dn>
+        base: {{ldap-groups-base-dn}}
         # LDAP filter defining which LDAP groups should be synchronized
-        filter: <ldap-group-filter>
+        filter: {{ldap-group-filter}}
         # this attribute is used as PG role name
         name_attribute: cn
         # lowercase name for use as PG role name
         lowercase_name: false
         # this attribute must reference to all member DN's of the given group
         member_attribute: member
+
       # Connection parameters to PostgreSQL server
       # see also: http://rubydoc.info/gems/pg/PG/Connection#initialize-instance_method
       pg_connection:
         host: localhost
         dbname: guacamole
         user: guacamole
-        password: <postgres-password>
+        password: {{postgres-password}}
+
       pg_users:
         # Filter for identifying LDAP generated users in the database.
         # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
         filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_users')
         # Options for CREATE RULE statements
         create_options: LOGIN IN ROLE ldap_users
+
       pg_groups:
         # Filter for identifying LDAP generated groups in the database.
         # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
@@ -81,8 +86,8 @@ packages:
 package_update: true
 package_upgrade: true
 
-  # taken from boschkundendienst/guacamole-docker-compose
-  - path: "/src/guacamole/docker-compose.yml"
+  # based on boschkundendienst/guacamole-docker-compose
+  - path: "/opt/guacamole/docker-compose.yml"
     content: |
       version: '3.4'
       networks:
@@ -98,11 +103,11 @@ package_upgrade: true
             PGDATA: /var/lib/postgresql/data/guacamole
             POSTGRES_DB: guacamole
             POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: <postgres-password>
+            POSTGRES_PASSWORD: {{postgres-password}}
           ports:
           - 5432:5432
           volumes:
-          - /src/guacamole/:/docker-entrypoint-initdb.d:ro
+          - /opt/guacamole/:/docker-entrypoint-initdb.d:ro
           - /data:/var/lib/postgresql/data:rw
           restart: always
 
@@ -126,20 +131,21 @@ package_upgrade: true
           environment:
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: debug
-            LDAP_HOSTNAME: <ldap-hostname>
-            LDAP_PORT: <ldap-port>
-            LDAP_USER_BASE_DN: <ldap-user-base-dn>
-            LDAP_USERNAME_ATTRIBUTE: sAMAccountName
-            LDAP_GROUP_BASE_DN: <ldap-group-base-dn>
-            LDAP_SEARCH_BIND_DN: <ldap-search-bind-dn>
-            LDAP_SEARCH_BIND_PASSWORD: <ldap-search-bind-password>
-            # POSTGRES_HOSTNAME: postgres
-            # POSTGRES_DATABASE: guacamole
-            # POSTGRES_USER: guacamole
-            # POSTGRES_PASSWORD: <postgres-password>
+            #LDAP_HOSTNAME: {{ldap-hostname}}
+            #LDAP_PORT: {{ldap-port}}
+            #LDAP_USER_BASE_DN: {{ldap-user-base-dn}}
+            #LDAP_USERNAME_ATTRIBUTE: sAMAccountName
+            #LDAP_GROUP_BASE_DN: {{ldap-group-base-dn}}
+            #LDAP_SEARCH_BIND_DN: {{ldap-search-user-dn}}
+            #LDAP_SEARCH_BIND_PASSWORD: {{ldap-search-user-password}}
+            POSTGRES_HOSTNAME: postgres
+            POSTGRES_DATABASE: guacamole
+            POSTGRES_USER: guacamole
+            POSTGRES_PASSWORD: {{postgres-password}}
             OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize
             OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/discovery/v2.0/keys
             OPENID_ISSUER: https://login.microsoftonline.com/{{tenant_id}}/v2.0
+            OPENID_USERNAME_CLAIM_TYPE: email
             OPENID_CLIENT_ID: {{application_id}}
             OPENID_REDIRECT_URI: https://{{guacamole_fqdn}}
           ports:
@@ -196,6 +202,7 @@ package_upgrade: true
           keepalive_timeout  65;
           include /etc/nginx/conf.d/*.conf;
       }
+
   - path: "/opt/nginx/guacamole.conf"
     content: |
       server {
@@ -243,110 +250,25 @@ package_upgrade: true
             root   /usr/share/nginx/html;
         }
       }
-  - path: "/src/guacamole/custom.sql"
+
+  - path: "/opt/guacamole/db_update.sql"
+    permissions: "0444"
     content: |
-      /* Add RDP connections */
-      ALTER TABLE guacamole_connection ADD CONSTRAINT connection_name_constraint UNIQUE (connection_name);
-      INSERT INTO guacamole_connection (connection_name, protocol)
-        VALUES ('DSVM Main (Desktop)', 'rdp'),
-               ('Windows (Desktop)', 'rdp')
-      ON CONFLICT DO NOTHING;
+      {{guacamole_update.sql}}
 
-      /* Add connection details */
-      INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, parameter_value)
-      SELECT guacamole_connection.connection_id, parameter_name, parameter_value
-      FROM (
-          VALUES
-              ('DSVM Main (Desktop)', 'hostname', '10.150.2.160'),
-              ('DSVM Main (Desktop)', 'username', '${GUAC_USERNAME}'),
-              ('DSVM Main (Desktop)', 'password', '${GUAC_PASSWORD}'),
-              ('Windows (Desktop)', 'hostname', '10.150.1.248'),
-              ('Windows (Desktop)', 'username', '${GUAC_USERNAME}'),
-              ('Windows (Desktop)', 'password', '${GUAC_PASSWORD}')
-      ) parameters (connection_name, parameter_name, parameter_value)
-      JOIN guacamole_connection ON parameters.connection_name = guacamole_connection.connection_name ON CONFLICT DO NOTHING;
+  - path: "/opt/guacamole/update_settings.sh"
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      pg_ldap_sync -c /opt/guacamole/pg-ldap-sync.yaml -vvv
+      docker cp /opt/guacamole/db_update.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_update.sql
+      docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_update.sql
 
-      /* Ensure that all users are Guacamole USER entities */
-      INSERT INTO guacamole_entity (name, type) SELECT usename, 'USER' FROM pg_user ON CONFLICT DO NOTHING;
-
-      /* Ensure that all user groups are Guacamole USER_GROUP entities */
-      INSERT INTO guacamole_entity (name, type) SELECT groname, 'USER_GROUP' FROM pg_group WHERE (groname LIKE 'SG SANDBOX %') ON CONFLICT DO NOTHING;
-
-      /* Ensure that all user groups are Guacamole USER_GROUP entities */
-      INSERT INTO guacamole_user_group (entity_id) SELECT entity_id FROM guacamole_entity WHERE type = 'USER_GROUP' ON CONFLICT DO NOTHING;
-
-      /* Ensure that all users are added to the correct group */
-      INSERT INTO guacamole_user_group_member (user_group_id, member_entity_id)
-        SELECT guacamole_user_group.user_group_id, guac_user.entity_id FROM pg_group
-        JOIN pg_user ON pg_has_role(pg_user.usesysid, grosysid, 'member')
-        JOIN guacamole_entity guac_group ON pg_group.groname = guac_group.name
-        JOIN guacamole_entity guac_user ON pg_user.usename = guac_user.name
-        JOIN guacamole_user_group ON guacamole_user_group.entity_id = guac_group.entity_id
-        WHERE (groname LIKE 'SG SANDBOX %')
-      ON CONFLICT DO NOTHING;
-
-      /* Assign connection permissions to each group */
-      INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
-      SELECT guacamole_entity.entity_id, guacamole_connection.connection_id, permission::guacamole_object_permission_type
-      FROM (
-          VALUES
-              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'READ'),
-              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'UPDATE'),
-              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'DELETE'),
-              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'ADMINISTER'),
-              ('guacadmin', 'USER', 'Windows (Desktop)', 'READ'),
-              ('guacadmin', 'USER', 'Windows (Desktop)', 'UPDATE'),
-              ('guacadmin', 'USER', 'Windows (Desktop)', 'DELETE'),
-              ('guacadmin', 'USER', 'Windows (Desktop)', 'ADMINISTER'),
-              ('<ldap-group-researchers>', 'USER_GROUP', 'DSVM Main (Desktop)', 'READ'),
-              ('<ldap-group-researchers>', 'USER_GROUP', 'Windows (Desktop)', 'READ')
-      ) permissions (username, entity_type, connection_name, permission)
-      JOIN guacamole_entity     ON permissions.username = guacamole_entity.name AND guacamole_entity.type::text = permissions.entity_type
-      JOIN guacamole_connection ON permissions.connection_name = guacamole_connection.connection_name ON CONFLICT DO NOTHING;
-
-
-
-
-# SELECT * FROM pg_group
-# JOIN guacamole_entity ON pg_group.groname = guacamole_entity.name
-# WHERE (groname LIKE 'SG SANDBOX %');
-
-
-# SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')
-
-
-# SELECT * FROM pg_group
-
-# SELECT guac_group.entity_id AS group_entity_id, guac_user.entity_id AS user_entity_id FROM pg_group
-# JOIN pg_user ON pg_has_role(pg_user.usesysid, grosysid, 'member')
-# JOIN guacamole_entity guac_group ON pg_group.groname = guac_group.name
-# JOIN guacamole_entity guac_user ON pg_user.usename = guac_user.name
-# WHERE (groname LIKE 'SG SANDBOX %');
-
-
-
-
-# SELECT * FROM pg_group
-# JOIN (
-#   SELECT usename, usesysid, entity_id AS user_entity_id FROM pg_user JOIN guacamole_entity ON pg_user.usename = guacamole_entity.name
-# ) ON pg_has_role(pg_user.usesysid, grosysid, 'member')
-
-
-# JOIN guacamole_entity ON pg_group.groname = guacamole_entity.name
-# WHERE (groname LIKE 'SG SANDBOX %');
-
-
-# (SELECT usename, usesysid, entity_id AS user_entity_id FROM pg_user JOIN guacamole_entity ON pg_user.usename = guacamole_entity.name)
-
-
-
-
-
-# SELECT * FROM guacamole_entity WHERE guacamole_entity.type = 'USER_GROUP'
-      # INSERT INTO guacamole_entity (name, type) VALUES ('<ldap-group-researchers>', 'USER_GROUP');
-      # INSERT INTO guacamole_user_group (entity_id)
-      #   SELECT entity_id FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
-
+  - path: "/opt/guacamole/connections.csv"
+    permissions: "0444"
+    content: |
+      DSVM Main (Desktop);10.152.4.160
+      DSVM 171 (Desktop);10.152.4.171
 
 packages:
   - docker-ce
@@ -366,6 +288,9 @@ runcmd:
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
+
+  # Move connections data to final location
+  - mv /opt/guacamole/connections.csv /data/connections.csv
 
   # Ensure that Docker is running
   - echo "Current Docker status..."
@@ -392,84 +317,27 @@ runcmd:
   # Setup Guacamole
   - echo ">=== Starting Guacamole... ===<"
   # # Generate a random application key for Duo. This must be >=40 characters so we generate 60 and strip any that are non-alphanumeric
-  # - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /src/guacamole/docker-compose.yml
-  - docker-compose -f /src/guacamole/docker-compose.yml up -d
+  # - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /opt/guacamole/docker-compose.yml
+  - docker-compose -f /opt/guacamole/docker-compose.yml up -d
   # Generate the necessary SQL config for the local PostgreSQL database
-  - docker-compose -f /src/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /src/guacamole/db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/guacamole/db_init.sql
   # Copy the base SQL config to the postgres container and run it
-  - docker cp /src/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
-  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
+  - docker cp /opt/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
 
-  #  # Download additional guacamole extensions
-  # - mkdir -p /src/guacamole/extensions/
-  # - GUACAMOLE_CONTAINER_ID=$(docker ps -q --filter "name=guacamole_guacamole_compose")
-  # - GUACAMOLE_VERSION="1.2.0"
-  # - |
-  #   for EXTENSION in "auth-openid"; do
-  #     cd /src/guacamole/extensions
-  #     FILENAME="guacamole-${EXTENSION}-${GUACAMOLE_VERSION}.tar.gz"
-  #     curl -SLO "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GUACAMOLE_VERSION}/binary/${FILENAME}"
-  #     docker cp /src/guacamole/extensions/${FILENAME} ${GUACAMOLE_CONTAINER_ID}:/root/.guacamole/extensions/${FILENAME}
-  #   done
-
-
-
-
-# echo "### Requesting Let's Encrypt certificate for $domains ..."
-# #Join $domains to -d args
-# domain_args=""
-# for domain in "${domains[@]}"; do
-#   domain_args="$domain_args -d $domain"
-# done
-
-# # Select appropriate email arg
-# case "$email" in
-#   "") email_arg="--register-unsafely-without-email" ;;
-#   *) email_arg="--email $email" ;;
-# esac
-
-# # Enable staging mode if needed
-# if [ $staging != "0" ]; then staging_arg="--staging"; fi
-
-# docker-compose run --rm --entrypoint "\
-#   certbot certonly --webroot -w /var/www/certbot \
-#     $staging_arg \
-#     $email_arg \
-#     $domain_args \
-#     --rsa-key-size $rsa_key_size \
-#     --agree-tos \
-#     --force-renewal" certbot
-# echo
-
-
-
-
-  # # Configure the OpenID extension
-  # - docker exec -i ${GUACAMOLE_CONTAINER_ID} sh -c "cat >> /root/.guacamole/guacamole.properties" < /src/guacamole/guacamole.properties
-  # # https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration
-
-
-  # openid-authorization-endpoint:https://login.microsoftonline.com/TENANTID/oauth2/v2.0/authorize
-  # openid-jwks-endpoint:https://login.microsoftonline.com/TENANTID/discovery/v2.0/keys
-  # openid-issuer:https://login.microsoftonline.com/TENANTID
-  # openid-client-id:CLIENTID
-  # openid-redirect-uri:https://MYSERVER:443/guacamole/
-
+  # http://guacamole.sandbox.testc.dsgroupdev.co.uk
 
 
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
-  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_users;"
-  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_groups;"
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_users;"
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_groups;"
   - gem install pg-ldap-sync
-  - pg_ldap_sync -c /src/guacamole/pg-ldap-sync.yaml -vv
+  # Run the initial update and schedule a sync every 10 minutes
+  - /opt/guacamole/update.sql
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - echo "*/10 * * * * root /opt/guacamole/update.sql" >> /etc/crontab
   - tail -n 1 /etc/crontab
-
-  # Copy the custom SQL config to the postgres container and run it
-  - docker cp /src/guacamole/custom.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_custom.sql
-  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_custom.sql
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state

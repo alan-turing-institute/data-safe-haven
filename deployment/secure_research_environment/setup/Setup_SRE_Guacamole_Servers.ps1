@@ -4,13 +4,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
-    [string]$tenantId,
-    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$duoIntegration,
-    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$duoSecret,
-    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$duoApiHost
+    [string]$tenantId
 )
 
 Import-Module Az
@@ -27,37 +21,12 @@ $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
-WRite-Host $config.sre.guacamole.fqdn
-
-
-$vmName = $config.sre.guacamole.vmName
-$vmSize = $config.sre.guacamole.vmSize
+# Retrieve passwords from the Key Vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.guacamole.adminPasswordSecretName -DefaultLength 20
 
-# # Get/set Duo secrets
-# $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-# # $duoIntegrationKey = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoIntegrationKey -DefaultValue $duoIntegration
-# # $duoSecretKey = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoSecretKey -DefaultValue $duoSecret
-# # $duoApiHostname = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoApiHostname -DefaultValue $duoApiHost
-# $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-# Create RDS resource group if it does not exist
-# ----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.location
-
-
-# # Load db-init template
-# $dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
-# $dbInitTemplate = Get-Content $dbInitFilePath -Raw
-
-# # Set template expansion variables
-# $GUACAMOLE_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
-# $RESEARCHERS_LDAP_GROUP = $config.sre.domain.securityGroups.researchUsers.Name
-# $SESSION_HOST_1 = $config.sre.rds.sessionHost1.hostname
-# $SESSION_HOST_2 = $config.sre.rds.sessionHost2.hostname
-
-# $DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
 
 # Retrieve VNET and subnet
 # ------------------------
@@ -66,40 +35,21 @@ $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupN
 $guacamoleSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.guacamole.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 
 
+# Create Guacamole resource group if it does not exist
+# ----------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.location
+
+
 # Deploy a NIC with a public IP address
 # -------------------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
-$publicIp = New-AzPublicIpAddress -Name "$vmName-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location -Force
+$vmNic = Deploy-VirtualMachineNIC -Name "$($config.sre.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
+$publicIp = New-AzPublicIpAddress -Name "$($config.sre.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location -Force
 $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $guacamoleSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 
 
 # Add DNS records for Guacamole server
 # ------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-# # Add DNS records to SRE DNS Zone
-# Add-LogMessage -Level Info "Adding DNS record for Guacamole server"
-# $dnsTtlSeconds = 30
-# # Set the A record
-# $recordName = "@"
-# Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-# Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-# $null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
-# if ($?) {
-#     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
-# } else {
-#     Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
-# }
-# # Set the CNAME record
-# $recordName = "$($config.sre.rds.gateway.hostname)".ToLower()
-# Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-# Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-# $null = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
-# if ($?) {
-#     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
-# } else {
-#     Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
-# }
-
 # Set an A record
 $dnsTtlSeconds = 30
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$($publicIp.IpAddress)' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
@@ -112,71 +62,23 @@ if ($?) {
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
-exit 1
-
 
 # Register AzureAD application
-# Connect-MgGraph -TenantId 1d93a235-0c16-4f39-adff-a550719bdb49 -Scopes "Application.ReadWrite.All"
+# ----------------------------
 Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All"
-
-# $application.Web.RedirectUris = "https://51.11.148.222"
-# Update-MgApplication -ApplicationId $application.Id -Web $application.Web
-
 $application = Get-MgApplication -Filter "DisplayName eq 'Guacamole Server'"
 if (-not $application) {
-    $application = New-MgApplication -DisplayName "Guacamole Server" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://51.11.148.222", "http://guacamole:8080/guacamole/") }
+    $application = New-MgApplication -DisplayName "Guacamole Server" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.guacamole.fqdn)") }
 }
+Write-Host "New-MgApplication -DisplayName `"Guacamole Server`" -SignInAudience `"AzureADMyOrg`" -Web @{ RedirectUris = @(`"https://$($config.sre.guacamole.fqdn)`") }"
 
+# # $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
+# # if ($dryRun) { $certificateName += "-dryrun" }
 
-# $Body = @{
-#     'resource'= $ARMResource
-#     'client_id' = $ClientID
-#     'grant_type' = 'client_credentials'
-#     'client_secret' = $ClientSecret
-# }
-
-# $params = @{
-# ContentType = 'application/x-www-form-urlencoded'
-# Headers = @{'accept'='application/json'}
-# Body = $Body
-# Method = 'Post'
-# URI = $TokenEndpoint
-# }
-
-# $token = Invoke-RestMethod @params
-
-# $accesstoken = $token.access_token
-
-# $url = {https://graph.windows.net/{0}/applications/{1}?api-version=1.6} -f $tennantid,$objectid
-
-# $header = @{
-# 'Authorization' = 'Bearer ' + $accesstoken
-# 'Content-Type' = 'application/json'
-# }
-
-# $json = @{
-# oauth2AllowIdTokenImplicitFlow = 'false' #or true
-# }
-
-# $body = $json | ConvertTo-Json
-
-# Invoke-RestMethod –Uri $url –Headers $header -Body $body –Method PATCH
-
-
-# $url = "https://graph.windows.net/${tenantId}/applications/$($application.Id)?api-version=1.6"
-
-
-$certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
-# if ($dryRun) { $certificateName += "-dryrun" }
-
-
-# # Check for existing certificate in Key Vault
-# # -------------------------------------------
-# Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in Key Vault..."
-$kvCertificate = Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName
-
-
-
+# # # Check for existing certificate in Key Vault
+# # # -------------------------------------------
+# # Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in Key Vault..."
+# $kvCertificate = Get-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName
 
 
 # Load cloud-init template
@@ -201,45 +103,30 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
-                                    Replace("<ldap-hostname>", "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
-                                    Replace("<ldap-port>", 389).
-                                    Replace("<ldap-group-base-dn>", $config.shm.domain.securityOuPath).
-                                    Replace("<ldap-search-bind-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
-                                    Replace("<ldap-search-bind-password>", $ldapSearchPassword).
-                                    Replace("<ldap-group-researchers>", $config.sre.domain.securityGroups.researchUsers.Name).
-                                    Replace("<postgres-password>", $guacamoleDbPassword).
-                                    Replace("<duo-api-hostname>", $duoApiHost).
-                                    Replace("<duo-integration-key>", $duoIntegrationKey).
-                                    Replace("<duo-secret-key>", $duoSecretKey).
                                     Replace("{{guacamole_fqdn}}", $config.sre.guacamole.fqdn).
+                                    Replace("{{ldap-group-base-dn}}", $config.shm.domain.securityOuPath).
+                                    Replace("{{ldap-group-filter}}", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
+                                    Replace("{{ldap-group-researchers}}", $config.sre.domain.securityGroups.researchUsers.name).
+                                    Replace("{{ldap-group-system-administrators}}", $config.sre.domain.securityGroups.systemAdministrators.name).
+                                    Replace("{{ldap-groups-base-dn}}", $config.shm.domain.ous.securityGroups.path).
+                                    Replace("{{ldap-hostname}}", "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
+                                    Replace("{{ldap-port}}", 389).
+                                    Replace("{{ldap-search-user-dn}}", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
+                                    Replace("{{ldap-search-user-password}}", $ldapSearchPassword).
+                                    Replace("{{ldap-user-base-dn}}", $config.shm.domain.ous.researchUsers.path).
+                                    Replace("{{ldap-user-filter}}", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+                                    Replace("{{postgres-password}}", $guacamoleDbPassword).
                                     Replace("{{public_ip_address}}", $publicIp.IpAddress).
-                                    Replace("<shm-dc-ip-address>", $config.shm.dc.ip).
-                                    Replace("{{tenant_id}}", $tenantId).
-                                    Replace("<ldap-user-base-dn>", $config.shm.domain.ous.researchUsers.path).
-                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))").
-                                    Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
-                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))")
+                                    Replace("{{shm-dc-hostname}}", $config.shm.dc.hostname).
+                                    Replace("{{tenant_id}}", $tenantId)
 
-
-# # Check that VNET and subnet exist
-# # --------------------------------
-# Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-# # $vnet = $null
-# try {
-#     $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.Name -ErrorAction Stop
-# } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
-#     Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
-# }
-# Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-# $subnetName = $config.sre.network.subnets.rds.name
-# Add-LogMessage -Level Info "Looking for subnet network '$subnetName'..."
-# $subnet = $vnet.subnets | Where-Object { $_.Name -eq $subnetName }
-# if ($null -eq $subnet) {
-#     Add-LogMessage -Level Fatal "Subnet '$subnetName' could not be found in virtual network '$($vnet.Name)'!"
-# }
-# Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
-
-
+# Insert resources into the cloud-init template
+$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
+}
 
 # Common settings
 # ---------------
@@ -256,16 +143,29 @@ $params = @{
     CloudInitYaml = $cloudInitYaml
     ImageSku = "18.04-LTS"
     Location = $config.sre.location
-    Name = $vmName
+    Name = $($config.sre.guacamole.vmName)
     NicId = $vmNic.Id
     OsDiskType = $diskType
     ResourceGroupName = $config.sre.guacamole.rg
-    Size = $vmSize
+    Size = $config.sre.guacamole.vmSize
 }
 $null = Deploy-UbuntuVirtualMachine @params
 
 
+# # Change subnets and IP address while the VM is off
+# # -------------------------------------------------
+# Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
+# Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vmHostname -VmIpAddress $finalIpAddress
 
+# Restart after deployment
+# ----------------------------
+Enable-AzVM -Name $config.sre.guacamole.vmName -ResourceGroupName $config.sre.guacamole.rg
+# Add-LogMessage -Level Info "Rebooting $($config.sre.guacamole.vmName)..."
+# if ($?) {
+#     Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
+# }
 
 
 
@@ -273,10 +173,10 @@ $null = Deploy-UbuntuVirtualMachine @params
 
 # # Poll VM to see whether it has finished running
 # Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-# $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
+# $statuses = (Get-AzVM -Name $($config.sre.guacamole.vmName) -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
 # $progress = 0
 # while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
-#     $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
+#     $statuses = (Get-AzVM -Name $($config.sre.guacamole.vmName) -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
 #     $progress = [math]::min(100, $progress + 1)
 #     Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
 #     Start-Sleep 10
@@ -285,13 +185,13 @@ $null = Deploy-UbuntuVirtualMachine @params
 # # VM must be off for us to switch NSG
 # # -----------------------------------
 # Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
-# Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
+# Add-VmToNSG -VMName $($config.sre.guacamole.vmName) -NSGName $secureNsg.Name
 
 
 # # Restart after the NSG switch
 # # ----------------------------
-# Add-LogMessage -Level Info "Rebooting $vmName..."
-# Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg
+# Add-LogMessage -Level Info "Rebooting $($config.sre.guacamole.vmName)..."
+# Enable-AzVM -Name $($config.sre.guacamole.vmName) -ResourceGroupName $config.sre.guacamole.rg
 # if ($?) {
 #     Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
 # } else {
