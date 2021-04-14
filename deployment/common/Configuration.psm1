@@ -717,15 +717,14 @@ function Get-SreConfig {
     # Guacamole server
     # ----------------
     $config.sre.guacamole = [ordered]@{
-        rg                      = "$($config.sre.rgPrefix)_GUACAMOLE".ToUpper()
-        adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-guacamole"
-        duoIntegrationKey       = "shm-$($shm.id)-duo-integration-key".ToLower()
-        duoSecretKey            = "shm-$($shm.id)-duo-secret-key".ToLower()
-        duoApiHostname          = "shm-$($shm.id)-duo-api-hostname".ToLower()
-        vmName                  = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
-        vmSize                  = "Standard_DS2_v2"
-        ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.guacamole.cidr -Offset 4
-        disks                   = [ordered]@{
+        rg                              = "$($config.sre.rgPrefix)_GUACAMOLE".ToUpper()
+        adminPasswordSecretName         = "$($config.sre.shortName)-vm-admin-password-guacamole"
+        databaseAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-guacamole"
+        fqdn                            = "guacamole.$($config.shm.domain.fqdn)".ToLower()
+        vmName                          = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
+        vmSize                          = "Standard_DS2_v2"
+        ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.guacamole.cidr -Offset 4
+        disks                           = [ordered]@{
             os   = [ordered]@{
                 sizeGb = "128"
                 type   = "Standard_LRS"

@@ -713,10 +713,10 @@ function Deploy-UbuntuVirtualMachine {
         [string]$CloudInitYaml,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
-        [string]$ImageId = $null,
+        [string]$ImageId,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
-        [string]$ImageSku = $null,
+        [string]$ImageSku,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
