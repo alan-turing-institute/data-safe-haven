@@ -67,6 +67,40 @@ resource "azurerm_storage_blob" "CreateADBDC_zip" {
   source                 = var.createadbdc_path
 }
 
+resource "azurerm_storage_blob" "config_files" {
+  for_each = toset(var.config_files)
+
+  name                   = each.value
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_shm_configuration_dc.name
+  type                   = "Block"
+  source                 = format("%s/%s", var.config_files_path, each.value)
+}
+
+resource "azurerm_storage_blob" "config_file_disconnect_ad" {
+  name                   = "Disconnect_AD.ps1"
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_shm_configuration_dc.name
+  type                   = "Block"
+  source                 = var.config_file_disconnect_ad
+}
+
+resource "azurerm_storage_blob" "chrome" {
+  name                   = "GoogleChrome_x64.msi"
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_sre_rds_sh_packages.name
+  type                   = "Block"
+  source_uri             = var.chrome_source_uri
+}
+
+resource "azurerm_storage_blob" "putty" {
+  name                   = "PuTTY_x64.msi"
+  storage_account_name   = azurerm_storage_account.dc_artifacts.name
+  storage_container_name = azurerm_storage_container.dc_artifacts_sre_rds_sh_packages.name
+  type                   = "Block"
+  source_uri             = var.putty_source_uri
+}
+
 resource "azurerm_template_deployment" "dc" {
   name                = var.name
   resource_group_name = azurerm_resource_group.dc.name

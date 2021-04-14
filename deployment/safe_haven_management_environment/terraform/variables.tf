@@ -190,6 +190,15 @@ variable "dc_createadpdc_path" {
 variable "dc_createadbdc_path" {
   type = string
 }
+variable "dc_config_files_path" {
+  type = string
+}
+variable "dc_config_file_disconnect_ad" {
+  type = string
+}
+variable "dc_putty_source_uri" {
+  type = string 
+}
 variable "dc_administrator_password" {
   type = string
   sensitive = true

@@ -54,44 +54,44 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 #     Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
 # }
 # Upload artifacts for configuring the DC
-Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
-$success = $true
-foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
-    if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
-        # Expand the AD disconnection template before uploading
-        $adScriptLocalFilePath = (New-TemporaryFile).FullName
-        (Get-Content $filePath -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $adScriptLocalFilePath
-        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
-        $null = Remove-Item $adScriptLocalFilePath
-    } else {
-        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File $filePath -Force
-    }
-    $success = $success -and $?
-}
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
-}
+# Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
+# $success = $true
+# foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
+#     if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
+#         # Expand the AD disconnection template before uploading
+#         $adScriptLocalFilePath = (New-TemporaryFile).FullName
+#         (Get-Content $filePath -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $adScriptLocalFilePath
+#         $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
+#         $null = Remove-Item $adScriptLocalFilePath
+#     } else {
+#         # $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File $filePath -Force
+#     }
+#     $success = $success -and $?
+# }
+# if ($success) {
+#     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
+# }
 # Upload Windows package installers
-Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
-$success = $true
-# Chrome
-$filename = "GoogleChromeStandaloneEnterprise64.msi"
-Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
+# Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
+# $success = $true
+# # Chrome
+# $filename = "GoogleChromeStandaloneEnterprise64.msi"
+# Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
+# $success = $success -and $?
 # PuTTY
-$baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
-$httpContent = Invoke-WebRequest -Uri $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
-$version = ($filename -split "-")[2]
-Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
-$success = $success -and $?
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded Windows package installers"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
-}
+# $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+# $httpContent = Invoke-WebRequest -Uri $baseUri
+# $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
+# $version = ($filename -split "-")[2]
+# Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
+# $success = $success -and $?
+# if ($success) {
+#     Add-LogMessage -Level Success "Uploaded Windows package installers"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
+# }
 
 
 # Create SHM DC resource group if it does not exist

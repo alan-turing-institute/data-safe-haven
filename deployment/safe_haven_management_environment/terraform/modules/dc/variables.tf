@@ -33,7 +33,37 @@ variable "template_path" {
 variable "createadpdc_path" {
   type = string
 }
+
 variable "createadbdc_path" {
+  type = string
+}
+
+variable "config_files_path" {
+    type = string
+}
+
+variable "config_files" {
+  type = list(string)
+  default = [
+    "CreateUsers.ps1", 
+    "GPOs.zip",
+    "Run_ADSync.ps1",
+    "StartMenuLayoutModification.xml",
+    "UpdateAADSyncRule.ps1",
+    "user_details_template.csv"
+  ]
+}
+
+variable "config_file_disconnect_ad" {
+  type = string
+}
+
+variable "chrome_source_uri" {
+  type = string
+  default = "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
+}
+
+variable "putty_source_uri" {
   type = string
 }
 

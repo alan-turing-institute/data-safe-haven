@@ -102,12 +102,29 @@ $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Se
 (Get-Content $tfvars_file).replace('<<<dc_sa_name_artifacts>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
 $dcTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json"
 (Get-Content $tfvars_file).replace('<<<dc_template_path>>>', $dcTemplatePath) | Set-Content $tfvars_file
+$dcTemplateName = Split-Path -Path "$dcTemplatePath" -LeafBase
+(Get-Content $tfvars_file).replace('<<<dc_name>>>', $dcTemplateName) | Set-Content $tfvars_file
 $dcCreateadpdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip"
 (Get-Content $tfvars_file).replace('<<<dc_createadpdc_path>>>', $dcCreateadpdcPath) | Set-Content $tfvars_file
 $dcCreateadbdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip"
 (Get-Content $tfvars_file).replace('<<<dc_createadbdc_path>>>', $dcCreateadbdcPath) | Set-Content $tfvars_file
-$dcTemplateName = Split-Path -Path "$dcTemplatePath" -LeafBase
-(Get-Content $tfvars_file).replace('<<<dc_name>>>', $dcTemplateName) | Set-Content $tfvars_file
+
+$dcConfigFilesPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
+(Get-Content $tfvars_file).replace('<<<dc_config_files_path>>>', $dcConfigFilesPath) | Set-Content $tfvars_file
+
+$dcConfigPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
+$dcConfigTemplate = Join-Path $dcConfigPath "Disconnect_AD.template.ps1"
+$dcTempFile = Join-Path $dcConfigPath "temp" "Disconnect_AD.ps1"
+(Get-Content $dcConfigTemplate -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $dcTempFile
+(Get-Content $tfvars_file).replace('<<<dc_config_file_disconnect_ad>>>', $dcTempFile) | Set-Content $tfvars_file
+
+$dcPuttyBaseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+$dcPuttyHttpContent = Invoke-WebRequest -Uri $dcPuttyBaseUri
+$dcPuttyFilename = $dcPuttyHttpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
+$dcPuttyVersion = ($dcPuttyFilename -split "-")[2]
+$dcPuttySourceUri = "$($dcPuttyBaseUri.Replace('latest', $dcPuttyVersion))/$dcPuttyFilename"
+(Get-Content $tfvars_file).replace('<<<dc_putty_source_uri>>>', $dcPuttySourceUri) | Set-Content $tfvars_file
+
 $dcDomainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower() -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_administrator_user>>>', $dcDomainAdminUsername) | Set-Content $tfvars_file
 $dcDomainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
