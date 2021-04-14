@@ -1,22 +1,5 @@
 #cloud-config
 
-# Update package database on first boot (ie. run apt-get update)
-package_update: true
-
-# Upgrade installed packages on first boot (ie. run apt-get upgrade)
-package_upgrade: true
-
-
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
-
-  # Add repositories
-  sources:
-    docker.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-      keyid: 8D81803C0EBFCD88
-
 write_files:
   - path: "/src/guacamole/pg-ldap-sync.yaml"
     owner: root:root
@@ -41,7 +24,7 @@ write_files:
         #  method: :simple_tls
       # Search parameters for LDAP users which should be synchronized
       ldap_users:
-        base: <ldap-users-base-dn>
+        base: <ldap-user-base-dn>
         # LDAP filter defining which LDAP users should be synchronized
         filter: <ldap-user-filter>
         # this attribute is used as PG role name
@@ -80,39 +63,23 @@ write_files:
         create_options: NOLOGIN IN ROLE ldap_groups
         grant_options:
 
-  # https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration
-  # https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/v2.0/.well-known/openid-configuration
-  - path: "/src/guacamole/guacamole.properties"
-    content: |
-      openid-authorization-endpoint: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/authorize
-      openid-jwks-endpoint: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/discovery/v2.0/keys
-      openid-issuer: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/v2.0
-      openid-client-id: f0a12d2a-88ce-47f6-b3f9-df5dcf169d02
-      openid-redirect-uri: http://guacamole:8080/guacamole/
+# Set locale
+locale: en_GB.UTF-8
 
-  # openid-redirect-uri: https://MYSERVER:8443/guacamole/
-  # {"token_endpoint":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/token",
-  #  "token_endpoint_auth_methods_supported":["client_secret_post","private_key_jwt","client_secret_basic"],
-  #  "jwks_uri":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/discovery/v2.0/keys",
-  #  "response_modes_supported":["query","fragment","form_post"],
-  #  "subject_types_supported":["pairwise"],
-  #  "id_token_signing_alg_values_supported":["RS256"],
-  #  "response_types_supported":["code","id_token","code id_token","id_token token"],
-  #  "scopes_supported":["openid","profile","email","offline_access"],
-  #  "issuer":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/v2.0",
-  #  "request_uri_parameter_supported":false,
-  #  "userinfo_endpoint":"https://graph.microsoft.com/oidc/userinfo",
-  #  "authorization_endpoint":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/authorize",
-  #  "device_authorization_endpoint":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/devicecode",
-  #  "http_logout_supported":true,
-  #  "frontchannel_logout_supported":true,
-  #  "end_session_endpoint":"https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/logout",
-  #  "claims_supported":["sub","iss","cloud_instance_name","cloud_instance_host_name","cloud_graph_host_name","msgraph_host","aud","exp","iat","auth_time","acr","nonce","preferred_username","name","tid","ver","at_hash","c_hash","email"],
-  #  "tenant_region_scope":"EU",
-  #  "cloud_instance_name":"microsoftonline.com",
-  #  "cloud_graph_host_name":"graph.windows.net",
-  #  "msgraph_host":"graph.microsoft.com","rbac_url":"https://pas.windows.net"}
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    gitlab.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
 
+# Install necessary apt packages
+packages:
+  - docker-ce
+  - docker-compose
+package_update: true
+package_upgrade: true
 
   # taken from boschkundendienst/guacamole-docker-compose
   - path: "/src/guacamole/docker-compose.yml"
@@ -141,7 +108,7 @@ write_files:
 
         guacd:
           container_name: guacd_guacamole_compose
-          image: guacamole/guacd:1.2.0
+          image: guacamole/guacd:1.3.0
           networks:
             guacnetwork_compose:
           environment:
@@ -150,12 +117,12 @@ write_files:
 
         guacamole:
           container_name: guacamole_guacamole_compose
-          image: guacamole/guacamole:1.2.0
-          networks:
-            guacnetwork_compose:
+          image: guacamole/guacamole:1.3.0
           depends_on:
           - guacd
           - postgres
+          networks:
+            guacnetwork_compose:
           environment:
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: debug
@@ -170,11 +137,11 @@ write_files:
             # POSTGRES_DATABASE: guacamole
             # POSTGRES_USER: guacamole
             # POSTGRES_PASSWORD: <postgres-password>
-            OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/oauth2/v2.0/authorize
-            OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/discovery/v2.0/keys
-            OPENID_ISSUER: https://login.microsoftonline.com/a87e65e6-8b21-4286-861a-2f2acea304d9/v2.0
-            OPENID_CLIENT_ID: f0a12d2a-88ce-47f6-b3f9-df5dcf169d02
-            OPENID_REDIRECT_URI: https://40.69.145.45:8443
+            OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize
+            OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/discovery/v2.0/keys
+            OPENID_ISSUER: https://login.microsoftonline.com/{{tenant_id}}/v2.0
+            OPENID_CLIENT_ID: {{application_id}}
+            OPENID_REDIRECT_URI: https://{{guacamole_fqdn}}
           ports:
           - 8080/tcp
           restart: always
@@ -185,63 +152,78 @@ write_files:
           networks:
             guacnetwork_compose:
           volumes:
+          - /opt/certbot/conf:/etc/letsencrypt
+          - /opt/certbot/www:/var/www/certbot
           - /opt/nginx/ssl/self.cert:/etc/nginx/ssl/self.cert:ro
           - /opt/nginx/ssl/self-ssl.key:/etc/nginx/ssl/self-ssl.key:ro
           - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
           - /opt/nginx/guacamole.conf:/etc/nginx/conf.d/guacamole.conf:ro
           ports:
-          - 8443:443
+          - 80:80
+          - 443:443
           links:
           - guacamole
           # run nginx
-          command: /bin/bash -c "nginx -g 'daemon off;'"
+          command: /bin/bash -c "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
           restart: always
+
+        certbot:
+          container_name: certbot_guacamole_compose
+          image: certbot/certbot
+          volumes:
+          - /opt/certbot/conf:/etc/letsencrypt
+          - /opt/certbot/www:/var/www/certbot
+          entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
   - path: "/opt/nginx/nginx.conf"
     content: |
       ### AAA
       user  nginx;
       worker_processes  1;
-
       error_log  /var/log/nginx/error.log warn;
       pid        /var/run/nginx.pid;
-
-
       events {
           worker_connections  1024;
       }
-
-
       http {
           include       /etc/nginx/mime.types;
           default_type  application/octet-stream;
-
           log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                             '$status $body_bytes_sent "$http_referer" '
                             '"$http_user_agent" "$http_x_forwarded_for"';
-
           access_log  /var/log/nginx/access.log  main;
-
           sendfile        on;
-          #tcp_nopush     on;
-
           keepalive_timeout  65;
-
-          #gzip  on;
-
           include /etc/nginx/conf.d/*.conf;
       }
   - path: "/opt/nginx/guacamole.conf"
     content: |
       server {
+        listen 80;
+        server_name {{guacamole_fqdn}};
+        location / {
+          return 301 https://$host$request_uri;
+        }
+        location /.well-known/acme-challenge/ {
+          allow all;
+          root /var/www/certbot;
+        }
+      }
+      server {
         listen       443 ssl http2;
-        server_name  localhost;
-        ssl_certificate /etc/nginx/ssl/self.cert;
-        ssl_certificate_key /etc/nginx/ssl/self-ssl.key;
+        server_name  {{guacamole_fqdn}};
+        ssl_certificate /etc/letsencrypt/live/{{guacamole_fqdn}}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/{{guacamole_fqdn}}/privkey.pem;
+        # include /etc/letsencrypt/options-ssl-nginx.conf;
+        # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+        # ssl_certificate /etc/nginx/ssl/self.cert;
+        # ssl_certificate_key /etc/nginx/ssl/self-ssl.key;
         ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_prefer_server_ciphers on;
-        ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+        ssl_prefer_server_ciphers off;
+        ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
         ssl_ecdh_curve secp384r1;
-        ssl_session_cache shared:SSL:10m;
+        ssl_session_cache shared:le_nginx_SSL:10m;
+        ssl_session_timeout 1440m;
         ssl_session_tickets off;
         ssl_stapling off;
         ssl_stapling_verify off;
@@ -380,21 +362,37 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Create SSL certificates
-  # echo "You can use your own certificates by placing the private key in nginx/ssl/self-ssl.key and the cert in nginx/ssl/self.cert"
-  - echo "Creating SSL certificates"
-  - mkdir -p /opt/nginx/ssl
-  - openssl req -nodes -newkey rsa:2048 -new -x509 -keyout /opt/nginx/ssl/self-ssl.key -out /opt/nginx/ssl/self.cert -subj '/C=DE/ST=BY/L=Hintertupfing/O=Dorfwirt/OU=Theke/CN=www.example.com/emailAddress=docker@example.com'
-
   # Clean up installation - getting to this point takes approximately 30 mins
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
 
-   # Setup Guacamole
+  # Ensure that Docker is running
+  - echo "Current Docker status..."
+  - systemctl start docker
+  - systemctl enable docker
+  - systemctl status docker
+
+  - echo ">=== Creating dummy SSL certificates... ===<"
+  - mkdir -p /opt/certbot/conf/live/{{guacamole_fqdn}} /opt/certbot/www
+  # mkdir -p /opt/certbot/conf/live/$guacamole_fqdn /opt/certbot/www
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/{{guacamole_fqdn}}/privkey.pem -out /opt/certbot/conf/live/{{guacamole_fqdn}}/fullchain.pem -subj '/CN=localhost'
+  # openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/$guacamole_fqdn/privkey.pem -out /opt/certbot/conf/live/$guacamole_fqdn/fullchain.pem -subj '/CN=localhost'
+  - docker-compose up --force-recreate -d nginx # start nginx using the dummy certificates
+  - ls -alh /opt/certbot/conf/live/{{guacamole_fqdn}}
+
+  # Get initial Let's Encrypt certificates
+  - echo ">=== Replacing dummy SSL certificates..."
+  - docker-compose run --rm --entrypoint "rm -rf /etc/letsencrypt/live/{{guacamole_fqdn}} && rm -rf /etc/letsencrypt/archive/{{guacamole_fqdn}} && rm -rf /etc/letsencrypt/renewal/{{guacamole_fqdn}}.conf" certbot # remove the old certificates
+  # docker-compose run --rm --entrypoint "rm -Rf /etc/letsencrypt/live/$guacamole_fqdn && rm -Rf /etc/letsencrypt/archive/$guacamole_fqdn && rm -Rf /etc/letsencrypt/renewal/$guacamole_fqdn.conf" certbot # remove the old certificates
+  - docker-compose run --rm --entrypoint "certbot certonly --webroot -w /var/www/certbot --register-unsafely-without-email -d {{guacamole_fqdn}} --rsa-key-size 2048 --agree-tos --force-renewal" certbot # generate new certificates
+  # docker-compose run --rm --entrypoint "certbot certonly --staging --webroot -w /var/www/certbot --register-unsafely-without-email -d $guacamole_fqdn --rsa-key-size 2048 --agree-tos --force-renewal" certbot # generate new certificates
+  - ls -alh /opt/certbot/conf/live/{{guacamole_fqdn}}
+
+  # Setup Guacamole
   - echo ">=== Starting Guacamole... ===<"
-  # Generate a random application key for Duo. This must be >=40 characters so we generate 60 and strip any that are non-alphanumeric
-  - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /src/guacamole/docker-compose.yml
+  # # Generate a random application key for Duo. This must be >=40 characters so we generate 60 and strip any that are non-alphanumeric
+  # - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /src/guacamole/docker-compose.yml
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
   # Generate the necessary SQL config for the local PostgreSQL database
   - docker-compose -f /src/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /src/guacamole/db_init.sql
@@ -402,28 +400,60 @@ runcmd:
   - docker cp /src/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
 
-   # Download additional guacamole extensions
-  - mkdir -p /src/guacamole/extensions/
-  - GUACAMOLE_CONTAINER_ID=$(docker ps -q --filter "name=guacamole_guacamole_compose")
-  - GUACAMOLE_VERSION="1.2.0"
-  - |
-    for EXTENSION in "auth-openid"; do
-      cd /src/guacamole/extensions
-      FILENAME="guacamole-${EXTENSION}-${GUACAMOLE_VERSION}.tar.gz"
-      curl -SLO "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GUACAMOLE_VERSION}/binary/${FILENAME}"
-      docker cp /src/guacamole/extensions/${FILENAME} ${GUACAMOLE_CONTAINER_ID}:/root/.guacamole/extensions/${FILENAME}
-    done
+  #  # Download additional guacamole extensions
+  # - mkdir -p /src/guacamole/extensions/
+  # - GUACAMOLE_CONTAINER_ID=$(docker ps -q --filter "name=guacamole_guacamole_compose")
+  # - GUACAMOLE_VERSION="1.2.0"
+  # - |
+  #   for EXTENSION in "auth-openid"; do
+  #     cd /src/guacamole/extensions
+  #     FILENAME="guacamole-${EXTENSION}-${GUACAMOLE_VERSION}.tar.gz"
+  #     curl -SLO "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/${GUACAMOLE_VERSION}/binary/${FILENAME}"
+  #     docker cp /src/guacamole/extensions/${FILENAME} ${GUACAMOLE_CONTAINER_ID}:/root/.guacamole/extensions/${FILENAME}
+  #   done
 
-  # Configure the OpenID extension
-  - docker exec -i ${GUACAMOLE_CONTAINER_ID} sh -c "cat >> /root/.guacamole/guacamole.properties" < /src/guacamole/guacamole.properties
-  # https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration
+
+
+
+# echo "### Requesting Let's Encrypt certificate for $domains ..."
+# #Join $domains to -d args
+# domain_args=""
+# for domain in "${domains[@]}"; do
+#   domain_args="$domain_args -d $domain"
+# done
+
+# # Select appropriate email arg
+# case "$email" in
+#   "") email_arg="--register-unsafely-without-email" ;;
+#   *) email_arg="--email $email" ;;
+# esac
+
+# # Enable staging mode if needed
+# if [ $staging != "0" ]; then staging_arg="--staging"; fi
+
+# docker-compose run --rm --entrypoint "\
+#   certbot certonly --webroot -w /var/www/certbot \
+#     $staging_arg \
+#     $email_arg \
+#     $domain_args \
+#     --rsa-key-size $rsa_key_size \
+#     --agree-tos \
+#     --force-renewal" certbot
+# echo
+
+
+
+
+  # # Configure the OpenID extension
+  # - docker exec -i ${GUACAMOLE_CONTAINER_ID} sh -c "cat >> /root/.guacamole/guacamole.properties" < /src/guacamole/guacamole.properties
+  # # https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration
 
 
   # openid-authorization-endpoint:https://login.microsoftonline.com/TENANTID/oauth2/v2.0/authorize
   # openid-jwks-endpoint:https://login.microsoftonline.com/TENANTID/discovery/v2.0/keys
   # openid-issuer:https://login.microsoftonline.com/TENANTID
   # openid-client-id:CLIENTID
-  # openid-redirect-uri:https://MYSERVER:8443/guacamole/
+  # openid-redirect-uri:https://MYSERVER:443/guacamole/
 
 
 
