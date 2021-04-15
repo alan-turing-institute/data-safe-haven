@@ -558,7 +558,7 @@ On your **deployment machine**.
 
 ## Ingress
 
-It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary SAS token that can be securely sent to the data provider:
+It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
 + In the portal go to `Subscriptions`->`<Subscription ID>`->`RG_SHM_<SHM ID>_PERSISTENT_DATA`->`<SHM ID><SRE ID>data<storage suffix>` (where <storage suffix> is a random string)
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
