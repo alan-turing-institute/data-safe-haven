@@ -9,7 +9,8 @@ param(
 
 Import-Module Az -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
-Import-Module Microsoft.Graph.Identity.Application -ErrorAction Stop
+Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
@@ -39,7 +40,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sr
 # Deploy a NIC with a public IP address
 # -------------------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$($config.sre.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
-$publicIp = New-AzPublicIpAddress -Name "$($config.sre.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location -Force
+$publicIp = Deploy-PublicIpAddress -Name "$($config.sre.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -Location $config.sre.location
 $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $guacamoleSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 
 
@@ -73,7 +74,7 @@ Add-LogMessage -Level Info "Registering Guacamole with Azure Active Directory...
 Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration"
 $application = Get-MgApplication -Filter "DisplayName eq 'Guacamole Server'"
 if (-not $application) {
-    $application = New-MgApplication -DisplayName "Guacamole Server" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.guacamole.fqdn)") }
+    $application = New-MgApplication -DisplayName "Guacamole Server" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)") }
 }
 if (Get-MgApplication -Filter "DisplayName eq 'Guacamole Server'") {
     Add-LogMessage -Level Success "Guacamole is correctly registered in Azure Active Directory"
@@ -94,9 +95,9 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 # Construct the cloud-init yaml file
 # ----------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
-$cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
+$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init"
+$cloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
 # Insert resources into the cloud-init template
-$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
     $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
     $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
@@ -105,7 +106,6 @@ foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))
 # Expand mustache template variables
 $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
                                     Replace("{{initial_compute_vm_ip}}", (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160)).
-                                    Replace("{{guacamole_fqdn}}", $config.sre.guacamole.fqdn).
                                     Replace("{{ldap-group-base-dn}}", $config.shm.domain.securityOuPath).
                                     Replace("{{ldap-group-filter}}", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
                                     Replace("{{ldap-group-researchers}}", $config.sre.domain.securityGroups.researchUsers.name).
@@ -117,11 +117,13 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
                                     Replace("{{ldap-search-user-password}}", $ldapSearchPassword).
                                     Replace("{{ldap-user-base-dn}}", $config.shm.domain.ous.researchUsers.path).
                                     Replace("{{ldap-user-filter}}", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+                                    Replace("{{ntp-server}}", $config.shm.time.ntp.poolFqdn).
                                     Replace("{{postgres-password}}", $guacamoleDbPassword).
                                     Replace("{{public_ip_address}}", $publicIp.IpAddress).
-                                    Replace("{{shm-dc-hostname}}", $config.shm.dc.hostname).
+                                    Replace("{{shm_dc_ip_address}}", $config.shm.dc.ip).
+                                    Replace("{{sre_fqdn}}", $config.sre.domain.fqdn).
                                     Replace("{{tenant_id}}", $tenantId).
-                                    Replace("{{timezone}}", $config.shm.time.timezone.linux)
+                                    Replace("{{timezone}}", $config.sre.time.timezone.linux)
 
 
 # Deploy the VM

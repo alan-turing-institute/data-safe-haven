@@ -558,7 +558,11 @@ function Deploy-PublicIpAddress {
     $publicIpAddress = Get-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating public IP address '$Name'"
-        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku
+        $ipAddressParams = @{}
+        if ($Sku -eq "Standard") {
+            $ipAddressParams["Zone"] = @(1, 2, 3)
+        }
+        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku @ipAddressParams
         if ($?) {
             Add-LogMessage -Level Success "Created public IP address '$Name'"
         } else {

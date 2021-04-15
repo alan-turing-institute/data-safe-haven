@@ -28,7 +28,7 @@ INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, param
                 ('disable-paste', 'true'),
                 ('disable-copy', 'true'),
                 ('clipboard-encoding', 'UTF-8'),
-                ('timezone', '{{timezone}'),
+                ('timezone', '{{timezone}}'),
                 ('server-layout', 'en-gb-qwerty')
         ) connection_settings (parameter_name, parameter_value)
         CROSS JOIN guacamole_connection

@@ -1,273 +1,63 @@
 #cloud-config
 
 write_files:
-  - path: "/opt/guacamole/pg-ldap-sync.yaml"
-    owner: root:root
+  - path: "/opt/pg-ldap-sync/configuration.yaml"
     permissions: "0700"
     content: |
-      # LDAP-synchronized groups/users are identified through their
-      # membership of ldap_user and ldap_group. These two roles must
-      # therefore be manually defined before running pg_ldap_sync.
+      {{guacamole_pg_ldap_sync.yaml}}
 
-      # Connection parameters to LDAP server
-      # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
-      # TODO: get SSL working on port 636
-      ldap_connection:
-        host: {{shm-dc-hostname}}
-        #port: 636
-        port: 389
-        auth:
-          method: :simple
-          username: {{ldap-search-user-dn}}
-          password: {{ldap-search-user-password}}
-        #encryption:
-        #  method: :simple_tls
+  - path: "/opt/guacamole/docker-compose.yml"
+    permissions: "0400"
+    content: |
+      {{guacamole_docker_compose.yml}}
 
-      # Search parameters for LDAP users which should be synchronized
-      ldap_users:
-        base: {{ldap-user-base-dn}}
-        # LDAP filter defining which LDAP users should be synchronized
-        filter: {{ldap-user-filter}}
-        # this attribute is used as PG role name. It is 'sAMAccountName@domain'
-        name_attribute: mail
-        # lowercase name for use as PG role name
-        lowercase_name: false
+  - path: "/opt/nginx/nginx.conf"
+    permissions: "0400"
+    content: |
+      {{guacamole_nginx_nginx.conf}}
 
-      # Search parameters for LDAP groups which should be synchronized
-      ldap_groups:
-        base: {{ldap-groups-base-dn}}
-        # LDAP filter defining which LDAP groups should be synchronized
-        filter: {{ldap-group-filter}}
-        # this attribute is used as PG role name
-        name_attribute: cn
-        # lowercase name for use as PG role name
-        lowercase_name: false
-        # this attribute must reference to all member DN's of the given group
-        member_attribute: member
+  - path: "/opt/nginx/guacamole.conf"
+    permissions: "0400"
+    content: |
+      {{guacamole_nginx_guacamole.conf}}
 
-      # Connection parameters to PostgreSQL server
-      # see also: http://rubydoc.info/gems/pg/PG/Connection#initialize-instance_method
-      pg_connection:
-        host: localhost
-        dbname: guacamole
-        user: guacamole
-        password: {{postgres-password}}
+  - path: "/opt/postgresql/db_update.sql"
+    permissions: "0444"
+    content: |
+      {{guacamole_db_update.sql}}
 
-      pg_users:
-        # Filter for identifying LDAP generated users in the database.
-        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
-        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_users')
-        # Options for CREATE RULE statements
-        create_options: LOGIN IN ROLE ldap_users
+  - path: "/opt/postgresql/synchronise_database.sh"
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      pg_ldap_sync -c /opt/pg-ldap-sync/configuration.yaml -vvv
+      docker cp /opt/postgresql/db_update.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_update.sql
+      docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_update.sql
 
-      pg_groups:
-        # Filter for identifying LDAP generated groups in the database.
-        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
-        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_groups')
-        # Options for CREATE RULE statements
-        create_options: NOLOGIN IN ROLE ldap_groups
-        grant_options:
+  - path: "/opt/postgresql/data/connections.csv"
+    permissions: "0444"
+    content: |
+      DSVM Main;{{initial_compute_vm_ip}}
 
-# Set locale
+# Set locale and timezone
 locale: en_GB.UTF-8
+timezone: {{timezone}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - {{ntp-server}}
 
 # Configure apt repositories
 apt:
   preserve_sources_list: true
   sources:
-    gitlab.list:
+    docker.list:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
       keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
-packages:
-  - docker-ce
-  - docker-compose
-package_update: true
-package_upgrade: true
-
-  # Note that the environment variables are not all documented, but can be found in https://github.com/apache/guacamole-client/blob/1.3.0/guacamole-docker/bin/start.sh
-  #
-  # We are not currently using the LDAP settings, but they are left here in case we move MFA into a separate app and switch back to LDAP authentication
-  # https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html has a good write-up of how to control access using group membership
-  #
-  # Originally based on boschkundendienst/guacamole-docker-compose
-  - path: "/opt/guacamole/docker-compose.yml"
-    content: |
-      version: '3.4'
-      networks:
-        guacnetwork_compose:
-          driver: bridge
-      services:
-        postgres:
-          container_name: postgres_guacamole_compose
-          image: postgres:12.2
-          networks:
-            guacnetwork_compose:
-          environment:
-            PGDATA: /var/lib/postgresql/data/guacamole
-            POSTGRES_DB: guacamole
-            POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: {{postgres-password}}
-          ports:
-          - 5432:5432
-          volumes:
-          - /opt/guacamole/:/docker-entrypoint-initdb.d:ro
-          - /data:/var/lib/postgresql/data:rw
-          restart: always
-
-        guacd:
-          container_name: guacd_guacamole_compose
-          image: guacamole/guacd:1.3.0
-          networks:
-            guacnetwork_compose:
-          environment:
-            GUACD_LOG_LEVEL: debug
-          restart: always
-
-        guacamole:
-          container_name: guacamole_guacamole_compose
-          image: guacamole/guacamole:1.3.0
-          depends_on:
-          - guacd
-          - postgres
-          networks:
-            guacnetwork_compose:
-          environment:
-            GUACD_HOSTNAME: guacd
-            LOGBACK_LEVEL: debug
-            #LDAP_HOSTNAME: {{ldap-hostname}}
-            #LDAP_PORT: {{ldap-port}}
-            #LDAP_USER_BASE_DN: {{ldap-user-base-dn}}
-            #LDAP_USERNAME_ATTRIBUTE: sAMAccountName
-            #LDAP_GROUP_BASE_DN: {{ldap-group-base-dn}}
-            #LDAP_SEARCH_BIND_DN: {{ldap-search-user-dn}}
-            #LDAP_SEARCH_BIND_PASSWORD: {{ldap-search-user-password}}
-            POSTGRES_HOSTNAME: postgres
-            POSTGRES_DATABASE: guacamole
-            POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: {{postgres-password}}
-            OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize
-            OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/discovery/v2.0/keys
-            OPENID_ISSUER: https://login.microsoftonline.com/{{tenant_id}}/v2.0
-            OPENID_USERNAME_CLAIM_TYPE: email
-            OPENID_CLIENT_ID: {{application_id}}
-            OPENID_REDIRECT_URI: https://{{guacamole_fqdn}}
-          ports:
-          - 8080/tcp
-          restart: always
-
-        nginx:
-          container_name: nginx_guacamole_compose
-          image: nginx
-          networks:
-            guacnetwork_compose:
-          volumes:
-          - /opt/certbot/conf:/etc/letsencrypt
-          - /opt/certbot/www:/var/www/certbot
-          - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-          - /opt/nginx/guacamole.conf:/etc/nginx/conf.d/guacamole.conf:ro
-          ports:
-          - 80:80
-          - 443:443
-          links:
-          - guacamole
-          # run nginx
-          command: /bin/bash -c "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
-          restart: always
-
-        certbot:
-          container_name: certbot_guacamole_compose
-          image: certbot/certbot
-          volumes:
-          - /opt/certbot/conf:/etc/letsencrypt
-          - /opt/certbot/www:/var/www/certbot
-          entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
-  - path: "/opt/nginx/nginx.conf"
-    content: |
-      ### AAA
-      user  nginx;
-      worker_processes  1;
-      error_log  /var/log/nginx/error.log warn;
-      pid        /var/run/nginx.pid;
-      events {
-          worker_connections  1024;
-      }
-      http {
-          include       /etc/nginx/mime.types;
-          default_type  application/octet-stream;
-          log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                            '$status $body_bytes_sent "$http_referer" '
-                            '"$http_user_agent" "$http_x_forwarded_for"';
-          access_log  /var/log/nginx/access.log  main;
-          sendfile        on;
-          keepalive_timeout  65;
-          include /etc/nginx/conf.d/*.conf;
-      }
-
-  - path: "/opt/nginx/guacamole.conf"
-    content: |
-      server {
-        listen 80;
-        server_name {{guacamole_fqdn}};
-        location / {
-          return 301 https://$host$request_uri;
-        }
-        location /.well-known/acme-challenge/ {
-          allow all;
-          root /var/www/certbot;
-        }
-      }
-      server {
-        listen       443 ssl http2;
-        server_name  {{guacamole_fqdn}};
-        ssl_certificate /etc/letsencrypt/live/{{guacamole_fqdn}}/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/{{guacamole_fqdn}}/privkey.pem;
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_prefer_server_ciphers off;
-        ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
-        ssl_ecdh_curve secp384r1;
-        ssl_session_cache shared:le_nginx_SSL:10m;
-        ssl_session_timeout 1440m;
-        ssl_session_tickets off;
-        ssl_stapling off;
-        ssl_stapling_verify off;
-        location / {
-          proxy_pass http://guacamole:8080/guacamole/;
-          proxy_buffering off;
-          proxy_http_version 1.1;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection $http_connection;
-          proxy_cookie_path /guacamole/ /;
-          access_log off;
-          client_max_body_size 4096m;
-        }
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   /usr/share/nginx/html;
-        }
-      }
-
-  - path: "/opt/guacamole/db_update.sql"
-    permissions: "0444"
-    content: |
-      {{guacamole_update.sql}}
-
-  - path: "/opt/guacamole/update_settings.sh"
-    permissions: "0500"
-    content: |
-      #! /bin/bash
-      pg_ldap_sync -c /opt/guacamole/pg-ldap-sync.yaml -vvv
-      docker cp /opt/guacamole/db_update.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_update.sql
-      docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_update.sql
-
-  - path: "/opt/guacamole/connections.csv"
-    permissions: "0444"
-    content: |
-      DSVM Main;{{initial_compute_vm_ip}}
-
 packages:
   - docker-ce
   - docker-compose
@@ -276,6 +66,8 @@ packages:
   - make
   - ruby
   - ruby-dev
+package_update: true
+package_upgrade: true
 
 runcmd:
   # Suppress apt prompts and warning messages
@@ -287,9 +79,6 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
 
-  # Move connections data to final location
-  - mv /opt/guacamole/connections.csv /data/connections.csv
-
   # Ensure that Docker is running
   - echo "Current Docker status..."
   - systemctl start docker
@@ -297,34 +86,37 @@ runcmd:
   - systemctl status docker
 
   - echo ">=== Creating dummy SSL certificates... ===<"
-  - mkdir -p /opt/certbot/conf/live/{{guacamole_fqdn}} /opt/certbot/www
-  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/{{guacamole_fqdn}}/privkey.pem -out /opt/certbot/conf/live/{{guacamole_fqdn}}/fullchain.pem -subj '/CN=localhost'
-  - docker-compose up --force-recreate -d nginx # start nginx using the dummy certificates
-  - ls -alh /opt/certbot/conf/live/{{guacamole_fqdn}}
+  - mkdir -p /opt/certbot/conf/live/{{sre_fqdn}} /opt/certbot/www
+  - openssl rand -out /root/.rnd -hex 256
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/certbot/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
+  - docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d nginx # start nginx using the dummy certificates
+  - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
 
   # Get initial Let's Encrypt certificates
   - echo ">=== Replacing dummy SSL certificates..."
-  - docker-compose run --rm --entrypoint "rm -rf /etc/letsencrypt/live/{{guacamole_fqdn}} && rm -rf /etc/letsencrypt/archive/{{guacamole_fqdn}} && rm -rf /etc/letsencrypt/renewal/{{guacamole_fqdn}}.conf" certbot # remove the old certificates
-  - docker-compose run --rm --entrypoint "certbot certonly --webroot -w /var/www/certbot --register-unsafely-without-email -d {{guacamole_fqdn}} --rsa-key-size 2048 --agree-tos --force-renewal" certbot # generate new certificates
-  - ls -alh /opt/certbot/conf/live/{{guacamole_fqdn}}
+  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "rm -rf /etc/letsencrypt/live/{{sre_fqdn}} && rm -rf /etc/letsencrypt/archive/{{sre_fqdn}} && rm -rf /etc/letsencrypt/renewal/{{sre_fqdn}}.conf" certbot # remove the old certificates
+  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "certbot certonly --webroot -w /var/www/certbot --register-unsafely-without-email --rsa-key-size 2048 --agree-tos --force-renewal -d {{sre_fqdn}} -d {{sre_fqdn}}" certbot # generate new certificates
+  - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
 
   # Setup Guacamole
-  - echo ">=== Starting Guacamole... ===<"
+  - echo ">=== Starting Docker compose services... ===<"
+  - docker-compose -f /opt/guacamole/docker-compose.yml down
   - docker-compose -f /opt/guacamole/docker-compose.yml up -d
+  - sleep 30
   # Generate the necessary SQL config for the local PostgreSQL database and run it
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/guacamole/db_init.sql
-  - docker cp /opt/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/db_init.sql
+  - echo "CREATE ROLE ldap_users;" >> /opt/postgresql/db_init.sql
+  - echo "CREATE ROLE ldap_groups;" >> /opt/postgresql/db_init.sql
+  - docker cp /opt/postgresql/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
   - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
 
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_users;"
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_groups;"
   - gem install pg-ldap-sync
-  # Run the initial update and schedule a sync every 10 minutes
-  - /opt/guacamole/update_settings.sh
-  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * root /opt/guacamole/update_settings.sh" >> /etc/crontab
+  # Run the initial update and schedule a sync every 5 minutes
+  - /opt/postgresql/synchronise_database.sh
+  - echo ">=== Scheduling database sync every 5 minutes... ===<"
+  - echo "*/5 * * * * root /opt/postgresql/synchronise_database.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
 
