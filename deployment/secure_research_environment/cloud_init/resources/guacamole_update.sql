@@ -6,10 +6,16 @@ ALTER TABLE guacamole_connection ADD CONSTRAINT connection_name_constraint UNIQU
 CREATE TABLE connections (connection_name VARCHAR(128), ip_address VARCHAR(32));
 COPY connections FROM '/var/lib/postgresql/data/connections.csv' (FORMAT CSV, DELIMITER(';'));
 
-/* Add initial connections */
+/* Add initial connections via RDP and ssh*/
 INSERT INTO guacamole_connection (connection_name, protocol)
-SELECT connection_name, 'rdp'
-    FROM connections
+SELECT CONCAT(connection_name, ' ', connection_type), protocol
+FROM
+    (
+        VALUES
+        ('(Desktop)', 'rdp'),
+        ('(SSH)', 'ssh')
+    ) connection_settings (connection_type, protocol)
+    CROSS JOIN connections
 ON CONFLICT DO NOTHING;
 
 /* Add connection details */
@@ -19,18 +25,21 @@ INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, param
         (
             VALUES
                 ('hostname', null),
-                ('username', '${GUAC_USERNAME}'),
-                ('password', '${GUAC_PASSWORD}')
+                ('disable-paste', 'true'),
+                ('disable-copy', 'true'),
+                ('clipboard-encoding', 'UTF-8'),
+                ('timezone', '{{timezone}'),
+                ('server-layout', 'en-gb-qwerty')
         ) connection_settings (parameter_name, parameter_value)
         CROSS JOIN guacamole_connection
-        JOIN connections ON guacamole_connection.connection_name = connections.connection_name
+        JOIN connections ON guacamole_connection.connection_name LIKE CONCAT(connections.connection_name, '%')
 ON CONFLICT DO NOTHING;
 
 /* Remove obsolete connections (NB. this will cascade delete guacamole_connection_parameter entries) */
 DELETE FROM guacamole_connection
 WHERE NOT EXISTS (
    SELECT FROM connections
-   WHERE connections.connection_name = guacamole_connection.connection_name
+   WHERE guacamole_connection.connection_name LIKE CONCAT(connections.connection_name, '%')
 );
 
 /* Drop the temporary connections table */
