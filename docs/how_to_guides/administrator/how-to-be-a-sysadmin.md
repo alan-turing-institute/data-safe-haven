@@ -18,6 +18,7 @@
   + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
   + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
   + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
++ Ingress and Egress
 + [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
   + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
   + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
@@ -554,6 +555,30 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
+
+## Ingress
+
+It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary SAS token that can be securely sent to the data provider:
+
++ In the portal go to `Subscriptions`->`<Subscription ID>`->`RG_SHM_<SHM ID>_PERSISTENT_DATA`->`<SHM ID><SRE ID>data<storage suffix>` (where <storage suffix> is a random string)
++ From the `Overview` tab, click the link to `Containers` (in the middle of the page)
++ Click `ingress`
++ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, the hit the save icon in the top left
++ Click `Shared access signature` under `Settings` and do the following:
+    - Copy the data providers IP address into the `Allowed IP addresses` box <- **TODO:** maybe not needed?
+    - Under `Permissions`, check these boxes:
+        - `Write`
+        - `Create`
+        - `Add`
+        - `List`
+    - Set a 24 hour time window in the `Start and expiry date/time`
+    - Leave everything else as default click `Generate SAS and connection string`
+    - Copy the `Blob SAS URL`
++ Send the `Blob SAS URL` to the data provider via secure email
+
+## Egress
+
+**TODO**
 
 ## :end: Remove a deployed Safe Haven
 
