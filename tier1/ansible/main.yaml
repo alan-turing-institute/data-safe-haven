@@ -414,11 +414,20 @@
             line: 'TerminalEmulator=xfce4-terminal'
 
         - name: Disable light-locker
-          # light-locker starts with an error when lightdm has not run. As we connect with xrdp this is the case.
+          # light-locker starts with an error when lightdm has not run. As we
+          # connect with xrdp this is the case.
           become: yes
           ansible.builtin.lineinfile:
             path: /etc/xdg/autostart/light-locker.desktop
             line: 'Hidden=true'
+
+        - name: Allow all users to manage colour in polkit
+          # By default remote sessions are disallowed (by polkit) to manage
+          # colour devices. This causes an error message when logging in.
+          become: yes
+          ansible.builtin.copy:
+            src: 99-allow-colord.pkla
+            dest: /etc/polkit-1/localauthority/50-local.d/99-allow-colord.pkla
 
     - name: Install apt packages
       become: yes
