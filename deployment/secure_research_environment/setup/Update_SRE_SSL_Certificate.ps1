@@ -8,9 +8,7 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [switch]$dryRun,
     [Parameter(Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
-    [switch]$forceInstall,
-    [Parameter(Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
-    [string]$remoteDirectory = "/Certificates"
+    [switch]$forceInstall
 )
 
 # Import modules
@@ -245,21 +243,7 @@ if ($doInstall) {
     $secretURL = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $certificateName).Id
 
     if (1 -eq [int]$config.sre.tier) {
-
-        # Add signed Key Vault certificate to the compute VM
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Adding SSL certificate to compute VM"
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
-        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
-        $null = Update-AzVM -ResourceGroupName $config.sre.dsvm.rg -VM $targetVM
-        if ($?) {
-            Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
-        }
-
-        # Link the certificate and private key to /opt/ssl
-        # ------------------------------------------------
         $script = "
             sudo mkdir -p /opt/ssl
             sudo chmod 0700 /opt/ssl
@@ -270,33 +254,31 @@ if ($doInstall) {
             sudo chmod 0600 /opt/ssl/*.*
             ls -alh /opt/ssl/
         "
-        $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
-
     } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
-
-        # Add signed Key Vault certificate to the gateway VM
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
-        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-        $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $targetVM
-        if ($?) {
-            Add-LogMessage -Level Success "Adding certificate succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding certificate failed!"
-        }
-
-        # Configure RDS Gateway VM to use signed certificate
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-        $params = @{
-            rdsFqdn         = $rdsFqdn
-            certThumbPrint  = $kvCertificate.Thumbprint
-            remoteDirectory = $remoteDirectory
-        }
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.guacamole.rg -Name $config.sre.guacamole.vmName | Remove-AzVMSecret
+        $script = "
+            sudo rm -rf /opt/ssl/conf/live/$($config.sre.domain.fqdn)/*
+            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/conf/live/$($config.sre.domain.fqdn)/fullchain.pem
+            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/conf/live/$($config.sre.domain.fqdn)/privkey.pem
+            ls -alh /opt/ssl/conf/live/$($config.sre.domain.fqdn)/
+            docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d
+        "
     }
+
+    # Add signed Key Vault certificate to the target VM
+    # -------------------------------------------------
+    Add-LogMessage -Level Info "Adding SSL certificate to $($targetVM.Name)"
+    $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
+    $null = Update-AzVM -ResourceGroupName $targetVM.ResourceGroupName -VM $targetVM
+    if ($?) {
+        Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
+    }
+
+    # Link the certificate and private key to /opt/ssl
+    # ------------------------------------------------
+    $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $targetVM.ResourceGroupName
 }
 
 

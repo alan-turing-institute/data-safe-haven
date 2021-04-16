@@ -96,29 +96,17 @@ runcmd:
   - docker --version
   - docker-compose --version
 
-  # Generate some self-signed certificates that we will use to bootstrap real certificates
-  - echo ">=== Creating dummy SSL certificates... ===<"
-  - mkdir -p /opt/certbot/conf/live/{{sre_fqdn}} /opt/certbot/www
-  - openssl rand -out ./.rnd -hex 256
-  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/certbot/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
-  - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
-  # Start nginx using the dummy certificates
-  - docker-compose -f /opt/guacamole/docker-compose.yml up -d nginx
-
-  # Get initial Let's Encrypt certificates
-  - echo ">=== Replacing dummy SSL certificates..."
-  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "rm -rf /etc/letsencrypt/live/{{sre_fqdn}} && rm -rf /etc/letsencrypt/archive/{{sre_fqdn}} && rm -rf /etc/letsencrypt/renewal/{{sre_fqdn}}.conf" certbot # remove the old certificates
-  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "certbot certonly --staging --webroot -w /var/www/certbot --register-unsafely-without-email --rsa-key-size 2048 --agree-tos --force-renewal -d {{sre_fqdn}}" certbot # generate new certificates
-  - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
-  # Restart nginx using the new certificates
-  - docker-compose -f /opt/guacamole/docker-compose.yml down
-  - docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d nginx
+  # Generate some self-signed certificates that will later be replaced by real ones
+  - echo ">=== Creating self-signed SSL certificates... ===<"
+  - mkdir -p /opt/ssl/conf/live/{{sre_fqdn}}
+  - openssl rand -out ${HOME}/.rnd -hex 256
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
+  - ls -alh /opt/ssl/conf/live/{{sre_fqdn}}
 
   # Setup Guacamole
   - echo ">=== Starting Docker compose services... ===<"
-  - docker-compose -f /opt/guacamole/docker-compose.yml down
   - docker-compose -f /opt/guacamole/docker-compose.yml up -d
-  - sleep 30
+
   # Generate the necessary SQL config for the local PostgreSQL database and run it
   - echo ">=== Configuring local PostgreSQL database... ===<"
   - docker-compose -f /opt/guacamole/docker-compose.yml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/scripts/db_init.sql
