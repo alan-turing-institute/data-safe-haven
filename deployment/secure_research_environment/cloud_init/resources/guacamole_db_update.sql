@@ -131,3 +131,6 @@ INSERT INTO guacamole_connection_permission (entity_id, connection_id, permissio
         CROSS JOIN guacamole_connection
         JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name
 ON CONFLICT DO NOTHING;
+
+/* Remove the default guacadmin user */
+DELETE FROM guacamole_entity WHERE guacamole_entity.name = 'guacadmin';
