@@ -20,6 +20,7 @@ services:
             - /etc/localtime:/etc/localtime:ro
             - /etc/timezone:/etc/timezone:ro
             - /opt/postgresql/data:/var/lib/postgresql/data:rw
+            - /opt/postgresql/scripts:/scripts:ro
         environment:
             PGDATA: /var/lib/postgresql/data/guacamole
             POSTGRES_DB: guacamole
