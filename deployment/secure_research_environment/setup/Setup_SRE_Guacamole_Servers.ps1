@@ -47,10 +47,11 @@ $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0]
 # Add DNS records for Guacamole server
 # ------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
+$dnsTtl = 30 # TTL in seconds
 # Set the A record for the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting 'A' record for $($config.sre.domain.fqdn) in SRE $($config.sre.id) to $($publicIp.IpAddress)"
 Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl 30 -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $publicIp.IpAddress)
+$null = New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtl -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $publicIp.IpAddress)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for SRE $($config.sre.id)"
 } else {
@@ -59,7 +60,7 @@ if ($?) {
 # Set a CNAME record which redirects the Guacamole FQDN to the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting CNAME record for $($config.sre.guacamole.vmName) to point to the 'A' record for $($config.sre.domain.fqdn)"
 Remove-AzDnsRecordSet -Name "guacamole" -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "guacamole" -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl 30 -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+$null = New-AzDnsRecordSet -Name "guacamole" -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtl -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for $($config.sre.guacamole.vmName)"
 } else {

@@ -32,7 +32,7 @@ write_files:
       #! /bin/bash
       pg_ldap_sync -c /opt/pg-ldap-sync/configuration.yaml -vvv
       docker cp /opt/postgresql/db_update.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_update.sql
-      docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_update.sql
+      docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /db_update.sql
 
   - path: "/opt/postgresql/data/connections.csv"
     permissions: "0444"
@@ -60,8 +60,8 @@ apt:
 # Install necessary apt packages
 packages:
   - docker-ce
-  - docker-compose
   - gcc
+  - jq
   - libpq-dev
   - make
   - ruby
@@ -74,29 +74,46 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Clean up installation - getting to this point takes approximately 30 mins
+  # Install docker-compose
+  - echo ">=== Installing docker-compose... ===<"
+  - DOCKER_COMPOSE_VERSION=$(curl --silent "https://api.github.com/repos/docker/compose/releases/latest" | jq -r .tag_name)
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+  - chmod ugo+x /usr/local/bin/docker-compose
+
+  # Install pg-ldap-sync
+  - echo ">=== Installing pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
+
+  # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
 
   # Ensure that Docker is running
-  - echo "Current Docker status..."
+  - echo ">=== Current Docker status... ===<"
   - systemctl start docker
   - systemctl enable docker
   - systemctl status docker
+  - docker --version
+  - docker-compose --version
 
+  # Generate some self-signed certificates that we will use to bootstrap real certificates
   - echo ">=== Creating dummy SSL certificates... ===<"
   - mkdir -p /opt/certbot/conf/live/{{sre_fqdn}} /opt/certbot/www
-  - openssl rand -out /root/.rnd -hex 256
+  - openssl rand -out ./.rnd -hex 256
   - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/certbot/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/certbot/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
-  - docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d nginx # start nginx using the dummy certificates
   - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
+  # Start nginx using the dummy certificates
+  - docker-compose -f /opt/guacamole/docker-compose.yml up -d nginx
 
   # Get initial Let's Encrypt certificates
   - echo ">=== Replacing dummy SSL certificates..."
   - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "rm -rf /etc/letsencrypt/live/{{sre_fqdn}} && rm -rf /etc/letsencrypt/archive/{{sre_fqdn}} && rm -rf /etc/letsencrypt/renewal/{{sre_fqdn}}.conf" certbot # remove the old certificates
-  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "certbot certonly --webroot -w /var/www/certbot --register-unsafely-without-email --rsa-key-size 2048 --agree-tos --force-renewal -d {{sre_fqdn}} -d {{sre_fqdn}}" certbot # generate new certificates
+  - docker-compose -f /opt/guacamole/docker-compose.yml run --rm --entrypoint "certbot certonly --webroot -w /var/www/certbot --register-unsafely-without-email --rsa-key-size 2048 --agree-tos --force-renewal -d {{sre_fqdn}}" certbot # generate new certificates
   - ls -alh /opt/certbot/conf/live/{{sre_fqdn}}
+  # Restart nginx using the new certificates
+  - docker-compose -f /opt/guacamole/docker-compose.yml down
+  - docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d nginx
 
   # Setup Guacamole
   - echo ">=== Starting Docker compose services... ===<"
@@ -104,15 +121,16 @@ runcmd:
   - docker-compose -f /opt/guacamole/docker-compose.yml up -d
   - sleep 30
   # Generate the necessary SQL config for the local PostgreSQL database and run it
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/db_init.sql
+  - echo ">=== Configuring local PostgreSQL database... ===<"
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/db_init.sql
   - echo "CREATE ROLE ldap_users;" >> /opt/postgresql/db_init.sql
   - echo "CREATE ROLE ldap_groups;" >> /opt/postgresql/db_init.sql
+  - ls -alh /opt/postgresql/db_init.sql
   - docker cp /opt/postgresql/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /db_init.sql
 
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
-  - gem install pg-ldap-sync
   # Run the initial update and schedule a sync every 5 minutes
   - /opt/postgresql/synchronise_database.sh
   - echo ">=== Scheduling database sync every 5 minutes... ===<"
