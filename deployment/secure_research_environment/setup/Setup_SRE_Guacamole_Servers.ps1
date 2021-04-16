@@ -57,14 +57,14 @@ if ($?) {
 } else {
     Add-LogMessage -Level Info "Failed to set 'A' record for SRE $($config.sre.id)!"
 }
-# Set a CNAME record which redirects the Guacamole FQDN to the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CNAME record for $($config.sre.guacamole.vmName) to point to the 'A' record for $($config.sre.domain.fqdn)"
+# Set the CAA record for the SRE FQDN
+Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
 Remove-AzDnsRecordSet -Name "guacamole" -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "guacamole" -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtl -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+$null = New-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtl -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
 if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CNAME' record for $($config.sre.guacamole.vmName)"
+    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
 } else {
-    Add-LogMessage -Level Info "Failed to set 'CNAME' record for $($config.sre.guacamole.vmName)!"
+    Add-LogMessage -Level Info "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -137,7 +137,7 @@ $params = @{
     CloudInitYaml = $cloudInitYaml
     ImageSku = "18.04-LTS"
     Location = $config.sre.location
-    Name = $($config.sre.guacamole.vmName)
+    Name = $config.sre.guacamole.vmName
     NicId = $vmNic.Id
     OsDiskSizeGb = $config.sre.guacamole.disks.os.sizeGb
     OsDiskType = $config.sre.guacamole.disks.os.type

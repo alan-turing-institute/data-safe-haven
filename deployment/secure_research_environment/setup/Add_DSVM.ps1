@@ -302,6 +302,11 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
 
 
+# Update Guacamole dashboard to include this new VM
+# -------------------------------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_Guacamole_Dashboard.ps1')" -shmId $shmId -sreId $sreId }
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
