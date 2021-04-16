@@ -11,14 +11,17 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:cop: 3. Prepare SHM environment](#cop-3-prepare-shm-environment)
 + [:station: 4. Deploy networking components](#station-4-deploy-networking-components)
 + [:satellite: 5. Deploy remote desktop](#satellite-5-deploy-remote-desktop)
-+ [:snowflake: 6. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
-+ [:floppy_disk: 7. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
-+ [:baseball: 8. Deploy databases](#baseball-8-deploy-databases)
-+ [:computer: 9. Deploy data science VMs](#computer-9-deploy-data-science-vms)
-+ [:lock: 10. Configure network lockdown](#lock-10-configure-network-lockdown)
-+ [:fire_engine: 11. Configure firewall](#fire_engine-11-configure-firewall)
-+ [:chart_with_upwards_trend: 12. Configure logging](#chart_with_upwards_trend-12-configure-logging)
-+ [:fire: 13. Run smoke tests on DSVM](#fire-13-run-smoke-tests-on-dsvm)
+  + [:pear: 5.1 Deploy Guacamole remote desktop](#pear-51-deploy-guacamole-remote-desktop)
+  + [:bento: 5.2 Deploy Microsoft Remote Desktop](#bento-52-deploy-microsoft-remote-desktop)
++ [:microscope: 6. Test remote desktop](#microscope-6-test-remote-desktop)
++ [:snowflake: 7. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
++ [:floppy_disk: 8. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
++ [:baseball: 9. Deploy databases](#baseball-8-deploy-databases)
++ [:computer: 10. Deploy data science VMs](#computer-9-deploy-data-science-vms)
++ [:lock: 11. Configure network lockdown](#lock-10-configure-network-lockdown)
++ [:fire_engine: 12. Configure firewall](#fire_engine-11-configure-firewall)
++ [:chart_with_upwards_trend: 13. Configure logging](#chart_with_upwards_trend-12-configure-logging)
++ [:fire: 14. Run smoke tests on DSVM](#fire-13-run-smoke-tests-on-dsvm)
 
 ## Explanation of symbols used in this guide
 
@@ -242,9 +245,46 @@ PS> ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shm
 
 The VNet peerings may take a few minutes to provision after the script completes.
 
-## :satellite: 5. Deploy remote desktop
+## :satellite: Deploy remote desktop
 
-### Deploy the remote desktop servers
+We currently support two different remote desktop solutions:
+
+- Guacamole (recommended)
+- Microsoft Remote Desktop
+
+### :pear: 5.1 Deploy Guacamole remote desktop
+
+#### Deploy the remote desktop servers
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
+
+```pwsh
+PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <tenant ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
++ where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](how-to-deploy-shm.md#get-the-azure-active-directory-tenant-id )
+
+
+#### Configure the AzureAD application
+
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+
++ From the Azure portal, navigate to the AAD you have created.
++ Navigate to `Azure Active Directory > App registrations`, and select the application called `Guacamole SRE <SRE ID>`.
++ Click on `Authentication` on the left-hand sidebar
++ Ensure that the `ID tokens` checkbox is ticked and click on the `Save` icon if you had to make any changes
+  <details><summary><b>Screenshots</b></summary>
+    <p align="center">
+        <img src="../../images/deploy_sre/aad_app_registration_idtoken.png" width="80%" title="AAD Tenant ID"/>
+    </p>
+  </details>
+
+
+### :bento: 5.2 Deploy Microsoft remote desktop
+
+#### Deploy the remote desktop servers
 
 ![Powershell: fifty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=fifty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -255,11 +295,11 @@ PS> ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+##### :warning: Troubleshooting
 
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
-### Configure RDS webclient
+#### Configure RDS webclient
 
 ![Remote: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=twenty%20minutes)
 
@@ -271,15 +311,15 @@ If you encounter errors with the deployment of the remote desktop servers, re-ru
 PS> C:\Installation\Deploy_RDS_Environment.ps1
 ```
 
-#### :pencil: Notes
+##### :pencil: Notes
 
 This script cannot be run remotely since remote `Powershell` runs as a local admin but this script has to be run as a domain admin.
 
-#### :warning: Troubleshooting
+##### :warning: Troubleshooting
 
 ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. Otherwise, there may be difficulties connecting to the **RDS Gateway**.
 
-### Secure RDS webclient
+#### Secure RDS webclient
 
 ![Powershell: fifteen minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=fifteen%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -292,12 +332,12 @@ PS> ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 This will perform the following actions, which can be run individually if desired:
 
-#### :pencil: Notes
+##### :pencil: Notes
 
 + If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run `./Disable_Legacy_TLS.ps1` to update the list of accepted protocols
 + `./Update_SRE_RDS_SSL_Certificate.ps1` should be run again whenever you want to update the certificate for this SRE.
 
-#### :warning: Troubleshooting
+##### :warning: Troubleshooting
 
 `Let's Encrypt` will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
@@ -343,6 +383,9 @@ PS> ./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailA
 + where `<email>` is an email address that you want to be notified when certificates are close to expiry
 
 </details>
+
+
+## :microscope: 6. Test remote desktop
 
 ### Optional: Set up a non-privileged user account
 
@@ -408,7 +451,16 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
-+ You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
+
+#### Guacamole Remote Desktop
+You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
+
+  <p align="center">
+    <img src="../../images/deploy_sre/guacamole_dashboard.png" width="80%" title="guacamole_dashboard"/>
+  </p>
+
+#### Microsoft Remote Desktop
+You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 
   <p align="center">
     <img src="../../images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop"/>
@@ -420,6 +472,20 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 + Note that clicking on the apps will not work until the other servers have been deployed.
 
 #### :warning: Troubleshooting
+
+<details>
+<summary><strong>Guacamole remote desktop</strong></summary>
+
+If you see an error like the following when attempting to log in, it is likely that you did not register the AzureAD application as an `ID token` provider (see introductions above)
+
+<p align="center">
+  <img src="../../images/deploy_sre/aad_idtoken_failure.png" width="80%" title="aad_idtoken_failure"/>
+</p>
+
+</details>
+
+<details>
+<summary><strong>Microsoft remote desktop</strong></summary>
 
 If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
 
@@ -434,8 +500,9 @@ If you get an `unexpected server authentication certificate error` , your browse
 If you can see an empty screen with `Work resources` but no app icons, your user has not been correctly added to the security group.
 
 + Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
+</details>
 
-## :snowflake: 6. Deploy web applications (GitLab and CodiMD)
+## :snowflake: 7. Deploy web applications (GitLab and CodiMD)
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -484,7 +551,7 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
 + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
 + This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 
-## :floppy_disk: 7. Deploy storage accounts
+## :floppy_disk: 8. Deploy storage accounts
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -497,7 +564,7 @@ PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
-## :baseball: 8. Deploy databases
+## :baseball: 9. Deploy databases
 
 ![Powershell: up to seventy minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=up%20to%20seventy%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -513,7 +580,7 @@ This will deploy any databases that you specified in the core config file. The t
 + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
 + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
 
-## :computer: 9. Deploy data science VMs
+## :computer: 10. Deploy data science VMs
 
 ### (Optional) Customise the deployed VM
 
@@ -543,7 +610,7 @@ This will deploy a new compute VM into the SRE environment
 + ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
 + If you want to deploy several DSVMs, simply repeat the above setps with a different IP address last octet
 
-## :lock: 10. Configure network lockdown
+## :lock: 11. Configure network lockdown
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -556,7 +623,7 @@ PS> ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 This will apply the locked-down network settings which will restrict access into/out of this SRE.
 
-## :fire_engine: 11. Configure firewall
+## :fire_engine: 12. Configure firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
@@ -569,7 +636,7 @@ PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-## :chart_with_upwards_trend: 12. Configure logging
+## :chart_with_upwards_trend: 13. Configure logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -592,7 +659,7 @@ Where the issue was an API timeout, these VMs will report that the extension is 
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
 If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
 
-## :fire: 13. Run smoke tests on DSVM
+## :fire: 14. Run smoke tests on DSVM
 
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
