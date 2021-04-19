@@ -437,6 +437,11 @@
       async: 1800
       poll: 5
 
+    - name: Install R Studio
+      become: yes
+      ansible.builtin.import_role:
+        name: oefenweb.rstudio
+
     - name: Install snaps
       become: yes
       community.general.snap:

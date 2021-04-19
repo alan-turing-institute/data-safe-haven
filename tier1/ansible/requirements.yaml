@@ -4,6 +4,7 @@ roles:
   - name: geerlingguy.docker
   - name: geerlingguy.pip
   - name: oefenweb.fail2ban
+  - name: oefenweb.rstudio
 
 collections:
   - name: devsec.hardening
