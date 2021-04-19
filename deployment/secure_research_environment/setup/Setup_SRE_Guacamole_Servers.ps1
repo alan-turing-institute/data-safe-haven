@@ -88,6 +88,9 @@ foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))
 }
 # Expand mustache template variables
 $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
+                                    Replace("{{disable_copy}}", ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')).
+                                    Replace("{{disable_paste}}", ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')).
+                                    Replace("{{initial_compute_vm_ip}}", (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160)).
                                     Replace("{{initial_compute_vm_ip}}", (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160)).
                                     Replace("{{ldap-group-base-dn}}", $config.shm.domain.securityOuPath).
                                     Replace("{{ldap-group-filter}}", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").

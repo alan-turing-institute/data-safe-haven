@@ -793,12 +793,12 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules = [ordered]@{}
     # Inbound: which IPs can access the Safe Haven (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.inboundAccessFrom -eq "default") {
-        if (@("3", "4").Contains($config.sre.tier)) {
-            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.240"
+        if (@("0", "1").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
         } elseif ($config.sre.tier -eq "2") {
             $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.253"
-        } elseif (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
+        } elseif (@("3", "4").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.240"
         }
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
         $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
@@ -807,17 +807,25 @@ function Get-SreConfig {
     }
     # Outbound: whether internet access is allowed (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
-        if (@("2", "3", "4").Contains($config.sre.tier)) {
-            $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
-        } elseif (@("0", "1").Contains($config.sre.tier)) {
+        if (@("0", "1").Contains($config.sre.tier)) {
             $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
+        } elseif (@("2", "3", "4").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
         }
-    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
-        $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
         $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
+    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+        $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } else {
         $config.sre.remoteDesktop.networkRules.outboundInternet = $sreConfigBase.outboundInternet
+    }
+    # Copy-and-paste
+    if (@("0", "1").Contains($config.sre.tier)) {
+        $config.sre.remoteDesktop.networkRules.copyAllowed = $true
+        $config.sre.remoteDesktop.networkRules.pasteAllowed = $true
+    } elseif (@("2", "3", "4").Contains($config.sre.tier)) {
+        $config.sre.remoteDesktop.networkRules.copyAllowed = $false
+        $config.sre.remoteDesktop.networkRules.pasteAllowed = $false
     }
 
 

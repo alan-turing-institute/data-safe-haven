@@ -25,8 +25,8 @@ INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, param
         (
             VALUES
                 ('hostname', null),
-                ('disable-paste', 'true'),
-                ('disable-copy', 'true'),
+                ('disable-copy', '{{disable_copy}}'),
+                ('disable-paste', '{{disable_paste}}'),
                 ('clipboard-encoding', 'UTF-8'),
                 ('timezone', '{{timezone}}'),
                 ('server-layout', 'en-gb-qwerty')
