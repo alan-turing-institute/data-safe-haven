@@ -40,7 +40,7 @@ $params = @{
     sreResearchUserSecurityGroup = $config.sre.domain.securityGroups.researchUsers.name
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Configure_CAP_And_RAP_Remote.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Parameter $params
 
 
 # Configure SHM NPS for SRE RDS RADIUS client
@@ -50,8 +50,8 @@ Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $params = @{
     npsSecretB64   = $npsSecret | ConvertTo-Base64
-    rdsGatewayIp   = $config.sre.rds.gateway.ip
-    rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
+    rdsGatewayIp   = $config.sre.remoteDesktop.gateway.ip
+    rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
     sreId          = $config.sre.id
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"

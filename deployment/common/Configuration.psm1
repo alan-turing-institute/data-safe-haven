@@ -499,18 +499,30 @@ function Get-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
-    # Set default Nexus usage
-    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false
+    # Check that one of the allowed remote desktop providers is selected
+    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
+    if (-not $sreConfigBase.remoteDesktopProvider) {
+        Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
+        $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
+    }
+    if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
+        Add-LogMessage -Level Fatal "Did not recognise remoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
+    }
+    # Setup the basic config
+    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false # Nexus is the default for tier-2 SREs
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            id               = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
-            rgPrefix         = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            nsgPrefix        = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
-            subscriptionName = $sreConfigBase.subscriptionName
-            tier             = $sreConfigBase.tier
-            nexus            = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
+            id                = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
+            rgPrefix          = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            nsgPrefix         = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            shortName         = "sre-$($sreConfigBase.sreId)".ToLower()
+            subscriptionName  = $sreConfigBase.subscriptionName
+            tier              = $sreConfigBase.tier
+            nexus             = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
+            remoteDesktop = [ordered]@{
+                provider = $sreConfigBase.remoteDesktopProvider
+            }
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -566,8 +578,8 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-compute-deployment.json"
                     }
                 }
-                rds        = [ordered]@{
-                    name = "RDSSubnet"
+                remoteDesktop = [ordered]@{ # note that further details are added below
+                    name = "RemoteDesktopSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
                 data       = [ordered]@{
@@ -598,17 +610,10 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-webapps.json"
                     }
                 }
-                guacamole    = [ordered]@{
-                    name = "GuacamoleSubnet"
-                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 6).0/24"
-                    nsg  = [ordered]@{
-                        name  = "$($config.sre.nsgPrefix)_GUACAMOLE".ToUpper()
-                        rules = "sre-nsg-rules-guacamole.json"
-                    }
-                }
             }
         }
     }
+
 
     # Firewall config
     # ---------------
@@ -714,38 +719,38 @@ function Get-SreConfig {
         }
     }
 
-    # Guacamole server
-    # ----------------
-    $config.sre.guacamole = [ordered]@{
-        rg                              = "$($config.sre.rgPrefix)_GUACAMOLE".ToUpper()
-        adminPasswordSecretName         = "$($config.sre.shortName)-vm-admin-password-guacamole"
-        databaseAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-guacamole"
-        vmName                          = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
-        vmSize                          = "Standard_DS2_v2"
-        ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.guacamole.cidr -Offset 4
-        disks                           = [ordered]@{
-            os   = [ordered]@{
-                sizeGb = "128"
-                type   = "Standard_LRS"
+    # Remote desktop either through Apache Guacamole or Microsoft RDS
+    # ---------------------------------------------------------------
+    $config.sre.remoteDesktop.rg   = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
+            name  = "$($config.sre.nsgPrefix)_GUACAMOLE".ToUpper()
+            rules = "sre-nsg-rules-guacamole.json"
+        }
+        $config.sre.remoteDesktop.guacamole = [ordered]@{
+            adminPasswordSecretName         = "$($config.sre.shortName)-vm-admin-password-guacamole"
+            databaseAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-guacamole"
+            vmName                          = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
+            vmSize                          = "Standard_DS2_v2"
+            ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
+            disks                           = [ordered]@{
+                os   = [ordered]@{
+                    sizeGb = "128"
+                    type   = "Standard_LRS"
+                }
             }
         }
-    }
-
-    # RDS Servers
-    # -----------
-    $config.sre.rds = [ordered]@{
-        rg             = "$($config.sre.rgPrefix)_RDS".ToUpper()
-        gateway        = [ordered]@{
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $config.sre.remoteDesktop.gateway        = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             installationDirectory   = "C:\Installation"
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
                 rules = "sre-nsg-rules-gateway.json"
             }
-            networkRules            = [ordered]@{}
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1023"
@@ -757,11 +762,11 @@ function Get-SreConfig {
                 }
             }
         }
-        appSessionHost = [ordered]@{
+        $config.sre.remoteDesktop.appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
                 rules = "sre-nsg-rules-session-hosts.json"
@@ -773,40 +778,46 @@ function Get-SreConfig {
                 }
             }
         }
+    } else {
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM
-    foreach ($server in $config.sre.rds.Keys) {
-        if ($config.sre.rds[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.rds[$server].hostname = $config.sre.rds[$server].vmName
-        $config.sre.rds[$server].fqdn = "$($config.sre.rds[$server].vmName).$($config.shm.domain.fqdn)"
+    foreach ($server in $config.sre.remoteDesktop.Keys) {
+        if (-not $config.sre.remoteDesktop[$server].vmName) { continue }
+        $config.sre.remoteDesktop[$server].hostname = $config.sre.remoteDesktop[$server].vmName
+        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)"
     }
-    # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
+
+    # Set the appropriate tier-dependent network rules for the remote desktop server
+    # ------------------------------------------------------------------------------
+    $config.sre.remoteDesktop.networkRules = [ordered]@{}
+    # Inbound: which IPs can access the Safe Haven (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.inboundAccessFrom -eq "default") {
         if (@("3", "4").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
+            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
-            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
+            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.253"
         } elseif (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
+            $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
         }
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
-        $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
+        $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
     } else {
-        $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
+        $config.sre.remoteDesktop.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
     }
-    # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
+    # Outbound: whether internet access is allowed (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
         if (@("2", "3", "4").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
+            $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
         } elseif (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
+            $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
         }
     } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
-        $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
+        $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
-        $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
+        $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
     } else {
-        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.outboundInternet
+        $config.sre.remoteDesktop.networkRules.outboundInternet = $sreConfigBase.outboundInternet
     }
 
 

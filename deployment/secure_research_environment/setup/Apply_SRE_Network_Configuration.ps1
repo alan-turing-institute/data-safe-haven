@@ -21,8 +21,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Get common parameters
 # ---------------------
-$allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
+$allowedSources = ($config.sre.remoteDesktop.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
 $nsgs = @{}
 
 
@@ -40,7 +40,7 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
     $null = Update-NetworkSecurityGroupRule -Name "InboundSSHAccess" -NetworkSecurityGroup $nsgs["compute"] -SourceAddressPrefix $allowedSources
 
     Add-LogMessage -Level Info "Setting outbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
 
 
 # Tier-2 and above have several NSGs
@@ -48,13 +48,13 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
 } else {
     # RDS gateway
     Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    Add-VmToNSG -VMName $config.sre.remoteDesktop.gateway.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 
     # RDS sesssion hosts
     Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.rds.appSessionHost.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    Add-VmToNSG -VMName $config.sre.remoteDesktop.appSessionHost.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 
     # Database servers
     Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
@@ -82,8 +82,8 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
 
     # Update user-facing NSGs
     Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
+    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
 }
 
 

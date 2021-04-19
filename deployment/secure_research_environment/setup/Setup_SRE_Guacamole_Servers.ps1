@@ -29,18 +29,18 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # ------------------------
 Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
 $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$guacamoleSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.guacamole.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$guacamoleSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Create Guacamole resource group if it does not exist
 # ----------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.remoteDesktop.rg -Location $config.sre.location
 
 
 # Deploy a NIC with a public IP address
 # -------------------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$($config.sre.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
-$publicIp = Deploy-PublicIpAddress -Name "$($config.sre.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.remoteDesktop.guacamole.ip -Location $config.sre.location
+$publicIp = Deploy-PublicIpAddress -Name "$($config.sre.remoteDesktop.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.remoteDesktop.rg -AllocationMethod Static -Location $config.sre.location
 $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $guacamoleSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 
 
@@ -63,8 +63,8 @@ if (Get-MgApplication -Filter "DisplayName eq 'Guacamole SRE $($config.sre.id)'"
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
-$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.guacamole.adminPasswordSecretName -DefaultLength 20
-$guacamoleDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.guacamole.databaseAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.remoteDesktop.guacamole.adminPasswordSecretName -DefaultLength 20
+$guacamoleDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.remoteDesktop.guacamole.databaseAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 
 
@@ -112,15 +112,15 @@ $params = @{
     CloudInitYaml = $cloudInitYaml
     ImageSku = "18.04-LTS"
     Location = $config.sre.location
-    Name = $config.sre.guacamole.vmName
+    Name = $config.sre.remoteDesktop.guacamole.vmName
     NicId = $vmNic.Id
-    OsDiskSizeGb = $config.sre.guacamole.disks.os.sizeGb
-    OsDiskType = $config.sre.guacamole.disks.os.type
-    ResourceGroupName = $config.sre.guacamole.rg
-    Size = $config.sre.guacamole.vmSize
+    OsDiskSizeGb = $config.sre.remoteDesktop.guacamole.disks.os.sizeGb
+    OsDiskType = $config.sre.remoteDesktop.guacamole.disks.os.type
+    ResourceGroupName = $config.sre.remoteDesktop.rg
+    Size = $config.sre.remoteDesktop.guacamole.vmSize
 }
 $null = Deploy-UbuntuVirtualMachine @params
-Start-VM -Name $config.sre.guacamole.vmName -ResourceGroupName $config.sre.guacamole.rg
+Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Add DNS records for Guacamole server

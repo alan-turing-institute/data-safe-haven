@@ -74,8 +74,8 @@ if ($null -eq $kvCertificate) {
 # -------------------------
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    $baseFqdn = $config.sre.domain.fqdn
-    $rdsFqdn = $config.sre.rds.gateway.fqdn
+    $userFriendlyFqdn = $config.sre.domain.fqdn
+    $serverFullFdqn = $config.sre.remoteDesktop.gateway.fqdn
 
     # Get token for DNS subscription
     # ------------------------------
@@ -92,9 +92,9 @@ if ($requestCertificate) {
 
     # Generate a certificate signing request in the Key Vault
     # -------------------------------------------------------
-    Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($baseFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$rdsFqdn"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($userFriendlyFqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($userFriendlyFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$serverFullFdqn"
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
@@ -108,12 +108,12 @@ if ($requestCertificate) {
 
     # Run Posh-ACME commands in a subjob to avoid incompatibility with the Az module
     # ------------------------------------------------------------------------------
-    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $baseFqdn, $csrPath, $emailAddress, $dryRun) -ScriptBlock {
+    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $userFriendlyFqdn, $csrPath, $emailAddress, $dryRun) -ScriptBlock {
         param(
             [string]$ScriptRoot,
             [string]$AZAccessToken,
             [string]$AZSubscriptionId,
-            [string]$BaseFqdn,
+            [string]$userFriendlyFqdn,
             [string]$CsrPath,
             [string]$EmailAddress,
             [bool]$dryRun
@@ -163,7 +163,7 @@ if ($requestCertificate) {
         # Test DNS record creation
         # ------------------------
         Add-LogMessage -Level Info "Test that we can interact with DNS records..."
-        $testDomain = "dnstest.${BaseFqdn}"
+        $testDomain = "dnstest.${userFriendlyFqdn}"
         Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
             Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
@@ -194,12 +194,12 @@ if ($requestCertificate) {
         Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
             Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
-            $null = Publish-DnsChallenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+            $null = Publish-DnsChallenge $userFriendlyFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         } else {
-            $null = Publish-Challenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+            $null = Publish-Challenge $userFriendlyFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         }
         $success = $?
-        Add-LogMessage -Level Info "[ ] Creating certificate for ${BaseFqdn}..."
+        Add-LogMessage -Level Info "[ ] Creating certificate for ${userFriendlyFqdn}..."
         $null = New-PACertificate -CSRPath $CsrPath -AcceptTOS -Contact $EmailAddress -DnsPlugin Azure -PluginArgs $PoshAcmeParams -Verbose
         $success = $success -and $?
         if ($success) {
@@ -207,7 +207,7 @@ if ($requestCertificate) {
         } else {
             Add-LogMessage -Level Fatal "Certificate creation failed!"
         }
-        return [string](Get-PACertificate -MainDomain $BaseFqdn).CertFile
+        return [string](Get-PACertificate -MainDomain $userFriendlyFqdn).CertFile
     } | Receive-Job -Wait -AutoRemoveJob
 
 
@@ -242,28 +242,41 @@ if ($doInstall) {
     $vaultId = (Get-AzKeyVault -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg).ResourceId
     $secretURL = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $certificateName).Id
 
-    if (1 -eq [int]$config.sre.tier) {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
-        $script = "
-            sudo mkdir -p /opt/ssl
-            sudo chmod 0700 /opt/ssl
-            sudo rm -rf /opt/ssl/letsencrypt*
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/letsencrypt.cert
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/letsencrypt.key
-            sudo chown -R root:root /opt/ssl/
-            sudo chmod 0600 /opt/ssl/*.*
-            ls -alh /opt/ssl/
-        "
-    } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.guacamole.rg -Name $config.sre.guacamole.vmName | Remove-AzVMSecret
-        $script = "
-            sudo rm -rf /opt/ssl/conf/live/$($config.sre.domain.fqdn)/*
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/conf/live/$($config.sre.domain.fqdn)/fullchain.pem
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/conf/live/$($config.sre.domain.fqdn)/privkey.pem
-            ls -alh /opt/ssl/conf/live/$($config.sre.domain.fqdn)/
-            docker-compose -f /opt/guacamole/docker-compose.yml up --force-recreate -d
-        "
+
+    # Get the appropriate VM, script and parameters for configuring the remote server
+    # -------------------------------------------------------------------------------
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.guacamole.vmName | Remove-AzVMSecret
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "scripts" "install_ssl_certificate.sh"
+        $scriptParams = @{
+            USER_FRIENDLY_FQDN  = $userFriendlyFqdn
+            CERT_THUMBPRINT  = $kvCertificate.Thumbprint
+        }
+        $scriptType = "UnixShell"
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        if (@(0, 1).Contains([int]$config.sre.tier)) {
+            $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
+            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "install_ssl_certificate_tier1.sh"
+            $scriptParams = @{
+                CERT_THUMBPRINT  = $kvCertificate.Thumbprint
+            }
+            $scriptType = "UnixShell"
+        } elseif (@(2, 3).Contains([int]$config.sre.tier)) {
+            $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
+            $scriptParams = @{
+                rdsFqdn         = $serverFullFdqn
+                certThumbPrint  = $kvCertificate.Thumbprint
+                remoteDirectory = $remoteDirectory
+            }
+            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
+            $scriptType = "PowerShell"
+        } else {
+            Add-LogMessage -Level Fatal "Tier '$($config.sre.tier)' is not currently supported!"
+        }
+    } else {
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
+
 
     # Add signed Key Vault certificate to the target VM
     # -------------------------------------------------
@@ -276,9 +289,11 @@ if ($doInstall) {
         Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
     }
 
-    # Link the certificate and private key to /opt/ssl
-    # ------------------------------------------------
-    $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $targetVM.ResourceGroupName
+
+    # Install the certificate and private key on the remote server
+    # ------------------------------------------------------------
+    Add-LogMessage -Level Info "Configuring '$($targetVM.Name)' to use signed SSL certificate"
+    $null = Invoke-RemoteScript -Shell $scriptType -ScriptPath $scriptPath -VMName $targetVM.Name -ResourceGroupName $targetVM.ResourceGroupName -Parameter $scriptParams
 }
 
 

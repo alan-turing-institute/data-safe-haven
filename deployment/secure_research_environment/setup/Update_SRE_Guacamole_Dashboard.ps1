@@ -49,7 +49,7 @@ Add-LogMessage -Level Info "Updating Guacamole with $($VMs.Count) VMs..."
 $lines = @("#! /bin/bash", "truncate -s 0 /opt/postgresql/data/connections.csv")
 $lines += $VMs | ForEach-Object { "echo '$($_.os)$($_.index)_$($_.cores)$($_.type)s_$($_.memory)GB;$($_.ipAddress)' >> /opt/postgresql/data/connections.csv" }
 $lines += @("/opt/postgresql/synchronise_database.sh")
-$null = Invoke-RemoteScript -VMName $config.sre.guacamole.vmName -ResourceGroupName $config.sre.guacamole.rg -Shell "UnixShell" -Script ($lines | Join-String -Separator "`n")
+$null = Invoke-RemoteScript -VMName $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Shell "UnixShell" -Script ($lines | Join-String -Separator "`n")
 
 
 # Switch back to original subscription

@@ -20,7 +20,7 @@
         "direction": "Inbound",
         "priority": 2000,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.rds.appSessionHost.ip}}",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.appSessionHost.ip}}",
         "sourcePortRange": "*"
     },
     {
@@ -72,9 +72,9 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}InternetOutbound",
+        "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+        "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",

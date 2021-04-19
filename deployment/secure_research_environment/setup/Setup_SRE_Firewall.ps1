@@ -21,7 +21,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Load the SRE VNet and gateway IP
 # --------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-# $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg | Where-Object { $_.Name -match "$($config.sre.rds.gateway.vmName).*" } | Select-Object -First 1).IpAddress
+# $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg | Where-Object { $_.Name -match "$($config.sre.remoteDesktop.gateway.vmName).*" } | Select-Object -First 1).IpAddress
 
 
 # Load the SHM firewall and ensure it is started (it can be deallocated to save costs or if credit has run out)
@@ -59,7 +59,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the RDG and deployment subnets to the firewall route table
 # ------------------------------------------------------------------------------------
-$excludedSubnetNames = @($config.sre.network.vnet.subnets.rds.name, $config.sre.network.vnet.subnets.deployment.name)
+$excludedSubnetNames = @($config.sre.network.vnet.subnets.remoteDesktop.name, $config.sre.network.vnet.subnets.deployment.name)
 foreach ($subnet in $VirtualNetwork.Subnets) {
     if ($excludedSubnetNames.Contains($subnet.Name)) {
         Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is NOT attached to any route table..."

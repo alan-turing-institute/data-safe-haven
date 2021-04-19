@@ -98,7 +98,7 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
     $params = @{
-        rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
+        rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 
@@ -118,12 +118,12 @@ if ($sreResources -or $sreResourceGroups) {
         Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
         $success = $?
         # RDS DNS record
-        $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+        $rdsDnsRecordname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
         Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $($config.sre.id) DNS zone ($sreDomain)"
         Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
         $success = $success -and $?
         # RDS ACME records
-        foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
+        foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.remoteDesktop.gateway.hostname)".ToLower(), "_acme-challenge")) {
             Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $($config.sre.id) DNS zone ($sreDomain)"
             Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
             $success = $success -and $?
