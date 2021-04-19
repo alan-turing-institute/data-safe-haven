@@ -4,13 +4,13 @@
             "name": "ViaFirewall",
             "properties": {
                 "addressPrefix": "0.0.0.0/0",
-                "nextHop": "<shm-firewall-private-ip>"
+                "nextHop": "{{shm.firewall.privateIpAddress}}"
             }
         },
         {
             "name": "ViaVpn",
             "properties": {
-                "addressPrefix": "<subnet-shm-vpn-cidr>",
+                "addressPrefix": "{{shm.network.vpn.cidr}}",
                 "nextHop": "VirtualNetworkGateway"
             }
         }
