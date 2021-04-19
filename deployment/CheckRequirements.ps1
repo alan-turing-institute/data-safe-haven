@@ -6,6 +6,7 @@ $ModuleVersionRequired = @{
     "Az"                       = ("ge", "5.0.0");
     "Az.Storage"               = ("eq", "2.5.2");
     "AzureAD.Standard.Preview" = ("ge", "0.1.599.7")
+    "Poshstache"               = ("ge", "0.1.10")
 }
 
 # Powershell version
