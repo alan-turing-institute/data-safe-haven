@@ -18,6 +18,13 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "MicrosoftRDS") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
+
+
 # Disable legacy TLS protocols on RDS Gateway
 # -------------------------------------------
 Add-LogMessage -Level Info "[ ] Disabling legacy SSL/TLS protocols on RDS Gateway"

@@ -25,6 +25,13 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "ApacheGuacamole") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
+
+
 # Retrieve VNET and subnet
 # ------------------------
 Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
