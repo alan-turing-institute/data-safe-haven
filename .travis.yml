@@ -16,8 +16,10 @@ jobs:
     - name: Lint JSON
       language: node_js
       node_js: node
-      before_script: npm install -g jsonlint
-      script: find . -name "*.json" | xargs -n 1 jsonlint --quiet --compact
+      before_script: npm install -g jsonlint mustache
+      script: |
+        echo "{}" > mustache_config.json
+        find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
 
     - name: Lint Markdown
       language: ruby
