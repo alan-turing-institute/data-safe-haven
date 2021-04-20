@@ -677,8 +677,8 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
-                performance        = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                storageKind        = (($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") -and ($config.sre.tier -eq "1")) ? "FileStorage" : "BlobStorage"
+                performance        = (($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") -and ($config.sre.tier -eq "1")) ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
