@@ -9,8 +9,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:computer: 3. Deploy SRE](#computer-3-deploy-sre)
 + [:microscope: 4. Test deployed SRE](#microscope-4-test-deployed-sre)
   + [:pear: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
-  + [:snowflake: 4.2 Test web applications](#snowflake-42-deploy-web-applications)
-  + [:fire: 4.3 Run smoke tests on DSVM](#fire-43-run-smoke-tests-on-dsvm)
+  + [:fire: 4.2 Run smoke tests on DSVM](#fire-42-run-smoke-tests-on-dsvm)
 
 
 ## Explanation of symbols used in this guide
@@ -477,15 +476,19 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 </details>
 
-### Test the RDS using a non-privileged user account
+### Test the remote desktop using a non-privileged user account
 
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
-  + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
-
-You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
-
+ + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
++ You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
   <p align="center">
     <img src="../../images/deploy_sre/guacamole_dashboard.png" width="80%" title="guacamole_dashboard"/>
+  </p>
++ At this point you should double click on the :computer: `Ubuntu0` link under `All Connections` which should bring you to an Ubuntu login screen
++ You will need the short-form of the user name (ie. without the `@<safe haven domain>` part) and the same password as before
++ This should bring you to an Ubuntu desktop that will look like the following
+  <p align="center">
+    <img src="../../images/deploy_sre/guacamole_desktop.png" width="80%" title="guacamole_desktop"/>
   </p>
 
 #### :pencil: Notes
@@ -514,62 +517,14 @@ If you see an error like the following when attempting to log in, it is likely t
   </details>
 
 
-### :snowflake: 4.2 Test web applications
-
-+ Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
-  + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
-  + Test `GitLab` by clicking on the `GitLab` app icon.
-  + You should receive an MFA request to your phone or authentication app.
-  + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
-  + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-+ Test `CodiMD` by clicking on the `CodiMD` app icon.
-  + You should receive an MFA request to your phone or authentication app.
-  + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
-  + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-+ If you do not get an MFA prompt or you cannot connect to the `GitLab` and `CodiMD` servers, follow the **troubleshooting** instructions below.
-
-#### :warning: Troubleshooting
-
-If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
-
-+ Ensure that both the SHM NPS server and the RDS Gateway are running
-+ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the configuration of the RDS gateway and NPS VMs.
-+ Ensure that the default UDP ports `1812` , `1813` , `1645` and `1646` are all open on the SHM NPS network security group ( `NSG_SHM_SUBNET_IDENTITY` ). [This documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)) gives further details.
-
-If this does not resolve the issue, trying checking the Windows event logs
-
-  + Use `Event Viewer` on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
-  + Use `Event Viewer` on the SHM NPS server (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
-    + Ensure that the requests are being received from the **private** IP address of the RDS Gateway and **not** its public one.
-  + One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x` . [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
-    + This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
-  + Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
-
-If you get a `We couldn't connect to the gateway because of an error` message, it's likely that the `Remote RADIUS Server` authentication timeouts have not been set correctly.
-
-+ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
-  + If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
-+ Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
-+ This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
-
-
-### :fire: 4.3 Run smoke tests on DSVM
+### :fire: 4.2 Run smoke tests on DSVM
 
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
-
-+ Navigate to the **compute VM** that you have just deployed in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE > SRE-<SRE ID>-<IP last octet>-<version number>` and note the `Private IP address` for this VM
-+ Next, navigate to the `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS` resource group and then the `kv-<SHM ID>-sre-<SRE ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
-+ `<admin username>` is in the `sre-<SRE ID>-vm-admin-username` secret.
-+ `<admin password>` is in the `sre-<SRE ID>-vm-admin-password-compute` secret.
-
-To run the smoke tests:
-
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
-+ Log into the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) VM that you just deployed using the credentials that you just retrieved from the portal.
++ Use the remote desktop interface at `https://<SRE ID>.<safe haven domain>` to log in to the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) that you have deployed using the scripts above
 + Open a terminal session
 + Enter the test directory using `cd /opt/verification/smoke_tests`
 + Run `bats run_all_tests.bats` .

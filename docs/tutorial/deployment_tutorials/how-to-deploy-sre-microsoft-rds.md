@@ -597,18 +597,9 @@ If you get consistent failure messages after re-running the logging set up scrip
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
 They are automatically uploaded to the compute VM during the deployment step.
 
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
-
-+ Navigate to the **compute VM** that you have just deployed in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE > SRE-<SRE ID>-<IP last octet>-<version number>` and note the `Private IP address` for this VM
-+ Next, navigate to the `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS` resource group and then the `kv-<SHM ID>-sre-<SRE ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
-+ `<admin username>` is in the `sre-<SRE ID>-vm-admin-username` secret.
-+ `<admin password>` is in the `sre-<SRE ID>-vm-admin-password-compute` secret.
-
-To run the smoke tests:
-
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
-+ Log into the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) VM that you just deployed using the credentials that you just retrieved from the portal.
++ Use the remote desktop interface at `https://<SRE ID>.<safe haven domain>` to log in to the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) that you have deployed using the scripts above
 + Open a terminal session
 + Enter the test directory using `cd /opt/verification/smoke_tests`
 + Run `bats run_all_tests.bats` .
