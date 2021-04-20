@@ -18,6 +18,7 @@ ssh_server_match_address:
 # Packages
 apt_packages_development:
   - git
+  - tmux
   - python3-venv
   - python3.9
   - python3.9-venv
