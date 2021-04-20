@@ -20,7 +20,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Create resource group if it does not exist
 # ------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
+# $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
 # Retrieve passwords from the Key Vault
@@ -34,26 +34,26 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 
 # Ensure that artifacts resource group, storage account and storage container exist
 # ---------------------------------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-$storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
-$storageContainerName = "shm-configuration-nps"
-$null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+# $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
+# $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
+# $storageContainerName = "shm-configuration-nps"
+# $null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
 
 
 # Upload artifacts
 # ----------------
-Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
-Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
-$success = $true
-foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
-    $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
-    $success = $success -and $?
-}
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded NPS configuration files"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
-}
+# Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
+# Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
+# $success = $true
+# foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
+#     $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
+#     $success = $success -and $?
+# }
+# if ($success) {
+#     Add-LogMessage -Level Success "Uploaded NPS configuration files"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
+# }
 
 
 # Deploy NPS from template

@@ -92,39 +92,43 @@ $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Se
 (Get-Content $tfvars_file).replace('<<<net_vnet_dns_dc2>>>', $config.dcb.ip) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_vpn_cidr>>>', $config.network.vpn.cidr) | Set-Content $tfvars_file
 
+# Artifacts
+# ------------------------------------------------------------
+(Get-Content $tfvars_file).replace('<<<art_rg_name>>>', $config.storage.artifacts.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<art_rg_location>>>', $config.location) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<art_sa_name>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
+$artCreateadpdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip"
+(Get-Content $tfvars_file).replace('<<<art_dc_createadpdc_path>>>', $artCreateadpdcPath) | Set-Content $tfvars_file
+$artCreateadbdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip"
+(Get-Content $tfvars_file).replace('<<<art_dc_createadbdc_path>>>', $artCreateadbdcPath) | Set-Content $tfvars_file
+$artConfigFilesPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
+(Get-Content $tfvars_file).replace('<<<art_dc_config_files_path>>>', $artConfigFilesPath) | Set-Content $tfvars_file
+$artConfigPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
+$artConfigTemplate = Join-Path $artConfigPath "Disconnect_AD.template.ps1"
+$artTempFile = Join-Path $artConfigPath "temp" "Disconnect_AD.ps1"
+(Get-Content $artConfigTemplate -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $artTempFile
+(Get-Content $tfvars_file).replace('<<<art_dc_config_file_disconnect_ad>>>', $artTempFile) | Set-Content $tfvars_file
+$artPuttyBaseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+$artPuttyHttpContent = Invoke-WebRequest -Uri $artPuttyBaseUri
+$artPuttyFilename = $artPuttyHttpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
+$artPuttyVersion = ($artPuttyFilename -split "-")[2]
+$artPuttySourceUri = "$($artPuttyBaseUri.Replace('latest', $artPuttyVersion))/$artPuttyFilename"
+(Get-Content $tfvars_file).replace('<<<art_dc_putty_source_uri>>>', $artPuttySourceUri) | Set-Content $tfvars_file
+
+$artNpsConfigFilesPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts"
+(Get-Content $tfvars_file).replace('<<<art_nps_config_files_path>>>', $artNpsConfigFilesPath) | Set-Content $tfvars_file
+
 # DC
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<dc_rg_name>>>', $config.dc.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_rg_location>>>', $config.location) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_rg_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_sa_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
-(Get-Content $tfvars_file).replace('<<<dc_rg_name_artifacts>>>', $config.storage.artifacts.rg) | Set-Content $tfvars_file
-(Get-Content $tfvars_file).replace('<<<dc_sa_name_artifacts>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
+
 $dcTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json"
 (Get-Content $tfvars_file).replace('<<<dc_template_path>>>', $dcTemplatePath) | Set-Content $tfvars_file
 $dcTemplateName = Split-Path -Path "$dcTemplatePath" -LeafBase
-(Get-Content $tfvars_file).replace('<<<dc_name>>>', $dcTemplateName) | Set-Content $tfvars_file
-$dcCreateadpdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip"
-(Get-Content $tfvars_file).replace('<<<dc_createadpdc_path>>>', $dcCreateadpdcPath) | Set-Content $tfvars_file
-$dcCreateadbdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip"
-(Get-Content $tfvars_file).replace('<<<dc_createadbdc_path>>>', $dcCreateadbdcPath) | Set-Content $tfvars_file
-
-$dcConfigFilesPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
-(Get-Content $tfvars_file).replace('<<<dc_config_files_path>>>', $dcConfigFilesPath) | Set-Content $tfvars_file
-
-$dcConfigPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"
-$dcConfigTemplate = Join-Path $dcConfigPath "Disconnect_AD.template.ps1"
-$dcTempFile = Join-Path $dcConfigPath "temp" "Disconnect_AD.ps1"
-(Get-Content $dcConfigTemplate -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $dcTempFile
-(Get-Content $tfvars_file).replace('<<<dc_config_file_disconnect_ad>>>', $dcTempFile) | Set-Content $tfvars_file
-
-$dcPuttyBaseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
-$dcPuttyHttpContent = Invoke-WebRequest -Uri $dcPuttyBaseUri
-$dcPuttyFilename = $dcPuttyHttpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
-$dcPuttyVersion = ($dcPuttyFilename -split "-")[2]
-$dcPuttySourceUri = "$($dcPuttyBaseUri.Replace('latest', $dcPuttyVersion))/$dcPuttyFilename"
-(Get-Content $tfvars_file).replace('<<<dc_putty_source_uri>>>', $dcPuttySourceUri) | Set-Content $tfvars_file
-
+(Get-Content $tfvars_file).replace('<<<dc_template_name>>>', $dcTemplateName) | Set-Content $tfvars_file
 $dcDomainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower() -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_administrator_user>>>', $dcDomainAdminUsername) | Set-Content $tfvars_file
 $dcDomainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
@@ -158,6 +162,50 @@ $dcSafemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.na
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_name>>>', $config.network.vnet.name) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_resource_group>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
+
+# NPS
+# ------------------------------------------------------------
+(Get-Content $tfvars_file).replace('<<<nps_rg_name>>>', $config.nps.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_rg_location>>>', $config.location) | Set-Content $tfvars_file
+
+$npsTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json"
+(Get-Content $tfvars_file).replace('<<<nps_template_path>>>', $npsTemplatePath) | Set-Content $tfvars_file
+$npsTemplateName = Split-Path -Path "$npsTemplatePath" -LeafBase
+(Get-Content $tfvars_file).replace('<<<nps_template_name>>>', $npsTemplateName) | Set-Content $tfvars_file
+
+
+$npsDomainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
+$npsDomainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+
+
+$npsVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_administrator_password>>>', (ConvertTo-SecureString $npsVmAdminPassword -AsPlainText -Force)) | Set-Content $tfvars_file
+$npsVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_administrator_user>>>', $npsVmAdminUsername) | Set-Content $tfvars_file
+
+
+(Get-Content $tfvars_file).replace('<<<nps_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
+
+
+
+nps_domain_join_password = "<<<nps_domain_join_password>>>"
+nps_domain_join_user = "<<<nps_domain_join_user>>>"
+nps_domain_name = "<<<nps_domain_name>>>"
+nps_data_disk_size_gb = "<<<nps_data_disk_size_gb>>>"
+nps_data_disk_type = "<<<nps_data_disk_type>>>"
+nps_host_name = "<<<nps_host_name>>>"
+nps_ip_address = "<<<nps_ip_address>>>"
+nps_os_disk_size_gb = "<<<nps_os_disk_size_gb>>>"
+nps_os_disk_type = "<<<nps_os_disk_type>>>"
+nps_vm_name = "<<<nps_vm_name>>>"
+nps_vm_size = "<<<nps_vm_size>>>"
+nps_ou_path = "<<<nps_ou_path>>>"
+nps_virtual_network_name = "<<<nps_virtual_network_name>>>"
+nps_virtual_network_resource_group = "<<<nps_virtual_network_resource_group>>>"
+nps_virtual_network_subnet = "<<<nps_virtual_network_subnet>>>"
+
+
+
 
 # Switch back to original subscription
 # ------------------------------------------------------------

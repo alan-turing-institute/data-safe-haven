@@ -1,4 +1,4 @@
-resource "azurerm_resource_group" "example" {
+resource "azurerm_resource_group" "dns" {
   name     = var.rg_name
   location = var.rg_location
 }

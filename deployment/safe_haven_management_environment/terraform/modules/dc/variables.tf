@@ -14,56 +14,11 @@ variable "sa_name_bootdiagnostics" {
   type = string
 }
 
-variable "rg_name_artifacts" {
-  type = string
-}
-
-variable "sa_name_artifacts" {
-  type = string
-}
-
-variable "name" {
+variable "template_name" {
   type = string
 }
 
 variable "template_path" {
-  type = string
-}
-
-variable "createadpdc_path" {
-  type = string
-}
-
-variable "createadbdc_path" {
-  type = string
-}
-
-variable "config_files_path" {
-    type = string
-}
-
-variable "config_files" {
-  type = list(string)
-  default = [
-    "CreateUsers.ps1", 
-    "GPOs.zip",
-    "Run_ADSync.ps1",
-    "StartMenuLayoutModification.xml",
-    "UpdateAADSyncRule.ps1",
-    "user_details_template.csv"
-  ]
-}
-
-variable "config_file_disconnect_ad" {
-  type = string
-}
-
-variable "chrome_source_uri" {
-  type = string
-  default = "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
-}
-
-variable "putty_source_uri" {
   type = string
 }
 

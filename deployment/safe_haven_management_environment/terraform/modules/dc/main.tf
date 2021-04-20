@@ -18,91 +18,10 @@ resource "azurerm_storage_account" "dc_bootdiagnostics" {
   access_tier              = "Hot"
 }
 
-resource "azurerm_resource_group" "dc_artifacts" {
-  name     = var.rg_name_artifacts
-  location = var.rg_location
-}
 
-resource "azurerm_storage_account" "dc_artifacts" {
-  name                     = var.sa_name_artifacts
-  resource_group_name      = azurerm_resource_group.dc_artifacts.name
-  location                 = azurerm_resource_group.dc_artifacts.location
-  account_kind             = "StorageV2"
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  access_tier              = "Hot"
-}
-
-resource "azurerm_storage_container" "dc_artifacts_shm_dsc_dc" {
-  name                  = "shm-dsc-dc"
-  storage_account_name  = azurerm_storage_account.dc_artifacts.name
-  container_access_type = "private"
-}
-
-resource "azurerm_storage_container" "dc_artifacts_shm_configuration_dc" {
-  name                  = "shm-configuration-dc"
-  storage_account_name  = azurerm_storage_account.dc_artifacts.name
-  container_access_type = "private"
-}
-
-resource "azurerm_storage_container" "dc_artifacts_sre_rds_sh_packages" {
-  name                  = "sre-rds-sh-packages"
-  storage_account_name  = azurerm_storage_account.dc_artifacts.name
-  container_access_type = "private"
-}
-
-resource "azurerm_storage_blob" "CreateADPDC_zip" {
-  name                   = "CreateADPDC.zip"
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_shm_dsc_dc.name
-  type                   = "Block"
-  source                 = var.createadpdc_path
-}
-
-resource "azurerm_storage_blob" "CreateADBDC_zip" {
-  name                   = "CreateADBDC.zip"
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_shm_dsc_dc.name
-  type                   = "Block"
-  source                 = var.createadbdc_path
-}
-
-resource "azurerm_storage_blob" "config_files" {
-  for_each = toset(var.config_files)
-
-  name                   = each.value
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_shm_configuration_dc.name
-  type                   = "Block"
-  source                 = format("%s/%s", var.config_files_path, each.value)
-}
-
-resource "azurerm_storage_blob" "config_file_disconnect_ad" {
-  name                   = "Disconnect_AD.ps1"
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_shm_configuration_dc.name
-  type                   = "Block"
-  source                 = var.config_file_disconnect_ad
-}
-
-resource "azurerm_storage_blob" "chrome" {
-  name                   = "GoogleChrome_x64.msi"
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_sre_rds_sh_packages.name
-  type                   = "Block"
-  source_uri             = var.chrome_source_uri
-}
-
-resource "azurerm_storage_blob" "putty" {
-  name                   = "PuTTY_x64.msi"
-  storage_account_name   = azurerm_storage_account.dc_artifacts.name
-  storage_container_name = azurerm_storage_container.dc_artifacts_sre_rds_sh_packages.name
-  type                   = "Block"
-  source_uri             = var.putty_source_uri
-}
-
+/*
 resource "azurerm_template_deployment" "dc" {
-  name                = var.name
+  name                = var.template_name
   resource_group_name = azurerm_resource_group.dc.name
   deployment_mode     = "Incremental"
   template_body       = file(var.template_path)
@@ -138,3 +57,4 @@ resource "azurerm_template_deployment" "dc" {
     Virtual_Network_Subnet         = var.virtual_network_subnet
   }
 }
+*/

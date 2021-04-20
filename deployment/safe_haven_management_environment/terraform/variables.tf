@@ -157,6 +157,38 @@ variable "net_vpn_cidr" {
 }
 
 ################################################
+# Artifacts
+################################################
+
+variable "art_rg_name" {
+  type = string
+}
+variable "art_rg_location" {
+  type = string
+}
+variable "art_sa_name" {
+  type = string
+}
+variable "art_dc_createadpdc_path" {
+  type = string
+}
+variable "art_dc_createadbdc_path" {
+  type = string
+}
+variable "art_dc_config_files_path" {
+  type = string
+}
+variable "art_dc_config_file_disconnect_ad" {
+  type = string
+}
+variable "art_dc_putty_source_uri" {
+  type = string 
+}
+variable "art_nps_config_files_path" {
+  type = string 
+}
+
+################################################
 # DC
 ################################################
 
@@ -172,32 +204,11 @@ variable "dc_rg_name_bootdiagnostics" {
 variable "dc_sa_name_bootdiagnostics" {
   type = string
 }
-variable "dc_rg_name_artifacts" {
-  type = string
-}
-variable "dc_sa_name_artifacts" {
-  type = string
-}
-variable "dc_name" {
+variable "dc_template_name" {
   type = string
 }
 variable "dc_template_path" {
   type = string
-}
-variable "dc_createadpdc_path" {
-  type = string
-}
-variable "dc_createadbdc_path" {
-  type = string
-}
-variable "dc_config_files_path" {
-  type = string
-}
-variable "dc_config_file_disconnect_ad" {
-  type = string
-}
-variable "dc_putty_source_uri" {
-  type = string 
 }
 variable "dc_administrator_password" {
   type = string
@@ -287,5 +298,78 @@ variable "dc_virtual_network_resource_group" {
   type = string
 }
 variable "dc_virtual_network_subnet" {
+  type = string
+}
+
+################################################
+# NPS
+################################################
+
+variable "nps_rg_name" {
+  type = string
+}
+variable "nps_rg_location" {
+  type = string
+}
+variable "nps_template_name" {
+  type = string
+}
+variable "nps_template_path" {
+  type = string
+}
+variable "nps_administrator_password" {
+  type = string
+  sensitive = true
+}
+variable "nps_administrator_user" {
+  type = string
+}
+variable "nps_bootdiagnostics_account_name" {
+  type = string
+}
+variable "nps_domain_join_password" {
+  type = string
+  sensitive = true
+}
+variable "nps_domain_join_user" {
+  type = string
+}
+variable "nps_domain_name" {
+  type = string
+}
+variable "nps_data_disk_size_gb" {
+  type = number
+}
+variable "nps_data_disk_type" {
+  type = string
+}
+variable "nps_host_name" {
+  type = string
+}
+variable "nps_ip_address" {
+  type = string
+}
+variable "nps_os_disk_size_gb" {
+  type = number
+}
+variable "nps_os_disk_type" {
+  type = string
+}
+variable "nps_vm_name" {
+  type = string
+}
+variable "nps_vm_size" {
+  type = string
+}
+variable "nps_ou_path" {
+  type = string
+}
+variable "nps_virtual_network_name" {
+  type = string
+}
+variable "nps_virtual_network_resource_group" {
+  type = string
+}
+variable "nps_virtual_network_subnet" {
   type = string
 }
