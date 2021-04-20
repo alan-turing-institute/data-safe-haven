@@ -3,8 +3,6 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
-    [string]$emailAddress = "dsgbuild@turing.ac.uk",
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [switch]$dryRun,
     [Parameter(Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
@@ -108,7 +106,7 @@ if ($requestCertificate) {
 
     # Run Posh-ACME commands in a subjob to avoid incompatibility with the Az module
     # ------------------------------------------------------------------------------
-    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $userFriendlyFqdn, $csrPath, $emailAddress, $dryRun) -ScriptBlock {
+    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $userFriendlyFqdn, $csrPath, $config.shm.organisation.contactEmail, $dryRun) -ScriptBlock {
         param(
             [string]$ScriptRoot,
             [string]$AZAccessToken,
