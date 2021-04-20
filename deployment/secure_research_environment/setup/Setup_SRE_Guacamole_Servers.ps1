@@ -57,7 +57,7 @@ Add-LogMessage -Level Info "Registering Guacamole with Azure Active Directory...
 Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration"
 $application = Get-MgApplication -Filter "DisplayName eq 'Guacamole SRE $($config.sre.id)'"
 if (-not $application) {
-    $application = New-MgApplication -DisplayName "Guacamole SRE $($config.sre.id)" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)") }
+    $application = New-MgApplication -DisplayName "Guacamole SRE $($config.sre.id)" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
 }
 if (Get-MgApplication -Filter "DisplayName eq 'Guacamole SRE $($config.sre.id)'") {
     Add-LogMessage -Level Success "Guacamole is correctly registered in Azure Active Directory"
@@ -114,6 +114,7 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
 
 # Deploy the VM
 # -------------
+$null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     AdminPassword = $vmAdminPassword
