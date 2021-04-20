@@ -52,18 +52,10 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
+$config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
+$config.logging["workspaceId"] = $workspaceId
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
-    Replace("<dc1-ip-address>", $config.dc.ip).
-    Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
-    Replace("<ntp-server-ip-addresses>", $($config.time.ntp.serverAddresses -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
-    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-    Replace("<shm-id>", $config.id).
-    Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
-    Replace("<subnet-mirror-tier2-cidr>", $config.network.mirrorVnets.tier2.cidr).
-    Replace("<subnet-mirror-tier3-cidr>", $config.network.mirrorVnets.tier3.cidr).
-    Replace("<subnet-repository-cidr>", $config.network.repositoryVnet.subnets.repository.cidr).
-    Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr).
-    Replace("<logging-workspace-id>", $workspaceId) | ConvertFrom-Json -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 
 
