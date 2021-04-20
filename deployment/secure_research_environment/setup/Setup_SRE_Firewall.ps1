@@ -39,10 +39,8 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 
 # Load all traffic rules from template
 # ------------------------------------
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
-    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-    Replace("<subnet-sre-deployment-cidr>", $config.sre.network.vnet.subnets.deployment.cidr).
-    Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
+$config.shm.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "sre-$($config.sre.id)*"
 
 

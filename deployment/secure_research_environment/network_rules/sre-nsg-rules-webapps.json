@@ -11,18 +11,20 @@
         "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
         "sourcePortRange": "*"
     },
-    {
-        "name": "AllowRdsApplicationHostInbound",
-        "access": "Allow",
-        "description": "Allow inbound http(s) connections from application session host",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "destinationPortRange": ["80", "443"],
-        "direction": "Inbound",
-        "priority": 2000,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.rds.appSessionHost.ip}}",
-        "sourcePortRange": "*"
-    },
+    {{#sre.rds.appSessionHost.ip?}}
+        {
+            "name": "AllowRdsApplicationHostInbound",
+            "access": "Allow",
+            "description": "Allow inbound http(s) connections from application session host",
+            "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+            "destinationPortRange": ["80", "443"],
+            "direction": "Inbound",
+            "priority": 2000,
+            "protocol": "TCP",
+            "sourceAddressPrefix": "{{sre.rds.appSessionHost.ip}}",
+            "sourcePortRange": "*"
+        },
+    {{/sre.rds.appSessionHost.ip?}}
     {
         "name": "AllowComputeVMsInbound",
         "access": "Allow",
@@ -51,7 +53,11 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationAddressPrefix": [
+            {{#shm.time.ntp.serverAddresses}}
+                "{{.}}",
+            {{/shm.time.ntp.serverAddresses}}
+        ],
         "destinationPortRange": 123,
         "direction": "Outbound",
         "priority": 1000,
