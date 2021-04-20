@@ -78,7 +78,7 @@ if ($requestCertificate) {
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $additionalFdqn = $config.sre.remoteDesktop.gateway.fqdn
     } else {
-        Add-LogMessage -Level Fatal "Certificate creation failed!"
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
 
     # Get token for DNS subscription

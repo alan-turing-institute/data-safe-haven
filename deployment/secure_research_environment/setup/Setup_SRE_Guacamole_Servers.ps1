@@ -147,6 +147,16 @@ if ($?) {
 } else {
     Add-LogMessage -Level Info "Failed to set 'A' record for SRE $($config.sre.id)!"
 }
+# Set the CNAME record for the remote desktop server
+$serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
+Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+if ($?) {
+    Add-LogMessage -Level Success "Successfully set 'CNAME' record for $serverHostname"
+} else {
+    Add-LogMessage -Level Info "Failed to set 'CNAME' record for $serverHostname!"
+}
 # Set the CAA record for the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
 Remove-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg

@@ -199,7 +199,7 @@ $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAct
 # Add DNS records to SRE DNS Zone
 Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
 $dnsTtlSeconds = 30
-# Set the A record
+# Set the A record for the SRE FQDN
 $recordName = "@"
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
 Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
@@ -209,15 +209,24 @@ if ($?) {
 } else {
     Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
 }
-# Set the CNAME record
-$recordName = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
+# Set the CNAME record for the remote desktop server
+$serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
 Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-Remove-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $recordName -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
+Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
     Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
+}
+# Set the CAA record for the SRE FQDN
+Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
+Remove-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$null = New-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtl -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
+if ($?) {
+    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
+} else {
+    Add-LogMessage -Level Info "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
