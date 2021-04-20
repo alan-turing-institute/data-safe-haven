@@ -41,18 +41,26 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE admin usernames exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!" -Exception $_.Exception
 }
 # :: VM admin passwords
 try {
+    # Remote desktop
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.guacamole.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    } else {
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+    }
+    # Other VMs
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE VM admin passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!" -Exception $_.Exception
 }
 # :: Databases
 try {
@@ -65,7 +73,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE database secrets exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE database secrets exist!" -Exception $_.Exception
 }
 # :: Other secrets
 try {
@@ -73,7 +81,7 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that other SRE secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!" -Exception $_.Exception
 }
 
 
