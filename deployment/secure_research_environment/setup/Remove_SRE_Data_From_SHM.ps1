@@ -47,6 +47,7 @@ if ($sreResources -or $sreResourceGroups) {
     # ----------------------------------------------
     Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
+    WRite-Host $peeringName
     foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
         foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
             $null = Remove-AzVirtualNetworkPeering -Name $peering.Name -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
@@ -69,9 +70,9 @@ if ($sreResources -or $sreResourceGroups) {
     $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
     # Remove SRE users and groups from SHM DC
     $params = @{
-        groupNamesJoined           = $groupNames -join "|"
-        userNamesJoined            = $userNames -join "|"
-        computerNamePatternsJoined = $computerNamePatterns -join "|"
+        groupNamesB64           = $groupNames | ConvertTo-Json | ConvertTo-Base64
+        userNamesB64            = $userNames | ConvertTo-Json | ConvertTo-Base64
+        computerNamePatternsB64 = $computerNamePatterns | ConvertTo-Json | ConvertTo-Base64
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
