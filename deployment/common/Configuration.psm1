@@ -26,11 +26,13 @@ function Get-CoreConfig {
         [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
         [string]$sreId = $null
     )
-    if (-not $sreId) {
-        $configFilename = "shm_${shmId}_core_config.json"
-    } else {
+    # Construct filename for this config file
+    if ($sreId) {
         $configFilename = "sre_${shmId}${sreId}_core_config.json"
+    } else {
+        $configFilename = "shm_${shmId}_core_config.json"
     }
+    # Try to load the file
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
         $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
@@ -38,6 +40,13 @@ function Get-CoreConfig {
         Add-LogMessage -Level Fatal "Could not find a config file named '$configFilename'..."
     } catch [System.ArgumentException] {
         Add-LogMessage -Level Fatal "'$configPath' is not a valid JSON config file..."
+    }
+    # Ensure that naming structure is being adhered to
+    if ($sreId -and ($sreId -ne $configJson.sreId)) {
+        Add-LogMessage -Level Fatal "Config file '$configFilename' has an incorrect SRE ID: $($configJson.sreId)!"
+    }
+    if ($shmId -ne $configJson.shmId) {
+        Add-LogMessage -Level Fatal "Config file '$configFilename' has an incorrect SHM ID: $($configJson.shmId)!"
     }
     return $configJson
 }
