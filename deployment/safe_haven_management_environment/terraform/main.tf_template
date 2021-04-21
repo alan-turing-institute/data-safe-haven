@@ -93,6 +93,7 @@ module "artifacts" {
   nps_config_files_path = var.art_nps_config_files_path
 }
 
+/*
 module "dc" {
   source = "./modules/dc"
 
@@ -139,7 +140,7 @@ module "nps" {
   rg_name = var.nps_rg_name
   rg_location = var.nps_rg_location
   
-  /*
+
   template_name = var.nps_template_name
   template_path = var.nps_template_path
   administrator_password = var.kv_secret_value_vm_admin_password
@@ -160,5 +161,5 @@ module "nps" {
   virtual_network_name = var.nps_virtual_network_name
   virtual_network_resource_group = var.nps_virtual_network_resource_group
   virtual_network_subnet = var.nps_virtual_network_subnet
-  */
 }
+*/
