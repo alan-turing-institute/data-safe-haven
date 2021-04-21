@@ -4,6 +4,8 @@ variable "rg_name" {
 variable "rg_location" {
   type = string
 }
+
+/*
 variable "template_name" {
   type = string
 }
@@ -66,3 +68,4 @@ variable "virtual_network_resource_group" {
 variable "virtual_network_subnet" {
   type = string
 }
+*/

@@ -76,6 +76,33 @@ variable "kv_secret_value_shm_vm_safemode_password_dc" {
   sensitive = true
 }
 
+variable "kv_secret_name_domain_join_password" {
+  type = string
+}
+
+variable "kv_secret_value_domain_join_password" {
+  type = string
+  sensitive = true
+}
+
+variable "kv_secret_name_vm_admin_username" {
+  type = string
+}
+
+variable "kv_secret_value_vm_admin_username" {
+  type = string
+  sensitive = true
+}
+
+variable "kv_secret_name_vm_admin_password" {
+  type = string
+}
+
+variable "kv_secret_value_vm_admin_password" {
+  type = string
+  sensitive = true
+}
+
 ################################################
 # Networking
 ################################################
@@ -210,13 +237,13 @@ variable "dc_template_name" {
 variable "dc_template_path" {
   type = string
 }
-variable "dc_administrator_password" {
-  type = string
-  sensitive = true
-}
-variable "dc_administrator_user" {
-  type = string
-}
+# variable "dc_administrator_password" {
+#   type = string
+#   sensitive = true
+# }
+# variable "dc_administrator_user" {
+#   type = string
+# }
 variable "dc_artifacts_location" {
   type = string
 }
@@ -284,10 +311,10 @@ variable "dc_domain_netbios_name" {
 variable "dc_external_dns_resolver" {
   type = string
 }
-variable "dc_safemode_password" {
-  type = string
-  sensitive = true
-}
+# variable "dc_safemode_password" {
+#   type = string
+#   sensitive = true
+# }
 variable "dc_shm_id" {
   type = string
 }
@@ -311,26 +338,27 @@ variable "nps_rg_name" {
 variable "nps_rg_location" {
   type = string
 }
+/*
 variable "nps_template_name" {
   type = string
 }
 variable "nps_template_path" {
   type = string
 }
-variable "nps_administrator_password" {
-  type = string
-  sensitive = true
-}
-variable "nps_administrator_user" {
-  type = string
-}
+# variable "nps_administrator_password" {
+#   type = string
+#   sensitive = true
+# }
+# variable "nps_administrator_user" {
+#   type = string
+# }
 variable "nps_bootdiagnostics_account_name" {
   type = string
 }
-variable "nps_domain_join_password" {
-  type = string
-  sensitive = true
-}
+# variable "nps_domain_join_password" {
+#   type = string
+#   sensitive = true
+# }
 variable "nps_domain_join_user" {
   type = string
 }
@@ -373,3 +401,4 @@ variable "nps_virtual_network_resource_group" {
 variable "nps_virtual_network_subnet" {
   type = string
 }
+*/

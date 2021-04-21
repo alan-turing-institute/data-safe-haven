@@ -48,6 +48,12 @@ module "keyvault" {
   secret_value_shm_domain_admin_password = var.kv_secret_value_shm_domain_admin_password
   secret_name_shm_vm_safemode_password_dc = var.kv_secret_name_shm_vm_safemode_password_dc
   secret_value_shm_vm_safemode_password_dc = var.kv_secret_value_shm_vm_safemode_password_dc
+  secret_name_domain_join_password = var.kv_secret_name_domain_join_password
+  secret_value_domain_join_password = var.kv_secret_value_domain_join_password
+  secret_name_vm_admin_username = var.kv_secret_name_vm_admin_username
+  secret_value_vm_admin_username = var.kv_secret_value_vm_admin_username
+  secret_name_vm_admin_password = var.kv_secret_name_vm_admin_password
+  secret_value_vm_admin_password = var.kv_secret_value_vm_admin_password
 }
 
 module "networking" {
@@ -96,8 +102,8 @@ module "dc" {
   sa_name_bootdiagnostics = var.dc_sa_name_bootdiagnostics
   template_name = var.dc_template_name
   template_path = var.dc_template_path
-  administrator_password = var.dc_administrator_password
-  administrator_user = var.dc_administrator_user
+  administrator_password = var.kv_secret_value_shm_domain_admin_password
+  administrator_user = var.kv_secret_value_shm_domain_admin_username
   artifacts_location = var.dc_artifacts_location
   artifacts_location_sas_token = var.dc_artifacts_location_sas_token
   bootdiagnostics_account_name = var.dc_bootdiagnostics_account_name
@@ -120,7 +126,7 @@ module "dc" {
   domain_name = var.dc_domain_name
   domain_netbios_name = var.dc_domain_netbios_name
   external_dns_resolver = var.dc_external_dns_resolver
-  safemode_password = var.dc_safemode_password
+  safemode_password = var.kv_secret_value_shm_vm_safemode_password_dc
   shm_id = var.dc_shm_id
   virtual_network_name = var.dc_virtual_network_name
   virtual_network_resource_group = var.dc_virtual_network_resource_group
@@ -132,13 +138,14 @@ module "nps" {
   
   rg_name = var.nps_rg_name
   rg_location = var.nps_rg_location
-
+  
+  /*
   template_name = var.nps_template_name
   template_path = var.nps_template_path
-  administrator_password = var.nps_administrator_password
-  administrator_user = var.nps_administrator_user
+  administrator_password = var.kv_secret_value_vm_admin_password
+  administrator_user = var.kv_secret_value_vm_admin_username
   bootdiagnostics_account_name = var.nps_bootdiagnostics_account_name
-  domain_join_password = var.nps_domain_join_password
+  domain_join_password = var.kv_secret_value_domain_join_password
   domain_join_user = var.nps_domain_join_user
   domain_name = var.nps_domain_name
   data_disk_size_gb = var.nps_data_disk_size_gb
@@ -153,4 +160,5 @@ module "nps" {
   virtual_network_name = var.nps_virtual_network_name
   virtual_network_resource_group = var.nps_virtual_network_resource_group
   virtual_network_subnet = var.nps_virtual_network_subnet
+  */
 }

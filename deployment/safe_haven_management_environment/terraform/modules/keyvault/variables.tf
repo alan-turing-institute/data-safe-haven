@@ -62,3 +62,30 @@ variable "secret_value_shm_vm_safemode_password_dc" {
   type = string
   sensitive = true
 }
+
+variable "secret_name_domain_join_password" {
+  type = string
+}
+
+variable "secret_value_domain_join_password" {
+  type = string
+  sensitive = true
+}
+
+variable "secret_name_vm_admin_username" {
+  type = string
+}
+
+variable "secret_value_vm_admin_username" {
+  type = string
+  sensitive = true
+}
+
+variable "secret_name_vm_admin_password" {
+  type = string
+}
+
+variable "secret_value_vm_admin_password" {
+  type = string
+  sensitive = true
+}

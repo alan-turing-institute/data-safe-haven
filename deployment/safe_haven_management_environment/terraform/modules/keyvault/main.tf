@@ -54,7 +54,6 @@ resource "azurerm_key_vault_secret" "shm_domain_admin_username" {
   key_vault_id = azurerm_key_vault.kv.id
 }
 
-
 resource "azurerm_key_vault_secret" "shm_domain_admin_password" {
   name         = var.secret_name_shm_domain_admin_password
   value        = var.secret_value_shm_domain_admin_password
@@ -64,5 +63,23 @@ resource "azurerm_key_vault_secret" "shm_domain_admin_password" {
 resource "azurerm_key_vault_secret" "vm_safemode_password_dc" {
   name         = var.secret_name_shm_vm_safemode_password_dc
   value        = var.secret_value_shm_vm_safemode_password_dc
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "domain_join_password" {
+  name         = var.secret_name_domain_join_password
+  value        = var.secret_value_domain_join_password
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "vm_admin_username" {
+  name         = var.secret_name_vm_admin_username
+  value        = var.secret_value_vm_admin_username
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_key_vault_secret" "vm_admin_password" {
+  name         = var.secret_name_vm_admin_password
+  value        = var.secret_value_vm_admin_password
   key_vault_id = azurerm_key_vault.kv.id
 }

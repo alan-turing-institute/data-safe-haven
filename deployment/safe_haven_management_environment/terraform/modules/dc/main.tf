@@ -18,7 +18,6 @@ resource "azurerm_storage_account" "dc_bootdiagnostics" {
   access_tier              = "Hot"
 }
 
-
 /*
 resource "azurerm_template_deployment" "dc" {
   name                = var.template_name

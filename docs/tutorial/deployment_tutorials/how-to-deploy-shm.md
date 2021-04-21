@@ -15,11 +15,11 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:id: 9. Configure internal administrator accounts](#id-9-configure-internal-administrator-accounts)
 + [:station: 10. Deploy network and VPN gateway](#station-10-deploy-network-and-vpn-gateway)
 + [:house_with_garden: 11. Deploy and configure domain controllers](#house_with_garden-11-deploy-and-configure-domain-controllers)
-+ [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
-+ [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
-+ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
++ [:police_car: 12. Deploy and configure network policy server](#police_car-12-deploy-and-configure-network-policy-server)
++ [:closed_lock_with_key: 13. Require MFA for all users](#closed_lock_with_key-13-require-mfa-for-all-users)
++ [:fire_engine: 14. Deploy firewall](#fire_engine-14-deploy-firewall)
++ [:package: 15. Deploy Python/R package repositories](#package-15-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 16. Deploy logging](#chart_with_upwards_trend-16-deploy-logging)
 
 ## Explanation of symbols used in this guide
 
@@ -814,7 +814,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 </details>
 
-## :police_car: 10. Deploy and configure network policy server
+## :police_car: 12. Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -905,7 +905,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
   + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
 
-## :closed_lock_with_key: 11. Require MFA for all users
+## :closed_lock_with_key: 13. Require MFA for all users
 
 :exclamation: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
@@ -940,7 +940,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## :fire_engine: 12. Deploy firewall
+## :fire_engine: 14. Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
@@ -951,7 +951,7 @@ PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-## :package: 13. Deploy Python/R package repositories
+## :package: 15. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
@@ -983,7 +983,7 @@ PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 + where `<desired tier>` is either `2` or `3`
 
-## :chart_with_upwards_trend: 14. Deploy logging
+## :chart_with_upwards_trend: 16. Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 

@@ -18,8 +18,8 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
+# # Create resource group if it does not exist
+# # ------------------------------------------
 # $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
@@ -32,18 +32,19 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 
 
-# Ensure that artifacts resource group, storage account and storage container exist
-# ---------------------------------------------------------------------------------
+# # Ensure that artifacts resource group, storage account and storage container exist
+# # ---------------------------------------------------------------------------------
 # $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 # $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
-# $storageContainerName = "shm-configuration-nps"
+$storageContainerName = "shm-configuration-nps"
 # $null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+$storageAccount = Get-AzStorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 
 
-# Upload artifacts
-# ----------------
-# Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
-# Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
+# # Upload artifacts
+# # ----------------
+# # Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
+# # Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
 # $success = $true
 # foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
 #     $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
@@ -58,9 +59,9 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 
 # Deploy NPS from template
 # ------------------------
-Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
-# NB. We do not currently use the dedicated service-servers computer management user.
-# This will need some deeper thought about which OU each VM should belong to.
+# Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
+# # NB. We do not currently use the dedicated service-servers computer management user.
+# # This will need some deeper thought about which OU each VM should belong to.
 $params = @{
     Administrator_Password         = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
     Administrator_User             = $vmAdminUsername

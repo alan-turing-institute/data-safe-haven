@@ -3,6 +3,7 @@ resource "azurerm_resource_group" "nps" {
   location = var.rg_location
 }
 
+/*
 resource "azurerm_template_deployment" "nps" {
   name                = var.template_name
   resource_group_name = azurerm_resource_group.nps.name
@@ -29,3 +30,4 @@ resource "azurerm_template_deployment" "nps" {
     Virtual_Network_Subnet         = var.virtual_network_subnet
   }
 }
+*/
