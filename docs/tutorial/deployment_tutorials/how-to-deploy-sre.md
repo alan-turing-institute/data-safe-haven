@@ -2,10 +2,11 @@
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-We currently support two different remote desktop solutions:
+We currently support three different end-user interfaces:
 
-+ :pear: **Apache Guacamole** (:sparkles: recommended :sparkles:)
++ :pear: `Apache Guacamole` :sparkles: **recommended** :sparkles:
   + [All tiers](how-to-deploy-sre-apache-guacamole.md)
-+ :bento: **Microsoft Remote Desktop**
-  + [Tiers 0/1](how-to-deploy-sre-cocalc.md) which use `CoCalc` as the user interface
-  + [Tiers 2/3](how-to-deploy-sre-microsoft-rds.md) which use `Microsoft Remote Desktop` as the user interface
++ :beginner: `CoCalc`
+  + [Tiers 0/1 only](how-to-deploy-sre-cocalc.md)
++ :bento: `Microsoft Remote Desktop`
+  + [Tiers 2/3/4 only](how-to-deploy-sre-microsoft-rds.md)

@@ -509,13 +509,19 @@ function Get-SreConfig {
     # Secure research environment config
     # ----------------------------------
     # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
+    $remoteDesktopProviders = @("ApacheGuacamole", "CoCalc", "MicrosoftRDS")
     if (-not $sreConfigBase.remoteDesktopProvider) {
         Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
         $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
     }
     if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
-        Add-LogMessage -Level Fatal "Did not recognise remoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
+        Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
+    }
+    if (
+        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$config.sre.tier)) -or
+        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$config.sre.tier))
+    ) {
+        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($config.sre.tier)'"
     }
     # Setup the basic config
     $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false # Nexus is the default for tier-2 SREs
@@ -635,7 +641,6 @@ function Get-SreConfig {
     $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
     $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
-    # Storage configuration entries
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
             readOnly  = [ordered]@{
@@ -677,19 +682,19 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = (($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") -and ($config.sre.tier -eq "1")) ? "FileStorage" : "BlobStorage"
-                performance        = (($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") -and ($config.sre.tier -eq "1")) ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
+                performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
                 }
             }
         }

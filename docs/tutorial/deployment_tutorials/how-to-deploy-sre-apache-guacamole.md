@@ -109,6 +109,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
         "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
         "version": "The version of the Compute VM image (e.g. 0.1.2019082900)",
     },
+    "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended) or 'CoCalc' (tier 0/1 only) or 'MicrosoftRDS' (tier 2/3 only)",
     "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",

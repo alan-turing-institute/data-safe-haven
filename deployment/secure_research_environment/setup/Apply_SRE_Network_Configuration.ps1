@@ -31,9 +31,9 @@ $nsgs = @{}
 Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
 
 
-# Tier-1 and below have single NSG
-# --------------------------------
-if (@(0, 1).Contains([int]$config.sre.tier)) {
+# CoCalc has a single NSG
+# -----------------------
+if ($config.sre.remoteDesktop.provider -eq "CoCalc") {
     $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
 
     Add-LogMessage -Level Info "Setting inbound connection rules on user-facing NSG..."
@@ -43,8 +43,8 @@ if (@(0, 1).Contains([int]$config.sre.tier)) {
     $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
 
 
-# Tier-2 and above have several NSGs
-# ----------------------------------
+# ApacheGuacamole and MicrosoftRDS have several NSGs
+# --------------------------------------------------
 } else {
     # Remote desktop
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
@@ -118,7 +118,6 @@ foreach ($nsgName in $nsgs.Keys) {
 # ------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
 Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -shmId $shmId -sreId $sreId"
-
 if (@(2, 3).Contains([int]$config.sre.tier)) {
     Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
 

@@ -121,23 +121,27 @@ if ($sreResources -or $sreResourceGroups) {
             $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
         } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
             $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
+        } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
+            $serverHostname = $null
         } else {
             Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
         }
-        Add-LogMessage -Level Info "[ ] Removing '$serverHostname' CNAME record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-        Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-        $success = $success -and $?
-        # Let's Encrypt ACME records
-        foreach ($letsEncryptAcmeDnsRecord in ("_acme-challenge.${serverHostname}".ToLower(), "_acme-challenge.$($config.sre.domain.fqdn)".ToLower(), "_acme-challenge")) {
-            Add-LogMessage -Level Info "[ ] Removing '$letsEncryptAcmeDnsRecord' TXT record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-            Remove-AzDnsRecordSet -Name $letsEncryptAcmeDnsRecord -RecordType TXT -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+        if ($serverHostname) {
+            Add-LogMessage -Level Info "[ ] Removing '$serverHostname' CNAME record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+            Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
             $success = $success -and $?
-        }
-        # Print success/failure message
-        if ($success) {
-            Add-LogMessage -Level Success "Record removal succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Record removal failed!"
+            # Let's Encrypt ACME records
+            foreach ($letsEncryptAcmeDnsRecord in ("_acme-challenge.${serverHostname}".ToLower(), "_acme-challenge.$($config.sre.domain.fqdn)".ToLower(), "_acme-challenge")) {
+                Add-LogMessage -Level Info "[ ] Removing '$letsEncryptAcmeDnsRecord' TXT record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+                Remove-AzDnsRecordSet -Name $letsEncryptAcmeDnsRecord -RecordType TXT -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+                $success = $success -and $?
+            }
+            # Print success/failure message
+            if ($success) {
+                Add-LogMessage -Level Success "Record removal succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Record removal failed!"
+            }
         }
     }
 }

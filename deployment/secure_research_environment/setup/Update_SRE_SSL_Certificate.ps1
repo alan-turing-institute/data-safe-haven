@@ -78,7 +78,7 @@ if ($requestCertificate) {
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $additionalFdqn = $config.sre.remoteDesktop.gateway.fqdn
     } else {
-        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+        Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }
 
     # Get token for DNS subscription
@@ -278,7 +278,7 @@ if ($doInstall) {
             Add-LogMessage -Level Fatal "Tier '$($config.sre.tier)' is not currently supported!"
         }
     } else {
-        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+        Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }
 
 

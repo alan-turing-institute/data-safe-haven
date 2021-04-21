@@ -51,7 +51,7 @@ try {
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    } else {
+    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Other VMs
@@ -85,9 +85,9 @@ try {
 }
 
 
-# Tier-2 and above need to register service users with the SHM
-# ------------------------------------------------------------
-if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+# All tiers need to register service users with the SHM except the tier-1 CoCalc deployment
+# -----------------------------------------------------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
     # Retrieve passwords from the Key Vault
     # -------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."

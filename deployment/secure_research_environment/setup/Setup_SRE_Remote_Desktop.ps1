@@ -207,7 +207,7 @@ $null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
-    Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
+    Add-LogMessage -Level Fatal "Failed to set 'A' record for gateway host!"
 }
 # Set the CNAME record for the remote desktop server
 $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
@@ -217,7 +217,7 @@ $null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $co
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
-    Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
+    Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for gateway host!"
 }
 # Set the CAA record for the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
@@ -226,7 +226,7 @@ $null = New-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.dom
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
 } else {
-    Add-LogMessage -Level Info "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
+    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
