@@ -377,7 +377,8 @@ directory or the [shared working directory](#shared-working-space).
 #### Shared working space
 
 The directory `/shared` can be used when multiple users will need to edit files
-or directories. New files and directories created here will belong to the
+or directories. This is the best place to keep large data files you may edit and
+you working file. New files and directories created here will belong to the
 `shared` group, which all users are members of, and members of the `shared`
 group will be given read and write privileges. This means that *any user* will
 be able to read, edit and delete files and directories created here.
@@ -397,3 +398,67 @@ The output directory, `/output`, provides a convenient place to put the products
 of your work. This directory is writeable by all users. At the end of a project,
 data stored here can be reviewed, and extracted from the environment by an
 administrator.
+
+### 👔 Recommended workflows
+
+#### Python
+
+You will notice that very few Python packages, including pip, are installed
+system wide. The intension is for you to manage as many or as few virtual
+environments as required for all your strands of work. A strong advantage of
+this approach is the multiple virtual environments may be created with the
+packages they need, pinned to particular versions if required, without the worry
+of maintaining compatible versions globally.
+
+Here is an example. Create a directory for this piece of work
+
+```
+$ mkdir /shared/new_project
+$ cd /shared/new_project
+```
+
+Create, and enter, a new virtual environment
+
+```
+$ python3 -m venv ./venv
+$ source ./venv/bin/activate
+```
+
+Your prompt will now (probably) have a prefix like `(venv)` indicating that you
+are using the virtual environment. You will notice that
+[venv](https://docs.python.org/3/library/venv.html) has installed
+[pip](https://pip.pypa.io/en/stable/user_guide/) and added it to your path, so
+you can now use pip to install and manage Python packages. For example
+
+```
+$ pip install numpy
+$ pip list
+$ pip uninstall numpy
+```
+
+Other members of your team can use the new virtual environment in the same way
+you did (_i.e._ `source /shared/new_project/venv/bin/activate`).
+
+You will want to communicate with your team to decide how to manage your virtual
+environments. For example, deciding how many will be needed, and giving notice
+of adding/removing/upgrading packages.
+
+A final tip, keeping a
+[`requirements.txt`](https://pip.pypa.io/en/stable/user_guide/#requirements-files)
+file is a good way to keep an authoritive list of all packages and their
+versions. This way, if anything does go wrong, you can recreate the environment
+easily. Also, others may duplicate the environment to ensure your work is
+reproducible.
+
+You can create a requirements file based on your currently install packages
+with
+
+```
+$ pip freeze > requirements.txt
+```
+
+You may then install the defined packages (with identical versions) with
+
+```
+$ pip install -r requirements.txt
+```
