@@ -1,4 +1,4 @@
-Import-Module Poshstache -ErrorAction Stop
+Import-Module Poshstache -Global -ErrorAction Stop # Note that we need -Global as Poshstache uses `Get-Module` to check where it is isntalled
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
