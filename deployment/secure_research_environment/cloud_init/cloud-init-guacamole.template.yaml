@@ -30,8 +30,11 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
-      pg_ldap_sync -c /opt/pg-ldap-sync/configuration.yaml -vvv
-      docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /scripts/db_update.sql
+      echo "$(date -u +%FT%T%Z) Running LDAP synchronisation..."
+      pg_ldap_sync -c /opt/pg-ldap-sync/configuration.yaml -vvv | logger -t SafeHaven
+      echo "$(date -u +%FT%T%Z) Updating database..."
+      docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /scripts/db_update.sql > /dev/null
+      echo "$(date -u +%FT%T%Z) Finished"
 
   - path: "/opt/postgresql/data/connections.csv"
     permissions: "0444"
