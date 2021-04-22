@@ -436,6 +436,7 @@ function Send-FilesToLinuxVM {
         [string]$VMResourceGroupName
     )
     $originalContext = Get-AzContext
+    $storageAccountSubscription = $BlobStorageAccount.Id.Split("/")[2]
     $ResolvedPath = Get-Item -Path $LocalDirectory
 
     # Zip files from the local directory
@@ -456,8 +457,8 @@ function Send-FilesToLinuxVM {
     # Upload the zipfile to blob storage
     Add-LogMessage -Level Info "[ ] Uploading zip file to container '$zipFileContainerName'..."
     try {
-        $null = Set-AzContext -SubscriptionId $BlobStorageAccount.Id.Split("/")[2] -ErrorAction Stop
-        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -ResourceGroupName $BlobStorageAccount.ResourceGroupName -Name $BlobStorageAccount.StorageAccountName).DefaultAction
+        $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
+        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName).DefaultAction
         $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
         $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
         $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
@@ -481,7 +482,7 @@ function Send-FilesToLinuxVM {
 
     # Generate a SAS token and construct URL
     Add-LogMessage -Level Info "[ ] Generating download URL..."
-    $sasToken = New-ReadOnlyStorageAccountSasToken -ResourceGroup $BlobStorageAccount.ResourceGroupName -AccountName $BlobStorageAccount.StorageAccountName -SubscriptionName $BlobStorageAccount.Id.Split("/")[2]
+    $sasToken = New-ReadOnlyStorageAccountSasToken -AccountName $BlobStorageAccount.StorageAccountName -ResourceGroup $BlobStorageAccount.ResourceGroupName -SubscriptionName $storageAccountSubscription
     $remoteUrl = "$($BlobStorageAccount.PrimaryEndpoints.Blob)${zipFileContainerName}/${zipFileName}${sasToken}"
     Add-LogMessage -Level Success "Constructed download URL $remoteUrl"
 
@@ -498,10 +499,12 @@ function Send-FilesToLinuxVM {
     # Remove blob storage container
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
+        $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
     } catch {
-        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!"
+        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!" -Exception $_.Exception
     }
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
