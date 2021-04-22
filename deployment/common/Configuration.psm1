@@ -518,10 +518,10 @@ function Get-SreConfig {
         Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
     }
     if (
-        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$config.sre.tier)) -or
-        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$config.sre.tier))
+        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$sreConfigBase.tier)) -or
+        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
     ) {
-        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($config.sre.tier)'"
+        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
     }
     # Setup the basic config
     $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false # Nexus is the default for tier-2 SREs
