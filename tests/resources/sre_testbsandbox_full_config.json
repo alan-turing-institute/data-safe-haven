@@ -570,6 +570,7 @@
         "ip": "10.151.1.4",
         "networkRules": {
           "allowedSources": "Internet",
+          "includeAzurePlatformDnsRule": true,
           "outboundInternet": "Deny"
         },
         "nsg": {

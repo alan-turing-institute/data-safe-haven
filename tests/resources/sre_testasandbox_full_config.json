@@ -594,6 +594,7 @@
         "ip": "10.150.1.4",
         "networkRules": {
           "allowedSources": "193.60.220.253",
+          "includeAzurePlatformDnsRule": true,
           "outboundInternet": "Deny"
         },
         "nsg": {

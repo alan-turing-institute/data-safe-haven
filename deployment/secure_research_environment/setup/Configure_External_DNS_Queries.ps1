@@ -22,16 +22,17 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Block external DNS resolution for DSVMs via SHM DNS servers
-# -----------------------------------------------------------
+# Configure external DNS resolution for DSVMs via SHM DNS servers
+# ---------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+$cidrsToBlock = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
 $params = @{
     sreId                          = $config.sre.id
-    blockedCidrsCommaSeparatedList = $config.sre.network.vnet.subnets.compute.cidr
+    blockedCidrsCommaSeparatedList = ($cidrsToBlock -join ",")
 }
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Block_External_DNS_Queries_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Configure_External_DNS_Queries_Remote.ps1"
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
-    Add-LogMessage -Level Info "Blocking external DNS resolution for DSVMs via ${dnsServerName}..."
+    Add-LogMessage -Level Info "Configuring external DNS resolution for DSVMs via ${dnsServerName}..."
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
@@ -49,14 +50,15 @@ if (-not $dsvmIpLastOctet) {
 $vmIpAddress = @($computeVmIpAddresses | Where-Object { $_.Split(".")[3] -eq $dsvmIpLastOctet })[0]
 Add-LogMessage -Level Info "Looking for DSVM with IP address '$vmIpAddress'..."
 if (-not $vmIpAddress) {
-    Add-LogMessage -Level Fatal "No DSVM found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution is blocked."
+    Add-LogMessage -Level Fatal "No DSVM found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
 } else {
     $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
-    Add-LogMessage -Level Info "Testing external DNS resolution fails on VM '$vmName'..."
+    Add-LogMessage -Level Info "Testing external DNS resolution on VM '$vmName'..."
     $params = @{
-        SHM_DOMAIN_FQDN = $config.shm.domain.fqdn
-        SHM_DC1_FQDN    = $config.shm.dc.fqdn
-        SHM_DC2_FQDN    = $config.shm.dcb.fqdn
+        SHM_DOMAIN_FQDN   = $config.shm.domain.fqdn
+        SHM_DC1_FQDN      = $config.shm.dc.fqdn
+        SHM_DC2_FQDN      = $config.shm.dcb.fqdn
+        OUTBOUND_INTERNET = $config.sre.remoteDesktop.networkRules.outboundInternet
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params

@@ -841,6 +841,8 @@ function Get-SreConfig {
         $config.sre.remoteDesktop.networkRules.copyAllowed = $false
         $config.sre.remoteDesktop.networkRules.pasteAllowed = $false
     }
+    # Since we cannot 'Allow' the AzurePlatformDNS endpoint we set this flag which can be used to turn-off the section in the mustache template
+    $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
     # CodiMD and Gitlab servers
