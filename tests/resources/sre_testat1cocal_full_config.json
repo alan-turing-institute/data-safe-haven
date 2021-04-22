@@ -286,6 +286,7 @@
     },
     "nsgPrefix": "NSG_SHM_TESTA",
     "organisation": {
+      "contactEmail": "safehavendevs@turing.ac.uk",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
@@ -380,74 +381,29 @@
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
-      "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "enableSSIS": true,
-        "ip": "10.150.3.4",
-        "port": "1433",
-        "sku": "sqldev",
-        "subnet": "databases",
-        "type": "MSSQL",
-        "vmName": "MSSQL-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "ip": "10.150.3.5",
-        "port": "5432",
-        "sku": "18.04-LTS",
-        "subnet": "databases",
-        "type": "PostgreSQL",
-        "vmName": "PSTGRS-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_DATABASES"
+      "rg": "RG_SHM_TESTA_SRE_T1COCAL_DATABASES"
     },
     "domain": {
-      "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "fqdn": "sandbox.testa.dsgroupdev.co.uk",
-      "netbiosName": "SANDBOX",
+      "dn": "DC=t1cocal,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "t1cocal.testa.dsgroupdev.co.uk",
+      "netbiosName": "T1COCAL",
       "securityGroups": {
         "dataAdministrators": {
-          "description": "SG SANDBOX Data Administrators",
-          "name": "SG SANDBOX Data Administrators"
+          "description": "SG T1COCAL Data Administrators",
+          "name": "SG T1COCAL Data Administrators"
         },
         "researchUsers": {
-          "description": "SG SANDBOX Research Users",
-          "name": "SG SANDBOX Research Users"
+          "description": "SG T1COCAL Research Users",
+          "name": "SG T1COCAL Research Users"
         },
         "systemAdministrators": {
-          "description": "SG SANDBOX System Administrators",
-          "name": "SG SANDBOX System Administrators"
+          "description": "SG T1COCAL System Administrators",
+          "name": "SG T1COCAL System Administrators"
         }
       }
     },
     "dsvm": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
+      "adminPasswordSecretName": "sre-t1cocal-vm-admin-password-compute",
       "disks": {
         "os": {
           "sizeGb": "default",
@@ -458,7 +414,7 @@
           "type": "Standard_LRS"
         }
       },
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_COMPUTE",
+      "rg": "RG_SHM_TESTA_SRE_T1COCAL_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
         "rg": "RG_SH_IMAGE_GALLERY",
@@ -469,145 +425,83 @@
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {
-      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
+      "routeTableName": "ROUTE-TABLE-SRE-T1COCAL"
     },
-    "guacamole": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-guacamole",
-      "disks": {
-        "os": {
-          "sizeGb": "128",
-          "type": "Standard_LRS"
-        }
-      },
-      "duoApiHostname": "shm--duo-api-hostname",
-      "duoIntegrationKey": "shm--duo-integration-key",
-      "duoSecretKey": "shm--duo-secret-key",
-      "ip": "10.150.6.4",
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_GUACAMOLE",
-      "vmName": "GUACAMOLE-SRE-SANDBOX",
-      "vmSize": "Standard_DS2_v2"
-    },
-    "id": "sandbox",
+    "id": "t1cocal",
     "keyVault": {
-      "name": "kv-testa-sre-sandbox",
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_SECRETS",
+      "name": "kv-testa-sre-t1cocal",
+      "rg": "RG_SHM_TESTA_SRE_T1COCAL_SECRETS",
       "secretNames": {
-        "adminUsername": "sre-sandbox-vm-admin-username",
-        "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-other-nps-secret"
+        "adminUsername": "sre-t1cocal-vm-admin-username",
+        "letsEncryptCertificate": "sre-t1cocal-lets-encrypt-certificate",
+        "npsSecret": "sre-t1cocal-other-nps-secret"
       }
     },
     "location": "uksouth",
     "network": {
       "vnet": {
-        "cidr": "10.150.0.0/21",
-        "name": "VNET_SHM_TESTA_SRE_SANDBOX",
-        "rg": "RG_SHM_TESTA_SRE_SANDBOX_NETWORKING",
+        "cidr": "10.161.0.0/21",
+        "name": "VNET_SHM_TESTA_SRE_T1COCAL",
+        "rg": "RG_SHM_TESTA_SRE_T1COCAL_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.150.4.0/24",
+            "cidr": "10.161.4.0/24",
             "name": "ComputeSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTA_SRE_SANDBOX_COMPUTE",
+              "name": "NSG_SHM_TESTA_SRE_T1COCAL_COMPUTE",
               "rules": "sre-nsg-rules-compute.json"
             }
           },
           "data": {
-            "cidr": "10.150.2.0/24",
+            "cidr": "10.161.2.0/24",
             "name": "PrivateDataSubnet"
           },
           "databases": {
-            "cidr": "10.150.3.0/24",
+            "cidr": "10.161.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTA_SRE_SANDBOX_DATABASES",
+              "name": "NSG_SHM_TESTA_SRE_T1COCAL_DATABASES",
               "rules": "sre-nsg-rules-databases.json"
             }
           },
           "deployment": {
-            "cidr": "10.150.0.0/24",
+            "cidr": "10.161.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTA_SRE_SANDBOX_DEPLOYMENT",
+              "name": "NSG_SHM_TESTA_SRE_T1COCAL_DEPLOYMENT",
               "rules": "sre-nsg-rules-compute-deployment.json"
             }
           },
-          "guacamole": {
-            "cidr": "10.150.6.0/24",
-            "name": "GuacamoleSubnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTA_SRE_SANDBOX_GUACAMOLE",
-              "rules": "sre-nsg-rules-guacamole.json"
-            }
-          },
-          "rds": {
-            "cidr": "10.150.1.0/24",
-            "name": "RDSSubnet"
+          "remoteDesktop": {
+            "cidr": "10.161.1.0/24",
+            "name": "RemoteDesktopSubnet"
           },
           "webapps": {
-            "cidr": "10.150.5.0/24",
+            "cidr": "10.161.5.0/24",
             "name": "WebappsSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTA_SRE_SANDBOX_WEBAPPS",
+              "name": "NSG_SHM_TESTA_SRE_T1COCAL_WEBAPPS",
               "rules": "sre-nsg-rules-webapps.json"
             }
           }
         }
       }
     },
-    "nexus": true,
-    "nsgPrefix": "NSG_SHM_TESTA_SRE_SANDBOX",
-    "rds": {
-      "appSessionHost": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
-        "disks": {
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.150.1.5",
-        "nsg": {
-          "name": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SESSION_HOSTS",
-          "rules": "sre-nsg-rules-session-hosts.json"
-        },
-        "vmName": "APP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
+    "nexus": false,
+    "nsgPrefix": "NSG_SHM_TESTA_SRE_T1COCAL",
+    "remoteDesktop": {
+      "networkRules": {
+        "allowedSources": "Internet",
+        "copyAllowed": true,
+        "includeAzurePlatformDnsRule": false,
+        "outboundInternet": "Allow",
+        "pasteAllowed": true
       },
-      "gateway": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
-        "disks": {
-          "data": {
-            "sizeGb": "1023",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "hostname": "RDG-SRE-SANDBOX",
-        "installationDirectory": "C:\\Installation",
-        "ip": "10.150.1.4",
-        "networkRules": {
-          "allowedSources": "193.60.220.253",
-          "includeAzurePlatformDnsRule": true,
-          "outboundInternet": "Deny"
-        },
-        "nsg": {
-          "name": "NSG_SHM_TESTA_SRE_SANDBOX_RDS_SERVER",
-          "rules": "sre-nsg-rules-gateway.json"
-        },
-        "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_RDS"
+      "provider": "CoCalc",
+      "rg": "RG_SHM_TESTA_SRE_T1COCAL_REMOTE_DESKTOP"
     },
-    "rgPrefix": "RG_SHM_TESTA_SRE_SANDBOX",
-    "shortName": "sre-sandbox",
+    "rgPrefix": "RG_SHM_TESTA_SRE_T1COCAL",
+    "shortName": "sre-t1cocal",
     "storage": {
       "accessPolicies": {
         "readOnly": {
@@ -618,44 +512,40 @@
         }
       },
       "artifacts": {
-        "accountName": "testasandboxartifactszoa",
-        "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS"
+        "accountName": "testat1cocalartifactslmu",
+        "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "testasandboxbootdiagszoa",
-        "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS"
+        "accountName": "testat1cocalbootdiagslmu",
+        "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS"
       },
       "persistentdata": {
         "account": {
           "accessTier": "hot",
-          "allowedIpAddresses": [
-            "188.214.11.75",
-            "193.60.220.240",
-            "193.60.220.253"
-          ],
-          "name": "testasandboxdatazoaweyqi",
-          "performance": "Standard_LRS",
-          "storageKind": "BlobStorage"
+          "allowedIpAddresses": "193.60.220.253",
+          "name": "testat1cocaldatalmuyonhw",
+          "performance": "Premium_LRS",
+          "storageKind": "FileStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
-            "mountType": "BlobSMB"
+            "connectionSecretName": "sre-t1cocal-data-egress-connection-readwrite",
+            "mountType": "ShareSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
-            "mountType": "BlobSMB"
+            "connectionSecretName": "sre-t1cocal-data-ingress-connection-readonly",
+            "mountType": "ShareSMB"
           }
         }
       },
       "userdata": {
         "account": {
           "accessTier": "hot",
-          "name": "testasandboxuserdatazoaw",
+          "name": "testat1cocaluserdatalmuy",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTA_SRE_SANDBOX_ARTIFACTS",
+          "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS",
           "storageKind": "FileStorage"
         },
         "containers": {
@@ -673,7 +563,7 @@
       }
     },
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
-    "tier": "2",
+    "tier": "1",
     "time": {
       "timezone": {
         "linux": "Europe/London",
@@ -683,20 +573,20 @@
     "users": {
       "serviceAccounts": {
         "ldapSearch": {
-          "name": "SANDBOX LDAP Search Service Account",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
-          "samAccountName": "sandboxldapsearch"
+          "name": "T1COCAL LDAP Search Service Account",
+          "passwordSecretName": "sre-t1cocal-other-service-account-password-ldap-search",
+          "samAccountName": "t1cocalldapsearch"
         },
         "postgres": {
-          "name": "SANDBOX Postgres DB Service Account",
-          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres",
-          "samAccountName": "sandboxdbpostgres"
+          "name": "T1COCAL Postgres DB Service Account",
+          "passwordSecretName": "sre-t1cocal-db-service-account-password-postgres",
+          "samAccountName": "t1cocaldbpostgres"
         }
       }
     },
     "webapps": {
       "codimd": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-codimd",
+        "adminPasswordSecretName": "sre-t1cocal-vm-admin-password-codimd",
         "codimd": {
           "dockerVersion": "2.3.2"
         },
@@ -710,19 +600,19 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-SANDBOX",
-        "ip": "10.150.5.6",
+        "fqdn": "CODIMD-SRE-T1COCAL.testa.dsgroupdev.co.uk",
+        "hostname": "CODIMD-SRE-T1COCAL",
+        "ip": "10.161.5.6",
         "osVersion": "18.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
-          "passwordSecretName": "sre-sandbox-other-codimd-password-postgresdb"
+          "passwordSecretName": "sre-t1cocal-other-codimd-password-postgresdb"
         },
-        "vmName": "CODIMD-SRE-SANDBOX",
+        "vmName": "CODIMD-SRE-T1COCAL",
         "vmSize": "Standard_D2s_v3"
       },
       "gitlab": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
+        "adminPasswordSecretName": "sre-t1cocal-vm-admin-password-gitlab",
         "disks": {
           "data": {
             "sizeGb": "512",
@@ -733,15 +623,15 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.150.5.5",
+        "fqdn": "GITLAB-SRE-T1COCAL.testa.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SRE-T1COCAL",
+        "ip": "10.161.5.5",
         "osVersion": "18.04-LTS",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-SANDBOX",
+        "rootPasswordSecretName": "sre-t1cocal-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-T1COCAL",
         "vmSize": "Standard_D2s_v3"
       },
-      "rg": "RG_SHM_TESTA_SRE_SANDBOX_WEBAPPS"
+      "rg": "RG_SHM_TESTA_SRE_T1COCAL_WEBAPPS"
     }
   }
 }

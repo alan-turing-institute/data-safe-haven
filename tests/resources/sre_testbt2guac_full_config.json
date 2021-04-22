@@ -286,6 +286,7 @@
     },
     "nsgPrefix": "NSG_SHM_TESTB",
     "organisation": {
+      "contactEmail": "safehavendevs@turing.ac.uk",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
@@ -381,9 +382,9 @@
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-mssql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -395,18 +396,18 @@
           }
         },
         "enableSSIS": true,
-        "ip": "10.151.3.4",
+        "ip": "10.152.3.4",
         "port": "1433",
         "sku": "sqldev",
         "subnet": "databases",
         "type": "MSSQL",
-        "vmName": "MSSQL-SANDBOX",
+        "vmName": "MSSQL-T2GUAC",
         "vmSize": "Standard_DS2_v2"
       },
       "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-postgresql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -417,37 +418,37 @@
             "type": "Standard_LRS"
           }
         },
-        "ip": "10.151.3.5",
+        "ip": "10.152.3.5",
         "port": "5432",
         "sku": "18.04-LTS",
         "subnet": "databases",
         "type": "PostgreSQL",
-        "vmName": "PSTGRS-SANDBOX",
+        "vmName": "PSTGRS-T2GUAC",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_DATABASES"
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_DATABASES"
     },
     "domain": {
-      "dn": "DC=sandbox,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "fqdn": "sandbox.testb.dsgroupdev.co.uk",
-      "netbiosName": "SANDBOX",
+      "dn": "DC=t2guac,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "t2guac.testb.dsgroupdev.co.uk",
+      "netbiosName": "T2GUAC",
       "securityGroups": {
         "dataAdministrators": {
-          "description": "SG SANDBOX Data Administrators",
-          "name": "SG SANDBOX Data Administrators"
+          "description": "SG T2GUAC Data Administrators",
+          "name": "SG T2GUAC Data Administrators"
         },
         "researchUsers": {
-          "description": "SG SANDBOX Research Users",
-          "name": "SG SANDBOX Research Users"
+          "description": "SG T2GUAC Research Users",
+          "name": "SG T2GUAC Research Users"
         },
         "systemAdministrators": {
-          "description": "SG SANDBOX System Administrators",
-          "name": "SG SANDBOX System Administrators"
+          "description": "SG T2GUAC System Administrators",
+          "name": "SG T2GUAC System Administrators"
         }
       }
     },
     "dsvm": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
+      "adminPasswordSecretName": "sre-t2guac-vm-admin-password-compute",
       "disks": {
         "os": {
           "sizeGb": "default",
@@ -458,7 +459,7 @@
           "type": "Standard_LRS"
         }
       },
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
         "rg": "RG_SH_IMAGE_GALLERY",
@@ -469,62 +470,66 @@
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {
-      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
+      "routeTableName": "ROUTE-TABLE-SRE-T2GUAC"
     },
-    "id": "sandbox",
+    "id": "t2guac",
     "keyVault": {
-      "name": "kv-testb-sre-sandbox",
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_SECRETS",
+      "name": "kv-testb-sre-t2guac",
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_SECRETS",
       "secretNames": {
-        "adminUsername": "sre-sandbox-vm-admin-username",
-        "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-other-nps-secret"
+        "adminUsername": "sre-t2guac-vm-admin-username",
+        "letsEncryptCertificate": "sre-t2guac-lets-encrypt-certificate",
+        "npsSecret": "sre-t2guac-other-nps-secret"
       }
     },
     "location": "uksouth",
     "network": {
       "vnet": {
-        "cidr": "10.151.0.0/21",
-        "name": "VNET_SHM_TESTB_SRE_SANDBOX",
-        "rg": "RG_SHM_TESTB_SRE_SANDBOX_NETWORKING",
+        "cidr": "10.152.0.0/21",
+        "name": "VNET_SHM_TESTB_SRE_T2GUAC",
+        "rg": "RG_SHM_TESTB_SRE_T2GUAC_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.151.4.0/24",
+            "cidr": "10.152.4.0/24",
             "name": "ComputeSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_SANDBOX_COMPUTE",
+              "name": "NSG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
               "rules": "sre-nsg-rules-compute.json"
             }
           },
           "data": {
-            "cidr": "10.151.2.0/24",
+            "cidr": "10.152.2.0/24",
             "name": "PrivateDataSubnet"
           },
           "databases": {
-            "cidr": "10.151.3.0/24",
+            "cidr": "10.152.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DATABASES",
+              "name": "NSG_SHM_TESTB_SRE_T2GUAC_DATABASES",
               "rules": "sre-nsg-rules-databases.json"
             }
           },
           "deployment": {
-            "cidr": "10.151.0.0/24",
+            "cidr": "10.152.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_SANDBOX_DEPLOYMENT",
+              "name": "NSG_SHM_TESTB_SRE_T2GUAC_DEPLOYMENT",
               "rules": "sre-nsg-rules-compute-deployment.json"
             }
           },
-          "rds": {
-            "cidr": "10.151.1.0/24",
-            "name": "RDSSubnet"
+          "remoteDesktop": {
+            "cidr": "10.152.1.0/24",
+            "name": "RemoteDesktopSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_SRE_T2GUAC_GUACAMOLE",
+              "rules": "sre-nsg-rules-guacamole.json"
+            }
           },
           "webapps": {
-            "cidr": "10.151.5.0/24",
+            "cidr": "10.152.5.0/24",
             "name": "WebappsSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_SANDBOX_WEBAPPS",
+              "name": "NSG_SHM_TESTB_SRE_T2GUAC_WEBAPPS",
               "rules": "sre-nsg-rules-webapps.json"
             }
           }
@@ -532,58 +537,35 @@
       }
     },
     "nexus": true,
-    "nsgPrefix": "NSG_SHM_TESTB_SRE_SANDBOX",
-    "rds": {
-      "appSessionHost": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
+    "nsgPrefix": "NSG_SHM_TESTB_SRE_T2GUAC",
+    "remoteDesktop": {
+      "guacamole": {
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-guacamole",
+        "databaseAdminPasswordSecretName": "sre-t2guac-db-admin-password-guacamole",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.151.1.5",
-        "nsg": {
-          "name": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SESSION_HOSTS",
-          "rules": "sre-nsg-rules-session-hosts.json"
-        },
-        "vmName": "APP-SRE-SANDBOX",
+        "fqdn": "GUACAMOLE-SRE-T2GUAC.testb.dsgroupdev.co.uk",
+        "hostname": "GUACAMOLE-SRE-T2GUAC",
+        "ip": "10.152.1.4",
+        "vmName": "GUACAMOLE-SRE-T2GUAC",
         "vmSize": "Standard_DS2_v2"
       },
-      "gateway": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
-        "disks": {
-          "data": {
-            "sizeGb": "1023",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "RDG-SRE-SANDBOX",
-        "installationDirectory": "C:\\Installation",
-        "ip": "10.151.1.4",
-        "networkRules": {
-          "allowedSources": "Internet",
-          "includeAzurePlatformDnsRule": true,
-          "outboundInternet": "Deny"
-        },
-        "nsg": {
-          "name": "NSG_SHM_TESTB_SRE_SANDBOX_RDS_SERVER",
-          "rules": "sre-nsg-rules-gateway.json"
-        },
-        "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2"
+      "networkRules": {
+        "allowedSources": "193.60.220.253",
+        "copyAllowed": false,
+        "includeAzurePlatformDnsRule": true,
+        "outboundInternet": "Deny",
+        "pasteAllowed": false
       },
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_RDS"
+      "provider": "ApacheGuacamole",
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_REMOTE_DESKTOP"
     },
-    "rgPrefix": "RG_SHM_TESTB_SRE_SANDBOX",
-    "shortName": "sre-sandbox",
+    "rgPrefix": "RG_SHM_TESTB_SRE_T2GUAC",
+    "shortName": "sre-t2guac",
     "storage": {
       "accessPolicies": {
         "readOnly": {
@@ -594,30 +576,30 @@
         }
       },
       "artifacts": {
-        "accountName": "testbsandboxartifactszoa",
-        "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS"
+        "accountName": "testbt2guacartifactsfmjy",
+        "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "accountName": "testbsandboxbootdiagszoa",
-        "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS"
+        "accountName": "testbt2guacbootdiagsfmjy",
+        "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS"
       },
       "persistentdata": {
         "account": {
           "accessTier": "hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testbsandboxdatazoaweyqi",
+          "name": "testbt2guacdatafmjyhpocz",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
+            "connectionSecretName": "sre-t2guac-data-egress-connection-readwrite",
             "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
+            "connectionSecretName": "sre-t2guac-data-ingress-connection-readonly",
             "mountType": "BlobSMB"
           }
         }
@@ -625,9 +607,9 @@
       "userdata": {
         "account": {
           "accessTier": "hot",
-          "name": "testbsandboxuserdatazoaw",
+          "name": "testbt2guacuserdatafmjyh",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTB_SRE_SANDBOX_ARTIFACTS",
+          "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS",
           "storageKind": "FileStorage"
         },
         "containers": {
@@ -655,20 +637,20 @@
     "users": {
       "serviceAccounts": {
         "ldapSearch": {
-          "name": "SANDBOX LDAP Search Service Account",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
-          "samAccountName": "sandboxldapsearch"
+          "name": "T2GUAC LDAP Search Service Account",
+          "passwordSecretName": "sre-t2guac-other-service-account-password-ldap-search",
+          "samAccountName": "t2guacldapsearch"
         },
         "postgres": {
-          "name": "SANDBOX Postgres DB Service Account",
-          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres",
-          "samAccountName": "sandboxdbpostgres"
+          "name": "T2GUAC Postgres DB Service Account",
+          "passwordSecretName": "sre-t2guac-db-service-account-password-postgres",
+          "samAccountName": "t2guacdbpostgres"
         }
       }
     },
     "webapps": {
       "codimd": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-codimd",
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-codimd",
         "codimd": {
           "dockerVersion": "2.3.2"
         },
@@ -682,19 +664,19 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-SANDBOX",
-        "ip": "10.151.5.6",
+        "fqdn": "CODIMD-SRE-T2GUAC.testb.dsgroupdev.co.uk",
+        "hostname": "CODIMD-SRE-T2GUAC",
+        "ip": "10.152.5.6",
         "osVersion": "18.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
-          "passwordSecretName": "sre-sandbox-other-codimd-password-postgresdb"
+          "passwordSecretName": "sre-t2guac-other-codimd-password-postgresdb"
         },
-        "vmName": "CODIMD-SRE-SANDBOX",
+        "vmName": "CODIMD-SRE-T2GUAC",
         "vmSize": "Standard_D2s_v3"
       },
       "gitlab": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-gitlab",
         "disks": {
           "data": {
             "sizeGb": "512",
@@ -705,15 +687,15 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.151.5.5",
+        "fqdn": "GITLAB-SRE-T2GUAC.testb.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SRE-T2GUAC",
+        "ip": "10.152.5.5",
         "osVersion": "18.04-LTS",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-SANDBOX",
+        "rootPasswordSecretName": "sre-t2guac-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-T2GUAC",
         "vmSize": "Standard_D2s_v3"
       },
-      "rg": "RG_SHM_TESTB_SRE_SANDBOX_WEBAPPS"
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_WEBAPPS"
     }
   }
 }

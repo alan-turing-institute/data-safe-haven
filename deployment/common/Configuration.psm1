@@ -528,14 +528,14 @@ function Get-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            id                = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
-            rgPrefix          = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            nsgPrefix         = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            shortName         = "sre-$($sreConfigBase.sreId)".ToLower()
-            subscriptionName  = $sreConfigBase.subscriptionName
-            tier              = $sreConfigBase.tier
-            nexus             = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
-            remoteDesktop = [ordered]@{
+            id               = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
+            rgPrefix         = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            nsgPrefix        = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
+            subscriptionName = $sreConfigBase.subscriptionName
+            tier             = $sreConfigBase.tier
+            nexus            = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
+            remoteDesktop    = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
         }
@@ -585,7 +585,7 @@ function Get-SreConfig {
             name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
-                deployment = [ordered]@{
+                deployment    = [ordered]@{
                     name = "DeploymentSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
                     nsg  = [ordered]@{
@@ -597,11 +597,11 @@ function Get-SreConfig {
                     name = "RemoteDesktopSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
-                data       = [ordered]@{
+                data          = [ordered]@{
                     name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
-                databases  = [ordered]@{
+                databases     = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
                     nsg  = [ordered]@{
@@ -609,7 +609,7 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-databases.json"
                     }
                 }
-                compute    = [ordered]@{
+                compute       = [ordered]@{
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
                     nsg  = [ordered]@{
@@ -617,7 +617,7 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-compute.json"
                     }
                 }
-                webapps    = [ordered]@{
+                webapps       = [ordered]@{
                     name = "WebappsSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
                     nsg  = [ordered]@{
@@ -735,7 +735,7 @@ function Get-SreConfig {
 
     # Remote desktop either through Apache Guacamole or Microsoft RDS
     # ---------------------------------------------------------------
-    $config.sre.remoteDesktop.rg   = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
+    $config.sre.remoteDesktop.rg = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
             name  = "$($config.sre.nsgPrefix)_GUACAMOLE".ToUpper()
@@ -748,14 +748,14 @@ function Get-SreConfig {
             vmSize                          = "Standard_DS2_v2"
             ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             disks                           = [ordered]@{
-                os   = [ordered]@{
+                os = [ordered]@{
                     sizeGb = "128"
                     type   = "Standard_LRS"
                 }
             }
         }
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $config.sre.remoteDesktop.gateway        = [ordered]@{
+        $config.sre.remoteDesktop.gateway = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
@@ -792,7 +792,7 @@ function Get-SreConfig {
                 }
             }
         }
-    } else {
+    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM
