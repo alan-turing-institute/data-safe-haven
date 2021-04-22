@@ -500,7 +500,11 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
+        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName).DefaultAction
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
+        $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
         $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
     } catch {
