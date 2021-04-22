@@ -53,16 +53,18 @@ $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0]
 
 # Register AzureAD application
 # ----------------------------
-Add-LogMessage -Level Info "Registering Guacamole with Azure Active Directory..."
+$azureAdApplicationName = "Guacamole SRE $($config.sre.id)"
+Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registered with Azure Active Directory..."
 Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration"
-$application = Get-MgApplication -Filter "DisplayName eq 'Guacamole SRE $($config.sre.id)'"
+$application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
 if (-not $application) {
-    $application = New-MgApplication -DisplayName "Guacamole SRE $($config.sre.id)" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
+    Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
+    $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
 }
-if (Get-MgApplication -Filter "DisplayName eq 'Guacamole SRE $($config.sre.id)'") {
-    Add-LogMessage -Level Success "Guacamole is correctly registered in Azure Active Directory"
+if (Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'") {
+    Add-LogMessage -Level Success "'$azureAdApplicationName' is already registered in Azure Active Directory"
 } else {
-    Add-LogMessage -Level Info "Failed register Guacamole in Azure Active Directory!"
+    Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
 }
 
 
@@ -147,6 +149,15 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Failed to set 'A' record for SRE $($config.sre.id)!"
 }
+# Set the CAA record for the SRE FQDN
+Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
+Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
+if ($?) {
+    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
+} else {
+    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
+}
 # Set the CNAME record for the remote desktop server
 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
 Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
@@ -156,15 +167,6 @@ if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for $serverHostname"
 } else {
     Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for $serverHostname!"
-}
-# Set the CAA record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
-Remove-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "CAA" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
