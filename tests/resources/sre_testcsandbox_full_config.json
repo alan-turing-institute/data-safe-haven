@@ -573,6 +573,7 @@
             "193.60.220.253",
             "193.60.220.240"
           ],
+          "includeAzurePlatformDnsRule": true,
           "outboundInternet": "Deny"
         },
         "nsg": {
