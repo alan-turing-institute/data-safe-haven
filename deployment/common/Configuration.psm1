@@ -792,6 +792,8 @@ function Get-SreConfig {
     } else {
         $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.outboundInternet
     }
+    # Since we cannot 'Allow' the AzurePlatformDNS endpoint we set this flag which can be used to turn-off the section in the mustache template
+    $config.sre.rds.gateway.networkRules.includeAzurePlatformDnsRule = ($config.sre.rds.gateway.networkRules.outboundInternet -ne "Allow")
 
 
     # CodiMD and Gitlab servers

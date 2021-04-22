@@ -135,18 +135,20 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
-    {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatformDnsOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
-        "destinationAddressPrefix": "AzurePlatformDNS",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 4001,
-        "protocol": "*",
-        "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
+    {{#sre.rds.gateway.networkRules.includeAzurePlatformDnsRule}}
+        {
+            "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatformDnsOutbound",
+            "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
+            "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+            "destinationAddressPrefix": "AzurePlatformDNS",
+            "destinationPortRange": "*",
+            "direction": "Outbound",
+            "priority": 4001,
+            "protocol": "*",
+            "sourceAddressPrefix": "*",
+            "sourcePortRange": "*"
+        },
+    {{/sre.rds.gateway.networkRules.includeAzurePlatformDnsRule}}
     {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
