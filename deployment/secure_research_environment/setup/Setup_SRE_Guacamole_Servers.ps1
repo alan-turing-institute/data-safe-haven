@@ -77,6 +77,22 @@ $guacamoleDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Na
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 
 
+# Get all 'recommended' ciphers from ciphersuite.info
+# ---------------------------------------------------
+$httpResponse = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/recommended -ErrorAction Stop
+$recommendedSslCiphers = $httpResponse.ciphersuites | ForEach-Object { $_.PSObject.Properties.Value.openssl_name } | Where-Object { $_ } | Join-String -Separator ":"
+# ... however we also need at least one cipher from the 'secure' list since none of the 'recommended' ciphers are supported by TLS 1.2
+# We take the ones recommended by SSL Labs (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
+$httpResponse = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
+$secureSslCiphers = $httpResponse.ciphersuites | ForEach-Object { $_.PSObject.Properties.Value } `
+                    | Where-Object { @("ECDHE", "DHE").Contains($_.kex_algorithm) } `
+                    | Where-Object { @("SHA256", "SHA384").Contains($_.hash_algorithm) } `
+                    | Where-Object { $_.enc_algorithm -eq "AES 256 GCM" } `
+                    | ForEach-Object { $_.openssl_name } `
+                    | Where-Object { $_ } `
+                    | Join-String -Separator ":"
+
+
 # Construct the cloud-init yaml file
 # ----------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -110,6 +126,7 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
                                     Replace("{{public_ip_address}}", $publicIp.IpAddress).
                                     Replace("{{shm_dc_ip_address}}", $config.shm.dc.ip).
                                     Replace("{{sre_fqdn}}", $config.sre.domain.fqdn).
+                                    Replace("{{ssl_ciphers}}", "${recommendedSslCiphers}:${secureSslCiphers}").
                                     Replace("{{tenant_id}}", $tenantId).
                                     Replace("{{timezone}}", $config.sre.time.timezone.linux)
 

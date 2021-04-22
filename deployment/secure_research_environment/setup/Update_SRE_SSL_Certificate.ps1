@@ -98,7 +98,7 @@ if ($requestCertificate) {
     # -------------------------------------------------------
     Add-LogMessage -Level Info "Generating a certificate signing request for $($userFriendlyFqdn) to be signed by Let's Encrypt..."
     $SubjectName = "CN=$($userFriendlyFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$additionalFdqn"
+    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$additionalFdqn" -KeySize 4096
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
@@ -257,26 +257,22 @@ if ($doInstall) {
             CERT_THUMBPRINT  = $kvCertificate.Thumbprint
         }
         $scriptType = "UnixShell"
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        if (@(0, 1).Contains([int]$config.sre.tier)) {
-            $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
-            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "install_ssl_certificate_tier1.sh"
-            $scriptParams = @{
-                CERT_THUMBPRINT  = $kvCertificate.Thumbprint
-            }
-            $scriptType = "UnixShell"
-        } elseif (@(2, 3).Contains([int]$config.sre.tier)) {
-            $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
-            $scriptParams = @{
-                rdsFqdn         = $additionalFdqn
-                certThumbPrint  = $kvCertificate.Thumbprint
-                remoteDirectory = $remoteDirectory
-            }
-            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
-            $scriptType = "PowerShell"
-        } else {
-            Add-LogMessage -Level Fatal "Tier '$($config.sre.tier)' is not currently supported!"
+    } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "install_ssl_certificate_tier1.sh"
+        $scriptParams = @{
+            CERT_THUMBPRINT  = $kvCertificate.Thumbprint
         }
+        $scriptType = "UnixShell"
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
+        $scriptParams = @{
+            rdsFqdn         = $additionalFdqn
+            certThumbPrint  = $kvCertificate.Thumbprint
+            remoteDirectory = $remoteDirectory
+        }
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
+        $scriptType = "PowerShell"
     } else {
         Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }

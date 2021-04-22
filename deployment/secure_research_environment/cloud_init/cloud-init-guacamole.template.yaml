@@ -106,6 +106,11 @@ runcmd:
   - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
   - ls -alh /opt/ssl/conf/live/{{sre_fqdn}}
 
+  # RFC-7919 recommended: https://tools.ietf.org/html/rfc7919
+  - echo ">=== Generating 4096-bit server-side Diffie-Hellman key ... ===<"
+  - openssl dhparam -dsaparam -out /opt/ssl/dhparam.pem 4096
+
+
   # Setup Guacamole
   - echo ">=== Starting Docker compose services... ===<"
   - docker-compose -f /opt/guacamole/docker-compose.yml up -d

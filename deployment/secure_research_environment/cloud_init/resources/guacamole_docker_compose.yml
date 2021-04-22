@@ -92,5 +92,11 @@ services:
             - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
             - /opt/nginx/guacamole.conf:/etc/nginx/conf.d/guacamole.conf:ro
             - /opt/ssl/conf:/etc/letsencrypt:ro
-        command: /bin/sh -c "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
+            - /opt/ssl/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
+        command: |
+            /bin/sh -c "while :; do
+                            sleep 6h & wait $${!};
+                            nginx -s reload;
+                        done &
+                        nginx -g 'daemon off;'"
         restart: always
