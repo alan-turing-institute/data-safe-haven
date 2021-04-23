@@ -457,9 +457,7 @@ function Send-FilesToLinuxVM {
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
         $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
-        # Temporarily allow the current IP address
-        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
         Start-Sleep 10
         $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
         $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
@@ -503,10 +501,8 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
-        # Temporarily allow the current IP address
         $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
-        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
         Start-Sleep 10
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
@@ -519,6 +515,20 @@ function Send-FilesToLinuxVM {
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
 
+# Local function to add an exemption for the current IP address
+# -------------------------------------------------------------
+function Add-CurrentIpExemption {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Existing rules")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSNetworkRuleSet]$ExistingRuleset
+    )
+    # Use a hashtable so that if the desired IP address is already in the list it will overwrite those settings
+    $IpRules = @{}
+    $ExistingRuleset.IpRules | ForEach-Object { $IpRules[$_.IPAddressOrRange] = $_ }
+    $IpAddress = (Invoke-WebRequest -Uri "https://ifconfig.me/ip").Content
+    $IpRules[$IpAddress] = (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=$IpAddress; Action="allow"})
+    return $IpRules.Values
+}
 
 # Create storage share if it does not exist
 # -----------------------------------------
@@ -533,10 +543,8 @@ function Set-StorageNfsShareQuota {
     )
     Add-LogMessage -Level Info "Setting storage quota for share '$Name' to $Quota GB..."
     try {
-        # Temporarily allow the current IP address
         $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName
-        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
         Start-Sleep 10
         $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context -ErrorAction Stop
         $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
