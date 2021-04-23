@@ -31,6 +31,7 @@ $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.pers
                                                   -Location $config.shm.location `
                                                   -ResourceGroupName $config.shm.storage.persistentdata.rg `
                                                   -SkuName $config.sre.storage.persistentdata.account.performance
+# Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Allow
 Start-Sleep 10
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
@@ -114,7 +115,9 @@ $userdataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.userda
                                                 -ResourceGroupName $config.sre.storage.userdata.account.rg `
                                                 -SkuName $config.sre.storage.userdata.account.performance `
                                                 -AllowHttpTraffic
+# Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Allow
+Start-Sleep 10
 
 
 # Ensure that all required userdata containers exist
@@ -142,6 +145,9 @@ $artifactsStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artif
                                                  -Location $config.sre.location `
                                                  -ResourceGroupName $config.sre.storage.artifacts.rg `
                                                  -SkuName $config.sre.storage.artifacts.account.performance
+# Add a temporary override during deployment
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -DefaultAction Allow
+Start-Sleep 10
 
 
 # Ensure that the storage accounts can be accessed from the SRE VNet through private endpoints

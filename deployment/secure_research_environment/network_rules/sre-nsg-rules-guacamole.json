@@ -2,9 +2,9 @@
     {
         "name": "AllowHttpsInbound",
         "access": "Allow",
-        "description": "Allow inbound HTTPS connections to RDS server",
+        "description": "Allow inbound http(s) connections to remote desktop server. Note that http requests will be upgraded",
         "destinationAddressPrefix": "*",
-        "destinationPortRange": "443",
+        "destinationPortRange": [80, 443],
         "direction": "Inbound",
         "priority": 100,
         "protocol": "TCP",

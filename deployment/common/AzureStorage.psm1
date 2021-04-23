@@ -183,11 +183,11 @@ function Deploy-StorageContainer {
     $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
-        if ($?) {
+        try {
+            $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
             Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"

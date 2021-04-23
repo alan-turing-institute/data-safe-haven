@@ -2,7 +2,7 @@
     {
         "name": "AllowHttpsInbound",
         "access": "Allow",
-        "description": "Allow inbound HTTPS connections to RDS server",
+        "description": "Allow inbound https connections to RDS server",
         "destinationAddressPrefix": "*",
         "destinationPortRange": "443",
         "direction": "Inbound",
