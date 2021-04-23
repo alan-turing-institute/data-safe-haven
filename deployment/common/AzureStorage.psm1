@@ -543,7 +543,7 @@ function Set-StorageNfsShareQuota {
         if ($finalQuota -eq $Quota) {
             Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
         } else {
-            Add-LogMessage -Level Failure "Failed to set storage quota for share '$Name'. Current quota is $finalQuota GB"
+            Add-LogMessage -Level Failure "Failed to update storage quota for share '$Name'. Current quota is $finalQuota GB"
         }
     } catch {
         Add-LogMessage -Level Fatal "Failed to update storage share '$Name'." -Exception $_.Exception
