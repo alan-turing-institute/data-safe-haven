@@ -11,7 +11,6 @@ These instructions will walk you through deploying a Secure Research Environment
   + [:pear: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
   + [:fire: 4.2 Run smoke tests on DSVM](#fire-42-run-smoke-tests-on-dsvm)
 
-
 ## Explanation of symbols used in this guide
 
 ![Powershell: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=estimate%20of%20time%20needed)
@@ -157,7 +156,6 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ## :computer: 3. Deploy SRE
 
-
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```pwsh
@@ -168,7 +166,6 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <AAD tenant ID> -
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 + where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](how-to-deploy-shm.md#get-the-azure-active-directory-tenant-id )
 + where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create (for example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`)
-
 
 This will perform the following actions, which can be run individually if desired:
 
@@ -188,7 +185,6 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 
 </details>
 
-
 <details>
 <summary><strong>Register SRE with the SHM</strong></summary>
 
@@ -204,7 +200,6 @@ PS> ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
 This step will register service accounts with the SHM and also create a Key Vault in the SRE subscription (at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS > kv-<SHM ID>-sre-<SRE ID>`).
 
 </details>
-
 
 <details>
 <summary><strong>Create SRE DNS Zone</strong></summary>
@@ -269,7 +264,6 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 
 </details>
 
-
 <details>
 <summary><strong>Deploy web applications (GitLab and CodiMD)</strong></summary>
 
@@ -283,7 +277,6 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
-
 
 <details>
 <summary><strong>Deploy storage accounts</strong></summary>
@@ -300,7 +293,6 @@ PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
 </details>
-
 
 <details>
 <summary><strong>Deploy databases</strong></summary>
@@ -320,7 +312,6 @@ This will deploy any databases that you specified in the core config file. The t
 + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
 
 </details>
-
 
 <details>
 <summary><strong>Deploy data science VMs</strong></summary>
@@ -343,6 +334,7 @@ This will deploy a new compute VM into the SRE environment
 #### :pencil: Notes
 
 ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that:
+
   + CPU-based VMs are deployed with the next unused last octet in the range `160` to `179`
   + GPU-based VMs are deployed with the next unused last octet in the range `180` and `199`
 
@@ -385,7 +377,6 @@ PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 </details>
 
-
 <details>
 <summary><strong>Configure logging</strong></summary>
 
@@ -411,7 +402,6 @@ Where there was a genuine failure in the installation of a VM extension, the scr
 If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
 
 </details>
-
 
 ## :microscope: 4. Test deployed SRE
 
@@ -516,7 +506,6 @@ If you see an error like the following when attempting to log in, it is likely t
         <img src="../../images/deploy_sre/aad_app_registration_idtoken.png" width="80%" title="AAD Tenant ID"/>
     </p>
   </details>
-
 
 ### :fire: 4.2 Run smoke tests on DSVM
 
