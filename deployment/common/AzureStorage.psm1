@@ -183,7 +183,7 @@ function Deploy-StorageContainer {
     $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context
+        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
         if ($?) {
             Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
         } else {
@@ -456,17 +456,21 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Uploading zip file to container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
-        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName).DefaultAction
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
+        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
+        # Temporarily allow the current IP address
+        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        Start-Sleep 10
         $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
         $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
-        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully uploaded zip file to '$zipFileContainerName'"
     } catch {
         $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction SilentlyContinue
         Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'!" -Exception $_.Exception
+    } finally {
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 
     # Remove zip file directory
@@ -489,6 +493,7 @@ function Send-FilesToLinuxVM {
                 "tmpdir=`$(mktemp -d)",
                 "curl -X GET -o `$tmpdir/${zipFileName} '${remoteUrl}' 2>&1",
                 "mkdir -p ${RemoteDirectory}",
+                "rm -rf ${RemoteDirectory}/*",
                 "unzip `$tmpdir/${zipFileName} -d ${RemoteDirectory}",
                 "rm -rf `$tmpdir") -join "`n"
     Add-LogMessage -Level Info "[ ] Downloading zip file onto $VMName"
@@ -498,15 +503,18 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
-        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName).DefaultAction
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
+        # Temporarily allow the current IP address
+        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
+        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        Start-Sleep 10
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
-        $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
-        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
     } catch {
         Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!" -Exception $_.Exception
+    } finally {
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
@@ -524,15 +532,23 @@ function Set-StorageNfsShareQuota {
         [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     Add-LogMessage -Level Info "Setting storage quota for share '$Name' to $Quota GB..."
-    $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName).DefaultAction
-    $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
-    $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context
-    $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
-    $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
-    if ($finalQuota -eq $Quota) {
-        Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
-    } else {
-        Add-LogMessage -Level Failure "Failed to storage quota for share '$Name'. Current quota is $finalQuota GB"
+    try {
+        # Temporarily allow the current IP address
+        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName
+        $IpRules = $storageAccountRules.IpRules + (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=(Invoke-WebRequest -Uri "http://ifconfig.me/ip").Content; Action="allow"})
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -IpRule $IpRules -ErrorAction Stop
+        Start-Sleep 10
+        $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context -ErrorAction Stop
+        $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
+        if ($finalQuota -eq $Quota) {
+            Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
+        } else {
+            Add-LogMessage -Level Failure "Failed to set storage quota for share '$Name'. Current quota is $finalQuota GB"
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to update storage share '$Name'." -Exception $_.Exception
+    } finally {
+        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
     }
 }
 Export-ModuleMember -Function Set-StorageNfsShareQuota
