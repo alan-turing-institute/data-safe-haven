@@ -132,7 +132,7 @@ foreach ($receptacleName in $config.sre.storage.userdata.containers.Keys) {
     $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $userdataStorageAccount -StorageType "NfsShare"
 
     # Set the quota for the storage share
-    $null = Set-AzStorageShareQuota -ShareName $receptacleName -Quota $config.sre.storage.userdata.containers[$receptacleName].sizeGb -Context $userdataStorageAccount.Context
+    $null = Set-StorageNfsShareQuota -Name $receptacleName -Quota $config.sre.storage.userdata.containers[$receptacleName].sizeGb -StorageAccount $userdataStorageAccount
 }
 
 

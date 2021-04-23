@@ -269,8 +269,6 @@ function Deploy-StorageNfsShare {
 Export-ModuleMember -Function Deploy-StorageNfsShare
 
 
-
-
 # Ensure that storage receptable (either container or share) exists
 # -----------------------------------------------------------------
 function Deploy-StorageReceptacle {
@@ -512,3 +510,31 @@ function Send-FilesToLinuxVM {
     }
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
+
+
+# Create storage share if it does not exist
+# -----------------------------------------
+function Set-StorageNfsShareQuota {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Size of quote in GB")]
+        [int]$Quota,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+    )
+    Add-LogMessage -Level Info "Setting storage quota for share '$Name' to $Quota GB..."
+    $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName).DefaultAction
+    $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
+    $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context
+    $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
+    $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
+    if ($finalQuota -eq $Quota) {
+        Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
+    } else {
+        Add-LogMessage -Level Failure "Failed to storage quota for share '$Name'. Current quota is $finalQuota GB"
+    }
+}
+Export-ModuleMember -Function Set-StorageNfsShareQuota
+
+
