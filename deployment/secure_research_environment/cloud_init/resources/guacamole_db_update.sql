@@ -8,12 +8,12 @@ COPY connections FROM '/var/lib/postgresql/data/connections.csv' (FORMAT CSV, DE
 
 /* Add initial connections via RDP and ssh*/
 INSERT INTO guacamole_connection (connection_name, protocol)
-SELECT CONCAT(connection_name, ' ', connection_type), protocol
+SELECT CONCAT(connection_type, ' ', connection_name), protocol
 FROM
     (
         VALUES
-        ('(Desktop)', 'rdp'),
-        ('(SSH)', 'ssh')
+        ('Desktop:', 'rdp'),
+        ('SSH:', 'ssh')
     ) connection_settings (connection_type, protocol)
     CROSS JOIN connections
 ON CONFLICT DO NOTHING;
