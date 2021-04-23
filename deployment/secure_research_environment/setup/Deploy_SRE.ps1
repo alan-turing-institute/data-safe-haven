@@ -56,6 +56,11 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_DNS_Zone.p
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Networking.ps1')" -shmId $shmId -sreId $sreId }
 
 
+# Deploy storage accounts
+# -----------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Storage_Accounts.ps1')" -shmId $shmId -sreId $sreId }
+
+
 # Deploy Guacamole remote desktop
 # -------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Guacamole_Servers.ps1')" -shmId $shmId -sreId $sreId -tenantId $tenantId }
@@ -69,11 +74,6 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_SSL_Certi
 # Deploy web applications (GitLab and CodiMD)
 # -------------------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_WebApp_Servers.ps1')" -shmId $shmId -sreId $sreId }
-
-
-# Deploy storage accounts
-# -----------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Storage_Accounts.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Deploy databases

@@ -10,9 +10,9 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
 + [:cop: 3. Prepare SHM environment](#cop-3-prepare-shm-environment)
 + [:station: 4. Deploy networking components](#station-4-deploy-networking-components)
-+ [:satellite: 5. Deploy remote desktop](#satellite-5-deploy-remote-desktop)
-+ [:snowflake: 6. Deploy web applications (GitLab and CodiMD)](#snowflake-6-deploy-web-applications-gitlab-and-CodiMD)
-+ [:floppy_disk: 7. Deploy storage accounts](#floppy_disk-7-deploy-storage-accounts)
++ [:floppy_disk: 5. Deploy storage accounts](#floppy_disk-5-deploy-storage-accounts)
++ [:satellite: 6. Deploy remote desktop](#satellite-6-deploy-remote-desktop)
++ [:snowflake: 7. Deploy web applications (GitLab and CodiMD)](#snowflake-7-deploy-web-applications-gitlab-and-CodiMD)
 + [:baseball: 8. Deploy databases](#baseball-8-deploy-databases)
 + [:computer: 9. Deploy data science VMs](#computer-9-deploy-data-science-vms)
 + [:lock: 10. Configure network lockdown](#lock-10-configure-network-lockdown)
@@ -123,6 +123,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
     },
     "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended) or 'CoCalc' (tier 0/1 only) or 'MicrosoftRDS' (tier 2/3 only)",
     "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
+    "deploymentIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using when deploying the SRE (if not specified then deployment commands from any IP address will be permitted).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
@@ -243,7 +244,20 @@ PS> ./Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 The VNet peerings may take a few minutes to provision after the script completes.
 
-## :satellite: 5. Deploy remote desktop
+## :floppy_disk: 5. Deploy storage accounts
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
+
+```pwsh
+PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
+
+## :satellite: 6. Deploy remote desktop
 
 ### Deploy the remote desktop servers
 
@@ -436,7 +450,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 + Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
 
-## :snowflake: 6. Deploy web applications (GitLab and CodiMD)
+## :snowflake: 7. Deploy web applications (GitLab and CodiMD)
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
@@ -484,19 +498,6 @@ If you get a `We couldn't connect to the gateway because of an error` message, i
   + If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
 + Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
 + This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
-
-## :floppy_disk: 7. Deploy storage accounts
-
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
-
-```pwsh
-PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-+ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-
-This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
 ## :baseball: 8. Deploy databases
 

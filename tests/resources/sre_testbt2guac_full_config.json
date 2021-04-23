@@ -307,11 +307,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestbartifactslubiehy",
-        "rg": "RG_SHM_TESTB_ARTIFACTS"
+        "rg": "RG_SHM_TESTB_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "shmtestbbootdiagslubiehy",
-        "rg": "RG_SHM_TESTB_ARTIFACTS"
+        "rg": "RG_SHM_TESTB_STORAGE"
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
@@ -576,12 +576,18 @@
         }
       },
       "artifacts": {
-        "accountName": "testbt2guacartifactsfmjy",
-        "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS"
+        "account": {
+          "accessTier": "cold",
+          "allowedIpAddresses": "any",
+          "name": "testbt2guacartifactsfmjy",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "testbt2guacbootdiagsfmjy",
-        "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS"
+        "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
       },
       "persistentdata": {
         "account": {
@@ -609,7 +615,7 @@
           "accessTier": "hot",
           "name": "testbt2guacuserdatafmjyh",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTB_SRE_T2GUAC_ARTIFACTS",
+          "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE",
           "storageKind": "FileStorage"
         },
         "containers": {

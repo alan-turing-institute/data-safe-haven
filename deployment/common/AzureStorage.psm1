@@ -86,11 +86,11 @@ function Deploy-StorageAccount {
             $params["EnableHttpsTrafficOnly"] = $false
             Add-LogMessage -Level Warning "Storage account '$Name' will be deployed with EnableHttpsTrafficOnly disabled. Note that this can take up to 15 minutes to complete."
         }
-        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params
-        if ($?) {
+        try {
+            $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params -ErrorAction Stop
             Add-LogMessage -Level Success "Created storage account '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!" -Exception $_.Exception
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage account '$Name' already exists"
@@ -456,25 +456,21 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Uploading zip file to container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
-        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
-        Start-Sleep 10
         $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
         $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully uploaded zip file to '$zipFileContainerName'"
     } catch {
         $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction SilentlyContinue
-        Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'!" -Exception $_.Exception
+        Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'! Is your current IP address in the set of permitted deploymentIpAddresses?" -Exception $_.Exception
     } finally {
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
         $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 
     # Remove zip file directory
     Add-LogMessage -Level Info "[ ] Cleaning up directory $zipFileDir..."
     try {
-        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
+        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileDir'"
     } catch {
         Add-LogMessage -Level Fatal "Failed to clean up '$zipFileDir'!"
@@ -501,34 +497,16 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
         $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
-        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
-        Start-Sleep 10
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
     } catch {
-        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!" -Exception $_.Exception
+        Add-LogMessage -Level Failure "Failed to clean up '$zipFileContainerName'! Is your current IP address in the set of permitted deploymentIpAddresses?" -Exception $_.Exception
     } finally {
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
         $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
 
-# Local function to add an exemption for the current IP address
-# -------------------------------------------------------------
-function Add-CurrentIpExemption {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Existing rules")]
-        [Microsoft.Azure.Commands.Management.Storage.Models.PSNetworkRuleSet]$ExistingRuleset
-    )
-    # Use a hashtable so that if the desired IP address is already in the list it will overwrite those settings
-    $IpRules = @{}
-    $ExistingRuleset.IpRules | ForEach-Object { $IpRules[$_.IPAddressOrRange] = $_ }
-    $IpAddress = (Invoke-WebRequest -Uri "https://ifconfig.me/ip").Content
-    $IpRules[$IpAddress] = (New-Object -TypeName Microsoft.Azure.Commands.Management.Storage.Models.PSIpRule -Property @{IPAddressOrRange=$IpAddress; Action="allow"})
-    return $IpRules.Values
-}
 
 # Create storage share if it does not exist
 # -----------------------------------------
@@ -543,20 +521,15 @@ function Set-StorageNfsShareQuota {
     )
     Add-LogMessage -Level Info "Setting storage quota for share '$Name' to $Quota GB..."
     try {
-        $storageAccountRules = Get-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction Allow -IpRule (Add-CurrentIpExemption -ExistingRuleset $storageAccountRules) -ErrorAction Stop
-        Start-Sleep 10
         $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context -ErrorAction Stop
         $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
         if ($finalQuota -eq $Quota) {
             Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
         } else {
-            Add-LogMessage -Level Failure "Failed to update storage quota for share '$Name'. Current quota is $finalQuota GB"
+            Add-LogMessage -Level Failure "Failed to update storage quota for share '$Name'! Current quota is $finalQuota GB"
         }
     } catch {
-        Add-LogMessage -Level Fatal "Failed to update storage share '$Name'." -Exception $_.Exception
-    } finally {
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $StorageAccount.StorageAccountName -ResourceGroupName $StorageAccount.ResourceGroupName -DefaultAction $storageAccountRules.DefaultAction -IpRule $storageAccountRules.IpRules -ErrorAction Stop
+        Add-LogMessage -Level Failure "Failed to update storage share '$Name'! Is your current IP address in the set of permitted dataAdminIpAddresses?" -Exception $_.Exception
     }
 }
 Export-ModuleMember -Function Set-StorageNfsShareQuota

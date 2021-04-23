@@ -418,7 +418,7 @@ function Get-ShmConfig {
     # --------------
     $shmStoragePrefix = "shm$($shm.id)"
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
-    $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
         artifacts       = [ordered]@{
             rg          = $storageRg
@@ -638,7 +638,7 @@ function Get-SreConfig {
 
     # Storage config
     # --------------
-    $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
     $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
@@ -651,8 +651,14 @@ function Get-SreConfig {
             }
         }
         artifacts       = [ordered]@{
-            accountName = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-            rg          = $storageRg
+            account = [ordered]@{
+                name               = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind        = "BlobStorage"
+                performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier         = "Cool"
+                allowedIpAddresses = $sreConfigBase.deploymentIpAddresses ? @($sreConfigBase.deploymentIpAddresses) : "any"
+            }
+            rg      = $storageRg
         }
         bootdiagnostics = [ordered]@{
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -663,7 +669,7 @@ function Get-SreConfig {
                 name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
                 performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier  = "hot"
+                accessTier  = "Hot"
                 rg          = $storageRg
             }
             containers = [ordered]@{
@@ -684,7 +690,7 @@ function Get-SreConfig {
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
                 performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier         = "hot"
+                accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{

@@ -307,11 +307,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestcartifactslubiehy",
-        "rg": "RG_SHM_TESTC_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "shmtestcbootdiagslubiehy",
-        "rg": "RG_SHM_TESTC_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_STORAGE"
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
@@ -598,16 +598,22 @@
         }
       },
       "artifacts": {
-        "accountName": "testct3msrdsartifactsreu",
-        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_ARTIFACTS"
+        "account": {
+          "accessTier": "Cool",
+          "allowedIpAddresses": "any",
+          "name": "testct3msrdsartifactsreu",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "testct3msrdsbootdiagsreu",
-        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },
       "persistentdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testct3msrdsdatareultqbi",
           "performance": "Standard_LRS",
@@ -628,10 +634,10 @@
       },
       "userdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "name": "testct3msrdsuserdatareul",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTC_SRE_T3MSRDS_ARTIFACTS",
+          "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE",
           "storageKind": "FileStorage"
         },
         "containers": {

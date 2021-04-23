@@ -307,11 +307,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactslubiehy",
-        "rg": "RG_SHM_TESTA_ARTIFACTS"
+        "rg": "RG_SHM_TESTA_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "shmtestabootdiagslubiehy",
-        "rg": "RG_SHM_TESTA_ARTIFACTS"
+        "rg": "RG_SHM_TESTA_STORAGE"
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTA_PERSISTENT_DATA"
@@ -512,12 +512,18 @@
         }
       },
       "artifacts": {
-        "accountName": "testat1cocalartifactslmu",
-        "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS"
+        "account": {
+          "accessTier": "cold",
+          "allowedIpAddresses": "any",
+          "name": "testat1cocalartifactslmu",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "rg": "RG_SHM_TESTA_SRE_T1COCAL_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "testat1cocalbootdiagslmu",
-        "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS"
+        "rg": "RG_SHM_TESTA_SRE_T1COCAL_STORAGE"
       },
       "persistentdata": {
         "account": {
@@ -545,7 +551,7 @@
           "accessTier": "hot",
           "name": "testat1cocaluserdatalmuy",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTA_SRE_T1COCAL_ARTIFACTS",
+          "rg": "RG_SHM_TESTA_SRE_T1COCAL_STORAGE",
           "storageKind": "FileStorage"
         },
         "containers": {

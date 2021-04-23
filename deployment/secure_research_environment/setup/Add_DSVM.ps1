@@ -287,9 +287,9 @@ $template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
           Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
           Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
-# Upload files to VM via the SHM persistent data storage account (since access is allowed from both the deployment machine and the DSVM)
-$persistentStorageAccount = Get-StorageAccount -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -SubscriptionName $config.shm.subscriptionName -ErrorAction Stop
-Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $persistentStorageAccount
+# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the DSVM)
+$artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
 Remove-Item -Path $localSmokeTestDir -Recurse -Force
 # Set smoke test permissions
 Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"

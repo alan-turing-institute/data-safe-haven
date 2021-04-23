@@ -110,6 +110,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
     },
     "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended) or 'CoCalc' (tier 0/1 only) or 'MicrosoftRDS' (tier 2/3 only)",
     "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
+    "deploymentIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using when deploying the SRE (if not specified then deployment commands from any IP address will be permitted).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
     "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
     "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
@@ -250,6 +251,22 @@ The VNet peerings may take a few minutes to provision after the script completes
 </details>
 
 <details>
+<summary><strong>Deploy storage accounts</strong></summary>
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
+
+```pwsh
+PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
+
+This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
+
+</details>
+
+<details>
 <summary><strong>Deploy Apache Guacamole remote desktop</strong></summary>
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
@@ -275,22 +292,6 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-
-</details>
-
-<details>
-<summary><strong>Deploy storage accounts</strong></summary>
-
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
-
-```pwsh
-PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
-+ where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-
-This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 
 </details>
 
