@@ -6,7 +6,9 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
     [string]$tenantId,
     [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of DSVMs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
-    [string[]]$VmSizes
+    [string[]]$VmSizes,
+    [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
+    [switch]$Clean
 )
 
 Import-Module Az.Accounts
@@ -34,7 +36,9 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot '..' '..' 'CheckRequi
 
 # Remove data from previous deployments
 # -------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Remove_SRE_Data_From_SHM.ps1')" -shmId $shmId -sreId $sreId }
+if ($Clean) {
+    Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Remove_SRE_Data_From_SHM.ps1')" -shmId $shmId -sreId $sreId }
+}
 
 
 # Register SRE with the SHM
