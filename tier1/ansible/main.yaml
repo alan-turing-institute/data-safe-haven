@@ -293,13 +293,15 @@
             name: acl
             state: present
 
-        - name: Set group permissions for new files
+        # Note that execute permissions are needed so that users in the shared
+        # group may enter directories, create new files, and delete files
+        - name: Set group permissions for new files and directories
           become: yes
           ansible.posix.acl:
             path: /shared
             etype: group
             default: yes
-            permissions: rw
+            permissions: rwx
             state: present
       when: shared_data_disk
 
