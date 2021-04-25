@@ -33,7 +33,7 @@ $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.pers
                                                   -SkuName $config.sre.storage.persistentdata.account.performance
 # Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Allow
-Start-Sleep 10
+Start-Sleep 30
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
@@ -117,7 +117,7 @@ $userdataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.userda
                                                 -AllowHttpTraffic
 # Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Allow
-Start-Sleep 10
+Start-Sleep 30
 
 
 # Ensure that all required userdata containers exist
@@ -147,7 +147,7 @@ $artifactsStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artif
                                                  -SkuName $config.sre.storage.artifacts.account.performance
 # Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -DefaultAction Allow
-Start-Sleep 10
+Start-Sleep 30
 
 
 # Ensure that the storage accounts can be accessed from the SRE VNet through private endpoints

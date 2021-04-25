@@ -149,7 +149,7 @@ function Deploy-StorageAccountEndpoint {
         $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
         if ($privateEndpoint.PrivateLinkServiceConnections.PrivateLinkServiceConnectionState.Status -eq "Disconnected") {
             $null = Remove-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Force
-            Start-Sleep 5
+            Start-Sleep 10
             $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
         }
         Add-LogMessage -Level InfoSuccess "Private endpoint '$privateEndpointName' already exists for storage account '$($StorageAccount.StorageAccountName)'"
@@ -187,7 +187,13 @@ function Deploy-StorageContainer {
             $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
             Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
         } catch {
-            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
+            # Sometimes the storage container exists but Powershell does not recognise this until it attempts to create it
+            $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+            if ($notExists) {
+                Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
+            } else {
+                Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+            }
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
