@@ -55,16 +55,24 @@ $null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0]
 # ----------------------------
 $azureAdApplicationName = "Guacamole SRE $($config.sre.id)"
 Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registered with Azure Active Directory..."
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration"
-$application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
-if (-not $application) {
-    Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
-    $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
-}
-if (Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'") {
-    Add-LogMessage -Level Success "'$azureAdApplicationName' is already registered in Azure Active Directory"
+if (Get-MgContext) {
+    Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
 } else {
-    Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+}
+try {
+    $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
+    if (-not $application) {
+        Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
+        $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
+    }
+    if (Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'") {
+        Add-LogMessage -Level Success "'$azureAdApplicationName' is already registered in Azure Active Directory"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+    }
+} catch {
+    Add-LogMessage -Level Fatal "Could not connect to Microsoft Graph!" -Exception $_.Exception
 }
 
 
