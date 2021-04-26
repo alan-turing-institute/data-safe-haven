@@ -462,3 +462,23 @@ You may then install the defined packages (with identical versions) with
 ```
 $ pip install -r requirements.txt
 ```
+
+#### Julia
+
+The default [Julia depot
+path](https://docs.julialang.org/en/v1/base/constants/#Base.DEPOT_PATH) has been
+changed from `~/.julia` to `/shared/julia_depot. This means that for the default
+environment will be shared between all users.
+
+Additional environments can be created as required, for example
+
+```
+julia> mkdir("/shared/my_project")
+julia> cd("/shared/my_project")
+julia> ]
+(@v1.4) pkg> activate .
+(my_project)> add JSON
+```
+
+See the [Pkg.jl documentation](https://pkgdocs.julialang.org/) for more
+information on managing packages and environments.

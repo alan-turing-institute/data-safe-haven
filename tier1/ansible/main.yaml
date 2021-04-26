@@ -454,6 +454,14 @@
       async: 1800
       poll: 1
 
+    - name: Set default Julia depot directory
+      become: yes
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        regexp: '^export JULIA_DEPOT_PATH='
+        line: 'export JULIA_DEPOT_PATH="/shared/julia_depot:$JULIA_DEPOT_PATH"'
+      when: shared_data_disk
+
   handlers:
     - name: Restart xrdp
       become: yes
