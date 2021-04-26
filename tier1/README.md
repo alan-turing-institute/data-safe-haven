@@ -364,6 +364,18 @@ using your new VM password.
 
 ### 🗄️ Data
 
+Your environment contains three directories intended to help the workflow of
+ingress, analysis and egress. There directories are located at
+
+- `/data`
+- `/shared`
+- `/output`
+
+although you will also find symbolic links to these directories in your home
+directory (`~/`) and on your desktop.
+
+Below a description and explanation of each directory is given.
+
 #### Input data
 
 The input data for your project will be brought into the environment by an

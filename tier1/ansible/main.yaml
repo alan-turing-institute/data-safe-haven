@@ -462,6 +462,33 @@
         line: 'export JULIA_DEPOT_PATH="/shared/julia_depot:$JULIA_DEPOT_PATH"'
       when: shared_data_disk
 
+    - name: Create desktop directory in /etc/skel
+      become: yes
+      ansible.builtin.file:
+        path: /etc/skel/Desktop
+        state: directory
+        mode: 0755
+
+    - name: Create default symbolic links to data directories in users' homes and desktops
+      become: yes
+      ansible.builtin.file:
+        path: "/etc/skel/{{ item.path }}"
+        src: "{{ item.src }}"
+        state: link
+      loop:
+        - path: shared
+          src: /shared
+        - path: Desktop/shared
+          src: /shared
+        - path: data
+          src: /data
+        - path: Desktop/data
+          src: /data
+        - path: output
+          src: /output
+        - path: Desktop/output
+          src: /output
+
   handlers:
     - name: Restart xrdp
       become: yes
