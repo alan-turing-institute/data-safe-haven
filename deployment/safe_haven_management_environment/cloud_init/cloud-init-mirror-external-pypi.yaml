@@ -103,13 +103,13 @@ write_files:
       #   -v          verbose
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
-      echo "$(date -u +%FT%T%Z): Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors"  | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      echo "[PushToInternal] Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors" | tee >(logger -t SafeHaven)
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          echo "$(date -u +%FT%T%Z): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
+          echo "[PushToInternal] Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee >(logger -t SafeHaven)
           START_TIME=$(date +%s)
-          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi 2>&1 | tee /datadrive/mirrordaemon/push_to_internal_mirrors.log
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi 2>&1 | awk '{print "[PushToInternal] " $0}' | tee >(logger -t SafeHaven)
           ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-          echo "$(date -u +%FT%T%Z): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+          echo "[PushToInternal] Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee >(logger -t SafeHaven)
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     owner: root:root
@@ -117,18 +117,18 @@ write_files:
     content: |
       #! /bin/bash
       TIER=<tier>
-      echo "$(date -u +%FT%T%Z): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
       if [ "$TIER" != "2" ]; then
           installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
           cat /home/mirrordaemon/package_whitelist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/whitelisted_packages
           packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/whitelisted_packages)" = "" ]; then echo $package; fi; done)
-          /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
           rm /tmp/whitelisted_packages 2> /dev/null
       fi
-      /usr/local/bin/bandersnatch mirror 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      /usr/local/bin/bandersnatch mirror 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-      echo "$(date -u +%FT%T%Z): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      echo "[PullFromInternet] Finished pulling from the internet after $ELAPSED" | tee >(logger -t SafeHaven)
   - path: "/home/mirrordaemon/pull_then_push.sh"
     owner: root:root
     permissions: "0700"

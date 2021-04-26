@@ -52,7 +52,7 @@ confirm_dns_lookup_succeeds() {
 
 echo "Testing DNS resolution lockdown"
 echo "-------------------------------"
-echo "$HOSTNAME $(date -u +%FT%T%Z)"
+echo "$HOSTNAME $(date -u --iso-8601=seconds)"
 
 FAILED_TESTS=0
 echo -e "\nTesting DNS lookup for internal FQDNs via default DNS servers..."
