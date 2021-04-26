@@ -30,16 +30,16 @@ Add-LogMessage -Level Info "Retrieving list of compute VMs..."
 $VMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | `
     Where-Object { $_.Name -like "*DSVM*" } | `
     ForEach-Object {
-    $VM = $_;
-    $VMSize = Get-AzVMSize -Location $config.sre.location | Where-Object { $_.Name -eq $VM.HardwareProfile.VmSize };
-    @{
-        "type"      = (($VM.HardwareProfile.VmSize).StartsWith("N") ? "GPU" : "CPU")
-        "ipAddress" = (Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $VM.Id }).IpConfigurations[0].PrivateIpAddress
-        "cores"     = $VMSize.NumberOfCores
-        "memory"    = $VMSize.MemoryInMB * 1mb / 1gb
-        "os"        = $VM.OSProfile.WindowsConfiguration ? "Windows" : "Ubuntu"
-    }
-} | Sort-Object -Property ipAddress
+        $VM = $_;
+        $VMSize = Get-AzVMSize -Location $config.sre.location | Where-Object { $_.Name -eq $VM.HardwareProfile.VmSize };
+        @{
+            "type"      = (($VM.HardwareProfile.VmSize).StartsWith("N") ? "GPU" : "CPU")
+            "ipAddress" = (Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $VM.Id }).IpConfigurations[0].PrivateIpAddress
+            "cores"     = $VMSize.NumberOfCores
+            "memory"    = $VMSize.MemoryInMB * 1mb / 1gb
+            "os"        = $VM.OSProfile.WindowsConfiguration ? "Windows" : "Ubuntu"
+        }
+    } | Sort-Object -Property ipAddress
 
 # Add an index to each Ubuntu and Windows VM
 # The number increases with IP address
@@ -52,7 +52,7 @@ $VMs | ForEach-Object { $idxUbuntu = 0; $idxWindows = 0 } {
 
 # Update the remote file list
 # ---------------------------
-Add-LogMessage -Level Info "Updating Guacamole with $($VMs.Count) VMs..."
+Add-LogMessage -Level Info "Updating Guacamole with $(@($VMs).Count) VMs..."
 $lines = @("#! /bin/bash", "truncate -s 0 /opt/postgresql/data/connections.csv")
 $lines += $VMs | ForEach-Object { "echo '$($_.os)$($_.index) [$($_.cores)$($_.type)s $($_.memory)GB];$($_.ipAddress)' >> /opt/postgresql/data/connections.csv" }
 $lines += @("/opt/postgresql/synchronise_database.sh")

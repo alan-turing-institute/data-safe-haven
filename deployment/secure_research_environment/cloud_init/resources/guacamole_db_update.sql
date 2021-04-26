@@ -32,14 +32,14 @@ INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, param
                 ('server-layout', 'en-gb-qwerty')
         ) connection_settings (parameter_name, parameter_value)
         CROSS JOIN guacamole_connection
-        JOIN connections ON guacamole_connection.connection_name LIKE CONCAT(connections.connection_name, '%')
+        JOIN connections ON guacamole_connection.connection_name LIKE CONCAT('%', connections.connection_name)
 ON CONFLICT DO NOTHING;
 
 /* Remove obsolete connections (NB. this will cascade delete guacamole_connection_parameter entries) */
 DELETE FROM guacamole_connection
 WHERE NOT EXISTS (
    SELECT FROM connections
-   WHERE guacamole_connection.connection_name LIKE CONCAT(connections.connection_name, '%')
+   WHERE guacamole_connection.connection_name LIKE CONCAT('%', connections.connection_name)
 );
 
 /* Drop the temporary connections table */
