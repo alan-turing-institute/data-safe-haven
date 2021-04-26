@@ -25,8 +25,8 @@ $vmsByRg = Get-VMsByResourceGroupPrefix -ResourceGroupPrefix $config.sre.rgPrefi
 
 switch ($Action) {
     "EnsureStarted" {
-        # Remove RDS VMs to process last
-        $rdsVms = $vmsByRg[$config.sre.remoteDesktop.rg]
+        # Remove remote desktop VMs to process last
+        $remoteDesktopVms = $vmsByRg[$config.sre.remoteDesktop.rg]
         $vmsByRg.Remove($config.sre.remoteDesktop.rg)
         # Start all other VMs before RDS VMs so all services will be available when users can login via RDS
         foreach ($key in $vmsByRg.Keys) {
@@ -37,27 +37,32 @@ switch ($Action) {
                 Start-VM -VM $vm
             }
         }
-        # Ensure RDS VMs are started
+        # Ensure remote desktop VMs are started
         Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.sre.remoteDesktop.rg)' are started..."
-        # RDS gateway must be started before RDS session hosts
-        $gatewayAlreadyRunning = Confirm-VmRunning -Name $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
-        if ($gatewayAlreadyRunning) {
-            Add-LogMessage -Level InfoSuccess "VM '$($config.sre.remoteDesktop.gateway.vmName)' already running."
-            # Ensure session hosts started
-            foreach ($vm in $rdsVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
-                Start-VM -VM $vm
-            }
-        } else {
-            # Stop session hosts as they must start after gateway
-            Add-LogMessage -Level Info "Stopping RDS session hosts as gateway is not running."
-            foreach ($vm in $rdsVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
-                Stop-VM -VM $vm
-            }
-            # Start gateway
-            Start-VM -Name $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
-            # Start session hosts
-            foreach ($vm in $rdsVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
-                Start-VM -VM $vm
+        if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+            # Start Guacamole VMs
+            $remoteDesktopVms | ForEach-Object { Start-VM -VM $_ }
+        } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+            # RDS gateway must be started before RDS session hosts
+            $gatewayAlreadyRunning = Confirm-VmRunning -Name $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
+            if ($gatewayAlreadyRunning) {
+                Add-LogMessage -Level InfoSuccess "VM '$($config.sre.remoteDesktop.gateway.vmName)' already running."
+                # Ensure session hosts started
+                foreach ($vm in $remoteDesktopVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
+                    Start-VM -VM $vm
+                }
+            } else {
+                # Stop session hosts as they must start after gateway
+                Add-LogMessage -Level Info "Stopping RDS session hosts as gateway is not running."
+                foreach ($vm in $remoteDesktopVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
+                    Stop-VM -VM $vm
+                }
+                # Start gateway
+                Start-VM -Name $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
+                # Start session hosts
+                foreach ($vm in $remoteDesktopVms | Where-Object { $_.Name -ne $config.sre.remoteDesktop.gateway.vmName }) {
+                    Start-VM -VM $vm
+                }
             }
         }
     }
