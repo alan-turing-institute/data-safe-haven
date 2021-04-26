@@ -282,7 +282,7 @@ write_files:
 
       # Search parameters for LDAP users which should be synchronized
       ldap_users:
-        base: <ldap-users-base-dn>
+        base: <ldap-user-base-dn>
         # LDAP filter defining which LDAP users should be synchronized
         filter: <ldap-user-filter>
         # this attribute is used as PG role name

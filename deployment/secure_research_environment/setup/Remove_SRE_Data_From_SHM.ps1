@@ -47,7 +47,6 @@ if ($sreResources -or $sreResourceGroups) {
     # ----------------------------------------------
     Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
-    WRite-Host $peeringName
     foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
         foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
             $null = Remove-AzVirtualNetworkPeering -Name $peering.Name -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
@@ -96,44 +95,53 @@ if ($sreResources -or $sreResourceGroups) {
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
     # ---------------------------------------------
-    Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
-    $params = @{
-        rdsGatewayFqdn = $config.sre.rds.gateway.fqdn
+    if ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
+        $params = @{
+            rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
+        }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
     }
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-
 
     # Remove RDS entries from SRE DNS Zone
     # ------------------------------------
     $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-    $dnsResourceGroup = $config.shm.dns.rg
-    $sreDomain = $config.sre.domain.fqdn
     # Check parent SRE domain record exists (if it does not, the other record removals will fail)
-    $null = Get-AzDnsZone -ResourceGroupName $dnsResourceGroup -Name $sreDomain -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -ResourceGroupName $config.shm.dns.rg -Name $config.sre.domain.fqdn -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($sreDomain) found."
+        Add-LogMessage -Level Info "No DNS Zone for SRE $($config.sre.id) domain ($($config.sre.domain.fqdn)) found."
     } else {
-        # RDS @ record
-        Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-        Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+        # SRE FQDN A record
+        Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+        Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
         $success = $?
-        # RDS DNS record
-        $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-        Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-        Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-        $success = $success -and $?
-        # RDS ACME records
-        foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
-            Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $($config.sre.id) DNS zone ($sreDomain)"
-            Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-            $success = $success -and $?
-        }
-        # Print success/failure message
-        if ($success) {
-            Add-LogMessage -Level Success "Record removal succeeded"
+        # Remote desktop server CNAME record
+        if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+            $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
+        } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+            $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
+        } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
+            $serverHostname = $null
         } else {
-            Add-LogMessage -Level Fatal "Record removal failed!"
+            Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+        }
+        if ($serverHostname) {
+            Add-LogMessage -Level Info "[ ] Removing '$serverHostname' CNAME record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+            Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+            $success = $success -and $?
+            # Let's Encrypt ACME records
+            foreach ($letsEncryptAcmeDnsRecord in ("_acme-challenge.${serverHostname}".ToLower(), "_acme-challenge.$($config.sre.domain.fqdn)".ToLower(), "_acme-challenge")) {
+                Add-LogMessage -Level Info "[ ] Removing '$letsEncryptAcmeDnsRecord' TXT record from SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+                Remove-AzDnsRecordSet -Name $letsEncryptAcmeDnsRecord -RecordType TXT -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
+                $success = $success -and $?
+            }
+            # Print success/failure message
+            if ($success) {
+                Add-LogMessage -Level Success "Record removal succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Record removal failed!"
+            }
         }
     }
 }

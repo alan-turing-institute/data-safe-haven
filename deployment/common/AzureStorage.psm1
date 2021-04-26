@@ -86,11 +86,11 @@ function Deploy-StorageAccount {
             $params["EnableHttpsTrafficOnly"] = $false
             Add-LogMessage -Level Warning "Storage account '$Name' will be deployed with EnableHttpsTrafficOnly disabled. Note that this can take up to 15 minutes to complete."
         }
-        $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params
-        if ($?) {
+        try {
+            $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName $SkuName -Kind $Kind @params -ErrorAction Stop
             Add-LogMessage -Level Success "Created storage account '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!" -Exception $_.Exception
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage account '$Name' already exists"
@@ -149,7 +149,7 @@ function Deploy-StorageAccountEndpoint {
         $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
         if ($privateEndpoint.PrivateLinkServiceConnections.PrivateLinkServiceConnectionState.Status -eq "Disconnected") {
             $null = Remove-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Force
-            Start-Sleep 5
+            Start-Sleep 10
             $privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
         }
         Add-LogMessage -Level InfoSuccess "Private endpoint '$privateEndpointName' already exists for storage account '$($StorageAccount.StorageAccountName)'"
@@ -183,11 +183,17 @@ function Deploy-StorageContainer {
     $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context
-        if ($?) {
+        try {
+            $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
             Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        } catch {
+            # Sometimes the storage container exists but Powershell does not recognise this until it attempts to create it
+            $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+            if ($notExists) {
+                Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
+            } else {
+                Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+            }
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
@@ -267,8 +273,6 @@ function Deploy-StorageNfsShare {
     return $storageShare
 }
 Export-ModuleMember -Function Deploy-StorageNfsShare
-
-
 
 
 # Ensure that storage receptable (either container or share) exists
@@ -436,6 +440,7 @@ function Send-FilesToLinuxVM {
         [string]$VMResourceGroupName
     )
     $originalContext = Get-AzContext
+    $storageAccountSubscription = $BlobStorageAccount.Id.Split("/")[2]
     $ResolvedPath = Get-Item -Path $LocalDirectory
 
     # Zip files from the local directory
@@ -456,24 +461,22 @@ function Send-FilesToLinuxVM {
     # Upload the zipfile to blob storage
     Add-LogMessage -Level Info "[ ] Uploading zip file to container '$zipFileContainerName'..."
     try {
-        $null = Set-AzContext -SubscriptionId $BlobStorageAccount.Id.Split("/")[2] -ErrorAction Stop
-        $DefaultAction = (Get-AzStorageAccountNetworkRuleSet -ResourceGroupName $BlobStorageAccount.ResourceGroupName -Name $BlobStorageAccount.StorageAccountName).DefaultAction
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction Allow -ErrorAction Stop
+        $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
         $null = Deploy-StorageContainer -Name $zipFileContainerName -StorageAccount $BlobStorageAccount
         $null = Set-AzStorageBlobContent -Container $zipFileContainerName -Context $BlobStorageAccount.Context -File $zipFilePath -Blob $zipFileName -Force -ErrorAction Stop
-        $null = Update-AzStorageAccountNetworkRuleSet -Name $BlobStorageAccount.StorageAccountName -ResourceGroupName $BlobStorageAccount.ResourceGroupName -DefaultAction $DefaultAction -ErrorAction Stop
-        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully uploaded zip file to '$zipFileContainerName'"
     } catch {
         $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction SilentlyContinue
-        Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'!" -Exception $_.Exception
+        Add-LogMessage -Level Fatal "Failed to upload zip file to '$zipFileContainerName'! Is your current IP address in the set of permitted deploymentIpAddresses?" -Exception $_.Exception
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 
     # Remove zip file directory
     Add-LogMessage -Level Info "[ ] Cleaning up directory $zipFileDir..."
     try {
-        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction SilentlyContinue
+        $null = Remove-Item -Path $zipFileDir -Recurse -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileDir'"
     } catch {
         Add-LogMessage -Level Fatal "Failed to clean up '$zipFileDir'!"
@@ -481,7 +484,7 @@ function Send-FilesToLinuxVM {
 
     # Generate a SAS token and construct URL
     Add-LogMessage -Level Info "[ ] Generating download URL..."
-    $sasToken = New-ReadOnlyStorageAccountSasToken -ResourceGroup $BlobStorageAccount.ResourceGroupName -AccountName $BlobStorageAccount.StorageAccountName -SubscriptionName $BlobStorageAccount.Id.Split("/")[2]
+    $sasToken = New-ReadOnlyStorageAccountSasToken -AccountName $BlobStorageAccount.StorageAccountName -ResourceGroup $BlobStorageAccount.ResourceGroupName -SubscriptionName $storageAccountSubscription
     $remoteUrl = "$($BlobStorageAccount.PrimaryEndpoints.Blob)${zipFileContainerName}/${zipFileName}${sasToken}"
     Add-LogMessage -Level Success "Constructed download URL $remoteUrl"
 
@@ -490,6 +493,7 @@ function Send-FilesToLinuxVM {
                 "tmpdir=`$(mktemp -d)",
                 "curl -X GET -o `$tmpdir/${zipFileName} '${remoteUrl}' 2>&1",
                 "mkdir -p ${RemoteDirectory}",
+                "rm -rf ${RemoteDirectory}/*",
                 "unzip `$tmpdir/${zipFileName} -d ${RemoteDirectory}",
                 "rm -rf `$tmpdir") -join "`n"
     Add-LogMessage -Level Info "[ ] Downloading zip file onto $VMName"
@@ -498,10 +502,42 @@ function Send-FilesToLinuxVM {
     # Remove blob storage container
     Add-LogMessage -Level Info "[ ] Cleaning up storage container '$zipFileContainerName'..."
     try {
+        $null = Set-AzContext -SubscriptionId $storageAccountSubscription -ErrorAction Stop
         $null = Remove-AzStorageContainer -Name $zipFileContainerName -Context $BlobStorageAccount.Context -Force -ErrorAction Stop
         Add-LogMessage -Level Success "Successfully cleaned up '$zipFileContainerName'"
     } catch {
-        Add-LogMessage -Level Fatal "Failed to clean up '$zipFileContainerName'!"
+        Add-LogMessage -Level Failure "Failed to clean up '$zipFileContainerName'! Is your current IP address in the set of permitted deploymentIpAddresses?" -Exception $_.Exception
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 }
 Export-ModuleMember -Function Send-FilesToLinuxVM
+
+
+# Create storage share if it does not exist
+# -----------------------------------------
+function Set-StorageNfsShareQuota {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Size of quote in GB")]
+        [int]$Quota,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+    )
+    Add-LogMessage -Level Info "Setting storage quota for share '$Name' to $Quota GB..."
+    try {
+        $null = Set-AzStorageShareQuota -ShareName $Name -Quota $Quota -Context $StorageAccount.Context -ErrorAction Stop
+        $finalQuota = (Get-AzStorageShare -Name $Name -Context $StorageAccount.Context).Quota
+        if ($finalQuota -eq $Quota) {
+            Add-LogMessage -Level Success "Set storage quota for share '$Name' to $Quota GB"
+        } else {
+            Add-LogMessage -Level Failure "Failed to update storage quota for share '$Name'! Current quota is $finalQuota GB"
+        }
+    } catch {
+        Add-LogMessage -Level Failure "Failed to update storage share '$Name'! Is your current IP address in the set of permitted dataAdminIpAddresses?" -Exception $_.Exception
+    }
+}
+Export-ModuleMember -Function Set-StorageNfsShareQuota
+
+

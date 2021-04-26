@@ -25,7 +25,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Configure external DNS resolution for DSVMs via SHM DNS servers
 # ---------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$cidrsToBlock = ($config.sre.rds.gateway.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
+$cidrsToBlock = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
 $params = @{
     sreId                          = $config.sre.id
     blockedCidrsCommaSeparatedList = ($cidrsToBlock -join ",")
@@ -58,7 +58,7 @@ if (-not $vmIpAddress) {
         SHM_DOMAIN_FQDN   = $config.shm.domain.fqdn
         SHM_DC1_FQDN      = $config.shm.dc.fqdn
         SHM_DC2_FQDN      = $config.shm.dcb.fqdn
-        OUTBOUND_INTERNET = $config.sre.rds.gateway.networkRules.outboundInternet
+        OUTBOUND_INTERNET = $config.sre.remoteDesktop.networkRules.outboundInternet
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
     $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params

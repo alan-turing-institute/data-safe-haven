@@ -561,7 +561,11 @@ function Deploy-PublicIpAddress {
     $publicIpAddress = Get-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating public IP address '$Name'"
-        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku
+        $ipAddressParams = @{}
+        if ($Sku -eq "Standard") {
+            $ipAddressParams["Zone"] = @(1, 2, 3)
+        }
+        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku @ipAddressParams
         if ($?) {
             Add-LogMessage -Level Success "Created public IP address '$Name'"
         } else {
@@ -716,10 +720,10 @@ function Deploy-UbuntuVirtualMachine {
         [string]$CloudInitYaml,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
-        [string]$ImageId = $null,
+        [string]$ImageId,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
-        [string]$ImageSku = $null,
+        [string]$ImageSku,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
@@ -758,7 +762,11 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } elseif ($ImageSku) {
-            $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+            if ($ImageSku -eq "20.04-LTS") {
+                $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
+            } else {
+                $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+            }
         } else {
             Add-LogMessage -Level Fatal "Could not determine which source image to use!"
         }
