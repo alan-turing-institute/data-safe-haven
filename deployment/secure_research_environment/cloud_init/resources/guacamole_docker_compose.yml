@@ -4,7 +4,7 @@
 # https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html has a good write-up of how to control access using group membership
 #
 # Originally based on boschkundendienst/guacamole-docker-compose
-version: '3.8'
+version: '3.7'
 networks:
     network_private:
     network_public:
@@ -15,7 +15,7 @@ services:
         networks:
             - network_private
         ports:
-            - 5432:5432
+            - 127.0.0.1:5432:5432
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /etc/timezone:/etc/timezone:ro
@@ -48,8 +48,6 @@ services:
             - postgres
         networks:
             - network_private
-        ports:
-            - 8080/tcp
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /etc/timezone:/etc/timezone:ro
