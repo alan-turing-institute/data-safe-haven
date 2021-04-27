@@ -1,0 +1,66 @@
+---
+
+- name: Ensure system singularity is not installed
+  ansible.builtin.apt:
+    name: singularity-container
+    state: absent
+
+- name: Check installed version of singularity
+  # This will return a non-zero return code if
+  # 1. Singularity is not installed
+  # 2. The singularity version does not match the variable singularity_Verison
+  ansible.builtin.shell:
+    cmd: "singularity --version | grep {{ singularity_version }}"
+  changed_when: False
+  failed_when: False
+  register: version_check
+
+- name: Install singularity from source
+  #available debs are quite out of date
+  block:
+    - name: Install singularity build dependencies
+      ansible.builtin.apt:
+        name:
+          - build-essential
+          - uuid-dev
+          - libgpgme-dev
+          - squashfs-tools
+          - libseccomp-dev
+          - pkg-config
+          - cryptsetup-bin
+          - golang
+
+    - name: Get singularity release
+      ansible.builtin.get_url:
+        url: "https://github.com/hpcng/singularity/releases/download/v{{ singularity_version }}/singularity-{{ singularity_version }}.tar.gz"
+        dest: "{{ ansible_user_dir }}"
+        checksum: "sha256:https://github.com/hpcng/singularity/releases/download/v{{ singularity_version }}/sha256sums"
+      register: singularity_archive
+
+    - name: Remove old source directory
+      ansible.builtin.file:
+        path: "{{ ansible_user_dir }}/singularity"
+        state: absent
+
+    - name: Unarchive singularity source
+      ansible.builtin.unarchive:
+        src: "{{ singularity_archive.dest }}"
+        remote_src: yes
+        dest: "{{ ansible_user_dir }}"
+
+    - name: Generate Makefile
+      ansible.builtin.command:
+        chdir: "{{ ansible_user_dir }}/singularity"
+        cmd: ./mconfig
+        creates: "{{ ansible_user_dir }}/singularity/Makefile"
+
+    - name: Build singularity
+      community.general.make:
+        chdir: "{{ ansible_user_dir }}/singularity/builddir"
+        target: all
+
+    - name: Install singularity
+      community.general.make:
+        chdir: "{{ ansible_user_dir }}/singularity/builddir"
+        target: install
+  when: version_check.rc != 0

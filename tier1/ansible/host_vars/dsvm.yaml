@@ -68,3 +68,5 @@ snap_packages_default:
   - name: dbeaver-ce
 
 snap_packages: "{{ snap_packages_default | union(snap_packages_extra) }}"
+
+singularity_version: 3.7.3

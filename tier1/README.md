@@ -145,12 +145,12 @@ $ cd ../ansible
 
 Terraform will have written some files needed by Ansible,
 
-- `inventory.yaml` - The Ansible inventory, which tells Ansible how to connect to
-  the virtual machines
-- `vars/terraform_vars.yaml` - Some variables exported for Terraform that will be used
-  by Ansible
-- `../keys/{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the DSVM and
-  Guacamole machines respectively
+- `inventory.yaml` - The Ansible inventory, which tells Ansible how to connect
+  to the virtual machines
+- `vars/terraform_vars.yaml` - Some variables exported for Terraform that will
+  be used by Ansible
+- `../keys/{dsvm,guacamole}_admin_id_rsa.pem` - The private SSH keys for the
+  DSVM and Guacamole machines respectively
 
 Ensure the required Ansible roles and collections are installed
 
@@ -494,3 +494,23 @@ julia> ]
 
 See the [Pkg.jl documentation](https://pkgdocs.julialang.org/) for more
 information on managing packages and environments.
+
+#### Containers
+
+You will find [singularity](https://sylabs.io/guides/latest/user-guide)
+installed on the DSVM. Singularity is a container platform with a focus on HPC.
+It has a number of advantages over docker when we want to run containers as
+applications rather than services including, no setup for non-trusted users,
+[MPI support](https://sylabs.io/guides/latest/user-guide/mpi.html), host system
+[GPU access](https://sylabs.io/guides/3.7/user-guide/gpu.html).
+
+Singularity can pull containers from [the Singularity
+library](https://cloud.sylabs.io/library) as well as [Docker
+Hub](https://hub.docker.com/). For example
+
+```
+$ singularity pull library://alpine
+$ singularity pull library://nginx
+```
+The Singularity [Quick Start](https://sylabs.io/guides/latest/user-guide/)
+provides a good introduction to the important commands.
