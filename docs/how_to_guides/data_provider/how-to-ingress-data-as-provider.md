@@ -54,7 +54,7 @@ This provides an added layer of protection in case the upload link is inadvertan
      <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
   </p>
 3. On `Select Authentication Method`, choose `Shared access signature` and hit `Next`
-3. On `Enter Connection Info`:
+4. On `Enter Connection Info`:
     - Copy the SAS URL that the administrator sent you via secure email
     - Check the `Display name` says `ingress`
 4. On the `Summary` page:
