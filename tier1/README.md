@@ -420,57 +420,60 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Supported programming languages
 
-- [Python](https://www.python.org/) ([3.8](https://docs.python.org/3.8/),
-  [3.9](https://docs.python.org/3.9/)) - `python3` `python3.9` see the [Python
-  recommended workflow section](#Python) for recommendations on how to use
-  virtual environments to install and manage Python packages
-- [Julia](https://julialang.org/) ([1.4](https://docs.julialang.org/en/v1.4/)) - `julia`
-- [R](https://www.r-project.org/) (3.6) - `R`
-- [Octave](https://www.gnu.org/software/octave/index) ([5.2](https://octave.org/doc/v5.2.0/)) - `octave` or Applications → Education → GNU Octave
-- C [gcc](https://gcc.gnu.org/)
-  ([9.3](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/gcc/)) - `gcc`
-- Fortran [gfortran](https://gcc.gnu.org/) ([9.3](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/gfortran/)) - `gfortran`
-- C++ [gpp](https://gcc.gnu.org/) ([9.3](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/libstdc++/manual/) - `gcc` or `g++`
+| language                                            | version  | docs                                                                       | command or route to application                                          | notes                                                                                                                                               |
+| ---                                                 | ---      | ---                                                                        | ---                                               | ---                                                                                                                                                 |
+| [Python](https://www.python.org/)                   | 3.8, 3.9 | ([3.8](https://docs.python.org/3.8/), [3.9](https://docs.python.org/3.9/)) | `python3`, `python3.9`                            | see the [Python recommended workflow section](#Python) for recommendations on how to use virtual environments to install and manage Python packages |
+| [Julia](https://julialang.org/)                     | 1.4      | [docs](https://docs.julialang.org/en/v1.4/)                                | `julia`                                           | see the [Julia recommended workflow section](#Julia) for information on how the default julia depot has been configured                             |
+| [R](https://www.r-project.org/)                     | 3.6      |                                                                            | `R`                                               |                                                                                                                                                     |
+| [Octave](https://www.gnu.org/software/octave/index) | 5.2      | [docs](https://octave.org/doc/v5.2.0/)                                     | `octave` or Applications → Education → GNU Octave |                                                                                                                                                     |
+| C [gcc](https://gcc.gnu.org/)                       | 9.3      | [docs](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/gcc/)                      | `gcc`                                             |                                                                                                                                                     |
+| Fortran [gfortran](https://gcc.gnu.org/)            | 9.3      | [docs](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/gfortran/)                 | `gfortran`                                        |                                                                                                                                                     |
+| C++ [gpp](https://gcc.gnu.org/)                     | 9.3      | [docs](https://gcc.gnu.org/onlinedocs/gcc-9.3.0/libstdc++/manual/)         | `gcc` or `g++`                                    |                                                                                                                                                     |
 
 #### Development tools
 
-- [git](https://git-scm.com/) ([2.25](https://git-scm.com/docs)) - `git`
-- [gitkraken](https://www.gitkraken.com/) ([7.5](https://support.gitkraken.com/)) - Applications → Development → GitKraken
-- [dbeaver](https://dbeaver.io/) ([21.0](https://github.com/dbeaver/dbeaver/wiki)) - Applications → Development → DBeaver Community
-- [make](https://www.gnu.org/software/make/)
-  ([4.2](https://www.gnu.org/software/make/manual/make.html)) - `make`
-- [cmake](https://cmake.org/) ([3.16](https://cmake.org/cmake/help/v3.16/)) - `cmake`
-- [ninja](https://ninja-build.org/) ([1.10](https://ninja-build.org/manual.html)) - `ninja`
+| language                                   | version | docs                                                       | command or route to application                | notes |
+| ---                                        | ---     | ---                                                        | ---                                            | ---   |
+| [git](https://git-scm.com/)                | 2.25    | [docs](https://git-scm.com/docs)                           | `git`                                          |       |
+| [gitkraken](https://www.gitkraken.com/)    | 7.5     | [docs](https://support.gitkraken.com/)                     | Applications → Development → GitKraken         |       |
+| [dbeaver](https://dbeaver.io/)             | 21.0    | [docs](https://github.com/dbeaver/dbeaver/wiki)            | Applications → Development → DBeaver Community |       |
+| [make](https://www.gnu.org/software/make/) | 4.2     | [docs](https://www.gnu.org/software/make/manual/make.html) | `make`                                         |       |
+| [cmake](https://cmake.org/)                | 3.16    | [docs](https://cmake.org/cmake/help/v3.16/)                | `cmake`                                        |       |
+| [ninja](https://ninja-build.org/)          | 1.10    | [docs](https://ninja-build.org/manual.html)                | `ninja`                                        |       |
 
 #### Shells are related
 
-- [bash](https://www.gnu.org/software/bash/) ([5.0](https://www.gnu.org/software/bash/manual/bash.html)) - `bash` the default shell for all users
-- [zsh](https://www.zsh.org/)
-  ([5.8](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html)) - `zsh`
-- [fish](https://fishshell.com/)
-  ([3.1](https://fishshell.com/docs/3.1/index.html)) - `fish`
-- [tmux](https://github.com/tmux/tmux/wiki)
-  ([3.0](https://github.com/tmux/tmux/wiki/Getting-Started)) - `tmux`
+| language                                   | version | docs                                                        | command or route to application | notes                           |
+| ---                                        | ---     | ---                                                         | ---                             | ---                             |
+| [bash](https://www.gnu.org/software/bash/) | 5.0     | [docs](https://www.gnu.org/software/bash/manual/bash.html)  | `bash`                          | the default shell for all users |
+| [zsh](https://www.zsh.org/)                | 5.8     | [docs](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html) | `zsh`                           |                                 |
+| [fish](https://fishshell.com/)             | 3.1     | [docs](https://fishshell.com/docs/3.1/index.html)           | `fish`                          |                                 |
+| [tmux](https://github.com/tmux/tmux/wiki)  | 3.0     | [docs](https://github.com/tmux/tmux/wiki/Getting-Started)   | `tmux`                          |                                 |
 
 #### Editors
 
-- [vim](https://www.vim.org/) ([8.1](https://www.vim.org/docs.php)) with fugitive, syntastic, airline, latexsuite and vim-julia - `vim` or Applications → Accessories → GVim
-- [neovim](https://neovim.io/) ([0.4](https://neovim.io/doc/user/)) - `nvim`
-- [emacs](https://www.gnu.org/software/emacs/) ([26.3](https://www.gnu.org/software/emacs/manual/html_node/emacs/index.html)) - `emacs` or Applications → Development → Emacs (GUI)
-- [atom](https://atom.io/) ([1.56](https://flight-manual.atom.io/)) - Applications → Development → Atom
-- [sublime](https://www.sublimetext.com/) ([3.2](https://www.sublimetext.com/docs/3/)) - Applications → Development → Sublime Text
+| language                                     | version | docs                                                                                       | command or route to application                     | notes |
+| ---                                          | ---     | ---                                                                                        | ---                                                 | ---   |
+| [vim](https://www.vim.org/)                  | 8.1     | [docs](https://www.vim.org/docs.php) with fugitive, syntastic, airline, latexsuite and vim | julia - `vim` or Applications → Accessories → GVim  |       |
+| [neovim](https://neovim.io/)                 | 0.4     | [docs](https://neovim.io/doc/user/)                                                        | `nvim`                                              |       |
+| [emacs](https://www.gnu.org/software/emacs/) | 26.3    | [docs](https://www.gnu.org/software/emacs/manual/html_node/emacs/index.html)               | `emacs` or Applications → Development → Emacs (GUI) |       |
+| [atom](https://atom.io/)                     | 1.56    | [docs](https://flight-manual.atom.io/)                                                     | Applications → Development → Atom                   |       |
+| [sublime](https://www.sublimetext.com/)      | 3.2     | [docs](https://www.sublimetext.com/docs/3/)                                                | Applications → Development → Sublime Text           |       |
 
 #### IDEs
 
-- [vscodium](https://vscodium.com/) (1.55) (community binary distribution of
-  VSCode) - Applications → Development → VSCodium
-- [pycharm](https://www.jetbrains.com/pycharm/) [docs](https://www.jetbrains.com/pycharm/learn/) (2021.1) - Applications → Development → PyCharm Community Edition
-- [rstudio](https://www.rstudio.com/) [docs](https://docs.rstudio.com/) (1.4) - Applications → Development → RStudio
+| language                                      | version | docs                                             | command or route to application                        | notes                                   |
+| ---                                           | ---     | ---                                              | ---                                                    | ---                                     |
+| [vscodium](https://vscodium.com/)             | 1.55    |                                                  | Applications → Development → VSCodium                  | community binary distribution of VSCode |
+| [pycharm](https://www.jetbrains.com/pycharm/) | 2021.1  | [docs](https://www.jetbrains.com/pycharm/learn/) | Applications → Development → PyCharm Community Edition |                                         |
+| [rstudio](https://www.rstudio.com/)           | 1.4     | [docs](https://docs.rstudio.com/)                | Applications → Development → RStudio                   |                                         |
 
 #### LaTeX
 
-- [texlive](https://tug.org/texlive/) [docs](https://tug.org/texlive/doc.html) (2019) full distribution
-- [texstudio](https://www.texstudio.org/) (2.12) - Applications → Office → TeXstudio
+| language                                | version | docs                                     | command or route to application   | notes             |
+| ---                                     | ---     | ---                                      | ---                               | ---               |
+| [texlive](https://tug.org/texlive/)     | 2019    | [docs](https://tug.org/texlive/doc.html) |                                   | full distribution |
+| [texstudio](https://www.texstudio.org/) | 2.12    |                                          | Applications → Office → TeXstudio |                   |
 
 ### 👔 Recommended workflows
 
