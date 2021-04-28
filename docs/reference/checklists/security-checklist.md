@@ -373,7 +373,7 @@ After deployment:
   + b) Check that we can revoke write access successfully
   + c) Check that we can view software that has been written to the volume and that only administrators can read the volume
   + d) Check that the volume can be changed to internal mode so that other researchers can read it (but not write)
-  + e) Check that software that requires administraor rights to install, can only be run by a System manager.
+  + e) Check that software that requires administrator rights to install, can only be run by a System manager.
 
 ## 10. Package mirrors
 
