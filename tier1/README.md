@@ -476,10 +476,10 @@ Here these packages are listed along with their version and how to launch them.
 
 #### LaTeX
 
-| application                             | version | docs                                     | command or route to application   | notes             |
-| ---                                     | ---     | ---                                      | ---                               | ---               |
-| [texlive](https://tug.org/texlive/)     | 2019    | [docs](https://tug.org/texlive/doc.html) |                                   | full distribution |
-| [texstudio](https://www.texstudio.org/) | 2.12    |                                          | Applications → Office → TeXstudio |                   |
+| application                             | version | docs                                     | command or route to application                        | notes             |
+| ---                                     | ---     | ---                                      | ---                                                    | ---               |
+| [texlive](https://tug.org/texlive/)     | 2019    | [docs](https://tug.org/texlive/doc.html) | `latexmk`, `latex`, `pdflatex`, `xetex`, `luatex`, ... | full distribution |
+| [texstudio](https://www.texstudio.org/) | 2.12    |                                          | Applications → Office → TeXstudio                      |                   |
 
 ### 👔 Recommended workflows
 
