@@ -420,7 +420,7 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Supported programming languages
 
-| language                                            | version  | docs                                                                       | command or route to application                                          | notes                                                                                                                                               |
+| language                                            | version  | docs                                                                       | command or route to application                   | notes                                                                                                                                               |
 | ---                                                 | ---      | ---                                                                        | ---                                               | ---                                                                                                                                                 |
 | [Python](https://www.python.org/)                   | 3.8, 3.9 | ([3.8](https://docs.python.org/3.8/), [3.9](https://docs.python.org/3.9/)) | `python3`, `python3.9`                            | see the [Python recommended workflow section](#Python) for recommendations on how to use virtual environments to install and manage Python packages |
 | [Julia](https://julialang.org/)                     | 1.4      | [docs](https://docs.julialang.org/en/v1.4/)                                | `julia`                                           | see the [Julia recommended workflow section](#Julia) for information on how the default julia depot has been configured                             |
@@ -432,7 +432,7 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Development tools
 
-| language                                   | version | docs                                                       | command or route to application                | notes |
+| application                                | version | docs                                                       | command or route to application                | notes |
 | ---                                        | ---     | ---                                                        | ---                                            | ---   |
 | [git](https://git-scm.com/)                | 2.25    | [docs](https://git-scm.com/docs)                           | `git`                                          |       |
 | [gitkraken](https://www.gitkraken.com/)    | 7.5     | [docs](https://support.gitkraken.com/)                     | Applications → Development → GitKraken         |       |
@@ -443,7 +443,7 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Shells are related
 
-| language                                   | version | docs                                                        | command or route to application | notes                           |
+| application                                   | version | docs                                                        | command or route to application | notes                           |
 | ---                                        | ---     | ---                                                         | ---                             | ---                             |
 | [bash](https://www.gnu.org/software/bash/) | 5.0     | [docs](https://www.gnu.org/software/bash/manual/bash.html)  | `bash`                          | the default shell for all users |
 | [zsh](https://www.zsh.org/)                | 5.8     | [docs](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html) | `zsh`                           |                                 |
@@ -452,7 +452,7 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Editors
 
-| language                                     | version | docs                                                                                       | command or route to application                     | notes |
+| application                                     | version | docs                                                                                       | command or route to application                     | notes |
 | ---                                          | ---     | ---                                                                                        | ---                                                 | ---   |
 | [vim](https://www.vim.org/)                  | 8.1     | [docs](https://www.vim.org/docs.php) with fugitive, syntastic, airline, latexsuite and vim | julia - `vim` or Applications → Accessories → GVim  |       |
 | [neovim](https://neovim.io/)                 | 0.4     | [docs](https://neovim.io/doc/user/)                                                        | `nvim`                                              |       |
@@ -462,15 +462,21 @@ Here these packages are listed along with their version and how to launch them.
 
 #### IDEs
 
-| language                                      | version | docs                                             | command or route to application                        | notes                                   |
+| application                                      | version | docs                                             | command or route to application                        | notes                                   |
 | ---                                           | ---     | ---                                              | ---                                                    | ---                                     |
 | [vscodium](https://vscodium.com/)             | 1.55    |                                                  | Applications → Development → VSCodium                  | community binary distribution of VSCode |
 | [pycharm](https://www.jetbrains.com/pycharm/) | 2021.1  | [docs](https://www.jetbrains.com/pycharm/learn/) | Applications → Development → PyCharm Community Edition |                                         |
 | [rstudio](https://www.rstudio.com/)           | 1.4     | [docs](https://docs.rstudio.com/)                | Applications → Development → RStudio                   |                                         |
 
+#### Containers
+
+| application                                   | version | docs                                             | command or route to application | notes                                                                                                                     |
+| ---                                           | ---     | ---                                              | ---                             | ---                                                                                                                       |
+| [singularity](https://sylabs.io/singularity/) | 3.7     | [docs](https://sylabs.io/guides/3.7/user-guide/) | `singularity`                   | see the [Containers section of recommended workflows](#Containers) for information on using singularity to run containers |
+
 #### LaTeX
 
-| language                                | version | docs                                     | command or route to application   | notes             |
+| application                             | version | docs                                     | command or route to application   | notes             |
 | ---                                     | ---     | ---                                      | ---                               | ---               |
 | [texlive](https://tug.org/texlive/)     | 2019    | [docs](https://tug.org/texlive/doc.html) |                                   | full distribution |
 | [texstudio](https://www.texstudio.org/) | 2.12    |                                          | Applications → Office → TeXstudio |                   |
