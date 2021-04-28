@@ -25,11 +25,14 @@ apt_packages_development:
   - python3.9-dev
   - jupyter
   - julia
+  - golang
+  - rustc
+  - cargo
   - r-base
   - octave
   - build-essential
   - cmake
-  - ninja
+  - ninja-build
   - gfortran
 
 apt_packages_shells:
