@@ -274,26 +274,25 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Verify by:
 
-First identify a select list of IP addresses and an email for which the data will be uploaded and a secure upload token sent. Open the data ingress volume.
+To test all the above, you will need to act both as the administrator and data provider:
 
-1. Ensure that the secure upload token is sent only to the email address provided and via a secure email system
-  + a) :white_check_mark: **Verify:** that email system is secure
-  + b) :camera: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the administrator document [INSERT LINK]
+1. Generate the secure upload token and check it can be sent to the email address provided by the data provider via a secure email system
+  + a) :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#ingressing-data), using the IP address of your own device in place of that of the data provider
+  + b) :white_check_mark: **Verify:** that you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes)
 
 2. Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
-  + a) Identify a test device that will have a whitelisted IP address
-  + b) Generate a secure upload token with write-only permissions with limited time period
-  + c) Attempt to write to the ingress volume via the test device
-  + d) :camera: **Verify:** that writing succeeds
-  + e) :camera: **Verify:** that one is unable to view or download from ingress
-  + f) Switch to a device that lacks a whitelisted IP address
-  + g) Attempt to write to the ingress volume via the test device
-  + h) :camera: **Verify:** that the access token fails.
+  + a) Ensure you're working from a device that will have a whitelisted IP address
+  + b) Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the [ingress instructions for the data provider](../../how_to_guides/data_provider/how-to-ingress-data-as-provider.md)
+  + c) :white_check_mark: **Verify:** that writing succeeds by uploading a file
+  + d) :white_check_mark: **Verify:** that attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window
+  + e) Switch to a device that lacks a whitelisted IP address (or change your IP with a VPN)
+  + f) Attempt to write to the ingress volume via the test device
+  + g) :white_check_mark: **Verify:** that the access token fails.
 
 3. Check the token duration and ensure that the upload fails if the duration has expired.
   + a) Create a write-only token with short duration
   + b) :white_check_mark: **Verify:** you can connect and write with the token during the duration
-  + c) :camera: **Verify:** you cannot connect and write with the token after the duration has expired
+  + c) :white_check_mark: **Verify:** you cannot connect and write with the token after the duration has expired
 
 4. Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 
