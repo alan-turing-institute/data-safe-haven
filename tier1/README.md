@@ -470,9 +470,9 @@ Here these packages are listed along with their version and how to launch them.
 
 #### Containers
 
-| application                                   | version | docs                                             | command or route to application | notes                                                                                                                     |
-| ---                                           | ---     | ---                                              | ---                             | ---                                                                                                                       |
-| [singularity](https://sylabs.io/singularity/) | 3.7     | [docs](https://sylabs.io/guides/3.7/user-guide/) | `singularity`                   | see the [Containers section of recommended workflows](#Containers) for information on using singularity to run containers |
+| application                                   | version | docs                                             | command or route to application | notes                                                                                                                       |
+| ---                                           | ---     | ---                                              | ---                             | ---                                                                                                                         |
+| [singularity](https://sylabs.io/singularity/) | 3.7     | [docs](https://sylabs.io/guides/3.7/user-guide/) | `singularity`                   | see the [Containers section of recommended workflows](#Containers-1) for information on using singularity to run containers |
 
 #### LaTeX
 
