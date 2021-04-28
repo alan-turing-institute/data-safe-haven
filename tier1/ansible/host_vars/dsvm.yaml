@@ -18,16 +18,19 @@ ssh_server_match_address:
 # Packages
 apt_packages_development:
   - git
-  - tmux
   - python3-venv
+  - python3-dev
   - python3.9
   - python3.9-venv
-  - julia
-  - build-essential
-  - octave
+  - python3.9-dev
   - jupyter
-  - gfortran
+  - julia
   - r-base
+  - octave
+  - build-essential
+  - cmake
+  - ninja
+  - gfortran
 
 apt_packages_shells:
   - bash
@@ -35,6 +38,7 @@ apt_packages_shells:
   - zsh-syntax-highlighting
   - zsh-autosuggestions
   - fish
+  - tmux
 
 apt_packages_editors:
   - vim
