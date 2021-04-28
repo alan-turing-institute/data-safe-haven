@@ -18,7 +18,7 @@
   + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
   + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
   + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
-+ Ingress and Egress
++ [:repeat: Ingress and Egress](#ingress-and-egress)
 + [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
   + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
   + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
@@ -556,7 +556,9 @@ On your **deployment machine**.
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
 
-## Ingress
+## Ingress and Egress
+
+### Ingressing data
 
 It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
@@ -576,7 +578,7 @@ It's up to the data provider to ingress data required by the safe haven. The fol
     - Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email
 
-## Egress
+### Egressing data
 
 **TODO**
 
