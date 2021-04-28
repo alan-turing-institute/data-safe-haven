@@ -560,10 +560,11 @@ On your **deployment machine**.
 
 It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
-+ In the portal go to `Subscriptions`->`<Subscription ID>`->`RG_SHM_<SHM ID>_PERSISTENT_DATA`->`<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
++ In the portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to ingress data to
++ Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
++ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, the hit the save icon in the top left
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 + Click `ingress`
-+ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, the hit the save icon in the top left
 + Click `Shared access signature` under `Settings` and do the following:
     - Copy the data providers IP address into the `Allowed IP addresses` box <- **TODO:** maybe not needed?
     - Under `Permissions`, check these boxes:
