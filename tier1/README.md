@@ -441,7 +441,7 @@ Here these packages are listed along with their version and how to launch them.
 | [cmake](https://cmake.org/)                | 3.16    | [docs](https://cmake.org/cmake/help/v3.16/)                | `cmake`                                        |       |
 | [ninja](https://ninja-build.org/)          | 1.10    | [docs](https://ninja-build.org/manual.html)                | `ninja`                                        |       |
 
-#### Shells are related
+#### Shells and related
 
 | application                                   | version | docs                                                        | command or route to application | notes                           |
 | ---                                        | ---     | ---                                                         | ---                             | ---                             |
