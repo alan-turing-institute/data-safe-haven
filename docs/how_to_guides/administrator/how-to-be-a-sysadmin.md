@@ -566,7 +566,6 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 + Click `ingress`
 + Click `Shared access signature` under `Settings` and do the following:
-    - Copy the data providers IP address into the `Allowed IP addresses` box <- **TODO:** maybe not needed?
     - Under `Permissions`, check these boxes:
         - `Write`
         - `Create`
