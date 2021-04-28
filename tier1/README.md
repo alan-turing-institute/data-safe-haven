@@ -479,7 +479,7 @@ $ pip install -r requirements.txt
 
 The default [Julia depot
 path](https://docs.julialang.org/en/v1/base/constants/#Base.DEPOT_PATH) has been
-changed from `~/.julia` to `/shared/julia_depot. This means that for the default
+changed from `~/.julia` to `/shared/.julia`. This means that for the default
 environment will be shared between all users.
 
 Additional environments can be created as required, for example
@@ -497,7 +497,7 @@ information on managing packages and environments.
 
 #### Containers
 
-You will find [singularity](https://sylabs.io/guides/latest/user-guide)
+You will find [Singularity](https://sylabs.io/guides/latest/user-guide)
 installed on the DSVM. Singularity is a container platform with a focus on HPC.
 It has a number of advantages over docker when we want to run containers as
 applications rather than services including, no setup for non-trusted users,
