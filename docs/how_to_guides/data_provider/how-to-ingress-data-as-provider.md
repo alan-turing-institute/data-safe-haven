@@ -66,6 +66,8 @@ This provides an added layer of protection in case the upload link is inadvertan
 
 Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file:
 
+<img width="492" alt="Screenshot 2021-04-28 at 14 25 09" src="https://user-images.githubusercontent.com/5486164/116411935-176e5200-a82e-11eb-9f5f-fc6c15f34d77.png">
+
 ### Common issues
 
 You may receive an error: _"this request is not authorized to perform this operation"_
