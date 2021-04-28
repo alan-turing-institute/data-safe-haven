@@ -278,7 +278,7 @@ First identify a select list of IP addresses and an email for which the data wil
 
 1. Ensure that the secure upload token is sent only to the email address provided and via a secure email system
   + a) :white_check_mark: **Verify:** that email system is secure
-  + b) :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions
+  + b) :camera: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the administrator document [INSERT LINK]
 
 2. Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
   + a) Identify a test device that will have a whitelisted IP address
