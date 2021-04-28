@@ -53,15 +53,18 @@ This provides an added layer of protection in case the upload link is inadvertan
       <p align="center">
          <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
       </p>
-3. On `Select Authentication Method`, choose `Shared access signature` and hit `Next`
+3. On `Select Resource`, choose `Blob container`
+4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 4. On `Enter Connection Info`:
-    - Copy the SAS URL that the administrator sent you via secure email
-    - Check the `Display name` says `ingress`
+    - Set the `Display name` to "ingress"
+    - Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
 4. On the `Summary` page:
     - Ensure the permissions are Add, Create, Write & List (if different, contact the administrator who sent you the token)
     - Hit `Connect`
 5. On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
 6. You should now be able to upload data to the Safe Haven by clicking the `Upload` button, completing the ingress process
+
+Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file:
 
 ### Common issues
 
