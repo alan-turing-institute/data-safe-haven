@@ -605,7 +605,7 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 + On the `Summary` page, hit `Connect`
 + On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
-+ You should now be able to securely download the data from the Safe Haven that was designated for egress
++ You should now be able to securely download the data from the Safe Haven that was designated for egress by highlighting the relevant file(s) and hitting the `Download` button
 
 ## :end: Remove a deployed Safe Haven
 
