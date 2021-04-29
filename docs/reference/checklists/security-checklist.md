@@ -363,8 +363,6 @@ After deployment:
 
 3. Check that outbound internet access on the DSVM is closed off with the following tests:
   + a) Check the network rules block
-  + b) Attempt to access some of your favourite websites (and fail)
-  + c) Attempt to download some software via terminal (and fail)
 4. Check that the software ingress volume works correctly:
   + a) Check that the volume can be changed to external mode and that the researcher can write (but not read) the volume
   + b) Check that we can revoke write access successfully
