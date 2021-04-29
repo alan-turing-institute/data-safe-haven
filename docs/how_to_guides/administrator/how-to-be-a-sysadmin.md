@@ -587,7 +587,9 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 + Click `egress`
 + Click `Shared access signature` under `Settings` and do the following:
-  + Under `Permissions`, check `Read` only
+  + Under `Permissions`, check these boxes:
+    + `Read`
+    + `List`
   + Set a time window in the `Start and expiry date/time` that gives you enough time to perform data egress
   + Leave everything else as default click `Generate SAS token and URL`
   + Leave this portal window open and move to the next step
