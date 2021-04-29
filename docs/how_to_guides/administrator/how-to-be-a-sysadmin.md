@@ -592,11 +592,11 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Leave everything else as default click `Generate SAS token and URL`
   + Leave this portal window open and move to the next step
 + Open Azure Storage explorer
-+ Click the socket image on the left hand side then select `Blob container`and hit `Next`
++ Click the socket image on the left hand side
     <p align="center">
        <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
     </p>
-+ On `Select Resource`, choose `Blob container`
++ On `Select Resource`, choose `Blob container` and hit `Next`
 + On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 + On `Enter Connection Info`:
   + Set the `Display name` to "egress"
