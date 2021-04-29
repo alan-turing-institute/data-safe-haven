@@ -568,19 +568,19 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 + Click `ingress`
 + Click `Shared access signature` under `Settings` and do the following:
-    - Under `Permissions`, check these boxes:
-        - `Write`
-        - `Create`
-        - `Add`
-        - `List`
-    - Set a 24 hour time window in the `Start and expiry date/time`
-    - Leave everything else as default click `Generate SAS token and URL`
-    - Copy the `Blob SAS URL`
+  + Under `Permissions`, check these boxes:
+    + `Write`
+    + `Create`
+    + `Add`
+    + `List`
+  + Set a 24 hour time window in the `Start and expiry date/time`
+  + Leave everything else as default click `Generate SAS token and URL`
+  + Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 
 ### Egressing data
 
-**TODO**
+TODO
 
 ## :end: Remove a deployed Safe Haven
 
