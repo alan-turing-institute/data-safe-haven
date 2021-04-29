@@ -578,7 +578,7 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 
-### Egressing data
+### Data egress
 
 TODO
 
