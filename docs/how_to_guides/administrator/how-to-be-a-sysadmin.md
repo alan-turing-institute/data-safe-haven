@@ -573,11 +573,15 @@ It's up to the data provider to ingress data required by the safe haven. The fol
     + `Create`
     + `Add`
     + `List`
-  + Set a 24 hour time window in the `Start and expiry date/time`
+  + Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
   + Leave everything else as default click `Generate SAS token and URL`
   + Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 + The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
+
+### Software Ingress
+
+Software is ingressed in a similar manner to data. Follow the steps as above to provide temporary write access, setting the time window for the SAS token as appropriate. [Share the token with a researcher so they can install software within the time window] OR [Use the access token to install the software via Azure Storage Explorer (*include details like for egress below*)], then when the time window expires, access is revoked. The software is then reviewed [by who?]. If it passes review, the software ingress volume is changed to provide researchers with read-only access to the environment [is it?].
 
 ### Data egress
 
