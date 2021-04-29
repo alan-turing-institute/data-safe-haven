@@ -577,6 +577,7 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Leave everything else as default click `Generate SAS token and URL`
   + Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
++ The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
 
 ### Data egress
 
