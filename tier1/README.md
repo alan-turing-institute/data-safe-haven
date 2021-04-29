@@ -483,6 +483,12 @@ Here these packages are listed along with their version and how to launch them.
 | [texlive](https://tug.org/texlive/)     | 2019    | [docs](https://tug.org/texlive/doc.html) | `latexmk`, `latex`, `pdflatex`, `xetex`, `luatex`, ... | full distribution |
 | [texstudio](https://www.texstudio.org/) | 2.12    |                                          | Applications → Office → TeXstudio                      |                   |
 
+#### Office
+
+| application                                 | version | docs                                                                    | command or route to application                                                                                                                        | notes |
+| ---                                         | ---     | ---                                                                     | ---                                                                                                                                                    | ---   |
+| [libreoffice](https://www.libreoffice.org/) | 6.4     | [docs](https://documentation.libreoffice.org/en/english-documentation/) | Applications → Office → (LibreOffice, LibreOffice Base, LibreOffice Calc, LibreOffice Draw, LibreOffice Impress, LibreOffice Math, LibreOffice Writer) |       |
+
 ### 👔 Recommended workflows
 
 #### Python
