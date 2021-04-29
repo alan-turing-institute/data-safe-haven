@@ -558,7 +558,7 @@ On your **deployment machine**.
 
 ## Ingress and Egress
 
-### Ingressing data
+### Data Ingress
 
 It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
