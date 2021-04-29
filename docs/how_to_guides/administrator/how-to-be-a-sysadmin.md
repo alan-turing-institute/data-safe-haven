@@ -591,7 +591,7 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Set a time window in the `Start and expiry date/time` that gives you enough time to perform data egress
   + Leave everything else as default click `Generate SAS token and URL`
   + Leave this portal window open and move to the next step
-+ Open Azure Storage explorer
++ Open Azure Storage explorer ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
 + Click the socket image on the left hand side
     <p align="center">
        <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
