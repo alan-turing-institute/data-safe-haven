@@ -174,8 +174,6 @@ For tier 3:
   + b) :white_check_mark: **Verify**: Connection fails
   + c) Using a managed device, attempt to connect to the environment using the correct VPN and credentials
   + d) :white_check_mark: **Verify**: Connection succeeds
-5. We can check that a managed device is within a specific IP range and that the environment firewall accepts it.
-6. We can check that the firewall blocks any device with an IP outside of the specified range.
 
 ## 4. Physical security
 
