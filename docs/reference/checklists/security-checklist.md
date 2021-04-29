@@ -302,7 +302,7 @@ To test all the above, you will need to act both as the administrator and data p
 
 The analysis environment contains a number of different storage volumes. Some of these storage volumes include write permissions that can then be viewed by administrators.
 
-Egressed data is held in a holding zone until approved to egressed out of the environment.
+Egressed data is held in a holding zone until approved to be egressed out of the environment.
 
 ### This means:
 

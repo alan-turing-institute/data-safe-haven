@@ -530,7 +530,7 @@ On your **deployment machine**.
 
 ## :boot: Start up an SHM or SRE
 
-If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts you used to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
 
 On your **deployment machine**.
 
