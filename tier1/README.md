@@ -587,8 +587,8 @@ library](https://cloud.sylabs.io/library) as well as [Docker
 Hub](https://hub.docker.com/). For example
 
 ```
-$ singularity pull library://alpine
-$ singularity pull library://nginx
+$ singularity pull library://dxtr/default/hpc-tensorflow:0.1
+$ singularity pull docker://alpine
 ```
 
 The Singularity [Quick Start](https://sylabs.io/guides/latest/user-guide/)
