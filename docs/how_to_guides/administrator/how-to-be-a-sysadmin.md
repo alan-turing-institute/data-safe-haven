@@ -562,9 +562,9 @@ On your **deployment machine**.
 
 It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
-+ In the portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to ingress data to
++ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to ingress data to
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
-+ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, the hit the save icon in the top left
++ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 + Click `ingress`
 + Click `Shared access signature` under `Settings` and do the following:
@@ -581,7 +581,29 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 
 ### Data egress
 
-TODO
++ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to egress data from
++ Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
++ Click `Networking` under `Settings` and make sure the IP address of your device is one of those allowed under the `Firewall` header, then hit the save icon in the top left
++ From the `Overview` tab, click the link to `Containers` (in the middle of the page)
++ Click `egress`
++ Click `Shared access signature` under `Settings` and do the following:
+  + Under `Permissions`, check all the boxes
+  + Set a time window in the `Start and expiry date/time` that gives you enough time to preform data egress
+  + Leave everything else as default click `Generate SAS token and URL`
+  + Leave this portal window open and move to the next step
++ Open Azure Storage explorer
++ Click the socket image on the left hand side then select `Blob container`and hit `Next`
+    <p align="center">
+       <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
+    </p>
++ On `Select Resource`, choose `Blob container`
++ On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
++ On `Enter Connection Info`:
+  + Set the `Display name` to "egress"
+  + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
++ On the `Summary` page, hit `Connect`
++ On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
++ You should now be able to securely download the data from the Safe Haven that was designated for egress
 
 ## :end: Remove a deployed Safe Haven
 
