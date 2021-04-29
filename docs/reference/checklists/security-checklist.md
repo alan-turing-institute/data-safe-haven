@@ -328,7 +328,7 @@ A domain administrator can view these volumes by logging into the Data Server.
   + c) :white_check_mark: **Verify:** that the different storage volumes exist and can be read (opened)
   + d) :white_check_mark: **Verify:** that one can write (move files to) Output and Home
   + e) :white_check_mark: **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
-2. Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions - TODO: this needs to be clarified, what/where is "the Data Server"? - Legacy thing, instead use blob storage
+2. Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions - TODO: this needs to be changed - Legacy thing, instead use blob storage
   + a) Login as domain admin to the SRE Data Server. IP address can be found `RG_SRE_DATA` -> `DAT-SRE-<sreID>`
   + b) Go to `This PC`
   + c) :camera: **Verify:** the volumes exist
@@ -364,7 +364,7 @@ During deployment:
 After deployment:
 
 3. Check that outbound internet access on the DSVM is closed off with the following tests:
-  + a) Check the network rules block <- TODO: What does this mean?
+  + a) Check the network rules block
   + b) Attempt to access some of your favourite websites (and fail)
   + c) Attempt to download some software via terminal (and fail)
 4. Check that the software ingress volume works correctly:
