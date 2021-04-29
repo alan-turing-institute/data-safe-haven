@@ -605,7 +605,23 @@ It's up to the data provider to ingress data required by the safe haven. The fol
   + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 + On the `Summary` page, hit `Connect`
 + On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
-+ You should now be able to securely download the data from the Safe Haven that was designated for egress by highlighting the relevant file(s) and hitting the `Download` button
++ You should now be able to securely download the data from the Safe Haven that was designated for egress (see [Egress volumes](#egress-volumes) below) by highlighting the relevant file(s) and hitting the `Download` button
+
+#### Egress volumes
+
+Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the following SRE volumes:
+
+The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to.
+
+The **Secure Document volume** contains electronically signed copies of agreements between the Data Provider and the Turing.
+
+The **Secure Scratch volume** is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here.
+
+The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication.
+
+The **Software volume** is a read-only area which contains software used for analysis.
+
+The **Home volume** is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
 
 ## :end: Remove a deployed Safe Haven
 
