@@ -54,7 +54,6 @@ $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
 $config.logging["workspaceId"] = $workspaceId
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 
