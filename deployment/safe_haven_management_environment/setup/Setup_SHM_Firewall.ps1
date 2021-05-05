@@ -133,13 +133,15 @@ $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
-# Restart primary domain controller if it is running
+# Restart domain controllers if they are running
 # --------------------------------------------------
-# This ensures that it establishes a new SSPR connection through the firewall in case
+# This ensures that they establish a new SSPR connection through the firewall in case
 # it was previously blocked due to incorrect firewall rules or a deallocated firewall
-
 if (Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
     Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
+}
+if (Confirm-VmRunning -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg) {
+    Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 
 
