@@ -8,7 +8,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
 + [:computer: 3. Deploy SRE](#computer-3-deploy-sre)
 + [:microscope: 4. Test deployed SRE](#microscope-4-test-deployed-sre)
-  + [:pear: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
+  + [:avocado: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
   + [:fire: 4.2 Run smoke tests on DSVM](#fire-42-run-smoke-tests-on-dsvm)
 
 ## Explanation of symbols used in this guide
@@ -406,7 +406,7 @@ If you get consistent failure messages after re-running the logging set up scrip
 
 ## :microscope: 4. Test deployed SRE
 
-## :pear: 4.1 Test Apache Guacamole remote desktop
+## :avocado: 4.1 Test Apache Guacamole remote desktop
 
 ### Optional: Set up a non-privileged user account
 
