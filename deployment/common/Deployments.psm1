@@ -1951,6 +1951,8 @@ function Wait-ForAzVMCloudInit {
             $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
         } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
             Add-LogMessage -Level Fatal "Could not retrieve VM status while waiting for cloud-init to finish!" -Exception $_.Exception
+        } catch {
+            Add-LogMessage -Level Fatal "Unknown error of type $($_.Exception.GetType()) occurred!" -Exception $_.Exception
         }
         $progress = [math]::min(100, $progress + 1)
         Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress

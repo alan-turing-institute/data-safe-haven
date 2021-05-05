@@ -12,7 +12,33 @@ param(
 )
 
 Import-Module Az.Accounts
+if (-not (Get-Module -Name "Microsoft.Graph.Authentication")) { Import-Module Microsoft.Graph.Authentication -ErrorAction Stop }
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Sto
+
+
+# Connect to Azure
+# ----------------
+if (Get-AzContext) { Disconnect-AzAccount } # force a refresh of the Azure token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Azure"
+Connect-AzAccount -ErrorAction Stop
+if (Get-AzContext) {
+    Add-LogMessage -Level Success "Authenticated with Azure"
+} else {
+    Add-LogMessage -Level Fatal "Failed to authenticate with Azure"
+}
+
+
+# Connect to Microsoft Graph
+# --------------------------
+if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
+Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+if (Get-MgContext) {
+    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+} else {
+    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+}
 
 
 # Get config and original context before changing subscription
