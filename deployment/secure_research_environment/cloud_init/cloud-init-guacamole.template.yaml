@@ -100,6 +100,10 @@ runcmd:
   - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
   - ls -alh /opt/ssl/conf/live/{{sre_fqdn}}
 
+  # Download the Let's Encrypt base certificate
+  - LETS_ENCRYPT_CERTIFICATE_PATH=/opt/ssl/lets-encrypt-r3.pem
+  - if [ ! -e $LETS_ENCRYPT_CERTIFICATE_PATH ]; then wget -O $LETS_ENCRYPT_CERTIFICATE_PATH https://letsencrypt.org/certs/lets-encrypt-r3.pem; fi
+
   # RFC-7919 recommended: https://tools.ietf.org/html/rfc7919
   - echo ">=== Generating 4096-bit server-side Diffie-Hellman key ... ===<"
   - openssl dhparam -dsaparam -out /opt/ssl/dhparam.pem 4096
