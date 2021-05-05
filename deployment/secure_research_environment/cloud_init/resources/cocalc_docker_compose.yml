@@ -1,0 +1,18 @@
+version: '3.7'
+networks:
+    network_default:
+services:
+    cocalc:
+        container_name: cocalc
+        image: sagemathinc/cocalc:{{docker-codimd-version}}
+        networks:
+            - network_default
+        ports:
+            - 443:443
+        volumes:
+            - /data/cocalc:/projects
+            - /etc/localtime:/etc/localtime:ro
+            - /etc/timezone:/etc/timezone:ro
+            - /opt/cocalc/pip.conf:/etc/pip.conf:ro
+            - /opt/cocalc/Rprofile.site:/etc/R/Rprofile.site:ro
+        restart: always

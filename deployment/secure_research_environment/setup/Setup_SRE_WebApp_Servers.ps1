@@ -10,6 +10,7 @@ Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
@@ -131,6 +132,63 @@ $params = @{
 $gitlabVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while GitLab VM is off then restart
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
+
+
+# Set mirror URLs
+# ---------------
+Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
+$IPs = Get-MirrorIPs -config $config
+$addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
+if ($?) {
+    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
+    Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
+} else {
+    Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
+}
+
+
+# Deploy and configure CoCalc VM
+# -------------------------------
+Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
+$cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.template.yaml" | Get-Item | Get-Content -Raw
+# Insert resources into the cloud-init template
+foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
+    $indent = $cocalcCloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
+    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cocalcCloudInitTemplate = $cocalcCloudInitTemplate.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
+}
+# Expand placeholders in the cloud-init template
+$cocalcCloudInitTemplate = $cocalcCloudInitTemplate.
+    Replace("{{cocalc-fqdn}}", "$($config.sre.webapps.cocalc.hostname).$($config.sre.domain.fqdn)").
+    Replace("{{docker-codimd-version}}", $config.sre.webapps.cocalc.dockerVersion).
+    Replace("{{mirror-index-pypi}}", $addresses.pypi.index).
+    Replace("{{mirror-index-url-pypi}}", $addresses.pypi.indexUrl).
+    Replace("{{mirror-host-pypi}}", $addresses.pypi.host).
+    Replace("{{mirror-url-cran}}", $addresses.cran.url).
+    Replace("{{ntp-server}}", $config.shm.time.ntp.poolFqdn).
+    Replace("{{timezone}}", $config.sre.time.timezone.linux)
+# Deploy CoCalc VM
+$cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
+$params = @{
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.cocalc.adminPasswordSecretName -DefaultLength 20)
+    AdminUsername          = $vmAdminUsername
+    BootDiagnosticsAccount = $bootDiagnosticsAccount
+    CloudInitYaml          = $cocalcCloudInitTemplate
+    DataDiskIds            = @($cocalcDataDisk.Id)
+    ImageSku               = $config.sre.webapps.cocalc.osVersion
+    Location               = $config.sre.location
+    Name                   = $config.sre.webapps.cocalc.vmName
+    OsDiskSizeGb           = $config.sre.webapps.cocalc.disks.os.sizeGb
+    OsDiskType             = $config.sre.webapps.cocalc.disks.os.type
+    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
+    ResourceGroupName      = $config.sre.webapps.rg
+    Size                   = $config.sre.webapps.cocalc.vmSize
+    Subnet                 = $deploymentSubnet
+}
+$cocalcVm = Deploy-UbuntuVirtualMachine @params
+# Change subnets and IP address while cocalc VM is off then restart
+Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
 
 
 # Switch back to original subscription

@@ -851,17 +851,17 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CodiMD and Gitlab servers
-    # -------------------------
+    # CoCalc, CodiMD and Gitlab servers
+    # ---------------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        gitlab = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
-            vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+        cocalc = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
+            dockerVersion           = "latest"
+            vmName                  = "COCALC-SRE-$($config.sre.id)".ToUpper()
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
-            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
-            osVersion               = "18.04-LTS"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
+            osVersion               = "20.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -886,6 +886,24 @@ function Get-SreConfig {
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
                 dockerVersion      = "13.1"
             }
+            disks                   = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
+                os   = [ordered]@{
+                    sizeGb = "32"
+                    type   = "Standard_LRS"
+                }
+            }
+        }
+        gitlab = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
+            vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+            vmSize                  = "Standard_D2s_v3"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
+            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
+            osVersion               = "18.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
