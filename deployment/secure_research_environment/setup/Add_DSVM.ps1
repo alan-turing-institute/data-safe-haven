@@ -19,7 +19,6 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
@@ -157,20 +156,6 @@ if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
 }
 
 
-# Set mirror URLs
-# ---------------
-Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$IPs = Get-MirrorIPs -config $config
-$addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
-if ($?) {
-    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-    Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
-} else {
-    Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
-}
-
-
 # Retrieve passwords from the Key Vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
@@ -215,10 +200,10 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
     Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
     Replace("<ldap-search-user-password>", $ldapSearchPassword).
-    Replace("<mirror-index-pypi>", $addresses.pypi.index).
-    Replace("<mirror-index-url-pypi>", $addresses.pypi.indexUrl).
-    Replace("<mirror-host-pypi>", $addresses.pypi.host).
-    Replace("<mirror-url-cran>", $addresses.cran.url).
+    Replace("<mirror-index-pypi>", $config.sre.repositories.pypi.index).
+    Replace("<mirror-index-url-pypi>", $config.sre.repositories.pypi.indexUrl).
+    Replace("<mirror-host-pypi>", $config.sre.repositories.pypi.host).
+    Replace("<mirror-url-cran>", $config.sre.repositories.cran.url).
     Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).

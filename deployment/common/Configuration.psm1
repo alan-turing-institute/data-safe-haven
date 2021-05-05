@@ -990,6 +990,44 @@ function Get-SreConfig {
     }
     $config.shm.Remove("dsvmImage")
 
+    # Package repositories
+    # --------------------
+    if (@(0, 1).Contains([int]$config.sre.tier)) {
+        # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
+        $pypiUrl = "https://pypi.org"
+        $cranUrl = "https://cran.r-project.org"
+    } else {
+        # All Nexus repositories are accessed over the same port (currently 80)
+        if ($config.sre.nexus) {
+            $nexus_port = 80
+            if ([int]$config.sre.tier -ne 2) {
+                Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
+            }
+            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+        # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        } else {
+            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
+            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+        }
+    }
+    # We want to extract the hostname from PyPI URLs in any of the following forms
+    # 1. http://10.20.2.20:3128                      => 10.20.2.20
+    # 2. https://pypi.org                            => pypi.org
+    # 3. http://10.30.1.10:80/repository/pypi-proxy  => 10.30.1.10
+    $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
+    $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
+    $config.sre.repositories = [ordered]@{
+        cran = [ordered]@{
+            url = $cranUrl
+        }
+        pypi = [ordered]@{
+            host     = $pypiHost
+            index    = $pypiIndex
+            indexUrl = "${pypiUrl}/simple"
+        }
+    }
+
     # Apply overrides (if any exist)
     # ------------------------------
     if ($sreConfigBase.overrides) {

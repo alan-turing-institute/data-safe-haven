@@ -10,7 +10,6 @@ Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
@@ -134,20 +133,6 @@ $gitlabVm = Deploy-UbuntuVirtualMachine @params
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
 
 
-# Set mirror URLs
-# ---------------
-Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$IPs = Get-MirrorIPs -config $config
-$addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
-if ($?) {
-    Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-    Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-    Add-LogMessage -Level Success "Successfully loaded package mirror URLs"
-} else {
-    Add-LogMessage -Level Fatal "Failed to load package mirror URLs!"
-}
-
-
 # Deploy and configure CoCalc VM
 # -------------------------------
 Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
@@ -162,10 +147,10 @@ foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))
 $cocalcCloudInitTemplate = $cocalcCloudInitTemplate.
     Replace("{{cocalc-fqdn}}", "$($config.sre.webapps.cocalc.hostname).$($config.sre.domain.fqdn)").
     Replace("{{docker-codimd-version}}", $config.sre.webapps.cocalc.dockerVersion).
-    Replace("{{mirror-index-pypi}}", $addresses.pypi.index).
-    Replace("{{mirror-index-url-pypi}}", $addresses.pypi.indexUrl).
-    Replace("{{mirror-host-pypi}}", $addresses.pypi.host).
-    Replace("{{mirror-url-cran}}", $addresses.cran.url).
+    Replace("{{mirror-index-pypi}}", $config.sre.repositories.pypi.index).
+    Replace("{{mirror-index-url-pypi}}", $config.sre.repositories.pypi.indexUrl).
+    Replace("{{mirror-host-pypi}}", $config.sre.repositories.pypi.host).
+    Replace("{{mirror-url-cran}}", $config.sre.repositories.cran.url).
     Replace("{{ntp-server}}", $config.shm.time.ntp.poolFqdn).
     Replace("{{timezone}}", $config.sre.time.timezone.linux)
 # Deploy CoCalc VM
