@@ -143,8 +143,9 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
 # Set PyPI and CRAN locations on the compute VM
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-foreach ($vmName in $computeVmNames) {
-    Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on compute VM: $($vmName)"
+$repositoryFacingVms = @(Get-AzVm -ResourceGroupName $config.sre.dsvm.rg) + @(Get-AzVM -Name $config.sre.webapps.cocalc.vmName)
+foreach ($vmName in $repositoryFacingVms) {
+    Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on ${vmName}"
     $params = @{
         CRAN_MIRROR_INDEX_URL = $config.sre.repositories.cran.url
         PYPI_MIRROR_INDEX     = $config.sre.repositories.pypi.index

@@ -172,7 +172,7 @@ $params = @{
     Subnet                 = $deploymentSubnet
 }
 $cocalcVm = Deploy-UbuntuVirtualMachine @params
-# Change subnets and IP address while cocalc VM is off then restart
+# Change subnets and IP address while CoCalc VM is off then restart
 Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
 
 

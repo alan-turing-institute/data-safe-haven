@@ -7,7 +7,7 @@ write_files:
     content: |
       {{cocalc_docker_compose.yml}}
 
-  - path: "/opt/cocalc/pip.conf"
+  - path: "/etc/pip.conf"
     permissions: "0444"
     content: |
       # Add the PyPI mirror to our global settings
@@ -16,7 +16,7 @@ write_files:
       index-url = {{mirror-index-url-pypi}}
       trusted-host = {{mirror-host-pypi}}
 
-  - path: "/opt/cocalc/Rprofile.site"
+  - path: "/etc/R/Rprofile.site"
     permissions: "0444"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
