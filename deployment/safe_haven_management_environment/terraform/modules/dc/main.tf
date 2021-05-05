@@ -1,59 +1,97 @@
 resource "azurerm_resource_group" "dc" {
-  name     = var.rg_name
-  location = var.rg_location
+    name     = var.rg_name
+    location = var.rg_location
 }
 
-resource "azurerm_resource_group" "dc_bootdiagnostics" {
-  name     = var.rg_name_bootdiagnostics
-  location = var.rg_location
+resource "azurerm_availability_set" "avset" {
+    name                         = "AVSET-SHM-${var.shm_id}-VM-DC"
+    location                     = var.rg_location
+    resource_group_name          = azurerm_resource_group.dc.name
+    platform_update_domain_count = 2
+    platform_fault_domain_count  = 2
 }
 
-resource "azurerm_storage_account" "dc_bootdiagnostics" {
-  name                     = var.sa_name_bootdiagnostics
-  resource_group_name      = azurerm_resource_group.dc_bootdiagnostics.name
-  location                 = azurerm_resource_group.dc_bootdiagnostics.location
-  account_kind             = "StorageV2"
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  access_tier              = "Hot"
+resource "azurerm_network_interface" "dc1netinter" {
+    name                          = "${var.dc1_vm_name}-NIC"
+    location                      = var.rg_location
+    resource_group_name           = azurerm_resource_group.dc.name
+    dns_servers                   = [var.dc1_ip_address, var.dc2_ip_address, var.external_dns_resolver]
+    enable_ip_forwarding          = false
+    enable_accelerated_networking = false
+
+    ip_configuration {
+        name                          = "ipconfig1"
+        private_ip_address_version    = "IPv4"
+        private_ip_address_allocation = "Static"
+        private_ip_address            = var.dc1_ip_address
+        primary                       = true
+        subnet_id                     = var.virtual_network_subnet
+    }
 }
 
-/*
-resource "azurerm_template_deployment" "dc" {
-  name                = var.template_name
-  resource_group_name = azurerm_resource_group.dc.name
-  deployment_mode     = "Incremental"
-  template_body       = file(var.template_path)
-  parameters = {
-    Administrator_Password         = var.administrator_password
-    Administrator_User             = var.administrator_user
-    Artifacts_Location             = var.artifacts_location
-    Artifacts_Location_SAS_Token   = var.artifacts_location_sas_token
-    BootDiagnostics_Account_Name   = var.bootdiagnostics_account_name
-    DC1_Data_Disk_Size_GB_str      = var.dc1_data_disk_size_gb
-    DC1_Data_Disk_Type             = var.dc1_data_disk_type
-    DC1_Host_Name                  = var.dc1_host_name
-    DC1_IP_Address                 = var.dc1_ip_address
-    DC1_Os_Disk_Size_GB_str        = var.dc1_os_disk_size_gb
-    DC1_Os_Disk_Type               = var.dc1_os_disk_type
-    DC1_VM_Name                    = var.dc1_vm_name
-    DC1_VM_Size                    = var.dc1_vm_size
-    DC2_Host_Name                  = var.dc2_host_name
-    DC2_Data_Disk_Size_GB_str      = var.dc2_data_disk_size_gb
-    DC2_Data_Disk_Type             = var.dc2_data_disk_type
-    DC2_IP_Address                 = var.dc2_ip_address
-    DC2_Os_Disk_Size_GB_str        = var.dc2_os_disk_size_gb
-    DC2_Os_Disk_Type               = var.dc2_os_disk_type
-    DC2_VM_Name                    = var.dc2_vm_name
-    DC2_VM_Size                    = var.dc2_vm_size
-    Domain_Name                    = var.domain_name
-    Domain_NetBIOS_Name            = var.domain_netbios_name
-    External_DNS_Resolver          = var.external_dns_resolver
-    SafeMode_Password              = var.safemode_password
-    Shm_Id                         = var.shm_id
-    Virtual_Network_Name           = var.virtual_network_name
-    Virtual_Network_Resource_Group = var.virtual_network_resource_group
-    Virtual_Network_Subnet         = var.virtual_network_subnet
-  }
+resource "azurerm_virtual_machine" "dc1vm" {
+    name                  = var.dc1_vm_name
+    resource_group_name   = azurerm_resource_group.dc.name
+    location              = var.rg_location
+    vm_size               = var.dc1_vm_size
+    availability_set_id   = azurerm_availability_set.avset.id
+    network_interface_ids = [azurerm_network_interface.dc1netinter.id]
+
+    storage_image_reference {
+        publisher = "MicrosoftWindowsServer"
+        offer     = "WindowsServer"
+        sku       = "2019-Datacenter"
+        version   = "latest"
+    }
+
+    storage_os_disk {
+        name                      = "${var.dc1_vm_name}-OS-DISK"
+        caching                   = "ReadWrite"
+        create_option             = "FromImage"
+        disk_size_gb              = var.dc1_os_disk_size_gb
+        managed_disk_type         = var.dc1_os_disk_type
+        write_accelerator_enabled = false
+        os_type                   = "Windows"
+    }
+
+    storage_data_disk {
+        lun                       = 0
+        name                      = "${var.dc1_vm_name}-DATA-DISK"
+        caching                   = "None"
+        create_option             = "Empty"
+        write_accelerator_enabled = false
+        disk_size_gb              = var.dc1_data_disk_size_gb
+        managed_disk_type         = var.dc1_data_disk_type
+    }
+    
+    os_profile {
+        computer_name  = var.dc1_host_name
+        admin_username = var.administrator_user
+        admin_password = var.administrator_password
+    }
+
+    os_profile_windows_config {
+        provision_vm_agent        = true
+        enable_automatic_upgrades = true
+    }
+
+    boot_diagnostics {
+        enabled     = true
+        storage_uri = "https://${var.bootdiagnostics_account_name}.blob.core.windows.net/"
+    }
 }
-*/
+
+resource "azurerm_virtual_machine_extension" "dc1vmadforest" {
+    name                 = "${var.dc1_vm_name}/CreateADForest"
+    virtual_machine_id   = azurerm_virtual_machine.dc1vm.id
+    publisher            = "Microsoft.Azure.Extensions"
+    type                 = "CustomScript"
+    type_handler_version = "2.0"
+
+    settings = <<SETTINGS
+    {
+        "commandToExecute": "hostname && uptime"
+    }
+    SETTINGS
+
+}

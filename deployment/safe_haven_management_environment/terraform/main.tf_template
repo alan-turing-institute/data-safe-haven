@@ -24,36 +24,18 @@ provider "azurerm" {
 data "azurerm_client_config" "current" {
 }
 
-# module "dns" {
-#   source = "./modules/dns"
-#   rg_name = var.dns_rg_name
-#   rg_location = var.dns_rg_location
-# }
+module "artifacts" {
+  source = "./modules/artifacts"
 
-module "keyvault" {
-  source = "./modules/keyvault"
-
-  rg_name = var.kv_rg_name
-  rg_location = var.kv_rg_location
-  name = var.kv_name
-  tenant_id = data.azurerm_client_config.current.tenant_id
-  security_group_id = var.kv_security_group_id
-  secret_name_shm_aad_emergency_admin_username = var.kv_secret_name_shm_aad_emergency_admin_username
-  secret_value_shm_aad_emergency_admin_username = var.kv_secret_value_shm_aad_emergency_admin_username
-  secret_name_shm_aad_emergency_admin_password = var.kv_secret_name_shm_aad_emergency_admin_password
-  secret_value_shm_aad_emergency_admin_password = var.kv_secret_value_shm_aad_emergency_admin_password
-  secret_name_shm_domain_admin_username = var.kv_secret_name_shm_domain_admin_username
-  secret_value_shm_domain_admin_username = var.kv_secret_value_shm_domain_admin_username
-  secret_name_shm_domain_admin_password = var.kv_secret_name_shm_domain_admin_password
-  secret_value_shm_domain_admin_password = var.kv_secret_value_shm_domain_admin_password
-  secret_name_shm_vm_safemode_password_dc = var.kv_secret_name_shm_vm_safemode_password_dc
-  secret_value_shm_vm_safemode_password_dc = var.kv_secret_value_shm_vm_safemode_password_dc
-  secret_name_domain_join_password = var.kv_secret_name_domain_join_password
-  secret_value_domain_join_password = var.kv_secret_value_domain_join_password
-  secret_name_vm_admin_username = var.kv_secret_name_vm_admin_username
-  secret_value_vm_admin_username = var.kv_secret_value_vm_admin_username
-  secret_name_vm_admin_password = var.kv_secret_name_vm_admin_password
-  secret_value_vm_admin_password = var.kv_secret_value_vm_admin_password
+  rg_name = var.art_rg_name
+  rg_location = var.art_rg_location
+  sa_name = var.art_sa_name
+  dc_createadpdc_path = var.art_dc_createadpdc_path
+  dc_createadbdc_path = var.art_dc_createadbdc_path
+  dc_config_files_path = var.art_dc_config_files_path
+  dc_config_file_disconnect_ad = var.art_dc_config_file_disconnect_ad
+  dc_putty_source_uri = var.art_dc_putty_source_uri
+  nps_config_files_path = var.art_nps_config_files_path
 }
 
 module "networking" {
@@ -79,32 +61,13 @@ module "networking" {
   vpn_cidr = var.net_vpn_cidr
 }
 
-module "artifacts" {
-  source = "./modules/artifacts"
-
-  rg_name = var.art_rg_name
-  rg_location = var.art_rg_location
-  sa_name = var.art_sa_name
-  dc_createadpdc_path = var.art_dc_createadpdc_path
-  dc_createadbdc_path = var.art_dc_createadbdc_path
-  dc_config_files_path = var.art_dc_config_files_path
-  dc_config_file_disconnect_ad = var.art_dc_config_file_disconnect_ad
-  dc_putty_source_uri = var.art_dc_putty_source_uri
-  nps_config_files_path = var.art_nps_config_files_path
-}
-
-/*
 module "dc" {
   source = "./modules/dc"
 
   rg_name = var.dc_rg_name
   rg_location = var.dc_rg_location
-  rg_name_bootdiagnostics = var.dc_rg_name_bootdiagnostics
-  sa_name_bootdiagnostics = var.dc_sa_name_bootdiagnostics
-  template_name = var.dc_template_name
-  template_path = var.dc_template_path
-  administrator_password = var.kv_secret_value_shm_domain_admin_password
-  administrator_user = var.kv_secret_value_shm_domain_admin_username
+  administrator_password = var.dc_administrator_password
+  administrator_user = var.dc_administrator_user
   artifacts_location = var.dc_artifacts_location
   artifacts_location_sas_token = var.dc_artifacts_location_sas_token
   bootdiagnostics_account_name = var.dc_bootdiagnostics_account_name
@@ -127,13 +90,15 @@ module "dc" {
   domain_name = var.dc_domain_name
   domain_netbios_name = var.dc_domain_netbios_name
   external_dns_resolver = var.dc_external_dns_resolver
-  safemode_password = var.kv_secret_value_shm_vm_safemode_password_dc
+  safemode_password = var.dc_safemode_password
   shm_id = var.dc_shm_id
   virtual_network_name = var.dc_virtual_network_name
   virtual_network_resource_group = var.dc_virtual_network_resource_group
-  virtual_network_subnet = var.dc_virtual_network_subnet
+
+  virtual_network_subnet = module.networking.subnet_identity_id
 }
 
+/*
 module "nps" {
   source = "./modules/nps"
   
@@ -161,5 +126,33 @@ module "nps" {
   virtual_network_name = var.nps_virtual_network_name
   virtual_network_resource_group = var.nps_virtual_network_resource_group
   virtual_network_subnet = var.nps_virtual_network_subnet
+}
+*/
+
+/*
+module "keyvault" {
+  source = "./modules/keyvault"
+
+  rg_name = var.kv_rg_name
+  rg_location = var.kv_rg_location
+  name = var.kv_name
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  security_group_id = var.kv_security_group_id
+  secret_name_shm_aad_emergency_admin_username = var.kv_secret_name_shm_aad_emergency_admin_username
+  secret_value_shm_aad_emergency_admin_username = var.kv_secret_value_shm_aad_emergency_admin_username
+  secret_name_shm_aad_emergency_admin_password = var.kv_secret_name_shm_aad_emergency_admin_password
+  secret_value_shm_aad_emergency_admin_password = var.kv_secret_value_shm_aad_emergency_admin_password
+  secret_name_shm_domain_admin_username = var.kv_secret_name_shm_domain_admin_username
+  secret_value_shm_domain_admin_username = var.kv_secret_value_shm_domain_admin_username
+  secret_name_shm_domain_admin_password = var.kv_secret_name_shm_domain_admin_password
+  secret_value_shm_domain_admin_password = var.kv_secret_value_shm_domain_admin_password
+  secret_name_shm_vm_safemode_password_dc = var.kv_secret_name_shm_vm_safemode_password_dc
+  secret_value_shm_vm_safemode_password_dc = var.kv_secret_value_shm_vm_safemode_password_dc
+  secret_name_domain_join_password = var.kv_secret_name_domain_join_password
+  secret_value_domain_join_password = var.kv_secret_value_domain_join_password
+  secret_name_vm_admin_username = var.kv_secret_name_vm_admin_username
+  secret_value_vm_admin_username = var.kv_secret_value_vm_admin_username
+  secret_name_vm_admin_password = var.kv_secret_name_vm_admin_password
+  secret_value_vm_admin_password = var.kv_secret_value_vm_admin_password
 }
 */

@@ -22,10 +22,6 @@ resource "azurerm_network_security_rule" "rpc_endpoint_mapper" {
     access                       = "Allow"
     priority                     = 200
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "ldap" {
@@ -41,10 +37,6 @@ resource "azurerm_network_security_rule" "ldap" {
     access                       = "Allow"
     priority                     = 201
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "ldap_ping" {
@@ -60,10 +52,6 @@ resource "azurerm_network_security_rule" "ldap_ping" {
     access                       = "Allow"
     priority                     = 202
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "ldap_over_ssl" {
@@ -79,10 +67,6 @@ resource "azurerm_network_security_rule" "ldap_over_ssl" {
     access                       = "Allow"
     priority                     = 203
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "global_catalog_ldap" {
@@ -98,10 +82,6 @@ resource "azurerm_network_security_rule" "global_catalog_ldap" {
     access                       = "Allow"
     priority                     = 204
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "global_catalog_ldap_over_ssl" {
@@ -117,10 +97,6 @@ resource "azurerm_network_security_rule" "global_catalog_ldap_over_ssl" {
     access                       = "Allow"
     priority                     = 205
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "dns" {
@@ -136,10 +112,6 @@ resource "azurerm_network_security_rule" "dns" {
     access                       = "Allow"
     priority                     = 206
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "kerberos" {
@@ -155,10 +127,6 @@ resource "azurerm_network_security_rule" "kerberos" {
     access                       = "Allow"
     priority                     = 207
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "smb_over_ip_microsoft_ds" {
@@ -174,10 +142,6 @@ resource "azurerm_network_security_rule" "smb_over_ip_microsoft_ds" {
     access                       = "Allow"
     priority                     = 208
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "netbios_service" {
@@ -193,10 +157,6 @@ resource "azurerm_network_security_rule" "netbios_service" {
     access                       = "Allow"
     priority                     = 209
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "netbios_datagram_service" {
@@ -212,10 +172,6 @@ resource "azurerm_network_security_rule" "netbios_datagram_service" {
     access                       = "Allow"
     priority                     = 210
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "netbios_session_service" {
@@ -231,10 +187,6 @@ resource "azurerm_network_security_rule" "netbios_session_service" {
     access                       = "Allow"
     priority                     = 211
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "rpc_for_lsa_sam_netlogon" {
@@ -250,10 +202,6 @@ resource "azurerm_network_security_rule" "rpc_for_lsa_sam_netlogon" {
     access                       = "Allow"
     priority                     = 212
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "kerberos_password_change" {
@@ -269,10 +217,6 @@ resource "azurerm_network_security_rule" "kerberos_password_change" {
     access                       = "Allow"
     priority                     = 213
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "active_directory_web_services" {
@@ -288,10 +232,6 @@ resource "azurerm_network_security_rule" "active_directory_web_services" {
     access                       = "Allow"
     priority                     = 214
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "outboundallowntp" {
@@ -303,13 +243,9 @@ resource "azurerm_network_security_rule" "outboundallowntp" {
     source_port_range            = "*"
     destination_port_range       = "123"
     source_address_prefix        = "VirtualNetwork"
-    destination_address_prefix   = ""
     access                       = "Allow"
     priority                     = 215
     direction                    = "Outbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
     destination_address_prefixes = var.ipaddresses_externalntp
 }
 
@@ -325,10 +261,7 @@ resource "azurerm_network_security_rule" "radius_authentication_rds_to_nps" {
     access                       = "Allow"
     priority                     = 300
     direction                    = "Inbound"
-    source_port_ranges           = []
     destination_port_ranges      = ["1645", "1646", "1812", "1813"]
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "remote_desktop_connection" {
@@ -344,10 +277,6 @@ resource "azurerm_network_security_rule" "remote_desktop_connection" {
     access                       = "Allow"
     priority                     = 400
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "deny_all" {
@@ -363,10 +292,6 @@ resource "azurerm_network_security_rule" "deny_all" {
     access                       = "Deny"
     priority                     = 3000
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "allowvnetinbound" {
@@ -380,12 +305,8 @@ resource "azurerm_network_security_rule" "allowvnetinbound" {
     source_address_prefix        = "VirtualNetwork"
     destination_address_prefix   = "VirtualNetwork"
     access                       = "Allow"
-    priority                     = 65000
+    priority                     = 4093
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "allowazureloadbalancerinbound" {
@@ -399,12 +320,8 @@ resource "azurerm_network_security_rule" "allowazureloadbalancerinbound" {
     source_address_prefix        = "AzureLoadBalancer"
     destination_address_prefix   = "*"
     access                       = "Allow"
-    priority                     = 65001
+    priority                     = 4094
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "denyallinbound" {
@@ -418,12 +335,8 @@ resource "azurerm_network_security_rule" "denyallinbound" {
     source_address_prefix        = "*"
     destination_address_prefix   = "*"
     access                       = "Deny"
-    priority                     = 65500
+    priority                     = 4095
     direction                    = "Inbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "allowvnetoutbound" {
@@ -437,12 +350,8 @@ resource "azurerm_network_security_rule" "allowvnetoutbound" {
     source_address_prefix        = "VirtualNetwork"
     destination_address_prefix   = "VirtualNetwork"
     access                       = "Allow"
-    priority                     = 65000
+    priority                     = 4093
     direction                    = "Outbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "allowinternetoutbound" {
@@ -456,12 +365,8 @@ resource "azurerm_network_security_rule" "allowinternetoutbound" {
     source_address_prefix        = "*"
     destination_address_prefix   = "Internet"
     access                       = "Allow"
-    priority                     = 65001
+    priority                     = 4094
     direction                    = "Outbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_network_security_rule" "denyalloutbound" {
@@ -475,12 +380,8 @@ resource "azurerm_network_security_rule" "denyalloutbound" {
     source_address_prefix        = "*"
     destination_address_prefix   = "*"
     access                       = "Deny"
-    priority                     = 65500
+    priority                     = 4095
     direction                    = "Outbound"
-    source_port_ranges           = []
-    destination_port_ranges      = []
-    source_address_prefixes      = []
-    destination_address_prefixes = []
 }
 
 resource "azurerm_public_ip" "gw_pip" {
@@ -501,10 +402,6 @@ resource "azurerm_virtual_network" "vnet" {
     dns_servers             = [var.vnet_dns_dc1, var.vnet_dns_dc2]
     vm_protection_enabled   = false
 
-    ddos_protection_plan {
-        enable = false
-    }
-
     subnet {
         name           = var.subnet_firewall_name
         address_prefix = var.subnet_firewall_cidr
@@ -523,35 +420,9 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 
-resource "azurerm_subnet" "subnet_firewall" {
-    name                 = "${var.virtual_network_name}/${var.subnet_firewall_name}"
-    resource_group_name  = azurerm_resource_group.net.name
-    virtual_network_name = azurerm_virtual_network.vnet.name
-    address_prefixes     = [var.subnet_firewall_cidr]
+output "subnet_identity_id" {
+    value = azurerm_virtual_network.vnet.subnet.*[index(azurerm_virtual_network.vnet.subnet.*.name, var.subnet_identity_name)].id
 }
-
-
-resource "azurerm_subnet" "subnet_gateway" {
-    name                 = "${var.virtual_network_name}/${var.subnet_gateway_name}"
-    resource_group_name  = azurerm_resource_group.net.name
-    virtual_network_name = azurerm_virtual_network.vnet.name
-    address_prefixes     = [var.subnet_gateway_cidr]
-}
-
-/*
-resource "azurerm_subnet" "subnet_identity" {
-    name                 = "${var.virtual_network_name}/${var.subnet_identity_name}"
-    resource_group_name  = azurerm_resource_group.net.name
-    virtual_network_name = azurerm_virtual_network.vnet.name
-    address_prefixes     = [var.subnet_identity_cidr]
-
-    ????? 
-      "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSG_Identity_Name'))]"
-                            },
-}
-*/
-
 
 
 resource "azurerm_virtual_network_gateway" "gw" {
@@ -568,7 +439,7 @@ resource "azurerm_virtual_network_gateway" "gw" {
         name                          = "shmgwipconf"
         public_ip_address_id          = azurerm_public_ip.gw_pip.id
         private_ip_address_allocation = "Dynamic"
-        subnet_id                     = azurerm_subnet.subnet_gateway.id
+        subnet_id                     = azurerm_virtual_network.vnet.subnet.*[index(azurerm_virtual_network.vnet.subnet.*.name, var.subnet_gateway_name)].id
     }
     
     vpn_client_configuration {
@@ -576,34 +447,7 @@ resource "azurerm_virtual_network_gateway" "gw" {
         vpn_client_protocols = ["IkeV2", "SSTP"]
         root_certificate {
             name             = "SafeHavenManagementP2SRootCert"
-            public_cert_data = 
-
+            public_cert_data = var.p2s_vpn_certificate
         }
     }
 }
-
-/*
-resource "azurerm_template_deployment" "shm-vnet" {
-  name                = var.name
-  resource_group_name = azurerm_resource_group.net.name
-  deployment_mode     = "Incremental"
-  template_body       = file(var.template_path)
-  parameters = {
-    IPAddresses_ExternalNTP_list = "${join(",", var.ipaddresses_externalntp)}"
-    NSG_Identity_Name       = var.nsg_identity_name
-    P2S_VPN_Certificate     = var.p2s_vpn_certificate
-    Shm_Id                  = var.shm_id
-    Subnet_Firewall_CIDR    = var.subnet_firewall_cidr
-    Subnet_Firewall_Name    = var.subnet_firewall_name
-    Subnet_Gateway_CIDR     = var.subnet_gateway_cidr
-    Subnet_Gateway_Name     = var.subnet_gateway_name
-    Subnet_Identity_CIDR    = var.subnet_identity_cidr
-    Subnet_Identity_Name    = var.subnet_identity_name
-    Virtual_Network_Name    = var.virtual_network_name
-    VNET_CIDR               = var.vnet_cidr
-    VNET_DNS_DC1            = var.vnet_dns_dc1
-    VNET_DNS_DC2            = var.vnet_dns_dc2
-    VPN_CIDR                = var.vpn_cidr
-  }
-}
-*/

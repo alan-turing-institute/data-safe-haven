@@ -1,26 +1,20 @@
-# dns_rg_name = "<<<dns_rg_name>>>"
-# dns_rg_location = "<<<dns_rg_location>>>"
+################################################
+# Artifacts
+################################################
 
-kv_rg_name = "<<<kv_rg_name>>>"
-kv_rg_location = "<<<kv_rg_location>>>"
-kv_name = "<<<kv_name>>>"
-kv_security_group_id = "<<<kv_security_group_id>>>"
-kv_secret_name_shm_aad_emergency_admin_username = "<<<kv_secret_name_shm_aad_emergency_admin_username>>>"
-kv_secret_value_shm_aad_emergency_admin_username = "<<<kv_secret_value_shm_aad_emergency_admin_username>>>"
-kv_secret_name_shm_aad_emergency_admin_password = "<<<kv_secret_name_shm_aad_emergency_admin_password>>>"
-kv_secret_value_shm_aad_emergency_admin_password = "<<<kv_secret_value_shm_aad_emergency_admin_password>>>"
-kv_secret_name_shm_domain_admin_username = "<<<kv_secret_name_shm_domain_admin_username>>>"
-kv_secret_value_shm_domain_admin_username = "<<<kv_secret_value_shm_domain_admin_username>>>"
-kv_secret_name_shm_domain_admin_password = "<<<kv_secret_name_shm_domain_admin_password>>>"
-kv_secret_value_shm_domain_admin_password = "<<<kv_secret_value_shm_domain_admin_password>>>"
-kv_secret_name_shm_vm_safemode_password_dc = "<<<kv_secret_name_shm_vm_safemode_password_dc>>>"
-kv_secret_value_shm_vm_safemode_password_dc = "<<<kv_secret_value_shm_vm_safemode_password_dc>>>"
-kv_secret_name_domain_join_password = "<<<kv_secret_name_domain_join_password>>>"
-kv_secret_value_domain_join_password = "<<<kv_secret_value_domain_join_password>>>"
-kv_secret_name_vm_admin_username = "<<<kv_secret_name_vm_admin_username>>>"
-kv_secret_value_vm_admin_username = "<<<kv_secret_value_vm_admin_username>>>"
-kv_secret_name_vm_admin_password = "<<<kv_secret_name_vm_admin_password>>>"
-kv_secret_value_vm_admin_password = "<<<kv_secret_value_vm_admin_password>>>"
+art_rg_name = "<<<art_rg_name>>>"
+art_rg_location = "<<<art_rg_location>>>"
+art_sa_name = "<<<art_sa_name>>>"
+art_dc_createadpdc_path = "<<<art_dc_createadpdc_path>>>"
+art_dc_createadbdc_path = "<<<art_dc_createadbdc_path>>>"
+art_dc_config_files_path = "<<<art_dc_config_files_path>>>"
+art_dc_config_file_disconnect_ad = "<<<art_dc_config_file_disconnect_ad>>>" 
+art_dc_putty_source_uri = "<<<art_dc_putty_source_uri>>>"
+art_nps_config_files_path = "<<<art_nps_config_files_path>>>"
+
+################################################
+# Networking
+################################################
 
 net_rg_name = "<<<net_rg_name>>>"
 net_rg_location = "<<<net_rg_location>>>"
@@ -44,26 +38,16 @@ net_vnet_dns_dc1 = "<<<net_vnet_dns_dc1>>>"
 net_vnet_dns_dc2 = "<<<net_vnet_dns_dc2>>>"
 net_vpn_cidr = "<<<net_vpn_cidr>>>"
 
-art_rg_name = "<<<art_rg_name>>>"
-art_rg_location = "<<<art_rg_location>>>"
-art_sa_name = "<<<art_sa_name>>>"
-art_dc_createadpdc_path = "<<<art_dc_createadpdc_path>>>"
-art_dc_createadbdc_path = "<<<art_dc_createadbdc_path>>>"
-art_dc_config_files_path = "<<<art_dc_config_files_path>>>"
-art_dc_config_file_disconnect_ad = "<<<art_dc_config_file_disconnect_ad>>>" 
-art_dc_putty_source_uri = "<<<art_dc_putty_source_uri>>>"
-art_nps_config_files_path = "<<<art_nps_config_files_path>>>"
+################################################
+# DC
+################################################
 
 dc_rg_name = "<<<dc_rg_name>>>"
 dc_rg_location = "<<<dc_rg_location>>>"
-dc_rg_name_bootdiagnostics = "<<<dc_rg_name_bootdiagnostics>>>"
-dc_sa_name_bootdiagnostics = "<<<dc_sa_name_bootdiagnostics>>>"
 
 # DC ARM template variables
-dc_template_name = "<<<dc_template_name>>>"
-dc_template_path = "<<<dc_template_path>>>"
-# dc_administrator_user = "<<<dc_administrator_user>>>"
-# dc_administrator_password = "<<<dc_administrator_password>>>"
+dc_administrator_user = "<<<dc_administrator_user>>>"
+dc_administrator_password = "<<<dc_administrator_password>>>"
 dc_artifacts_location = "<<<dc_artifacts_location>>>"
 dc_artifacts_location_sas_token = "<<<dc_artifacts_location_sas_token>>>"
 dc_bootdiagnostics_account_name = "<<<dc_bootdiagnostics_account_name>>>"
@@ -86,16 +70,18 @@ dc_dc2_vm_size = "<<<dc_dc2_vm_size>>>"
 dc_domain_name = "<<<dc_domain_name>>>"
 dc_domain_netbios_name = "<<<dc_domain_netbios_name>>>"
 dc_external_dns_resolver = "<<<dc_external_dns_resolver>>>"
-# dc_safemode_password = "<<<dc_safemode_password>>>"
+dc_safemode_password = "<<<dc_safemode_password>>>"
 dc_shm_id = "<<<dc_shm_id>>>"
 dc_virtual_network_name = "<<<dc_virtual_network_name>>>"
 dc_virtual_network_resource_group = "<<<dc_virtual_network_resource_group>>>"
 dc_virtual_network_subnet = "<<<dc_virtual_network_subnet>>>"
 
+
+/*
 nps_rg_name = "<<<nps_rg_name>>>"
 nps_rg_location = "<<<nps_rg_location>>>"
 
-/*
+
 # NPS ARM template variables
 nps_template_name = "<<<nps_template_name>>>"
 nps_template_path = "<<<nps_template_path>>>"
@@ -117,4 +103,28 @@ nps_ou_path = "<<<nps_ou_path>>>"
 nps_virtual_network_name = "<<<nps_virtual_network_name>>>"
 nps_virtual_network_resource_group = "<<<nps_virtual_network_resource_group>>>"
 nps_virtual_network_subnet = "<<<nps_virtual_network_subnet>>>"
+*/
+
+
+/*
+kv_rg_name = "<<<kv_rg_name>>>"
+kv_rg_location = "<<<kv_rg_location>>>"
+kv_name = "<<<kv_name>>>"
+kv_security_group_id = "<<<kv_security_group_id>>>"
+kv_secret_name_shm_aad_emergency_admin_username = "<<<kv_secret_name_shm_aad_emergency_admin_username>>>"
+kv_secret_value_shm_aad_emergency_admin_username = "<<<kv_secret_value_shm_aad_emergency_admin_username>>>"
+kv_secret_name_shm_aad_emergency_admin_password = "<<<kv_secret_name_shm_aad_emergency_admin_password>>>"
+kv_secret_value_shm_aad_emergency_admin_password = "<<<kv_secret_value_shm_aad_emergency_admin_password>>>"
+kv_secret_name_shm_domain_admin_username = "<<<kv_secret_name_shm_domain_admin_username>>>"
+kv_secret_value_shm_domain_admin_username = "<<<kv_secret_value_shm_domain_admin_username>>>"
+kv_secret_name_shm_domain_admin_password = "<<<kv_secret_name_shm_domain_admin_password>>>"
+kv_secret_value_shm_domain_admin_password = "<<<kv_secret_value_shm_domain_admin_password>>>"
+kv_secret_name_shm_vm_safemode_password_dc = "<<<kv_secret_name_shm_vm_safemode_password_dc>>>"
+kv_secret_value_shm_vm_safemode_password_dc = "<<<kv_secret_value_shm_vm_safemode_password_dc>>>"
+kv_secret_name_domain_join_password = "<<<kv_secret_name_domain_join_password>>>"
+kv_secret_value_domain_join_password = "<<<kv_secret_value_domain_join_password>>>"
+kv_secret_name_vm_admin_username = "<<<kv_secret_name_vm_admin_username>>>"
+kv_secret_value_vm_admin_username = "<<<kv_secret_value_vm_admin_username>>>"
+kv_secret_name_vm_admin_password = "<<<kv_secret_name_vm_admin_password>>>"
+kv_secret_value_vm_admin_password = "<<<kv_secret_value_vm_admin_password>>>"
 */
