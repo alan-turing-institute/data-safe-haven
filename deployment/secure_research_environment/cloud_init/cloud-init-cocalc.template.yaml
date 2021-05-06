@@ -26,7 +26,6 @@ write_files:
           options(repos = r)
       })
 
-
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}

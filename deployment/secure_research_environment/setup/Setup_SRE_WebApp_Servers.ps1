@@ -83,23 +83,14 @@ Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGro
 # Deploy and configure CodiMD VM
 # ------------------------------
 Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
-$codimdCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Raw
-# Expand placeholders in the cloud-init template
-$codimdCloudInitTemplate = $codimdCloudInitTemplate.
-    Replace("<codimd-bind-creds>", $ldapSearchUserPassword).
-    Replace("<codimd-bind-dn>", $ldapSearchUserDn).
-    Replace("<codimd-fqdn>", "$($config.sre.webapps.codimd.hostname).$($config.sre.domain.fqdn)").
-    Replace("<codimd-hostname>", $config.sre.webapps.codimd.hostname).
-    Replace("<codimd-ip>", $config.sre.webapps.codimd.ip).
-    Replace("<codimd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<codimd-ldap-netbios>", $config.shm.domain.netbiosName).
-    Replace("<codimd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
-    Replace("<codimd-postgres-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)).
-    Replace("<codimd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))").
-    Replace("<docker-codimd-version>", $config.sre.webapps.codimd.codimd.dockerVersion).
-    Replace("<docker-postgres-version>", $config.sre.webapps.codimd.postgres.dockerVersion).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-    Replace("<timezone>", $config.sre.time.timezone.linux)
+# Load the cloud-init template and expand mustache placeholders
+$config["codimd"] = @{
+    ldapSearchUserDn = $ldapSearchUserDn
+    ldapSearchUserPassword = $ldapSearchUserPassword
+    ldapUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
+    postgresPassword = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
+}
+$codimdCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Parameters $config
 # Deploy CodiMD VM
 $codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
@@ -126,21 +117,14 @@ Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGro
 # Deploy and configure GitLab VM
 # ------------------------------
 Add-LogMessage -Level Info "Constructing GitLab cloud-init from template..."
-$gitlabCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Raw
-# Expand placeholders in the cloud-init template
-$gitlabCloudInitTemplate = $gitlabCloudInitTemplate.
-    Replace("<gitlab-rb-host>", "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
-    Replace("<gitlab-rb-bind-dn>", $ldapSearchUserDn).
-    Replace("<gitlab-rb-pw>", $ldapSearchUserPassword).
-    Replace("<gitlab-rb-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<gitlab-rb-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
-    Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
-    Replace("<gitlab-hostname>", $config.sre.webapps.gitlab.hostname).
-    Replace("<gitlab-fqdn>", "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
-    Replace("<gitlab-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)).
-    Replace("<gitlab-login-domain>", $config.shm.domain.fqdn).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-    Replace("<timezone>", $config.sre.time.timezone.linux)
+# Load the cloud-init template and expand mustache placeholders
+$config["gitlab"] = @{
+    ldapSearchUserDn = $ldapSearchUserDn
+    ldapSearchUserPassword = $ldapSearchUserPassword
+    ldapUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
+    rootPassword = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
+}
+$gitlabCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Parameters $config
 # Deploy GitLab VM
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
