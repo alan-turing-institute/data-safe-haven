@@ -97,12 +97,6 @@ variable "safemode_password" {
 variable "shm_id" {
   type = string
 }
-variable "virtual_network_name" {
-  type = string
-}
-variable "virtual_network_resource_group" {
-  type = string
-}
 variable "virtual_network_subnet" {
   type = string
 }

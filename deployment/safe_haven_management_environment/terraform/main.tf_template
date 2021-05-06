@@ -94,25 +94,19 @@ module "dc" {
   external_dns_resolver = var.dc_external_dns_resolver
   safemode_password = var.dc_safemode_password
   shm_id = var.dc_shm_id
-  virtual_network_name = var.dc_virtual_network_name
-  virtual_network_resource_group = var.dc_virtual_network_resource_group
-
   virtual_network_subnet = module.networking.subnet_identity_id
 }
 
-/*
 module "nps" {
   source = "./modules/nps"
   
   rg_name = var.nps_rg_name
   rg_location = var.nps_rg_location
   
-  template_name = var.nps_template_name
-  template_path = var.nps_template_path
-  administrator_password = var.kv_secret_value_vm_admin_password
-  administrator_user = var.kv_secret_value_vm_admin_username
+  administrator_password = var.nps_administrator_password
+  administrator_user = var.nps_administrator_user
   bootdiagnostics_account_name = var.nps_bootdiagnostics_account_name
-  domain_join_password = var.kv_secret_value_domain_join_password
+  domain_join_password = var.nps_domain_join_password
   domain_join_user = var.nps_domain_join_user
   domain_name = var.nps_domain_name
   data_disk_size_gb = var.nps_data_disk_size_gb
@@ -124,8 +118,5 @@ module "nps" {
   vm_name = var.nps_vm_name
   vm_size = var.nps_vm_size
   ou_path = var.nps_ou_path
-  virtual_network_name = var.nps_virtual_network_name
-  virtual_network_resource_group = var.nps_virtual_network_resource_group
-  virtual_network_subnet = var.nps_virtual_network_subnet
+  virtual_network_subnet = module.networking.subnet_identity_id
 }
-*/

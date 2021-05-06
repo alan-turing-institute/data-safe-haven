@@ -140,45 +140,32 @@ $dcDomainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 $dcSafemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20 -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_safemode_password>>>', $dcSafemodeAdminPassword) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_shm_id>>>', $config.id) | Set-Content $tfvars_file
-(Get-Content $tfvars_file).replace('<<<dc_virtual_network_name>>>', $config.network.vnet.name) | Set-Content $tfvars_file
-(Get-Content $tfvars_file).replace('<<<dc_virtual_network_resource_group>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
 
-# # NPS
-# # ------------------------------------------------------------
-# (Get-Content $tfvars_file).replace('<<<nps_rg_name>>>', $config.nps.rg) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_rg_location>>>', $config.location) | Set-Content $tfvars_file
-
-# $npsTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json"
-# (Get-Content $tfvars_file).replace('<<<nps_template_path>>>', $npsTemplatePath) | Set-Content $tfvars_file
-# $npsTemplateName = Split-Path -Path "$npsTemplatePath" -LeafBase
-# (Get-Content $tfvars_file).replace('<<<nps_template_name>>>', $npsTemplateName) | Set-Content $tfvars_file
-
-# # $npsVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-# # (Get-Content $tfvars_file).replace('<<<nps_administrator_password>>>', (ConvertTo-SecureString $npsVmAdminPassword -AsPlainText -Force)) | Set-Content $tfvars_file
-# # $npsVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
-# # (Get-Content $tfvars_file).replace('<<<nps_administrator_user>>>', $npsVmAdminUsername) | Set-Content $tfvars_file
-
-# (Get-Content $tfvars_file).replace('<<<nps_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
-
-# # $npsDomainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
-# # Get-Content $tfvars_file).replace('<<<nps_domain_join_password>>>', (ConvertTo-SecureString $npsDomainJoinPassword -AsPlainText -Force)) | Set-Content $tfvars_file
-
-# $npsDomainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
-# (Get-Content $tfvars_file).replace('<<<nps_domain_join_user>>>', $npsDomainJoinUsername) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_domain_name>>>', $config.domain.fqdn) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_data_disk_size_gb>>>', $config.nps.disks.data.sizeGb) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_data_disk_type>>>', $config.nps.disks.data.type) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_host_name>>>', $config.nps.hostname) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_ip_address>>>', $config.nps.ip) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_os_disk_size_gb>>>', $config.nps.disks.os.sizeGb) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_os_disk_type>>>', $config.nps.disks.os.type) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_vm_name>>>', $config.nps.vmName) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_vm_size>>>', $config.nps.vmSize) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_ou_path>>>', $config.domain.ous.identityServers.path) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_virtual_network_name>>>', $config.network.vnet.name) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_virtual_network_resource_group>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<nps_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
+# NPS
+# ------------------------------------------------------------
+(Get-Content $tfvars_file).replace('<<<nps_rg_name>>>', $config.nps.rg) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_rg_location>>>', $config.location) | Set-Content $tfvars_file
+$npsVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_administrator_password>>>', (ConvertTo-SecureString $npsVmAdminPassword -AsPlainText -Force)) | Set-Content $tfvars_file
+$npsVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_administrator_user>>>', $npsVmAdminUsername) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
+$npsDomainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_domain_join_password>>>', $npsDomainJoinPassword) | Set-Content $tfvars_file
+$npsDomainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
+(Get-Content $tfvars_file).replace('<<<nps_domain_join_user>>>', $npsDomainJoinUsername) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_domain_name>>>', $config.domain.fqdn) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_data_disk_size_gb>>>', $config.nps.disks.data.sizeGb) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_data_disk_type>>>', $config.nps.disks.data.type) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_host_name>>>', $config.nps.hostname) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_ip_address>>>', $config.nps.ip) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_os_disk_size_gb>>>', $config.nps.disks.os.sizeGb) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_os_disk_type>>>', $config.nps.disks.os.type) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_vm_name>>>', $config.nps.vmName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_vm_size>>>', $config.nps.vmSize) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_ou_path>>>', $config.domain.ous.identityServers.path) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<nps_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
 
 # Switch back to original subscription
 # ------------------------------------------------------------

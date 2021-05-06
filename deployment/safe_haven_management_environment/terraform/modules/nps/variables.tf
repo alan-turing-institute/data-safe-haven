@@ -4,14 +4,6 @@ variable "rg_name" {
 variable "rg_location" {
   type = string
 }
-
-/*
-variable "template_name" {
-  type = string
-}
-variable "template_path" {
-  type = string
-}
 variable "administrator_password" {
   type = string
   sensitive = true
@@ -59,13 +51,6 @@ variable "vm_size" {
 variable "ou_path" {
   type = string
 }
-variable "virtual_network_name" {
-  type = string
-}
-variable "virtual_network_resource_group" {
-  type = string
-}
 variable "virtual_network_subnet" {
   type = string
 }
-*/

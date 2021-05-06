@@ -182,12 +182,67 @@ variable "dc_safemode_password" {
 variable "dc_shm_id" {
   type = string
 }
-variable "dc_virtual_network_name" {
-  type = string
-}
-variable "dc_virtual_network_resource_group" {
-  type = string
-}
 variable "dc_virtual_network_subnet" {
+  type = string
+}
+
+################################################
+# NPS
+################################################
+
+variable "nps_rg_name" {
+  type = string
+}
+variable "nps_rg_location" {
+  type = string
+}
+variable "nps_administrator_password" {
+  type = string
+  sensitive = true
+}
+variable "nps_administrator_user" {
+  type = string
+}
+variable "nps_bootdiagnostics_account_name" {
+  type = string
+}
+variable "nps_domain_join_password" {
+  type = string
+  sensitive = true
+}
+variable "nps_domain_join_user" {
+  type = string
+}
+variable "nps_domain_name" {
+  type = string
+}
+variable "nps_data_disk_size_gb" {
+  type = number
+}
+variable "nps_data_disk_type" {
+  type = string
+}
+variable "nps_host_name" {
+  type = string
+}
+variable "nps_ip_address" {
+  type = string
+}
+variable "nps_os_disk_size_gb" {
+  type = number
+}
+variable "nps_os_disk_type" {
+  type = string
+}
+variable "nps_vm_name" {
+  type = string
+}
+variable "nps_vm_size" {
+  type = string
+}
+variable "nps_ou_path" {
+  type = string
+}
+variable "nps_virtual_network_subnet" {
   type = string
 }

@@ -46,7 +46,6 @@ net_vpn_cidr = "<<<net_vpn_cidr>>>"
 dc_rg_name = "<<<dc_rg_name>>>"
 dc_rg_location = "<<<dc_rg_location>>>"
 
-# DC ARM template variables
 dc_administrator_user = "<<<dc_administrator_user>>>"
 dc_administrator_password = "<<<dc_administrator_password>>>"
 dc_artifacts_location = "<<<dc_artifacts_location>>>"
@@ -72,23 +71,19 @@ dc_domain_netbios_name = "<<<dc_domain_netbios_name>>>"
 dc_external_dns_resolver = "<<<dc_external_dns_resolver>>>"
 dc_safemode_password = "<<<dc_safemode_password>>>"
 dc_shm_id = "<<<dc_shm_id>>>"
-dc_virtual_network_name = "<<<dc_virtual_network_name>>>"
-dc_virtual_network_resource_group = "<<<dc_virtual_network_resource_group>>>"
 dc_virtual_network_subnet = "<<<dc_virtual_network_subnet>>>"
 
+################################################
+# NPS
+################################################
 
-/*
 nps_rg_name = "<<<nps_rg_name>>>"
 nps_rg_location = "<<<nps_rg_location>>>"
 
-
-# NPS ARM template variables
-nps_template_name = "<<<nps_template_name>>>"
-nps_template_path = "<<<nps_template_path>>>"
-# nps_administrator_password = "<<<nps_administrator_password>>>"
-# nps_administrator_user = "<<<nps_administrator_user>>>"
+nps_administrator_password = "<<<nps_administrator_password>>>"
+nps_administrator_user = "<<<nps_administrator_user>>>"
 nps_bootdiagnostics_account_name = "<<<nps_bootdiagnostics_account_name>>>"
-# nps_domain_join_password = "<<<nps_domain_join_password>>>"
+nps_domain_join_password = "<<<nps_domain_join_password>>>"
 nps_domain_join_user = "<<<nps_domain_join_user>>>"
 nps_domain_name = "<<<nps_domain_name>>>"
 nps_data_disk_size_gb = <<<nps_data_disk_size_gb>>>
@@ -100,7 +95,4 @@ nps_os_disk_type = "<<<nps_os_disk_type>>>"
 nps_vm_name = "<<<nps_vm_name>>>"
 nps_vm_size = "<<<nps_vm_size>>>"
 nps_ou_path = "<<<nps_ou_path>>>"
-nps_virtual_network_name = "<<<nps_virtual_network_name>>>"
-nps_virtual_network_resource_group = "<<<nps_virtual_network_resource_group>>>"
 nps_virtual_network_subnet = "<<<nps_virtual_network_subnet>>>"
-*/
