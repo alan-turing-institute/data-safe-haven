@@ -12,9 +12,9 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = {{mirror-index-pypi}}
-      index-url = {{mirror-index-url-pypi}}
-      trusted-host = {{mirror-host-pypi}}
+      index = {{sre.repositories.pypi.index}}
+      index-url = {{sre.repositories.pypi.indexUrl}}
+      trusted-host = {{sre.repositories.pypi.host}}
 
   - path: "/etc/R/Rprofile.site"
     permissions: "0444"
@@ -22,20 +22,20 @@ write_files:
       ## Set Rprofile.site to the appropriate CRAN mirror
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "{{mirror-url-cran}}"
+          r["CRAN"] <- "{{sre.repositories.cran.url}}"
           options(repos = r)
       })
 
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: {{timezone}}
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   pools:
-    - {{ntp-server}}
+    - {{shm.time.ntp.poolFqdn}}
 
 # Configure apt repositories
 apt:
@@ -66,8 +66,8 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
-fqdn: {{cocalc-fqdn}}
-hostname: {{cocalc-fqdn}}
+fqdn: {{sre.webapps.cocalc.hostname}}.{{sre.domain.fqdn}}
+hostname: {{sre.webapps.cocalc.hostname}}.{{sre.domain.fqdn}}
 
 # Add the SRE admin (default) and cocalcdaemon users
 users:
@@ -121,7 +121,7 @@ runcmd:
   # Wait for deployment to finish
   - |
     while true; do
-      STATUS=$(docker-compose -f /opt/cocalc/docker-compose.yml logs cocalc | grep "API listen on /run/docker.sock")
+      STATUS=$(su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yml logs cocalc" | grep "finished exec of psql")
       if [ "$STATUS" != "" ]; then
         break
       fi

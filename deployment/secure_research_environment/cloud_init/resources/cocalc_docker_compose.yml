@@ -4,7 +4,7 @@ networks:
 services:
     cocalc:
         container_name: cocalc
-        image: sagemathinc/cocalc:{{docker-codimd-version}}
+        image: sagemathinc/cocalc:{{sre.webapps.cocalc.dockerVersion}}
         networks:
             - network_default
         ports:
