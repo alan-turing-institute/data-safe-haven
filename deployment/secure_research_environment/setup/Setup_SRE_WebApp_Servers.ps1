@@ -78,6 +78,8 @@ $params = @{
 $cocalcVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while CoCalc VM is off then restart
 Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.cocalc.hostname -VmIpAddress $config.sre.webapps.cocalc.ip
 
 
 # Deploy and configure CodiMD VM
@@ -112,6 +114,8 @@ $params = @{
 $codimdVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while CodiMD VM is off then restart
 Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.codimd.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.codimd.hostname -VmIpAddress $config.sre.webapps.codimd.ip
 
 
 # Deploy and configure GitLab VM
@@ -146,6 +150,8 @@ $params = @{
 $gitlabVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while GitLab VM is off then restart
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.gitlab.hostname -VmIpAddress $config.sre.webapps.gitlab.ip
 
 
 # Switch back to original subscription
