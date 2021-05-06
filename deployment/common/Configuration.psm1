@@ -82,8 +82,9 @@ function Get-ShmConfig {
     }
 
     # Set timezone and NTP configuration
-    # NB. Very few NTP services provide an exhaustive, stable list of IP addresses. The Google NTP servers are incompatible with others due to leap-second smearing
-    # -------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Google is one of the few NTP services to provide an exhaustive, stable list of IP addresses.
+    # However, note that the Google NTP servers are incompatible with others due to leap-second smearing
+    # --------------------------------------------------------------------------------------------------
     $timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
     $shm.time = [ordered]@{
         timezone = [ordered]@{
