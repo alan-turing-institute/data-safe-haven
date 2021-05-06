@@ -8,7 +8,10 @@ variable "art_rg_name" {
 variable "art_rg_location" {
   type = string
 }
-variable "art_sa_name" {
+variable "art_boot_sa_name" {
+  type = string
+}
+variable "art_art_sa_name" {
   type = string
 }
 variable "art_dc_createadpdc_path" {
@@ -111,10 +114,6 @@ variable "dc_administrator_user" {
 }
 variable "dc_artifacts_location" {
   type = string
-}
-variable "dc_artifacts_location_sas_token" {
-  type = string
-  sensitive = true
 }
 variable "dc_bootdiagnostics_account_name" {
   type = string

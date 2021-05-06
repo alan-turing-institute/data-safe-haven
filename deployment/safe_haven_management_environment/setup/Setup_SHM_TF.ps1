@@ -53,7 +53,8 @@ Copy-Item ../terraform/terraform.tfvars_template $tfvars_file
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<art_rg_name>>>', $config.storage.artifacts.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<art_rg_location>>>', $config.location) | Set-Content $tfvars_file
-(Get-Content $tfvars_file).replace('<<<art_sa_name>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<art_art_sa_name>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<art_boot_sa_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
 $artCreateadpdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip"
 (Get-Content $tfvars_file).replace('<<<art_dc_createadpdc_path>>>', $artCreateadpdcPath) | Set-Content $tfvars_file
 $artCreateadbdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip"
@@ -105,8 +106,6 @@ $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Se
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<dc_rg_name>>>', $config.dc.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_rg_location>>>', $config.location) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<dc_rg_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.rg) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<dc_sa_name_bootdiagnostics>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
 # $dcTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json"
 # (Get-Content $tfvars_file).replace('<<<dc_template_path>>>', $dcTemplatePath) | Set-Content $tfvars_file
 # $dcTemplateName = Split-Path -Path "$dcTemplatePath" -LeafBase
@@ -116,8 +115,8 @@ $dcDomainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 $dcDomainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_administrator_password>>>', $dcDomainAdminPassword) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_artifacts_location>>>', "https://$($config.storage.artifacts.accountName).blob.core.windows.net") | Set-Content $tfvars_file
-$dcArtifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
-(Get-Content $tfvars_file).replace('<<<dc_artifacts_location_sas_token>>>', $dcArtifactSasToken) | Set-Content $tfvars_file
+# $dcArtifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+# (Get-Content $tfvars_file).replace('<<<dc_artifacts_location_sas_token>>>', $dcArtifactSasToken) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_dc1_data_disk_size_gb>>>', $config.dc.disks.data.sizeGb) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_dc1_data_disk_type>>>', $config.dc.disks.data.type) | Set-Content $tfvars_file
@@ -180,39 +179,6 @@ $dcSafemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.na
 # (Get-Content $tfvars_file).replace('<<<nps_virtual_network_name>>>', $config.network.vnet.name) | Set-Content $tfvars_file
 # (Get-Content $tfvars_file).replace('<<<nps_virtual_network_resource_group>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
 # (Get-Content $tfvars_file).replace('<<<nps_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
-
-
-
-
-
-
-# Key Vault
-# ------------------------------------------------------------
-# (Get-Content $tfvars_file).replace('<<<kv_rg_name>>>', $config.keyVault.rg) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_rg_location>>>', $config.location) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_name>>>', $config.keyVault.name) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_location>>>', $config.location) | Set-Content $tfvars_file
-# $kvSecurityGroupId = (Get-AzADGroup -DisplayName $config.azureAdminGroupName)[0].Id
-# (Get-Content $tfvars_file).replace('<<<kv_security_group_id>>>', $kvSecurityGroupId) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_aad_emergency_admin_username>>>', $config.keyVault.secretNames.aadEmergencyAdminUsername) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_aad_emergency_admin_username>>>', "aad.admin.emergency.access") | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_aad_emergency_admin_password>>>', $config.keyVault.secretNames.aadEmergencyAdminPassword) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_aad_emergency_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_domain_admin_username>>>', $config.keyVault.secretNames.domainAdminUsername) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_username>>>', "domain$($config.id)admin".ToLower()) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_domain_admin_password>>>', $config.keyVault.secretNames.domainAdminPassword) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_domain_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_shm_vm_safemode_password_dc>>>', $config.dc.safemodePasswordSecretName) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_shm_vm_safemode_password_dc>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_domain_join_password>>>', $config.users.computerManagers.identityServers.passwordSecretName) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_domain_join_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_vm_admin_username>>>', $config.keyVault.secretNames.vmAdminUsername) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_vm_admin_username>>>', "shm$($config.id)admin".ToLower()) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_name_vm_admin_password>>>', $config.nps.adminPasswordSecretName) | Set-Content $tfvars_file
-# (Get-Content $tfvars_file).replace('<<<kv_secret_value_vm_admin_password>>>', $(New-Password -Length 20)) | Set-Content $tfvars_file
-
-
-
 
 # Switch back to original subscription
 # ------------------------------------------------------------

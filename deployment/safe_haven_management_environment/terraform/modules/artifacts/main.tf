@@ -3,14 +3,61 @@ resource "azurerm_resource_group" "artifacts" {
   location = var.rg_location
 }
 
-resource "azurerm_storage_account" "artifacts" {
-  name                     = var.sa_name
+resource "azurerm_storage_account" "bootdiagnostics" {
+  name                     = var.boot_sa_name
   resource_group_name      = azurerm_resource_group.artifacts.name
   location                 = azurerm_resource_group.artifacts.location
   account_kind             = "StorageV2"
   account_tier             = "Standard"
   account_replication_type = "LRS"
   access_tier              = "Hot"
+}
+
+resource "azurerm_storage_account" "artifacts" {
+  name                     = var.art_sa_name
+  resource_group_name      = azurerm_resource_group.artifacts.name
+  location                 = azurerm_resource_group.artifacts.location
+  account_kind             = "StorageV2"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  access_tier              = "Hot"
+}
+
+data "azurerm_storage_account_sas" "dcartifactssas" {
+    connection_string = azurerm_storage_account.artifacts.primary_connection_string
+    https_only        = true
+    signed_version    = "2017-07-29"
+
+    resource_types {
+        service   = true
+        container = true
+        object    = true
+    }
+
+    services {
+        blob  = true
+        queue = false
+        table = false
+        file  = true
+    }
+
+    start  = timestamp()
+    expiry = timeadd(timestamp(), "2h")
+
+    permissions {
+        read    = true
+        write   = false
+        delete  = false
+        list    = true
+        add     = false
+        create  = false
+        update  = false
+        process = false
+    }
+}
+
+output "dc_artifact_sas_token" {
+    value = data.azurerm_storage_account_sas.dcartifactssas.sas
 }
 
 resource "azurerm_storage_container" "artifacts_shm_dsc_dc" {

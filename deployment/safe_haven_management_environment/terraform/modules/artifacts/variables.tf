@@ -6,7 +6,11 @@ variable "rg_location" {
   type = string
 }
 
-variable "sa_name" {
+variable "boot_sa_name" {
+  type = string
+}
+
+variable "art_sa_name" {
   type = string
 }
 
