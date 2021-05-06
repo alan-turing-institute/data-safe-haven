@@ -65,8 +65,8 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
-fqdn: {{sre.webapps.cocalc.hostname}}.{{sre.domain.fqdn}}
-hostname: {{sre.webapps.cocalc.hostname}}.{{sre.domain.fqdn}}
+fqdn: {{sre.webapps.cocalc.fqdn}}
+hostname: {{sre.webapps.cocalc.fqdn}}
 
 # Add the SRE admin (default) and cocalcdaemon users
 users:

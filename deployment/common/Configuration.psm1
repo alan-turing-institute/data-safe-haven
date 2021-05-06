@@ -859,7 +859,7 @@ function Get-SreConfig {
         cocalc = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
             dockerVersion           = "latest"
-            vmName                  = "COCALC-SRE-$($config.sre.id)".ToUpper()
+            hostname                = "COCALC"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
             osVersion               = "20.04-LTS"
@@ -876,10 +876,10 @@ function Get-SreConfig {
         }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
-            vmName                  = "CODIMD-SRE-$($config.sre.id)".ToUpper()
+            hostname                = "CODIMD"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion               = "18.04-LTS"
+            osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
                 dockerVersion = "2.3.2"
             }
@@ -900,11 +900,11 @@ function Get-SreConfig {
         }
         gitlab = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
-            vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+            hostname                = "GITLAB"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
-            osVersion               = "18.04-LTS"
+            osVersion               = "20.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -920,8 +920,8 @@ function Get-SreConfig {
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].hostname = $config.sre.webapps[$server].vmName
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
+        $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
     }
 
 

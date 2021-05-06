@@ -75,8 +75,8 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
-fqdn: {{sre.webapps.gitlab.hostname}}.{{sre.domain.fqdn}}
-hostname: {{sre.webapps.gitlab.hostname}}.{{sre.domain.fqdn}}
+fqdn: {{sre.webapps.gitlab.fqdn}}
+hostname: {{sre.webapps.gitlab.fqdn}}
 
 # Add the SRE admin (default) user
 users:
