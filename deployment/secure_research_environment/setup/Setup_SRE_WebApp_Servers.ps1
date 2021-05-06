@@ -89,7 +89,7 @@ Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
 $config["codimd"] = @{
     ldapSearchUserDn = $ldapSearchUserDn
     ldapSearchUserPassword = $ldapSearchUserPassword
-    ldapUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
+    ldapUserFilter = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
     postgresPassword = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
 }
 $codimdCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Parameters $config

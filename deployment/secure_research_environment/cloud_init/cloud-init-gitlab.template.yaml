@@ -20,7 +20,7 @@ write_files:
           allow_username_or_email_login: true
           block_auto_created_users: false
           base: '{{shm.domain.ous.researchUsers.path}}'
-          user_filter: '{{gitlab.ldapUserFilter}}'
+          user_filter: '{{{gitlab.ldapUserFilter}}}'
       attributes:
         username: ['uid', 'userid', 'sAMAccountName']
         email:    ['mail', 'email', 'userPrincipalName']

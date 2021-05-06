@@ -18,10 +18,14 @@ function Expand-MustacheTemplate {
     # If we are given a path then we need to extract the content
     if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
 
+    # Define the delimiters
+    $MustacheOpen = "{"
+    $MustacheClose = "}"
+    $StartDelimiter = "${MustacheOpen}${MustacheOpen}"
+    $EndDelimiter = "${MustacheClose}${MustacheClose}"
+
     # Get all unique mustache tags
-    $StartDelimiter = "{{"
-    $EndDelimiter = "}}"
-    $tags = ($Template | Select-String -Pattern "$StartDelimiter[^$EndDelimiter]*$EndDelimiter" -AllMatches).Matches.Value | `
+    $tags = ($Template | Select-String -Pattern "$StartDelimiter[^${MustacheOpen}${MustacheClose}]*$EndDelimiter" -AllMatches).Matches.Value | `
         Where-Object { $_ -and ($_ -ne "{{.}}") } | `
         ForEach-Object { $_.Replace("#", "").Replace("/", "").Replace("?", "").Replace("^", "").Replace("&", "") } | `
         Get-Unique

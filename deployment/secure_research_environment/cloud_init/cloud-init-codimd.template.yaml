@@ -21,7 +21,7 @@ write_files:
             - CMD_LDAP_BINDDN={{codimd.ldapSearchUserDn}}
             - CMD_LDAP_PROVIDERNAME={{shm.domain.netbiosName}}
             - CMD_LDAP_SEARCHBASE={{shm.domain.ous.researchUsers.path}}
-            - CMD_LDAP_SEARCHFILTER={{codimd.ldapUserFilter}}
+            - CMD_LDAP_SEARCHFILTER={{{codimd.ldapUserFilter}}}
             - CMD_LDAP_URL=ldap://{{shm.dc.fqdn}}
             - CMD_LDAP_USERIDFIELD=sAMAccountName
             - CMD_USECDN=false
