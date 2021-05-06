@@ -12,6 +12,7 @@ Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -52,14 +53,9 @@ $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($
 # Deploy and configure CoCalc VM
 # -------------------------------
 Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
+# Load the cloud-init template then add resources and expand mustache placeholders
 $cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.template.yaml" | Get-Item | Get-Content -Raw
-# Insert resources into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
-    $indent = $cocalcCloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cocalcCloudInitTemplate = $cocalcCloudInitTemplate.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
-}
-# Expand placeholders in the cloud-init template
+$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 $cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
 # Deploy CoCalc VM
 $cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
