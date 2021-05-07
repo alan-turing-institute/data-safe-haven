@@ -411,6 +411,10 @@ function Get-ShmConfig {
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{
+        scripts         = [ordered]@{
+            rg          = $storageRg
+            accountName = "${shmStoragePrefix}scripts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        }
         artifacts       = [ordered]@{
             rg          = $storageRg
             accountName = "${shmStoragePrefix}artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -631,6 +635,10 @@ function Get-SreConfig {
             readWrite = [ordered]@{
                 permissions = "racwdl"
             }
+        }
+        scripts         = [ordered]@{
+            rg          = $storageRg
+            accountName = "${shmStoragePrefix}scripts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         artifacts       = [ordered]@{
             accountName = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent

@@ -8,10 +8,16 @@ variable "art_rg_name" {
 variable "art_rg_location" {
   type = string
 }
+variable "art_script_sa_name" {
+  type = string
+}
 variable "art_boot_sa_name" {
   type = string
 }
 variable "art_art_sa_name" {
+  type = string
+}
+variable "art_dc_active_directory_configuration_path" {
   type = string
 }
 variable "art_dc_createadpdc_path" {
@@ -115,6 +121,9 @@ variable "dc_administrator_user" {
 variable "dc_artifacts_location" {
   type = string
 }
+variable "dc_scripts_location" {
+  type = string
+}
 variable "dc_bootdiagnostics_account_name" {
   type = string
 }
@@ -183,6 +192,18 @@ variable "dc_shm_id" {
   type = string
 }
 variable "dc_virtual_network_subnet" {
+  type = string
+}
+variable "dc_domain_ou_base" {
+  type = string
+}
+variable "dc_gpo_backup_path_b64" {
+  type = string
+}
+variable "dc_user_accounts_b64" {
+  type = string
+}
+variable "dc_security_groups_b64" {
   type = string
 }
 

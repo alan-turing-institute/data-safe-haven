@@ -4,24 +4,19 @@ variable "rg_name" {
 variable "rg_location" {
   type = string
 }
-
-
-
-# ------------------------
-
-# variable "template_name" {
-#   type = string
-# }
-# variable "template_path" {
-#   type = string
-# }
-
 variable "administrator_password" {
   type = string
   sensitive = true
 }
 variable "administrator_user" {
   type = string
+}
+variable "scripts_location" {
+  type = string
+}
+variable "scripts_location_sas_token" {
+  type = string
+  sensitive = true
 }
 variable "artifacts_location" {
   type = string
@@ -98,5 +93,17 @@ variable "shm_id" {
   type = string
 }
 variable "virtual_network_subnet" {
+  type = string
+}
+variable "domain_ou_base" {
+  type = string
+}
+variable "gpo_backup_path_b64" {
+  type = string
+}
+variable "user_accounts_b64" {
+  type = string
+}
+variable "security_groups_b64" {
   type = string
 }

@@ -165,24 +165,29 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Impor
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
-# Configure Active Directory remotely
-# -----------------------------------
-Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
-# Fetch user and OU details
+# # Configure Active Directory remotely
+# # -----------------------------------
+# Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
+# # Fetch user and OU details
+
+
+# # Run remote script
+# $scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration_template.ps1" | Get-Item | Get-Content -Raw
+# $script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name).
+#                           Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
+#                           Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
+#                           Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
+#                           Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
+#                           Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
+#                           Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
+#                           Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
+
+
 $userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
 foreach ($user in $userAccounts.Keys) {
     $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
 }
-# Run remote script
-$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
-$script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name).
-                          Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
-                          Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
-                          Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
-                          Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
-                          Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
-                          Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
-                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
+
 $params = @{
     domainAdminUsername    = $domainAdminUsername
     domainControllerVmName = $config.dc.vmName

@@ -13,6 +13,68 @@ resource "azurerm_storage_account" "bootdiagnostics" {
   access_tier              = "Hot"
 }
 
+resource "azurerm_storage_account" "scripts" {
+  name                     = var.script_sa_name
+  resource_group_name      = azurerm_resource_group.artifacts.name
+  location                 = azurerm_resource_group.artifacts.location
+  account_kind             = "StorageV2"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  access_tier              = "Hot"
+}
+
+data "azurerm_storage_account_sas" "dcscriptssas" {
+    connection_string = azurerm_storage_account.artifacts.primary_connection_string
+    https_only        = true
+    signed_version    = "2017-07-29"
+
+    resource_types {
+        service   = true
+        container = true
+        object    = true
+    }
+
+    services {
+        blob  = true
+        queue = false
+        table = false
+        file  = true
+    }
+
+    start  = timestamp()
+    expiry = timeadd(timestamp(), "2h")
+
+    permissions {
+        read    = true
+        write   = false
+        delete  = false
+        list    = true
+        add     = false
+        create  = false
+        update  = false
+        process = false
+    }
+}
+
+output "dc_scripts_sas_token" {
+    value = data.azurerm_storage_account_sas.dcscriptssas.sas
+}
+
+resource "azurerm_storage_container" "scripts_shm_configuration_dc" {
+  name                  = "shm-configuration-dc"
+  storage_account_name  = azurerm_storage_account.scripts.name
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "Active_Directory_Configuration_ps1" {
+  name                   = "Active_Directory_Configuration.ps1"
+  storage_account_name   = azurerm_storage_account.scripts.name
+  storage_container_name = azurerm_storage_container.scripts_shm_configuration_dc.name
+  type                   = "Block"
+  source                 = var.dc_active_directory_configuration_path
+}
+
+
 resource "azurerm_storage_account" "artifacts" {
   name                     = var.art_sa_name
   resource_group_name      = azurerm_resource_group.artifacts.name

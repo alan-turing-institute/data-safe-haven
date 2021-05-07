@@ -14,9 +14,9 @@ param(
     [Parameter(HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainOuBase,
-    [Parameter(HelpMessage = "Path to GPO backup files")]
+    [Parameter(HelpMessage = "Base64-encoded path to GPO backup files")]
     [ValidateNotNullOrEmpty()]
-    [string]$gpoBackupPath,
+    [string]$gpoBackupPathB64,
     [Parameter(HelpMessage = "NetBios name")]
     [ValidateNotNullOrEmpty()]
     [string]$netbiosName,
@@ -207,6 +207,7 @@ foreach ($groupCfg in $securityGroups.PSObject.Members) {
     }
 }
 
+$gpoBackupPath = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($gpoBackupPathB64)) | ConvertFrom-Json
 
 # Decode user accounts and create them
 # ------------------------------------

@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 2.26"
+      version = "=2.58.0"
     }
   }
   backend "azurerm" {
@@ -29,8 +29,10 @@ module "artifacts" {
 
   rg_name = var.art_rg_name
   rg_location = var.art_rg_location
+  script_sa_name = var.art_script_sa_name
   boot_sa_name = var.art_boot_sa_name
   art_sa_name = var.art_art_sa_name
+  dc_active_directory_configuration_path = var.art_dc_active_directory_configuration_path
   dc_createadpdc_path = var.art_dc_createadpdc_path
   dc_createadbdc_path = var.art_dc_createadbdc_path
   dc_config_files_path = var.art_dc_config_files_path
@@ -70,6 +72,8 @@ module "dc" {
   rg_location = var.dc_rg_location
   administrator_password = var.dc_administrator_password
   administrator_user = var.dc_administrator_user
+  scripts_location = var.dc_scripts_location
+  scripts_location_sas_token = module.artifacts.dc_scripts_sas_token
   artifacts_location = var.dc_artifacts_location
   artifacts_location_sas_token = module.artifacts.dc_artifact_sas_token
   bootdiagnostics_account_name = var.dc_bootdiagnostics_account_name
@@ -95,8 +99,13 @@ module "dc" {
   safemode_password = var.dc_safemode_password
   shm_id = var.dc_shm_id
   virtual_network_subnet = module.networking.subnet_identity_id
+  domain_ou_base = var.dc_domain_ou_base
+  gpo_backup_path_b64 = var.dc_gpo_backup_path_b64
+  user_accounts_b64 = var.dc_user_accounts_b64
+  security_groups_b64 = var.dc_security_groups_b64
 }
 
+/*
 module "nps" {
   source = "./modules/nps"
   
@@ -120,3 +129,4 @@ module "nps" {
   ou_path = var.nps_ou_path
   virtual_network_subnet = module.networking.subnet_identity_id
 }
+*/

@@ -9,6 +9,7 @@ Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
@@ -55,6 +56,9 @@ Copy-Item ../terraform/terraform.tfvars_template $tfvars_file
 (Get-Content $tfvars_file).replace('<<<art_rg_location>>>', $config.location) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<art_art_sa_name>>>', $config.storage.artifacts.accountName) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<art_boot_sa_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<art_script_sa_name>>>', $config.storage.scripts.accountName) | Set-Content $tfvars_file
+$artActiveDirectoryConfigurationPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1"
+(Get-Content $tfvars_file).replace('<<<art_dc_active_directory_configuration_path>>>', $artActiveDirectoryConfigurationPath) | Set-Content $tfvars_file
 $artCreateadpdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip"
 (Get-Content $tfvars_file).replace('<<<art_dc_createadpdc_path>>>', $artCreateadpdcPath) | Set-Content $tfvars_file
 $artCreateadbdcPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip"
@@ -106,17 +110,12 @@ $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Se
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<dc_rg_name>>>', $config.dc.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_rg_location>>>', $config.location) | Set-Content $tfvars_file
-# $dcTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json"
-# (Get-Content $tfvars_file).replace('<<<dc_template_path>>>', $dcTemplatePath) | Set-Content $tfvars_file
-# $dcTemplateName = Split-Path -Path "$dcTemplatePath" -LeafBase
-# (Get-Content $tfvars_file).replace('<<<dc_template_name>>>', $dcTemplateName) | Set-Content $tfvars_file
 $dcDomainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "domain$($config.id)admin".ToLower() -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_administrator_user>>>', $dcDomainAdminUsername) | Set-Content $tfvars_file
 $dcDomainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<dc_administrator_password>>>', $dcDomainAdminPassword) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_scripts_location>>>', "https://$($config.storage.scripts.accountName).blob.core.windows.net") | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_artifacts_location>>>', "https://$($config.storage.artifacts.accountName).blob.core.windows.net") | Set-Content $tfvars_file
-# $dcArtifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
-# (Get-Content $tfvars_file).replace('<<<dc_artifacts_location_sas_token>>>', $dcArtifactSasToken) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_dc1_data_disk_size_gb>>>', $config.dc.disks.data.sizeGb) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_dc1_data_disk_type>>>', $config.dc.disks.data.type) | Set-Content $tfvars_file
@@ -141,6 +140,32 @@ $dcSafemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.na
 (Get-Content $tfvars_file).replace('<<<dc_safemode_password>>>', $dcSafemodeAdminPassword) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_shm_id>>>', $config.id) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
+
+
+
+# Script to configure Active Directory remotely
+# -----------------------------------
+
+$ad_conf_templ_file = '../remote/create_dc/scripts/Active_Directory_Configuration_template.ps1'
+$ad_conf_file = '../remote/create_dc/scripts/Active_Directory_Configuration.ps1'
+Copy-Item $ad_conf_templ_file $ad_conf_file
+
+(Get-Content $ad_conf_file).replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name) | Set-Content $ad_conf_file
+(Get-Content $ad_conf_file).replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name) | Set-Content $ad_conf_file
+(Get-Content $tfvars_file).replace('<<<dc_domain_ou_base>>>', $config.domain.dn) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_gpo_backup_path_b64>>>', ("$($config.dc.installationDirectory)\GPOs" | ConvertTo-Json | ConvertTo-Base64)) | Set-Content $tfvars_file
+$dcUserAccounts = $config.users.computerManagers + $config.users.serviceAccounts
+foreach ($user in $dcUserAccounts.Keys) {
+    $dcUserAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $dcUserAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
+}
+(Get-Content $tfvars_file).replace('<<<dc_user_accounts_b64>>>', ($dcUserAccounts | ConvertTo-Json | ConvertTo-Base64)) | Set-Content $tfvars_file
+(Get-Content $tfvars_file).replace('<<<dc_security_groups_b64>>>', ($config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64)) | Set-Content $tfvars_file
 
 # NPS
 # ------------------------------------------------------------
