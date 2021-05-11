@@ -64,7 +64,7 @@ Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registere
 if (Get-MgContext) {
     Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
 } else {
-    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
@@ -150,18 +150,18 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
 $null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
-    AdminPassword = $vmAdminPassword
-    AdminUsername = $vmAdminUsername
+    AdminPassword          = $vmAdminPassword
+    AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitYaml
-    ImageSku = "20.04-LTS"
-    Location = $config.sre.location
-    Name = $config.sre.remoteDesktop.guacamole.vmName
-    NicId = $networkCard.Id
-    OsDiskSizeGb = $config.sre.remoteDesktop.guacamole.disks.os.sizeGb
-    OsDiskType = $config.sre.remoteDesktop.guacamole.disks.os.type
-    ResourceGroupName = $config.sre.remoteDesktop.rg
-    Size = $config.sre.remoteDesktop.guacamole.vmSize
+    CloudInitYaml          = $cloudInitYaml
+    ImageSku               = "20.04-LTS"
+    Location               = $config.sre.location
+    Name                   = $config.sre.remoteDesktop.guacamole.vmName
+    NicId                  = $networkCard.Id
+    OsDiskSizeGb           = $config.sre.remoteDesktop.guacamole.disks.os.sizeGb
+    OsDiskType             = $config.sre.remoteDesktop.guacamole.disks.os.type
+    ResourceGroupName      = $config.sre.remoteDesktop.rg
+    Size                   = $config.sre.remoteDesktop.guacamole.vmSize
 }
 $null = Deploy-UbuntuVirtualMachine @params
 
@@ -188,7 +188,7 @@ if ($?) {
 # Set the CAA record for the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
 Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
+$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
 } else {

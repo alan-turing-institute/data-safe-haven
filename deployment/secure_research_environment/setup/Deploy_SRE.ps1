@@ -33,7 +33,7 @@ if (Get-AzContext) {
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
 } else {

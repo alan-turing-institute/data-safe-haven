@@ -75,7 +75,7 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     if (Get-MgContext) {
         Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
     } else {
-        Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+        Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
     }
     try {
         Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
