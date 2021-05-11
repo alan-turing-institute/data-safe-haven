@@ -292,7 +292,7 @@ To test all the above, you will need to act both as the administrator and data p
   + b) :white_check_mark: **Verify:** you can connect and write with the token during the duration
   + c) :white_check_mark: **Verify:** you cannot connect and write with the token after the duration has expired
 
-4. Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
+4. :white_check_mark: **Verify:** Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 
 ## 8. Storage volumes and egress
 
