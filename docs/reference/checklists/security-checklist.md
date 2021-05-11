@@ -304,19 +304,7 @@ Egressed data is held in a holding zone until approved to be egressed out of the
 
 ### This means:
 
-A Secure Data volume is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to.
-
-A Secure Document volume contains electronically signed copies of agreements between the Data Provider and the Turing.
-
-A Secure Scratch volume is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here.
-
-An Output volume is a read-write area intended for the extraction of results, such as figures for publication.
-
-The Software volume is a read-only area which contains software used for analysis.
-
-A Home volume is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
-
-A domain administrator can view these volumes by logging into the Data Server.
+A domain administrator can view [these volumes](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#egress-volumes) in the blob storage via Azure Storage Explorer.
 
 ### Verify by:
 
