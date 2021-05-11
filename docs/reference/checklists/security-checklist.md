@@ -275,7 +275,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 To test all the above, you will need to act both as the administrator and data provider:
 
 1. Generate the secure upload token and check it can be sent to the email address provided by the data provider via a secure email system
-  + a) :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#ingressing-data), using the IP address of your own device in place of that of the data provider
+  + a) :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-ingress), using the IP address of your own device in place of that of the data provider
   + b) :white_check_mark: **Verify:** that you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes)
 
 2. Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
@@ -326,12 +326,11 @@ A domain administrator can view these volumes by logging into the Data Server.
   + c) :white_check_mark: **Verify:** that the different storage volumes exist and can be read (opened)
   + d) :white_check_mark: **Verify:** that one can write (move files to) Output and Home
   + e) :white_check_mark: **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
-2. Confirming that the different volumes exist on the Data Server and that logging on requires domain admin permissions - TODO: this needs to be changed - Legacy thing, instead use blob storage
-  + a) Login as domain admin to the SRE Data Server. IP address can be found `RG_SRE_DATA` -> `DAT-SRE-<sreID>`
-  + b) Go to `This PC`
-  + c) :camera: **Verify:** the volumes exist
-  + d) :camera: **Verify:** that a user has written a file to the Output storage volume
-  + e) :camera: **Verify:** that a written file can be taken out of the environment
+2. Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
+  + a) Follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access egressed files with Azure Storage Explorer
+  + b) :white_check_mark: **Verify:** the volumes exist
+  + c) :white_check_mark: **Verify:** You can see the written a files written to the Output storage volume (including any you created as a non-privileged user in step 1)
+  + f) :white_check_mark: **Verify:** that a written file can be taken out of the environment via download
 
 ## 9. Software Ingress
 
