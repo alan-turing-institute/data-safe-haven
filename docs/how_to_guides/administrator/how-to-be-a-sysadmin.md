@@ -581,7 +581,12 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 
 ### Software Ingress
 
-Software is ingressed in a similar manner to data. Follow the steps as above to provide temporary write access, setting the time window for the SAS token as appropriate. [Share the token with a researcher so they can install software within the time window] OR [Use the access token to install the software via Azure Storage Explorer (*include details like for egress below*)], then when the time window expires, access is revoked. The software is then reviewed [by who?]. If it passes review, the software ingress volume is changed to provide researchers with read-only access to the environment [is it?].
+Software is ingressed in a similar manner to data.
+
++ Follow the same steps for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
++ Share the token with the project PI, so they can install software within the time window.
++ The PI can ingress the software via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
++ Note: The software ingress must be signed off by the data provider (and referee) as is the case for data ingress
 
 ### Data egress
 
