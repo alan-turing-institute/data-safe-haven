@@ -137,8 +137,41 @@ write_files:
           options(repos = r)
       })
 
+  - path: "/usr/share/applications/CoCalc.desktop"
+    permissions: "0744"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=CoCalc
+      Exec=xdg-open http://{{sre.webapps.cocalc.fqdn}}
+      Icon=/opt/icons/cocalc.svg
+      Categories=Utility;Internet;Development;IDE;
+
+  - path: "/usr/share/applications/CodiMD.desktop"
+    permissions: "0744"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=CodiMD
+      Exec=xdg-open http://{{sre.webapps.codimd.fqdn}}
+      Icon=/opt/icons/codimd.png
+      Categories=Utility;Internet;Development;IDE;
+
+  - path: "/usr/share/applications/GitLab.desktop"
+    permissions: "0744"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=GitLab
+      Exec=xdg-open http://{{sre.webapps.gitlab.fqdn}}
+      Icon=/opt/icons/gitlab.png
+      Categories=Utility;Internet;Development;
+
   - path: "/etc/skel/Desktop/CoCalc.desktop"
-    permissions: "0644"
+    permissions: "0744"
     content: |
       [Desktop Entry]
       Version=1.0
@@ -149,7 +182,7 @@ write_files:
       URL=http://{{sre.webapps.cocalc.fqdn}}
 
   - path: "/etc/skel/Desktop/CodiMD.desktop"
-    permissions: "0644"
+    permissions: "0744"
     content: |
       [Desktop Entry]
       Version=1.0
@@ -160,7 +193,7 @@ write_files:
       URL=http://{{sre.webapps.codimd.fqdn}}
 
   - path: "/etc/skel/Desktop/GitLab.desktop"
-    permissions: "0644"
+    permissions: "0744"
     content: |
       [Desktop Entry]
       Version=1.0
@@ -458,9 +491,10 @@ runcmd:
   - python3 /opt/configuration/configure_pycharm.py /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
   # Download web application icons
+  - mkdir -p /opt/icons
   - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
   - wget https://share.cocalc.com/share/cocalc-icon.svg -O /opt/icons/cocalc.svg
-  - wget https://github.com/hackmdio/codimd/blob/develop/public/codimd-icon-1024.png -O /opt/icons/codimd.png
+  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard

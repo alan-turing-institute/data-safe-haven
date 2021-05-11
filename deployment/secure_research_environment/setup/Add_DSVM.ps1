@@ -212,6 +212,9 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<storage-account-persistentdata-ingress-sastoken>", $ingressContainerSasToken).
     Replace("<storage-account-persistentdata-egress-sastoken>", $egressContainerSasToken).
     Replace("<storage-account-userdata-name>", $config.sre.storage.userdata.account.name).
+    Replace("{{sre.webapps.cocalc.fqdn}}", $config.sre.webapps.cocalc.fqdn).
+    Replace("{{sre.webapps.codimd.fqdn}}", $config.sre.webapps.codimd.fqdn).
+    Replace("{{sre.webapps.gitlab.fqdn}}", $config.sre.webapps.gitlab.fqdn).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
