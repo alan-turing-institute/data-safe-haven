@@ -61,7 +61,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group.
  + b) Visit https://aka.ms/mfasetup in an incognito browser
  + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
- + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed
+ + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed <img width="513" alt="Screenshot 2021-03-30 at 14 10 04" src="https://user-images.githubusercontent.com/5486164/112994086-cb15f080-9161-11eb-809a-fa5c2bd0d0b3.png">
  + e) :camera: **Verify after adding to group**: Login again and check that apps can now be viewed
  + f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails
 2. Check that the user is able to successfully set up MFA
