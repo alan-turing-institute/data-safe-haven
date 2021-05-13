@@ -61,9 +61,9 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group.
  + b) Visit https://aka.ms/mfasetup in an incognito browser
  + c) Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
- + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed <img width="513" alt="Screenshot 2021-03-30 at 14 10 04" src="https://user-images.githubusercontent.com/5486164/112994086-cb15f080-9161-11eb-809a-fa5c2bd0d0b3.png">
- + e) :camera: **Verify after adding to group**: Login again and check that apps can now be viewed <img width="533" alt="Screenshot 2021-03-30 at 14 12 57" src="https://user-images.githubusercontent.com/5486164/112994346-0e705f00-9162-11eb-8800-6fa5bc1a6b88.png">
- + f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png">
+ + d) :camera: **Verify before adding to group**: Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`) works but apps cannot be viewed ![1-1d-cropped](https://user-images.githubusercontent.com/5486164/118115124-73b1a400-b3e0-11eb-92d3-aab5aa90d89c.png)
+ + e) :camera: **Verify after adding to group**: Login again and check that apps can now be viewed <img width="549" alt="1-1e-cropped" src="https://user-images.githubusercontent.com/5486164/118115140-7b714880-b3e0-11eb-9235-d2d8c75d75a6.png">
++ f) :camera: **Verify**: attempt to login to DSVM Main (Desktop) fails <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png">
 2. Check that the user is able to successfully set up MFA
   + a) Visit https://aka.ms/mfasetup again
   + b) Login as the user you set up
