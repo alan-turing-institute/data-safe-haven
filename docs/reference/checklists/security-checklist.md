@@ -200,14 +200,14 @@ Connections can only be made via remote desktop (Tier 2+)
 
 ### This means
 
-User can connect via remote desktop but cannot connect through other means such as SSH (without access to the VPN)
+User can connect via remote desktop but cannot connect through other means such as SSH
 
 ### Verify by:
 
 1. Unable to connect as a non-admin user to the DSVM via SSH
   + a) Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
   + b) :camera: **Verify:** ssh login fails: `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`) ![Screenshot 2021-04-13 at 11 04 35](https://user-images.githubusercontent.com/5486164/114535742-45f20780-9c48-11eb-9ccc-71351e776d8c.png)
-  + c) :camera: **Verify:** The RDS server and Firewall are the **only** resources with public IP addresses
+  + c) :white_check_mark: **Verify:** The RDS server (`RDG-SRE-<SRE ID>`) is the only resource with a public IP address
 
 ## 6. Copy-and-paste
 
