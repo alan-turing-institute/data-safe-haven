@@ -110,7 +110,7 @@ SREs in the same SHM are still isolated from one another.
   + h) Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + i) Click `Open`
   + j) :camera: **Verify:** Connection fails with `Network error: Connection timed out` <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png">
-5. Check that the network rules are set appropriately to block outgoing traffic
+4. Check that the network rules are set appropriately to block outgoing traffic
   + a) Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
   + b) :camera: **Verify:** There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet. <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png">
 
