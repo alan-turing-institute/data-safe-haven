@@ -108,7 +108,7 @@ SREs in the same SHM are still isolated from one another.
 2. Be unable to connect to the internet from within a DSVM on the SRE network.
   + a) Login as a user to a DSVM from within the SRE by using the web client.
   + b) Choose your favourite three websites and attempt to access the internet using a browser
-  + c) :camera: **Verify**: Connection fails <img width="941" alt="Screenshot 2021-03-30 at 15 52 19" src="https://user-images.githubusercontent.com/5486164/113009794-2f3fb100-9170-11eb-81d0-286027ab9d49.png">
+  + c) :camera: **Verify**: Connection fails <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png">
   + d) :camera: **Verify**: type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>` <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png">
 3. Check that users cannot connect between two SREs within the same SHM, even if they have access to both SREs
   + a) Ensure you have two SREs managed by the same SHM
