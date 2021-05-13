@@ -14,14 +14,13 @@ An overview of our security controls is shown here
     <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
 </p>
 
-## How to use this check list
+## How to use this checklist
 
 1. Ensure you have an SHM and attached SRE that you wish to test.
     - Note: Some parts of the security checklist are only relevant to either a tier 2 or tier 3 SRE. Other parts are only relevant when there are multiple SREs attached to the same SHM
-2. Create an issue called `Carry out security evaluation checklist for release x.x.x`
-3. Using [#977](https://github.com/alan-turing-institute/data-safe-haven/issues/977) as a guide, create the checklist as per this document and check it off as
-    - The :camera: indicates that you should **Verify** by adding a screenshot(s) of your evidence to the issue comments, which you can use the numbering to reference
-    - The :white_check_mark: means that you should **Verify** by ticking a box to say you've done this, but that a screenshot is not needed
+2. Work your way through the actions described in each section, taking care to notice each time you see a :camera: or a :white_check_mark: and the word **Verify**:
+    - :camera: Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
+    - :white_check_mark: This indicates a checklist item for which a screenshot is either not appropriate or  difficult
 
 ## Contents
 
