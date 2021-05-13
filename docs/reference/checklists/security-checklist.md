@@ -1,14 +1,12 @@
 # Security evaluation checklist
 
-In this check list we aim to do the following things.
+In this check list we aim to do the following things:
 
 + Establish our current claims about the Data Safe Haven
 + Establish what these security claims mean in terms of implementation
 + How we can verify that we actually do what we say
 
-In particular for verification we will focus on user security and permissions. We will establish two types of verification **Black Box (BB)** and **White Box (WB)**. BB verification involves testing with a user account to confirm levels of user access. In contrast, WB verification involves using an admin account to check the specific configuration required to set user access permissions.
-
-An overview of our security controls is shown here
+An overview of our security controls is shown here:
 
 <p align="center">
     <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
@@ -54,8 +52,6 @@ Passwords are strong
 
 Users must set up MFA before accessing the secure analysis environment. Users cannot access the environment without MFA. Users are strongly advised to create passwords of a certain strength.
 
-### Verify by (BB):
-
 1. Create a new user without MFA and check that the user cannot access the apps
  + a) Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#bicyclist-optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (d) and after (e) adding them to the `SG <SRE ID> Research Users` group.
  + b) Visit https://aka.ms/mfasetup in an incognito browser
@@ -73,9 +69,6 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + a) :camera: **Verify**: login to the portal using the user account and check that MFA requested <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png">
   + b) Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + c) :white_check_mark: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
-
-### Verify by (WB):
-
 4. Users are required to set up MFA before they can access the environment
   + a) Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
   + b) :camera: **Verify** all of the following with a single screenshot: i) `app passwords` are set to "Do not allow users to create app passwords to sign in to non-browser apps" (this stops any users bypassing MFA). ii) `trusted ips->Skip multi-factor authentication for requests from federated users on my intranet` is unchecked. iii) Checkbox under `remember multi-factor authentication on trusted device` is unchecked (this means the user must authenticate each time) <img width="937" alt="Screenshot 2021-03-30 at 15 19 00" src="https://user-images.githubusercontent.com/5486164/113005154-21882c80-916c-11eb-8149-4a76d479ded7.png">
@@ -93,8 +86,6 @@ Users cannot access any part of the network without already being in the network
 Whilst in the network, one cannot use the internet to connect outside the network.
 
 SREs in the same SHM are still isolated from one another.
-
-### Verify by (BB):
 
 1. Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + a) Connect to the SHM VPN
@@ -120,9 +111,6 @@ SREs in the same SHM are still isolated from one another.
   + h) Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + i) Click `Open`
   + j) :camera: **Verify:** Connection fails with `Network error: Connection timed out` <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png">
-
-### Verify by (WB):
-
 5. Check that the network rules are set appropriately to block outgoing traffic
   + a) Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
   + b) :camera: **Verify:** There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet. <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png">
