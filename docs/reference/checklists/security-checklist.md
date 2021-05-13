@@ -341,19 +341,13 @@ For tier 0/1 environments, outbound internet access means users can directly ing
 
 ### Verify by:
 
-During deployment:
-
-1. Check that one can install software during deployment by using outbound internet
-2. Check that outbound internet is closed before adding any project data
-
-After deployment:
-
-3. Check that outbound internet access on the DSVM is closed off with the following tests:
-  + a) Check the network rules block
-4. Check that the software ingress volume works correctly:
-  + a) Check that the volume can be changed to external mode and that the researcher can write (but not read) the volume
-  + b) Check that we can revoke write access successfully
-  + c) Check that we can view software that has been written to the volume and that only administrators can read the volume
+1. Check that software was installed during deployment (via outbound internet), but that outbound internet access on the DSVM is closed off after deployment:
+  + a) :camera: **Verify:** Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access)
+  + b) Check the network rules block
+2. Check that it's possible to grant and revoke software ingress capability by following the instructions in the [Safe Haven Administrator Documentation](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#software-ingress):
+  + a) :white_check_mark: **Verify:** You can generate a temporary write-only upload token
+  + b) :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
+  + c) :white_check_mark: **Verify:** Software uploaded to the by a non-admin can be read by administrators
   + d) Check that the volume can be changed to internal mode so that other researchers can read it (but not write)
   + e) Check that software that requires administrator rights to install, can only be run by a System manager.
 
