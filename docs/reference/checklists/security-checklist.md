@@ -34,7 +34,6 @@ An overview of our security controls is shown here:
 + [9. Software Ingress](#9-software-ingress)
 + [10. Package mirrors](#10-package-mirrors)
 + [11. Azure Firewalls](#11-azure-firewalls)
-+ [12. Non technical security implementation](#12.-non-technical-security-implementation)
 
 ## Prerequisites
 
@@ -382,17 +381,3 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
   + b) Click on `Start -> Settings-> Update & Security`
   + c) Click the `Download` button ![Screenshot 2021-04-06 at 14 47 52](https://user-images.githubusercontent.com/5486164/113721176-340fe200-96e7-11eb-9316-1869a8724e11.png)
   + d) :camera: **Verify:** download and update successful
-
-## 12. Non technical security implementation
-
-### User addition sign-off
-
-Non technical implementation
-
-### Data classification sign-off
-
-Non technical implementation
-
-### Software ingress sign-off
-
-Non technical implementation
