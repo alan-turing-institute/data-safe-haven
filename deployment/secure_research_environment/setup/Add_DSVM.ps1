@@ -185,7 +185,7 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 
 # Insert resources into the cloud-init template

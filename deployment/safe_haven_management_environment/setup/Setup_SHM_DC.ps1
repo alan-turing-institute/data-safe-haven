@@ -76,6 +76,10 @@ if ($success) {
 # Upload Windows package installers
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
 $success = $true
+# AzureADConnect
+$filename = "AzureADConnect.msi"
+Start-AzStorageBlobCopy -AbsoluteUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/$filename" -DestContainer "shm-configuration-dc" -DestBlob $filename -DestContext $storageAccount.Context -Force
+$success = $success -and $?
 # Chrome
 $filename = "GoogleChromeStandaloneEnterprise64.msi"
 Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force

@@ -1595,6 +1595,8 @@ function Start-VM {
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
         [Parameter(HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart,
         [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
@@ -1602,7 +1604,12 @@ function Start-VM {
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
     }
     # Ensure VM is started but don't restart if already running
     $operation = "start"
@@ -1655,12 +1662,19 @@ function Stop-VM {
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
         [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
         [switch]$NoWait
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
     }
     # Ensure VM is deallocated
     if (Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
@@ -1937,6 +1951,8 @@ function Wait-ForAzVMCloudInit {
             $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
         } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
             Add-LogMessage -Level Fatal "Could not retrieve VM status while waiting for cloud-init to finish!" -Exception $_.Exception
+        } catch {
+            Add-LogMessage -Level Fatal "Unknown error of type $($_.Exception.GetType()) occurred!" -Exception $_.Exception
         }
         $progress = [math]::min(100, $progress + 1)
         Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
