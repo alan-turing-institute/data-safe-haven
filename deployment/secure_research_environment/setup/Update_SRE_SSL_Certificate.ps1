@@ -3,14 +3,10 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
-    [string]$emailAddress = "dsgbuild@turing.ac.uk",
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [switch]$dryRun,
     [Parameter(Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
-    [switch]$forceInstall,
-    [Parameter(Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
-    [string]$remoteDirectory = "/Certificates"
+    [switch]$forceInstall
 )
 
 # Import modules
@@ -74,10 +70,16 @@ if ($null -eq $kvCertificate) {
 
 # Request a new certificate
 # -------------------------
+$userFriendlyFqdn = $config.sre.domain.fqdn
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    $baseFqdn = $config.sre.domain.fqdn
-    $rdsFqdn = $config.sre.rds.gateway.fqdn
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $additionalFdqn = $config.sre.remoteDesktop.guacamole.fqdn
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $additionalFdqn = $config.sre.remoteDesktop.gateway.fqdn
+    } else {
+        Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
+    }
 
     # Get token for DNS subscription
     # ------------------------------
@@ -94,9 +96,9 @@ if ($requestCertificate) {
 
     # Generate a certificate signing request in the Key Vault
     # -------------------------------------------------------
-    Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($baseFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$rdsFqdn"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($userFriendlyFqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($userFriendlyFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$additionalFdqn" -KeySize 4096
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
@@ -110,12 +112,12 @@ if ($requestCertificate) {
 
     # Run Posh-ACME commands in a subjob to avoid incompatibility with the Az module
     # ------------------------------------------------------------------------------
-    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $baseFqdn, $csrPath, $emailAddress, $dryRun) -ScriptBlock {
+    $certificateFilePath = Start-Job -ArgumentList @($PSScriptRoot, $token, $azureContext.Subscription.Id, $userFriendlyFqdn, $csrPath, $config.shm.organisation.contactEmail, $dryRun) -ScriptBlock {
         param(
             [string]$ScriptRoot,
             [string]$AZAccessToken,
             [string]$AZSubscriptionId,
-            [string]$BaseFqdn,
+            [string]$userFriendlyFqdn,
             [string]$CsrPath,
             [string]$EmailAddress,
             [bool]$dryRun
@@ -165,7 +167,7 @@ if ($requestCertificate) {
         # Test DNS record creation
         # ------------------------
         Add-LogMessage -Level Info "Test that we can interact with DNS records..."
-        $testDomain = "dnstest.${BaseFqdn}"
+        $testDomain = "dnstest.${userFriendlyFqdn}"
         Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
             Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
@@ -196,12 +198,12 @@ if ($requestCertificate) {
         Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
         if ($PublishCommandName -eq "Publish-DnsChallenge") {
             Add-LogMessage -Level Warning "The version of the Posh-ACME module that you are using is <4.0.0. Support for this version will be dropped in future."
-            $null = Publish-DnsChallenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+            $null = Publish-DnsChallenge $userFriendlyFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         } else {
-            $null = Publish-Challenge $BaseFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
+            $null = Publish-Challenge $userFriendlyFqdn -Account $PoshAcmeAccount -Token faketoken -Plugin Azure -PluginArgs $PoshAcmeParams -Verbose
         }
         $success = $?
-        Add-LogMessage -Level Info "[ ] Creating certificate for ${BaseFqdn}..."
+        Add-LogMessage -Level Info "[ ] Creating certificate for ${userFriendlyFqdn}..."
         $null = New-PACertificate -CSRPath $CsrPath -AcceptTOS -Contact $EmailAddress -DnsPlugin Azure -PluginArgs $PoshAcmeParams -Verbose
         $success = $success -and $?
         if ($success) {
@@ -209,7 +211,7 @@ if ($requestCertificate) {
         } else {
             Add-LogMessage -Level Fatal "Certificate creation failed!"
         }
-        return [string](Get-PACertificate -MainDomain $BaseFqdn).CertFile
+        return [string](Get-PACertificate -MainDomain $userFriendlyFqdn).CertFile
     } | Receive-Job -Wait -AutoRemoveJob
 
 
@@ -244,59 +246,54 @@ if ($doInstall) {
     $vaultId = (Get-AzKeyVault -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg).ResourceId
     $secretURL = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $certificateName).Id
 
-    if (1 -eq [int]$config.sre.tier) {
 
-        # Add signed Key Vault certificate to the compute VM
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Adding SSL certificate to compute VM"
+    # Get the appropriate VM, script and parameters for configuring the remote server
+    # -------------------------------------------------------------------------------
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.guacamole.vmName | Remove-AzVMSecret
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "scripts" "install_ssl_certificate.sh"
+        $scriptParams = @{
+            USER_FRIENDLY_FQDN = $userFriendlyFqdn
+            CERT_THUMBPRINT    = $kvCertificate.Thumbprint
+        }
+        $scriptType = "UnixShell"
+    } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
-        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
-        $null = Update-AzVM -ResourceGroupName $config.sre.dsvm.rg -VM $targetVM
-        if ($?) {
-            Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "install_ssl_certificate_tier1.sh"
+        $scriptParams = @{
+            CERT_THUMBPRINT = $kvCertificate.Thumbprint
         }
-
-        # Link the certificate and private key to /opt/ssl
-        # ------------------------------------------------
-        $script = "
-            sudo mkdir -p /opt/ssl
-            sudo chmod 0700 /opt/ssl
-            sudo rm -rf /opt/ssl/letsencrypt*
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).crt /opt/ssl/letsencrypt.cert
-            sudo cp /var/lib/waagent/$($kvCertificate.Thumbprint).prv /opt/ssl/letsencrypt.key
-            sudo chown -R root:root /opt/ssl/
-            sudo chmod 0600 /opt/ssl/*.*
-            ls -alh /opt/ssl/
-        "
-        $null = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $targetVM.Name -ResourceGroupName $config.sre.dsvm.rg
-
-    } elseif (@(2, 3, 4).Contains([int]$config.sre.tier)) {
-
-        # Add signed Key Vault certificate to the gateway VM
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
+        $scriptType = "UnixShell"
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
-        $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-        $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $targetVM
-        if ($?) {
-            Add-LogMessage -Level Success "Adding certificate succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Adding certificate failed!"
-        }
-
-        # Configure RDS Gateway VM to use signed certificate
-        # --------------------------------------------------
-        Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-        $params = @{
-            rdsFqdn         = $rdsFqdn
+        $scriptParams = @{
+            rdsFqdn         = $additionalFdqn
             certThumbPrint  = $kvCertificate.Thumbprint
             remoteDirectory = $remoteDirectory
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+        $scriptType = "PowerShell"
+    } else {
+        Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }
+
+
+    # Add signed Key Vault certificate to the target VM
+    # -------------------------------------------------
+    Add-LogMessage -Level Info "Adding SSL certificate to $($targetVM.Name)"
+    $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
+    $null = Update-AzVM -ResourceGroupName $targetVM.ResourceGroupName -VM $targetVM
+    if ($?) {
+        Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Adding certificate with thumbprint $($kvCertificate.Thumbprint) failed!"
+    }
+
+
+    # Install the certificate and private key on the remote server
+    # ------------------------------------------------------------
+    Add-LogMessage -Level Info "Configuring '$($targetVM.Name)' to use signed SSL certificate"
+    $null = Invoke-RemoteScript -Shell $scriptType -ScriptPath $scriptPath -VMName $targetVM.Name -ResourceGroupName $targetVM.ResourceGroupName -Parameter $scriptParams
 }
 
 

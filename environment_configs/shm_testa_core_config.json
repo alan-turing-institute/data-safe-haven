@@ -12,7 +12,8 @@
         "name": "The Alan Turing Institute",
         "townCity": "London",
         "stateCountyRegion": "London",
-        "countryCode": "GB"
+        "countryCode": "GB",
+        "contactEmail": "safehavendevs@turing.ac.uk"
     },
     "dnsRecords": {
         "subscriptionName": "[Prod] Safe Haven Domains",

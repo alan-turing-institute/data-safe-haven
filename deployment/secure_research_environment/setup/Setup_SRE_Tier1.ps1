@@ -27,6 +27,13 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
+
+
 # Get absolute path to users file
 # -------------------------------
 if ($usersYAMLPath) { $usersYAMLPath = (Resolve-Path -Path $usersYAMLPath).Path }
@@ -48,13 +55,13 @@ $subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -Vir
 # Ensure that NSG exists
 # ----------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 2000 `
                              -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
+                             -Access $config.sre.remoteDesktop.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange * `

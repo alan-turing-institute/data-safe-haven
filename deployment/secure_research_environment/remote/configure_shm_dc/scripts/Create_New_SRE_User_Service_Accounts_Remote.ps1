@@ -5,10 +5,20 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(HelpMessage = "Name of security group that will contain SHM sysadmins")]
+    [ValidateNotNullOrEmpty()]
     [String]$shmSystemAdministratorSgName,
+    [Parameter(HelpMessage = "Base64-encoded group details")]
+    [ValidateNotNullOrEmpty()]
     [String]$groupsB64,
+    [Parameter(HelpMessage = "Base64-encoded service user details")]
+    [ValidateNotNullOrEmpty()]
     [String]$serviceUsersB64,
+    [Parameter(HelpMessage = "LDAP OU that SRE security groups belong to")]
+    [ValidateNotNullOrEmpty()]
     [String]$securityOuPath,
+    [Parameter(HelpMessage = "LDAP OU that SRE service accounts belong to")]
+    [ValidateNotNullOrEmpty()]
     [String]$serviceOuPath
 )
 

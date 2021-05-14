@@ -561,7 +561,11 @@ function Deploy-PublicIpAddress {
     $publicIpAddress = Get-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating public IP address '$Name'"
-        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku
+        $ipAddressParams = @{}
+        if ($Sku -eq "Standard") {
+            $ipAddressParams["Zone"] = @(1, 2, 3)
+        }
+        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku @ipAddressParams
         if ($?) {
             Add-LogMessage -Level Success "Created public IP address '$Name'"
         } else {
@@ -716,10 +720,10 @@ function Deploy-UbuntuVirtualMachine {
         [string]$CloudInitYaml,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
-        [string]$ImageId = $null,
+        [string]$ImageId,
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
-        [string]$ImageSku = $null,
+        [string]$ImageSku,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
@@ -758,7 +762,11 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } elseif ($ImageSku) {
-            $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+            if ($ImageSku -eq "20.04-LTS") {
+                $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
+            } else {
+                $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+            }
         } else {
             Add-LogMessage -Level Fatal "Could not determine which source image to use!"
         }
@@ -1587,6 +1595,8 @@ function Start-VM {
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
         [Parameter(HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart,
         [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
@@ -1594,7 +1604,12 @@ function Start-VM {
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
     }
     # Ensure VM is started but don't restart if already running
     $operation = "start"
@@ -1647,12 +1662,19 @@ function Stop-VM {
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
         [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
         [switch]$NoWait
     )
     # Get VM if not provided
     if (-not $VM) {
-        $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
     }
     # Ensure VM is deallocated
     if (Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
@@ -1929,6 +1951,8 @@ function Wait-ForAzVMCloudInit {
             $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
         } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
             Add-LogMessage -Level Fatal "Could not retrieve VM status while waiting for cloud-init to finish!" -Exception $_.Exception
+        } catch {
+            Add-LogMessage -Level Fatal "Unknown error of type $($_.Exception.GetType()) occurred!" -Exception $_.Exception
         }
         $progress = [math]::min(100, $progress + 1)
         Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress

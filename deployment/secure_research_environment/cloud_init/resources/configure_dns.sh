@@ -13,3 +13,8 @@ echo ">=== end of /etc/resolv.conf ===<"
 
 # Add systemd-resolved to list of services to start on boot
 systemctl enable systemd-resolved
+
+# Restart systemd networking
+systemctl daemon-reload
+systemctl restart systemd-networkd
+systemctl restart systemd-resolved

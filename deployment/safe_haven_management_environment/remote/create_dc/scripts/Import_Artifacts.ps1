@@ -62,17 +62,6 @@ foreach ($blobName in $blobNames) {
 }
 
 
-# Download AzureADConnect
-# -----------------------
-Write-Output "Downloading AzureADConnect to '$downloadDir'..."
-Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "${downloadDir}\AzureADConnect.msi"
-if ($?) {
-    Write-Output " [o] Completed"
-} else {
-    Write-Output " [x] Failed to download AzureADConnect"
-}
-
-
 # Extract GPOs
 # ------------
 Write-Output "Extracting zip files..."
@@ -82,6 +71,7 @@ if ($?) {
 } else {
     Write-Output " [x] Failed to extract GPO zip files"
 }
+
 
 # List items
 # ----------

@@ -113,7 +113,8 @@ The following core SHM properties are required - look at `shm_testa_core_config.
         "name": "Name of your organisation, used when generating SSL certificates (eg. 'The Alan Turing Institute')",
         "townCity": "Town where your organisation is located, used when generating SSL certificates (eg. 'London')",
         "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates (eg. 'London')",
-        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')"
+        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')",
+        "contactEmail": "Email address at your organisation that will receive notifications when SSL certificates are about to expire."
     },
     "dnsRecords": {
         "subscriptionName": "[Optional] Azure subscription which holds DNS records (if not specified then the value from the 'azure' block will be used).",
