@@ -18,10 +18,6 @@
   + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
   + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
   + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
-+ [:repeat: Ingress and Egress](#ingress-and-egress)
-  + :arrow_up: [Data Ingress](#data-ingress)
-  + :arrow_up: [Software Ingress](#software-ingress)
-  + :arrow_down: [Data Egress](#data-egress)
 + [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
   + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
   + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
@@ -533,7 +529,7 @@ On your **deployment machine**.
 
 ## :boot: Start up an SHM or SRE
 
-If you need to reboot an SHM or SRE that is not running, you can use the same scripts you used to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
 
 On your **deployment machine**.
 
