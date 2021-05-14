@@ -1,12 +1,14 @@
-Import-Module $PSScriptRoot/../../deployment/common/Configuration -Force -ErrorAction Stop
-
-
 # Formatter settings
 # ------------------
 $FileExtensions = @("*.json")
 $ReferenceConfigFilePath = Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "resources"
 $ShmIds = Get-ChildItem -Path $ReferenceConfigFilePath | ForEach-Object { $_.Name } | Where-Object { $_ -like "shm_*" } | ForEach-Object { $_.Split("_")[1] }
 $ConfigFileDetails = @(Get-ChildItem -Path $ReferenceConfigFilePath -Include $FileExtensions -Recurse | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name; "ConfigType" = $_.Name.Split("_")[0]; "ConfigId" = $_.Name.Split("_")[1]; "ShmIds" = $ShmIds } })
+
+BeforeAll {
+    Import-Module $PSScriptRoot/../../deployment/common/Configuration -Force -ErrorAction Stop
+    Import-Module $PSScriptRoot/../../deployment/common/DataStructures -Force -ErrorAction Stop
+}
 
 Describe "SHM configuration file check" {
     It "Checks that SHM config '<ConfigId>' expands to give the reference: '<FilePath>'" -TestCases ($ConfigFileDetails | Where-Object { $_.ConfigType -eq "shm" }) {
