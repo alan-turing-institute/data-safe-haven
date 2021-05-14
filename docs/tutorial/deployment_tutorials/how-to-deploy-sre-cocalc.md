@@ -1,6 +1,8 @@
-# Secure Research Environment Build Instructions (Tier 1)
+# Secure Research Environment Build Instructions (CoCalc collaborative notebooks)
 
-> :warning: If you are deploying a Tier 2 or Tier 3 environment, follow [these instructions](./how-to-deploy-sre-microsoft-rds.md) instead.
+> :warning: If you are deploying a Tier 2 or Tier 3 environment, you should deploy with an [RDS remote desktop](./how-to-deploy-sre-microsoft-rds.md) instead.
+> This CoCalc notebook based user interface does not support the required security level for Tier 2 or above environments, but is suitable for Tier 0 or 1 environments.
+> For Tier 0 and 1 environments where a full remote desktop is required, we would recommend deploying with [Guacamole](./how-to-deploy-sre-apache-guacamole.md), which is also recommended for development and testing purposes due to having a more fully automated deployment than the  [RDS remote desktop](./how-to-deploy-sre-microsoft-rds.md).
 
 ## Contents
 

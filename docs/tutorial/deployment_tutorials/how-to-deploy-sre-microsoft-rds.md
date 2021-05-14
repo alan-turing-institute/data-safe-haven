@@ -1,8 +1,9 @@
-# Secure Research Environment Build Instructions
+# Secure Research Environment Build Instructions (RDS remote desktop)
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 0 or Tier 1 environment, follow [these instructions](./how-to-deploy-sre-cocalc.md) instead.
+> :warning: If you are deploying a Tier 0 or Tier 1 environment, or a development environment, we would suggest deploying with either [Guacamole](./how-to-deploy-sre-apache-guacamole.md) for a full remote desktop or [CoCalc](./how-to-deploy-sre-cocalc.md) for a collaborative notebook based interface.
+> These options are more fully automated and, while they do not yet provide the required security assurances for Tier 2 and above environments, they are suitably secure for Tier 0 or 1 environments.
 
 ## Contents
 
