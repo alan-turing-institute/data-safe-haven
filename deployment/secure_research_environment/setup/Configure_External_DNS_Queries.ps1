@@ -26,9 +26,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # ---------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $cidrsToBlock = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
+$cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
 $params = @{
-    sreId                          = $config.sre.id
-    blockedCidrsCommaSeparatedList = ($cidrsToBlock -join ",")
+    sreId                            = $config.sre.id
+    blockedCidrsCommaSeparatedList   = ($cidrsToBlock -join ",")
+    exceptionCidrsCommaSeparatedList = ($cidrsToAllow -join ",")
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Configure_External_DNS_Queries_Remote.ps1"
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {

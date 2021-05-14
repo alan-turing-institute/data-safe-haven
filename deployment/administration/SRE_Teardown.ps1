@@ -67,6 +67,25 @@ if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
 }
 
 
+# Tear down the AzureAD application
+# ---------------------------------
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    $azureAdApplicationName = "Guacamole SRE $($config.sre.id)"
+    Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is removed from Azure Active Directory..."
+    if (Get-MgContext) {
+        Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
+    } else {
+        Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    }
+    try {
+        Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
+        Add-LogMessage -Level Success "'$azureAdApplicationName' has been removed from Azure Active Directory"
+    } catch {
+        Add-LogMessage -Level Fatal "Could not remove '$azureAdApplicationName' from Azure Active Directory!" -Exception $_.Exception
+    }
+}
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop

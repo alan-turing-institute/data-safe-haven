@@ -8,8 +8,8 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
-Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
-Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+if (-not (Get-Module -Name "Microsoft.Graph.Authentication")) { Import-Module Microsoft.Graph.Authentication -ErrorAction Stop }
+if (-not (Get-Module -Name "Microsoft.Graph.Applications")) { Import-Module Microsoft.Graph.Applications -ErrorAction Stop }
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
@@ -32,23 +32,29 @@ if ($config.sre.remoteDesktop.provider -ne "ApacheGuacamole") {
 }
 
 
-# Retrieve VNET and subnet
-# ------------------------
+# Retrieve VNET and subnets
+# -------------------------
 Add-LogMessage -Level Info "Retrieving virtual network '$($config.sre.network.vnet.name)'..."
 $vnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 $guacamoleSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+$deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetworkName $vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
 
 
-# Create Guacamole resource group if it does not exist
-# ----------------------------------------------------
+# Get deployment IP address
+# -------------------------
+$deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet
+
+
+# Create remote desktop resource group if it does not exist
+# ---------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.remoteDesktop.rg -Location $config.sre.location
 
 
-# Deploy a NIC with a public IP address
-# -------------------------------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $guacamoleSubnet -PrivateIpAddress $config.sre.remoteDesktop.guacamole.ip -Location $config.sre.location
+# Deploy a network card with a public IP address
+# ----------------------------------------------
+$networkCard = Deploy-VirtualMachineNIC -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $publicIp = Deploy-PublicIpAddress -Name "$($config.sre.remoteDesktop.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.remoteDesktop.rg -AllocationMethod Static -Location $config.sre.location
-$null = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $guacamoleSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
+$null = $networkCard | Set-AzNetworkInterfaceIpConfig -Name $networkCard.ipConfigurations[0].Name -SubnetId $deploymentSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 
 
 # Register AzureAD application
@@ -58,7 +64,7 @@ Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registere
 if (Get-MgContext) {
     Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
 } else {
-    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All","Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
@@ -144,20 +150,25 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
 $null = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
-    AdminPassword = $vmAdminPassword
-    AdminUsername = $vmAdminUsername
+    AdminPassword          = $vmAdminPassword
+    AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitYaml
-    ImageSku = "20.04-LTS"
-    Location = $config.sre.location
-    Name = $config.sre.remoteDesktop.guacamole.vmName
-    NicId = $vmNic.Id
-    OsDiskSizeGb = $config.sre.remoteDesktop.guacamole.disks.os.sizeGb
-    OsDiskType = $config.sre.remoteDesktop.guacamole.disks.os.type
-    ResourceGroupName = $config.sre.remoteDesktop.rg
-    Size = $config.sre.remoteDesktop.guacamole.vmSize
+    CloudInitYaml          = $cloudInitYaml
+    ImageSku               = "20.04-LTS"
+    Location               = $config.sre.location
+    Name                   = $config.sre.remoteDesktop.guacamole.vmName
+    NicId                  = $networkCard.Id
+    OsDiskSizeGb           = $config.sre.remoteDesktop.guacamole.disks.os.sizeGb
+    OsDiskType             = $config.sre.remoteDesktop.guacamole.disks.os.type
+    ResourceGroupName      = $config.sre.remoteDesktop.rg
+    Size                   = $config.sre.remoteDesktop.guacamole.vmSize
 }
 $null = Deploy-UbuntuVirtualMachine @params
+
+
+# Change subnets and IP address while the VM is off then restart
+# --------------------------------------------------------------
+Update-VMIpAddress -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $guacamoleSubnet -IpAddress $config.sre.remoteDesktop.guacamole.ip
 Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
@@ -166,18 +177,18 @@ Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $co
 $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
 $dnsTtlSeconds = 30
 # Set the A record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting 'A' record for $($config.sre.domain.fqdn) in SRE $($config.sre.id) to $($publicIp.IpAddress)"
+Add-LogMessage -Level Info "[ ] Setting 'A' record for $($config.sre.domain.fqdn) to $($publicIp.IpAddress)"
 Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
 $null = New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $publicIp.IpAddress)
 if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for SRE $($config.sre.id)"
+    Add-LogMessage -Level Success "Successfully set 'A' record for $($config.sre.domain.fqdn)"
 } else {
-    Add-LogMessage -Level Fatal "Failed to set 'A' record for SRE $($config.sre.id)!"
+    Add-LogMessage -Level Fatal "Failed to set 'A' record for $($config.sre.domain.fqdn)!"
 }
 # Set the CAA record for the SRE FQDN
 Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
 Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Caaflags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
+$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
 } else {
@@ -185,7 +196,7 @@ if ($?) {
 }
 # Set the CNAME record for the remote desktop server
 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
+Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in $($config.sre.domain.fqdn)"
 Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
 $null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
 if ($?) {

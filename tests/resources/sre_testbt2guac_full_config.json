@@ -577,7 +577,7 @@
       },
       "artifacts": {
         "account": {
-          "accessTier": "cold",
+          "accessTier": "Cool",
           "allowedIpAddresses": "any",
           "name": "testbt2guacartifactsfmjy",
           "performance": "Standard_LRS",
@@ -591,7 +591,7 @@
       },
       "persistentdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testbt2guacdatafmjyhpocz",
           "performance": "Standard_LRS",
@@ -612,7 +612,7 @@
       },
       "userdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "name": "testbt2guacuserdatafmjyh",
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE",

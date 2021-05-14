@@ -513,7 +513,7 @@
       },
       "artifacts": {
         "account": {
-          "accessTier": "cold",
+          "accessTier": "Cool",
           "allowedIpAddresses": "any",
           "name": "testat1cocalartifactslmu",
           "performance": "Standard_LRS",
@@ -527,7 +527,7 @@
       },
       "persistentdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testat1cocaldatalmuyonhw",
           "performance": "Premium_LRS",
@@ -548,7 +548,7 @@
       },
       "userdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "name": "testat1cocaluserdatalmuy",
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTA_SRE_T1COCAL_STORAGE",
