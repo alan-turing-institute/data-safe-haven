@@ -563,9 +563,9 @@ On your **deployment machine**.
 
 ### Data Ingress
 
-It's up to the data provider to ingress data required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
+It's up to the data provider to the perform data ingress required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
-+ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to ingress data to
++ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM for which you wish to perform data ingress
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 + Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
@@ -584,16 +584,16 @@ It's up to the data provider to ingress data required by the safe haven. The fol
 
 ### Software Ingress
 
-Software is ingressed in a similar manner to data.
+Software ingress is performed in a similar manner to data.
 
-+ Follow the same steps for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
++ Follow the same steps as for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
 + Share the token with the project PI, so they can install software within the time window.
-+ The PI can ingress the software via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
++ The PI can perform software ingress via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
 + Note: The software ingress must be signed off by the data provider (and referee) as is the case for data ingress
 
 ### Data egress
 
-+ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to egress data from
++ In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM you wish to perform data egress from
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 + Click `Networking` under `Settings` and make sure the IP address of your device is one of those allowed under the `Firewall` header, then hit the save icon in the top left
 + From the `Overview` tab, click the link to `Containers` (in the middle of the page)
