@@ -37,6 +37,19 @@
                         "sourceAddresses": [
                             "*"
                         ]
+                    },
+                    {
+                        "name": "AllowExternalDnsResolver",
+                        "protocols": [
+                            "TCP:53",
+                            "UDP:53"
+                        ],
+                        "targetAddresses": [
+                            "{{dc.external_dns_resolver}}"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
                     }
                 ]
             }

@@ -1,4 +1,6 @@
-Import-Module $PSScriptRoot/../../deployment/common/DataStructures -Force -ErrorAction Stop
+BeforeAll {
+    Import-Module $PSScriptRoot/../../deployment/common/DataStructures -Force -ErrorAction Stop
+}
 
 # Test ConvertTo-SortedHashtable
 Describe "Test ConvertTo-SortedHashtable" {
@@ -63,8 +65,8 @@ Describe "Test Limit-StringLength MaximumLength" {
 }
 Describe "Test Limit-StringLength FailureIsFatal" {
     It "Should throw an exception since the string is too long" {
-        Mock Write-Host {} # we mock Write-Host here as we expect output from the exception
+        Mock Write-Host -Module Logging {} # we mock Write-Host here as we expect output from the exception
         { "abcdefghijklm" | Limit-StringLength -FailureIsFatal -MaximumLength 6 } | Should -Throw "'abcdefghijklm' has length 13 but must not exceed 6!"
-        Assert-MockCalled Write-Host -Exactly 1 -Scope It
+        Assert-MockCalled -Module Logging Write-Host -Exactly 1 -Scope It
     }
 }

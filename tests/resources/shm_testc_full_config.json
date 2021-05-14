@@ -331,6 +331,7 @@
   },
   "nsgPrefix": "NSG_SHM_TESTC",
   "organisation": {
+    "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
     "name": "The Alan Turing Institute",
     "stateCountyRegion": "London",
@@ -351,11 +352,11 @@
   "storage": {
     "artifacts": {
       "accountName": "shmtestcartifactslubiehy",
-      "rg": "RG_SHM_TESTC_ARTIFACTS"
+      "rg": "RG_SHM_TESTC_STORAGE"
     },
     "bootdiagnostics": {
       "accountName": "shmtestcbootdiagslubiehy",
-      "rg": "RG_SHM_TESTC_ARTIFACTS"
+      "rg": "RG_SHM_TESTC_STORAGE"
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTC_PERSISTENT_DATA"

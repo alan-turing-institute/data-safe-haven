@@ -12,7 +12,7 @@ These instructions will walk you through deploying a Secure Research Environment
 + [:clipboard: 2. Secure Research Environment configuration](#clipboard-2-secure-research-environment-configuration)
 + [:computer: 3. Deploy SRE](#computer-3-deploy-sre)
 + [:microscope: 4. Test deployed SRE](#microscope-4-test-deployed-sre)
-  + [:pear: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
+  + [:avocado: 4.1 Test Apache Guacamole remote desktop](#pear-41-test-apache-guacamole-remote-desktop)
   + [:fire: 4.2 Run smoke tests on DSVM](#fire-42-run-smoke-tests-on-dsvm)
 
 ## Explanation of symbols used in this guide
@@ -346,7 +346,7 @@ This will deploy a new compute VM into the SRE environment
 If this SRE needs additional software or settings that are not in your default VM image, you can create a custom cloud init file on your **deployment machine**.
 
 + By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
-+ If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
++ If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-shm-<SHM ID>-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
 </details>
 
@@ -410,7 +410,7 @@ If you get consistent failure messages after re-running the logging set up scrip
 
 ## :microscope: 4. Test deployed SRE
 
-## :pear: 4.1 Test Apache Guacamole remote desktop
+## :avocado: 4.1 Test Apache Guacamole remote desktop
 
 ### Optional: Set up a non-privileged user account
 
