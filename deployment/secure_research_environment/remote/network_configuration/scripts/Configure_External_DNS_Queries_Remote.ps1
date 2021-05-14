@@ -27,8 +27,8 @@ function Get-DnsClientSubnetNameFromCidr {
 }
 
 
-# Ensure DNS client subnets exist
-# -------------------------------
+# Ensure that a DNS client subnet exists
+# --------------------------------------
 function Set-DnsClientSubnets {
     param(
         [Parameter(HelpMessage = "CIDR")]
@@ -51,8 +51,8 @@ function Set-DnsClientSubnets {
 }
 
 
-# Ensure DNS server resolution policies exist
-# -------------------------------------------
+# Ensure that a DNS server resolution policy exists
+# -------------------------------------------------
 function Set-DnsQueryResolutionPolicy {
     param(
         [Parameter(HelpMessage = "CIDR")]
@@ -62,7 +62,9 @@ function Set-DnsQueryResolutionPolicy {
         [Parameter(HelpMessage = "Recursion policy")]
         [string]$recursionScopeName
     )
-    $policyName = "${subnetName}-default-recursion"
+    $recursionType = $recursionScopeName
+    if ($recursionType -eq ".") { $recursionType = "RecursionAllowed" }
+    $policyName = "${subnetName}-${recursionType}"
     try {
         $null = Add-DnsServerQueryResolutionPolicy -Name $policyName -Action ALLOW -ClientSubnet "EQ,$subnetName" -ApplyOnRecursion -RecursionScope $recursionScopeName
         Write-Output " [o] Successfully created policy '$policyName' to apply '$recursionScopeName' for DNS Client Subnet '$subnetName' (CIDR: '$cidr')"
@@ -91,7 +93,7 @@ if ($exceptionCidrsCommaSeparatedList) {
 }
 
 
-# Remove pre-existing DNS Query Resolution Policies for SRE
+# Remove pre-existing DNS query resolution policies for SRE
 # ---------------------------------------------------------
 Write-Output "`nDeleting pre-existing DNS resolution policies for SRE '$sreId'..."
 $existingPolicies = Get-DnsServerQueryResolutionPolicy | Where-Object { $_.Name -like "$srePrefix-*" }
@@ -110,7 +112,7 @@ if ($existingPolicies) {
 }
 
 
-# Remove pre-existing DNS Client Subnets for SRE
+# Remove pre-existing DNS client subnets for SRE
 # ----------------------------------------------
 Write-Output "`nDeleting pre-existing DNS client subnets for SRE '$sreId'..."
 $existingSubnets = Get-DnsServerClientSubnet | Where-Object { $_.Name -like "$srePrefix-*" }
@@ -129,7 +131,7 @@ if ($existingSubnets) {
 }
 
 
-# Ensure DNS Client Subnets exist for exception CIDR ranges
+# Ensure DNS client subnets exist for exception CIDR ranges
 # ---------------------------------------------------------
 Write-Output "`nCreating DNS client subnets for exception CIDR ranges (these will not be blocked)..."
 if ($exceptionConfigs) {
@@ -139,26 +141,13 @@ if ($exceptionConfigs) {
 }
 
 
-# Ensure DNS Client Subnets exist for blocked CIDR ranges
+# Ensure DNS client subnets exist for blocked CIDR ranges
 # -------------------------------------------------------
 Write-Output "`nCreating DNS client subnets for blocked CIDR ranges..."
 if ($blockedConfigs) {
     $blockedConfigs | ForEach-Object { Set-DnsClientSubnets -cidr $_.cidr -subnetName $_.Name }
 } else {
     Write-Output " [o] No blocked CIDR ranges specifed."
-}
-
-
-# Create DNS resolution policies for exception IP ranges
-# ------------------------------------------------------
-# Assign all queries for exception CIDRs subnets to default ('.') recursion scope.
-# We must set policies for exception CIDR subnets first to ensure they take precedence as we
-# cannot set processing order to be greater than the total number of resolution policies.
-Write-Output "`nCreating DNS resolution policies for exception CIDR ranges (these will not be blocked)..."
-if ($exceptionConfigs) {
-    $exceptionConfigs | ForEach-Object { Set-DnsQueryResolutionPolicy -cidr $_.cidr -subnetName $_.Name -recursionScopeName "." }
-} else {
-    Write-Output " [o] No exception CIDR ranges specifed."
 }
 
 
@@ -175,6 +164,19 @@ if (-not $blockedRecursionScope) {
 
 # Create DNS resolution policies for exception IP ranges
 # ------------------------------------------------------
+# Assign all queries for exception CIDRs subnets to default ('.') recursion scope.
+# We must set policies for exception CIDR subnets first to ensure they take precedence as we
+# cannot set processing order to be greater than the total number of resolution policies.
+Write-Output "`nCreating DNS resolution policies for exception CIDR ranges (these will not be blocked)..."
+if ($exceptionConfigs) {
+    $exceptionConfigs | ForEach-Object { Set-DnsQueryResolutionPolicy -cidr $_.cidr -subnetName $_.Name -recursionScopeName "." }
+} else {
+    Write-Output " [o] No exception CIDR ranges specifed."
+}
+
+
+# Create DNS resolution policies for blocked IP ranges
+# ----------------------------------------------------
 # Assign all queries for blocked CIDRs subnets to blocked recursion scope.
 Write-Output "`nCreating DNS resolution policies for blocked CIDR ranges..."
 if ($blockedConfigs) {

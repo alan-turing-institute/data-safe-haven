@@ -185,7 +185,7 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 
 # Insert resources into the cloud-init template
@@ -287,9 +287,9 @@ $template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
           Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
           Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
-# Upload files to VM via the SHM persistent data storage account (since access is allowed from both the deployment machine and the DSVM)
-$persistentStorageAccount = Get-StorageAccount -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -SubscriptionName $config.shm.subscriptionName -ErrorAction Stop
-Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $persistentStorageAccount
+# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the DSVM)
+$artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
 Remove-Item -Path $localSmokeTestDir -Recurse -Force
 # Set smoke test permissions
 Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"
@@ -300,6 +300,11 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 # Run remote diagnostic scripts
 # -----------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
+
+
+# Update Guacamole dashboard to include this new VM
+# -------------------------------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_Guacamole_Dashboard.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Switch back to original subscription

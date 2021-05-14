@@ -1,4 +1,6 @@
+Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -191,7 +193,11 @@ function Set-NetworkSecurityGroupRules {
     } catch {
         Add-LogMessage -Level Fatal "Error adding provided rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
     }
-    $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
+    try {
+        $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup -ErrorAction Stop
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to add one or more NSG rules!" -Exception $_.Exception
+    }
     $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
     foreach ($updatedRule in $updatedRules) {
         $sourceAddressText = ($updatedRule.SourceAddressPrefix -eq "*") ? "any source" : $updatedRule.SourceAddressPrefix

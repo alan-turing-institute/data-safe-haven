@@ -5,17 +5,22 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE groups")]
-    [string]$groupNamesJoined,
-    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE users")]
-    [string]$userNamesJoined,
-    [Parameter(Mandatory = $false, HelpMessage = "Pipe-separated list of SRE computers")]
-    [string]$computerNamePatternsJoined
+    [Parameter(Mandatory = $false, HelpMessage = "Base64-encoded list of SRE groups")]
+    [string]$groupNamesB64,
+    [Parameter(Mandatory = $false, HelpMessage = "Base64-encoded list of SRE users")]
+    [string]$userNamesB64,
+    [Parameter(Mandatory = $false, HelpMessage = "Base64-encoded list of SRE computers")]
+    [string]$computerNamePatternsB64
 )
+
+# Unserialise JSON and read into PSCustomObject
+$groupNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($groupNamesB64)) | ConvertFrom-Json
+$userNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($userNamesB64)) | ConvertFrom-Json
+$computerNamePatterns = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($computerNamePatternsB64)) | ConvertFrom-Json
 
 # Remove users
 Write-Output "Removing SRE users..."
-foreach ($samAccountName in $userNamesJoined.Split("|")) {
+foreach ($samAccountName in $userNames) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
         Remove-ADUser (Get-ADUser $samAccountName) -Confirm:$False
         if ($?) {
@@ -31,7 +36,7 @@ foreach ($samAccountName in $userNamesJoined.Split("|")) {
 
 # Remove computers
 Write-Output "Removing SRE computers..."
-foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
+foreach ($computerNamePattern in $computerNamePatterns) {
     foreach ($computer in $(Get-ADComputer -Filter "Name -like '$computerNamePattern'")) {
         $computer | Remove-ADObject -Recursive -Confirm:$False
         if ($?) {
@@ -45,7 +50,7 @@ foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
 
 # Remove groups
 Write-Output "Removing SRE groups..."
-foreach ($groupName in $groupNamesJoined.Split("|")) {
+foreach ($groupName in $groupNames) {
     if (Get-ADGroup -Filter "Name -eq '$groupName'") {
         Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
         if ($?) {

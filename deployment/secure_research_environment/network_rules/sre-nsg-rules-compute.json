@@ -3,7 +3,11 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationAddressPrefix": [
+            {{#shm.time.ntp.serverAddresses}}
+                "{{.}}",
+            {{/shm.time.ntp.serverAddresses}}
+        ],
         "destinationPortRange": 123,
         "direction": "Outbound",
         "priority": 1000,
@@ -120,9 +124,9 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}InternetOutbound",
+        "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+        "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",
@@ -131,18 +135,20 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
-    {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}AzurePlatformDnsOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
-        "destinationAddressPrefix": "AzurePlatformDNS",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 4001,
-        "protocol": "*",
-        "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
+    {{#sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule}}
+        {
+            "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}AzurePlatformDnsOutbound",
+            "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+            "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+            "destinationAddressPrefix": "AzurePlatformDNS",
+            "destinationPortRange": "*",
+            "direction": "Outbound",
+            "priority": 4001,
+            "protocol": "*",
+            "sourceAddressPrefix": "*",
+            "sourcePortRange": "*"
+        },
+    {{/sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule}}
     {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",

@@ -61,9 +61,28 @@ if ($suspiciousResourceGroups) {
 
 # Remove residual SRE data from the SHM
 # -------------------------------------
-if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
     $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
     Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
+}
+
+
+# Tear down the AzureAD application
+# ---------------------------------
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    $azureAdApplicationName = "Guacamole SRE $($config.sre.id)"
+    Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is removed from Azure Active Directory..."
+    if (Get-MgContext) {
+        Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
+    } else {
+        Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    }
+    try {
+        Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
+        Add-LogMessage -Level Success "'$azureAdApplicationName' has been removed from Azure Active Directory"
+    } catch {
+        Add-LogMessage -Level Fatal "Could not remove '$azureAdApplicationName' from Azure Active Directory!" -Exception $_.Exception
+    }
 }
 
 

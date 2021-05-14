@@ -18,16 +18,23 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "MicrosoftRDS") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
+
+
 # Disable legacy TLS protocols on RDS Gateway
 # -------------------------------------------
 Add-LogMessage -Level Info "[ ] Disabling legacy SSL/TLS protocols on RDS Gateway"
 $ScriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Disable_Legacy_TLS_Remote.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $ScriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $ScriptPath -VMName $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Reboot RDS Gateway
 # ------------------
-Start-VM -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -ForceRestart
+Start-VM -Name $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -ForceRestart
 
 
 # Switch back to original subscription

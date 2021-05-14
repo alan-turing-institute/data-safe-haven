@@ -1,6 +1,3 @@
-Import-Module PSScriptAnalyzer
-
-
 # Formatter settings
 # ------------------
 $FileExtensions = @("*.ps1", "*.psm1", "*.psd1")
@@ -11,6 +8,9 @@ foreach ($CodeDirectory in $CodeDirectories) {
     $FileDetails += @(Get-ChildItem -Path $CodeDirectoryPath -Include $FileExtensions -Recurse | Where-Object { ($_.FullName -notmatch "shm-dc1-setup-scripts") -and ($_ -notmatch "shm-dc2-setup-scripts") } | ForEach-Object { @{"FilePath" = $_.FullName; "FileName" = $_.Name } })
 }
 
+BeforeAll {
+    Import-Module PSScriptAnalyzer -ErrorAction Stop
+}
 
 # Run Invoke-Formatter on all files
 # ---------------------------------

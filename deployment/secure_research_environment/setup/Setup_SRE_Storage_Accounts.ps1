@@ -31,8 +31,9 @@ $persistentStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.pers
                                                   -Location $config.shm.location `
                                                   -ResourceGroupName $config.shm.storage.persistentdata.rg `
                                                   -SkuName $config.sre.storage.persistentdata.account.performance
+# Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Allow
-Start-Sleep 10
+Start-Sleep 30
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
@@ -114,7 +115,9 @@ $userdataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.userda
                                                 -ResourceGroupName $config.sre.storage.userdata.account.rg `
                                                 -SkuName $config.sre.storage.userdata.account.performance `
                                                 -AllowHttpTraffic
+# Add a temporary override during deployment
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Allow
+Start-Sleep 30
 
 
 # Ensure that all required userdata containers exist
@@ -127,25 +130,35 @@ foreach ($receptacleName in $config.sre.storage.userdata.containers.Keys) {
     if ($config.sre.storage.userdata.containers[$receptacleName].mountType -ne "NFS") {
         Add-LogMessage -Level Fatal "Currently only file-storage mounted over NFS is supported for the '$receptacleName' container! If you attempted to override this setting in your config file, please remove this change."
     }
-
-    # Deploy the share
+    # Deploy the share and set its quota
     $null = Deploy-StorageReceptacle -Name $receptacleName -StorageAccount $userdataStorageAccount -StorageType "NfsShare"
-
-    # Set the quota for the storage share
-    $null = Set-AzStorageShareQuota -ShareName $receptacleName -Quota $config.sre.storage.userdata.containers[$receptacleName].sizeGb -Context $userdataStorageAccount.Context
+    $null = Set-StorageNfsShareQuota -Name $receptacleName -Quota $config.sre.storage.userdata.containers[$receptacleName].sizeGb -StorageAccount $userdataStorageAccount
 }
 
 
-# Ensure that the storage accounts can only be accessed through private endpoints
-# -------------------------------------------------------------------------------
+# Ensure that SRE artifacts storage account exists
+# ------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
+$artifactsStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.account.name `
+                                                 -AccessTier $config.sre.storage.artifacts.account.accessTier `
+                                                 -Kind $config.sre.storage.artifacts.account.storageKind `
+                                                 -Location $config.sre.location `
+                                                 -ResourceGroupName $config.sre.storage.artifacts.rg `
+                                                 -SkuName $config.sre.storage.artifacts.account.performance
+# Add a temporary override during deployment
+$null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -DefaultAction Allow
+Start-Sleep 30
+
+
+# Ensure that the storage accounts can be accessed from the SRE VNet through private endpoints
+# --------------------------------------------------------------------------------------------
 $dataSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-foreach ($storageAccount in @($persistentStorageAccount, $userdataStorageAccount)) {
+foreach ($storageAccount in @($persistentStorageAccount, $userdataStorageAccount, $artifactsStorageAccount)) {
     # Set up a private endpoint
     Add-LogMessage -Level Info "Setting up private endpoint for '$($storageAccount.StorageAccountName)'"
     $privateEndpoint = Deploy-StorageAccountEndpoint -StorageAccount $storageAccount -StorageType "Default" -Subnet $dataSubnet -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
     $privateEndpointIp = (Get-AzNetworkInterface -ResourceId $privateEndpoint.NetworkInterfaces.Id).IpConfigurations[0].PrivateIpAddress
     $privateEndpointFqdns = Get-StorageAccountEndpoints -StorageAccount $storageAccount | ForEach-Object { $_.Split("/")[2] } # we want only the FQDN without protocol or trailing slash
-
     # Set up a DNS zone on the SHM DC
     $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
     Add-LogMessage -Level Info "Setting up DNS zones for: $privateEndpointFqdns"
@@ -159,15 +172,24 @@ foreach ($storageAccount in @($persistentStorageAccount, $userdataStorageAccount
 }
 
 
-# Ensure that public access to the storage account is only allowed from approved locations
-# ----------------------------------------------------------------------------------------
-# Persistent data
+# Ensure that public access to the storage accounts is only allowed from approved locations
+# -----------------------------------------------------------------------------------------
+# Persistent data - allow access from approved IP addresses
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -DefaultAction Deny
 foreach ($IpAddress in $config.sre.storage.persistentdata.account.allowedIpAddresses) {
     $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.persistentdata.account.name -ResourceGroupName $config.shm.storage.persistentdata.rg -IPAddressOrRange $IpAddress
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# Build artifacts - allow access from approved IP addresses
+if ($config.sre.storage.artifacts.account.allowedIpAddresses -eq "any") {
+    $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -DefaultAction Allow
+} else {
+    $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -DefaultAction Deny
+    foreach ($IpAddress in $config.sre.storage.artifacts.account.allowedIpAddresses) {
+        $null = Add-AzStorageAccountNetworkRule -AccountName $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -IPAddressOrRange $IpAddress
+    }
+}
 # User data - deny all access
 $null = Update-AzStorageAccountNetworkRuleSet -Name $config.sre.storage.userdata.account.name -ResourceGroupName $config.sre.storage.userdata.account.rg -DefaultAction Deny
 

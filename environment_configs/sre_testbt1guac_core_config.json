@@ -1,15 +1,16 @@
 {
-    "sreId": "sandbox",
-    "tier": "2",
+    "sreId": "t1guac",
+    "tier": "1",
     "shmId": "testb",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
     "ipPrefix": "10.151.0",
-    "inboundAccessFrom": "anywhere",
+    "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
         "version": "0.3.2021032200"
     },
     "databases": ["MSSQL", "PostgreSQL"],
-    "dataAdminIpAddresses": ["193.60.220.253"]
+    "dataAdminIpAddresses": ["193.60.220.253"],
+    "remoteDesktopProvider": "ApacheGuacamole"
 }

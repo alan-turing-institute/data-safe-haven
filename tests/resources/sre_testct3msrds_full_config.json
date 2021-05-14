@@ -286,6 +286,7 @@
     },
     "nsgPrefix": "NSG_SHM_TESTC",
     "organisation": {
+      "contactEmail": "safehavendevs@turing.ac.uk",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
       "stateCountyRegion": "London",
@@ -306,11 +307,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestcartifactslubiehy",
-        "rg": "RG_SHM_TESTC_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_STORAGE"
       },
       "bootdiagnostics": {
         "accountName": "shmtestcbootdiagslubiehy",
-        "rg": "RG_SHM_TESTC_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_STORAGE"
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
@@ -381,9 +382,9 @@
     "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-t3msrds-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-t3msrds-db-admin-username-mssql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -395,18 +396,18 @@
           }
         },
         "enableSSIS": true,
-        "ip": "10.152.3.4",
+        "ip": "10.151.3.4",
         "port": "1433",
         "sku": "sqldev",
         "subnet": "databases",
         "type": "MSSQL",
-        "vmName": "MSSQL-SANDBOX",
+        "vmName": "MSSQL-T3MSRDS",
         "vmSize": "Standard_DS2_v2"
       },
       "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-t3msrds-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-t3msrds-db-admin-username-postgresql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -417,37 +418,37 @@
             "type": "Standard_LRS"
           }
         },
-        "ip": "10.152.3.5",
+        "ip": "10.151.3.5",
         "port": "5432",
         "sku": "18.04-LTS",
         "subnet": "databases",
         "type": "PostgreSQL",
-        "vmName": "PSTGRS-SANDBOX",
+        "vmName": "PSTGRS-T3MSRDS",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SHM_TESTC_SRE_SANDBOX_DATABASES"
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_DATABASES"
     },
     "domain": {
-      "dn": "DC=sandbox,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
-      "fqdn": "sandbox.testc.dsgroupdev.co.uk",
-      "netbiosName": "SANDBOX",
+      "dn": "DC=t3msrds,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "t3msrds.testc.dsgroupdev.co.uk",
+      "netbiosName": "T3MSRDS",
       "securityGroups": {
         "dataAdministrators": {
-          "description": "SG SANDBOX Data Administrators",
-          "name": "SG SANDBOX Data Administrators"
+          "description": "SG T3MSRDS Data Administrators",
+          "name": "SG T3MSRDS Data Administrators"
         },
         "researchUsers": {
-          "description": "SG SANDBOX Research Users",
-          "name": "SG SANDBOX Research Users"
+          "description": "SG T3MSRDS Research Users",
+          "name": "SG T3MSRDS Research Users"
         },
         "systemAdministrators": {
-          "description": "SG SANDBOX System Administrators",
-          "name": "SG SANDBOX System Administrators"
+          "description": "SG T3MSRDS System Administrators",
+          "name": "SG T3MSRDS System Administrators"
         }
       }
     },
     "dsvm": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
+      "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-compute",
       "disks": {
         "os": {
           "sizeGb": "default",
@@ -458,7 +459,7 @@
           "type": "Standard_LRS"
         }
       },
-      "rg": "RG_SHM_TESTC_SRE_SANDBOX_COMPUTE",
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
       "vmImage": {
         "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
         "rg": "RG_SH_IMAGE_GALLERY",
@@ -469,62 +470,62 @@
       "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {
-      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
+      "routeTableName": "ROUTE-TABLE-SRE-T3MSRDS"
     },
-    "id": "sandbox",
+    "id": "t3msrds",
     "keyVault": {
-      "name": "kv-testc-sre-sandbox",
-      "rg": "RG_SHM_TESTC_SRE_SANDBOX_SECRETS",
+      "name": "kv-testc-sre-t3msrds",
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_SECRETS",
       "secretNames": {
-        "adminUsername": "sre-sandbox-vm-admin-username",
-        "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
-        "npsSecret": "sre-sandbox-other-nps-secret"
+        "adminUsername": "sre-t3msrds-vm-admin-username",
+        "letsEncryptCertificate": "sre-t3msrds-lets-encrypt-certificate",
+        "npsSecret": "sre-t3msrds-other-nps-secret"
       }
     },
     "location": "uksouth",
     "network": {
       "vnet": {
-        "cidr": "10.152.0.0/21",
-        "name": "VNET_SHM_TESTC_SRE_SANDBOX",
-        "rg": "RG_SHM_TESTC_SRE_SANDBOX_NETWORKING",
+        "cidr": "10.151.0.0/21",
+        "name": "VNET_SHM_TESTC_SRE_T3MSRDS",
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.152.4.0/24",
+            "cidr": "10.151.4.0/24",
             "name": "ComputeSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTC_SRE_SANDBOX_COMPUTE",
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
               "rules": "sre-nsg-rules-compute.json"
             }
           },
           "data": {
-            "cidr": "10.152.2.0/24",
+            "cidr": "10.151.2.0/24",
             "name": "PrivateDataSubnet"
           },
           "databases": {
-            "cidr": "10.152.3.0/24",
+            "cidr": "10.151.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTC_SRE_SANDBOX_DATABASES",
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DATABASES",
               "rules": "sre-nsg-rules-databases.json"
             }
           },
           "deployment": {
-            "cidr": "10.152.0.0/24",
+            "cidr": "10.151.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTC_SRE_SANDBOX_DEPLOYMENT",
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DEPLOYMENT",
               "rules": "sre-nsg-rules-compute-deployment.json"
             }
           },
-          "rds": {
-            "cidr": "10.152.1.0/24",
-            "name": "RDSSubnet"
+          "remoteDesktop": {
+            "cidr": "10.151.1.0/24",
+            "name": "RemoteDesktopSubnet"
           },
           "webapps": {
-            "cidr": "10.152.5.0/24",
+            "cidr": "10.151.5.0/24",
             "name": "WebappsSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTC_SRE_SANDBOX_WEBAPPS",
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_WEBAPPS",
               "rules": "sre-nsg-rules-webapps.json"
             }
           }
@@ -532,28 +533,28 @@
       }
     },
     "nexus": false,
-    "nsgPrefix": "NSG_SHM_TESTC_SRE_SANDBOX",
-    "rds": {
+    "nsgPrefix": "NSG_SHM_TESTC_SRE_T3MSRDS",
+    "remoteDesktop": {
       "appSessionHost": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-sh1",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "APP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-        "hostname": "APP-SRE-SANDBOX",
-        "ip": "10.152.1.5",
+        "fqdn": "APP-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "APP-SRE-T3MSRDS",
+        "ip": "10.151.1.5",
         "nsg": {
-          "name": "NSG_SHM_TESTC_SRE_SANDBOX_RDS_SESSION_HOSTS",
+          "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SESSION_HOSTS",
           "rules": "sre-nsg-rules-session-hosts.json"
         },
-        "vmName": "APP-SRE-SANDBOX",
+        "vmName": "APP-SRE-T3MSRDS",
         "vmSize": "Standard_DS2_v2"
       },
       "gateway": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-gateway",
         "disks": {
           "data": {
             "sizeGb": "1023",
@@ -564,28 +565,29 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "RDG-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-        "hostname": "RDG-SRE-SANDBOX",
+        "fqdn": "RDG-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "RDG-SRE-T3MSRDS",
         "installationDirectory": "C:\\Installation",
-        "ip": "10.152.1.4",
-        "networkRules": {
-          "allowedSources": [
-            "193.60.220.253",
-            "193.60.220.240"
-          ],
-          "outboundInternet": "Deny"
-        },
+        "ip": "10.151.1.4",
         "nsg": {
-          "name": "NSG_SHM_TESTC_SRE_SANDBOX_RDS_SERVER",
+          "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SERVER",
           "rules": "sre-nsg-rules-gateway.json"
         },
-        "vmName": "RDG-SRE-SANDBOX",
+        "vmName": "RDG-SRE-T3MSRDS",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SHM_TESTC_SRE_SANDBOX_RDS"
+      "networkRules": {
+        "allowedSources": "193.60.220.240",
+        "copyAllowed": false,
+        "includeAzurePlatformDnsRule": true,
+        "outboundInternet": "Deny",
+        "pasteAllowed": false
+      },
+      "provider": "MicrosoftRDS",
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_REMOTE_DESKTOP"
     },
-    "rgPrefix": "RG_SHM_TESTC_SRE_SANDBOX",
-    "shortName": "sre-sandbox",
+    "rgPrefix": "RG_SHM_TESTC_SRE_T3MSRDS",
+    "shortName": "sre-t3msrds",
     "storage": {
       "accessPolicies": {
         "readOnly": {
@@ -596,40 +598,46 @@
         }
       },
       "artifacts": {
-        "accountName": "testcsandboxartifactszoa",
-        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
+        "account": {
+          "accessTier": "Cool",
+          "allowedIpAddresses": "any",
+          "name": "testct3msrdsartifactsreu",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },
       "bootdiagnostics": {
-        "accountName": "testcsandboxbootdiagszoa",
-        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
+        "accountName": "testct3msrdsbootdiagsreu",
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },
       "persistentdata": {
         "account": {
-          "accessTier": "hot",
+          "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testcsandboxdatazoaweyqi",
+          "name": "testct3msrdsdatareultqbi",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "containers": {
           "egress": {
             "accessPolicyName": "readWrite",
-            "connectionSecretName": "sre-sandbox-data-egress-connection-readwrite",
+            "connectionSecretName": "sre-t3msrds-data-egress-connection-readwrite",
             "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "connectionSecretName": "sre-sandbox-data-ingress-connection-readonly",
+            "connectionSecretName": "sre-t3msrds-data-ingress-connection-readonly",
             "mountType": "BlobSMB"
           }
         }
       },
       "userdata": {
         "account": {
-          "accessTier": "hot",
-          "name": "testcsandboxuserdatazoaw",
+          "accessTier": "Hot",
+          "name": "testct3msrdsuserdatareul",
           "performance": "Premium_LRS",
-          "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS",
+          "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE",
           "storageKind": "FileStorage"
         },
         "containers": {
@@ -657,20 +665,20 @@
     "users": {
       "serviceAccounts": {
         "ldapSearch": {
-          "name": "SANDBOX LDAP Search Service Account",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
-          "samAccountName": "sandboxldapsearch"
+          "name": "T3MSRDS LDAP Search Service Account",
+          "passwordSecretName": "sre-t3msrds-other-service-account-password-ldap-search",
+          "samAccountName": "t3msrdsldapsearch"
         },
         "postgres": {
-          "name": "SANDBOX Postgres DB Service Account",
-          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres",
-          "samAccountName": "sandboxdbpostgres"
+          "name": "T3MSRDS Postgres DB Service Account",
+          "passwordSecretName": "sre-t3msrds-db-service-account-password-postgres",
+          "samAccountName": "t3msrdsdbpostgres"
         }
       }
     },
     "webapps": {
       "codimd": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-codimd",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-codimd",
         "codimd": {
           "dockerVersion": "2.3.2"
         },
@@ -684,19 +692,19 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-SANDBOX",
-        "ip": "10.152.5.6",
+        "fqdn": "CODIMD-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "CODIMD-SRE-T3MSRDS",
+        "ip": "10.151.5.6",
         "osVersion": "18.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
-          "passwordSecretName": "sre-sandbox-other-codimd-password-postgresdb"
+          "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
         },
-        "vmName": "CODIMD-SRE-SANDBOX",
+        "vmName": "CODIMD-SRE-T3MSRDS",
         "vmSize": "Standard_D2s_v3"
       },
       "gitlab": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-gitlab",
         "disks": {
           "data": {
             "sizeGb": "512",
@@ -707,15 +715,15 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "ip": "10.152.5.5",
+        "fqdn": "GITLAB-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SRE-T3MSRDS",
+        "ip": "10.151.5.5",
         "osVersion": "18.04-LTS",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-SANDBOX",
+        "rootPasswordSecretName": "sre-t3msrds-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-T3MSRDS",
         "vmSize": "Standard_D2s_v3"
       },
-      "rg": "RG_SHM_TESTC_SRE_SANDBOX_WEBAPPS"
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_WEBAPPS"
     }
   }
 }
