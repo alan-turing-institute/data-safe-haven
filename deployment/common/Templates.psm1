@@ -91,8 +91,3 @@ function Get-JsonFromMustacheTemplate {
     return ($templateJson | ConvertFrom-Json -AsHashtable:$AsHashtable)
 }
 Export-ModuleMember -Function Get-JsonFromMustacheTemplate
-
-
-
-
-

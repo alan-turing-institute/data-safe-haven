@@ -120,7 +120,7 @@ if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
     Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to SHM..."
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
     $params = @{
-        SreFqdn                     = $config.sre.domain.fqdn
+        SreFqdn = $config.sre.domain.fqdn
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

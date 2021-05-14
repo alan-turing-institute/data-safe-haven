@@ -87,10 +87,10 @@ Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.s
 Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
 # Load the cloud-init template and expand mustache placeholders
 $config["codimd"] = @{
-    ldapSearchUserDn = $ldapSearchUserDn
+    ldapSearchUserDn       = $ldapSearchUserDn
     ldapSearchUserPassword = $ldapSearchUserPassword
-    ldapUserFilter = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
-    postgresPassword = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
+    ldapUserFilter         = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
+    postgresPassword       = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
 }
 $codimdCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Parameters $config
 # Deploy CodiMD VM
@@ -123,10 +123,10 @@ Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.s
 Add-LogMessage -Level Info "Constructing GitLab cloud-init from template..."
 # Load the cloud-init template and expand mustache placeholders
 $config["gitlab"] = @{
-    ldapSearchUserDn = $ldapSearchUserDn
+    ldapSearchUserDn       = $ldapSearchUserDn
     ldapSearchUserPassword = $ldapSearchUserPassword
-    ldapUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
-    rootPassword = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
+    ldapUserFilter         = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
+    rootPassword           = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
 }
 $gitlabCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Parameters $config
 # Deploy GitLab VM
