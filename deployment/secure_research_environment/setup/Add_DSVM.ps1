@@ -175,25 +175,10 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 
 # Insert resources into the cloud-init template
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
-foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
-}
-
-# Insert xrdp logo into the cloud-init template
-# Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
-# If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
-$xrdpCustomLogo = Get-Content (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
-$outputStream = New-Object IO.MemoryStream
-$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
-$gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
-$gzipStream.Close()
-$xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
-$outputStream.Close()
-$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 
 # Expand placeholders in the cloud-init template
+# Note that the xrdp logo has to be an 8-bit RGB .bmp with no alpha. If using a size other than the default (240x140) xrdp.ini needs to be modified.
 $cloudInitTemplate = $cloudInitTemplate.
     Replace("<domain-join-password>", $domainJoinPassword).
     Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
@@ -221,8 +206,8 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
     Replace("<timezone>", $config.sre.time.timezone.linux).
     Replace("<vm-hostname>", ($vmHostname | Limit-StringLength -MaximumLength 15)).
-    Replace("<vm-ipaddress>", $finalIpAddress)
-
+    Replace("<vm-ipaddress>", $finalIpAddress).
+    Replace("{{xrdpCustomLogoEncoded}}", (ConvertTo-Base64GZip -Path (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp")))
 
 # Deploy the VM
 # -------------
