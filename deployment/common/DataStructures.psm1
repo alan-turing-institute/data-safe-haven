@@ -1,17 +1,23 @@
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
-
-# Convert an object from a Base-64 string
-# -------------------------------------
-function ConvertFrom-Base64 {
+# Convert a file into a Base-64, GZipped string
+# ---------------------------------------------
+function ConvertTo-Base64GZip {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Base-64 to be converted to an object", ValueFromPipeline = $true)]
-        [AllowEmptyString()]
-        [string]$InputString
+        [Parameter(Mandatory = $true, HelpMessage = "Path to file to be converted", ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
     )
-    return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($InputString))
+    $xrdpCustomLogo = Get-Content $Path -Raw -AsByteStream
+    $outputStream = New-Object IO.MemoryStream
+    $gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+    $gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
+    $gzipStream.Close()
+    $output = [Convert]::ToBase64String($outputStream.ToArray())
+    $outputStream.Close()
+    return $output
 }
-Export-ModuleMember -Function ConvertFrom-Base64
+Export-ModuleMember -Function ConvertTo-Base64GZip
 
 
 # Convert an object to a Base-64 string
