@@ -137,41 +137,8 @@ write_files:
           options(repos = r)
       })
 
-  - path: "/usr/share/applications/CoCalc.desktop"
-    permissions: "0744"
-    content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=CoCalc
-      Exec=xdg-open http://{{sre.webapps.cocalc.fqdn}}
-      Icon=/opt/icons/cocalc.svg
-      Categories=Utility;Internet;Development;IDE;
-
-  - path: "/usr/share/applications/CodiMD.desktop"
-    permissions: "0744"
-    content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=CodiMD
-      Exec=xdg-open http://{{sre.webapps.codimd.fqdn}}
-      Icon=/opt/icons/codimd.png
-      Categories=Utility;Internet;Development;IDE;
-
-  - path: "/usr/share/applications/GitLab.desktop"
-    permissions: "0744"
-    content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=GitLab
-      Exec=xdg-open http://{{sre.webapps.gitlab.fqdn}}
-      Icon=/opt/icons/gitlab.png
-      Categories=Utility;Internet;Development;
-
   - path: "/etc/skel/Desktop/CoCalc.desktop"
-    permissions: "0744"
+    permissions: "0755"
     content: |
       [Desktop Entry]
       Version=1.0
@@ -182,7 +149,7 @@ write_files:
       URL=http://{{sre.webapps.cocalc.fqdn}}
 
   - path: "/etc/skel/Desktop/CodiMD.desktop"
-    permissions: "0744"
+    permissions: "0755"
     content: |
       [Desktop Entry]
       Version=1.0
@@ -193,7 +160,7 @@ write_files:
       URL=http://{{sre.webapps.codimd.fqdn}}
 
   - path: "/etc/skel/Desktop/GitLab.desktop"
-    permissions: "0744"
+    permissions: "0755"
     content: |
       [Desktop Entry]
       Version=1.0
