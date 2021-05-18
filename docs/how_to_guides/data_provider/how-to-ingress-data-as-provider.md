@@ -56,7 +56,7 @@ This provides an added layer of protection in case the upload link is inadvertan
 3. On `Select Resource`, choose `Blob container`
 4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 5. On `Enter Connection Info`:
-  + Set the `Display name` to "ingress"
+  + Set the `Display name` to "ingress" (or choose an appropriate name)
   + Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
 6. On the `Summary` page:
   + Ensure the permissions are Add, Create, Write & List (if different, contact the administrator who sent you the token)
