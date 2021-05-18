@@ -613,15 +613,11 @@ Software ingress is performed in a similar manner to data.
   + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 + On the `Summary` page, hit `Connect`
 + On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
-+ You should now be able to securely download the data from the Safe Haven's [egress volumes](#egress-volumes) by highlighting the relevant file(s) and hitting the `Download` button
++ You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
 
-#### Egress volumes
+#### The output volume
 
-Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the following SRE volumes:
-
-The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to. On the DSVM, this volume is `/data` and is shared between all DSVMs in an SRE.
-
-The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
+Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
 
 For more info on shared SRE storage volumes, consult the [user guide](../user_guides/user-guide.md/#open_file_folder-shared-directories-within-the-sre).
 
