@@ -29,9 +29,9 @@ An overview of our security controls is shown here:
 + [4. Physical security](#4-physical-security)
 + [5. Remote connections](#5-remote-connections)
 + [6. Copy-and-paste](#6-copy-and-paste)
-+ [7. Data ingress](#7-data-ingress)
-+ [8. Storage volumes and egress](#8-storage-volumes-and-egress)
-+ [9. Software Ingress](#9-software-ingress)
++ [7. Data Ingress](#7-data-ingress)
++ [8. Data Egress](#8-data-egress)
++ [9. Software ingress](#9-software-ingress)
 + [10. Package mirrors](#10-package-mirrors)
 + [11. Azure Firewalls](#11-azure-firewalls)
 
@@ -269,31 +269,27 @@ To test all the above, you will need to act both as the administrator and data p
 
 4. :white_check_mark: **Verify:** Check that the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 
-## 8. Storage volumes and egress
+## 8. Data egress
 
 ### We claim:
 
-The analysis environment contains a number of different storage volumes. Some of these storage volumes include write permissions that can then be viewed by administrators.
-
-Egressed data is held in a holding zone until approved to be egressed out of the environment.
+SREs contain an `/output` volume, in which SRE users can store data designated for egress.
 
 ### This means:
 
-A domain administrator can view [these volumes](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#egress-volumes) in the blob storage via Azure Storage Explorer.
+A domain administrator can view and download data in the `/output` volume via Azure Storage Explorer.
 
 ### Verify by:
 
-1. Confirm that a user is able to read the different storage volumes and write to Output and Home
+1. Confirm that a user is able to read the different storage volumes and write to Output
   + a) Login to a DSVM as a non privileged user account via the remote desktop web client
   + b) Open up a file explorer and search for the various storage volumes
-  + c) :white_check_mark: **Verify:** that the different storage volumes exist and can be read (opened)
-  + d) :white_check_mark: **Verify:** that one can write (move files to) Output and Home
-  + e) :white_check_mark: **Verify:** that one cannot write (move files to) the other storage volumes or to outside the environment
+  + c) :white_check_mark: **Verify:** that the `/output` volume exists and can be read and written to
+  + d) :white_check_mark: **Verify:** that the permissions of other storage volumes match that described in the [user guide](../../how_to_guides/user_guides/user-guide.md#open_file_folder-shared-directories-within-the-sre)
 2. Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
   + a) Follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access egressed files with Azure Storage Explorer
-  + b) :white_check_mark: **Verify:** the volumes exist
-  + c) :white_check_mark: **Verify:** You can see the written a files written to the Output storage volume (including any you created as a non-privileged user in step 1)
-  + f) :white_check_mark: **Verify:** that a written file can be taken out of the environment via download
+  + b) :white_check_mark: **Verify:** You can see the files written to the Output storage volume (including any you created as a non-privileged user in step 1)
+  + c) :white_check_mark: **Verify:** that a written file can be taken out of the environment via download
 
 ## 9. Software Ingress
 
