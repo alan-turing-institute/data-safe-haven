@@ -53,7 +53,7 @@ This provides an added layer of protection in case the upload link is inadvertan
       <p align="center">
          <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
       </p>
-3. On `Select Resource`, choose `Blob container` and hit `Next`
+3. On `Select Resource`, choose `Blob container`
 4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 5. On `Enter Connection Info`:
   + Set the `Display name` to "ingress"
