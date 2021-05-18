@@ -581,6 +581,7 @@ It is the data provider's responsibility to upload any data they own and is requ
   + Copy the `Blob SAS URL`
 + Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 + The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
++ You can validate successful data ingress by logging into the DSVM for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
 ### Software Ingress
 
