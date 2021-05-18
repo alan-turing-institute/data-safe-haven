@@ -314,7 +314,6 @@ For tier 0/1 environments, outbound internet access means users can directly ing
 
 1. Check that software was installed during deployment (via outbound internet), but that outbound internet access on the DSVM is closed off after deployment:
   + a) :camera: **Verify:** Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access) ![Screenshot 2021-05-13 at 09 46 40](https://user-images.githubusercontent.com/5486164/118102097-43620980-b3d0-11eb-838a-1973389865af.png)
-  + b) Check the network rules block
 2. Check that it's possible to grant and revoke software ingress capability by following the instructions in the [Safe Haven Administrator Documentation](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#software-ingress):
   + a) :white_check_mark: **Verify:** You can generate a temporary write-only upload token
   + b) :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
