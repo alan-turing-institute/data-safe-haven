@@ -623,7 +623,7 @@ The **Secure Data volume** is a read-only volume that contains the secure data f
 
 The **Secure Scratch volume** is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here. On the DSVM, this volume is `/scratch` and is shared between all DSVMs in an SRE.
 
-The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication.
+The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
 
 The **Software volume** is a read-only area which contains software used for analysis.
 
