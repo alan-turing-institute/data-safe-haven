@@ -590,7 +590,7 @@ Software ingress is performed in a similar manner to data.
 
 + In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
-+ Click `Networking` under `Settings` and make sure the IP address of your device is one of those allowed under the `Firewall` header, then hit the save icon in the top left
++ Click `Networking` under `Settings` to check the list of  pre-approved IP addresses allowed under the `Firewall` header and check your own IP address to ensure you are connecting from one of these
 + Click `Containers` under `Data storage`
 + Click `egress`
 + Click `Shared access signature` under `Settings` and do the following:
