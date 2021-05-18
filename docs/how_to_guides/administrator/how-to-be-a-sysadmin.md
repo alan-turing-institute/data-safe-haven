@@ -621,8 +621,6 @@ Once you have set up the egress connection in Azure Storage Explorer, you should
 
 The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to. On the DSVM, this volume is `/data` and is shared between all DSVMs in an SRE.
 
-The **Secure Document volume** contains electronically signed copies of agreements between the Data Provider and the Turing.
-
 The **Secure Scratch volume** is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here.
 
 The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication.
