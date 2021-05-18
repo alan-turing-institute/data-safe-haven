@@ -18,6 +18,10 @@
   + [:point_down: Shut down an SHM or SRE](#point_down-shut-down-an-shm-or-sre)
   + [:boot: Start up an SHM or SRE](#boot-start-up-an-shm-or-sre)
   + [:anger: Tear down SHM package mirrors](#anger-tear-down-shm-package-mirrors)
++ [:repeat: Ingress and Egress](#ingress-and-egress)
+  + :arrow_up: [Data Ingress](#data-ingress)
+  + :arrow_up: [Software Ingress](#software-ingress)
+  + :arrow_down: [Data Egress](#data-egress)
 + [:end: Remove a deployed Safe Haven](#end-remove-a-deployed-safe-haven)
   + [:fire: Tear down an SRE](#fire-tear-down-an-SRE)
   + [:fire: Tear down the SHM](#fire-tear-down-the-SHM)
@@ -554,6 +558,76 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
 + This will take **a few minutes** to run.
+
+## Ingress and Egress
+
+### Data Ingress
+
+It is the data provider's responsibility to upload the data required by the safe haven.
+
+**IMPORTANT:** The data ingress must be signed off by the data provider (and referee).
+
+The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
+
++ In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
++ Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
++ Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
++ From the `Overview` tab, click the link to `Containers` (in the middle of the page)
++ Click `ingress`
++ Click `Shared access signature` under `Settings` and do the following:
+  + Under `Permissions`, check these boxes:
+    + `Write`
+    + `List`
+  + Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
+  + Leave everything else as default click `Generate SAS token and URL`
+  + Copy the `Blob SAS URL`
++ Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
++ The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
++ You can validate successful data ingress by logging into the DSVM for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
+
+### Software Ingress
+
+Software ingress is performed in a similar manner to data.
+
+**IMPORTANT:** The software ingress must be signed off by the data provider (and referee) as is the case for data ingress.
+
++ Follow the same steps as for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
++ Share the token with the project PI, so they can install software within the time window.
++ The PI can perform software ingress via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
+
+### Data egress
+
++ In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
++ Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
++ Click `Networking` under `Settings` to check the list of  pre-approved IP addresses allowed under the `Firewall` header and check your own IP address to ensure you are connecting from one of these
++ Click `Containers` under `Data storage`
++ Click `egress`
++ Click `Shared access signature` under `Settings` and do the following:
+  + Under `Permissions`, check these boxes:
+    + `Read`
+    + `List`
+  + Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
+  + Leave everything else as default click `Generate SAS token and URL`
+  + Leave this portal window open and move to the next step
++ Open Azure Storage explorer ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
++ Click the socket image on the left hand side
+    <p align="center">
+       <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
+    </p>
++ On `Select Resource`, choose `Blob container`
++ On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
++ On `Enter Connection Info`:
+  + Set the `Display name` to "egress" (or choose an informative name)
+  + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
++ On the `Summary` page, hit `Connect`
++ On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
++ You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
+
+#### The output volume
+
+Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
+
+For more info on shared SRE storage volumes, consult the [user guide](../user_guides/user-guide.md/#open_file_folder-shared-directories-within-the-sre).
 
 ## :end: Remove a deployed Safe Haven
 
