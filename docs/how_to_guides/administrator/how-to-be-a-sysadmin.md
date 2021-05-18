@@ -606,7 +606,7 @@ Software ingress is performed in a similar manner to data.
     <p align="center">
        <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
     </p>
-+ On `Select Resource`, choose `Blob container` and hit `Next`
++ On `Select Resource`, choose `Blob container`
 + On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 + On `Enter Connection Info`:
   + Set the `Display name` to "egress"
