@@ -15,10 +15,10 @@ An overview of our security controls is shown here:
 ## How to use this checklist
 
 1. Ensure you have an SHM and attached SRE that you wish to test.
-    - Note: Some parts of the security checklist are only relevant to either a tier 2 or tier 3 SRE. Other parts are only relevant when there are multiple SREs attached to the same SHM
+  + Note: Some parts of the security checklist are only relevant to either a tier 2 or tier 3 SRE. Other parts are only relevant when there are multiple SREs attached to the same SHM
 2. Work your way through the actions described in each section, taking care to notice each time you see a :camera: or a :white_check_mark: and the word **Verify**:
-    - :camera: Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
-    - :white_check_mark: This indicates a checklist item for which a screenshot is either not appropriate or  difficult
+  + :camera: Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
+  + :white_check_mark: This indicates a checklist item for which a screenshot is either not appropriate or  difficult
 
 ## Contents
 
@@ -144,10 +144,10 @@ For tier 2:
 
 For tier 3:
 
-3. A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
+1. A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
   + a) Check that the device is managed by the partner institution IT team
   + b) :white_check_mark: **Verify**: The user lacks root access
-4. A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
+2. A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
   + a) Using a personal device, attempt to connect to the environment using the correct VPN and credentials
   + b) :white_check_mark: **Verify**: Connection fails
   + c) Using a managed device, attempt to connect to the environment using the correct VPN and credentials
@@ -341,7 +341,7 @@ Tier 2:
 
 Tier 3:
 
-2. Download packages on the whitelist (see the lists in `environment_configs/package_lists`)
+1. Download packages on the whitelist (see the lists in `environment_configs/package_lists`)
   + a) Login as a user into a DSVM via remote desktop web client
   + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + c) Attempt to download the package
