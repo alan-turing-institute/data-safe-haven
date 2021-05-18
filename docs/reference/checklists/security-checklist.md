@@ -304,10 +304,10 @@ Ingressed software is stored in a holding zone until approved to be added for us
 For tier 0/1 environments, outbound internet access means users can directly ingress their software from the internet. For tier 2+ environments we use alternative means.
 
 + Installation during deployment
-  + If known in advance, software can be installed during DSVM deployment whilst there is still internet access, but before project data is added. Once the software is installed, the DSVM is ingressed into the environment with a one way lock.
+  + If known in advance, software can be installed during DSVM deployment whilst there is still internet access, but before project data is added. Once the software is installed, the DSVM undergoes ingress into the environment with a one way lock.
 + Installation after deployment
   + Once a DSVM has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
-  + Software is ingressed in a similar manner to data. Researchers are provided temporary write-only access to the software ingress volume (external mode). The access is then revoked and the software is then reviewed. If it passes review, the software ingress volume is changed to provide researchers with read-only access to the environment (internal mode).
+  + Software is added via ingress in a similar manner to data. Researchers are provided temporary write-only access to the software ingress volume (external mode). The access is then revoked and the software is then reviewed. If it passes review, the software ingress volume is changed to provide researchers with read-only access to the environment (internal mode).
   + If the software requires administrator rights to install, a System Manager must do this. Otherwise, the researcher can do this themselves.
 
 ### Verify by:
