@@ -563,7 +563,7 @@ On your **deployment machine**.
 
 ### Data Ingress
 
-It is the data provider's responsibility to upload any data they own and is required to the safe haven.
+It is the data provider's responsibility to upload the data required by the safe haven.
 
 **IMPORTANT:** The data ingress must be signed off by the data provider (and referee).
 
