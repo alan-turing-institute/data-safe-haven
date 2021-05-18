@@ -629,7 +629,7 @@ The **Secure Scratch volume** is a read-write volume used for data analysis. Its
 
 The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
 
-The **Home volume** is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
+The **Home volume** is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume. On the DSVM, this volume is `/home` and is unique to a given user of the SRE.
 
 ## :end: Remove a deployed Safe Haven
 
