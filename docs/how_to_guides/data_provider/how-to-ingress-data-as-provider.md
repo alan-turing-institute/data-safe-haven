@@ -64,7 +64,7 @@ This provides an added layer of protection in case the upload link is inadvertan
 7. On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
 8. You should now be able to upload data to the Safe Haven by clicking the `Upload` button, completing the ingress process
 
-Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file:
+Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file. Click `Yes`.
 
 <img width="492" alt="Screenshot 2021-04-28 at 14 25 09" src="https://user-images.githubusercontent.com/5486164/116411935-176e5200-a82e-11eb-9f5f-fc6c15f34d77.png">
 
