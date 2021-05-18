@@ -625,11 +625,9 @@ Once you have set up the egress connection in Azure Storage Explorer, you should
 
 The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to. On the DSVM, this volume is `/data` and is shared between all DSVMs in an SRE.
 
-The **Secure Scratch volume** is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here. On the DSVM, this volume is `/scratch` and is shared between all DSVMs in an SRE.
-
 The **Output volume** is a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
 
-The **Home volume** is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume. On the DSVM, this volume is `/home` and is unique to a given user of the SRE.
+For more info on shared SRE storage volumes, consult the [user guide](../user_guides/user-guide.md/#open_file_folder-shared-directories-within-the-sre).
 
 ## :end: Remove a deployed Safe Haven
 
