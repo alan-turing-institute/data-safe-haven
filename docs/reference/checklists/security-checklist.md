@@ -232,7 +232,7 @@ One cannot copy something from outside the network and paste it into the network
 
 All data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
 
-Ingressed data is stored in a holding zone until approved to be added for user access.
+Data is stored in a holding zone until approved to be added for user access.
 
 ### This means
 
@@ -287,7 +287,7 @@ A domain administrator can view and download data in the `/output` volume via Az
   + c) :white_check_mark: **Verify:** that the `/output` volume exists and can be read and written to
   + d) :white_check_mark: **Verify:** that the permissions of other storage volumes match that described in the [user guide](../../how_to_guides/user_guides/user-guide.md#open_file_folder-shared-directories-within-the-sre)
 2. Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
-  + a) Follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access egressed files with Azure Storage Explorer
+  + a) Follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access files set for egress with Azure Storage Explorer
   + b) :white_check_mark: **Verify:** You can see the files written to the Output storage volume (including any you created as a non-privileged user in step 1)
   + c) :white_check_mark: **Verify:** that a written file can be taken out of the environment via download
 
@@ -295,13 +295,13 @@ A domain administrator can view and download data in the `/output` volume via Az
 
 ### We claim:
 
-The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed, as well as package mirrors. For other kinds of software this must be ingressed seperately.
+The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed, as well as package mirrors. For other kinds of software this must be added separately via ingress.
 
-Ingressed software is stored in a holding zone until approved to be added for user access.
+Software is stored in a holding zone until approved to be added for user access.
 
 ### Which means:
 
-For tier 0/1 environments, outbound internet access means users can directly ingress their software from the internet. For tier 2+ environments we use alternative means.
+For tier 0/1 environments, outbound internet access means users can directly download their software from the internet. For tier 2+ environments we use the secure data transfer process.
 
 + Installation during deployment
   + If known in advance, software can be installed during DSVM deployment whilst there is still internet access, but before project data is added. Once the software is installed, the DSVM undergoes ingress into the environment with a one way lock.
