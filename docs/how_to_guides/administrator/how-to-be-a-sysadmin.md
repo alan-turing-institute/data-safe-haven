@@ -623,7 +623,7 @@ Software ingress is performed in a similar manner to data.
 
 Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the following SRE volumes:
 
-The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to.
+The **Secure Data volume** is a read-only volume that contains the secure data for use in analyses. It is mounted as read-only in the analysis Environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the Environment has access to. On the DSVM, this volume is `/data` and is shared between all DSVMs in an SRE.
 
 The **Secure Document volume** contains electronically signed copies of agreements between the Data Provider and the Turing.
 
