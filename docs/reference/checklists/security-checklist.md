@@ -222,10 +222,6 @@ One cannot copy something from outside the network and paste it into the network
   + d) Attempt to paste the text to it.
   + e) :white_check_mark: **Verify:** paste succeeds
 
-### Verify by:
-
-+ Security group policy that blocks clip board access
-
 ## 7. Data ingress
 
 ### We claim:
