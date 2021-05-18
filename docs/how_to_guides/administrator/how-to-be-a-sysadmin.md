@@ -573,8 +573,6 @@ It is the data provider's responsibility to upload any data they own and is requ
 + Click `Shared access signature` under `Settings` and do the following:
   + Under `Permissions`, check these boxes:
     + `Write`
-    + `Create`
-    + `Add`
     + `List`
   + Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
   + Leave everything else as default click `Generate SAS token and URL`
