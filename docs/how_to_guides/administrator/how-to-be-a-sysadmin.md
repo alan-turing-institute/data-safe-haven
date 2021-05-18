@@ -563,7 +563,11 @@ On your **deployment machine**.
 
 ### Data Ingress
 
-It is the data provider's responsibility to upload any data they own and is required to the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
+It is the data provider's responsibility to upload any data they own and is required to the safe haven.
+
+**IMPORTANT:** The data ingress must be signed off by the data provider (and referee).
+
+The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
 + In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
@@ -585,10 +589,11 @@ It is the data provider's responsibility to upload any data they own and is requ
 
 Software ingress is performed in a similar manner to data.
 
+**IMPORTANT:** The software ingress must be signed off by the data provider (and referee) as is the case for data ingress.
+
 + Follow the same steps as for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
 + Share the token with the project PI, so they can install software within the time window.
 + The PI can perform software ingress via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
-+ Note: The software ingress must be signed off by the data provider (and referee) as is the case for data ingress
 
 ### Data egress
 
