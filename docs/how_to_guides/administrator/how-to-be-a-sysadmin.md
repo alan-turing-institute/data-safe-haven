@@ -609,7 +609,7 @@ Software ingress is performed in a similar manner to data.
 + On `Select Resource`, choose `Blob container`
 + On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 + On `Enter Connection Info`:
-  + Set the `Display name` to "egress"
+  + Set the `Display name` to "egress" (or choose an informative name)
   + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 + On the `Summary` page, hit `Connect`
 + On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
