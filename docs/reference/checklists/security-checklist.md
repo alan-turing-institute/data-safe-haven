@@ -318,8 +318,7 @@ For tier 0/1 environments, outbound internet access means users can directly ing
   + a) :white_check_mark: **Verify:** You can generate a temporary write-only upload token
   + b) :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
   + c) :white_check_mark: **Verify:** Software uploaded to the by a non-admin can be read by administrators
-  + d) Check that the volume can be changed to internal mode so that other researchers can read it (but not write)
-  + e) Check that software that requires administrator rights to install, can only be run by a System manager.
+  + d) Check that software that requires administrator rights to install, can only be run by a System manager.
 
 ## 10. Package mirrors
 
