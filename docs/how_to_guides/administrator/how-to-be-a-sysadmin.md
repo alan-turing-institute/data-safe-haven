@@ -598,7 +598,7 @@ Software ingress is performed in a similar manner to data.
   + Under `Permissions`, check these boxes:
     + `Read`
     + `List`
-  + Set a time window in the `Start and expiry date/time` that gives you enough time to perform data egress
+  + Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
   + Leave everything else as default click `Generate SAS token and URL`
   + Leave this portal window open and move to the next step
 + Open Azure Storage explorer ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
