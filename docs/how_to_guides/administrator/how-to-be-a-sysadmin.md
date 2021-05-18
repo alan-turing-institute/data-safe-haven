@@ -567,7 +567,7 @@ It is the data provider's responsibility to upload the data required by the safe
 
 **IMPORTANT:** The data ingress must be signed off by the data provider (and referee).
 
-The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
+The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
 
 + In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
