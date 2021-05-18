@@ -613,7 +613,7 @@ Software ingress is performed in a similar manner to data.
   + Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 + On the `Summary` page, hit `Connect`
 + On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
-+ You should now be able to securely download the data from the Safe Haven that was designated for egress (see [Egress volumes](#egress-volumes) below) by highlighting the relevant file(s) and hitting the `Download` button
++ You should now be able to securely download the data from the Safe Haven's [egress volumes](#egress-volumes) by highlighting the relevant file(s) and hitting the `Download` button
 
 #### Egress volumes
 
