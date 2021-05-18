@@ -563,7 +563,7 @@ On your **deployment machine**.
 
 ### Data Ingress
 
-It's up to the data provider to the perform data ingress required by the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
+It is the data provider's responsibility to upload any data they own and is required to the safe haven. The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider:
 
 + In the Azure portal go to `Subscriptions`->`<Subscription ID>`, where the `<Subscription ID>` is the one linked to the SHM for which you wish to perform data ingress
 + Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
