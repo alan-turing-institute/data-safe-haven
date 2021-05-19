@@ -6,7 +6,7 @@ In this check list we aim to do the following things:
 + Establish what these security claims mean in terms of implementation
 + How we can verify that we actually do what we say
 
-An overview of our security controls is shown here:
+This diagram shows the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs). The security checklist currently focuses on checks that can verify these security requirements for tier 2+ SREs (with some steps noted as specific to a tier):
 
 <p align="center">
     <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
@@ -14,8 +14,8 @@ An overview of our security controls is shown here:
 
 ## How to use this checklist
 
-+ Ensure you have an SHM and attached SRE that you wish to test.
-  + Note: Some parts of the security checklist are only relevant to either a tier 2 or tier 3 SRE. Other parts are only relevant when there are multiple SREs attached to the same SHM
++ Ensure you have an SHM and attached SRE(s) that you wish to test.
+  + Note: Some parts of the checklist are only relevant when there are multiple SREs attached to the same SHM
 + Work your way through the actions described in each section, taking care to notice each time you see a :camera: or a :white_check_mark: and the word **Verify**:
   + :camera: Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
   + :white_check_mark: This indicates a checklist item for which a screenshot is either not appropriate or  difficult
