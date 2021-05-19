@@ -51,6 +51,8 @@ Passwords are strong
 
 Users must set up MFA before accessing the secure analysis environment. Users cannot access the environment without MFA. Users are strongly advised to create passwords of a certain strength.
 
+### Verify by:
+
 + Create a new user without MFA and check that the user cannot access the apps
   + Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
   + Visit https://aka.ms/mfasetup in an incognito browser
@@ -82,6 +84,8 @@ Users cannot access any part of the network without already being in the network
 Whilst in the network, one cannot use the internet to connect outside the network.
 
 SREs in the same SHM are still isolated from one another.
+
+### Verify by:
 
 + Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + Connect to the SHM VPN
