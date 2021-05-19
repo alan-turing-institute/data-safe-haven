@@ -68,9 +68,6 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + :camera: **Verify**: login to the portal using the user account and check that MFA requested <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png">
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + :white_check_mark: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
-+ Users are required to set up MFA before they can access the environment
-  + Using an AAD admin account, go to `AAD -> Users -> Multi-Factor authentication -> Service settings`
-  + :camera: **Verify** all of the following with a single screenshot: i) `app passwords` are set to "Do not allow users to create app passwords to sign in to non-browser apps" (this stops any users bypassing MFA). ii) `trusted ips->Skip multi-factor authentication for requests from federated users on my intranet` is unchecked. iii) Checkbox under `remember multi-factor authentication on trusted device` is unchecked (this means the user must authenticate each tim<img width="937" alt="Screenshot 2021-03-30 at 15 19 00" src="https://user-images.githubusercontent.com/5486164/113005154-21882c80-916c-11eb-8149-4a76d479ded7.png">
 
 ## 2. Isolated Network
 
