@@ -90,7 +90,7 @@ SREs in the same SHM are still isolated from one another.
   + :white_check_mark: **Verify:** Connection works
   + Disconnect from the SHM VPN
   + Attempt to connect to the SHM DC and NPS again
-  + g) :white_check_mark: **Verify:** Connection fails
+  + :white_check_mark: **Verify:** Connection fails
 + Be unable to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
   + Choose your favourite three websites and attempt to access the internet using a browser
@@ -103,10 +103,10 @@ SREs in the same SHM are still isolated from one another.
   + :white_check_mark: **Verify:** Copy and paste is not possible
   + Attempt to connect to SRE B's DSVM via SSH from SRE A:
   + Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
-  + g) Right click on the PuTTY terminal and click `New Session...`
-  + h) Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
-  + i) Click `Open`
-  + j) :camera: **Verify:** Connection fails with `Network error: Connection timed out` <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png">
+  + Right click on the PuTTY terminal and click `New Session...`
+  + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
+  + Click `Open`
+  + :camera: **Verify:** Connection fails with `Network error: Connection timed out` <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png">
 + Check that the network rules are set appropriately to block outgoing traffic
   + Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
   + :camera: **Verify:** There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet. <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png">
@@ -211,7 +211,7 @@ One cannot copy something from outside the network and paste it into the network
   + :white_check_mark: **Verify:** paste fails
   + Write some next in the note pad or terminal of the DSVM and copy it
   + Attempt to copy the text externally to deployment device (e.g. into URL of browser)
-  + g) :white_check_mark: **Verify:** paste fails
+  + :white_check_mark: **Verify:** paste fails
 + One can copy between VMs inside the network
   + Login to a DSVM via the remote desktop web client
   + Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
@@ -253,7 +253,7 @@ To test all the above, you will need to act both as the administrator and data p
   + :white_check_mark: **Verify:** that attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window
   + Switch to a device that lacks a whitelisted IP address (or change your IP with a VPN)
   + Attempt to write to the ingress volume via the test device
-  + g) :white_check_mark: **Verify:** that the access token fails.
+  + :white_check_mark: **Verify:** that the access token fails.
 
 + Check the token duration and ensure that the upload fails if the duration has expired.
   + Create a write-only token with short duration
@@ -345,7 +345,7 @@ Tier 3:
   + :camera: **Verify:** the download succeeds (see screenshot in part g below)
   + Take a package that is not included in the whitelist
   + Attempt to download the package
-  + g) :camera: **Verify:** the download fails ![Screenshot 2021-04-13 at 16 12 00](https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png)
+  + :camera: **Verify:** the download fails ![Screenshot 2021-04-13 at 16 12 00](https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png)
 
 ## 11. Azure Firewalls
 
