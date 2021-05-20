@@ -39,10 +39,10 @@ write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     owner: root:root
     permissions: "0600"
-  - path: "/home/mirrordaemon/package_whitelist.txt"
+  - path: "/home/mirrordaemon/package_allowlist.txt"
     permissions: "0600"
     content: |
-      # PACKAGE_WHITELIST
+      # PACKAGE_ALLOWLIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
     owner: root:root
     permissions: "0400"
@@ -54,9 +54,9 @@ write_files:
       config_sections = defaultdict(list)
       section = "main"
 
-      # Load packages from whitelist
-      with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
-          packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
+      # Load packages from allowlist
+      with open("/home/mirrordaemon/package_allowlist.txt", "r") as f_allowlist:
+          packages = [p for p in f_allowlist.read().splitlines() if p and not p.startswith("#")]
 
       # Parse bandersnatch configuration into sections
       with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
@@ -66,30 +66,30 @@ write_files:
               if line:
                   config_sections[section].append(line)
 
-      # Enable/disable whitelist depending on tier
-      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "whitelist_project" in p]
+      # Enable/disable allowlist depending on tier
+      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "allowlist_project" in p]
       if int(TIER) == 2:
-          # Tier 2 mirrors should not have a whitelist section
-          config_sections.pop("whitelist", [])
+          # Tier 2 mirrors should not have a allowlist section
+          config_sections.pop("allowlist", [])
       else:
-          # If there is already a whitelist section then start by emptying it
-          config_sections["whitelist"] = ["[whitelist]", "packages ="]
+          # If there is already a allowlist section then start by emptying it
+          config_sections["allowlist"] = ["[allowlist]", "packages ="]
 
-          # Ensure the that whitelist_project plugin is enabled
-          config_sections["plugins"].append("    whitelist_project")
+          # Ensure the that allowlist_project plugin is enabled
+          config_sections["plugins"].append("    allowlist_project")
 
-          # Add any whitelisted packages to this section
-          # Note that we need at least one package for whitelisting to work. 'six' is minimal and safe.
+          # Add any allowed packages to this section
+          # Note that we need at least one package for package filtering to work. 'six' is minimal and safe.
           if not packages:
               packages = ["six"]
-          [config_sections["whitelist"].append("    {}".format(package)) for package in packages]
+          [config_sections["allowlist"].append("    {}".format(package)) for package in packages]
 
       # Write the output bandersnatch configuration
       with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
           for section in config_sections.keys():
               [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
               f_bandersnatch.write("\n")
-      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_allowlist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     owner: root:root
     permissions: "0700"
@@ -121,10 +121,10 @@ write_files:
       START_TIME=$(date +%s)
       if [ "$TIER" != "2" ]; then
           installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
-          cat /home/mirrordaemon/package_whitelist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/whitelisted_packages
-          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/whitelisted_packages)" = "" ]; then echo $package; fi; done)
+          cat /home/mirrordaemon/package_allowlist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/package_allowlist
+          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/package_allowlist)" = "" ]; then echo $package; fi; done)
           /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
-          rm /tmp/whitelisted_packages 2> /dev/null
+          rm /tmp/package_allowlist 2> /dev/null
       fi
       /usr/local/bin/bandersnatch mirror 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
@@ -224,7 +224,7 @@ runcmd:
   - pip3 install bandersnatch==4.2.0
   - echo "Using bandersnatch from '$(which bandersnatch)'"
 
-  # Initialise whitelist if appropriate
+  # Initialise allowlist if appropriate
   - python3 /home/mirrordaemon/update_bandersnatch_config.py
 
   # Schedule regular mirroring jobs

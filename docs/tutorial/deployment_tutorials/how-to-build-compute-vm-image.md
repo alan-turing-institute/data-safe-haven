@@ -103,7 +103,7 @@ In general, this image should cover most use cases, but it's possible that you m
   + `deployment/dsvm_images/packages/packages-python-pypi-37.list`
   + `deployment/dsvm_images/packages/packages-python-pypi-38.list`
 + If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/dsvm_images/packages/python-requirements.json`
-+ You should also add this package to the **whitelist** used by Tier-3 package mirrors in `environment_configs/package_lists/whitelist-core-python-pypi-tier3.list`
++ You should also add this package to the **allowlist** used by Tier-3 package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
 ### Adding a new R package
 
@@ -111,14 +111,14 @@ In general, this image should cover most use cases, but it's possible that you m
   + `deployment/dsvm_images/packages/packages-r-bioconductor.list`
   + `deployment/dsvm_images/packages/packages-r-cran.list`
 + If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind` ) then add it to `deployment/dsvm_images/packages/packages-apt.list` if so
-+ You should also add this package to the **whitelist** used by Tier-3 package mirrors in `environment_configs/package_lists/whitelist-core-r-cran-tier3.list`
++ You should also add this package to the **allowlist** used by Tier-3 package mirrors in `environment_configs/package_lists/allowlist-core-r-cran-tier3.list`
 
-#### Adding packages to the package whitelist
+#### Adding packages to the package allowlist
 
-+ When you add a new package to either the `PyPI` or `CRAN` whitelist you should also determine all of its dependencies (and their dependencies, recursively)
++ When you add a new package to either the `PyPI` or `CRAN` allowlist you should also determine all of its dependencies (and their dependencies, recursively)
 + Once you have the list of packages you should add them to:
-  + **PyPI:** `environment_configs/package_lists/whitelist-full-python-pypi-tier3.list`
-  + **CRAN:** `environment_configs/package_lists/whitelist-full-r-cran-tier3.list`
+  + **PyPI:** `environment_configs/package_lists/allowlist-full-python-pypi-tier3.list`
+  + **CRAN:** `environment_configs/package_lists/allowlist-full-r-cran-tier3.list`
 
 ### Changing the version of a package
 
