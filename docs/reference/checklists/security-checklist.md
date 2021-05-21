@@ -66,9 +66,9 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + Login as the user you set up
   + :white_check_mark: **Verify:** user guided to set up MFA
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
-  + :camera: **Verify:** successfully set up MFA ![Screenshot 2021-03-30 at 14 27 17](https://user-images.githubusercontent.com/5486164/112996434-13cea900-9164-11eb-9ddd-db638c64846a.png)
+  + <details><summary>:camera: <b>Verify:</b> successfully set up MFA</summary> ![Screenshot 2021-03-30 at 14 27 17](https://user-images.githubusercontent.com/5486164/112996434-13cea900-9164-11eb-9ddd-db638c64846a.png)</details>
 + Check that MFA is working as we expect
-  + :camera: **Verify:** login to the portal using the user account and check that MFA requested <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png">
+  + <details><summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary> <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png"></details>
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
 
@@ -99,8 +99,8 @@ SREs in the same SHM are still isolated from one another.
 + Be unable to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
   + Choose your favourite three websites and attempt to access the internet using a browser
-  + :camera: **Verify:** Connection fails <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png">
-  + :camera: **Verify:** type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>` <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png">
+  + <details><summary>:camera: <b>Verify:</b> Connection fails</summary> <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png"></details>
+  + <details><summary>:camera: <b>Verify:</b> type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>`</summary> <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png"></details>
 + Check that users cannot connect between two SREs within the same SHM, even if they have access to both SREs
   + Ensure you have two SREs managed by the same SHM
   + Connect to a DSVM in SRE A as a user by using the web client. On a separate browser window, do the same for SRE B.
@@ -111,10 +111,10 @@ SREs in the same SHM are still isolated from one another.
   + Right click on the PuTTY terminal and click `New Session...`
   + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + Click `Open`
-  + :camera: **Verify:** Connection fails with `Network error: Connection timed out` <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png">
+  + <details><summary>:camera: <b>Verify:</b> Connection fails with `Network error: Connection timed out`</summary> <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png"></details>
 + Check that the network rules are set appropriately to block outgoing traffic
   + Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
-  + :camera: **Verify:** There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet. <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png">
+  + <details><summary>:camera: <b>Verify:</b> There exists an `DenyInternetOutbound` rule with Destination `Internet` and Action `Deny` and no higher priority rule allows connection to the internet.</summary> <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png"></details>
 
 ## 3. User devices
 
@@ -141,7 +141,7 @@ For tier 2:
   + :white_check_mark: **Verify:** Connection succeeds
 + There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
   + Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  + :camera: **Verify:** The `RDS` NSG has network rules allowing **inbound** access from the IP address of the tier 2 SRE <img width="1028" alt="Screenshot 2021-04-06 at 13 42 09" src="https://user-images.githubusercontent.com/5486164/113712330-e8a50600-96dd-11eb-9b09-4076830cf84c.png">
+  + <details><summary>:camera: <b>Verify:</b> The `RDS` NSG has network rules allowing **inbound** access from the IP address of the tier 2 SRE </summary><img width="1028" alt="Screenshot 2021-04-06 at 13 42 09" src="https://user-images.githubusercontent.com/5486164/113712330-e8a50600-96dd-11eb-9b09-4076830cf84c.png"></details>
   + :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
@@ -194,7 +194,7 @@ User can connect via remote desktop but cannot connect through other means such 
 
 + Unable to connect as a non-admin user to the DSVM via SSH
   + Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-  + :camera: **Verify:** ssh login fails: `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`) ![Screenshot 2021-04-13 at 11 04 35](https://user-images.githubusercontent.com/5486164/114535742-45f20780-9c48-11eb-9ccc-71351e776d8c.png)
+  + <details><summary>:camera: <b>Verify:</b> ssh login fails: `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)</summary> ![Screenshot 2021-04-13 at 11 04 35](https://user-images.githubusercontent.com/5486164/114535742-45f20780-9c48-11eb-9ccc-71351e776d8c.png)</details>
   + :white_check_mark: **Verify:** The RDS server (`RDG-SRE-<SRE ID>`) is the only resource with a public IP address
 
 ## 6. Copy-and-paste
@@ -311,7 +311,7 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 ### Verify by:
 
 + Check that software was installed during deployment (via outbound internet), but that outbound internet access on the DSVM is closed off after deployment:
-  + :camera: **Verify:** Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access) ![Screenshot 2021-05-13 at 09 46 40](https://user-images.githubusercontent.com/5486164/118102097-43620980-b3d0-11eb-838a-1973389865af.png)
+  + <details><summary>:camera: <b>Verify:</b> Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access)</summary> ![Screenshot 2021-05-13 at 09 46 40](https://user-images.githubusercontent.com/5486164/118102097-43620980-b3d0-11eb-838a-1973389865af.png)</details>
 + Check that it's possible to grant and revoke software ingress capability by following the instructions in the [Safe Haven Administrator Documentation](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#software-ingress):
   + :white_check_mark: **Verify:** You can generate a temporary write-only upload token
   + :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
@@ -339,7 +339,7 @@ Tier 2:
 + Download packages from the full mirror.
   + Login as a user into a DSVM via remote desktop web client
   + Open up a terminal
-  + :camera: **Verify:** You can install any package that is not included at base (for example, try `pip install sklearn`) ![Screenshot 2021-04-13 at 15 04 19](https://user-images.githubusercontent.com/5486164/114565858-96c62800-9c69-11eb-8300-bef6bb169002.png)
+  + <details><summary>:camera: <b>Verify:</b> You can install any package that is not included at base (for example, try `pip install sklearn`)</summary> ![Screenshot 2021-04-13 at 15 04 19](https://user-images.githubusercontent.com/5486164/114565858-96c62800-9c69-11eb-8300-bef6bb169002.png)</details>
 
 Tier 3:
 
@@ -347,10 +347,10 @@ Tier 3:
   + Login as a user into a DSVM via remote desktop web client
   + Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
   + Attempt to download the package
-  + :camera: **Verify:** the download succeeds (see screenshot in part g below)
+  + :camera: <b>Verify:</b> the download succeeds (see screenshot in final bullet below)
   + Take a package that is not included in the whitelist
   + Attempt to download the package
-  + :camera: **Verify:** the download fails ![Screenshot 2021-04-13 at 16 12 00](https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png)
+  + <details><summary>:camera: <b>Verify:</b> the download fails</summary> ![Screenshot 2021-04-13 at 16 12 00](https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png)</details>
 
 ## 11. Azure Firewalls
 
@@ -367,9 +367,9 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
 + Admin has limited access to the internet
   + Connect to an administrator VM such as the SHM-DC
   + Attempt to connect to your favourite non standard site
-  + :camera: **Verify:** connection fails ![Screenshot 2021-04-06 at 14 42 37](https://user-images.githubusercontent.com/5486164/113720408-800e5700-96e6-11eb-914a-dd176de94c6a.png)
+  + <details><summary>:camera: <b>Verify:</b> connection fails</summary> ![Screenshot 2021-04-06 at 14 42 37](https://user-images.githubusercontent.com/5486164/113720408-800e5700-96e6-11eb-914a-dd176de94c6a.png)</details>
 + Admin can download Windows updates
   + Connect to an administrator VM such as the SHM-DC
   + Click on `Start -> Settings-> Update & Security`
-  + Click the `Download` button ![Screenshot 2021-04-06 at 14 47 52](https://user-images.githubusercontent.com/5486164/113721176-340fe200-96e7-11eb-9316-1869a8724e11.png)
-  + :camera: **Verify:** download and update successful
+  + Click the `Download` button
+  + <details><summary>:camera: <b>Verify:</b> download and update successful</summary>![Screenshot 2021-04-06 at 14 47 52](https://user-images.githubusercontent.com/5486164/113721176-340fe200-96e7-11eb-9316-1869a8724e11.png)></details>
