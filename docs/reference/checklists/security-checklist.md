@@ -58,9 +58,9 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + Visit https://aka.ms/mfasetup in an incognito browser
   + Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
   + Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + <details><summary>:camera: <b>Verify before adding to group</b>: Login works but apps cannot be viewed</summary> !<img width="549" alt="1-1d-cropped" src="https://user-images.githubusercontent.com/5486164/118115124-73b1a400-b3e0-11eb-92d3-aab5aa90d89c.png"></details>
-  + <details><summary>:camera: <b>Verify after adding to group</b>: Login again and check that apps can now be viewed</summary> <img width="549" alt="1-1e-cropped" src="https://user-images.githubusercontent.com/5486164/118115140-7b714880-b3e0-11eb-9235-d2d8c75d75a6.png"></b>
-+ <details><summary>:camera: <b>Verify</b>: attempt to login to DSVM Main (Desktop) fails</summary> <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png"></details>
+  + <details><summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary> !<img width="549" alt="1-1d-cropped" src="https://user-images.githubusercontent.com/5486164/118115124-73b1a400-b3e0-11eb-92d3-aab5aa90d89c.png"></details>
+  + <details><summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary> <img width="549" alt="1-1e-cropped" src="https://user-images.githubusercontent.com/5486164/118115140-7b714880-b3e0-11eb-9235-d2d8c75d75a6.png"></b>
++ <details><summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary> <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png"></details>
 + Check that the user is able to successfully set up MFA
   + Visit https://aka.ms/mfasetup again
   + Login as the user you set up
@@ -68,9 +68,9 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
   + :camera: **Verify:** successfully set up MFA ![Screenshot 2021-03-30 at 14 27 17](https://user-images.githubusercontent.com/5486164/112996434-13cea900-9164-11eb-9ddd-db638c64846a.png)
 + Check that MFA is working as we expect
-  + :camera: **Verify**: login to the portal using the user account and check that MFA requested <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png">
+  + :camera: **Verify:** login to the portal using the user account and check that MFA requested <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png">
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + :white_check_mark: **Verify**: that MFA is requested on first attempt to log in to DSVM Main (Desktop)
+  + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
 
 ## 2. Isolated Network
 
@@ -99,8 +99,8 @@ SREs in the same SHM are still isolated from one another.
 + Be unable to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
   + Choose your favourite three websites and attempt to access the internet using a browser
-  + :camera: **Verify**: Connection fails <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png">
-  + :camera: **Verify**: type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>` <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png">
+  + :camera: **Verify:** Connection fails <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png">
+  + :camera: **Verify:** type `curl <website>` into terminal and check that you get a response like: `curl: (6) Could not resolve <website>` <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png">
 + Check that users cannot connect between two SREs within the same SHM, even if they have access to both SREs
   + Ensure you have two SREs managed by the same SHM
   + Connect to a DSVM in SRE A as a user by using the web client. On a separate browser window, do the same for SRE B.
@@ -136,24 +136,24 @@ For tier 2:
 
 + One can connect regardless of device as long as one has the correct VPN and credentials
   + Using a personal device, connect to the environment using the correct VPN and credentials
-  + :white_check_mark: **Verify**: Connection succeeds
+  + :white_check_mark: **Verify:** Connection succeeds
   + Using a managed device, connect to the environment using the correct VPN and credentials.
-  + :white_check_mark: **Verify**: Connection succeeds
+  + :white_check_mark: **Verify:** Connection succeeds
 + There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
   + Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  + :camera: **Verify**: The `RDS` NSG has network rules allowing **inbound** access from the IP address of the tier 2 SRE <img width="1028" alt="Screenshot 2021-04-06 at 13 42 09" src="https://user-images.githubusercontent.com/5486164/113712330-e8a50600-96dd-11eb-9b09-4076830cf84c.png">
+  + :camera: **Verify:** The `RDS` NSG has network rules allowing **inbound** access from the IP address of the tier 2 SRE <img width="1028" alt="Screenshot 2021-04-06 at 13 42 09" src="https://user-images.githubusercontent.com/5486164/113712330-e8a50600-96dd-11eb-9b09-4076830cf84c.png">
   + :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
 
 + A device is managed by checking user permissions and where the device has come from. We should check that it is managed by the partner institution's IT team.
   + Check that the device is managed by the partner institution IT team
-  + :white_check_mark: **Verify**: The user lacks root access
+  + :white_check_mark: **Verify:** The user lacks root access
 + A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
   + Using a personal device, attempt to connect to the environment using the correct VPN and credentials
-  + :white_check_mark: **Verify**: Connection fails
+  + :white_check_mark: **Verify:** Connection fails
   + Using a managed device, attempt to connect to the environment using the correct VPN and credentials
-  + :white_check_mark: **Verify**: Connection succeeds
+  + :white_check_mark: **Verify:** Connection succeeds
 
 ## 4. Physical security
 
