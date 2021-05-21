@@ -253,11 +253,11 @@ To test all the above, you will need to act both as the administrator and data p
   + :white_check_mark: **Verify:** that you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes)
 
 + Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
-  + Ensure you're working from a device that will have a whitelisted IP address
+  + Ensure you're working from a device that will have a allowlisted IP address
   + Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the [ingress instructions for the data provider](../../how_to_guides/data_provider/how-to-ingress-data-as-provider.md)
   + :white_check_mark: **Verify:** that writing succeeds by uploading a file
   + :white_check_mark: **Verify:** that attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window
-  + Switch to a device that lacks a whitelisted IP address (or change your IP with a VPN)
+  + Switch to a device that lacks a allowlisted IP address (or change your IP with a VPN)
   + Attempt to write to the ingress volume via the test device
   + :white_check_mark: **Verify:** that the access token fails.
 
@@ -325,13 +325,13 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 
 Tier 2: User can access full package mirrors
 
-Tier 3: User can only access whitelisted package mirrors
+Tier 3: User can only access allowlisted package mirrors
 
 ### This means:
 
 Tier 2: The user can access any package included within our mirrors. They can freely use these packages without restriction.
 
-Tier 3: The user can only access a specific set of packages that we have agreed with. They will be unable to download any package not on the whitelist.
+Tier 3: The user can only access a specific set of packages that we have agreed with. They will be unable to download any package not on the allowlist.
 
 ### Verify by:
 
@@ -345,10 +345,10 @@ Tier 2:
 
 Tier 3:
 
-+ Download packages on the whitelist (see the lists in `environment_configs/package_lists`)
++ Download packages on the allowlist (see the lists in `environment_configs/package_lists`)
   + Login as a user into a DSVM via remote desktop web client
-  + Attempt to download a package included in the whitelist
-  + Then attempt to download a package that is not included in the whitelist
+  + Attempt to download a package included in the allowlist
+  + Then attempt to download a package that is not included in the allowlist
   + <details><summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary> <img src="https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png"></details>
 
 ## 11. Azure Firewalls
