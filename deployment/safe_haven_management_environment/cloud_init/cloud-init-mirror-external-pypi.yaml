@@ -181,7 +181,7 @@ write_files:
       enabled =
           exclude_platform
 
-      [blacklist]
+      [blocklist]
       platforms =
           windows
           macos

@@ -33,14 +33,14 @@ Specific risks which this policy aims to mitigate include:
 + For each supported programming language, three package lists will be maintained:
   + an allowlist of packages that are available from the package mirrors deployed in Tier 3 secure environments
   + a core list of broadly useful packages from the allowlist that are included in the DSVM image
-  + where applicable, a blacklist of packages (with specific version numbers) that have been specifically rejected due to known security vulnerabilities or other issues.
+  + where applicable, a denylist of packages (with specific version numbers) that have been specifically rejected due to known security vulnerabilities or other issues.
 
 + Users may request to add packages to the allowlist via the [procedure described below](#Package-request--review-procedure). In the interests of improving researcher productivity the aim will be to accommodate such requests, provided there are no outweighing security concerns associated with the package or its dependencies.
 
 + Requests will be reviewed by a safe haven administrator. When deciding whether to accept or reject a request, the reviewer will take into account:
   + information provided by the user when making the request
   + package author/contributor identities
-  + any existing package/version blacklist
+  + any existing package/version denylist
   + relevant data on the package *and* its full dependency tree including:
     + download statistics (recent and longer-term, current and previous versions)
     + publicly-accessible CVE databases (listing Common Vulnerabilities and Exposures)
