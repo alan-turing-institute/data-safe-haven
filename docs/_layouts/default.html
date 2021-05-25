@@ -179,6 +179,13 @@
               {% endfor %}
             </ul>
           </li>
+          <li class="active"> <a href="{{site.baseurl}}/how_to_guides/user_guides/">User guides</a>
+            <ul>
+              {% for doc in site.how_to_guides.user_guides %}
+                <li class="active"><a href="{{ doc.url | relative_url}}">{{ doc.title}}</a></li>
+              {% endfor %}
+            </ul>
+          </li>
         </ul>
       </nav>
 
