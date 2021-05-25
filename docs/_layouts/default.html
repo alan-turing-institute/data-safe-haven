@@ -172,32 +172,10 @@
 
       <nav class="nav nav--left">
         <ul>
-          <li><a href="{{site.baseurl}}">TuringBench</a>
+          <li class="active"> <a href="{{site.baseurl}}/explanations/">Explanations</a>
             <ul>
-              <li class="active"> <a href="{{site.baseurl}}#getting-started">Getting Started</a> </li>
-              <li class="active"> <a href="{{site.baseurl}}#workflow">TuringBench Workflow</a> </li>
-              <li class="active"> <a href="{{site.baseurl}}#contributing-benchmarks">Contributing Benchmarks</a> </li>
-              <li class="active"> <a href="{{site.baseurl}}#about-this-site">About</a> </li>
-            </ul>
-          </li>
-          <li>Resources
-            <ul>
-              <li class="active"> <a href="https://www.docker.com/get-started">Docker</a> </li>
-              <li class="active"> <a href="https://github.com/NVIDIA/nvidia-docker">NVIDIA-Docker</a> </li>
-              <li class="active"> <a href="https://www.sylabs.io/guides/3.1/user-guide/">Singularity</a> </li>
-            </ul>
-          </li>
-          <li class="active"> <a href="{{site.baseurl}}/workflow/">Examples</a>
-            <ul>
-              {% for example in site.examples %}
-                <li class="active"><a href="{{ example.url | relative_url}}">{{ example.title}}</a></li>
-              {% endfor %}
-            </ul>
-          </li>
-          <li class="active"><a href="{{site.baseurl}}/workflow/benchmarks/">Benchmarks</a>
-            <ul>
-              {% for benchmark in site.benchmarks %}
-                <li class="active"><a href="{{ benchmark.url | relative_url}}">{{ benchmark.title}}</a></li>
+              {% for doc in site.explanations %}
+                <li class="active"><a href="{{ doc.url | relative_url}}">{{ doc.title}}</a></li>
               {% endfor %}
             </ul>
           </li>
