@@ -147,8 +147,9 @@ $deployScriptLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
 $template.Replace("<domainAdminUsername>", $domainAdminUsername).
           Replace("<dsvmInitialIpAddress>", $dsvmInitialIpAddress).
-          Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
+          Replace("<cocalcIpAddress>", $config.sre.webapps.cocalc.ip).
           Replace("<codimdIpAddress>", $config.sre.webapps.codimd.ip).
+          Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
           Replace("<rdsGatewayVmFqdn>", $config.sre.remoteDesktop.gateway.fqdn).
           Replace("<rdsGatewayVmName>", $config.sre.remoteDesktop.gateway.vmName).
           Replace("<rdsAppSessionHostFqdn>", $config.sre.remoteDesktop.appSessionHost.fqdn).
