@@ -86,6 +86,7 @@ if ($sreResources -or $sreResourceGroups) {
         ForEach-Object { $_.Context.Name }
     $params = @{
         ShmFqdn                     = $config.shm.domain.fqdn
+        SreFqdn                     = $config.sre.domain.fqdn
         SreId                       = $config.sre.id
         PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
     }

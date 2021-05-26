@@ -18,10 +18,14 @@ function Expand-MustacheTemplate {
     # If we are given a path then we need to extract the content
     if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
 
+    # Define the delimiters
+    $MustacheOpen = "{"
+    $MustacheClose = "}"
+    $StartDelimiter = "${MustacheOpen}${MustacheOpen}"
+    $EndDelimiter = "${MustacheClose}${MustacheClose}"
+
     # Get all unique mustache tags
-    $StartDelimiter = "{{"
-    $EndDelimiter = "}}"
-    $tags = ($Template | Select-String -Pattern "$StartDelimiter(.*)$EndDelimiter" -AllMatches).Matches.Value | `
+    $tags = ($Template | Select-String -Pattern "$StartDelimiter[^${MustacheOpen}${MustacheClose}]*$EndDelimiter" -AllMatches).Matches.Value | `
         Where-Object { $_ -and ($_ -ne "{{.}}") } | `
         ForEach-Object { $_.Replace("#", "").Replace("/", "").Replace("?", "").Replace("^", "").Replace("&", "") } | `
         Get-Unique
@@ -39,6 +43,31 @@ function Expand-MustacheTemplate {
     return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json $PoshstacheParameters)
 }
 Export-ModuleMember -Function Expand-MustacheTemplate
+
+
+# Expand a cloud-init file by inserting any referenced resources
+# --------------------------------------------------------------
+function Expand-CloudInitResources {
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFile", HelpMessage = "Cloud-init template to be expanded.")]
+        [string]$Template,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to cloud-init template to be expanded.")]
+        [string]$TemplatePath,
+        [Parameter(Mandatory = $true, HelpMessage = "Path to resource files.")]
+        [string]$ResourcePath
+    )
+    # If we are given a path then we need to extract the content
+    if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
+
+    # Insert resources into the cloud-init template
+    foreach ($resource in (Get-ChildItem $ResourcePath)) {
+        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
+        $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+        $Template = $Template.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
+    }
+    return $Template
+}
+Export-ModuleMember -Function Expand-CloudInitResources
 
 
 # Get patched JSON from template

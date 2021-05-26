@@ -500,6 +500,16 @@
       "provider": "CoCalc",
       "rg": "RG_SHM_TESTA_SRE_T1COCAL_REMOTE_DESKTOP"
     },
+    "repositories": {
+      "cran": {
+        "url": "https://cran.r-project.org"
+      },
+      "pypi": {
+        "host": "pypi.org",
+        "index": "https://pypi.org",
+        "indexUrl": "https://pypi.org/simple"
+      }
+    },
     "rgPrefix": "RG_SHM_TESTA_SRE_T1COCAL",
     "shortName": "sre-t1cocal",
     "storage": {
@@ -591,6 +601,26 @@
       }
     },
     "webapps": {
+      "cocalc": {
+        "adminPasswordSecretName": "sre-t1cocal-vm-admin-password-cocalc",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "dockerVersion": "latest",
+        "fqdn": "COCALC.t1cocal.testa.dsgroupdev.co.uk",
+        "hostname": "COCALC",
+        "ip": "10.161.5.7",
+        "osVersion": "20.04-LTS",
+        "vmName": "COCALC-SRE-T1COCAL",
+        "vmSize": "Standard_D2s_v3"
+      },
       "codimd": {
         "adminPasswordSecretName": "sre-t1cocal-vm-admin-password-codimd",
         "codimd": {
@@ -606,10 +636,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-T1COCAL.testa.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-T1COCAL",
+        "fqdn": "CODIMD.t1cocal.testa.dsgroupdev.co.uk",
+        "hostname": "CODIMD",
         "ip": "10.161.5.6",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
           "passwordSecretName": "sre-t1cocal-other-codimd-password-postgresdb"
@@ -629,10 +659,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-T1COCAL.testa.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-T1COCAL",
+        "fqdn": "GITLAB.t1cocal.testa.dsgroupdev.co.uk",
+        "hostname": "GITLAB",
         "ip": "10.161.5.5",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "rootPasswordSecretName": "sre-t1cocal-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-T1COCAL",
         "vmSize": "Standard_D2s_v3"

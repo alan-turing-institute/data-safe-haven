@@ -20,7 +20,9 @@
 + [:link: Share files with collaborators](#link-share-files-with-collaborators)
   + [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
   + [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
-+ [:couple: Collaborate on code using GitLab](#couple-collaborate-on-code-using-gitlab)
++ [:couple: Collaborate on code using CoCalc](#couple-collaborate-on-code-using-cocalc)
+  + [:unlock: Access CoCalc](#unlock-access-cocalc)
++ [:file_cabinet: Versioning code using GitLab](#file_cabinet-versioning-code-using-gitlab)
   + [:books: Maintaining an archive of the project](#books-maintaining-an-archive-of-the-project)
   + [:unlock: Access GitLab](#unlock-access-gitlab)
   + [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
@@ -659,15 +661,51 @@ They will have to discuss whether this is an acceptable risk to the data securit
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
-## :couple: Collaborate on code using GitLab
+## :couple: Collaborate on code using CoCalc
+
+CoCalc is a collaborative calculation and data science environment.
+It lets you work with others on projects, using Jupyter, LaTeX, Octave, Python or R in collaborative notebooks.
+
+The CoCalc instance within the SRE is the easiest way to work directly with others in your team (for example pair-programming) who might not be physically near you.
+You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
+
+### :unlock: Access CoCalc
+
+You can access CoCalc from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+
+The first time that you login, you will see a security warning. This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_security_warning.png" width="80%" title="cocalc_security_warning"/>
+   </p>
+
+You will then get to the CoCalc homepage where you should click on `Sign In`
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_homepage.png" width="80%" title="cocalc_homepage"/>
+   </p>
+
+You will need to create a new account. You can use any username/password here - it is not connected to your main Safe Haven account.
+
+> :information_source: Our example user, Ada Lovelace has used `ada.lovelace@apr20.turingsafehaven.ac.uk` as her username and set her own password
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_account_creation.png" width="80%" title="cocalc_account_creation"/>
+   </p>
+
+> The CoCalc instance within the SRE is entirely separate from the https://cocalc.com service
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CoCalc from the `CoCalc` icon on the Work Resources page.
+
+## :file_cabinet: Versioning code using GitLab
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
-It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
+It allows you to use git to **version control** your work, coordinate tasks using GitLab **issues** and review work using GitLab **merge requests**.
 
 As GitLab make all their source code publicly available for reuse, anyone can host their own version of GitLab.
 So while there is a central service run by the GitLab organisation at https://gitlab.com, an organisation can run their own version - which looks exactly the same - at their own web address.
 
-The GitLab instance within the SRE can contain code, documentation and results from you and your team's analyses.
+The GitLab instance within the SRE can contain code, documentation and results from your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
 
 ### :books: Maintaining an archive of the project
@@ -684,7 +722,7 @@ Anything that you think should be considered for **egress** from the environment
 
 ### :unlock: Access GitLab
 
-You can access GitLab from the `GitLab` icon on the Work Resources page.
+You can access GitLab from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
@@ -694,20 +732,11 @@ Login with username `firstname.lastname` (the domain is not needed) and `passwor
       <img src="../../images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login"/>
    </p>
 
-  > :warning: Do not use your username and password from a pre-existing GitLab account.
-  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-You can also access GitLab from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access GitLab from the Work Resources page.
-
-> :point_right: Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the "All Resources" tab ever time you want to launch GitLab (although you can do if that's easiest!)
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD.
-+ If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :warning: Do not use your username and password from a pre-existing GitLab account! The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access GitLab from the `GitLab` icon on the Work Resources page.
 
 ### :open_hands: Public repositories within the SRE
 
@@ -742,7 +771,7 @@ We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/ad
 
 ### :unlock: Access CodiMD
 
-You can access CodiMD from the `CodiMD` icon on the Work Resources page.
+You can access CodiMD from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
 Login with your long-form username `firstname.lastname@<username domain>` and `password`.
 
@@ -752,17 +781,9 @@ Login with your long-form username `firstname.lastname@<username domain>` and `p
       <img src="../../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
    </p>
 
-You can also access CodiMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access CodiMD from the Work Resources page.
+Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-> :point_right: Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the `All Resources` tab ever time you want to launch CodiMD.
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD
-+ Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CodiMD from the `CodiMD` icon on the Work Resources page.
 
 ### :busts_in_silhouette: Editing other people's documents
 
