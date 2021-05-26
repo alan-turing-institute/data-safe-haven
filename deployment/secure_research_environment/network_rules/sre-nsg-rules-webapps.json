@@ -84,7 +84,19 @@
         "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
         "destinationPortRange": "*",
         "direction": "Outbound",
-        "priority": 2000,
+        "priority": 2500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowPrivateDataEndpointsOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to private endpoints in the VNet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3000,
         "protocol": "*",
         "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
         "sourcePortRange": "*"

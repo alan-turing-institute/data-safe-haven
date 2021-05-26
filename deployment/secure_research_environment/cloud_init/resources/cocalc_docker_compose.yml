@@ -15,4 +15,5 @@ services:
             - /etc/timezone:/etc/timezone:ro
             - /etc/pip.conf:/etc/pip.conf:ro
             - /etc/R/Rprofile.site:/etc/R/Rprofile.site:ro
+            - /ingress:/data:ro
         restart: always
