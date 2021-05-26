@@ -37,7 +37,23 @@ This diagram shows the security standards we're trying to meet for Data Safe Hav
 
 ## Prerequisites
 
-If you haven't already, you'll need download a VPN certificate and configure [VPN access](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM that the SRE you're testing uses and make sure you can log in to the [domain controller (DC1) via Remote Desktop](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop), as well as the [network policy server (NPS)](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#log-in-to-the-nps-vm-using-microsoft-remote-desktop).
++ **Deployed SHM** that you are testing
++ **Deployed SRE A** that is attached to the SHM
++ **Deployed SRE B** that is attached to the same SHM
+
++ **VPN access** to the SHM that you are testing
+  + If you haven't already, you'll need download a VPN certificate and configure [VPN access](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM
+  + Make sure you can use Remote Desktop to log in to the [domain controller (DC1)](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop) and the [network policy server (NPS)](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#log-in-to-the-nps-vm-using-microsoft-remote-desktop).
+
+The following users will be needed for this checklist
+
++ **SRE standard user** who is a member of the **SRE A** research users group
+  + Create a new user **without** MFA
+    + Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
+    + Visit https://aka.ms/mfasetup in an incognito browser
+    + Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
++ **System administrator** who has `Contributor` permissions (or higher) on the underlying Azure subscription
++ **Data provider** who has no accounts on the Safe Haven system
 
 ## 1. Multifactor Authentication and Password strength
 
@@ -53,21 +69,18 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 ### Verify by:
 
-+ Create a new user without MFA and check that the user cannot access the apps
-  + Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
-  + Visit https://aka.ms/mfasetup in an incognito browser
-  + Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
++ Check that the **SRE standard user** cannot access the apps
   + Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + <details><summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary> <img width="549" alt="1-1d-cropped" src="https://user-images.githubusercontent.com/5486164/118115124-73b1a400-b3e0-11eb-92d3-aab5aa90d89c.png"></details>
   + <details><summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary> <img width="549" alt="1-1e-cropped" src="https://user-images.githubusercontent.com/5486164/118115140-7b714880-b3e0-11eb-9235-d2d8c75d75a6.png"></b>
 + <details><summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary> <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png"></details>
-+ Check that the user is able to successfully set up MFA
++ Check that the **SRE standard user** is able to successfully set up MFA
   + Visit https://aka.ms/mfasetup again
   + Login as the user you set up
   + :white_check_mark: **Verify:** user guided to set up MFA
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
   + <details><summary>:camera: <b>Verify:</b> successfully set up MFA</summary> <img src="https://user-images.githubusercontent.com/5486164/112996434-13cea900-9164-11eb-9ddd-db638c64846a.png"></details>
-+ Check that MFA is working as we expect
++ Check that the **SRE standard user** can now access the apps
   + <details><summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary> <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png"></details>
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
@@ -101,17 +114,19 @@ SREs in the same SHM are still isolated from one another.
   + Choose your favourite three websites and attempt to access the internet using a browser
   + <details><summary>:camera: <b>Verify:</b> Connection fails</summary> <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png"></details>
   + <details><summary>:camera: <b>Verify:</b> that when you "curl" a website, you do not receive a response</summary> <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png"></details>
-+ Check that users cannot connect between two SREs within the same SHM, even if they have access to both SREs
-  + Ensure you have two SREs managed by the same SHM
-  + Connect to a DSVM in SRE A as a user by using the web client. On a separate browser window, do the same for SRE B.
-  + Attempt to copy and paste a file from one SRE desktop to another
-  + :white_check_mark: **Verify:** Copy and paste is not possible
-  + Attempt to connect to SRE B's DSVM via SSH from SRE A:
++ Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
+  + Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
+  + Connect to SRE A as the **SRE standard user** by using the web client.
   + Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
   + Right click on the PuTTY terminal and click `New Session...`
   + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + Click `Open`
   + <details><summary>:camera: <b>Verify:</b> Connection fails </summary> <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png"></details>
++ Check that users cannot copy files from one SRE to another one in the same SHM
+  + Connect to a DSVM in SRE A as the **SRE standard user** by using the web client.
+  + In a separate browser window, do the same for SRE B.
+  + Attempt to copy and paste a file from one SRE desktop to another
+  + :white_check_mark: **Verify:** Copy and paste is not possible
 + Check that the network rules are set appropriately to block outgoing traffic
   + Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
   + <details><summary>:camera: <b>Verify:</b> There exists a "DenyInternetOutbound" rule with Destination "Internet" and Action "Deny" and no higher priority rule allows connection to the internet.</summary> <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png"></details>
@@ -192,7 +207,7 @@ User can connect via remote desktop but cannot connect through other means such 
 
 ### Verify by:
 
-+ Unable to connect as a non-admin user to the DSVM via SSH
++ Unable to connect as the **SRE standard user** to the DSVM via SSH
   + Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
   + Attempt ssh login with `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)
   + <details><summary>:camera: <b>Verify:</b> ssh login fails </summary> <img src="https://user-images.githubusercontent.com/5486164/114535742-45f20780-9c48-11eb-9ccc-71351e776d8c.png"></details>
@@ -210,16 +225,16 @@ One cannot copy something from outside the network and paste it into the network
 
 ### Verify by:
 
-+ One is unable to copy some text from outside the network, into a DSVM and vice versa
++ Users are unable to copy some text from outside the network, into a DSVM and vice versa
   + Copy some text from your deployment device
-  + Login to a DSVM via the remote desktop web client
+  + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
   + :white_check_mark: **Verify:** paste fails
   + Write some next in the note pad or terminal of the DSVM and copy it
   + Attempt to copy the text externally to deployment device (e.g. into URL of browser)
   + :white_check_mark: **Verify:** paste fails
-+ One can copy between VMs inside the network
-  + Login to a DSVM via the remote desktop web client
++ Users cannot copy between VMs inside the network
+  + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
   + Connect to another DSVM (for example, the SSH connection) via the remote desktop web client (as a second tab)
   + Attempt to paste the text to it.
@@ -248,16 +263,16 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 To test all the above, you will need to act both as the administrator and data provider:
 
-+ Generate the secure upload token and check it can be sent to the email address provided by the data provider via a secure email system
++ As the **system administrator** generate a secure upload token and check it can be sent to the email address provided by the **data provider** via a secure email system
   + :white_check_mark: **Verify:** that a secure upload token can be created with write-only permissions, by following the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-ingress), using the IP address of your own device in place of that of the data provider
   + :white_check_mark: **Verify:** that you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes)
 
 + Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
-  + Ensure you're working from a device that will have a allowlisted IP address
+  + As the **data provider**, ensure you're working from a device that has an allow-listed IP address
   + Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the [ingress instructions for the data provider](../../how_to_guides/data_provider/how-to-ingress-data-as-provider.md)
   + :white_check_mark: **Verify:** that writing succeeds by uploading a file
   + :white_check_mark: **Verify:** that attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window
-  + Switch to a device that lacks a allowlisted IP address (or change your IP with a VPN)
+  + Switch to a device that lacks an allow-listed IP address (or change your IP with a VPN)
   + Attempt to write to the ingress volume via the test device
   + :white_check_mark: **Verify:** that the access token fails.
 
@@ -276,17 +291,17 @@ SREs contain an `/output` volume, in which SRE users can store data designated f
 
 ### This means:
 
-A domain administrator can view and download data in the `/output` volume via Azure Storage Explorer.
+A **system administrator** can view and download data in the `/output` volume via Azure Storage Explorer.
 
 ### Verify by:
 
-+ Confirm that a user is able to read the different storage volumes and write to Output
-  + Login to a DSVM as a non privileged user account via the remote desktop web client
++ Confirm that a non-privileged user is able to read the different storage volumes and write to Output
+  + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + Open up a file explorer and search for the various storage volumes
   + :white_check_mark: **Verify:** that the `/output` volume exists and can be read and written to
   + :white_check_mark: **Verify:** that the permissions of other storage volumes match that described in the [user guide](../../how_to_guides/user_guides/user-guide.md#open_file_folder-shared-directories-within-the-sre)
 + Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
-  + Follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access files set for egress with Azure Storage Explorer
+  + As the **system administrator**, follow the instructions in the [administrator document](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#data-egress) on how to access files set for egress with Azure Storage Explorer
   + :white_check_mark: **Verify:** You can see the files written to the Output storage volume (including any you created as a non-privileged user in step 1)
   + :white_check_mark: **Verify:** that a written file can be taken out of the environment via download
 
@@ -338,7 +353,7 @@ Tier 3: The user can only access a specific set of packages that we have agreed 
 Tier 2:
 
 + Download packages from the full mirror.
-  + Login as a user into a DSVM via remote desktop web client
+  + Login as the **SRE standard user** into a DSVM via remote desktop web client
   + Open up a terminal
   + Attempt to install any package that is not included at base (for example, try `pip install sklearn`)
   + <details><summary>:camera: <b>Verify:</b> You cannot install the package </summary> <img src="https://user-images.githubusercontent.com/5486164/114565858-96c62800-9c69-11eb-8300-bef6bb169002.png"></details>
@@ -346,7 +361,7 @@ Tier 2:
 Tier 3:
 
 + Download packages on the allowlist (see the lists in `environment_configs/package_lists`)
-  + Login as a user into a DSVM via remote desktop web client
+  + Login as the **SRE standard user** into a DSVM via remote desktop web client
   + Attempt to download a package included in the allowlist
   + Then attempt to download a package that is not included in the allowlist
   + <details><summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary> <img src="https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png"></details>
@@ -364,11 +379,11 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
 ### Verify by:
 
 + Admin has limited access to the internet
-  + Connect to an administrator VM such as the SHM-DC
-  + Attempt to connect to your favourite non standard site
+  + As the **system administrator** use Remote Desktop to connect to the SHM domain controller VM
+  + Attempt to connect to a non-approved site, such as `www.google.com`
   + <details><summary>:camera: <b>Verify:</b> connection fails</summary> <img src="https://user-images.githubusercontent.com/5486164/113720408-800e5700-96e6-11eb-914a-dd176de94c6a.png"></details>
 + Admin can download Windows updates
-  + Connect to an administrator VM such as the SHM-DC
+  + As the **system administrator** use Remote Desktop to connect to the SHM domain controller VM
   + Click on `Start -> Settings-> Update & Security`
   + Click the `Download` button
   + <details><summary>:camera: <b>Verify:</b> download and update successful</summary><img src="https://user-images.githubusercontent.com/5486164/113721176-340fe200-96e7-11eb-9316-1869a8724e11.png"></details>
