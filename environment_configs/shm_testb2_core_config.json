@@ -1,0 +1,25 @@
+{
+    "name": "Turing Dev Safe Haven B2",
+    "shmId": "testb2",
+    "domain": "testb.dsgroupdev.co.uk",
+    "timezone": "Europe/London",
+    "azure": {
+        "subscriptionName": "Safe Haven Management Test B",
+        "adminGroupName" : "Safe Haven Test Admins",
+        "location": "uksouth"
+    },
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB",
+        "contactEmail": "safehavendevs@turing.ac.uk"
+    },
+    "dnsRecords": {
+        "subscriptionName": "[Prod] Safe Haven Domains",
+        "resourceGroupName": "RG_SHM_DNS_TEST"
+    },
+    "vmImages": {
+        "subscriptionName": "[Prod] Safe Haven VM Images"
+    }
+}
