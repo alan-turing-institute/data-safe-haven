@@ -21,16 +21,17 @@ resource "azurerm_storage_account" "scripts" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
   access_tier              = "Hot"
+  allow_blob_public_access = true
 }
 
 data "azurerm_storage_account_sas" "dcscriptssas" {
-    connection_string = azurerm_storage_account.artifacts.primary_connection_string
+    connection_string = azurerm_storage_account.scripts.primary_connection_string
     https_only        = true
-    signed_version    = "2017-07-29"
+    signed_version    = "2020-02-10"
 
     resource_types {
-        service   = true
         container = true
+        service   = true
         object    = true
     }
 
@@ -42,7 +43,7 @@ data "azurerm_storage_account_sas" "dcscriptssas" {
     }
 
     start  = timestamp()
-    expiry = timeadd(timestamp(), "2h")
+    expiry = timeadd(timestamp(), "4h")
 
     permissions {
         read    = true
@@ -74,7 +75,6 @@ resource "azurerm_storage_blob" "Active_Directory_Configuration_ps1" {
   source                 = var.dc_active_directory_configuration_path
 }
 
-
 resource "azurerm_storage_account" "artifacts" {
   name                     = var.art_sa_name
   resource_group_name      = azurerm_resource_group.artifacts.name
@@ -88,11 +88,11 @@ resource "azurerm_storage_account" "artifacts" {
 data "azurerm_storage_account_sas" "dcartifactssas" {
     connection_string = azurerm_storage_account.artifacts.primary_connection_string
     https_only        = true
-    signed_version    = "2017-07-29"
+    signed_version    = "2020-02-10"
 
     resource_types {
-        service   = true
         container = true
+        service   = true
         object    = true
     }
 
@@ -104,7 +104,7 @@ data "azurerm_storage_account_sas" "dcartifactssas" {
     }
 
     start  = timestamp()
-    expiry = timeadd(timestamp(), "2h")
+    expiry = timeadd(timestamp(), "4h")
 
     permissions {
         read    = true

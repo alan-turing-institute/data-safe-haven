@@ -152,8 +152,7 @@ resource "azurerm_virtual_machine" "dc2vm" {
 }
 
 resource "azurerm_virtual_machine_extension" "dc1vmadforest" {
-    name                       = "configdcvm1"
-    # "CreateADForest"
+    name                       = "CreateADForest"
     virtual_machine_id         = azurerm_virtual_machine.dc1vm.id
     publisher                  = "Microsoft.Powershell"
     type                       = "DSC"
@@ -191,41 +190,68 @@ resource "azurerm_virtual_machine_extension" "dc1vmadforest" {
     PROTECTED_SETTINGS
 }
 
-resource "azurerm_virtual_machine_extension" "dcactivedirectoryconfig" {
-    name                       = "configdcvm1"
-    # "ActiveDirectoryConfiguration"
+resource "azurerm_virtual_machine_extension" "dc1activedirectoryconfig" {
+    name                       = "ActiveDirectoryConfiguration"
     virtual_machine_id         = azurerm_virtual_machine.dc1vm.id
-    publisher                  = "Microsoft.Powershell"
-    type                       = "DSC"
-    type_handler_version       = "2.77"
+    publisher                  = "Microsoft.Compute"
+    type                       = "CustomScriptExtension"
+    type_handler_version       = "1.10"
     auto_upgrade_minor_version = true
+    
+    depends_on                 = [azurerm_virtual_machine_extension.dc1vmadforest]
 
     settings = <<SETTINGS
-    {
-        "WMFVersion": "latest",
-        "configuration": {
-            "url": "${var.scripts_location}/shm-configuration-dc/Active_Directory_Configuration.ps1",
-            "script": "Active_Directory_Configuration.ps1",
-            "function": "ActiveDirectoryConfiguration"
-        },
-        "configurationArguments": {
-            "domainAdminUsername": "${var.administrator_user}",
-            "domainControllerVmName": "${var.dc1_vm_name}",
-            "domainOuBase": "${var.domain_ou_base}",
-            "gpoBackupPath": "${var.gpo_backup_path_b64}",
-            "netbiosName": "${var.domain_netbios_name}",
-            "shmFdqn": "${var.domain_name}",
-            "securityGroupsB64": "${var.security_groups_b64}",
-            "userAccountsB64": "${var.user_accounts_b64}"
-        }
+    {  
     }
     SETTINGS
     protected_settings = <<PROTECTED_SETTINGS
     {
-        "configurationUrlSasToken": "${var.scripts_location_sas_token}"
+        "commandToExecute": "powershell.exe -domainAdminUsername ${var.administrator_user} -domainControllerVmName ${var.dc1_vm_name} -domainOuBase ${var.domain_ou_base} -gpoBackupPath ${var.gpo_backup_path_b64} -netbiosName ${var.domain_netbios_name} -shmFdqn ${var.domain_name} -securityGroupsB64 ${var.security_groups_b64} -userAccountsB64 ${var.user_accounts_b64} -File Active_Directory_Configuration.ps1;",
+        "fileUris": ["${var.scripts_location}/shm-configuration-dc/Active_Directory_Configuration.ps1${var.scripts_location_sas_token}"]
     }
+   
     PROTECTED_SETTINGS
 }
+
+
+# resource "azurerm_virtual_machine_extension" "dcactivedirectoryconfig" {
+#     # name                       = "configdcvm1"
+#     name                       = "ActiveDirectoryConfiguration"
+#     virtual_machine_id         = azurerm_virtual_machine.dc1vm.id
+#     publisher                  = "Microsoft.Powershell"
+#     type                       = "DSC"
+#     type_handler_version       = "2.77"
+#     auto_upgrade_minor_version = true
+
+#     settings = <<SETTINGS
+#     {
+#         "WMFVersion": "latest",
+#         "configuration": {
+#             "url": "${var.scripts_location}/shm-configuration-dc/Active_Directory_Configuration.ps1",
+#             "script": "Active_Directory_Configuration.ps1",
+#             "function": "ActiveDirectoryConfiguration"
+#         },
+#         "configurationArguments": {
+#             "domainAdminUsername": "${var.administrator_user}",
+#             "domainControllerVmName": "${var.dc1_vm_name}",
+#             "domainOuBase": "${var.domain_ou_base}",
+#             "gpoBackupPath": "${var.gpo_backup_path_b64}",
+#             "netbiosName": "${var.domain_netbios_name}",
+#             "shmFdqn": "${var.domain_name}",
+#             "securityGroupsB64": "${var.security_groups_b64}",
+#             "userAccountsB64": "${var.user_accounts_b64}"
+#         }
+#     }
+#     SETTINGS
+#     protected_settings = <<PROTECTED_SETTINGS
+#     {
+#         "configurationUrlSasToken": "${var.scripts_location_sas_token}"
+#     }
+#     PROTECTED_SETTINGS
+# }
+
+
+
 
 resource "azurerm_virtual_machine_extension" "dc2vmadbdc" {
     name                       = "CreateADBDC"
@@ -234,6 +260,8 @@ resource "azurerm_virtual_machine_extension" "dc2vmadbdc" {
     type                       = "DSC"
     type_handler_version       = "2.77"
     auto_upgrade_minor_version = true
+
+    depends_on                 = [azurerm_virtual_machine_extension.dc1vmadforest]
 
     settings = <<SETTINGS
     {
