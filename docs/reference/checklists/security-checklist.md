@@ -9,7 +9,7 @@ In this check list we aim to do the following things:
 This diagram shows the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs). The security checklist currently focuses on checks that can verify these security requirements for tier 2+ SREs (with some steps noted as specific to a tier):
 
 <p align="center">
-    <img src="../../images/security_checklist/recommended-controls.png" width="80%" title="recommended-controls">
+  <img src="../../images/security_checklist/recommended_controls.png" width="80%" title="recommended_controls"/>
 </p>
 
 ## How to use this checklist
@@ -71,17 +71,32 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
 + Check that the **SRE standard user** cannot access the apps
   + Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + <details><summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary> <img width="549" alt="1-1d-cropped" src="https://user-images.githubusercontent.com/5486164/118115124-73b1a400-b3e0-11eb-92d3-aab5aa90d89c.png"></details>
-  + <details><summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary> <img width="549" alt="1-1e-cropped" src="https://user-images.githubusercontent.com/5486164/118115140-7b714880-b3e0-11eb-9235-d2d8c75d75a6.png"></b>
-+ <details><summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary> <img width="619" alt="Screenshot 2021-03-30 at 14 14 34" src="https://user-images.githubusercontent.com/5486164/112995318-006f0e00-9163-11eb-9310-dca76d800dca.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary>
+      <img src="../../images/security_checklist/msrds_dashboard_no_apps.png" width="80%" title="msrds_dashboard_no_apps"/>
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary>
+      <img src="../../images/security_checklist/msrds_dashboard_with_apps.png" width="80%" title="msrds_dashboard_with_apps"/>
+    </details>
++ <details>
+    <summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary>
+    <img src="../../images/security_checklist/msrds_failed_to_connect.png" width="80%" title="msrds_failed_to_connect"/>
+  </details>
 + Check that the **SRE standard user** is able to successfully set up MFA
   + Visit https://aka.ms/mfasetup again
   + Login as the user you set up
   + :white_check_mark: **Verify:** user guided to set up MFA
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
-  + <details><summary>:camera: <b>Verify:</b> successfully set up MFA</summary> <img src="https://user-images.githubusercontent.com/5486164/112996434-13cea900-9164-11eb-9ddd-db638c64846a.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> successfully set up MFA</summary>
+      <img src="../../images/security_checklist/aad_additional_security_verification.png" width="80%" title="aad_additional_security_verification"/>
+    </details>
 + Check that the **SRE standard user** can now access the apps
-  + <details><summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary> <img width="418" alt="Screenshot 2021-03-30 at 14 32 36" src="https://user-images.githubusercontent.com/5486164/112998020-8ab87180-9165-11eb-9933-b0e2258d2c9a.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary>
+      <img src="../../images/security_checklist/aad_mfa_approve_signin_request.png" width="80%" title="aad_mfa_approve_signin_request"/>
+    </details>
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
 
@@ -112,8 +127,14 @@ SREs in the same SHM are still isolated from one another.
 + Be unable to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
   + Choose your favourite three websites and attempt to access the internet using a browser
-  + <details><summary>:camera: <b>Verify:</b> Connection fails</summary> <img width="938" alt="2-2c-cropped" src="https://user-images.githubusercontent.com/5486164/118115368-c25f3e00-b3e0-11eb-8afd-6d7ab86d6de0.png"></details>
-  + <details><summary>:camera: <b>Verify:</b> that when you "curl" a website, you do not receive a response</summary> <img width="539" alt="Screenshot 2021-03-30 at 15 57 05" src="https://user-images.githubusercontent.com/5486164/113010241-99585600-9170-11eb-9345-49cc39558dce.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> Connection fails</summary>
+      <img src="../../images/security_checklist/dsvm_no_internet.png" width="80%" title="dsvm_no_internet"/>
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> that when you "curl" a website, you do not receive a response</summary>
+      <img src="../../images/security_checklist/dsvm_no_curl.png" width="80%" title="dsvm_no_curl"/>
+    </details>
 + Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
   + Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
   + Connect to SRE A as the **SRE standard user** by using the web client.
@@ -156,7 +177,10 @@ For tier 2:
   + :white_check_mark: **Verify:** Connection succeeds
 + There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
   + Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  + <details><summary>:camera: <b>Verify:</b> The RDS NSG has network rules allowing <b>inbound</b> access from the IP address of the tier 2 SRE </summary><img width="1028" alt="Screenshot 2021-04-06 at 13 42 09" src="https://user-images.githubusercontent.com/5486164/113712330-e8a50600-96dd-11eb-9b09-4076830cf84c.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> The RDS NSG has network rules allowing <b>inbound</b> access from the IP address of the tier 2 SRE </summary>
+      <img src="../../images/security_checklist/nsg_inbound_access.png" width="80%" title="nsg_inbound_access"/>
+    </details>
   + :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
@@ -210,7 +234,9 @@ User can connect via remote desktop but cannot connect through other means such 
 + Unable to connect as the **SRE standard user** to the DSVM via SSH
   + Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
   + Attempt ssh login with `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)
-  + <details><summary>:camera: <b>Verify:</b> ssh login fails </summary> <img src="https://user-images.githubusercontent.com/5486164/114535742-45f20780-9c48-11eb-9ccc-71351e776d8c.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> ssh login fails </summary>
+      <img src="../../images/security_checklist/dsvm_no_ssh.png" width="80%" title="dsvm_no_ssh"/>
   + :white_check_mark: **Verify:** The RDS server (`RDG-SRE-<SRE ID>`) is the only resource with a public IP address
 
 ## 6. Copy-and-paste
@@ -327,7 +353,9 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 ### Verify by:
 
 + Check that software was installed during deployment (via outbound internet), but that outbound internet access on the DSVM is closed off after deployment:
-  + <details><summary>:camera: <b>Verify:</b> Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access)</summary> <img src="https://user-images.githubusercontent.com/5486164/118102097-43620980-b3d0-11eb-838a-1973389865af.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access)</summary>
+      <img src="../../images/security_checklist/msrds_dashboard_apps_check.png" width="80%" title="msrds_dashboard_apps_check"/>
 + Check that it's possible to grant and revoke software ingress capability by following the instructions in the [Safe Haven Administrator Documentation](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#software-ingress):
   + :white_check_mark: **Verify:** You can generate a temporary write-only upload token
   + :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
@@ -356,7 +384,10 @@ Tier 2:
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
   + Open up a terminal
   + Attempt to install any package that is not included at base (for example, try `pip install sklearn`)
-  + <details><summary>:camera: <b>Verify:</b> You cannot install the package </summary> <img src="https://user-images.githubusercontent.com/5486164/114565858-96c62800-9c69-11eb-8300-bef6bb169002.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> You cannot install the package </summary>
+      <img src="../../images/security_checklist/dsvm_install_package.png" width="80%" title="dsvm_install_package"/>
+    </details>
 
 Tier 3:
 
@@ -364,7 +395,10 @@ Tier 3:
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
   + Attempt to download a package included in the allowlist
   + Then attempt to download a package that is not included in the allowlist
-  + <details><summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary> <img src="https://user-images.githubusercontent.com/5486164/114577970-659f2500-9c74-11eb-9a8c-8321cbfb05c0.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary>
+      <img src="../../images/security_checklist/dsvm_fail_package.png" width="80%" title="dsvm_fail_package"/>
+    </details>
 
 ## 11. Azure Firewalls
 
@@ -381,9 +415,16 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
 + Admin has limited access to the internet
   + As the **system administrator** use Remote Desktop to connect to the SHM domain controller VM
   + Attempt to connect to a non-approved site, such as `www.google.com`
-  + <details><summary>:camera: <b>Verify:</b> connection fails</summary> <img src="https://user-images.githubusercontent.com/5486164/113720408-800e5700-96e6-11eb-914a-dd176de94c6a.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> connection fails</summary>
+      <img src="../../images/security_checklist/dsvm_website_deny.png" width="80%" title="dsvm_website_deny"/>
+    </details>
 + Admin can download Windows updates
   + As the **system administrator** use Remote Desktop to connect to the SHM domain controller VM
   + Click on `Start -> Settings-> Update & Security`
   + Click the `Download` button
-  + <details><summary>:camera: <b>Verify:</b> download and update successful</summary><img src="https://user-images.githubusercontent.com/5486164/113721176-340fe200-96e7-11eb-9316-1869a8724e11.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> download and update successful</summary>
+      shmdc_windows_update.png
+      <img src="../../images/security_checklist/shmdc_windows_update.png" width="80%" title="shmdc_windows_update"/>
+    </details>
