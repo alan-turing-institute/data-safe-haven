@@ -21,6 +21,7 @@
   + [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
   + [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
 + [:couple: Collaborate on code using CoCalc](#couple-collaborate-on-code-using-cocalc)
+  + [:unlock: Access CoCalc](#unlock-access-cocalc)
 + [:file_cabinet: Versioning code using GitLab](#file_cabinet-versioning-code-using-gitlab)
   + [:books: Maintaining an archive of the project](#books-maintaining-an-archive-of-the-project)
   + [:unlock: Access GitLab](#unlock-access-gitlab)
@@ -663,10 +664,38 @@ They will have to discuss whether this is an acceptable risk to the data securit
 ## :couple: Collaborate on code using CoCalc
 
 CoCalc is a collaborative calculation and data science environment.
-It lets you work with others on projects, using Jupyter, LaTeX, Octave, Python or R in collborative notebooks.
+It lets you work with others on projects, using Jupyter, LaTeX, Octave, Python or R in collaborative notebooks.
 
-The CoCalc instance within the SRE is the easiest way to work directly with others in your team (for example  pair-programming) who might not be physically near you.
+The CoCalc instance within the SRE is the easiest way to work directly with others in your team (for example pair-programming) who might not be physically near you.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
+
+### :unlock: Access CoCalc
+
+You can access CoCalc from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+
+The first time that you login, you will see a security warning. This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_security_warning.png" width="80%" title="cocalc_security_warning"/>
+   </p>
+
+You will then get to the CoCalc homepage where you should click on `Sign In`
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_homepage.png" width="80%" title="cocalc_homepage"/>
+   </p>
+
+You will need to create a new account. You can use any username/password here - it is not connected to your main Safe Haven account.
+
+> :information_source: Our example user, Ada Lovelace has used `ada.lovelace@apr20.turingsafehaven.ac.uk` as her username and set her own password
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_account_creation.png" width="80%" title="cocalc_account_creation"/>
+   </p>
+
+> The CoCalc instance within the SRE is entirely separate from the https://cocalc.com service
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CoCalc from the `CoCalc` icon on the Work Resources page.
 
 ## :file_cabinet: Versioning code using GitLab
 
@@ -705,8 +734,8 @@ Login with username `firstname.lastname` (the domain is not needed) and `passwor
 
 Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-> :warning: Do not use your username and password from a pre-existing GitLab account.
-> The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+> :warning: Do not use your username and password from a pre-existing GitLab account! The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+>
 > :point_right: If your SRE uses Microsoft Remote Desktop you can also access GitLab from the `GitLab` icon on the Work Resources page.
 
 ### :open_hands: Public repositories within the SRE
