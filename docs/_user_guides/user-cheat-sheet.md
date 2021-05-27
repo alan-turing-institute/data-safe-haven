@@ -3,8 +3,6 @@ layout: page
 title: Cheat Sheet
 ---
 
-# Data Safe Havens - Cheat Sheet
-
 ## Introduction to Data Safe Havens
 
 Welcome to the Turing Safe Haven tool. Secure environments for analysis of sensitive datasets are essential for research, giving data providers confidence that their datasets will be kept secure over the course of a project. Here at the Turing, we've developed a tool that allows you to set up secure research environments for your projects at scale, to allow you to work on sensitive / confidential datasets.

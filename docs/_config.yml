@@ -4,15 +4,19 @@ description: >- # this means to ignore newlines until "baseurl:"
   Turing Data Safe Haven Documentation.
 baseurl: /data-safe-haven # the subpath of your site, e.g. /blog
 collections:
-  how_to_guides:
+  data_provider:
     output: true
-  explanations:
+  dev_and_admin:
     output: true
-  reference:
-    output: true
-  tutorial:
+  checklists:
     output: true
   user_guides:
+    output: true
+  general:
+    output: true
+  principal_investigator:
+    output: true
+  project_manager:
     output: true
 markdown: GFM
 
