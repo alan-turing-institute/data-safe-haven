@@ -359,7 +359,7 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 
 ### Verify by:
 
-+ Check that software was installed during deployment, but that outbound internet access on the DSVM is closed off after deployment:
++ Check that some software tools were installed as expected during deployment
   + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + <details>
       <summary>:camera: <b>Verify:</b> Confirm that the following programmes can be opened without issue: DBeaver, RStudio, PyCharm and Visual Studio Code</summary>
