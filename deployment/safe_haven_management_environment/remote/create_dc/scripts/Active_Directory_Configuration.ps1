@@ -190,7 +190,7 @@ foreach ($ouName in ("<ou-research-users-name>",
 # Create security groups
 # ----------------------
 Write-Output "Creating security groups..."
-$securityGroups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
+$securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
 foreach ($groupCfg in $securityGroups.PSObject.Members) {
     if ($groupCfg.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
     $groupName = $groupCfg.Value.name
@@ -210,7 +210,7 @@ foreach ($groupCfg in $securityGroups.PSObject.Members) {
 
 # Decode user accounts and create them
 # ------------------------------------
-$userAccounts = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
+$userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
 $serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 # Azure active directory synchronisation service account
 # NB. As of build 1.4.###.# it is no longer supported to use an enterprise admin or a domain admin account with AD Connect.

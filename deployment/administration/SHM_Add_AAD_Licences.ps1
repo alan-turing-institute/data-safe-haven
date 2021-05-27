@@ -1,7 +1,7 @@
 param(
-  [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+  [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId,
-  [Parameter(Mandatory = $false, HelpMessage = "Sku for the licence you want to assign")]
+  [Parameter(Mandatory = $false, HelpMessage = "SKU for the licence you want to assign")]
   [string]$licenceSku = "AAD_PREMIUM"
 )
 
@@ -9,7 +9,7 @@ Import-Module AzureAD.Standard.Preview -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $shmDomain = $config.domain.fqdn
 
 # Connect to the Azure AD
@@ -24,7 +24,6 @@ $Licence.SkuId = (Get-AzureADSubscribedSku | Where-Object -Property SkuPartNumbe
 $LicencesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicenses
 $LicencesToAssign.AddLicenses = $Licence
 Add-LogMessage -Level Info "Preparing to add licence '$licenceSku' ($($Licence.SkuId)) to unlicenced users"
-
 
 # Find all users without assigned licences who have an OnPremisesSecurityIdentifier (indicating that they were synched from a local AD)
 $unlicensedUsers = Get-AzureADUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }

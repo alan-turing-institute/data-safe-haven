@@ -20,15 +20,17 @@
 + [:link: Share files with collaborators](#link-share-files-with-collaborators)
   + [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
   + [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
-+ [:couple: Collaborate on code using GitLab](#couple-collaborate-on-code-using-gitlab)
++ [:couple: Collaborate on code using CoCalc](#couple-collaborate-on-code-using-cocalc)
+  + [:unlock: Access CoCalc](#unlock-access-cocalc)
++ [:file_cabinet: Versioning code using GitLab](#file_cabinet-versioning-code-using-gitlab)
   + [:books: Maintaining an archive of the project](#books-maintaining-an-archive-of-the-project)
   + [:unlock: Access GitLab](#unlock-access-gitlab)
   + [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
   + [:construction_worker: Support for GitLab use](#construction_worker-support-for-gitlab-use)
-+ [:book: Collaborate on documents using HackMD](#book-collaborate-on-documents-using-hackmd)
-  + [:unlock: Access HackMD](#unlock-access-hackmd)
++ [:book: Collaborate on documents using CodiMD](#book-collaborate-on-documents-using-codimd)
+  + [:unlock: Access CodiMD](#unlock-access-codimd)
   + [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
-  + [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
+  + [:microscope: Troubleshooting CodiMD](#microscope-troubleshooting-codimd)
 + [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
 + [:green_book: Access databases](#green_book-access-databases)
   + [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
@@ -89,6 +91,7 @@ Make sure you have all of the following in front of you when connecting to the S
 + :european_castle: The [domain name and URL](#domain-names) for the SRE, given in an email from your SRE administrator.
 + :computer: Your computer.
 + :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
++ :lock: [Data security training](#data-security-training-requirements) for those working on health datasets.
 + :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
 
 You should also know who the **designated contact** for your SRE is.
@@ -118,6 +121,26 @@ You will be told what these requirements are for your particular environment.
 
 > :point_right: Make sure you know the networks from which you must connect to your SRE.
 > This information will be available in the email you received with your connection information.
+
+#### Data security training requirements
+
+This only applies to DSH users working on health data.
+
+Users required to undertake data security awareness training:
+
++ Safe Haven code owners and those with admin access to the Safe Haven Github (including organisational admins). This is to ensure integrity of the Safe Haven supply chain.
++ Safe Haven administrators
++ IT Azure admin team, as they have admin access to all subscriptions
++ Safe Haven programme and project managers, as they can create a new project and request an SRE is created
++ All Researchers with access to data in scope of DSPT that is currently managed by Turing
++ Data Provider Representatives, Principal Investigators and Referees for data in scope of DSPT that is currently managed by Turing
+
+The requirement is documented proof of (within 1 year):
+
++ Organisational Data Protection training (or Turing's training)
++ Organisational Information Security training (or Turing's training)
++ [NHS Data Security Awareness training](https://www.e-lfh.org.uk/programmes/data-security-awareness)
++ We may accept equivalent qualifications from another organisations that meet their own DSPT requirements
 
 #### Your phone for multi-factor authentication
 
@@ -495,11 +518,9 @@ This will give output like:
 
 ``` bash
   system
-  2.7.18
   3.6.11
-
-* 3.7.8 (set by /home/ada.lovelace/.pyenv_version)
-
+  3.7.8
+* 3.8.3 (set by /home/ada.lovelace/.pyenv_version)
 ```
 
 You can change your preferred Python version globally or on a folder-by-folder basis using
@@ -565,9 +586,9 @@ pip install --user <package-name>
 Depending on the type of data you are accessing, different `R` and `python` packages will be available to you (in addition to the ones that are pre-installed):
 
 + Tier-2 (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
-+ Tier-3 (high security) environments only have pre-authorised "whitelisted" packages available.
++ Tier-3 (high security) environments only have pre-authorised packages available.
 
-If you need to use a package that is not on the approved whitelist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
+If you need to use a package that is not on the allowlist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
 
 ## :link: Share files with collaborators
 
@@ -601,7 +622,7 @@ The `/shared/` folder should be used for any work that you want to share with yo
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
 The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`
 
@@ -640,15 +661,51 @@ They will have to discuss whether this is an acceptable risk to the data securit
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
-## :couple: Collaborate on code using GitLab
+## :couple: Collaborate on code using CoCalc
+
+CoCalc is a collaborative calculation and data science environment.
+It lets you work with others on projects, using Jupyter, LaTeX, Octave, Python or R in collaborative notebooks.
+
+The CoCalc instance within the SRE is the easiest way to work directly with others in your team (for example pair-programming) who might not be physically near you.
+You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
+
+### :unlock: Access CoCalc
+
+You can access CoCalc from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+
+The first time that you login, you will see a security warning. This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_security_warning.png" width="80%" title="cocalc_security_warning"/>
+   </p>
+
+You will then get to the CoCalc homepage where you should click on `Sign In`
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_homepage.png" width="80%" title="cocalc_homepage"/>
+   </p>
+
+You will need to create a new account. You can use any username/password here - it is not connected to your main Safe Haven account.
+
+> :information_source: Our example user, Ada Lovelace has used `ada.lovelace@apr20.turingsafehaven.ac.uk` as her username and set her own password
+
+   <p align="center">
+      <img src="../../images/user_guide/cocalc_account_creation.png" width="80%" title="cocalc_account_creation"/>
+   </p>
+
+> The CoCalc instance within the SRE is entirely separate from the https://cocalc.com service
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CoCalc from the `CoCalc` icon on the Work Resources page.
+
+## :file_cabinet: Versioning code using GitLab
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
-It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
+It allows you to use git to **version control** your work, coordinate tasks using GitLab **issues** and review work using GitLab **merge requests**.
 
 As GitLab make all their source code publicly available for reuse, anyone can host their own version of GitLab.
 So while there is a central service run by the GitLab organisation at https://gitlab.com, an organisation can run their own version - which looks exactly the same - at their own web address.
 
-The GitLab instance within the SRE can contain code, documentation and results from you and your team's analyses.
+The GitLab instance within the SRE can contain code, documentation and results from your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
 
 ### :books: Maintaining an archive of the project
@@ -665,7 +722,7 @@ Anything that you think should be considered for **egress** from the environment
 
 ### :unlock: Access GitLab
 
-You can access GitLab from the `GitLab` icon on the Work Resources page.
+You can access GitLab from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
@@ -675,20 +732,11 @@ Login with username `firstname.lastname` (the domain is not needed) and `passwor
       <img src="../../images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login"/>
    </p>
 
-  > :warning: Do not use your username and password from a pre-existing GitLab account.
-  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-You can also access GitLab from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access GitLab from the Work Resources page.
-
-> :point_right: Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the "All Resources" tab ever time you want to launch GitLab (although you can do if that's easiest!)
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/HackMD.
-+ If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :warning: Do not use your username and password from a pre-existing GitLab account! The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access GitLab from the `GitLab` icon on the Work Resources page.
 
 ### :open_hands: Public repositories within the SRE
 
@@ -709,53 +757,45 @@ If you have not used GitLab before:
 + Ask the designated contact for your SRE.
 + There may be a dedicated discussion channel, for example during Turing Data Study Groups you can ask in the Slack channel.
 
-## :book: Collaborate on documents using HackMD
+## :book: Collaborate on documents using CodiMD
 
-HackMD is a locally installed tool that allows you to collaboratively write reports.
-It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
+CodiMD is a locally installed tool that allows you to collaboratively write reports.
+It uses Markdown which is a simple way to format your text so that it renders nicely in full HTML.
 
-> :earth_africa: Although we colloquially refer to this tool as HackMD, it is actually an installation of CodiMD: a fully open source version of the HackMD software.
+> :earth_africa: CodiMD is a fully open source version of the HackMD software.
 >
-> This information doesn't matter at all for how you use HackMD within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
-> You can read more about CodiMD at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd---the-open-source-hackmd>).
+> This information doesn't matter at all for how you use CodiMD within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
+> You can read more about CodiMD at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
 
 We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](<https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet>)
 
-### :unlock: Access HackMD
+### :unlock: Access CodiMD
 
-You can access HackMD from the `HackMD` icon on the Work Resources page.
+You can access CodiMD from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
-Login with your short-form username `firstname.lastname` and `password`.
+Login with your long-form username `firstname.lastname@<username domain>` and `password`.
 
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_logon.png" width="80%" title="hackmd_logon"/>
+      <img src="../../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
    </p>
 
-You can also access HackMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access HackMD from the Work Resources page.
+Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-> :point_right: Accessing HackMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the `All Resources` tab ever time you want to launch HackMD.
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/HackMD
-+ Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CodiMD from the `CodiMD` icon on the Work Resources page.
 
 ### :busts_in_silhouette: Editing other people's documents
 
-The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
+The CodiMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
 When you make a markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
-They will have the right to change the file if they are signed into the HackMD instance.
+They will have the right to change the file if they are signed into the CodiMD instance.
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_access_options.png" width="80%" title="hackmd_logon"/>
+      <img src="../../images/user_guide/codimd_access_options.png" width="80%" title="codimd_logon"/>
    </p>
 
 > :handshake: We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
@@ -768,7 +808,7 @@ Click the `Publish` button to publish the document and generate the short URL.
 Click the pen button (shown in the image below) to return to the editable markdown view.
 
    <p align="center">
-      <img src="../../images/user_guide/hackmd_screenshot.png" width="80%" title="hackmd_screenshot"/>
+      <img src="../../images/user_guide/codimd_screenshot.png" width="80%" title="codimd_screenshot"/>
    </p>
 
 > :pencil2: We recommend **publishing** the document to get a much shorter URL to share with your team.
@@ -776,11 +816,11 @@ Click the pen button (shown in the image below) to return to the editable markdo
 > Remember that the document is not published to the internet, it is only available to others within the SRE.
 >
 > :point_right: If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
-> Store a copy of the HackMD url in a text file in the outputs folder.
+> Store a copy of the CodiMD url in a text file in the outputs folder.
 > You will find some example report templates that outline the recommended structure.
-> We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
+> We recommend writing the report in CodiMD - rather than GitLab - so that everyone can edit and contribute quickly.
 
-### :microscope: Troubleshooting HackMD
+### :microscope: Troubleshooting CodiMD
 
 We have noticed that a lower case `L` and an upper case `I` look the same and often trip up users in the SRE.
 
@@ -948,6 +988,7 @@ head(df, 3)
 
 ``` R
 library(DBI)
+library(RPostgres)
 
 # Connect to the databases
 cnxn <- DBI::dbConnect(

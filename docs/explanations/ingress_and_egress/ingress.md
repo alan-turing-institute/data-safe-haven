@@ -62,7 +62,7 @@ As a general rule, code which is primarily written by researchers on any particu
 
 ### Installation during virtual machine deployment
 
-Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software sucan be installed during deployment.
+Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software can be installed during deployment.
 In this case, software installation is performed while the virtual machine is outside of the Environment with outbound internet access available, but no access to any project data.
 Once the additional software has been installed, the virtual machine is ingressed to the Environment via a one-way airlock.
 

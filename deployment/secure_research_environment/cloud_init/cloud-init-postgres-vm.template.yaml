@@ -107,7 +107,7 @@ write_files:
     content: |
       #! /bin/bash
       echo ">=== Ensuring that LDAP sync has run... ===<"
-      sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+      sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv 2>&1
 
   - path: "/etc/local/runonce.d/03-set-public-schema-permissions.sh"
     owner: root:root
@@ -160,17 +160,17 @@ write_files:
     content: |
       <realmd.conf>
 
-  - path: "/opt/configuration/configure-dns.sh"
+  - path: "/opt/configuration/configure_dns.sh"
     owner: root:root
     permissions: "0500"
     content: |
-      <configure-dns.sh>
+      <configure_dns.sh>
 
-  - path: "/opt/configuration/configure-hostname.sh"
+  - path: "/opt/configuration/configure_hostname.sh"
     owner: root:root
     permissions: "0500"
     content: |
-      <configure-hostname.sh>
+      <configure_hostname.sh>
 
   - path: "/opt/configuration/create-postgres-triggers.sql"
     owner: root:root
@@ -282,7 +282,7 @@ write_files:
 
       # Search parameters for LDAP users which should be synchronized
       ldap_users:
-        base: <ldap-users-base-dn>
+        base: <ldap-user-base-dn>
         # LDAP filter defining which LDAP users should be synchronized
         filter: <ldap-user-filter>
         # this attribute is used as PG role name
@@ -363,8 +363,8 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure-dns.sh
-  - /opt/configuration/configure-hostname.sh
+  - /opt/configuration/configure_dns.sh
+  - /opt/configuration/configure_hostname.sh
   - systemctl enable sssd
   # Check Kerberos settings
   - echo "Checking Kerberos config"

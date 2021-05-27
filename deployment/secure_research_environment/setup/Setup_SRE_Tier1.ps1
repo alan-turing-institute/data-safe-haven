@@ -1,6 +1,8 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Mandatory = $false, HelpMessage = "Path to the users file for the Tier1 VM")]
@@ -20,9 +22,16 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
 
 
 # Get absolute path to users file
@@ -45,14 +54,14 @@ $subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -Vir
 
 # Ensure that NSG exists
 # ----------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 2000 `
                              -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
+                             -Access $config.sre.remoteDesktop.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange * `
@@ -97,22 +106,22 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -VirtualNetwork $sreVnet -NetworkSecurityGroup $nsg
 
 
-# Retrieve credentials from the keyvault
-# --------------------------------------
+# Retrieve credentials from the Key Vault
+# ---------------------------------------
 $keyVault = $config.sre.keyVault.name
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $keyVault -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 
 
 # Ensure that the persistent data storage account exists
 # ------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
 $dataStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.persistentdata.account.name `
                                             -AccessTier $config.sre.storage.persistentdata.account.accessTier `
-                                            -ResourceGroupName $config.sre.dataserver.rg `
+                                            -ResourceGroupName $config.sre.storage.artifacts.rg `
                                             -Kind $config.sre.storage.persistentdata.account.storageKind `
                                             -SkuName $config.sre.storage.persistentdata.account.performance `
                                             -Location $config.sre.location
-$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.dataserver.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
+$dataStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $config.sre.storage.artifacts.rg -Name $dataStorageAccount.StorageAccountName | Where-Object { $_.KeyName -eq "key1" }).Value
 
 
 # Deploy storage shares for data ingress and egress
@@ -146,7 +155,7 @@ $vmNic = Deploy-VirtualMachineNIC -Name "${vmName}-NIC" -ResourceGroupName $conf
 $vmPublicIpAddress = (Get-AzPublicIpAddress -Name "${vmName}-NIC-PIP" -ResourceGroupName $config.sre.dsvm.rg).IpAddress
 
 
-# Ensure that SSH keys exist in the key vault
+# Ensure that SSH keys exist in the Key Vault
 # -------------------------------------------
 $publicKeySecretName = "sre-tier1-key-public"
 $privateKeySecretName = "sre-tier1-key-private"
@@ -182,7 +191,7 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         } else {
             Add-LogMessage -Level Fatal "Failed to create new Ansible SSH key pair!"
         }
-        # Upload keys to key vault
+        # Upload keys to Key Vault
         $null = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem.pub" -Raw) -AsPlaintext
         $success = $?
         $null = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -DefaultValue $(Get-Content "$($vmName).pem" -Raw) -AsPlaintext
@@ -197,8 +206,8 @@ if (-not ((Get-AzKeyVaultSecret -VaultName $keyVault -Name $publicKeySecretName)
         Remove-Item "${vmName}.pem*" -Force -ErrorAction SilentlyContinue
     }
 }
-# Fetch SSH keys from key vault
-Add-LogMessage -Level Info "Retrieving SSH keys from key vault"
+# Fetch SSH keys from Key Vault
+Add-LogMessage -Level Info "Retrieving SSH keys from Key Vault"
 $sshPublicKey = Resolve-KeyVaultSecret -SecretName $publicKeySecretName -VaultName $keyVault -AsPlaintext
 $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -VaultName $keyVault -AsPlaintext
 

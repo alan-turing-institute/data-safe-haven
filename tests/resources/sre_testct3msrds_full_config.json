@@ -1,0 +1,759 @@
+{
+  "shm": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "dc": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "external_dns_resolver": "168.63.129.16",
+      "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-TESTC",
+      "installationDirectory": "C:\\Installation",
+      "ip": "10.0.0.4",
+      "rg": "RG_SHM_TESTC_DC",
+      "safemodePasswordSecretName": "shm-testc-vm-safemode-password-dc",
+      "vmName": "DC1-SHM-TESTC",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dcb": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DC2-SHM-TESTC.testc.dsgroupdev.co.uk",
+      "hostname": "DC2-SHM-TESTC",
+      "ip": "10.0.0.5",
+      "vmName": "DC2-SHM-TESTC",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS_TEST",
+      "subscriptionName": "[Prod] Safe Haven Domains"
+    },
+    "domain": {
+      "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "testc.dsgroupdev.co.uk",
+      "netbiosName": "TESTC",
+      "ous": {
+        "databaseServers": {
+          "name": "Secure Research Environment Database Servers",
+          "path": "OU=Secure Research Environment Database Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Identity Servers",
+          "path": "OU=Safe Haven Identity Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Linux Servers",
+          "path": "OU=Secure Research Environment Linux Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment RDS Gateway Servers",
+          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
+        }
+      },
+      "securityGroups": {
+        "computerManagers": {
+          "description": "SG Safe Haven Computer Management Users",
+          "name": "SG Safe Haven Computer Management Users"
+        },
+        "serverAdmins": {
+          "description": "SG Safe Haven Server Administrators",
+          "name": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTC",
+      "routeTableName": "ROUTE-TABLE-SHM-TESTC"
+    },
+    "id": "testc",
+    "keyVault": {
+      "name": "kv-shm-testc",
+      "rg": "RG_SHM_TESTC_SECRETS",
+      "secretNames": {
+        "aadEmergencyAdminPassword": "shm-testc-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-testc-aad-emergency-admin-username",
+        "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
+        "domainAdminPassword": "shm-testc-domain-admin-password",
+        "domainAdminUsername": "shm-testc-domain-admin-username",
+        "vmAdminUsername": "shm-testc-vm-admin-username",
+        "vpnCaCertificate": "shm-testc-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-testc-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-testc-vpn-client-cert",
+        "vpnClientCertPassword": "shm-testc-vpn-client-cert-password"
+      }
+    },
+    "location": "uksouth",
+    "logging": {
+      "rg": "RG_SHM_TESTC_LOGGING",
+      "workspaceName": "shmtestcloganalytics"
+    },
+    "mirrors": {
+      "cran": {
+        "tier2": {
+          "diskSize": 128,
+          "external": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-2",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 32,
+          "external": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "tier2": {
+          "diskSize": 8192,
+          "external": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-2",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 512,
+          "external": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "rg": "RG_SHM_TESTC_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms"
+    },
+    "name": "Turing Development Safe Haven C",
+    "network": {
+      "mirrorVnets": {
+        "tier2": {
+          "cidr": "10.20.2.0/24",
+          "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER2",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.2.0/28",
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
+            },
+            "internal": {
+              "cidr": "10.20.2.16/28",
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER2"
+              }
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.20.3.0/24",
+          "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER3",
+          "subnets": {
+            "external": {
+              "cidr": "10.20.3.0/28",
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
+            },
+            "internal": {
+              "cidr": "10.20.3.16/28",
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3"
+              }
+            }
+          }
+        }
+      },
+      "repositoryVnet": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositorySubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+              "rules": "shm-nsg-rules-nexus.json"
+            }
+          }
+        }
+      },
+      "vnet": {
+        "cidr": "10.0.0.0/21",
+        "name": "VNET_SHM_TESTC",
+        "rg": "RG_SHM_TESTC_NETWORKING",
+        "subnets": {
+          "firewall": {
+            "cidr": "10.0.2.0/24",
+            "name": "AzureFirewallSubnet"
+          },
+          "gateway": {
+            "cidr": "10.0.7.0/24",
+            "name": "GatewaySubnet"
+          },
+          "identity": {
+            "cidr": "10.0.0.0/24",
+            "name": "IdentitySubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_IDENTITY"
+            }
+          }
+        }
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
+      }
+    },
+    "nps": {
+      "adminPasswordSecretName": "shm-testc-vm-admin-password-nps",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "hostname": "NPS-SHM-TESTC",
+      "installationDirectory": "C:\\Installation",
+      "ip": "10.0.0.6",
+      "rg": "RG_SHM_TESTC_NPS",
+      "vmName": "NPS-SHM-TESTC",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "nsgPrefix": "NSG_SHM_TESTC",
+    "organisation": {
+      "contactEmail": "safehavendevs@turing.ac.uk",
+      "countryCode": "GB",
+      "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
+      "townCity": "London"
+    },
+    "repository": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    },
+    "rgPrefix": "RG_SHM_TESTC",
+    "storage": {
+      "artifacts": {
+        "accountName": "shmtestcartifactslubiehy",
+        "rg": "RG_SHM_TESTC_STORAGE"
+      },
+      "bootdiagnostics": {
+        "accountName": "shmtestcbootdiagslubiehy",
+        "rg": "RG_SHM_TESTC_STORAGE"
+      },
+      "persistentdata": {
+        "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
+      }
+    },
+    "subscriptionName": "Safe Haven Management Test C",
+    "time": {
+      "ntp": {
+        "poolFqdn": "time.google.com",
+        "serverAddresses": [
+          "216.239.35.0",
+          "216.239.35.4",
+          "216.239.35.8",
+          "216.239.35.12"
+        ],
+        "serverFqdns": [
+          "time.google.com",
+          "time1.google.com",
+          "time2.google.com",
+          "time3.google.com",
+          "time4.google.com"
+        ]
+      },
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "databaseServers": {
+          "name": "TESTC Database Servers Manager",
+          "passwordSecretName": "shm-testc-computer-manager-password-database-servers",
+          "samAccountName": "testcdatabasesrvrs"
+        },
+        "identityServers": {
+          "name": "TESTC Identity Servers Manager",
+          "passwordSecretName": "shm-testc-computer-manager-password-identity-servers",
+          "samAccountName": "testcidentitysrvrs"
+        },
+        "linuxServers": {
+          "name": "TESTC Linux Servers Manager",
+          "passwordSecretName": "shm-testc-computer-manager-password-linux-servers",
+          "samAccountName": "testclinuxsrvrs"
+        },
+        "rdsGatewayServers": {
+          "name": "TESTC RDS Gateway Manager",
+          "passwordSecretName": "shm-testc-computer-manager-password-rds-gateway-servers",
+          "samAccountName": "testcgatewaysrvrs"
+        },
+        "rdsSessionServers": {
+          "name": "TESTC RDS Session Servers Manager",
+          "passwordSecretName": "shm-testc-computer-manager-password-rds-session-servers",
+          "samAccountName": "testcsessionsrvrs"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "TESTC Local AD Sync Administrator",
+          "passwordSecretName": "shm-testc-aad-localsync-password",
+          "samAccountName": "testclocaladsync",
+          "usernameSecretName": "shm-testc-aad-localsync-username"
+        }
+      }
+    }
+  },
+  "sre": {
+    "azureAdminGroupName": "Safe Haven Test Admins",
+    "databases": {
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-t3msrds-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-t3msrds-db-admin-username-mssql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true,
+        "ip": "10.151.3.4",
+        "port": "1433",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "type": "MSSQL",
+        "vmName": "MSSQL-T3MSRDS",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-t3msrds-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-t3msrds-db-admin-username-postgresql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "ip": "10.151.3.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "type": "PostgreSQL",
+        "vmName": "PSTGRS-T3MSRDS",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_DATABASES"
+    },
+    "domain": {
+      "dn": "DC=t3msrds,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "t3msrds.testc.dsgroupdev.co.uk",
+      "netbiosName": "T3MSRDS",
+      "securityGroups": {
+        "dataAdministrators": {
+          "description": "SG T3MSRDS Data Administrators",
+          "name": "SG T3MSRDS Data Administrators"
+        },
+        "researchUsers": {
+          "description": "SG T3MSRDS Research Users",
+          "name": "SG T3MSRDS Research Users"
+        },
+        "systemAdministrators": {
+          "description": "SG T3MSRDS System Administrators",
+          "name": "SG T3MSRDS System Administrators"
+        }
+      }
+    },
+    "dsvm": {
+      "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-compute",
+      "disks": {
+        "os": {
+          "sizeGb": "default",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "1024",
+          "type": "Standard_LRS"
+        }
+      },
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
+      "vmImage": {
+        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "subscription": "[Prod] Safe Haven VM Images",
+        "type": "Ubuntu",
+        "version": "0.3.2021032200"
+      },
+      "vmSizeDefault": "Standard_D2s_v3"
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-T3MSRDS"
+    },
+    "id": "t3msrds",
+    "keyVault": {
+      "name": "kv-testc-sre-t3msrds",
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-t3msrds-vm-admin-username",
+        "letsEncryptCertificate": "sre-t3msrds-lets-encrypt-certificate",
+        "npsSecret": "sre-t3msrds-other-nps-secret"
+      }
+    },
+    "location": "uksouth",
+    "network": {
+      "vnet": {
+        "cidr": "10.151.0.0/21",
+        "name": "VNET_SHM_TESTC_SRE_T3MSRDS",
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_NETWORKING",
+        "subnets": {
+          "compute": {
+            "cidr": "10.151.4.0/24",
+            "name": "ComputeSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
+              "rules": "sre-nsg-rules-compute.json"
+            }
+          },
+          "data": {
+            "cidr": "10.151.2.0/24",
+            "name": "PrivateDataSubnet"
+          },
+          "databases": {
+            "cidr": "10.151.3.0/24",
+            "name": "DatabasesSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DATABASES",
+              "rules": "sre-nsg-rules-databases.json"
+            }
+          },
+          "deployment": {
+            "cidr": "10.151.0.0/24",
+            "name": "DeploymentSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DEPLOYMENT",
+              "rules": "sre-nsg-rules-compute-deployment.json"
+            }
+          },
+          "remoteDesktop": {
+            "cidr": "10.151.1.0/24",
+            "name": "RemoteDesktopSubnet"
+          },
+          "webapps": {
+            "cidr": "10.151.5.0/24",
+            "name": "WebappsSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_SRE_T3MSRDS_WEBAPPS",
+              "rules": "sre-nsg-rules-webapps.json"
+            }
+          }
+        }
+      }
+    },
+    "nexus": false,
+    "nsgPrefix": "NSG_SHM_TESTC_SRE_T3MSRDS",
+    "remoteDesktop": {
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-sh1",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "APP-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "APP-SRE-T3MSRDS",
+        "ip": "10.151.1.5",
+        "nsg": {
+          "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SESSION_HOSTS",
+          "rules": "sre-nsg-rules-session-hosts.json"
+        },
+        "vmName": "APP-SRE-T3MSRDS",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "gateway": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-gateway",
+        "disks": {
+          "data": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "RDG-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
+        "hostname": "RDG-SRE-T3MSRDS",
+        "installationDirectory": "C:\\Installation",
+        "ip": "10.151.1.4",
+        "nsg": {
+          "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SERVER",
+          "rules": "sre-nsg-rules-gateway.json"
+        },
+        "vmName": "RDG-SRE-T3MSRDS",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "networkRules": {
+        "allowedSources": "193.60.220.240",
+        "copyAllowed": false,
+        "includeAzurePlatformDnsRule": true,
+        "outboundInternet": "Deny",
+        "pasteAllowed": false
+      },
+      "provider": "MicrosoftRDS",
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_REMOTE_DESKTOP"
+    },
+    "repositories": {
+      "cran": {
+        "url": "http://10.20.3.21"
+      },
+      "pypi": {
+        "host": "10.20.3.20",
+        "index": "http://10.20.3.20:3128",
+        "indexUrl": "http://10.20.3.20:3128/simple"
+      }
+    },
+    "rgPrefix": "RG_SHM_TESTC_SRE_T3MSRDS",
+    "shortName": "sre-t3msrds",
+    "storage": {
+      "accessPolicies": {
+        "readOnly": {
+          "permissions": "rl"
+        },
+        "readWrite": {
+          "permissions": "racwdl"
+        }
+      },
+      "artifacts": {
+        "account": {
+          "accessTier": "Cool",
+          "allowedIpAddresses": "any",
+          "name": "testct3msrdsartifactsreu",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
+      },
+      "bootdiagnostics": {
+        "accountName": "testct3msrdsbootdiagsreu",
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
+      },
+      "persistentdata": {
+        "account": {
+          "accessTier": "Hot",
+          "allowedIpAddresses": "193.60.220.253",
+          "name": "testct3msrdsdatareultqbi",
+          "performance": "Standard_LRS",
+          "storageKind": "BlobStorage"
+        },
+        "containers": {
+          "egress": {
+            "accessPolicyName": "readWrite",
+            "connectionSecretName": "sre-t3msrds-data-egress-connection-readwrite",
+            "mountType": "BlobSMB"
+          },
+          "ingress": {
+            "accessPolicyName": "readOnly",
+            "connectionSecretName": "sre-t3msrds-data-ingress-connection-readonly",
+            "mountType": "BlobSMB"
+          }
+        }
+      },
+      "userdata": {
+        "account": {
+          "accessTier": "Hot",
+          "name": "testct3msrdsuserdatareul",
+          "performance": "Premium_LRS",
+          "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE",
+          "storageKind": "FileStorage"
+        },
+        "containers": {
+          "home": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          },
+          "shared": {
+            "accessPolicyName": "readWrite",
+            "mountType": "NFS",
+            "sizeGb": "1024"
+          }
+        }
+      }
+    },
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+    "tier": "3",
+    "time": {
+      "timezone": {
+        "linux": "Europe/London",
+        "windows": "GMT Standard Time"
+      }
+    },
+    "users": {
+      "serviceAccounts": {
+        "ldapSearch": {
+          "name": "T3MSRDS LDAP Search Service Account",
+          "passwordSecretName": "sre-t3msrds-other-service-account-password-ldap-search",
+          "samAccountName": "t3msrdsldapsearch"
+        },
+        "postgres": {
+          "name": "T3MSRDS Postgres DB Service Account",
+          "passwordSecretName": "sre-t3msrds-db-service-account-password-postgres",
+          "samAccountName": "t3msrdsdbpostgres"
+        }
+      }
+    },
+    "webapps": {
+      "cocalc": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-cocalc",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "dockerVersion": "latest",
+        "fqdn": "COCALC.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "COCALC",
+        "ip": "10.151.5.7",
+        "osVersion": "20.04-LTS",
+        "vmName": "COCALC-SRE-T3MSRDS",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "codimd": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-codimd",
+        "codimd": {
+          "dockerVersion": "2.3.2"
+        },
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "CODIMD.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "CODIMD",
+        "ip": "10.151.5.6",
+        "osVersion": "20.04-LTS",
+        "postgres": {
+          "dockerVersion": "13.1",
+          "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
+        },
+        "vmName": "CODIMD-SRE-T3MSRDS",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "gitlab": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-gitlab",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "GITLAB.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "GITLAB",
+        "ip": "10.151.5.5",
+        "osVersion": "20.04-LTS",
+        "rootPasswordSecretName": "sre-t3msrds-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-T3MSRDS",
+        "vmSize": "Standard_D2s_v3"
+      },
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_WEBAPPS"
+    }
+  }
+}

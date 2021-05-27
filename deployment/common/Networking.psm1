@@ -1,4 +1,6 @@
+Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -191,7 +193,11 @@ function Set-NetworkSecurityGroupRules {
     } catch {
         Add-LogMessage -Level Fatal "Error adding provided rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
     }
-    $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
+    try {
+        $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup -ErrorAction Stop
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to add one or more NSG rules!" -Exception $_.Exception
+    }
     $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
     foreach ($updatedRule in $updatedRules) {
         $sourceAddressText = ($updatedRule.SourceAddressPrefix -eq "*") ? "any source" : $updatedRule.SourceAddressPrefix
@@ -202,6 +208,48 @@ function Set-NetworkSecurityGroupRules {
     return $NetworkSecurityGroup
 }
 Export-ModuleMember -Function Set-NetworkSecurityGroupRules
+
+
+# Update DNS record on the SHM for a VM
+# -------------------------------------
+function Update-VMDnsRecords {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of primary DC VM")]
+        [string]$DcName,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group of primary DC VM")]
+        [string]$DcResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for this SHM")]
+        [string]$BaseFqdn,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the SHM subscription")]
+        [string]$ShmSubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Hostname of VM whose records need to be updated")]
+        [string]$VmHostname,
+        [Parameter(Mandatory = $true, HelpMessage = "IP address for this VM")]
+        [string]$VmIpAddress
+    )
+    # Get original subscription
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -SubscriptionId $ShmSubscriptionName -ErrorAction Stop
+        Add-LogMessage -Level Info "[ ] Resetting DNS record for VM '$VmHostname'..."
+        $params = @{
+            Fqdn      = $BaseFqdn
+            HostName  = ($VmHostname | Limit-StringLength -MaximumLength 15)
+            IpAddress = $VMIpAddress
+        }
+        $scriptPath = Join-Path $PSScriptRoot "remote" "ResetDNSRecord.ps1"
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $DcName -ResourceGroupName $DcResourceGroupName -Parameter $params
+        if ($?) {
+            Add-LogMessage -Level Success "Resetting DNS record for VM '$VmHostname' was successful"
+        } else {
+            Add-LogMessage -Level Failure "Resetting DNS record for VM '$VmHostname' failed!"
+        }
+    } finally {
+        # Switch back to original subscription
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+}
+Export-ModuleMember -Function Update-VMDnsRecords
 
 
 # Update subnet and IP address for a VM

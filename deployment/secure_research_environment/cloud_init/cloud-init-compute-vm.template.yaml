@@ -20,7 +20,6 @@ mounts:
 
 write_files:
   - path: "/etc/bash.bashrc"
-    owner: root:root
     permissions: "0644"
     append: true
     content: |
@@ -34,7 +33,6 @@ write_files:
       fi
 
   - path: "/etc/clamav/clamd.conf"
-    owner: root:root
     permissions: "0644"
     append: true
     content: |
@@ -56,13 +54,11 @@ write_files:
       @reboot root /usr/local/bin/runonce | logger -t SafeHaven
 
   - path: "/etc/domain-join.secret"
-    owner: root:root
     permissions: "0400"
     content: |
       <domain-join-password>
 
   - path: "/etc/jaas.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       pgjdbc {
@@ -74,7 +70,6 @@ write_files:
       };
 
   - path: "/etc/ldap.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       # The distinguished name of the search base.
@@ -91,13 +86,11 @@ write_files:
       pam_password md5
 
   - path: "/etc/ldap.secret"
-    owner: root:root
     permissions: "0400"
     content: |
       <ldap-search-user-password>
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
-    owner: root:root
     permissions: "0500"
     content: |
       #! /bin/bash
@@ -108,7 +101,6 @@ write_files:
       /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
 
   - path: "/etc/local/runonce.d/01-remount-nfs.sh"
-    owner: root:root
     permissions: "0500"
     content: |
       #! /bin/bash
@@ -117,13 +109,11 @@ write_files:
       systemctl start shared.mount
 
   - path: "/etc/krb5.conf"
-    owner: root:root
     permissions: "0444"
     content: |
-      <krb5.conf>
+      {{krb5.conf}}
 
   - path: "/etc/pip.conf"
-    owner: root:root
     permissions: "0444"
     content: |
       # Add the PyPI mirror to our global settings
@@ -133,13 +123,11 @@ write_files:
       trusted-host = <mirror-host-pypi>
 
   - path: "/etc/realmd.conf"
-    owner: root:root
     permissions: "0400"
     content: |
-      <realmd.conf>
+      {{realmd.conf}}
 
   - path: "/etc/R/Rprofile.site"
-    owner: root:root
     permissions: "0444"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
@@ -149,8 +137,40 @@ write_files:
           options(repos = r)
       })
 
+  - path: "/etc/skel/Desktop/CoCalc.desktop"
+    permissions: "0755"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Link
+      Name=CoCalc
+      Comment=
+      Icon=/opt/icons/cocalc.svg
+      URL=https://{{sre.webapps.cocalc.fqdn}}
+
+  - path: "/etc/skel/Desktop/CodiMD.desktop"
+    permissions: "0755"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Link
+      Name=CodiMD
+      Comment=
+      Icon=/opt/icons/codimd.png
+      URL=http://{{sre.webapps.codimd.fqdn}}
+
+  - path: "/etc/skel/Desktop/GitLab.desktop"
+    permissions: "0755"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Link
+      Name=GitLab
+      Comment=
+      Icon=/opt/icons/gitlab.png
+      URL=http://{{sre.webapps.gitlab.fqdn}}
+
   - path: "/etc/skel/.bashrc"
-    owner: root:root
     permissions: "0644"
     content: |
       # determine if terminal has color support
@@ -174,25 +194,16 @@ write_files:
       fi
 
   - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
-    owner: root:root
     permissions: "0400"
     content: |
-      <project.default.xml>
-
-  - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
-    owner: root:root
-    permissions: "0400"
-    content: |
-      <jdk.table.xml>
+      {{project.default.xml}}
 
   - path: "/etc/skel/.xsession"
-    owner: root:root
     permissions: "0444"
     content: |
       xfce4-session
 
   - path: "/etc/systemd/system/clamav-clamonacc.service"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -212,7 +223,6 @@ write_files:
       WantedBy=multi-user.target
 
   - path: "/etc/systemd/system/clamav-clamdscan.service"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -226,7 +236,6 @@ write_files:
       ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
 
   - path: "/etc/systemd/system/clamav-clamdscan.timer"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -243,7 +252,6 @@ write_files:
       WantedBy=timers.target
 
   - path: "/etc/systemd/system/data.mount"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -261,7 +269,6 @@ write_files:
       WantedBy=network-online.target
 
   - path: "/etc/systemd/system/data.automount"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -276,7 +283,6 @@ write_files:
       WantedBy=multi-user.target
 
   - path: "/etc/systemd/system/output.mount"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -294,7 +300,6 @@ write_files:
       WantedBy=network-online.target
 
   - path: "/etc/systemd/system/output.automount"
-    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -309,7 +314,6 @@ write_files:
       WantedBy=multi-user.target
 
   - path: "/etc/xrdp/startwm.sh"
-    owner: root:root
     permissions: "0755"
     content: |
       #!/bin/sh
@@ -320,20 +324,17 @@ write_files:
       # Start xfce4
       startxfce4
 
-  - path: "/opt/configuration/configure-dns.sh"
-    owner: root:root
+  - path: "/opt/configuration/configure_dns.sh"
     permissions: "0500"
     content: |
-      <configure-dns.sh>
+      {{configure_dns.sh}}
 
-  - path: "/opt/configuration/configure-hostname.sh"
-    owner: root:root
+  - path: "/opt/configuration/configure_hostname.sh"
     permissions: "0500"
     content: |
-      <configure-hostname.sh>
+      {{configure_hostname.sh}}
 
-  - path: "/opt/configuration/configure-pam.sh"
-    owner: root:root
+  - path: "/opt/configuration/configure_pam.sh"
     permissions: "0500"
     content: |
       # Edit the PAM session configuration file
@@ -345,8 +346,12 @@ write_files:
       grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
       echo ">=== end of /etc/pam.d/common-session ===<"
 
+  - path: "/opt/configuration/configure_pycharm.py"
+    permissions: "0500"
+    content: |
+      {{configure_pycharm.py}}
+
   - path: "/opt/configuration/credentials-ingress.secret"
-    owner: root:root
     permissions: "0400"
     content: |
       accountName <storage-account-persistentdata-name>
@@ -355,7 +360,6 @@ write_files:
       containerName ingress
 
   - path: "/opt/configuration/credentials-egress.secret"
-    owner: root:root
     permissions: "0400"
     content: |
       accountName <storage-account-persistentdata-name>
@@ -363,14 +367,17 @@ write_files:
       authType SAS
       containerName egress
 
+  - path: "/opt/configuration/jdk-template.xml"
+    permissions: "0400"
+    content: |
+      {{jdk-template.xml}}
+
   - path: "/opt/configuration/join_domain.sh"
-    owner: root:root
     permissions: "0500"
     content: |
-      <join_domain.sh>
+      {{join_domain.sh}}
 
   - path: "/opt/configuration/mount-ingress.sh"
-    owner: root:root
     permissions: "0500"
     content: |
       if [ ! "$(df -h | grep $1)" ]; then
@@ -382,7 +389,6 @@ write_files:
       fi
 
   - path: "/opt/configuration/mount-egress.sh"
-    owner: root:root
     permissions: "0500"
     content: |
       if [ ! "$(df -h | grep $1)" ]; then
@@ -394,17 +400,15 @@ write_files:
       fi
 
   - path: "/usr/local/bin/runonce"
-    owner: root:root
     permissions: "0500"
     content: |
-      <runonce.sh>
+      {{runonce.sh}}
 
   - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
-    owner: root:root
     encoding: gz+b64
     permissions: "0644"
     content: |
-      <xrdpCustomLogoEncoded>
+      {{xrdpCustomLogoEncoded}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
@@ -429,9 +433,9 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure-dns.sh
-  - /opt/configuration/configure-hostname.sh
-  - /opt/configuration/configure-pam.sh
+  - /opt/configuration/configure_dns.sh
+  - /opt/configuration/configure_hostname.sh
+  - /opt/configuration/configure_pam.sh
   - systemctl enable sssd
   # Check Kerberos settings
   - echo "Checking LDAP config"
@@ -450,14 +454,14 @@ runcmd:
   - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # PyCharm configuration
   - echo ">=== Configuring PyCharm... ===<"
-  - PY27_VERSION=$(/opt/pyenv/versions/2.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY36_VERSION=$(/opt/pyenv/versions/3.6.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - PY37_VERSION=$(/opt/pyenv/versions/3.7.*/bin/python --version 2>&1 | cut -d ' ' -f2)
-  - sed -i "s/PY27_VERSION/$PY27_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
-  - sed -i "s/PY36_VERSION/$PY36_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
-  - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
+  - python3 /opt/configuration/configure_pycharm.py /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
+  # Download web application icons
+  - mkdir -p /opt/icons
+  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
+  - wget https://share.cocalc.com/share/cocalc-icon.svg -O /opt/icons/cocalc.svg
+  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard

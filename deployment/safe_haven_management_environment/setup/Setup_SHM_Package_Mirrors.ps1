@@ -1,7 +1,7 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [Parameter(Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
     [ValidateSet("2", "3")]
     [string]$tier
 )
@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
@@ -157,19 +157,19 @@ $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagno
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 
 
-# Resolve the cloud init file, applying a whitelist if needed
+# Resolve the cloud init file, applying an allowlist if needed
 # -----------------------------------------------------------
 function Resolve-CloudInit {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Type of mirror to set up")]
+        [Parameter(Mandatory = $true, HelpMessage = "Type of mirror to set up")]
         $MirrorType,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
         [ValidateSet("Internal", "External")]
         $MirrorDirection,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Path to cloud init file")]
+        [Parameter(Mandatory = $true, HelpMessage = "Path to cloud init file")]
         $CloudInitPath,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Path to package whitelist (if any)")]
-        $WhitelistPath
+        [Parameter(Mandatory = $true, HelpMessage = "Path to package allowlist (if any)")]
+        $AllowlistPath
     )
 
     # Load template cloud-init file
@@ -187,16 +187,16 @@ function Resolve-CloudInit {
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
-        $externalMirrorPublicKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
+        $externalMirrorPublicKey = $result.Value[0].Message -Split "`n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
     }
 
-    # Populate initial package whitelist file defined in cloud init YAML
-    $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    # Populate initial package allowlist file defined in cloud init YAML
+    $allowlist = Get-Content $AllowlistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if (-Not $notExists) {
-        $packagesBefore = "      # PACKAGE_WHITELIST"
+        $packagesBefore = "      # PACKAGE_ALLOWLIST"
         $packagesAfter = ""
-        foreach ($package in $whitelist -split "`n") {
+        foreach ($package in $allowlist -split "`n") {
             $packagesAfter += "      $package`n"
         }
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
@@ -215,9 +215,9 @@ function Resolve-CloudInit {
 # ------------------------------
 function Deploy-PackageMirror {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
         $MirrorType,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
         [ValidateSet("Internal", "External")]
         $MirrorDirection
     )
@@ -225,8 +225,8 @@ function Deploy-PackageMirror {
     # --------------------
     $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
     $fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "whitelist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
-    $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
+    $allowlistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
+    $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -AllowlistPath $allowlistPath
 
     # Construct IP address for this mirror
     # ------------------------------------
@@ -318,8 +318,8 @@ function Deploy-PackageMirror {
             #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
+            $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $internalFingerprint = $result.Value[0].Message -Split "`n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
             $externalVmName = $vmName.Replace("INTERNAL", "EXTERNAL")

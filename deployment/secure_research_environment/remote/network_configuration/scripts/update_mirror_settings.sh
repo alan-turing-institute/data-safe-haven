@@ -1,10 +1,13 @@
 #!/bin/bash
-# $CRAN_MIRROR_INDEX_URL must be present as an environment variable
-# $PYPI_MIRROR_IP must be present as an environment variable
-# $PYPI_MIRROR_HOST must be present as an environment variable
+# Update PyPI and CRAN repository settings
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
+#
+# The following variables are expected by the script
+#     CRAN_MIRROR_INDEX_URL
+#     PYPI_MIRROR_IP
+#     PYPI_MIRROR_HOST
 
 # Update PyPI
 #------------

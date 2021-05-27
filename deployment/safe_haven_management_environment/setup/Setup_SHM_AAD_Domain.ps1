@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
     [string]$tenantId
@@ -31,7 +31,7 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction Stop
 

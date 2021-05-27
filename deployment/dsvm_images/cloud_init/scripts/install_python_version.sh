@@ -10,7 +10,7 @@ DEBUG=0
 
 START_TIME=$(date +%s)
 echo ">=== ${START_TIME} Installing Python ($PYTHON_ENV_NAME) and packages ===<"
-echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+echo "Starting at $(date -u --iso-8601=seconds)"
 
 # Ensure that pyenv is active
 PYENV_VERSION="system"
@@ -54,9 +54,9 @@ while read LINE; do
         # If the package has a version specifier then use it
         REQUIREMENT=$LINE
     else
-        # ... otherwise use the highest available version
-        # ... otherwise use the full available range
-        VERSIONS=$(pip install $LINE==any 2>&1 | grep "Could not find a version" | sed -E -e 's|.*: ([^)]*).*|\1|' -e 's/[[:space:]]*//g' | tr ',' '\n' | grep -v "macosx")
+        # Otherwise use the full available range
+        # NB. the option to use the legacy solver will be removed in pip 21: https://github.com/pypa/pip/issues/9139
+        VERSIONS=$(pip install --use-deprecated=legacy-resolver $LINE==any 2>&1 | grep "Could not find a version" | sed -E -e 's|.*: ([^)]*).*|\1|' -e 's/[[:space:]]*//g' | tr ',' '\n' | grep -v "macosx")
         MIN_VERSION=$(echo $VERSIONS | cut -d ' ' -f 1)
         MAX_VERSION=$(echo $VERSIONS | rev | cut -d ' ' -f 1 | rev)
         REQUIREMENT="$LINE>=$MIN_VERSION,<=$MAX_VERSION"
@@ -85,6 +85,7 @@ if [ $DEBUG -eq 1 ]; then cat pyproject.toml | awk '{print "[DEBUG] "$1}'; fi
 echo "Installed packages:"
 poetry show
 poetry show > /opt/verification/python-package-versions-${PYTHON_VERSION}.log
+poetry show --tree >> /opt/verification/python-package-versions-${PYTHON_VERSION}.log
 rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
@@ -146,4 +147,4 @@ ln -s /opt/pyenv/versions/${PYTHON_VERSION}/share/jupyter/kernels/python[2,3] /o
 # ---------
 rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
 ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-echo "Finished at $(date +'%Y-%m-%d %H:%M:%S') after $ELAPSED"
+echo "Finished at $(date -u --iso-8601=seconds) after $ELAPSED"

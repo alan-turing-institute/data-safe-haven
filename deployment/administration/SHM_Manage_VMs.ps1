@@ -1,12 +1,12 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID.")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter action (EnsureStarted, EnsureStopped)")]
     [ValidateSet("EnsureStarted", "EnsureStopped")]
     [string]$Action,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter VM group (Identity, Mirrors or All)")]
+    [Parameter(Mandatory = $false, HelpMessage = "Enter VM group (Identity, Mirrors or All)")]
     [ValidateSet("Identity", "Mirrors", "All")]
-    [string]$Group,
+    [string]$Group = "All",
     [Parameter(Mandatory = $false, HelpMessage = "Exclude Firewall (only has an effect if Action is 'EnsureStopped'")]
     [switch]$ExcludeFirewall
 )
@@ -19,7 +19,7 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
@@ -49,17 +49,17 @@ switch ($Action) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
                 # Start Secondary DC and NPS
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
             } else {
                 # Stop Secondary DC and NPS as these must start after Primary DC
                 Add-LogMessage -Level Info "Stopping Secondary DC and NPS as Primary DC is not running."
                 Stop-Vm -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Stop-Vm -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+                Stop-Vm -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
                 # Start Primary DC
                 Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
                 # Start Secondary DC and NPS
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
             }
             # Remove Identity VMs from general VM list so they are not processed twice
             $vmsByRg.Remove($config.dc.rg)

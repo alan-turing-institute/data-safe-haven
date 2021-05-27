@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId
 )
 
 Import-Module Az -ErrorAction Stop
@@ -13,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -30,7 +32,7 @@ $computeSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.na
 $null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
 $databasesSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.databases.cidr
 $deploymentSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.deployment.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.deployment.cidr
-$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
+$remoteDesktopSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.remoteDesktop.cidr
 $webappsSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.vnet.subnets.webapps.cidr
 
 
@@ -48,7 +50,7 @@ Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
 # Ensure that compute NSG exists with correct rules and attach it to the compute subnet
 # -------------------------------------------------------------------------------------
 $computeNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.compute.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.compute.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $rules
 $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg
 
@@ -56,7 +58,7 @@ $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkS
 # Ensure that database NSG exists with correct rules and attach it to the deployment subnet
 # -----------------------------------------------------------------------------------------
 $databasesNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.databases.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.databases.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $databasesNsg -Rules $rules
 $databasesSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databasesSubnet -NetworkSecurityGroup $databasesNsg
 
@@ -64,7 +66,7 @@ $databasesSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databasesSubnet -Netw
 # Ensure that deployment NSG exists with correct rules and attach it to the deployment subnet
 # -------------------------------------------------------------------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.deployment.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.deployment.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.deployment.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentNsg -Rules $rules
 $deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -NetworkSecurityGroup $deploymentNsg
 
@@ -72,23 +74,33 @@ $deploymentSubnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentSubnet -Ne
 # Ensure that webapps NSG exists with correct rules and attach it to the webapps subnet
 # -------------------------------------------------------------------------------------
 $webappsNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.webapps.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.webapps.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $webappsNsg -Rules $rules
 $webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $webappsNsg
 
 
-# Ensure that gateway NSG exists with correct rules
-# -------------------------------------------------
-$gatewayNsg = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.rds.gateway.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $gatewayNsg -Rules $rules
-
-
-# Ensure that session host NSG exists with correct rules
-# ------------------------------------------------------
-$sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.rds.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.rds.appSessionHost.nsg.rules) -ArrayJoiner '"' -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules
+# Set up the correct NSGs and rules for the remote desktop that is being used
+# ---------------------------------------------------------------------------
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    # Ensure that Guacamole NSG exists with correct rules and attach it to the Guacamole subnet
+    $guacamoleNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.remoteDesktop.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.remoteDesktop.nsg.rules) -Parameters $config -AsHashtable
+    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $guacamoleNsg -Rules $rules
+    $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $guacamoleNsg
+} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+    # Ensure that gateway NSG exists with correct rules
+    $gatewayNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.gateway.nsg.rules) -Parameters $config -AsHashtable
+    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $gatewayNsg -Rules $rules
+    # Ensure that session host NSG exists with correct rules
+    $sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.appSessionHost.nsg.rules) -Parameters $config -AsHashtable
+    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules
+} elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
+    Add-LogMessage -Level Info "No remote desktop network is needed for CoCalc"
+} else {
+    Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+}
 
 
 # Switch back to original subscription

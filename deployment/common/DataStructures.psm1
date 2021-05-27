@@ -1,11 +1,43 @@
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
+# Convert a file into a Base-64, GZipped string
+# ---------------------------------------------
+function ConvertTo-Base64GZip {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Path to file to be converted", ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path
+    )
+    $xrdpCustomLogo = Get-Content $Path -Raw -AsByteStream
+    $outputStream = New-Object IO.MemoryStream
+    $gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+    $gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
+    $gzipStream.Close()
+    $output = [Convert]::ToBase64String($outputStream.ToArray())
+    $outputStream.Close()
+    return $output
+}
+Export-ModuleMember -Function ConvertTo-Base64GZip
+
+
+# Convert an object to a Base-64 string
+# -------------------------------------
+function ConvertTo-Base64 {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "String to be converted to Base-64", ValueFromPipeline = $true)]
+        [AllowEmptyString()]
+        [string]$InputString
+    )
+    return [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($InputString))
+}
+Export-ModuleMember -Function ConvertTo-Base64
+
 
 # Convert a nested, sortable object into a sorted hashtable
 # ---------------------------------------------------------
 function ConvertTo-SortedHashtable {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline=$True)]
+        [Parameter(Mandatory = $true, HelpMessage = "Nested object to be sorted", ValueFromPipeline = $true)]
         [AllowNull()][AllowEmptyString()]
         $Sortable
     )
@@ -71,6 +103,7 @@ function Find-AllMatchingKeys {
     return $output
 }
 Export-ModuleMember -Function Find-AllMatchingKeys
+
 
 # Retrieve value for a (possibly) multilevel key
 # ----------------------------------------------

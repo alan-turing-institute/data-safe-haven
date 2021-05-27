@@ -5,14 +5,22 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [Parameter(HelpMessage = "Name of security group that will contain SHM sysadmins")]
+    [ValidateNotNullOrEmpty()]
     [String]$shmSystemAdministratorSgName,
+    [Parameter(HelpMessage = "Base64-encoded group details")]
+    [ValidateNotNullOrEmpty()]
     [String]$groupsB64,
+    [Parameter(HelpMessage = "Base64-encoded service user details")]
+    [ValidateNotNullOrEmpty()]
     [String]$serviceUsersB64,
+    [Parameter(HelpMessage = "LDAP OU that SRE security groups belong to")]
+    [ValidateNotNullOrEmpty()]
     [String]$securityOuPath,
+    [Parameter(HelpMessage = "LDAP OU that SRE service accounts belong to")]
+    [ValidateNotNullOrEmpty()]
     [String]$serviceOuPath
 )
-# [String]$shmLdapUserSgName,
-# [String]$computerManagersB64,
 
 
 # Create a new security group associated with this SRE
@@ -106,9 +114,8 @@ function Add-SreUserToGroup {
 
 
 # Unserialise JSON and read into PSCustomObject
-$groups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
-# $computerManagers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($computerManagersB64)) | ConvertFrom-Json
-$serviceUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
+$groups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
+$serviceUsers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
 
 # Create SRE Security Groups
 foreach ($group in $groups.PSObject.Members) {
@@ -118,13 +125,6 @@ foreach ($group in $groups.PSObject.Members) {
 
 # Add SHM sysadmins group to the SRE sysadmins group
 Add-SreUserToGroup -SamAccountName "$shmSystemAdministratorSgName" -GroupName $groups.systemAdministrators.name
-
-# # Create SRE LDAP users and add them to the LDAP users group
-# foreach ($user in $computerManagers.PSObject.Members) {
-#     if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-#     New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
-#     Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $shmLdapUserSgName
-# }
 
 # Create SRE service accounts
 foreach ($user in $serviceUsers.PSObject.Members) {

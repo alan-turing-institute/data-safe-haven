@@ -1,7 +1,9 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
     [string]$ipLastOctet
 )
 
@@ -9,11 +11,12 @@ Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
@@ -33,66 +36,33 @@ if ($?) {
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -ipLastOctet $ipLastOctet"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet"
 
 
-# Get LDAP secret from the KeyVault
-# ---------------------------------
-Add-LogMessage -Level Info "[ ] Loading LDAP secret from key vault '$($config.sre.keyVault.name)'"
+# Get LDAP secret from the Key Vault
+# ----------------------------------
+Add-LogMessage -Level Info "[ ] Loading LDAP secret from Key Vault '$($config.sre.keyVault.name)'"
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
 if ($ldapSearchPassword) {
-    Add-LogMessage -Level Success "Found LDAP secret in the key vault"
+    Add-LogMessage -Level Success "Found LDAP secret in the Key Vault"
 } else {
-    Add-LogMessage -Level Fatal "Could not load LDAP secret from key vault '$($config.sre.keyVault.name)'"
+    Add-LogMessage -Level Fatal "Could not load LDAP secret from Key Vault '$($config.sre.keyVault.name)'"
 }
 
 
-# Set LDAP secret on the compute VM
-# ---------------------------------
-Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '$($vm.Name)'"
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
-$params = @{
-    ldapPassword = "`"$ldapSearchPassword`""
-}
-$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-if ($?) {
-    Add-LogMessage -Level Success "Setting LDAP secret on compute VM $($vm.Name) was successful"
-} else {
-    Add-LogMessage -Level Fatal "Setting LDAP secret on compute VM $($vm.Name) failed!"
-}
+# Update LDAP secret on the compute VM
+# ------------------------------------
+Update-VMLdapSecret -Name $vm.Name -ResourceGroupName $config.sre.dsvm.rg -LdapSearchPassword $ldapSearchPassword
 
 
-# Set LDAP secret in local Active Directory on the SHM DC
-# -------------------------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
-$params = @{
-    samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.samAccountName)`""
-    ldapPassword   = "`"$ldapSearchPassword`""
-}
-Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-if ($?) {
-    Add-LogMessage -Level Success "Setting LDAP secret on SHM DC was successful"
-} else {
-    Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
-}
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# Update LDAP secret in local Active Directory on the SHM DC
+# ----------------------------------------------------------
+Update-AdLdapSecret -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -SubscriptionName $config.shm.subscriptionName -LdapSearchPassword $ldapSearchPassword -LdapSearchSamAccountName $config.sre.users.serviceAccounts.ldapSearch.samAccountName
 
 
 # Update DNS record on the SHM for this VM
 # ----------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm. -ErrorAction Stop
-Add-LogMessage -Level Info "[ ] Updating DNS record for DSVM '$($vm.Name)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "UpdateDNSRecord.ps1"
-$params = @{
-    Fqdn      = $config.shm.domain.fqdn
-    HostName  = $vm.Name
-    IpAddress = $vmIpAddress
-}
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vm.Name -VmIpAddress $vmIpAddress
 
 
 # Switch back to original subscription

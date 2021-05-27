@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId
 )
 
@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig ($shmId)
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
@@ -23,9 +23,9 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
-# Retrieve passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+# Retrieve passwords from the Key Vault
+# -------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.keyVault.name)'..."
 $domainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
@@ -87,26 +87,26 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Run configuration script remotely
 # ---------------------------------
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $params = @{
-    remoteDir = "`"C:\Installation`""
+    installationDir = $config.nps.installationDirectory
 }
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Import conditional-access-policy settings
 # -----------------------------------------
 Add-LogMessage -Level Info "Importing NPS configuration '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    remoteDir              = "`"C:\Installation`""
-    pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName   = "`"$storageContainerName`""
-    sasToken               = "`"$artifactSasToken`""
+    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    installationDir      = $config.nps.installationDirectory
+    sasTokenB64          = $artifactSasToken | ConvertTo-Base64
+    storageAccountName   = $config.storage.artifacts.accountName
+    storageContainerName = $storageContainerName
 }
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 

@@ -1,6 +1,8 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
-    [string]$configId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "Force an existing database VM to be redeployed.")]
     [switch]$Redeploy
 )
@@ -8,6 +10,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
@@ -16,7 +19,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $configId
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
@@ -35,9 +38,9 @@ $deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment
 
 # Create each database defined in the config file
 # -----------------------------------------------
-foreach ($dbConfigName in $config.sre.databases.Keys) {
-    if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
-    $databaseCfg = $config.sre.databases[$dbConfigName]
+foreach ($keyName in $config.sre.databases.Keys) {
+    if ($config.sre.databases[$keyName] -isnot [System.Collections.IDictionary]) { continue }
+    $databaseCfg = $config.sre.databases[$keyName]
 
     # Check whether this database VM has already been deployed
     # --------------------------------------------------------
@@ -62,16 +65,16 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     $subnet = Deploy-Subnet -Name $subnetCfg.name -VirtualNetwork $virtualNetwork -AddressPrefix $subnetCfg.cidr
     $deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $virtualNetwork -Verbose
 
-    # Retrieve domain join details from SHM keyvault
-    # ----------------------------------------------
+    # Retrieve domain join details from SHM Key Vault
+    # -----------------------------------------------
     $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
-    Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
+    Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.shm.keyVault.name)'..."
     $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.databaseServers.passwordSecretName -DefaultLength 20 -AsPlaintext
     $null = Set-AzContext -Subscription $config.sre.subscriptionName -ErrorAction Stop
 
-    # Retrieve usernames/passwords from SRE keyvault
-    # ----------------------------------------------
-    Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+    # Retrieve usernames/passwords from SRE Key Vault
+    # -----------------------------------------------
+    Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
     $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsernameSecretName -AsPlaintext
     $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
@@ -121,13 +124,13 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
-            DataAdminGroup           = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)`""
-            DbAdminPassword          = $dbAdminPassword
+            DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+            DbAdminPasswordB64       = $dbAdminPassword | ConvertTo-Base64
             DbAdminUsername          = $dbAdminUsername
-            EnableSSIS               = $databaseCfg.enableSSIS
-            ResearchUsersGroup       = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)`""
-            ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-            SysAdminGroup            = "`"$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)`""
+            EnableSSIS               = [string]($databaseCfg.enableSSIS)
+            ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
+            ServerLockdownCommandB64 = Get-Content $serverLockdownCommandPath -Raw | ConvertTo-Base64
+            SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.systemAdministrators.name)"
             VmAdminUsername          = $vmAdminUsername
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
@@ -139,8 +142,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         # Create PostgreSQL server from template
         Add-LogMessage -Level Info "Preparing to create PostgreSQL database $($databaseCfg.vmName)..."
 
-        # Retrieve secrets from key vaults
-        Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+        # Retrieve secrets from Key Vaults
+        Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
         $dbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
         $dbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
         $dbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext
@@ -150,10 +153,10 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
         $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
         $params = @{
-            Hostname       = "`"$($databaseCfg.vmName)`""
-            Name           = "`"$($dbServiceAccountName)`""
-            SamAccountName = "`"$($dbServiceAccountSamAccountName)`""
-            ShmFqdn        = "`"$($config.shm.domain.fqdn)`""
+            Hostname       = $databaseCfg.vmName
+            Name           = $dbServiceAccountName
+            SamAccountName = $dbServiceAccountSamAccountName
+            ShmFqdn        = $config.shm.domain.fqdn
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
         $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -191,7 +194,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
             Replace("<ldap-search-user-password>", $ldapSearchPassword).
             Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-            Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+            Replace("<ldap-user-base-dn>", $config.shm.domain.ous.researchUsers.path).
             Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
             Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
@@ -221,6 +224,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
+        # Update DNS records for this VM
+        Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $databaseCfg.vmName -VmIpAddress $databaseCfg.ip
     }
 }
 

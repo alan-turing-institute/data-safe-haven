@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
@@ -102,7 +102,8 @@ $targetRegions = @(
 )
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
 Add-LogMessage -Level Info "Please note, this may take about 1 hour to complete"
-$imageVersion = New-AzGalleryImageVersion -GalleryImageDefinitionName $imageDefinition `
+$null = New-AzGalleryImageVersion `
+    -GalleryImageDefinitionName $imageDefinition `
     -GalleryImageVersionName "$imageVersion" `
     -GalleryName $config.dsvmImage.gallery.sig `
     -ResourceGroupName $config.dsvmImage.gallery.rg `
@@ -116,6 +117,8 @@ while ($job.State -ne "Completed") {
     Write-Progress -Activity "Replication status" -Status $job.State -PercentComplete $progress
     Start-Sleep 60
 }
+$resource = Get-AzResource -ResourceGroupName $config.dsvmImage.gallery.rg | Where-Object { $_.Name -match "${imageDefinition}/${imageVersion}" }
+$null = New-AzTag -ResourceId $resource.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
 # Create the image as a new version of the appropriate existing registered version

@@ -14,6 +14,7 @@
     "external_dns_resolver": "168.63.129.16",
     "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
     "hostname": "DC1-SHM-TESTA",
+    "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTA_DC",
     "safemodePasswordSecretName": "shm-testa-vm-safemode-password-dc",
@@ -98,7 +99,6 @@
     "build": {
       "nsg": {
         "allowedIpAddresses": [
-          "188.214.11.75",
           "193.60.220.240",
           "193.60.220.253"
         ],
@@ -323,6 +323,7 @@
       }
     },
     "hostname": "NPS-SHM-TESTA",
+    "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.6",
     "rg": "RG_SHM_TESTA_NPS",
     "vmName": "NPS-SHM-TESTA",
@@ -330,6 +331,7 @@
   },
   "nsgPrefix": "NSG_SHM_TESTA",
   "organisation": {
+    "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
     "name": "The Alan Turing Institute",
     "stateCountyRegion": "London",
@@ -350,11 +352,11 @@
   "storage": {
     "artifacts": {
       "accountName": "shmtestaartifactslubiehy",
-      "rg": "RG_SHM_TESTA_ARTIFACTS"
+      "rg": "RG_SHM_TESTA_STORAGE"
     },
     "bootdiagnostics": {
       "accountName": "shmtestabootdiagslubiehy",
-      "rg": "RG_SHM_TESTA_ARTIFACTS"
+      "rg": "RG_SHM_TESTA_STORAGE"
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTA_PERSISTENT_DATA"

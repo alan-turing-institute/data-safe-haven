@@ -1,7 +1,6 @@
 ArgCheck
 ArgParse
 BenchmarkTools
-Clustering
 Conda
 CSV
 CuArrays
@@ -44,5 +43,4 @@ ScikitLearn
 StaticArrays
 StatsBase
 StatsFuns
-TensorFlow
 Zygote

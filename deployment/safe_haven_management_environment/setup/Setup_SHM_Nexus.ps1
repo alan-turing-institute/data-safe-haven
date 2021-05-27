@@ -1,7 +1,7 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [Parameter(Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
     [ValidateSet("2", "3")]
     [string]$tier
 )
@@ -25,14 +25,14 @@ if ($tier -ne "2") {
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Retrieve passwords from the key vault
+# Retrieve passwords from the Key Vault
 # -------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.keyVault.name)'..."
 $nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository.nexus.nexusAppAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
 
 
@@ -82,8 +82,7 @@ Set-VnetPeering -Vnet1Name $config.network.repositoryVnet.name `
 # Ensure that Nexus NSG exists with correct rules and attach it to the Nexus subnet
 # ---------------------------------------------------------------------------------
 $repositoryNsg = Deploy-NetworkSecurityGroup -Name $config.network.repositoryVnet.subnets.repository.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-$tmpConfig = @{"network" = @{"repositoryVnet" = @{"subnets" = @{"repository" = @{"cidr" = $config.network.repositoryVnet.subnets.repository.cidr } } } } } # Note that PR #873 has the fix which means that this will no longer be needed
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.repositoryVnet.subnets.repository.nsg.rules) -ArrayJoiner '"' -Parameters $tmpConfig -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.repositoryVnet.subnets.repository.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $repositoryNsg -Rules $rules
 $repositorySubnet = Set-SubnetNetworkSecurityGroup -Subnet $repositorySubnet -NetworkSecurityGroup $repositoryNsg
 

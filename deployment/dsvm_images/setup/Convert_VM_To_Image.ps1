@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmConfig $shmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
 
@@ -40,7 +40,6 @@ if ($notExists) {
     }
     Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
-$vmTags = @{"Commit hash" = $vm.Tags["Commit hash"] }
 
 
 # Ensure that the VM is running
@@ -49,12 +48,25 @@ Start-VM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
 Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 
 
+# Check the VM build status and ask for user confirmation
+# -------------------------------------------------------
+Add-LogMessage -Level Info "Obtaining build status for candidate: $($vm.Name)..."
+$null = Invoke-RemoteScript -VMName $vm.Name -ResourceGroupName $config.dsvmImage.build.rg -Shell "UnixShell" -Script "python3 /opt/verification/analyse_build.py"
+Add-LogMessage -Level Info "Please check that the output of the build analysis script (above) before continuing. All steps should have completed with a 'SUCCESS' message."
+$confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
+while ($confirmation -ne "y") {
+    if ($confirmation -eq "n") { exit 0 }
+    $confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
+}
+
+
 # Deprovision the VM over SSH
 # ---------------------------
 Add-LogMessage -Level Info "Deprovisioning VM: $($vm.Name)..."
+$adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${vmName}"
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*$($vm.Name)-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
-Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.name)' key vault"
+Add-LogMessage -Level Info "... the password for this account is in the '${adminPasswordName}' secret in the '$($config.dsvmImage.keyVault.name)' Key Vault"
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | sudo tee /opt/verification/deprovision.log'
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
@@ -89,7 +101,8 @@ $vm = Get-AzVM -Name $vm.Name -ResourceGroupName $config.dsvmImage.build.rg
 $imageConfig = New-AzImageConfig -Location $config.dsvmImage.location -SourceVirtualMachineId $vm.ID
 $image = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.dsvmImage.images.rg
 # Apply VM tags to the image
-$null = New-AzTag -ResourceId $image.id -Tag $vmTags
+$null = New-AzTag -ResourceId $image.Id -Tag @{"Build commit hash" = $vm.Tags["Build commit hash"] }
+Add-LogMessage -Level Info "Finished creating image $imageName"
 # If the image has been successfully created then remove build artifacts
 if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
@@ -101,10 +114,11 @@ if ($image) {
     $null = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
     Add-LogMessage -Level Info "... public IP address: ${vmName}-NIC-PIP"
     $null = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
+    Add-LogMessage -Level Info "... KeyVault password: ${adminPasswordName}"
+    Remove-AndPurgeKeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $adminPasswordName
 } else {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be created!"
 }
-Add-LogMessage -Level Info "Finished creating image $imageName"
 
 
 # Switch back to original subscription

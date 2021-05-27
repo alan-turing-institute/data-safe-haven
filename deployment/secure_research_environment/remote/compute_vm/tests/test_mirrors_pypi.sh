@@ -1,8 +1,8 @@
 #! /bin/bash
-# Test "cvxopt" as it is an early package on the Tier-3 whitelist (in the "00/02" package directory) and is not pre-installed
-# Test "reportlab" as it a late package on the Tier-3 whitelist (in the "ff/fb" package directory) and is not pre-installed
-# Test "abed" and "zope.interface" which are alphabetically early and late in the Tier-3 list and are not pre-installed
-packages=("abed" "cvxopt" "reportlab" "zope.interface")
+# Test "cvxopt" as it is an early package on the Tier-3 allowlist (in the "00/02" package directory) and is not pre-installed
+# Test "reportlab" as it a late package on the Tier-3 allowlist (in the "ff/fb" package directory) and is not pre-installed
+# Test "aero-calc" and "zope.interface" which are alphabetically early and late in the Tier-3 allowlist and are not pre-installed
+packages=("aero-calc" "cvxopt" "reportlab" "zope.interface")
 
 # Install sample packages to local user library
 OUTCOME=0

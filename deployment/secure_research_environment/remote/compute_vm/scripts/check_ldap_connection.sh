@@ -1,11 +1,12 @@
-#!/bin/bash
-# $DOMAIN_CONTROLLER must be present as an environment variable
-# $LDAP_SEARCH_USER must be present as an environment variable
-# $LDAP_TEST_USER must be present as an environment variables
-# $SERVICE_PATH must be present as an environment variable
+#! /bin/bash
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
+# It expects the following parameters:
+#     DOMAIN_CONTROLLER
+#     LDAP_SEARCH_USER
+#     LDAP_TEST_USER
+#     SERVICE_PATH
 
 RED="\033[0;31m"
 BLUE="\033[0;36m"

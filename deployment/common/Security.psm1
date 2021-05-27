@@ -108,3 +108,21 @@ function Resolve-KeyVaultSecret {
     return $secret.SecretValue
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
+
+
+# Purge a secret from the keyvault
+# --------------------------------
+function Remove-AndPurgeKeyVaultSecret {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [ValidateNotNullOrEmpty()]
+        [string]$SecretName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [ValidateNotNullOrEmpty()]
+        [string]$VaultName
+    )
+    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -Force -ErrorAction Stop
+    Start-Sleep -Seconds 10
+    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+}
+Export-ModuleMember -Function Remove-AndPurgeKeyVaultSecret
