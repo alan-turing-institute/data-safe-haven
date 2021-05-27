@@ -1,4 +1,7 @@
-# Data Ingress Process
+---
+layout: page
+title: Data Ingress Process
+---
 
 This document details the ways of importing data to the Turing Safe Haven. By data we refer to any digital document, file, dataset in any format known and to be known.
 

@@ -1,4 +1,7 @@
-# Starting a project
+---
+layout: page
+title: Starting a project
+---
 
 This document details how project managers should set up a project that needs to use a Safe Haven.
 The input data and the data analysis that will be carried out with it together form a work package.

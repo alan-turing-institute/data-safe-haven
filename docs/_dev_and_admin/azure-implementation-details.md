@@ -1,4 +1,7 @@
-# Implementation details for the Turing Safe Haven
+---
+layout: page
+title: Implementation details for the Turing Safe Haven
+---
 
 ## Introduction
 

@@ -1,4 +1,7 @@
-# Bringing data and software into the Turing Safe Haven
+---
+layout: page
+title: Bringing data and software into the Turing Safe Haven
+---
 
 This document discusses bringing data or software into the environment from an external source. This process is known as ingress.
 

@@ -1,4 +1,7 @@
-# Security evaluation checklist
+---
+layout: page
+title: Security evaluation checklist
+---
 
 In this check list we aim to do the following things.
 

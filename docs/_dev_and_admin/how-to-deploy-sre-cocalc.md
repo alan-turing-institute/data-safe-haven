@@ -1,4 +1,7 @@
-# Secure Research Environment Build Instructions (CoCalc collaborative notebooks)
+---
+layout: page
+title: Secure Research Environment Build Instructions (CoCalc collaborative notebooks)
+---
 
 > :warning: If you are deploying a Tier 2 or Tier 3 environment, you should deploy with an [RDS remote desktop](./how-to-deploy-sre-microsoft-rds.md) instead.
 > This CoCalc notebook based user interface does not support the required security level for Tier 2 or above environments, but is suitable for Tier 0 or 1 environments.

@@ -1,4 +1,7 @@
-# Data Ingress to the Turing Data Safe Haven
+---
+layout: page
+title: Data Ingress to the Turing Data Safe Haven
+---
 
 ## Intro
 

@@ -1,4 +1,7 @@
-# Secure Research Environment Build Instructions (RDS remote desktop)
+---
+layout: page
+title: Secure Research Environment Build Instructions (RDS remote desktop)
+---
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 

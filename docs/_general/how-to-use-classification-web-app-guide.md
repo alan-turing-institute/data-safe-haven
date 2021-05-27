@@ -1,4 +1,7 @@
-# Classification - Instructions for data provider representatives
+---
+layout: page
+title: Classification - Instructions for data provider representatives
+---
 
 Welcome to the Data Safe Haven web-app. This is a tool to help you carry out research projects on secure organisational and personal data, by guiding you through the classification process, and giving instruction on how to handle personal data.
 

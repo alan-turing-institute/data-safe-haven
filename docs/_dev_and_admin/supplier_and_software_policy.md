@@ -1,4 +1,7 @@
-# Suppliers and Software Policy
+---
+layout: page
+title: Suppliers and Software Policy
+---
 
 What Software is available in the Data Safe Haven Virtual Machines? (DSVM)
 The DSVM’s currently run the below operating system:
@@ -131,4 +134,3 @@ DSPT Requirements breakdown:
     + From link above: 'Access to customer data by Microsoft operations and support personnel is denied by default. When access to data related to a support case is granted, it is only granted using a just-in-time (JIT) model using policies that are audited and vetted against our compliance and privacy policies.'
   + Azure is [ISO/IEC 27701 certified](https://azure.microsoft.com/en-gb/blog/azure-is-now-certified-for-the-iso-iec-27701-privacy-standard/)
     + 'Schellman & Company LLC issued a certificate of registration for ISO/IEC 27701:2019 that covers the requirements, controls, and guidelines for implementing a privacy information security management system as an extension to ISO/IEC 27001:2013 for privacy management as a personally identifiable information (PII) processor relevant to the information security management system supporting Microsoft Azure, Dynamics, and other online services that are deployed in Azure Public, Government cloud, and Germany Cloud, including their development, operations, and infrastructures and their associated security, privacy, and compliance per the statement of applicability version 2019-02. A copy of the certification is available on the Service Trust Portal.'
-

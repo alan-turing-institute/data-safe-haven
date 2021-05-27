@@ -1,4 +1,7 @@
-# Secure Research Environment Build Instructions
+---
+layout: page
+title: Secure Research Environment Build Instructions
+---
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 

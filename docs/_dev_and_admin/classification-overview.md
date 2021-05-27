@@ -1,4 +1,7 @@
-# Classifying sensitive data
+---
+layout: page
+title: Classifying sensitive data
+---
 
 ## Why classify data?
 

@@ -1,4 +1,7 @@
-# Safe Haven VM Image Build Instructions
+---
+layout: page
+title: Safe Haven VM Image Build Instructions
+---
 
 These instructions will walk you through creating a new VM image for use in the secure research environment.
 

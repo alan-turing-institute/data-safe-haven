@@ -1,4 +1,7 @@
-# Additional Security Policies for Data Safe Haven
+---
+layout: page
+title: Additional Security Policies for Data Safe Haven
+---
 
 Overview:
 

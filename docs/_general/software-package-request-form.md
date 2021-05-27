@@ -1,4 +1,7 @@
-# Turing data safe haven - software package request form
+---
+layout: page
+title: Turing data safe haven - software package request form
+---
 
 Please use this form to make a request to add a software package to the Tier 3 whitelist by filling in the REQUEST section and sending to <safe-haven-admin@turing.ac.uk> for review.
 

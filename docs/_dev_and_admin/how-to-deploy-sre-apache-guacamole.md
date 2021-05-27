@@ -1,4 +1,7 @@
-# Secure Research Environment Build Instructions (Guacamole remote desktop)
+---
+layout: page
+title: Secure Research Environment Build Instructions (Guacamole remote desktop)
+---
 
 > :warning: If you are deploying a Tier 2 or Tier 3 environment, you should deploy with an [RDS remote desktop](./how-to-deploy-sre-microsoft-rds.md) instead.
 > This Guacamole remote desktop interface has not yet been validated to provide the security assurances required for Tier 2 or above environments, but is suitable for Tier 0 or 1 environments or development and testing purposes.

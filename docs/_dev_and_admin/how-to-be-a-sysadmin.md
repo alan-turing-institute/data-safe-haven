@@ -1,4 +1,7 @@
-# Safe Haven Administrator Documentation
+---
+layout: page
+title: Safe Haven Administrator Documentation
+---
 
 ## :mailbox_with_mail: Table of contents
 

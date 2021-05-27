@@ -1,4 +1,7 @@
-# What is a Safe Haven?
+---
+layout: page
+title: What is a Safe Haven?
+---
 
 Secure Environments for analysis of sensitive datasets are essential for research. Such "data safe havens" are a vital part of the research infrastructure.
 

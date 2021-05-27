@@ -1,4 +1,7 @@
-# NHS DSPT Security Assessment
+---
+layout: page
+title: NHS DSPT Security Assessment
+---
 
 Below is the updating list for the NHS DSPT self assessment for Cat. 3 orgs that the DSH team is hoping to submit by March.
 Please have a look through and give any feedback/ideas/comments as we collect the remaining evidence and decide on outstanding policies.

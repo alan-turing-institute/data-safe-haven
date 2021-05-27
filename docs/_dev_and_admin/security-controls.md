@@ -1,4 +1,7 @@
-# Security controls in the Safe Haven
+---
+layout: page
+title: Security controls in the Safe Haven
+---
 
 ## Connections to and from the Environment
 

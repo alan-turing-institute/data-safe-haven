@@ -1,4 +1,7 @@
-# Design decisions based on physical resilience and availability
+---
+layout: page
+title: Design decisions based on physical resilience and availability
+---
 
 ## Issues
 
