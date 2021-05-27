@@ -1,6 +1,6 @@
 ---
 layout: page
-title: [DRAFT] Turing data safe haven - software package whitelisting policy
+title: Turing data safe haven - software package allowlisting policy
 ---
 
 ## Introduction
