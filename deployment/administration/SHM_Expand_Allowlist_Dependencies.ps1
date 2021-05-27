@@ -70,16 +70,16 @@ function Get-Dependencies {
 }
 
 
-# Load appropriate whitelists
+# Load appropriate allowlists
 # ---------------------------
 $languageName = @{cran = "r"; pypi = "python" }[$MirrorType]
-$coreWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list"
-$fullWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-${languageName}-${MirrorType}-tier3.list"
+$coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${MirrorType}-tier3.list"
+$fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${MirrorType}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
 
-# Combine base image package lists with the core whitelist to construct a single list of core packages
+# Combine base image package lists with the core allowlist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
-$corePackageList = Get-Content $coreWhitelistPath
+$corePackageList = Get-Content $coreAllowlistPath
 foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
     $corePackageList += $buildtimePackageList
 }
@@ -105,22 +105,22 @@ if ($MirrorType -notin $dependencyCache["unavailable_packages"].Keys) { $depende
 
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
-$packageWhitelist = @()
+$packageAllowlist = @()
 Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $MirrorType"
 while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
-        # Check that the package exists and add it to the whitelist if so
+        # Check that the package exists and add it to the allowlist if so
         Add-LogMessage -Level Info "Determining canonical name for '$unverifiedName'"
         $response = Test-PackageExistence -Repository $MirrorType -Package $unverifiedName -ApiKey $ApiKey
         $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
-        $packageWhitelist += @($response.Name)
+        $packageAllowlist += @($response.Name)
         # Look for dependencies and add them to the queue
         if ($versions) {
             Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
             $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
             Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-            $newPackages = $dependencies | Where-Object { $_ -notin $packageWhitelist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
+            $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
             $newPackages | ForEach-Object { $queue.Enqueue($_) }
             $allDependencies += $dependencies
         } else {
@@ -131,7 +131,7 @@ while ($queue.Count) {
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"
         $dependencyCache["unavailable_packages"][$MirrorType] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
     }
-    Add-LogMessage -Level Info "... there are $($packageWhitelist.Count) packages on the expanded whitelist"
+    Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) packages on the expanded allowlist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
     # Write to the dependency file after each package in case the script terminates early
     $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
@@ -168,7 +168,7 @@ if ($unavailablePackages) {
 }
 
 
-# Write the full package list to the expanded whitelist
+# Write the full package list to the expanded allowlist
 # -----------------------------------------------------
-Add-LogMessage -Level Info "Writing $($packageWhitelist.Count) packages to the expanded whitelist..."
-$packageWhitelist | Sort-Object -Unique | Out-File $fullWhitelistPath
+Add-LogMessage -Level Info "Writing $($packageAllowlist.Count) packages to the expanded allowlist..."
+$packageAllowlist | Sort-Object -Unique | Out-File $fullAllowlistPath

@@ -268,12 +268,12 @@ First identify a select list of IP addresses and an email for which the data wil
   + b) **Verify:** that a secure upload token can be created with write-only permissions
 
 + Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
-  + a) Identify a test device that will have a whitelisted IP address
+  + a) Identify a test device that will have an allowed IP address
   + b) Generate a secure upload token with write-only permissions with limited time period
   + c) Attempt to write to the ingress volume via the test device
   + d) **Verify:** that writing suceeds
   + e) **Verify:** that one is unable to view or download from ingress
-  + f) Switch to a device that lacks a whitelisted IP address
+  + f) Switch to a device that lacks an allowed IP address
   + g) Attempt to write to the ingress volume via the test device
   + h) **Verify:** that the access token fails.
 
@@ -368,13 +368,13 @@ After deployment:
 
 Tier 2: User can access full package mirrors
 
-Tier 3: User can only access whitelisted package mirrors
+Tier 3: User can only access approved packages
 
 ### This means:
 
 Tier 2: The user can access any package included within our mirrors. They can freely use these packages without restriction.
 
-Tier 3: The user can only access a specific set of packages that we have agreed with. They will be unable to download any package not on the whitelist.
+Tier 3: The user can only access a specific set of packages that we have agreed with. They will be unable to download any package not on the allowlist.
 
 ### Verify by:
 
@@ -387,12 +387,12 @@ Tier 2:
 
 Tier 3:
 
-+ Download packages on the whitelist
++ Download packages on the allowlist
   + a) Login as a user into a DSVM via remote desktop web client
-  + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the whitelist
+  + b) Check that the package is not installed on the VM `sudo apt list <package>` but on the allowlist
   + c) Attempt to download the package
   + d) **Verify:** the download suceeds
-  + e) Take a package that is not included in the whitelist
+  + e) Take a package that is not included in the allowlist
   + f) Attempt to download the package
   + g) **Verify:** the download fails
 

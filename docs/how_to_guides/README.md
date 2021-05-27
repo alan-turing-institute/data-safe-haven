@@ -8,7 +8,7 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
 + [Safe Haven administrator guide](administrator/how-to-be-a-sysadmin.md) - Instructions for administrators of a Safe Haven. Includes how to create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
-+ [Software package whitelist policy](general/software-package-whitelist-policy.md) - Guidance on our policy for whitelisting software packages.
++ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our policy for approving software packages.
 
 ## How to be a project manager
 
@@ -30,7 +30,7 @@ This application will guide you through our [classification process]() for deter
 
 + [Software package request form](general/software-package-request-form.md) - Guidance on how to request a new package to be added to the environment.
 
-+ [Software package whitelist policy](general/software-package-whitelist-policy.md) - GGuidance on our policy for whitelisting software packages.
++ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our policy for approving software packages.
 
 + [Data egress guide for principal investigators](principal_investigator/how-to-egress-data.md) - Instructions for principal investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
@@ -44,7 +44,7 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 
 + [Safe Havens Cheat Sheet](user_guides/user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
-+ [Software package whitelist policy](general/software-package-whitelist-policy.md) - Guidance on our software package white listing policy.
++ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our software package approval policy.
 
 ## How to contribute to the development of the Safe Haven project
 

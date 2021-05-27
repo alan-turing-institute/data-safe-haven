@@ -501,7 +501,7 @@ Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` f
   <img src="../../images/administrator_guide/internal_mirror_packages.png" width="80%" title="Package list">
 </p>
 
-If the requested is expected to be available (i.e. it is on the appropriate whitelist), then you can force a mirror update by rebooting the `EXTERNAL` mirrors.
+If the requested is expected to be available (i.e. it is on the appropriate allowlist), then you can force a mirror update by rebooting the `EXTERNAL` mirrors.
 This will trigger the following actions:
 
 1. Synchronisation of the external mirror with the remote, internet repository (a `pull` update)

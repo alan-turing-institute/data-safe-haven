@@ -586,9 +586,9 @@ pip install --user <package-name>
 Depending on the type of data you are accessing, different `R` and `python` packages will be available to you (in addition to the ones that are pre-installed):
 
 + Tier-2 (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
-+ Tier-3 (high security) environments only have pre-authorised "whitelisted" packages available.
++ Tier-3 (high security) environments only have pre-authorised packages available.
 
-If you need to use a package that is not on the approved whitelist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
+If you need to use a package that is not on the allowlist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
 
 ## :link: Share files with collaborators
 

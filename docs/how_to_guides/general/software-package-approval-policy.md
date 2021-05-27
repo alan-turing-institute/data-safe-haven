@@ -1,14 +1,14 @@
-# [DRAFT] Turing data safe haven - software package whitelisting policy
+# [DRAFT] Turing data safe haven - software package approval policy
 
 ## Introduction
 
 Secure analysis environments include package mirrors (i.e. copies of external software repositories) for the supported programming languages: Python, R and Julia.
 
-At security Tier 3 and above, these mirrors do not include all of the packages available from the parent repository. Instead they provide access to a subset of whitelisted packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
+At security Tier 3 and above, these mirrors do not include all of the packages available from the parent repository. Instead they provide access to a subset of approved packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
 
-To improve the usability of the research environment, whitelisted packages that are deemed broadly useful to a cross section of researchers are also included in the data science virtual machine (DSVM) image, making them directly available to all users without requiring installation from the package mirror.
+To improve the usability of the research environment, approved packages that are deemed broadly useful to a cross section of researchers are also included in the data science virtual machine (DSVM) image, making them directly available to all users without requiring installation from the package mirror.
 
-This page sets out the policy for whitelisting software packages and the criteria for including them in the DSVM image. It also describes the procedure that users of the secure environment should follow to request new additions to the whitelist.
+This page sets out the policy for approving software packages and the criteria for including them in the DSVM image. It also describes the procedure that users of the secure environment should follow to request new additions to the allowlist.
 
 ## Background
 
@@ -25,35 +25,35 @@ Such risks may originate unwittingly, from a user who wants to "just get the job
 
 Specific risks which this policy aims to mitigate include:
 
-+ package name squatting (whitelisting a similarly-named package instead of the intended one)
++ package name squatting (approving a similarly-named package instead of the intended one)
 + privilege escalation attacks (enabling a user to gain elevated access permissions).
 
 ## Policy
 
 + For each supported programming language, three package lists will be maintained:
-  + a whitelist of packages that are available from the package mirrors deployed in Tier 3 secure environments
-  + a core list of broadly useful packages from the whitelist that are included in the DSVM image
-  + where applicable, a blacklist of packages (with specific version numbers) that have been specifically rejected due to known security vulnerabilities or other issues.
+  + an allowlist of packages that are available from the package mirrors deployed in Tier 3 secure environments
+  + a core list of broadly useful packages from the allowlist that are included in the DSVM image
+  + where applicable, a denylist of packages (with specific version numbers) that have been specifically rejected due to known security vulnerabilities or other issues.
 
-+ Users may request to add packages to the whitelist via the [procedure described below](#Package-request--review-procedure). In the interests of improving researcher productivity the aim will be to accommodate such requests, provided there are no outweighing security concerns associated with the package or its dependencies.
++ Users may request to add packages to the allowlist via the [procedure described below](#Package-request--review-procedure). In the interests of improving researcher productivity the aim will be to accommodate such requests, provided there are no outweighing security concerns associated with the package or its dependencies.
 
 + Requests will be reviewed by a safe haven administrator. When deciding whether to accept or reject a request, the reviewer will take into account:
   + information provided by the user when making the request
   + package author/contributor identities
-  + any existing package/version blacklist
+  + any existing package/version denylist
   + relevant data on the package *and* its full dependency tree including:
     + download statistics (recent and longer-term, current and previous versions)
     + publicly-accessible CVE databases (listing Common Vulnerabilities and Exposures)
 
-+ If approved, a requested package will be added to the Tier 3 package whitelist making it available to all future SRE deployments via the package mirror (as long as it remains on the whitelist).
++ If approved, a requested package will be added to the Tier 3 package allowlist making it available to all future SRE deployments via the package mirror (as long as it remains on the allowlist).
 
-+ New additions to the whitelist will be judged against the [criteria](#Criteria-for-inclusion-in-the-DSVM-image) for inclusion in the DSVM image and, where appropriate, also added to that list.
++ New additions to the allowlist will be judged against the [criteria](#Criteria-for-inclusion-in-the-DSVM-image) for inclusion in the DSVM image and, where appropriate, also added to that list.
 
 + The DSVM image will be updated every month to ensure that changes to the image package list are propagated to new safe haven deployments.
 
 ### Criteria for inclusion in the DSVM image
 
-Whitelisted software that is considered broadly useful to a cross section of researchers will be included in the DSVM image.
+Allowed software that is considered broadly useful to a cross section of researchers will be included in the DSVM image.
 
 To meet this condition, a package should:
 
@@ -70,10 +70,10 @@ To meet this condition, a package should:
   + What will you be able to do with this package that you can't currently do? What alternatives are there?
   + What risks to data integrity/security might arise from including this package or its dependencies?
 
-+ A member of the Turing safe haven administrators team reviews the request according to the terms of the [whitelisting policy](#Policy).
++ A member of the Turing safe haven administrators team reviews the request according to the terms of the [approving policy](#Policy).
 
 + The reviewer adds their decision (accept/reject) to the form and notifies the user who made the request.
   + If the decision is to reject, the reviewer must include an explanation. Any subsequent request for the same package should address the specific concern raised.
   + If the decision is to accept, the reviewer forwards the request/review document to the data provider, who has the opportunity to question and/or overturn the decision.
 
-+ If approved, and no objection is received from the data provider, the package is added to the Tier 3 package whitelist.
++ If approved, and no objection is received from the data provider, the package is added to the Tier 3 package allowlist.

@@ -113,8 +113,7 @@ runcmd:
 
   # Restrict login to SHM domain (must be done AFTER GitLab update)
   - |
-    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['{{shm.domain.fqdn}}'])"
-
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_allowlist: ['{{shm.domain.fqdn}}'])"
   # Reload GitLab configuration and restart GitLab
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
