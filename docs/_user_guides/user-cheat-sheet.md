@@ -1,3 +1,8 @@
+---
+layout: page
+title: Cheat Sheet
+---
+
 # Data Safe Havens - Cheat Sheet
 
 ## Introduction to Data Safe Havens

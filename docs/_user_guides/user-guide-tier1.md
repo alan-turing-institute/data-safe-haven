@@ -1,3 +1,8 @@
+---
+layout: page
+title: Safe Haven User Documentation - Tier 1
+---
+
 # Safe Haven User Documentation - Tier 1
 
 ## :mailbox_with_mail: Table of contents
