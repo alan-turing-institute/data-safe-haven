@@ -12,6 +12,8 @@ collections:
     output: true
   tutorial:
     output: true
+  user_guides:
+    output: true
 markdown: GFM
 
 # Build settings
