@@ -190,7 +190,7 @@ Please follow these steps carefully.
    The first time you log in you need to click **"Forgotten my password"**.
 
    <p align="center">
-      <img src="../../images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password"/>
+      <img src="../images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password"/>
    </p>
 
    > :warning: If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
@@ -198,13 +198,13 @@ Please follow these steps carefully.
 + Fill out the requested CAPTCHA (your username should be pre-filled).
 
    <p align="center">
-      <img src="../../images/user_guide/resetpassword_2.png" width="80%" title="CAPTCHA"/>
+      <img src="../images/user_guide/resetpassword_2.png" width="80%" title="CAPTCHA"/>
    </p>
 
 + Confirm your phone number, which you provided to the SRE administrator when you registered for access to the environment.
 
    <p align="center">
-      <img src="../../images/user_guide/resetpassword_3.png" width="80%" title="resetpassword_3"/>
+      <img src="../images/user_guide/resetpassword_3.png" width="80%" title="resetpassword_3"/>
    </p>
 
 + Select a password.
@@ -232,19 +232,19 @@ Please follow these steps carefully.
 + Enter your password into the `Enter new password` and `Confirm new password` fields.
 
    <p align="center">
-      <img src="../../images/user_guide/resetpassword_4.png" width="80%" title="resetpassword_4"/>
+      <img src="../images/user_guide/resetpassword_4.png" width="80%" title="resetpassword_4"/>
    </p>
 
    Then continue to the next step
 
    <p align="center">
-      <img src="../../images/user_guide/resetpassword_5.png" width="80%" title="resetpassword_5"/>
+      <img src="../images/user_guide/resetpassword_5.png" width="80%" title="resetpassword_5"/>
    </p>
 
 + Log into your account when prompted and at this point you will be asked for additional security verification.
 
    <p align="center">
-      <img src="../../images/user_guide/more_information_required.png" width="80%" title="more_information_required">
+      <img src="../images/user_guide/more_information_required.png" width="80%" title="more_information_required">
    </p>
 
 ### :door: Set up multi-factor authentication
@@ -255,7 +255,7 @@ This additional security verification is to make it harder for people to imperso
 + Choose how you would like to be contacted for the additional security verification.
 
   <p align="center">
-    <img src="../../images/user_guide/additional_security_verification.png" width="80%" title="additional_security_verification"/>
+    <img src="../images/user_guide/additional_security_verification.png" width="80%" title="additional_security_verification"/>
   </p>
 
   + If you select phone verification, go to step 2.
@@ -266,13 +266,13 @@ This additional security verification is to make it harder for people to imperso
    If you choose to set up the authentication by phone call you will receive a call straight away.
 
    <p align="center">
-      <img src="../../images/user_guide/setup_mfa_phone_1.png" width="80%" title="setup_mfa_phone_1"/>
+      <img src="../images/user_guide/setup_mfa_phone_1.png" width="80%" title="setup_mfa_phone_1"/>
    </p>
 
    > :pencil2: Note that some people get a call that says, *press the pound key* and others receive *press the hash key* – both mean hit the `#` button.
 
    <p align="center">
-      <img src="../../images/user_guide/setup_mfa_phone_2.png" width="80%" title="setup_mfa_phone_2">
+      <img src="../images/user_guide/setup_mfa_phone_2.png" width="80%" title="setup_mfa_phone_2">
    </p>
 
    When you click `close` the page will switch to your dashboard.
@@ -298,19 +298,19 @@ This additional security verification is to make it harder for people to imperso
   + Scan the QR code on the screen
 
   <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_1.png" width="80%" title="setup_mfa_app_1"/>
+    <img src="../images/user_guide/setup_mfa_app_1.png" width="80%" title="setup_mfa_app_1"/>
   </p>
 
   + Click `Next` to start verification
 
   <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_2.png" width="80%" title="setup_mfa_app_2"/>
+    <img src="../images/user_guide/setup_mfa_app_2.png" width="80%" title="setup_mfa_app_2"/>
   </p>
 
   + Click `Next` again to test the app, you will get a verification on your app.
 
   <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_3.png" width="80%" title="setup_mfa_app_3"/>
+    <img src="../images/user_guide/setup_mfa_app_3.png" width="80%" title="setup_mfa_app_3"/>
   </p>
 
 + Check that your MFA is completed.
@@ -318,7 +318,7 @@ This additional security verification is to make it harder for people to imperso
     > :warning: It is confusing that the "save" button is not available to click, but if your phone or app appears on this screen you **are** set up for MFA.
 
    <p align="center">
-      <img src="../../images/user_guide/setup_mfa_app_4.png" width="80%" title="setup_mfa_app_4"/>
+      <img src="../images/user_guide/setup_mfa_app_4.png" width="80%" title="setup_mfa_app_4"/>
    </p>
 
    Close the browser once MFA is confirmed.
@@ -359,7 +359,7 @@ After going through the account setup procedure, you should have access to:
 + You should arrive at a login page that looks like this.
 
    <p align="center">
-      <img src="../../images/user_guide/logon_environment.PNG" width="80%" title="logon_environment">
+      <img src="../images/user_guide/logon_environment.PNG" width="80%" title="logon_environment">
    </p>
 
    Enter your username (either as `username` or as `username@<username domain>` ) and password here, then click `Sign in` .
@@ -369,7 +369,7 @@ After going through the account setup procedure, you should have access to:
 + If you are successful, you'll see the a screen with icons for the available apps.
 
    <p align="center">
-      <img src="../../images/user_guide/RDS_app_selection_options.png" width="80%" title="RDS_app_selection_options"/>
+      <img src="../images/user_guide/RDS_app_selection_options.png" width="80%" title="RDS_app_selection_options"/>
    </p>
 
    Welcome to the Turing Safe Haven SRE! :wave:
@@ -391,19 +391,19 @@ Once connected to it, you can carry out data science research while remaining co
    Go to the app to approve the request.
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_connection_screen.png" width="80%" title="dsvm_connection_screen"/>
+      <img src="../images/user_guide/dsvm_connection_screen.png" width="80%" title="dsvm_connection_screen"/>
    </p>
 
    > :warning: If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_connection_failure.png" width="80%" title="dsvm_connection_failure"/>
+      <img src="../images/user_guide/dsvm_connection_failure.png" width="80%" title="dsvm_connection_failure"/>
    </p>
 
 + After verifying using MFA, you might get a security alert like this one. If you do, it is safe to tick the box and to click `Yes` .
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_security_fingerprint.png" width="80%" title="dsvm_security_fingerprint"/>
+      <img src="../images/user_guide/dsvm_security_fingerprint.png" width="80%" title="dsvm_security_fingerprint"/>
    </p>
 
 + Insert your username and password.
@@ -411,13 +411,13 @@ Once connected to it, you can carry out data science research while remaining co
     > :information_source: Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_login_screen.png" width="80%" title="dsvm_login_screen"/>
+      <img src="../images/user_guide/dsvm_login_screen.png" width="80%" title="dsvm_login_screen"/>
    </p>
 
    If you enter your username and / or password incorrect you will see a warning:
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_login_failure.png" width="80%" title="dsvm_login_failure"/>
+      <img src="../images/user_guide/dsvm_login_failure.png" width="80%" title="dsvm_login_failure"/>
    </p>
 
    > :point_right: Please try again, entering your username and password carefully.
@@ -430,7 +430,7 @@ Once connected to it, you can carry out data science research while remaining co
 + You should now be greeted by a Linux desktop.
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial"/>
+      <img src="../images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial"/>
    </p>
 
 You are now inside the Turing Safe Haven SRE!
@@ -503,7 +503,7 @@ For example:
 + Open Terminal -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
 
 <p align="center">
-  <img src="../../images/user_guide/access-applications.png" width="80%" title="screen capture to show how to access applications from the desktop"/>
+  <img src="../images/user_guide/access-applications.png" width="80%" title="screen capture to show how to access applications from the desktop"/>
 </p>
 
 ### :snake: Initiate the correct version of R or python
@@ -696,7 +696,7 @@ Login with username `firstname.lastname` (the domain is not needed) and `passwor
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in` .
 
    <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login"/>
+      <img src="../images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login"/>
    </p>
 
   > :warning: Do not use your username and password from a pre-existing GitLab account.
@@ -711,7 +711,7 @@ You can also access GitLab from an internet browser from the Linux Data cience D
 + If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
 
    <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
+      <img src="../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
    </p>
 
 ### :open_hands: Public repositories within the SRE
@@ -754,7 +754,7 @@ Login with your long-form username `firstname.lastname@<username domain>` and `p
    > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 
    <p align="center">
-      <img src="../../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
+      <img src="../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
    </p>
 
 You can also access CodiMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access CodiMD from the Work Resources page.
@@ -766,7 +766,7 @@ You can also access CodiMD from an internet browser from the Linux Data Science 
 + Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
 
    <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
+      <img src="../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
    </p>
 
 ### :busts_in_silhouette: Editing other people's documents
@@ -779,7 +779,7 @@ They will have the right to change the file if they are signed into the CodiMD i
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
    <p align="center">
-      <img src="../../images/user_guide/codimd_access_options.png" width="80%" title="codimd_logon"/>
+      <img src="../images/user_guide/codimd_access_options.png" width="80%" title="codimd_logon"/>
    </p>
 
 > :handshake: We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
@@ -792,7 +792,7 @@ Click the `Publish` button to publish the document and generate the short URL.
 Click the pen button (shown in the image below) to return to the editable markdown view.
 
    <p align="center">
-      <img src="../../images/user_guide/codimd_screenshot.png" width="80%" title="codimd_screenshot"/>
+      <img src="../images/user_guide/codimd_screenshot.png" width="80%" title="codimd_screenshot"/>
    </p>
 
 > :pencil2: We recommend **publishing** the document to get a much shorter URL to share with your team.
@@ -826,7 +826,7 @@ You will need to know the IP address of the new machine, which you will be told 
 + Enter the IP address of the additional virtual machine.
 
    <p align="center">
-      <img src="../../images/user_guide/dsvm_rdc_screen.png" width="80%" title="dsvm_rdc_screen"/>
+      <img src="../images/user_guide/dsvm_rdc_screen.png" width="80%" title="dsvm_rdc_screen"/>
    </p>
 
 + After entering the IP address, you will get the normal login screen, where you use the same `username` and `password` credentials as before.
@@ -862,7 +862,7 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using Azure Data Studio as follows:
 
    <p align="center">
-      <img src="../../images/user_guide/db_azure_data_studio.png" width="80%" title="db_AzureDataStudio"/>
+      <img src="../images/user_guide/db_azure_data_studio.png" width="80%" title="db_AzureDataStudio"/>
    </p>
 
 > :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database.
@@ -880,7 +880,7 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
    <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_mssql.png" width="80%" title="DBeaver MS SQL connection"/>
+      <img src="../images/user_guide/db_dbeaver_mssql.png" width="80%" title="DBeaver MS SQL connection"/>
    </p>
 
 > :point_right: it is important to use `Kerberos` authentication so that your username and password will be passed through to the database
@@ -894,13 +894,13 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
    <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_postgres1.png" width="80%" title="DBeaver PostgreSQL connection"/>
+      <img src="../images/user_guide/db_dbeaver_postgres1.png" width="80%" title="DBeaver PostgreSQL connection"/>
    </p>
 
 > :point_right: If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
 
    <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_postgres2.png" width="80%" title="DBeaver PostgreSQL connection"/>
+      <img src="../images/user_guide/db_dbeaver_postgres2.png" width="80%" title="DBeaver PostgreSQL connection"/>
    </p>
 
 ### :snake: Connecting using Python
@@ -1158,7 +1158,7 @@ In Git, when you copy a project you say you "clone" it. To work on a git project
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](<https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html>). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
    <p align="center">
-      <img src="../../images/user_guide/project_clone_url.png" width="80%" title="project_clone_url"/>
+      <img src="../images/user_guide/project_clone_url.png" width="80%" title="project_clone_url"/>
    </p>
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
@@ -1267,7 +1267,7 @@ For more information, check the [merge requests documentation](<https://docs.git
    The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
    <p align="center">
-      <img src="../../images/user_guide/merge1.png" width="80%" title="merge1"/>
+      <img src="../images/user_guide/merge1.png" width="80%" title="merge1"/>
    </p>
 
 + When ready, click on the Compare branches and continue button.
@@ -1276,7 +1276,7 @@ For more information, check the [merge requests documentation](<https://docs.git
    Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
    <p align="center">
-      <img src="../../images/user_guide/merge2.png" width="80%" title="merge2"/>
+      <img src="../images/user_guide/merge2.png" width="80%" title="merge2"/>
    </p>
 
 + When ready, click on the `Submit merge request` button.
@@ -1296,7 +1296,7 @@ Your merge request will be ready to be approved and merged.
 + You do not see any available apps
 
    <p align="center">
-      <img src="../../images/user_guide/no_folders_present.png" width="80%" title="no_folders_present">
+      <img src="../images/user_guide/no_folders_present.png" width="80%" title="no_folders_present">
    </p>
 
 #### Cause
@@ -1319,7 +1319,7 @@ Follow the two factor authentication section from the [logging in section](#hous
 + When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
 
    <p align="center">
-      <img src="../../images/user_guide/unexpected_certificate_error.png" width="80%" title="unexpected_certificate_error"/>
+      <img src="../images/user_guide/unexpected_certificate_error.png" width="80%" title="unexpected_certificate_error"/>
    </p>
 
 #### Cause
