@@ -124,7 +124,7 @@ SREs in the same SHM are still isolated from one another.
   + Disconnect from the SHM VPN
   + Attempt to connect to the SHM DC and NPS again
   + :white_check_mark: **Verify:** Connection fails
-+ Be unable to connect to the internet from within a DSVM on the SRE network.
++ Fail to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
   + Choose your favourite three websites and attempt to access the internet using a browser
   + <details>
@@ -142,7 +142,11 @@ SREs in the same SHM are still isolated from one another.
   + Right click on the PuTTY terminal and click `New Session...`
   + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
   + Click `Open`
-  + <details><summary>:camera: <b>Verify:</b> Connection fails </summary> <img width="685" alt="Screenshot 2021-04-01 at 10 07 17" src="https://user-images.githubusercontent.com/5486164/113274096-359b6d80-92d5-11eb-8e8a-024514178edf.png"></details>
+  + <details>
+
+      <summary>:camera: <b>Verify:</b> Connection fails </summary>
+      <img src="../../images/security_checklist/ssh_connection_fail.png" width="80%" title="ssh_connection_fail"/>
+    </details>
 + Check that users cannot copy files from one SRE to another one in the same SHM
   + Connect to a DSVM in SRE A as the **SRE standard user** by using the web client.
   + In a separate browser window, do the same for SRE B.
@@ -150,7 +154,10 @@ SREs in the same SHM are still isolated from one another.
   + :white_check_mark: **Verify:** Copy and paste is not possible
 + Check that the network rules are set appropriately to block outgoing traffic
   + Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on the `Outbound security rules` under `Settings`
-  + <details><summary>:camera: <b>Verify:</b> There exists a "DenyInternetOutbound" rule with Destination "Internet" and Action "Deny" and no higher priority rule allows connection to the internet.</summary> <img width="1896" alt="Screenshot 2021-04-01 at 12 00 25" src="https://user-images.githubusercontent.com/5486164/113284898-3686cc00-92e2-11eb-8e29-adc9e55ca6e3.png"></details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> There exists an NSG rule with Destination "Internet" and Action "Deny" and that no higher priority rule allows connection to the internet.</summary>
+      <img src="../../images/security_checklist/nsg_outbound_access.png" width="80%" title="nsg_outbound_access"/>
+    </details>
 
 ## 3. User devices
 
@@ -352,15 +359,17 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 
 ### Verify by:
 
-+ Check that software was installed during deployment (via outbound internet), but that outbound internet access on the DSVM is closed off after deployment:
++ Check that software was installed during deployment, but that outbound internet access on the DSVM is closed off after deployment:
+  + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + <details>
-      <summary>:camera: <b>Verify:</b> Connect as a user to a tier 2+ SRE via the webclient and check that GitLab is present (GitLab being an example of software installed during deployment via outbound internet access)</summary>
-      <img src="../../images/security_checklist/msrds_dashboard_apps_check.png" width="80%" title="msrds_dashboard_apps_check"/>
+      <summary>:camera: <b>Verify:</b> Confirm that the following programmes can be opened without issue: DBeaver, RStudio, PyCharm and Visual Studio Code</summary>
+      <img src="../../images/security_checklist/dsvm_installed_software.png" width="80%" title="dsvm_installed_software"/>
+    </details>
 + Check that it's possible to grant and revoke software ingress capability by following the instructions in the [Safe Haven Administrator Documentation](../../how_to_guides/administrator/how-to-be-a-sysadmin.md#software-ingress):
   + :white_check_mark: **Verify:** You can generate a temporary write-only upload token
   + :white_check_mark: **Verify:** You can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
   + :white_check_mark: **Verify:** Software uploaded to the by a non-admin can be read by administrators
-  + :white_check_mark: **Verify:** Check that software that requires administrator rights to install (i.e. anything you can install with `apt`), can only be installed by a System manager (see definition [here](https://arxiv.org/abs/1908.08737)), or at least verify that it cannot when logged in to the DSVM with a non-manager account.
+  + :white_check_mark: **Verify:** Check that the **SRE standard user** cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
 
 ## 10. Package mirrors
 
@@ -383,10 +392,10 @@ Tier 2:
 + Download packages from the full mirror.
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
   + Open up a terminal
-  + Attempt to install any package that is not included at base (for example, try `pip install sklearn`)
+  + Attempt to install any package that is not included out-of-the-box (for example, try `pip install botocore`)
   + <details>
-      <summary>:camera: <b>Verify:</b> You cannot install the package </summary>
-      <img src="../../images/security_checklist/dsvm_install_package.png" width="80%" title="dsvm_install_package"/>
+      <summary>:camera: <b>Verify:</b> You can install the package </summary>
+      <img src="../../images/security_checklist/dsvm_pypi_tier2.png" width="80%" title="dsvm_pypi_tier2"/>
     </details>
 
 Tier 3:
@@ -397,7 +406,7 @@ Tier 3:
   + Then attempt to download a package that is not included in the allowlist
   + <details>
       <summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary>
-      <img src="../../images/security_checklist/dsvm_fail_package.png" width="80%" title="dsvm_fail_package"/>
+      <img src="../../images/security_checklist/dsvm_pypi_tier3.png" width="80%" title="dsvm_pypi_tier3"/>
     </details>
 
 ## 11. Azure Firewalls
@@ -417,7 +426,7 @@ Whilst all user access VMs are entirely blocked off from the internet, this is n
   + Attempt to connect to a non-approved site, such as `www.google.com`
   + <details>
       <summary>:camera: <b>Verify:</b> connection fails</summary>
-      <img src="../../images/security_checklist/dsvm_website_deny.png" width="80%" title="dsvm_website_deny"/>
+      <img src="../../images/security_checklist/shmdc_website_deny.png" width="80%" title="shmdc_website_deny"/>
     </details>
 + Admin can download Windows updates
   + As the **system administrator** use Remote Desktop to connect to the SHM domain controller VM
