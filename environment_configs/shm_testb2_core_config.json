@@ -21,5 +21,8 @@
     },
     "vmImages": {
         "subscriptionName": "[Prod] Safe Haven VM Images"
+    },
+    "overrides": {
+        "ipPrefix": "10.0.8"
     }
 }
