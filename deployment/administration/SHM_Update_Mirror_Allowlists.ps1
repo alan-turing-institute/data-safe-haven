@@ -1,8 +1,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing whitelist files (default: '<repo root>/environment_configs/package_lists')")]
-    [string]$whitelistDirectory = $null
+    [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing allowlist files (default: '<repo root>/environment_configs/package_lists')")]
+    [string]$allowlistDirectory = $null
 )
 
 Import-Module Az -ErrorAction Stop
@@ -21,28 +21,28 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 # Common variable names
 # ---------------------
 $mirrorTypes = @("PyPI", "CRAN")
-$tier = "3"  # currently only Tier-3 mirrors have whitelists
-if (-Not $whitelistDirectory) { $whitelistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
+$tier = "3"  # currently only Tier-3 mirrors have allowlists
+if (-Not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
 
 
 # Update all external package mirrors
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
     $fullMirrorType = "${mirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-    $whitelistPath = Join-Path $whitelistDirectory "whitelist-full-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
-    $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $allowlistPath = Join-Path $allowlistDirectory "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
+    $allowList = Get-Content $allowlistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Failure "Could not find whitelist at '$whitelistPath'"
+        Add-LogMessage -Level Failure "Could not find allowlist at '$allowlistPath'"
     } else {
-        # Update the whitelist with the new set of packages
-        Add-LogMessage -Level Info "Using whitelist from '$whitelistPath'"
+        # Update the allowlist with the new set of packages
+        Add-LogMessage -Level Info "Using allowlist from '$allowlistPath'"
         $script = "#! /bin/bash`n"
-        $script += ": > /home/mirrordaemon/package_whitelist.txt`n"  # ':' is the shell no-op command
-        foreach ($package in $whiteList -split "`n") {
-            $script += "echo $package >> /home/mirrordaemon/package_whitelist.txt`n"
+        $script += ": > /home/mirrordaemon/package_allowlist.txt`n"  # ':' is the shell no-op command
+        foreach ($package in $allowList -split "`n") {
+            $script += "echo $package >> /home/mirrordaemon/package_allowlist.txt`n"
         }
-        $script += "sed -i '/^$/d' /home/mirrordaemon/package_whitelist.txt`n"  # remove empty lines
-        $script += "echo `"There are `$(wc -l /home/mirrordaemon/package_whitelist.txt | cut -d' ' -f1)`" packages on the whitelist`n"
+        $script += "sed -i '/^$/d' /home/mirrordaemon/package_allowlist.txt`n"  # remove empty lines
+        $script += "echo `"There are `$(wc -l /home/mirrordaemon/package_allowlist.txt | cut -d' ' -f1)`" packages on the allowlist`n"
 
         # PyPI also needs us to run the script which updates /etc/bandersnatch.conf
         if ($MirrorType.ToLower() -eq "pypi") {
@@ -51,7 +51,7 @@ foreach ($mirrorType in $mirrorTypes) {
 
         # Run the script on the mirror VM
         $vmName = "$MirrorType-EXTERNAL-MIRROR-TIER-$tier".ToUpper()
-        Add-LogMessage -Level Info "Updating whitelist on $vmName"
+        Add-LogMessage -Level Info "Updating allowlist on $vmName"
         $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
 
         # Restart the mirror to trigger a pull-then-push

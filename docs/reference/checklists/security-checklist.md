@@ -375,15 +375,15 @@ For tier 0/1 environments, outbound internet access means users can directly dow
 
 ### We claim:
 
-Tier 2: User can access full package mirrors
+Tier 2: User can access all packages from PyPI/CRAN
 
-Tier 3: User can only access allowlisted package mirrors
+Tier 3: User can only access approved packages from PyPI/CRAN
 
 ### This means:
 
-Tier 2: The user can access any package included within our mirrors. They can freely use these packages without restriction.
+Tier 2: The user can access any package from our mirrors. They can freely use these packages without restriction.
 
-Tier 3: The user can only access a specific set of packages that we have agreed with. They will be unable to download any package not on the allowlist.
+Tier 3: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowlist.
 
 ### Verify by:
 
@@ -402,8 +402,8 @@ Tier 3:
 
 + Download packages on the allowlist (see the lists in `environment_configs/package_lists`)
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
-  + Attempt to download a package included in the allowlist
-  + Then attempt to download a package that is not included in the allowlist
+  + Attempt to install a package on the allowlist that is not included out-of-the-box (for example, try `pip install aero-calc`)
+  + Then attempt to download a package that is not included in the allowlist (for example, try `pip install botocore`)
   + <details>
       <summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary>
       <img src="../../images/security_checklist/dsvm_pypi_tier3.png" width="80%" title="dsvm_pypi_tier3"/>

@@ -82,8 +82,9 @@ function Get-ShmConfig {
     }
 
     # Set timezone and NTP configuration
-    # NB. Very few NTP services provide an exhaustive, stable list of IP addresses. The Google NTP servers are incompatible with others due to leap-second smearing
-    # -------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Google is one of the few NTP services to provide an exhaustive, stable list of IP addresses.
+    # However, note that the Google NTP servers are incompatible with others due to leap-second smearing
+    # --------------------------------------------------------------------------------------------------
     $timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
     $shm.time = [ordered]@{
         timezone = [ordered]@{
@@ -851,17 +852,17 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CodiMD and Gitlab servers
-    # -------------------------
+    # CoCalc, CodiMD and Gitlab servers
+    # ---------------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        gitlab = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
-            vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+        cocalc = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
+            dockerVersion           = "latest"
+            hostname                = "COCALC"
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
-            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
-            osVersion               = "18.04-LTS"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
+            osVersion               = "20.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -875,10 +876,10 @@ function Get-SreConfig {
         }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
-            vmName                  = "CODIMD-SRE-$($config.sre.id)".ToUpper()
+            hostname                = "CODIMD"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion               = "18.04-LTS"
+            osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
                 dockerVersion = "2.3.2"
             }
@@ -897,12 +898,30 @@ function Get-SreConfig {
                 }
             }
         }
+        gitlab = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
+            hostname                = "GITLAB"
+            vmSize                  = "Standard_D2s_v3"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
+            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
+            osVersion               = "20.04-LTS"
+            disks                   = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
+                os   = [ordered]@{
+                    sizeGb = "32"
+                    type   = "Standard_LRS"
+                }
+            }
+        }
     }
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].hostname = $config.sre.webapps[$server].vmName
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
+        $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
     }
 
 
@@ -971,6 +990,44 @@ function Get-SreConfig {
         }
     }
     $config.shm.Remove("dsvmImage")
+
+    # Package repositories
+    # --------------------
+    if (@(0, 1).Contains([int]$config.sre.tier)) {
+        # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
+        $pypiUrl = "https://pypi.org"
+        $cranUrl = "https://cran.r-project.org"
+    } else {
+        # All Nexus repositories are accessed over the same port (currently 80)
+        if ($config.sre.nexus) {
+            $nexus_port = 80
+            if ([int]$config.sre.tier -ne 2) {
+                Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
+            }
+            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+        # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        } else {
+            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
+            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+        }
+    }
+    # We want to extract the hostname from PyPI URLs in any of the following forms
+    # 1. http://10.20.2.20:3128                      => 10.20.2.20
+    # 2. https://pypi.org                            => pypi.org
+    # 3. http://10.30.1.10:80/repository/pypi-proxy  => 10.30.1.10
+    $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
+    $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
+    $config.sre.repositories = [ordered]@{
+        cran = [ordered]@{
+            url = $cranUrl
+        }
+        pypi = [ordered]@{
+            host     = $pypiHost
+            index    = $pypiIndex
+            indexUrl = "${pypiUrl}/simple"
+        }
+    }
 
     # Apply overrides (if any exist)
     # ------------------------------

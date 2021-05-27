@@ -35,11 +35,11 @@ write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     owner: root:root
     permissions: "0600"
-  - path: "/home/mirrordaemon/package_whitelist.txt"
+  - path: "/home/mirrordaemon/package_allowlist.txt"
     owner: root:root
     permissions: "0600"
     content: |
-      # PACKAGE_WHITELIST
+      # PACKAGE_ALLOWLIST
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     owner: root:root
     permissions: "0700"
@@ -73,29 +73,29 @@ write_files:
           # Download all files
           rsync -rtlvz --delete --delete-excluded --exclude=bin/windows/* --exclude=bin/macos*/* --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
       else
-          # Download all whitelisted packages (which might be none)
-          WHITELISTED_PACKAGES=$(grep -v "^#" /home/mirrordaemon/package_whitelist.txt)
+          # Download all allowed packages (which might be none)
+          ALLOWED_PACKAGES=$(grep -v "^#" /home/mirrordaemon/package_allowlist.txt)
           echo "" > /datadrive/mirrordaemon/pull_from_internet.log
           # Note that there is a server-side timeout (30s) which causes problems for complicated commands
           # By splitting into subdirectories we reduce the complexity of each rsync command
           # Additionally, using an initial '/' anchors the search path at the directory root, speeding up calculation time
           # Directory: /bin
           INCLUDE_DIRS=""
-          for RPACKAGE in $WHITELISTED_PACKAGES; do
+          for RPACKAGE in $ALLOWED_PACKAGES; do
               INCLUDE_DIRS="${INCLUDE_DIRS} --include=/linux/ubuntu/*/${RPACKAGE}_*"
           done
           mkdir -p /datadrive/mirrordaemon/www/cran/bin
           rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/bin/ /datadrive/mirrordaemon/www/cran/bin 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
           # Directory: /src
           INCLUDE_DIRS="--include=/contrib/PACKAGES"
-          for RPACKAGE in $WHITELISTED_PACKAGES; do
+          for RPACKAGE in $ALLOWED_PACKAGES; do
               INCLUDE_DIRS="${INCLUDE_DIRS} --include=/contrib/${RPACKAGE}_* --include=/contrib/Archive/${RPACKAGE}/*"
           done
           mkdir -p /datadrive/mirrordaemon/www/cran/src
           rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN/src/ /datadrive/mirrordaemon/www/cran/src 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
           # Directory: /web
           INCLUDE_DIRS="--include=/packages/index.html"
-          for RPACKAGE in $WHITELISTED_PACKAGES; do
+          for RPACKAGE in $ALLOWED_PACKAGES; do
               INCLUDE_DIRS="${INCLUDE_DIRS} --include=/checks/check_results_${RPACKAGE}.html --include=/dcmeta/${RPACKAGE}.xml --include=/packages/${RPACKAGE}/***"
           done
           mkdir -p /datadrive/mirrordaemon/www/cran/web

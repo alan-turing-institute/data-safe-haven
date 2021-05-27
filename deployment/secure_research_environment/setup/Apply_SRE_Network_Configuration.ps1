@@ -9,7 +9,6 @@ Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Mirrors -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -139,26 +138,21 @@ if (@(2, 3).Contains([int]$config.sre.tier)) {
 }
 
 
-# Update SRE mirror lookup
-# ------------------------
-Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$IPs = Get-MirrorIPs $config
-$addresses = Get-MirrorAddresses -cranIp $IPs.cran -pypiIp $IPs.pypi -nexus $config.sre.nexus
-Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Info "PyPI: '$($addresses.pypi.index)'"
-
+# Update SRE package repository details
+# -------------------------------------
 # Set PyPI and CRAN locations on the compute VM
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-foreach ($vmName in $computeVmNames) {
-    Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
+$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.dsvm.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
+foreach ($VM in $repositoryFacingVms) {
+    Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{
-        CRAN_MIRROR_INDEX_URL = $addresses.cran.url
-        PYPI_MIRROR_INDEX     = $addresses.pypi.index
-        PYPI_MIRROR_INDEX_URL = $addresses.pypi.indexUrl
-        PYPI_MIRROR_HOST      = $addresses.pypi.host
+        CRAN_MIRROR_INDEX_URL = $config.sre.repositories.cran.url
+        PYPI_MIRROR_INDEX     = $config.sre.repositories.pypi.index
+        PYPI_MIRROR_INDEX_URL = $config.sre.repositories.pypi.indexUrl
+        PYPI_MIRROR_HOST      = $config.sre.repositories.pypi.host
     }
-    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Parameter $params
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 

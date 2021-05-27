@@ -1291,7 +1291,7 @@ function Remove-VirtualMachine {
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
         [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Forces the command to run without asking for user confirmation.")]
+        [Parameter(HelpMessage = "Forces the command to run without asking for user confirmation.")]
         [switch]$Force
     )
     $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue

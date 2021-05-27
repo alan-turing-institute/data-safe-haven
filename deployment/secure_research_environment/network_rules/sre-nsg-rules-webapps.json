@@ -78,6 +78,30 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowPackageRepositoriesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the SHM package repositories",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 2500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowPrivateDataEndpointsOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to private endpoints in the VNet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}InternetOutbound",
         "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
         "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",

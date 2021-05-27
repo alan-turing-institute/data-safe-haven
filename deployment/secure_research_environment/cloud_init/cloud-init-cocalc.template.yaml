@@ -1,0 +1,203 @@
+#cloud-config
+
+# Create files
+write_files:
+  - path: "/opt/cocalc/docker-compose.yml"
+    permissions: "0400"
+    content: |
+      {{cocalc_docker_compose.yml}}
+
+  - path: "/etc/pip.conf"
+    permissions: "0444"
+    content: |
+      # Add the PyPI mirror to our global settings
+      [global]
+      index = {{sre.repositories.pypi.index}}
+      index-url = {{sre.repositories.pypi.indexUrl}}
+      trusted-host = {{sre.repositories.pypi.host}}
+
+  - path: "/etc/R/Rprofile.site"
+    permissions: "0444"
+    content: |
+      ## Set Rprofile.site to the appropriate CRAN mirror
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "{{sre.repositories.cran.url}}"
+          options(repos = r)
+      })
+
+  - path: "/etc/systemd/system/ingress.mount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for ingress volume (via blobfuse)
+      Requires=network-online.target
+      After=network-online.target
+
+      [Mount]
+      What=/opt/mounts/ingress-mount.sh
+      Where=/ingress
+      Type=fuse
+      Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
+
+  - path: "/etc/systemd/system/ingress.automount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/ingress
+
+      [Automount]
+      Where=/ingress
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: "/opt/mounts/ingress-credentials.secret"
+    permissions: "0400"
+    content: |
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{sre.storage.persistentdata.ingressSasToken}}}
+      authType SAS
+      containerName ingress
+
+  - path: "/opt/mounts/ingress-mount.sh"
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
+        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/mounts/ingress-credentials.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: {{sre.time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  pools:
+    - {{shm.time.ntp.poolFqdn}}
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    docker.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
+
+    microsoft-general.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
+# Install necessary apt packages
+packages:
+  - blobfuse
+  - docker-ce
+  - docker-compose
+package_update: true
+package_upgrade: true
+
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+
+# Set hostname
+fqdn: {{sre.webapps.cocalc.fqdn}}
+hostname: {{sre.webapps.cocalc.fqdn}}
+
+# Add the SRE admin (default) and cocalcdaemon users
+users:
+  - default
+  - name: cocalcdaemon
+    lock_passwd: True # Lock the password to disable password login
+    sudo: False       # This user will not have sudo privileges
+
+
+# Run other commands
+runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt-get -y autoremove
+  - apt-get clean
+
+  # Check server settings
+  - echo ">=== Hostname ===<"
+  - hostnamectl
+  - echo ">=== Date/time ===<"
+  - timedatectl
+
+  # Configuring attached disks
+  - echo ">=== Configuring attached disks... ===<"
+  - mkdir -p /data/cocalc
+  - ls -alh /data/
+
+  # Ensure that Docker is running
+  - echo ">=== Current Docker status... ===<"
+  - systemctl start docker
+  - systemctl enable docker
+  - systemctl status docker
+  - docker --version
+  - docker-compose --version
+
+  # Set up the cocalcdaemon user
+  - echo "Configuring cocalcdaemon user..."
+  - groupadd docker 2> /dev/null
+  - usermod -aG docker cocalcdaemon
+  - newgrp docker
+  - chown -R cocalcdaemon:cocalcdaemon /opt/cocalc
+  - ls -alh /opt/cocalc
+
+  # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
+  - echo ">=== Configure ingress and egress mounts ... ===<"
+  - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
+  - echo "user_allow_other" >> /etc/fuse.conf.tmp
+  - mv /etc/fuse.conf.tmp /etc/fuse.conf
+  - systemctl enable ingress.mount
+  - systemctl enable ingress.automount
+  - ls -alh /ingress
+
+  # Deploy CoCalc using Docker
+  - echo "Deploying CoCalc with Docker..."
+  - su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yml up -d"
+  # Wait for deployment to finish
+  - |
+    while true; do
+      STATUS=$(su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yml logs cocalc" | grep "finished exec of psql")
+      if [ "$STATUS" != "" ]; then
+        break
+      fi
+      sleep 5
+    done
+  - docker-compose -f /opt/cocalc/docker-compose.yml logs
+  # Print a final message
+  - echo "Deploying CoCalc with Docker is complete:"
+  - docker-compose -f /opt/cocalc/docker-compose.yml ps
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True
