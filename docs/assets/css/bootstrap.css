@@ -90,6 +90,13 @@ sub {
 img {
   border: 0;
 }
+
+img.emoji {
+    display: inline;
+    height: 1em;
+    width: 1em;
+}
+
 svg:not(:root) {
   overflow: hidden;
 }
