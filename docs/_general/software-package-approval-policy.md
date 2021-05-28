@@ -1,4 +1,7 @@
-# [DRAFT] Turing data safe haven - software package approval policy
+---
+layout: page
+title: DRAFT Software package approval policy
+---
 
 ## Introduction
 
