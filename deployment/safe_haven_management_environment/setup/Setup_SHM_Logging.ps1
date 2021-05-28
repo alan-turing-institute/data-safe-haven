@@ -49,6 +49,11 @@ $facilities = @{
     "user"     = "user-level messages";
     "uucp"     = "UUCP subsystem";
 }
+# Delete all existing syslog sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'LinuxSysLog'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+}
 # Syslog severities:
 #   See
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Severity
