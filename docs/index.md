@@ -1,8 +1,7 @@
 ---
 layout: page
+title: Safe Haven Documentation
 ---
-
-# Safe Haven Documentation
 
 We organise our documentation into four types. Read in accordance to what might be most helpful to you.
 
