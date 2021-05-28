@@ -679,13 +679,13 @@ You can access CoCalc from an internet browser from the Linux Data Science Deskt
 The first time that you login, you will see a security warning. This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
 
    <p align="center">
-      <img src="../../images/user_guide/cocalc_security_warning.png" width="80%" title="cocalc_security_warning"/>
+      <img src="../images/user_guide/cocalc_security_warning.png" width="80%" title="cocalc_security_warning"/>
    </p>
 
 You will then get to the CoCalc homepage where you should click on `Sign In`
 
    <p align="center">
-      <img src="../../images/user_guide/cocalc_homepage.png" width="80%" title="cocalc_homepage"/>
+      <img src="../images/user_guide/cocalc_homepage.png" width="80%" title="cocalc_homepage"/>
    </p>
 
 You will need to create a new account. You can use any username/password here - it is not connected to your main Safe Haven account.
@@ -693,7 +693,7 @@ You will need to create a new account. You can use any username/password here - 
 > :information_source: Our example user, Ada Lovelace has used `ada.lovelace@apr20.turingsafehaven.ac.uk` as her username and set her own password
 
    <p align="center">
-      <img src="../../images/user_guide/cocalc_account_creation.png" width="80%" title="cocalc_account_creation"/>
+      <img src="../images/user_guide/cocalc_account_creation.png" width="80%" title="cocalc_account_creation"/>
    </p>
 
 > The CoCalc instance within the SRE is entirely separate from the https://cocalc.com service
