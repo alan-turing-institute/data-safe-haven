@@ -8,7 +8,7 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
 + [Safe Haven administrator guide](administrator/how-to-be-a-sysadmin.md) - Instructions for administrators of a Safe Haven. Includes how to create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
-+ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our policy for approving software packages.
++ [Software package allowlist policy](general/software-package-approval-policy.md) - Guidance on our policy for approving software packages.
 
 ## How to be a project manager
 

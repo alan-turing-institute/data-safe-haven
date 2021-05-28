@@ -40,7 +40,7 @@ try {
     $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter })
     foreach ($sreResourceGroup in $sreResourceGroups) {
         foreach ($vm in $(Get-AzVM -ResourceGroup $sreResourceGroup.ResourceGroupName)) {
-            $null = Deploy-VirtualMachineMonitoringExtension -vm $vm -workspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+            $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
         }
     }
     Add-LogMessage -Level Success "Ensured that logging agent is installed on all SRE VMs."

@@ -173,7 +173,7 @@
                             "{{logging.workspaceId}}.ods.opinsights.azure.com",
                             "{{logging.workspaceId}}.oms.opinsights.azure.com",
                             "{{logging.workspaceId}}.blob.core.windows.net",
-                            "{{logging.workspaceId}}.azure-automation.net"
+                            "{{logging.workspaceId}}.agentsvc.azure-automation.net"
                         ],
                         "sourceAddresses": [
                             "*"

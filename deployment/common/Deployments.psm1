@@ -860,13 +860,13 @@ function Deploy-VirtualMachineMonitoringExtension {
         [Parameter(Mandatory = $true, HelpMessage = "VM object")]
         $VM,
         [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
-        [string]$workspaceId,
+        [string]$WorkspaceId,
         [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
-        [string]$workspaceKey
+        [string]$WorkspaceKey
     )
 
-    $PublicSettings = @{ "workspaceId" = $workspaceId }
-    $ProtectedSettings = @{ "workspaceKey" = $workspaceKey }
+    $PublicSettings = @{ "workspaceId" = $WorkspaceId }
+    $ProtectedSettings = @{ "workspaceKey" = $WorkspaceKey }
 
     function Set-ExtensionIfNotInstalled {
         param(
