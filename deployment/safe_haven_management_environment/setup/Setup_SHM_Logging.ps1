@@ -144,25 +144,27 @@ $counters = @(
     @{setName = "Processor"; counterName = "% Processor Time" },
     @{setName = "System"; counterName = "Processor Queue Length" }
 )
+
+# Delete all existing performance counter log sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'WindowsPerformanceCounter'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+}
+
 foreach ($counter in $counters) {
     $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource -Name $sourceName -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
-    if ($source) {
-        Add-LogMessage -Level InfoSuccess "Logging already active for '$($counter.setName)/$($counter.counterName)'"
+    $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
+            -Name $sourceName `
+            -ResourceGroupName $config.logging.rg `
+            -WorkspaceName $config.logging.workspaceName `
+            -ObjectName $counter.setName `
+            -InstanceName "*" `
+            -CounterName $counter.counterName `
+            -IntervalSeconds 60
+    if ($?) {
+        Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
     } else {
-        $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
-                -Name $sourceName `
-                -ResourceGroupName $config.logging.rg `
-                -WorkspaceName $config.logging.workspaceName `
-                -ObjectName $counter.setName `
-                -InstanceName "*" `
-                -CounterName $counter.counterName `
-                -IntervalSeconds 60
-        if ($?) {
-            Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
-        } else {
-            Add-LogMessage -Level Fatal "Failed to activate logging for '$($counter.setName)/$($counter.counterName)'!"
-        }
+        Add-LogMessage -Level Fatal "Failed to activate logging for '$($counter.setName)/$($counter.counterName)'!"
     }
 }
 
