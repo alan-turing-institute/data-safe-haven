@@ -176,11 +176,13 @@ $packNames = @(
     "AgentHealthAssessment",
     "AzureActivity",
     "AzureNetworking",
+    "AzureResources",
     "AntiMalware",
     "CapacityPerformance",
     "ChangeTracking",
     "DnsAnalytics",
     "InternalWindowsEvent",
+    "LogManagement",
     "NetFlow",
     "NetworkMonitoring",
     "ServiceMap",
@@ -190,20 +192,34 @@ $packNames = @(
     "WindowsFirewall",
     "WinLog"
 )
-foreach ($packName in $packNames) {
-    $pack = Get-AzOperationalInsightsIntelligencePack -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg | Where-Object { $_.Name -eq $packName }
-    if ($pack.Enabled) {
-        Add-LogMessage -Level InfoSuccess "'$packName' Intelligence Pack already enabled."
-    } else {
-        $pack = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $packName -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $true
-        if ($?) {
-            Add-LogMessage -Level Success "'$packName' Intelligence Pack enabled."
+
+# Ensure only the selected intelligence packs are enabled
+$packsAvailable = Get-AzOperationalInsightsIntelligencePack -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
+foreach ($pack in $packsAvailable) {
+    if ($pack.Name -in $packNames) {
+        if ($pack.Enabled) {
+            Add-LogMessage -Level InfoSuccess "'$($pack.Name)' Intelligence Pack already enabled."
         } else {
-            Add-LogMessage -Level Fatal "Failed to enable '$packName' Intelligence Pack!"
+            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $true
+            if ($?) {
+                Add-LogMessage -Level Success "'$($pack.Name)' Intelligence Pack enabled."
+            } else {
+                Add-LogMessage -Level Fatal "Failed to enable '$($pack.Name)' Intelligence Pack!"
+            }
+        }
+    } else {
+        if ($pack.Enabled) {
+            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $false
+            if ($?) {
+                Add-LogMessage -Level Success "'$($pack.Name)' Intelligence Pack disabled."
+            } else {
+                Add-LogMessage -Level Fatal "Failed to disable '$($pack.Name)' Intelligence Pack!"
+            }
+        } else {
+            Add-LogMessage -Level InfoSuccess "'$($pack.Name)' Intelligence Pack already disabled."
         }
     }
 }
-
 
 # Ensure logging is active on all SHM VMs
 # ---------------------------------------
