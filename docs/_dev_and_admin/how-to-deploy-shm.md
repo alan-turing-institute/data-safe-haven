@@ -849,7 +849,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Close the dialog by clicking `X`
 + If you get a Javascript error that prevents the script from running then simply run this script again.
 + If you receive an Internet Explorer pop-up dialog like `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration`
-  + Add these webpages to the exceptions whitelist by clicking `Add` and clicking `Close`
+  + Add these webpages to the exceptions allowlist by clicking `Add` and clicking `Close`
 + If you see a Windows Security Warning when connecting to Azure AD, check `Don't show this message again` and click `Yes`.
 + If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
   + Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
@@ -865,7 +865,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
     + The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-  + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
+  + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and configured MFA on your account.
 
 ## :closed_lock_with_key: 11. Require MFA for all users
 

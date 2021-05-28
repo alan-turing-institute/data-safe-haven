@@ -71,7 +71,7 @@ For management of the environment there is an Azure point-to-site (P2S) VPN serv
 
 For Tier 2 and Tier 3 SREs, a selection of Python and R packages can be provided via a set of servers that mirror some or all of the PyPI or CRAN package servers.
 
-Tier 2 environments can access a common set of full mirrors of PyPI and CRAN, while each Tier 3 environment can have its own dedicated set of mirrors, hosting only a subset of PyPI or CRAN packages restricted to a SRE specific whitelist. Connection of SREs to mirror sets is achieved via VNet peering. While Tier 2 SREs are peered to the same mirror VNet, this does not permit communication between SREs.
+Tier 2 environments can access a common set of full mirrors of PyPI and CRAN, while each Tier 3 environment can have its own dedicated set of mirrors, hosting only a subset of PyPI or CRAN packages restricted to a SRE specific allowlist. Connection of SREs to mirror sets is achieved via VNet peering. While Tier 2 SREs are peered to the same mirror VNet, this does not permit communication between SREs.
 
 To minimise the risk of any breaches via the package mirrors, there are two mirror servers for each official package server mirrored.
 
@@ -107,7 +107,7 @@ The following access is restricted to members of the Safe Haven Administrators s
 + The copying of information into or out of any of the resources in the SRE is prevented by the RDS configuration.
 + Researchers are not provided with any administrative rights on the data science compute VMs, but can install additional Python or R packages in their own user directories from internal mirrors of the PyPI and CRAN package servers.
   + For Tier 2, access is provided to a local copy of all packages on the official PyPI and CRAN servers.
-  + For Tier 3, access is provided to a limited whitelist of packages from the official PyPI and CRAN servers. This whitelist can be configured separately for each Tier 3 project SRE.
+  + For Tier 3, access is provided to a limited allowlist of packages from the official PyPI and CRAN servers. This allowlist can be configured separately for each Tier 3 project SRE.
 + Access to the RDS Gateway is only permitted from the IP addresses associated with specific networks at the Turing or its partner institutes.
   + For Tier 2, access is permitted from any institutionally managed network, which may be accessible by anyone on-site at the institute.
   + For Tier 3, access is only permitted from designated restricted networks, accessible only by a known subset of Researchers.

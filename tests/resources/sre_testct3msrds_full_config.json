@@ -586,6 +586,16 @@
       "provider": "MicrosoftRDS",
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_REMOTE_DESKTOP"
     },
+    "repositories": {
+      "cran": {
+        "url": "http://10.20.3.21"
+      },
+      "pypi": {
+        "host": "10.20.3.20",
+        "index": "http://10.20.3.20:3128",
+        "indexUrl": "http://10.20.3.20:3128/simple"
+      }
+    },
     "rgPrefix": "RG_SHM_TESTC_SRE_T3MSRDS",
     "shortName": "sre-t3msrds",
     "storage": {
@@ -677,6 +687,26 @@
       }
     },
     "webapps": {
+      "cocalc": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-cocalc",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "dockerVersion": "latest",
+        "fqdn": "COCALC.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "COCALC",
+        "ip": "10.151.5.7",
+        "osVersion": "20.04-LTS",
+        "vmName": "COCALC-SRE-T3MSRDS",
+        "vmSize": "Standard_D2s_v3"
+      },
       "codimd": {
         "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-codimd",
         "codimd": {
@@ -692,10 +722,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-T3MSRDS",
+        "fqdn": "CODIMD.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "CODIMD",
         "ip": "10.151.5.6",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
           "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
@@ -715,10 +745,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-T3MSRDS",
+        "fqdn": "GITLAB.t3msrds.testc.dsgroupdev.co.uk",
+        "hostname": "GITLAB",
         "ip": "10.151.5.5",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "rootPasswordSecretName": "sre-t3msrds-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-T3MSRDS",
         "vmSize": "Standard_D2s_v3"

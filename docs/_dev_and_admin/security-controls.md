@@ -63,7 +63,7 @@ For higher tiers, without access to the external internet, this requires mainten
 
 Use of package mirrors inside the Environment means that the set of default installed packages can be kept to a minimum, reducing the likelihood of encountering package-conflict problems (where a package can be prevented from being installed due to the presence of an existing package with the same name) and saving on System Manager time.
 
-At the the highest tiers a subset of whitelisted packages (packages which are explicitly marked as safe) is maintained. This whitelist can be specific to the work package if required.
+At the the highest tiers a subset of allowed packages (packages which are explicitly marked as safe) is maintained. This allowlist can be specific to the work package if required.
 At other tiers the full package list is mirrored, but with a short delato provide an opportunity for the wider community to catch any malicious code uploaded to the canonical package mirrors.
 
 ## Storage
@@ -171,7 +171,7 @@ However, we recommend the following at each tier.
 
 ### Software installation
 
-+ At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only white-listed software packages.
++ At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only allowed software packages.
 + At Tier 2, package mirrors should include all software packages.
 + At Tier 2 and above, all software not available from a package mirror must be installed either at the time the analysis machine is first deployed or by ingressing the software installer as data, with an associated ingress review.
 + At Tier 1 and 0, all software installation should be from the internet.

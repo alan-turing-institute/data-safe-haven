@@ -564,6 +564,16 @@
       "provider": "ApacheGuacamole",
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_REMOTE_DESKTOP"
     },
+    "repositories": {
+      "cran": {
+        "url": "http://10.30.1.10:80/repository/cran-proxy"
+      },
+      "pypi": {
+        "host": "10.30.1.10",
+        "index": "http://10.30.1.10:80/repository/pypi-proxy/pypi",
+        "indexUrl": "http://10.30.1.10:80/repository/pypi-proxy/simple"
+      }
+    },
     "rgPrefix": "RG_SHM_TESTB_SRE_T2GUAC",
     "shortName": "sre-t2guac",
     "storage": {
@@ -655,6 +665,26 @@
       }
     },
     "webapps": {
+      "cocalc": {
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-cocalc",
+        "disks": {
+          "data": {
+            "sizeGb": "512",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "dockerVersion": "latest",
+        "fqdn": "COCALC.t2guac.testb.dsgroupdev.co.uk",
+        "hostname": "COCALC",
+        "ip": "10.152.5.7",
+        "osVersion": "20.04-LTS",
+        "vmName": "COCALC-SRE-T2GUAC",
+        "vmSize": "Standard_D2s_v3"
+      },
       "codimd": {
         "adminPasswordSecretName": "sre-t2guac-vm-admin-password-codimd",
         "codimd": {
@@ -670,10 +700,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD-SRE-T2GUAC.testb.dsgroupdev.co.uk",
-        "hostname": "CODIMD-SRE-T2GUAC",
+        "fqdn": "CODIMD.t2guac.testb.dsgroupdev.co.uk",
+        "hostname": "CODIMD",
         "ip": "10.152.5.6",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "postgres": {
           "dockerVersion": "13.1",
           "passwordSecretName": "sre-t2guac-other-codimd-password-postgresdb"
@@ -693,10 +723,10 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB-SRE-T2GUAC.testb.dsgroupdev.co.uk",
-        "hostname": "GITLAB-SRE-T2GUAC",
+        "fqdn": "GITLAB.t2guac.testb.dsgroupdev.co.uk",
+        "hostname": "GITLAB",
         "ip": "10.152.5.5",
-        "osVersion": "18.04-LTS",
+        "osVersion": "20.04-LTS",
         "rootPasswordSecretName": "sre-t2guac-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-T2GUAC",
         "vmSize": "Standard_D2s_v3"

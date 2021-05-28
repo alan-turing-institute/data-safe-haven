@@ -219,7 +219,7 @@ function Update-VMDnsRecords {
         [Parameter(Mandatory = $true, HelpMessage = "Resource group of primary DC VM")]
         [string]$DcResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "FQDN for this SHM")]
-        [string]$ShmFqdn,
+        [string]$BaseFqdn,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the SHM subscription")]
         [string]$ShmSubscriptionName,
         [Parameter(Mandatory = $true, HelpMessage = "Hostname of VM whose records need to be updated")]
@@ -233,7 +233,7 @@ function Update-VMDnsRecords {
         $null = Set-AzContext -SubscriptionId $ShmSubscriptionName -ErrorAction Stop
         Add-LogMessage -Level Info "[ ] Resetting DNS record for VM '$VmHostname'..."
         $params = @{
-            Fqdn      = $ShmFqdn
+            Fqdn      = $BaseFqdn
             HostName  = ($VmHostname | Limit-StringLength -MaximumLength 15)
             IpAddress = $VMIpAddress
         }

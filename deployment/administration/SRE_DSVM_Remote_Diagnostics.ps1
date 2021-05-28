@@ -62,7 +62,7 @@ Update-AdLdapSecret -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.d
 
 # Update DNS record on the SHM for this VM
 # ----------------------------------------
-Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vm.Name -VmIpAddress $vmIpAddress
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vm.Name -VmIpAddress $vmIpAddress
 
 
 # Switch back to original subscription
