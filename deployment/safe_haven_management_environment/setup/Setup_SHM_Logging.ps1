@@ -103,25 +103,26 @@ $eventLogNames = @(
     "System"
 )
 
+# Delete all existing event log sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'WindowsEvent'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+}
+
 foreach ($eventLogName in $eventLogNames) {
     $sourceName = "windows-event-$eventLogName".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $source = Get-AzOperationalInsightsDataSource -Name $sourceName -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
-    if ($source) {
-        Add-LogMessage -Level InfoSuccess "Logging already active for '$eventLogName'."
+    $null = New-AzOperationalInsightsWindowsEventDataSource `
+            -Name $sourceName `
+            -ResourceGroupName $config.logging.rg `
+            -WorkspaceName $config.logging.workspaceName `
+            -EventLogName $eventLogName `
+            -CollectErrors `
+            -CollectWarnings `
+            -CollectInformation
+    if ($?) {
+        Add-LogMessage -Level Success "Logging activated for '$eventLogName'."
     } else {
-        $null = New-AzOperationalInsightsWindowsEventDataSource `
-                -Name $sourceName `
-                -ResourceGroupName $config.logging.rg `
-                -WorkspaceName $config.logging.workspaceName `
-                -EventLogName $eventLogName `
-                -CollectErrors `
-                -CollectWarnings `
-                -CollectInformation
-        if ($?) {
-            Add-LogMessage -Level Success "Logging activated for '$eventLogName'."
-        } else {
-            Add-LogMessage -Level Fatal "Failed to activate logging for '$eventLogName'!"
-        }
+        Add-LogMessage -Level Fatal "Failed to activate logging for '$eventLogName'!"
     }
 }
 
