@@ -13,7 +13,7 @@ It will help you update the SHM to a newer release by deploying a new SHM and mi
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [:station: 6. Deploy network and VPN gateway](#station-6-deploy-network-and-vpn-gateway)
 + [:house_with_garden: 7. Deploy and configure domain controllers](#house_with_garden-7-deploy-and-configure-domain-controllers)
-  + [:closed_lock_with_key: Suspend MFA for all users](#closed_lock_with_key-suspend-mfa-for-all-users)
+  + [:lock_with_ink_pen: Suspend MFA for all users](#lock_with_ink_pen-suspend-mfa-for-all-users)
   + [:arrow_right_hook: Copy SHM users from old domain controller](#arrow_right_hook-copy-shm-users-from-old-domain-controller)
   + [:unlock: Disconnect the old domain controller from the Azure Active Directory](#unlock-disconnect-the-old-domain-controller-from-the-azure-active-directory)
   + [:anchor: Install Azure Active Directory Connect](#anchor-install-azure-active-directory-connect)
@@ -77,6 +77,12 @@ It will help you update the SHM to a newer release by deploying a new SHM and mi
 
 + All of the [Safe Haven Management (SHM) environment](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#seedling-1-prerequisites) prerequisites
 
+The following variables will be used during deploying
+
++ `<old SHM ID>`: the [management environment ID](#management-environment-id) for the previously deployed SHM
++ `<SHM ID>`: the [management environment ID](#management-environment-id) for the new SHM you want to deploy
++ `<AAD tenant ID>`: the `Tenant ID` for the Azure Active Directory that your previously deployed SHM is connected to
+
 ## :clipboard: 2. Safe Haven Management configuration
 
 + Create a copy of the configuration file for your previous SHM
@@ -95,54 +101,31 @@ It will help you update the SHM to a newer release by deploying a new SHM and mi
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
-PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
-```
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
 See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#door-3-configure-dns-for-the-custom-domain) documentation for more details
 
 ## :file_folder: 4. Ensure the Azure Active Directory domain is registered
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
-PS> pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-+ where `<AAD tenant ID>` is the `Tenant ID` for the AAD
-
 See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#file_folder-4-setup-azure-active-directory-aad) documentation for more details
 
-#### :pencil: Notes
+### :pencil: Notes
+
 + You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
 
 ## :key: 5. Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
-PS> pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-+ where `<AAD tenant ID>` is the `Tenant ID` for the AAD
-
 See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account) documentation for more details
 
-#### :pencil: Notes
+### :pencil: Notes
+
 + You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
 
 ## :station: 6. Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
-
-```pwsh
-PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
 Follow the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#station-8-deploy-network-and-vpn-gateway) documentation for instructions on VPN gateway setup
 
@@ -150,18 +133,13 @@ Follow the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-de
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
-PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
 See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#house_with_garden-9-deploy-and-configure-domain-controllers) documentation for more details
 
-#### :pencil: Notes
+### :pencil: Notes
+
 + Do not configure the domain controller yet
 
-### :closed_lock_with_key: Suspend MFA for all users
+### :lock_with_ink_pen: Suspend MFA for all users
 
 ![Azure AD: under a minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=under%20a%20minute)
 
@@ -192,7 +170,12 @@ PS> ./Copy_SHM_Users.ps1 -oldShmId <old SHM ID> -newShmId <SHM ID>
   + Navigate to `C:\Installation`
   + Run `.\Disconnect_AD.ps1`
   + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
-+ Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less.
+
++ :warning: Do not attempt to add users to the old SHM after this point as they will not be synchronised to the Azure Active Directory!
+
+#### :pencil: Notes
+
++ Full disconnection of the Azure Active Directory can take up to 72 hours but will typically take around one day
 
 ### :anchor: Install Azure Active Directory Connect
 
@@ -202,7 +185,13 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
 
 #### :pencil: Notes
 
-Since you are trying to connect the new SHM to an Azure Active Directory that was already synchronised, you may find the `AzureADConnect` installation step requires you to wait for up to 72 hrs for the previous disconnection to complete.
+Since you are trying to connect the new SHM to an Azure Active Directory that was already synchronised, you may find the `AzureADConnect` installation fails with an error like the one below. If this happens then you will need to wait for up to 72 hrs for the previous disconnection to complete.
+
+<details><summary><b>Directory synchronisation failure</b></summary>
+  <p align="center">
+    <img src="../../images/deploy_shm/aad_connection_failure.png" width="80%" title="aad_connection_failure"/>
+  </p>
+</details>
 
 ### :recycle: Update Azure Active Directory Connect rules
 
