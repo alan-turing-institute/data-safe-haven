@@ -4,7 +4,6 @@ This document assumes that you have already deployed a [Safe Haven Management (S
 
 It will help you update the SHM to a newer release by deploying a new SHM and migrating the users to it.
 
-
 ## :mailbox_with_mail: Table of contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
@@ -12,16 +11,19 @@ It will help you update the SHM to a newer release by deploying a new SHM and mi
 + [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Ensure the Azure Active Directory domain is registered](#file_folder-4-ensure-the-azure-active-directory-domain-is-registered)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
-<!-- + [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
-+ [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts) -->
-+ [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
-+ [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
-+ [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
-+ [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
-+ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
-
++ [:station: 6. Deploy network and VPN gateway](#station-6-deploy-network-and-vpn-gateway)
++ [:house_with_garden: 7. Deploy and configure domain controllers](#house_with_garden-7-deploy-and-configure-domain-controllers)
+  + [:closed_lock_with_key: Suspend MFA for all users](#closed_lock_with_key-suspend-mfa-for-all-users)
+  + [:arrow_right_hook: Copy SHM users from old domain controller](#arrow_right_hook-copy-shm-users-from-old-domain-controller)
+  + [:unlock: Disconnect the old domain controller from the Azure Active Directory](#unlock-disconnect-the-old-domain-controller-from-the-azure-active-directory)
+  + [:anchor: Install Azure Active Directory Connect](#anchor-install-azure-active-directory-connect)
+  + [:recycle: Update Azure Active Directory Connect rules](#recycle-update-azure-active-directory-connect-rules)
+  + [:ballot_box_with_check: Validate Active Directory synchronisation](#ballot_box_with_check-validate-active-directory-synchronisation)
++ [:police_car: 8. Deploy and configure network policy server](#police_car-8-deploy-and-configure-network-policy-server)
++ [:closed_lock_with_key: 9. Require MFA for all users](#closed_lock_with_key-9-require-mfa-for-all-users)
++ [:fire_engine: 10. Deploy firewall](#fire_engine-10-deploy-firewall)
++ [:package: 11. Deploy Python/R package repositories](#package-11-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 12. Deploy logging](#chart_with_upwards_trend-12-deploy-logging)
 
 ## Explanation of symbols used in this guide
 
@@ -132,7 +134,7 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
 #### :pencil: Notes
 + You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
 
-## :station: 8. Deploy network and VPN gateway
+## :station: 6. Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -144,7 +146,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 
 Follow the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#station-8-deploy-network-and-vpn-gateway) documentation for instructions on VPN gateway setup
 
-## :house_with_garden: 9. Deploy and configure domain controllers
+## :house_with_garden: 7. Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -159,7 +161,7 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
 #### :pencil: Notes
 + Do not configure the domain controller yet
 
-## :closed_lock_with_key: 11. Suspend MFA for all users
+### :closed_lock_with_key: Suspend MFA for all users
 
 ![Azure AD: under a minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=under%20a%20minute)
 
@@ -170,7 +172,7 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
   + Toggle `Enable policy` to `Off`
   + Click the `Save` button
 
-## Copy SHM users
+### :arrow_right_hook: Copy SHM users from old domain controller
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -180,3 +182,66 @@ PS> ./Copy_SHM_Users.ps1 -oldShmId <old SHM ID> -newShmId <SHM ID>
 
 + where `<old SHM ID>` is the [management environment ID](#management-environment-id) for the previously deployed SHM
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
+### :unlock: Disconnect the old domain controller from the Azure Active Directory
+
+![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
+
++ Log into the **SHM primary domain controller** for the old SHM (`DC1-SHM-<old SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` from the portal
++ Open Powershell as an administrator
+  + Navigate to `C:\Installation`
+  + Run `.\Disconnect_AD.ps1`
+  + You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
++ Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less.
+
+### :anchor: Install Azure Active Directory Connect
+
+![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#install-azure-active-directory-connect) documentation for more details
+
+#### :pencil: Notes
+
+Since you are trying to connect the new SHM to an Azure Active Directory that was already synchronised, you may find the `AzureADConnect` installation step requires you to wait for up to 72 hrs for the previous disconnection to complete.
+
+### :recycle: Update Azure Active Directory Connect rules
+
+![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#update-azure-active-directory-connect-rules) documentation for more details
+
+### :ballot_box_with_check: Validate Active Directory synchronisation
+
+![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#validate-active-directory-synchronisation) documentation for more details
+
+## :police_car: 8. Deploy and configure network policy server
+
+![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#police_car-10-deploy-and-configure-network-policy-server) documentation for more details
+
+## :closed_lock_with_key: 9. Require MFA for all users
+
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#closed_lock_with_key-11-require-mfa-for-all-users) documentation for more details
+
+## :fire_engine: 10. Deploy firewall
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#fire_engine-12-deploy-firewall) documentation for more details
+
+## :package: 11. Deploy Python/R package repositories
+
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#package-13-deploy-PythonR-package-repositories) documentation for more details
+
+## :chart_with_upwards_trend: 12. Deploy logging
+
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#chart_with_upwards_trend-14-deploy-logging) documentation for more details
