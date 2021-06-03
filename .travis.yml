@@ -74,8 +74,8 @@ jobs:
         - ls -alh
         - ls -alh docs/
       deploy:
-        keep_history: true
-        local_dir: docs/_build
+        keep_history: false
+        local_dir: docs/_build/html
         provider: pages
         skip_cleanup: true
         strategy: git
