@@ -2,7 +2,7 @@
 os: linux
 dist: focal
 
-language: minimal
+language: shell
 
 jobs:
   include:
@@ -60,6 +60,29 @@ jobs:
       before_script: npm install -g markdown-link-check
       script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
       env: ALLOWED_FAILURE=true
+
+    - name: Build documentation
+      before_script:
+        - sudo apt-get update
+        - sudo apt-get -y install git python3 python3-pip
+        - pip install -r docs/requirements.txt
+        - pip list
+      script:
+        - make -C docs clean
+        - make -C docs html
+        - pwd
+        - ls -alh
+        - ls -alh docs/
+      deploy:
+        keep_history: true
+        local_dir: docs/_build
+        provider: pages
+        skip_cleanup: true
+        strategy: git
+        target_branch: ci-docs
+        token: $GITHUB_TOKEN
+        on:
+          branch: 1004-automated-documentation
 
   allow_failures:
     - env: ALLOWED_FAILURE=true

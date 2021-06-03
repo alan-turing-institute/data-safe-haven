@@ -1,0 +1,3 @@
+karma-sphinx-theme==0.0.8
+myst-parser==0.14.0
+Sphinx==3.5.4

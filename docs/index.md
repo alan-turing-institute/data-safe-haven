@@ -58,8 +58,3 @@ abc | mnp | xyz
 --- | --- | ---
 123 | 456 | 789
 :::
-
-<div class="admonition note" name="html-admonition" style="background: lightgreen; padding: 10px">
-<p class="title">This is the **title**</p>
-This is the *content*
-</div>
