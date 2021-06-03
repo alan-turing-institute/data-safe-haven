@@ -70,9 +70,7 @@ jobs:
       script:
         - make -C docs clean
         - make -C docs html
-        - pwd
-        - ls -alh
-        - ls -alh docs/
+        - touch docs/_build/html/.nojekyll
       deploy:
         keep_history: false
         local_dir: docs/_build/html
