@@ -140,7 +140,7 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
-```pwsh
+```powershell
 PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
@@ -152,7 +152,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds) at :file_folder: `./deployment`
 
-```pwsh
+```powershell
 PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -163,7 +163,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <AAD tenant ID> -VMs <VM sizes>
 ```
 
@@ -179,7 +179,7 @@ This will perform the following actions, which can be run individually if desire
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -195,7 +195,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -211,7 +211,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -241,7 +241,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -259,7 +259,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -275,7 +275,7 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <tenant ID>
 ```
 
@@ -290,7 +290,7 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -304,7 +304,7 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: up to seventy minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=up%20to%20seventy%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -325,7 +325,7 @@ The following script will be run once for each VM that you specified using the `
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -vmSize <VM size> -ipLastOctet <IP last octet>
 ```
 
@@ -355,7 +355,7 @@ If this SRE needs additional software or settings that are not in your default V
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -373,7 +373,7 @@ This will apply the locked-down network settings which will restrict access into
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -387,7 +387,7 @@ PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -448,7 +448,7 @@ You should have already set up a non-privileged user account upon setting up the
   + Click `Ok` again to exit the `Add users` dialogue
 + Synchronise with Azure Active Directory by running following `Powershell` command on the SHM primary domain controller
 
-```pwsh
+```powershell
 PS> C:\Installation\Deploy_RDS_Environment.ps1
 ```
 
