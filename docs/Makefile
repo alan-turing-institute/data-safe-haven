@@ -7,15 +7,24 @@ SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
+MARKDOWNSRCS  = how_to_guides/user_guides/user-guide.md \
+				tutorial/deployment_tutorials/how-to-deploy-shm.md \
+				tutorial/deployment_tutorials/how-to-deploy-sre.md
+PDFSRCS       = $(patsubst %.md,%.pdf,$(MARKDOWNSRCS))
 
-# Put it first so that "make" without argument is like "make help".
+# Put help first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 .PHONY: help Makefile
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@echo $(SPHINXOPTS)
+%.pdf: %.md
+	pretty-md-pdf -i $^ -o $@ -c markdown2pdf.json
+	mkdir -p _build/html/pdf
+	mv $@ _build/html/pdf
+
+pdf: $(PDFSRCS)
+
+# Use Sphinx for other options. $(O) is meant as a shortcut for $(SPHINXOPTS).
+.DEFAULT: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

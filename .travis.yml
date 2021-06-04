@@ -59,41 +59,46 @@ jobs:
 
     # - name: Check for dead links in Markdown
     #   language: node_js
-    #   node_js: node
+    #   node_js: 16.2.0
     #   before_script: npm install -g markdown-link-check
     #   script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
     #   env: ALLOWED_FAILURE=true
 
     - name: Build documentation
+      language: node_js
+      node_js: 16.2.0
       before_script:
+        - BACKUPDIR=$(mktemp -d)
+        - OUTPUTDIR=$(mktemp -d)
+        # Node dependencies
+        - npm install -g pretty-markdown-pdf
+        # Python and dependencies
         - sudo apt-get update
         - sudo apt-get -y install git python3 python3-pip
         - pip install -r docs/requirements.txt
-        - pip list
       script:
-        - OUTPUTDIR=$(mktemp -d)
-        - SPHINXDIR=$(mktemp -d)
-        - cp -R docs/* ${SPHINXDIR}
+        - cp -R docs/* ${BACKUPDIR}
         - make -C docs clean
-        - make -C docs html
+        - make -C docs html pdf
         - mv docs/_build/html ${OUTPUTDIR}/latest
         - |
           for tag in $(git tag); do
             echo -e "\033[1mGenerating documention for ${tag} \033[0m"
             git checkout $tag
-            mkdir -p docs/_templates  # ensure that necessary directories exist
+            mkdir -p docs/_templates docs/_static # ensure that necessary directories exist
             if [ ! -e "docs/conf.py" ]; then
               echo -e "\033[1mAttempting to generate documentation from tag ${tag} that is unware of Sphinx \033[0m"
               # Copy Sphinx configuration files
-              cp ${SPHINXDIR}/conf.py docs/
-              cp ${SPHINXDIR}/Makefile docs/
-              cp ${SPHINXDIR}/_templates/versions.html docs/_templates/versions.html
+              cp ${BACKUPDIR}/conf.py docs/
+              cp ${BACKUPDIR}/Makefile docs/
+              cp ${BACKUPDIR}/_templates/* docs/_templates
+              cp ${BACKUPDIR}/_static/* docs/_static
               # Use README.md if there is one, otherwise the default index
               if [ ! -e "docs/index.md" ]; then
                 if [ -e "docs/README.md" ]; then
                   mv docs/README.md docs/index.md
                 else
-                  cp ${SPHINXDIR}/meta/default.template docs/index.md
+                  cp ${BACKUPDIR}/meta/default.template docs/index.md
                 fi
               fi
               # Remove the software request form which contains invalid markdown in old releases
@@ -102,17 +107,17 @@ jobs:
             fi
             # Build the HTML docs
             make -C docs clean
-            make -C docs html
+            make -C docs html pdf
             # Store in the output directory and reset
             mv docs/_build/html ${OUTPUTDIR}/${tag}
             git reset --hard HEAD
             git clean -fd
-            ls -alh ${OUTPUTDIR}
           done
-        - cp ${SPHINXDIR}/meta/index.html ${OUTPUTDIR}/index.html
+        - cp ${BACKUPDIR}/meta/index.html ${OUTPUTDIR}/index.html
         - touch ${OUTPUTDIR}/.nojekyll
         - mv $OUTPUTDIR ${TRAVIS_BUILD_DIR}/output
         - ls -alh ${TRAVIS_BUILD_DIR}/output
+        - ls -alh ${TRAVIS_BUILD_DIR}/output/latest
       deploy:
         keep_history: false
         local_dir: ${TRAVIS_BUILD_DIR}/output
