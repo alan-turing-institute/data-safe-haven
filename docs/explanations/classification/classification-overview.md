@@ -127,7 +127,6 @@ A detailed diagram of how we classify work packages as well as a simplified, hig
 ![simple_classification_flow](../../images/data_classification/simple_classification_flow.png)
 </details>
 
-
 ### Tier 0
 
 Tier 0 Environments are used to handle open information, which is legally available to the general public with no restrictions, where all generated and combined information is also suitable for open handling.
