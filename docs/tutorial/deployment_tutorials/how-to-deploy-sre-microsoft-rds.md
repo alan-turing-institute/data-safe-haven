@@ -583,7 +583,7 @@ PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 The API call that installs the logging extensions to the VMs will time out after a few minutes, so you may get some extension installation failure messages if installation of the loggin agent takes longer than this to complete.
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.

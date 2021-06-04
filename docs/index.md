@@ -41,20 +41,11 @@ The easiest way to make shareable PDF files from the Markdown documents included
   + Install the `Symbola` font (https://dn-works.com/ufas/)
   + Run `./markdown2pdf.sh <file name>.md latex`
 
+```{toctree}
+:hidden: true
 
-:::{note}
-This text is **standard** _Markdown_
-:::
-
-:::{important}
-This text is also **standard** _Markdown_
-:::
-
-:::{table} This is a **standard** _Markdown_ title
-:align: center
-:widths: grid
-
-abc | mnp | xyz
---- | --- | ---
-123 | 456 | 789
-:::
+explanations/README.md
+how_to_guides/README.md
+reference/README.md
+tutorial/README.md
+```

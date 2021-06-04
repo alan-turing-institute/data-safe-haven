@@ -49,3 +49,20 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 ## How to contribute to the development of the Safe Haven project
 
 + [Getting started as a developer](developer/how-to-contribute.md)
+
+```{toctree}
+:hidden: true
+
+administrator/how-to-be-a-sysadmin.md
+data_provider/how-to-ingress-data-as-provider.md
+developer/how-to-contribute.md
+general/how-to-use-classification-web-app-guide.md
+general/software-package-approval-policy.md
+general/software-package-request-form.md
+principal_investigator/how-to-egress-data.md
+project_manager/data-ingress.md
+project_manager/how-to-start-a-project.md
+user_guides/user-cheat-sheet.md
+user_guides/user-guide.md
+user_guides/user-guide-tier1.md
+```

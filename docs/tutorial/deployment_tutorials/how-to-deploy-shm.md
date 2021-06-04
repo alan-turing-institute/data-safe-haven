@@ -783,7 +783,7 @@ PS> ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure the network policy server (NPS) via Remote Desktop
@@ -952,5 +952,5 @@ PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.

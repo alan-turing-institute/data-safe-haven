@@ -218,7 +218,7 @@ PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
@@ -248,7 +248,7 @@ PS> ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shm
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :pencil: Notes
+### :pencil: Notes
 
 The VNet peerings may take a few minutes to provision after the script completes.
 
@@ -336,7 +336,7 @@ PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -vmSize <VM size> -ipLastOcte
 
 This will deploy a new compute VM into the SRE environment
 
-#### :pencil: Notes
+### :pencil: Notes
 
 ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that:
 
@@ -394,7 +394,7 @@ PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 The API call that installs the logging extensions to the VMs will time out after a few minutes, so you may get some extension installation failure messages if installation of the loggin agent takes longer than this to complete.
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
