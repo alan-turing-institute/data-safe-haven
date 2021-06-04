@@ -79,6 +79,7 @@ jobs:
       script:
         - cp -R docs/* ${BACKUPDIR}
         - make -C docs clean
+        - make -C docs emojify
         - make -C docs html pdf
         - mv docs/_build/html ${OUTPUTDIR}/latest
         - |
@@ -107,6 +108,7 @@ jobs:
             fi
             # Build the HTML docs
             make -C docs clean
+            make -C docs emojify
             make -C docs html pdf
             # Store in the output directory and reset
             mv docs/_build/html ${OUTPUTDIR}/${tag}

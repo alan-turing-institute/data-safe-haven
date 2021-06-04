@@ -16,6 +16,9 @@ PDFSRCS       = $(patsubst %.md,%.pdf,$(MARKDOWNSRCS))
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+emojify:
+	find "$(SOURCEDIR)" -name "*.md" -exec python emojify.py {} \;
+
 .PHONY: help Makefile
 
 %.pdf: %.md
