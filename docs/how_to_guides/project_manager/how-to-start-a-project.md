@@ -26,7 +26,7 @@ Finally, you should identify a **referee**, who able to provide an independent e
 
 ### Review existing data governance arrangements
 
-There may be existing agreements or arrangments that define the scope of data usage by Turing. These should be reviewed before assessing new plans.
+There may be existing agreements or arrangements that define the scope of data usage by Turing. These should be reviewed before assessing new plans.
 
 ### Consent and privacy of individuals in the dataset
 
@@ -34,4 +34,4 @@ If there is data relating to individual people in the data set, it is necessary 
 
 ## Classification
 
-The data classification process follows [this flow chart](../../explanations/classification/Full-Classification-Flow-Diagram.pdf). Step-by-step instructions on how to classify a work package using our web application [are given here](../general/how-to-use-classification-web-app-guide.md).
+Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart [are given here](../general/how-to-use-classification-web-app-guide.md).

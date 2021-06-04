@@ -20,13 +20,13 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
 + [Data ingress guide for data providers](data_provider/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
-+ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application. The classification process can also be seen in [flow chart form](../explanations/classification/Full-Classification-Flow-Diagram.pdf).
++ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart.
 
 This application will guide you through our classification process for determining the classification tier for a work package.
 
 ## How to be the principal investigator for a project
 
-+ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application. The classification process can also be seen in [flow chart form](../explanations/classification/Full-Classification-Flow-Diagram.pdf).
++ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart.
 
 + [Software package request form](general/software-package-request-form.md) - Guidance on how to request a new package to be added to the environment.
 
