@@ -2,64 +2,67 @@
 os: linux
 dist: focal
 
+git:
+  depth: false
+
 language: shell
 
 jobs:
   include:
-    - name: Lint Ansible
-      addons:
-        apt:
-          packages:
-            ansible-lint
-      script: ansible-lint
+    # - name: Lint Ansible
+    #   addons:
+    #     apt:
+    #       packages:
+    #         ansible-lint
+    #   script: ansible-lint
 
-    - name: Lint JSON
-      language: node_js
-      node_js: node
-      before_script: npm install -g jsonlint mustache
-      script: |
-        echo "{}" > mustache_config.json
-        find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
+    # - name: Lint JSON
+    #   language: node_js
+    #   node_js: node
+    #   before_script: npm install -g jsonlint mustache
+    #   script: |
+    #     echo "{}" > mustache_config.json
+    #     find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
 
-    - name: Lint Markdown
-      language: ruby
-      install: gem install mdl
-      script: mdl --style .mdlstyle.rb *.md docs/
+    # - name: Lint Markdown
+    #   language: ruby
+    #   install: gem install mdl
+    #   script: mdl --style .mdlstyle.rb *.md docs/
 
-    - name: Lint PowerShell
-      before_script:
-        - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
-      script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
+    # - name: Lint PowerShell
+    #   before_script:
+    #     - sudo snap install powershell --classic
+    #     - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
+    #   script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
 
-    - name: Lint Python
-      language: python
-      python: 3.9
-      before_script: pip install flake8
-      script: flake8 . --statistics --count
+    # - name: Lint Python
+    #   language: python
+    #   python: 3.9
+    #   before_script: pip install flake8
+    #   script: flake8 . --statistics --count
 
-    - name: Lint shell
-      before_script: sudo apt-get install -y shellcheck
-      script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
+    # - name: Lint shell
+    #   before_script: sudo apt-get install -y shellcheck
+    #   script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
 
-    - name: Lint YAML
-      language: python
-      python: 3.9
-      before_script: pip install yamllint
-      script: yamllint .
+    # - name: Lint YAML
+    #   language: python
+    #   python: 3.9
+    #   before_script: pip install yamllint
+    #   script: yamllint .
 
-    - name: Test Powershell
-      before_script:
-        - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
-      script: pwsh -c './tests/Run_Pester_Tests.ps1'
+    # - name: Test Powershell
+    #   before_script:
+    #     - sudo snap install powershell --classic
+    #     - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
+    #   script: pwsh -c './tests/Run_Pester_Tests.ps1'
 
-    - name: Check for dead links in Markdown
-      language: node_js
-      node_js: node
-      before_script: npm install -g markdown-link-check
-      script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
-      env: ALLOWED_FAILURE=true
+    # - name: Check for dead links in Markdown
+    #   language: node_js
+    #   node_js: node
+    #   before_script: npm install -g markdown-link-check
+    #   script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
+    #   env: ALLOWED_FAILURE=true
 
     - name: Build documentation
       before_script:
@@ -68,12 +71,51 @@ jobs:
         - pip install -r docs/requirements.txt
         - pip list
       script:
+        - OUTPUTDIR=$(mktemp -d)
+        - SPHINXDIR=$(mktemp -d)
+        - cp -R docs/* ${SPHINXDIR}
         - make -C docs clean
         - make -C docs html
-        - touch docs/_build/html/.nojekyll
+        - mv docs/_build/html ${OUTPUTDIR}/latest
+        - |
+          for tag in $(git tag); do
+            echo -e "\033[1mGenerating documention for ${tag} \033[0m"
+            git checkout $tag
+            mkdir -p docs/_templates  # ensure that necessary directories exist
+            if [ ! -e "docs/conf.py" ]; then
+              echo -e "\033[1mAttempting to generate documentation from tag ${tag} that is unware of Sphinx \033[0m"
+              # Copy Sphinx configuration files
+              cp ${SPHINXDIR}/conf.py docs/
+              cp ${SPHINXDIR}/Makefile docs/
+              cp ${SPHINXDIR}/_templates/versions.html docs/_templates/versions.html
+              # Use README.md if there is one, otherwise the default index
+              if [ ! -e "docs/index.md" ]; then
+                if [ -e "docs/README.md" ]; then
+                  mv docs/README.md docs/index.md
+                else
+                  cp ${SPHINXDIR}/meta/default.template docs/index.md
+                fi
+              fi
+              # Remove the software request form which contains invalid markdown in old releases
+              rm docs/how_to_guides/general/software-package-request-form.md 2>/dev/null;
+              rm docs/software-package-request-form.md 2>/dev/null;
+            fi
+            # Build the HTML docs
+            make -C docs clean
+            make -C docs html
+            # Store in the output directory and reset
+            mv docs/_build/html ${OUTPUTDIR}/${tag}
+            git reset --hard HEAD
+            git clean -fd
+            ls -alh ${OUTPUTDIR}
+          done
+        - cp ${SPHINXDIR}/meta/index.html ${OUTPUTDIR}/index.html
+        - touch ${OUTPUTDIR}/.nojekyll
+        - mv $OUTPUTDIR ${TRAVIS_BUILD_DIR}/output
+        - ls -alh ${TRAVIS_BUILD_DIR}/output
       deploy:
         keep_history: false
-        local_dir: docs/_build/html
+        local_dir: ${TRAVIS_BUILD_DIR}/output
         provider: pages
         skip_cleanup: true
         strategy: git
