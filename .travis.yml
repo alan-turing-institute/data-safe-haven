@@ -124,7 +124,7 @@ jobs:
         provider: pages
         skip_cleanup: true
         strategy: git
-        target_branch: ci-docs
+        target_branch: autodocs
         token: $GITHUB_TOKEN
         on:
           branch: 1004-automated-documentation
