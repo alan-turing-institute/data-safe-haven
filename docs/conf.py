@@ -27,7 +27,11 @@ html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in version
 html_context["downloads"] = [
     ("User guide PDF", f"/{repo_name}/{version}/pdf/safe_haven_user_guide.pdf"),
 ]
-
+# Add 'Edit on GitHub' link
+html_context["display_github"] = True
+html_context["github_user"] = "alan-turing-institute"
+html_context["github_repo"] = "data-safe-haven"
+html_context["github_version"] = "master/docs/"
 
 # -- Project information -----------------------------------------------------
 
