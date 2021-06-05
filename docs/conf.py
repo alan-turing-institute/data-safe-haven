@@ -26,6 +26,8 @@ html_context["current_version"] = version
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
 html_context["downloads"] = [
     ("User guide PDF", f"/{repo_name}/{version}/pdf/safe_haven_user_guide.pdf"),
+    ("Data classification full PDF", f"/{repo_name}/{version}/pdf/data_classification_flow_full.pdf"),
+    ("Data classification simplified PDF", f"/{repo_name}/{version}/pdf/data_classification_flow_simple.pdf"),
 ]
 # Add 'Edit on GitHub' link
 html_context["display_github"] = True
