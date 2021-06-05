@@ -115,17 +115,25 @@ Derived information may be of higher security tier than the information in the i
 If it becomes apparent during the project that intended analysis will produce this effect then the inputs should be treated as a new work package with this extra information, and classified afresh, following the full classification process below.
 In the below, "personal data" follows the GDPR definition: information from which a living individual is identified or identifiable. It excludes information about individuals who are dead.
 
-A detailed diagram of how we classify work packages as well as a simplified, high level version can be seen below
+## Classification workflow
 
-<details><summary>Detailed diagram</summary>
+Flowcharts demonstrating how we classify work packages can be seen here:
 
-![full_classification_flow](../../images/data_classification/full_classification_flow.png)
-</details>
++ Detailed, full diagram
+  <details><summary>Show</summary>
 
-<details><summary>High-level diagram</summary>
+  ![full_classification_flow](../../images/data_classification/full_classification_flow.png)
+  </details>
++ Simplified, high-level diagram
+  <details><summary>Show</summary>
 
-![simple_classification_flow](../../images/data_classification/simple_classification_flow.png)
-</details>
+  ![simple_classification_flow](../../images/data_classification/simple_classification_flow.png)
+  </details>
+
+
+<!-- A detailed diagram of how we classify work packages as well as a simplified, high level version can be seen below -->
+
+
 
 ### Tier 0
 

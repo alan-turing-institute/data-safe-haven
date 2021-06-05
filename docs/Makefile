@@ -18,26 +18,30 @@ PDFTARGETDIR               = _build/html/pdf
 # User guide
 USERGUIDEMDSOURCE          = $(shell find . -type f -name "DSG-user-documentation.md" -o -name "safe_haven_user_guide.md" -o -name "user-guide.md")
 USERGUIDEMDTARGET          = $(PDFTARGETDIR)/safe_haven_user_guide.md
+# User guide
+PKGREQUESTMDSOURCE         = $(shell find . -type f -name "software-package-request-form.md")
+PKGREQUESTMDTARGET         = $(PDFTARGETDIR)/safe_haven_software_request_form.md
 # Classification flowcharts
 CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "Full-Classification-Flow-Diagram.pdf")
 CLASSIFICATIONFULLTARGET   = $(PDFTARGETDIR)/data_classification_flow_full.pdf
 CLASSIFICATIONSIMPLESOURCE = $(shell find . -type f -name "Simple-Classification-Flow-Diagram.pdf")
 CLASSIFICATIONSIMPLETARGET = $(PDFTARGETDIR)/data_classification_flow_simple.pdf
 # List of PDFs to build
-PDFTARGETS                 = $(patsubst %.md,%.pdf,$(USERGUIDEMDTARGET) $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET))
+PDFTARGETS                 = $(patsubst %.md,%.pdf,$(USERGUIDEMDTARGET) $(PKGREQUESTMDTARGET) $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET))
 
 # Put help first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-emojify:
-	find "$(SOURCEDIR)" -name "*.md" -exec python emojify.py {} \;
 
 .PHONY: help Makefile
 
 $(USERGUIDEMDTARGET): $(USERGUIDEMDSOURCE)
 	mkdir -p $(PDFTARGETDIR)
 	cp $(USERGUIDEMDSOURCE) $(USERGUIDEMDTARGET)
+
+$(PKGREQUESTMDTARGET): $(PKGREQUESTMDSOURCE)
+	mkdir -p $(PDFTARGETDIR)
+	cp $(PKGREQUESTMDSOURCE) $(PKGREQUESTMDTARGET)
 
 $(CLASSIFICATIONFULLTARGET): $(CLASSIFICATIONFULLSOURCE)
 	mkdir -p $(PDFTARGETDIR)
@@ -47,11 +51,22 @@ $(CLASSIFICATIONSIMPLETARGET): $(CLASSIFICATIONSIMPLESOURCE)
 	mkdir -p $(PDFTARGETDIR)
 	cp $(CLASSIFICATIONSIMPLESOURCE) $(CLASSIFICATIONSIMPLETARGET)
 
+# Build single PDF using pretty-md-pdf
 %.pdf: %.md
 	pretty-md-pdf -i $^ -o $@ -c markdown2pdf.json
 	rm $^
 
+# Convert emoji codes to Unicode in all Markdown files
+emojify:
+	find "$(SOURCEDIR)" -name "*.md" -exec python emojify.py {} \;
+
+# Build all PDF targets
 pdf: $(PDFTARGETS)
+
+# Ensure that clean also removes the contents of $(PDFTARGETDIR)
+clean:
+	rm -rf $(PDFTARGETDIR)/*
+	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)"
 
 # Use Sphinx for other options. $(O) is meant as a shortcut for $(SPHINXOPTS).
 .DEFAULT: Makefile

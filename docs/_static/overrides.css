@@ -35,4 +35,5 @@
 /* Main content */
 .wy-nav-content {
     background: #f5f6f7;
+    max-width: none;
 }

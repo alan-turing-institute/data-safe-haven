@@ -9,11 +9,12 @@ from git import Repo
 # -- Customisation  -----------------------------------------------------------
 
 # Find name of current version plus names of all tags
+tag2version = lambda tag: tag.name.replace("v", "")
 repo = Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 tags = [t for t in repo.tags if t.commit == repo.head.commit]
-version = tags[0].name if tags else "latest"
-versions = ["latest"] + [t.name for t in repo.tags]
+version = tag2version(tags[0]) if tags else "latest"
+versions = ["latest"] + [tag2version(t) for t in repo.tags]
 
 # Set sidebar variables
 try:
@@ -26,6 +27,7 @@ html_context["current_version"] = version
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
 html_context["downloads"] = [
     ("User guide PDF", f"/{repo_name}/{version}/pdf/safe_haven_user_guide.pdf"),
+    ("Software request form", f"/{repo_name}/{version}/pdf/safe_haven_software_request_form.pdf"),
     ("Data classification full PDF", f"/{repo_name}/{version}/pdf/data_classification_flow_full.pdf"),
     ("Data classification simplified PDF", f"/{repo_name}/{version}/pdf/data_classification_flow_simple.pdf"),
 ]

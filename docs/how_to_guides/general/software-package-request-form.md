@@ -1,13 +1,17 @@
 # Turing data safe haven - software package request form
 
-Please use this form to make a request to add a software package to the Tier 3 allowlist by filling in the REQUEST section and sending to `safe-haven-admin@turing.ac.uk` for review.
+Please use this form to make a request to add a software package to the Tier 3 allowlist by filling in the REQUEST and DEPENDENCIES sections and sending to `safe-haven-admin@turing.ac.uk` for review.
 
 ## REQUEST
+
+### Requester details
 
 + **Date of request:**
 + **Requested by:**
 + **Contact email:**
 + **Project name:**
+
+### Package details
 
 + **Package name:**
 + **Package version (if different from latest):**
@@ -25,12 +29,6 @@ To support this request, please respond to the following questions:
 + **Reviewed by:**
 + **Contact email:**
 
-Data on the requested package and its full (recursive) dependency tree:
-
-| Package | Version | Date of publication | Downloads last 30 days | Downloads last 12 months | Known CVEs |
-| --------|---------|---------------------|------------------------|--------------------------|------------|
-|         |         |                     |                        |                          |            |
-
 ## DECISION
 
 + **Decision:** Accept/Reject
@@ -42,3 +40,12 @@ Data on the requested package and its full (recursive) dependency tree:
 + **Data provider organisation:**
 + **Data provider contact:**
 + **Contact email:**
+
+## DEPENDENCIES
+
+Data on the requested package and its full (recursive) dependency tree:
+
+| Package | Version | Date of publication | Downloads last 30 days | Downloads last 12 months | Known CVEs |
+| --------|---------|---------------------|------------------------|--------------------------|------------|
+|         |         |                     |                        |                          |            |
+

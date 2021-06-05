@@ -1269,6 +1269,6 @@ This downloaded certificate is cached by your browser, which means that the old 
 
 #### Solution
 
-Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/>) of the page (instructions vary by browser and operating system>).
+Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/>) of the page (instructions vary by browser and operating system).
 You may also need to [clear your cache](<https://www.refreshyourcache.com/en/home/>) for this site.
 In either case, removing locally cached data should mean that you retrieve a copy of the new certificate.
