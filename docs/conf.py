@@ -8,8 +8,10 @@ from git import Repo
 
 # -- Customisation  -----------------------------------------------------------
 
+def tag2version(tag):
+    return tag.name.replace("v", "")
+
 # Find name of current version plus names of all tags
-tag2version = lambda tag: tag.name.replace("v", "")
 repo = Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 tags = [t for t in repo.tags if t.commit == repo.head.commit]
