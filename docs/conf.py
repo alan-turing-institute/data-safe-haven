@@ -7,9 +7,10 @@ from git import Repo
 
 
 # -- Customisation  -----------------------------------------------------------
+
+# Find name of current version plus names of all tags
 repo = Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-# Find the version name which is a tag or branch name
 tags = [t for t in repo.tags if t.commit == repo.head.commit]
 version = tags[0].name if tags else "latest"
 versions = ["latest"] + [t.name for t in repo.tags]
@@ -24,9 +25,7 @@ html_context["version"] = version
 html_context["current_version"] = version
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
 html_context["downloads"] = [
-    ("PDF user guide", f"/{repo_name}/{version}/pdf/user-guide.pdf"),
-    ("PDF SRE deployment", f"/{repo_name}/{version}/pdf/how-to-deploy-sre.pdf"),
-    ("PDF SHM deployment", f"/{repo_name}/{version}/pdf/how-to-deploy-shm.pdf"),
+    ("User guide PDF", f"/{repo_name}/{version}/pdf/safe_haven_user_guide.pdf"),
 ]
 
 
