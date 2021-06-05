@@ -181,9 +181,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 + Duplicate these records to the parent DNS system as follows:
   + If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above
     + For example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`
-  <p align="center">
-    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record"/>
-  </p>
+  ![Subdomain NS record](../../images/deploy_sre/subdomain_ns_record.png)
   + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 
 </details>
@@ -196,9 +194,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 + From the Azure portal, click `Create a Resource` and search for `Azure Active Directory`
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory"/>
-    </p>
+    ![Azure Active Directory](../../images/deploy_shm/AAD.png)
   </details>
 + Click `Create`
 + Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Development Safe Haven A`)
@@ -206,9 +202,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 + Set the `Initial Domain Name` to the `Organisation Name` all lower case with spaces removed (e.g. `turingdevelopmentsafehavena`)
 + Set the `Country or Region` to whatever region is appropriate for your deployment (e.g. `United Kingdom`)
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/aad_creation.png" width="80%" title="Azure Active Directory creation"/>
-    </p>
+    ![Azure Active Directory creation](../../images/deploy_shm/aad_creation.png)
   </details>
 + Click `Create`
 + Wait for the AAD to be created
@@ -223,9 +217,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 + If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-        <img src="../../images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID"/>
-    </p>
+    ![AAD Tenant ID](../../images/deploy_shm/aad_tenant_id.png)
   </details>
 
 ### Add the SHM domain to the Azure Active Directory
@@ -287,9 +279,7 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Check `Global Administrator`
   + Click the `Add` button
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_global_admin.png" width="80%" title="AAD Global Admin"/>
-      </p>
+      ![AAD Global Admin](../../images/deploy_shm/aad_global_admin.png)
     </details>
 
 ## :iphone: 6. Enable MFA and self-service password reset
@@ -365,9 +355,7 @@ Click the heading that applies to you to expand the instructions for that scenar
   + If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 + Click the `Save` icon
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/aad_sspr.png" width="80%" title="AAD self-service password reset"/>
-    </p>
+    ![AAD self-service password reset](../../images/deploy_shm/aad_sspr.png)
   </details>
 
 ### Configure MFA on Azure Active Directory
@@ -387,9 +375,7 @@ Click the heading that applies to you to expand the instructions for that scenar
     + ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
   + Click "Save" and close window
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings"/>
-      </p>
+      ![AAD MFA settings](../../images/deploy_shm/aad_mfa_settings.png)
     </details>
 
 ## :id: 7. Configure internal administrator accounts
@@ -435,9 +421,7 @@ Several later steps will require the use of a **native** administrator account w
   + Note that you do **not** need to fill out either of the `Phone` fields here
   + Click the `Save` icon at the top of the panel
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_create_admin.png" width="80%" title="AAD create admin account"/>
-      </p>
+      ![AAD create admin account](../../images/deploy_shm/aad_create_admin.png)
     </details>
 
 ### Activate and configure your new internal admin account
@@ -510,9 +494,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
-  <p align="center">
-    <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups"/>
-  </p>
+  ![Resource groups](../../images/deploy_shm/vnet_resource_groups.png)
 + If you cannot see these resource groups:
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
@@ -540,9 +522,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 + Once there open the `Point-to-site configuration` page under the `Settings` section in the left hand sidebar
 + Click the `Download VPN client` link at the top of the page to download a zip file
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details"/>
-    </p>
+    ![Certificate details](../../images/deploy_shm/certificate_details.png)
   </details>
 + Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
 + Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
@@ -576,9 +556,7 @@ PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 <details><summary><b>Sanity check</b></summary>
 
 + Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
-  <p align="center">
-    <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups"/>
-  </p>
+  ![Resource groups](../../images/deploy_shm/dc_resource_groups.png)
 + If you cannot see these resource groups:
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
@@ -740,9 +718,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 + Select `Password reset` from the left hand menu
 + Select `On-premises integration` from the left hand side bar
   + Ensure `Write back passwords to your on-premises directory` is set to yes.
-    <p align="center">
-      <img src="../../images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback"/>
-    </p>
+    ![Enable writeback](../../images/deploy_shm/enable_writeback.png)
   + If you changed this setting, click the `Save` icon
 
 #### Manually add an MFA licence for the user
@@ -802,9 +778,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + Configure NPS to log to a local text file:
   + Select `NPS (Local) > Accounting` on the left-hand sidebar
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting"/>
-      </p>
+      ![NPS accounting](../../images/deploy_shm/nps_accounting.png)
     </details>
   + Click on `Accounting > Configure Accounting`
     + On the `Introduction` screen, click `Next`.

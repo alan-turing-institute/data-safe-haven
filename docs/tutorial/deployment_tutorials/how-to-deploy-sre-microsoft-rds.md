@@ -219,9 +219,7 @@ PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
-  <p align="center">
-    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record"/>
-  </p>
+  ![subdomain_ns_record](../../images/deploy_sre/subdomain_ns_record.png)
 + Duplicate these records to the parent DNS system as follows:
   + If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
     + The name should be set to the subdomain (e.g. `sandbox` ) or `@` if using a custom domain, and the values duplicated from above.
@@ -425,10 +423,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
 + You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
-
-  <p align="center">
-    <img src="../../images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop"/>
-  </p>
+  ![rds_desktop](../../images/deploy_sre/rds_desktop.png)
 
 #### :pencil: Notes
 
