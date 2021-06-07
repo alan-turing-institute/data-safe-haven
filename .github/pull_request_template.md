@@ -4,21 +4,26 @@ Please review the [guidelines for contributing](../CONTRIBUTING.md) to this repo
 
 - Make sure that you give your pull request a meaningful title (*e.g.* `Enable foobar integration` rather than `515 foobar`)
 - If this pull request is not ready to merge yet, please add `WIP:` to the beginning of the name as well as marking it as a **draft** pull request
-- Make sure that your branch is up-to-date with the **master branch** (you probably started your branch from master but it may have changed since then)
+- Make sure that your branch is up-to-date with the **develop branch** (you probably started your branch from develop but it may have changed since then)
 - There is **no need** to use GitHub labels for pull requests. The issue(s) which this pull request is closing should have the appropriate labels.
 - Make sure that you have checked the formatting of any Powershell that you've added. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
 
 :tada: Thank you!
 -->
 
-### :arrow_heading_up: Squash-and-merge commit message
+### :arrow_heading_up: Summary
 <!--
-Please add the text here that will explain this PR when it is merged into the master branch.
+Please explain what your pull request does here.
 -->
 
 ### :closed_umbrella: Related issues
 <!--
 If your pull request will close any open issues (hopefully it will!) then add `Closes #<issue number>` here.
+-->
+
+#### :camera: Screenshots
+<!--
+Optionally include screenshots here.
 -->
 
 ### :microscope: Tests
