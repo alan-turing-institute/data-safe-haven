@@ -129,7 +129,7 @@ jobs:
         target_branch: autodocs
         token: $GITHUB_TOKEN
         on:
-          branch: master
+          branch: develop
 
   allow_failures:
     - env: ALLOWED_FAILURE=true

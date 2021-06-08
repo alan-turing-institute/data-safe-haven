@@ -47,7 +47,7 @@ html_context["downloads"] = [
 html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
-html_context["github_version"] = "master/docs/"
+html_context["github_version"] = "develop/docs/"
 
 # -- Project information -----------------------------------------------------
 
