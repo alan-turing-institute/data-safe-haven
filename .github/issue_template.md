@@ -3,14 +3,9 @@
 A clear and concise description of what the issue is about and (if relevant) what the behaviour should be when this issue is closed.
 -->
 
-#### :camera: Screenshots
-<!--
-Optionally include screenshots here.
--->
-
 #### :recycle: To reproduce
 <!--
-If this issue is describing a bug, include some steps to reproduce the behaviour.
+Optionally, if this issue is describing a bug, include some steps to reproduce the behaviour.
 -->
 
 #### :page_facing_up: Tasks

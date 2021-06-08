@@ -3,7 +3,7 @@
 **Welcome to the Turing Data Safe Haven project repository!**
 
 Thank you for being here and contributing to the project.
-It can truly only succeed with a interdisiplinary team working together.
+It can truly only succeed with a interdisciplinary team working together.
 
 The point of these contributing guidelines are to help you participate as easily as possible.
 If you have any questions that aren't discussed below, please let us know by [opening an issue](#project-management-through-issues).
@@ -62,8 +62,8 @@ Although we are not following an Agile workflow, we still think that the followi
 ### Project meetings
 
 The goal of the project meetings is to **reflect** on how ongoing work is proceeding and to **plan** the next section of work.
-During the project meetings we'll start by working through the [issues list][safehaven-issues] and discussing all the issues that are marked as [in progress][labels-in-progress] .
-We will consider whether we should start work on any issues marked as [on hold][labels-on-hold].
+During the project meetings we'll start by working through the [issues list][safehaven-issues] and discussing all the issues that are marked as [in progress](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20in%20progress).
+We will consider whether we should start work on any issues marked as [on hold](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20on%20hold).
 
 Note that the project meeting is very explicitly **not** where the work gets done.
 It is a review, reflection and an opportunity to set goals.
@@ -72,25 +72,39 @@ Discussions around particular tasks should be conducted **when the work is being
 ### Communications within the team and asking for help
 
 As this team is distributed, not working full-time on this project and often working asynchronously, we do not have any form of daily meeting or stand-up
-The best way to work around this absense is to **commit to sharing updates as regularly as possible**.
+The best way to work around this absence is to **commit to sharing updates as regularly as possible**.
 Please see the section on [project management through issues](#project-management-through-issues) below on how to do this via GitHub.
-
-***If each individual team member asks themselves the three questions (what did I did, what will I do, what is blocking me) and updates their assigned issues with the answers we will likely make good progress in the absense of daily meetings.***
 
 ## Contributing through GitHub
 
-[git][git] is a really useful tool for version control. [GitHub][github] sits on top of git and supports collaborative and distributed working.
+[git](https://git-scm.com) is a really useful tool for version control. [GitHub](https://github.com) sits on top of git and supports collaborative and distributed working.
 
 We know that it can be daunting to start using `git` and `GitHub` if you haven't worked with them in the past, but the Turing Research Engineering Team are happy to help you figure out any of the jargon or confusing instructions you encounter! :heart:
 
-In order to contribute via GitHub you'll need to set up a free account and sign in. Here are some [instructions][github-newaccount] to help you get going.
+In order to contribute via GitHub you'll need to set up a free account and sign in. Here are some [instructions](https://help.github.com/articles/signing-up-for-a-new-github-account/) to help you get going.
+
+We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+
+<p align="center">
+   <img src="docs/images/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
+</p>
+
+This means that:
+
++ checking out the `main` branch, which is the default branch of the repository will give you the latest tagged release
++ the `develop` branch will contain the latest cutting-edge code that has not yet made it into a release
++ releases are made by branching from `develop` into a branch called `release-<version name>`
+  + deployment is tested from this release and any necessary integration changes are made on this branch
+  + the branch is then merged into `main` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
++ we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
 ### Writing in markdown
 
-GitHub has a helpful page on [getting started with writing and formatting on GitHub][github-markdownhelp].
+GitHub has a helpful page on [getting started with writing and formatting on GitHub](https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github).
 
-Most of the writing that you'll do will be in [Markdown][markdown]. You can think of Markdown as a few little symbols around your text that will allow GitHub to render the text with a little bit of formatting.
-For example you could write words as bold ( `**bold**` ), or in italics ( `*italics*` ), or as a [link][rick-roll] ( `[link](https://https://youtu.be/dQw4w9WgXcQ)` ) to another webpage.
+Most of the writing that you'll do will be in [Markdown](https://guides.github.com/features/mastering-markdown/).
+You can think of Markdown as a few little symbols around your text that will allow GitHub to render the text with a little bit of formatting.
+For example you could write words as bold ( `**bold**` ), or in italics ( `*italics*` ), or as a [link](https://https://youtu.be/dQw4w9WgXcQ) ( `[link](https://https://youtu.be/dQw4w9WgXcQ)` ) to another webpage.
 
 `GitHub` issues render markdown really nicely.
 The goal is to allow you to focus on the content rather than worry too much about how things are laid out!
@@ -129,7 +143,7 @@ If an issue is growing to encompass more than one task, consider breaking it int
 You can think of the issues as **conversations** about a particular topic.
 GitHub's tagline is **social coding** and the issues are inspired by social media conversations.
 
-You can [mention a user][github-mentionuser] by putting `@` infront of their github id.
+You can [mention a user](https://help.github.com/articles/basic-writing-and-formatting-syntax/#mentioning-people-and-teams) by putting `@` infront of their github id.
 For example, `@KirstieJane` will send a notification to Kirstie Whitaker so she knows to visit the issue and (for example) reply to your question.
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
@@ -157,89 +171,74 @@ If you're updating the code or other documents in the main repository, the follo
 
 This allows other members of the Data Safe Haven project team to confirm that you aren't overlapping with work that's currently underway and that everyone is on the same page with the goal of the work you're going to carry out.
 
-[This blog][dont-push-pull-request] is a nice explanation of why putting this work in up front is so useful to everyone involved.
+[This blog][https://www.igvita.com/2011/12/19/dont-push-your-pull-requests] is a nice explanation of why putting this work in up front is so useful to everyone involved.
 
-#### 2. [Fork][github-fork] the [Data Safe Haven repository][safehaven-repo] to your profile
+#### 2. [Fork](https://help.github.com/articles/fork-a-repo) the [Data Safe Haven repository](https://github.com/alan-turing-institute/data-safe-haven) to your profile
 
 This is now your own unique copy of the Data Safe Haven repository. Changes here won't affect anyone else's work, so it's a safe space to explore edits to the code or documentation!
-Make sure to [keep your fork up to date][github-syncfork] with the master repository, otherwise you can end up with lots of dreaded [merge conflicts][github-mergeconflicts].
+Make sure to [keep your fork up to date](https://help.github.com/articles/syncing-a-fork) with the upstream repository, otherwise you can end up with lots of dreaded [merge conflicts](https://help.github.com/articles/about-merge-conflicts).
 
 #### 3. Make the changes you've discussed
 
-Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you][jerry-maguire] :wink:
-If you feel tempted to "branch out" then please make a [new branch][github-branches] and a [new issue][safehaven-issues] to go with it.
+Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
+If you feel tempted to "branch out" then please make a [new branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository) and a [new issue][safehaven-issues] to go with it.
 
-#### 4. Submit a [pull request][github-pullrequest]
+#### 4. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request)
 
 A member of the Safe Haven project team will review your changes to confirm that they can be merged into the main codebase.
 
-A [review][github-review] will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
+A [review](https://help.github.com/articles/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
-You can update your [fork][github-fork] of the data safe haven [repository][safehaven-repo] and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
+You can update your [fork][github-fork] of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
 
-GitHub has a [nice introduction][github-flow] to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
+GitHub has a [nice introduction](https://guides.github.com/introduction/flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
 ### Who's involved in the project
 
 The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do.
-(Another option for private repositories is to allow all members of the organisation but *not+ public members to see all projects owned by the organisation.)
-Therefore it is sometimes nice to know **who** you're working with on the project (which is oddly difficult to do if you aren't an administrator on the project!)
+As some users have GitHub IDs that make it a little difficult to know who they are in real life and it's sometimes nice to know **who** you're working with on the project, hopefully this table will help you put names to faces and IDs :sparkles:
 
-(Additionally some users have GitHub IDs that make it a little difficult to know who they are in real life! Hopefully this table will help you put names to faces and IDs :sparkles:)
+The following people have made one or more commits to the project:
 
-The following people currently have write access to the project:
-
-| Name               | GitHub ID | Email |
-| ------------------ | --- | --- |
-| Daniel Allen       | [@sysdan](https://github.com/sysdan) | <dallen@turing.ac.uk> |
-| Diego Arenas       | [@darenasc](https://github.com/darenasc) | <darenasc@gmail.com> |
-| Nick Barlow        | [@nbarlowATI](https://github.com/nbarlowATI) | <nbarlow@turing.ac.uk> |
-| Ian Carter         | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
-| Rob Clarke         | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
-| Sarah Gibson       | [@sgibson91](https://github.com/sgibson91)| <sgibson@turing.ac.uk> |
-| Oscar Giles        | [@OscartGiles](https://github.com/OscartGiles) | <ogiles@turing.ac.uk> |
-| Tim Hobson         | [@thobson88](https://github.com/thobson88) | <thobson@turing.ac.uk> |
-| Radka Jersakova    | [@radka-j](https://github.com/radka-j) | <rjersakova@turing.ac.uk> |
-| Catherine Lawrence | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
-| Jim Madge          | [@JimMadge](https://github.com/JimMadge) | <jmadge@turing.ac.uk> |
-| Jules Manser       | [@JulesMarz](https://github.com/JulesMarz)| <jmanser@turing.ac.uk> |
-| Federico Nanni     | [@fedenanni](https://github.com/fedenanni) | <fnanni@turing.ac.uk> |
-| Martin O'Reilly    | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
-| Daisy Parry        | [@DaisyParry](https://github.com/DaisyParry)| <dparry@turing.ac.uk> |
-| Jack Roberts       | [@jack89roberts](https://github.com/jack89roberts) | <jroberts@turing.ac.uk> |
-| James Robinson     | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
-| Oliver Strickson   | [@ots22](https://github.com/ots22) | <ostrickson@turing.ac.uk> |
-| Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
-| Warwick Wood       | [@warwick26](https://github.com/warwick26) | <wwood@turing.ac.uk> |
-| Kevin Xu           | [@kevinxufs](https://github.com/kevinxufs) | <kxu@turing.ac.uk> |
+| Name                 | GitHub ID | Email |
+| -------------------- | --- | --- |
+| Daniel Allen         | [@sysdan](https://github.com/sysdan) | <dallen@turing.ac.uk> |
+| Diego Arenas         | [@darenasc](https://github.com/darenasc) | <darenasc@gmail.com> |
+| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan) | <dbeavan@turing.ac.uk> |
+| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas) | <acabrejasegea@turing.ac.uk> |
+| Ian Carter           | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
+| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1) | <echalstrey@turing.ac.uk> |
+| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
+| James Cunningham     | [@james-c](https://github.com/james-c) | <james.a.cunningham@manchester.ac.uk> |
+| Tom Doel             | [@tomdoel](https://github.com/tomdoel)| <tom.doel@codechoreography.co.uk> |
+| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall)| <chris.edsall@bristol.ac.uk> |
+| Oliver Forrest       | [@oforrest](https://github.com/oforrest) | <oforrest@turing.ac.uk> |
+| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles) | <ogiles@turing.ac.uk> |
+| James Hetherington   | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
+| Tim Hobson           | [@thobson88](https://github.com/thobson88) | <thobson@turing.ac.uk> |
+| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) | <George.Holmes@Ensono.com> |
+| Catherine Lawrence   | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
+| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz) | <tlazauskas@turing.ac.uk> |
+| Jim Madge            | [@JimMadge](https://github.com/JimMadge) | <jmadge@turing.ac.uk> |
+| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)| <jmanser@turing.ac.uk> |
+| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)| <mmorin@turing.ac.uk> |
+| Federico Nanni       | [@fedenanni](https://github.com/fedenanni) | <fnanni@turing.ac.uk> |
+| Guillaume Noell      | [@gn5](https://github.com/gn5) | <gn5@sanger.ac.uk> |
+| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
+| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts) | <jroberts@turing.ac.uk> |
+| James Robinson       | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
+| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd) | <Brett.Todd@Ensono.com> |
+| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj) | <svollmer@turing.ac.uk> |
+| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream) | <bwalden@turing.ac.uk> |
+| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
+| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1) | <rwinstanley@turing.ac.uk> |
+| Warwick Wood         | [@warwick26](https://github.com/warwick26) | <wwood@turing.ac.uk> |
+| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs) | <kxu@turing.ac.uk> |
 
 ## Thank you!
 
 You're awesome! :wave::smiley:
 
-*&mdash; Based on contributing guidelines from the [BIDS Starter Kit][bids-starterkit-repo] project. Reused under the CC-BY license.*
+*&mdash; Based on contributing guidelines from the [BIDS Starter Kit](https://github.com/INCF/bids-starter-kit) project. Reused under the CC-BY license.*
 
-[bids-starterkit-repo]: https://github.com/INCF/bids-starter-kit
-[dont-push-pull-request]: https://www.igvita.com/2011/12/19/dont-push-your-pull-requests
-[git]: https://git-scm.com
-[github]: https://github.com
-[github-newaccount]: https://help.github.com/articles/signing-up-for-a-new-github-account/
-[github-branches]: https://help.github.com/articles/creating-and-deleting-branches-within-your-repository
-[github-fork]: https://help.github.com/articles/fork-a-repo
-[github-flow]: https://guides.github.com/introduction/flow
-[github-markdownhelp]: https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github
-[github-mentionuser]: https://help.github.com/articles/basic-writing-and-formatting-syntax/#mentioning-people-and-teams
-[github-mergeconflicts]: https://help.github.com/articles/about-merge-conflicts
-[github-pullrequest]: https://help.github.com/articles/creating-a-pull-request
-[github-review]: https://help.github.com/articles/about-pull-request-reviews
-[github-syncfork]: https://help.github.com/articles/syncing-a-fork
-[intro-github-wiki]: https://help.github.com/articles/about-github-wikis
-[labels-in-progress]: https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20in%20progress
-[labels-on-hold]: https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20on%20hold
-[jerry-maguire]: https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif
-[markdown]: https://daringfireball.net/projects/markdown
-[rick-roll]: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 [safehaven-issues]: https://github.com/alan-turing-institute/data-safe-haven/issues
-[safehaven-labels]: https://github.com/alan-turing-institute/data-safe-haven/labels
-[safehaven-repo]: https://github.com/alan-turing-institute/data-safe-haven
-[safehaven-wiki]: https://github.com/alan-turing-institute/data-safe-haven/wiki
