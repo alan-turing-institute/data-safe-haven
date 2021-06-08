@@ -26,6 +26,7 @@ jobs:
 
     - name: Lint Markdown
       language: ruby
+      rvm: ruby-head
       install: gem install mdl
       script: mdl --style .mdlstyle.rb *.md docs/
 
@@ -59,14 +60,14 @@ jobs:
 
     - name: Check for dead links in Markdown
       language: node_js
-      node_js: 16.2.0
+      node_js: node
       before_script: npm install -g markdown-link-check
       script: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
       env: ALLOWED_FAILURE=true
 
     - name: Build documentation
       language: node_js
-      node_js: 16.2.0
+      node_js: node
       before_script:
         - BACKUPDIR=$(mktemp -d)
         - OUTPUTDIR=$(mktemp -d)
