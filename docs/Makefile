@@ -17,15 +17,15 @@ BUILDDIR          = _build
 PDFTARGETDIR               = _build/html/pdf
 # User guide
 USERGUIDEMDSOURCE          = $(shell find . -type f -name "DSG-user-documentation.md" -o -name "safe_haven_user_guide.md" -o -name "user-guide.md")
-USERGUIDEMDTARGET          = $(PDFTARGETDIR)/safe_haven_user_guide.md
+USERGUIDEMDTARGET          = $(if $(USERGUIDEMDSOURCE),$(PDFTARGETDIR)/safe_haven_user_guide.md,"")
 # User guide
 PKGREQUESTMDSOURCE         = $(shell find . -type f -name "software-package-request-form.md")
-PKGREQUESTMDTARGET         = $(PDFTARGETDIR)/safe_haven_software_request_form.md
+PKGREQUESTMDTARGET         = $(if $(PKGREQUESTMDSOURCE),$(PDFTARGETDIR)/safe_haven_software_request_form.md,"")
 # Classification flowcharts
 CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "Full-Classification-Flow-Diagram.pdf")
-CLASSIFICATIONFULLTARGET   = $(PDFTARGETDIR)/data_classification_flow_full.pdf
+CLASSIFICATIONFULLTARGET   = $(if $(CLASSIFICATIONFULLSOURCE),$(PDFTARGETDIR)/data_classification_flow_full.pdf,"")
 CLASSIFICATIONSIMPLESOURCE = $(shell find . -type f -name "Simple-Classification-Flow-Diagram.pdf")
-CLASSIFICATIONSIMPLETARGET = $(PDFTARGETDIR)/data_classification_flow_simple.pdf
+CLASSIFICATIONSIMPLETARGET = $(if $(CLASSIFICATIONSIMPLESOURCE),$(PDFTARGETDIR)/data_classification_flow_simple.pdf,"")
 # List of PDFs to build
 PDFTARGETS                 = $(patsubst %.md,%.pdf,$(USERGUIDEMDTARGET) $(PKGREQUESTMDTARGET) $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET))
 
