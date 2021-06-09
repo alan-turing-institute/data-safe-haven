@@ -51,9 +51,11 @@ case $operation in
         echo "Loading files from $backup_directory"
         # Copy Sphinx configuration files
         mkdir -p docs/_templates docs/_static
+        rm -rf docs/_templates/* docs/_static/*
         cp -v "$backup_directory"/conf.py docs/
         cp -v "$backup_directory"/emojify.py docs/
         cp -v "$backup_directory"/Makefile docs/
+        cp -v "$backup_directory"/markdown2pdf.json docs/
         cp -v "$backup_directory"/_templates/* docs/_templates
         cp -v "$backup_directory"/_static/* docs/_static
         # Use README.md if there is one, otherwise the default index

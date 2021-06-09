@@ -37,6 +37,7 @@ make -C docs emojify
 make -C docs html pdf
 
 # Store docs in the output directory
+echo "Moving output to ${output_directory}/${name}"
 mv docs/_build/html "${output_directory}/${name}"
 
 # Reset local changes

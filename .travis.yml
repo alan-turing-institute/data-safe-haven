@@ -87,7 +87,7 @@ jobs:
             cp ${BACKUPDIR}/build_config_backup.sh docs/
             cp ${BACKUPDIR}/build_docs_instance.sh docs/
             if [ ! -e "docs/conf.py" ]; then
-              echo -e "\033[1mAttempting to generate documentation from tag ${tag} that is unware of Sphinx \033[0m"
+              echo -e "\033[1mPreparing pre-Sphinx tag: ${tag}...\033[0m"
               # Remove the software request form which contains invalid markdown in old releases
               rm docs/how_to_guides/general/software-package-request-form.md 2>/dev/null;
               rm docs/software-package-request-form.md 2>/dev/null;
@@ -100,16 +100,35 @@ jobs:
         - mv $OUTPUTDIR ${TRAVIS_BUILD_DIR}/output
         - ls -alh ${TRAVIS_BUILD_DIR}/output
         - ls -alh ${TRAVIS_BUILD_DIR}/output/latest
+
+      # To change the deployment key you will need to do the following:
+      # - generate a new RSA key pair
+      # - add the PUBLIC key as a deployment key on the GitHub repo with read/write permissions
+      # - encrypt the PRIVATE key as follows:
+      #   - travis login --pro                        # login to Travis on the command line: you may have to install the Travis gem
+      #   - travis encrypt-file <path to private key> # this will create <private key>.enc in your working directory. Note the names of the encryption keys
+      #   - cat <private key>.enc | base64            # this will generate a base64 version of the encrypted private key
+      # - add the base64, encrypted private key as a Travis environment variable called GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64
+      # - edit the openssl line below to use the new `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables generated above
+      # - remove the previous `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables from Travis
+
+      before_deploy:
+        - echo $GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64 | base64 --decode > safehaven_rw_rsa4096.enc
+        - openssl aes-256-cbc -K $encrypted_d794587a8a8a_key -iv $encrypted_d794587a8a8a_iv -in safehaven_rw_rsa4096.enc -out safehaven_rw_rsa4096 -d
+        - pwd
+        - ls -alh
       deploy:
-        keep_history: false
+        cleanup: false
+        edge: true # opt in to dpl v2
         local_dir: ${TRAVIS_BUILD_DIR}/output
-        provider: pages
-        skip_cleanup: true
+        keep_history: false
+        provider: pages:git
+        deploy_key: safehaven_rw_rsa4096
         strategy: git
         target_branch: autodocs
         token: $GITHUB_TOKEN
         on:
-          branch: develop
+          branch: 1004-automated-documentation
 
   allow_failures:
     - env: ALLOWED_FAILURE=true
