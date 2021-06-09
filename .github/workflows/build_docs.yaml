@@ -1,4 +1,4 @@
-name: docs_pages_workflow
+name: Build documentation
 
 # Run workflow on pushes to matching branches
 on:
