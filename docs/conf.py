@@ -7,7 +7,7 @@ from git import Repo
 
 
 def tag2version(tag):
-    return tag.name.replace("v", "")
+    return tag.name
 
 
 # -- Customisation  -----------------------------------------------------------
@@ -16,8 +16,8 @@ def tag2version(tag):
 repo = Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 tags = [t for t in repo.tags if t.commit == repo.head.commit]
-version = tag2version(tags[0]) if tags else "latest"
-versions = ["latest"] + [tag2version(t) for t in repo.tags]
+version = tag2version(tags[0]) if tags else "develop"
+versions = ["develop"] + [tag2version(t) for t in repo.tags]
 
 # Set sidebar variables
 try:

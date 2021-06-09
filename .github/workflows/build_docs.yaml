@@ -42,8 +42,9 @@ jobs:
         run: |
           # Save config to BACKUPDIR then build
           ./docs/build_config_backup.sh -b -d ${{env.BACKUPDIR}}
-          ./docs/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n latest
-          cp docs/meta/index.html ${{env.OUTPUTDIR}}/index.html
+          ./docs/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n develop
+          latest_stable=$(git tag | grep -v beta | sort | tail -n 1)
+          sed "s|{{latest_stable}}|$latest_stable|g" docs/meta/index.html > ${{env.OUTPUTDIR}}/index.html
           touch ${{env.OUTPUTDIR}}/.nojekyll
       - name: Build tagged documentation
         shell: bash
