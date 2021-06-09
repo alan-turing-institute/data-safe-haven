@@ -1,9 +1,9 @@
 name: Build documentation
 
 # Run workflow on pushes to matching branches
-on:
+on:  # yamllint disable-line rule:truthy
   push:
-    branches: [ 1004-automated-documentation ]
+    branches: [develop]
 
 # checkout needs 'contents:read'
 # deploy needs 'contents:write'
@@ -64,10 +64,10 @@ jobs:
             echo "✅ Finished working on ${tag}"
           done
       - name: Deploy documentation to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@5dc1d5a192aeb5ab5b7d5a77b7d36aea4a7f5c92 # This commit corresponds to tag (4.1.4)
+        uses: JamesIves/github-pages-deploy-action@5dc1d5a192aeb5ab5b7d5a77b7d36aea4a7f5c92  # This commit corresponds to tag (4.1.4)
         with:
-          branch: autodocs                    # The branch the action should deploy to.
-          folder: ${{env.OUTPUTDIR}}          # The folder the action should deploy.
-          git-config-name: Deployment Bot     # Name of the committer
-          git-config-email: deploy@github.com # Email of the committer
-          single-commit: true                 # Only keep one commit on the branch
+          branch: autodocs                     # The branch the action should deploy to.
+          folder: ${{env.OUTPUTDIR}}           # The folder the action should deploy.
+          git-config-name: Deployment Bot      # Name of the committer
+          git-config-email: deploy@github.com  # Email of the committer
+          single-commit: true                  # Only keep one commit on the branch

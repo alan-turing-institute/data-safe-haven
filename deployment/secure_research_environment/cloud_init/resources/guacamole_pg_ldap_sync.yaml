@@ -4,17 +4,17 @@
 
 # Connection parameters to LDAP server
 # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
-# TODO: get SSL working on port 636
+# Ideally we would use SSL (as below) but this is not currently working
+# port: 636
+# encryption:
+#   method: :simple_tls
 ldap_connection:
   host: {{shm_dc_ip_address}}
-  #port: 636
   port: 389
   auth:
     method: :simple
     username: {{ldap-search-user-dn}}
     password: {{ldap-search-user-password}}
-  #encryption:
-  #  method: :simple_tls
 
 # Search parameters for LDAP users which should be synchronized
 ldap_users:

@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 
 # Create files
 write_files:
@@ -92,11 +92,11 @@ apt:
   sources:
     docker.list:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
 # Install necessary apt packages
 packages:
@@ -110,8 +110,8 @@ package_upgrade: true
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
-    layout: True
-    overwrite: True
+    layout: true
+    overwrite: true
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     partition: 1
@@ -127,8 +127,8 @@ hostname: {{sre.webapps.cocalc.fqdn}}
 users:
   - default
   - name: cocalcdaemon
-    lock_passwd: True # Lock the password to disable password login
-    sudo: False       # This user will not have sudo privileges
+    lock_passwd: true  # Lock the password to disable password login
+    sudo: false        # This user will not have sudo privileges
 
 
 # Run other commands
@@ -200,4 +200,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true
