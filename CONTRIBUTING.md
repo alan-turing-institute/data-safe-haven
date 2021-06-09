@@ -104,7 +104,7 @@ GitHub has a helpful page on [getting started with writing and formatting on Git
 
 Most of the writing that you'll do will be in [Markdown](https://guides.github.com/features/mastering-markdown/).
 You can think of Markdown as a few little symbols around your text that will allow GitHub to render the text with a little bit of formatting.
-For example you could write words as bold ( `**bold**` ), or in italics ( `*italics*` ), or as a [link](https://https://youtu.be/dQw4w9WgXcQ) ( `[link](https://https://youtu.be/dQw4w9WgXcQ)` ) to another webpage.
+For example you could write words as bold ( `**bold**` ), or in italics ( `*italics*` ), or as a [link](https://youtu.be/dQw4w9WgXcQ) ( `[link](https://youtu.be/dQw4w9WgXcQ)` ) to another webpage.
 
 `GitHub` issues render markdown really nicely.
 The goal is to allow you to focus on the content rather than worry too much about how things are laid out!
@@ -171,7 +171,7 @@ If you're updating the code or other documents in the main repository, the follo
 
 This allows other members of the Data Safe Haven project team to confirm that you aren't overlapping with work that's currently underway and that everyone is on the same page with the goal of the work you're going to carry out.
 
-[This blog][https://www.igvita.com/2011/12/19/dont-push-your-pull-requests] is a nice explanation of why putting this work in up front is so useful to everyone involved.
+[This blog](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests) is a nice explanation of why putting this work in up front is so useful to everyone involved.
 
 #### 2. [Fork](https://help.github.com/articles/fork-a-repo) the [Data Safe Haven repository](https://github.com/alan-turing-institute/data-safe-haven) to your profile
 
