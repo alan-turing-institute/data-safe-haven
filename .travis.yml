@@ -78,35 +78,25 @@ jobs:
         - sudo apt-get -y install git python3 python3-pip
         - pip install -r docs/requirements.txt
       script:
-        - cp -R docs/* ${BACKUPDIR}
+        - ./docs/config_backup.sh -b -d ${BACKUPDIR} # save config to BACKUPDIR
         - make -C docs clean
         - make -C docs emojify
         - make -C docs html pdf
         - mv docs/_build/html ${OUTPUTDIR}/latest
+        - git reset --hard HEAD
+        - git clean -fd
         - |
           for tag in $(git tag); do
             echo -e "\033[1mGenerating documention for ${tag} \033[0m"
             git checkout $tag
-            mkdir -p docs/_templates docs/_static # ensure that necessary directories exist
+            cp ${BACKUPDIR}/config_backup.sh docs/
             if [ ! -e "docs/conf.py" ]; then
               echo -e "\033[1mAttempting to generate documentation from tag ${tag} that is unware of Sphinx \033[0m"
-              # Copy Sphinx configuration files
-              cp ${BACKUPDIR}/conf.py docs/
-              cp ${BACKUPDIR}/Makefile docs/
-              cp ${BACKUPDIR}/_templates/* docs/_templates
-              cp ${BACKUPDIR}/_static/* docs/_static
-              # Use README.md if there is one, otherwise the default index
-              if [ ! -e "docs/index.md" ]; then
-                if [ -e "docs/README.md" ]; then
-                  mv docs/README.md docs/index.md
-                else
-                  cp ${BACKUPDIR}/meta/default.template docs/index.md
-                fi
-              fi
               # Remove the software request form which contains invalid markdown in old releases
               rm docs/how_to_guides/general/software-package-request-form.md 2>/dev/null;
               rm docs/software-package-request-form.md 2>/dev/null;
             fi
+            ./docs/config_backup.sh -l -d ${BACKUPDIR} # always reload config to get a consistent Sphinx style
             # Build the HTML docs
             make -C docs clean
             make -C docs emojify
