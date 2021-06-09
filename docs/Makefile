@@ -35,34 +35,30 @@ help:
 
 .PHONY: help Makefile
 
+# Build from Markdown
 $(USERGUIDEMDTARGET): $(USERGUIDEMDSOURCE)
-	@if [ -f '$^' ]; then
-		mkdir -p $(PDFTARGETDIR)
-		cp $(USERGUIDEMDSOURCE) $(USERGUIDEMDTARGET)
-	fi
-
 $(PKGREQUESTMDTARGET): $(PKGREQUESTMDSOURCE)
-	@if [ -f '$^' ]; then
-		mkdir -p $(PDFTARGETDIR)
-		cp $(PKGREQUESTMDSOURCE) $(PKGREQUESTMDTARGET)
-	fi
 
+# Build from existing PDF
 $(CLASSIFICATIONFULLTARGET): $(CLASSIFICATIONFULLSOURCE)
-	@if [ -f '$^' ]; then
-		mkdir -p $(PDFTARGETDIR)
-		cp $(CLASSIFICATIONFULLSOURCE) $(CLASSIFICATIONFULLTARGET)
-	fi
-
 $(CLASSIFICATIONSIMPLETARGET): $(CLASSIFICATIONSIMPLESOURCE)
-	@if [ -f '$^' ]; then
-		mkdir -p $(PDFTARGETDIR)
-		cp $(CLASSIFICATIONSIMPLESOURCE) $(CLASSIFICATIONSIMPLETARGET)
-	fi
+
+# Build rule for copying Markdown
+$(USERGUIDEMDTARGET) $(PKGREQUESTMDTARGET):
+	@mkdir -p $(PDFTARGETDIR)
+	@if [ "$^" ]; then cp $^ $@; fi
+
+# Build rule for copying PDFs
+$(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET):
+	@mkdir -p $(PDFTARGETDIR)
+	@if [ "$^" ]; then cp $^ $@; echo "[Existing PDF ] Copied $^ to $@"; fi
 
 # Build single PDF using pretty-md-pdf
 %.pdf: %.md
-	pretty-md-pdf -i $^ -o $@ -c markdown2pdf.json
-	rm $^
+	@if test -f '$^'; then \
+		pretty-md-pdf -i $^ -o $@ -c markdown2pdf.json; \
+		rm $^; \
+	fi
 
 # Convert emoji codes to Unicode in all Markdown files
 emojify:
