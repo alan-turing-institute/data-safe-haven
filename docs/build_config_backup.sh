@@ -13,19 +13,19 @@ usage() {
 # Read command line arguments, overriding defaults where necessary
 operation=""
 backup_directory=""
-while getopts "hbld:" option; do
+while getopts "bd:hl" option; do
     case $option in
-        h)
-            usage
-            ;;
         b)
             operation="backup"
             ;;
-        l)
-            operation="load"
-            ;;
         d)
             backup_directory=$OPTARG
+            ;;
+        h)
+            usage
+            ;;
+        l)
+            operation="load"
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -52,6 +52,7 @@ case $operation in
         # Copy Sphinx configuration files
         mkdir -p docs/_templates docs/_static
         cp -v "$backup_directory"/conf.py docs/
+        cp -v "$backup_directory"/emojify.py docs/
         cp -v "$backup_directory"/Makefile docs/
         cp -v "$backup_directory"/_templates/* docs/_templates
         cp -v "$backup_directory"/_static/* docs/_static

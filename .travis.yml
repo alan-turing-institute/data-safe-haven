@@ -78,33 +78,22 @@ jobs:
         - sudo apt-get -y install git python3 python3-pip
         - pip install -r docs/requirements.txt
       script:
-        - ./docs/config_backup.sh -b -d ${BACKUPDIR} # save config to BACKUPDIR
-        - make -C docs clean
-        - make -C docs emojify
-        - make -C docs html pdf
-        - mv docs/_build/html ${OUTPUTDIR}/latest
-        - git reset --hard HEAD
-        - git clean -fd
+        - ./docs/build_config_backup.sh -b -d ${BACKUPDIR} # save config to BACKUPDIR
+        - ./docs/build_docs_instance.sh -d ${OUTPUTDIR} -n latest # build 'latest'
         - |
           for tag in $(git tag); do
             echo -e "\033[1mGenerating documention for ${tag} \033[0m"
             git checkout $tag
-            cp ${BACKUPDIR}/config_backup.sh docs/
+            cp ${BACKUPDIR}/build_config_backup.sh docs/
+            cp ${BACKUPDIR}/build_docs_instance.sh docs/
             if [ ! -e "docs/conf.py" ]; then
               echo -e "\033[1mAttempting to generate documentation from tag ${tag} that is unware of Sphinx \033[0m"
               # Remove the software request form which contains invalid markdown in old releases
               rm docs/how_to_guides/general/software-package-request-form.md 2>/dev/null;
               rm docs/software-package-request-form.md 2>/dev/null;
             fi
-            ./docs/config_backup.sh -l -d ${BACKUPDIR} # always reload config to get a consistent Sphinx style
-            # Build the HTML docs
-            make -C docs clean
-            make -C docs emojify
-            make -C docs html pdf
-            # Store in the output directory and reset
-            mv docs/_build/html ${OUTPUTDIR}/${tag}
-            git reset --hard HEAD
-            git clean -fd
+            ./docs/build_config_backup.sh -l -d ${BACKUPDIR} # always reload config to get a consistent Sphinx style
+            ./docs/build_docs_instance.sh -d ${OUTPUTDIR} -n ${tag} # build tag
           done
         - cp ${BACKUPDIR}/meta/index.html ${OUTPUTDIR}/index.html
         - touch ${OUTPUTDIR}/.nojekyll
