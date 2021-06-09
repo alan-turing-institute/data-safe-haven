@@ -100,33 +100,29 @@ jobs:
         - mv $OUTPUTDIR ${TRAVIS_BUILD_DIR}/output
         - ls -alh ${TRAVIS_BUILD_DIR}/output
         - ls -alh ${TRAVIS_BUILD_DIR}/output/latest
-
-      # To change the deployment key you will need to do the following:
-      # - generate a new RSA key pair
-      # - add the PUBLIC key as a deployment key on the GitHub repo with read/write permissions
-      # - encrypt the PRIVATE key as follows:
-      #   - travis login --pro                        # login to Travis on the command line: you may have to install the Travis gem
-      #   - travis encrypt-file <path to private key> # this will create <private key>.enc in your working directory. Note the names of the encryption keys
-      #   - cat <private key>.enc | base64            # this will generate a base64 version of the encrypted private key
-      # - add the base64, encrypted private key as a Travis environment variable called GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64
-      # - edit the openssl line below to use the new `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables generated above
-      # - remove the previous `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables from Travis
-
       before_deploy:
-        - echo $GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64 | base64 --decode > safehaven_rw_rsa4096.enc
-        - openssl aes-256-cbc -K $encrypted_d794587a8a8a_key -iv $encrypted_d794587a8a8a_iv -in safehaven_rw_rsa4096.enc -out safehaven_rw_rsa4096 -d
-        - pwd
-        - ls -alh
+        # To change the deployment key you will need to do the following:
+        # - generate a new RSA key pair
+        # - add the PUBLIC key as a deployment key on the GitHub repo with read/write permissions
+        # - encrypt the PRIVATE key as follows:
+        #   - travis login --pro                        # login to Travis on the command line: you may have to install the Travis gem
+        #   - travis encrypt-file <path to private key> # this will create <private key>.enc in your working directory. Note the encryption key names
+        #   - cat <private key>.enc | base64            # this will generate a base64 version of the encrypted private key
+        # - add the base64, encrypted private key as a Travis environment variable called GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64
+        # - edit the openssl line below to use the new `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables generated above
+        # - remove the previous `encrypted_<name>_key` and `encrypted_<name>_iv` environment variables from Travis
+        - echo ${GITHUB_DEPLOY_KEY_ENCRYPTED_BASE64} | base64 --decode > private_key.enc
+        - openssl aes-256-cbc -K $encrypted_d794587a8a8a_key -iv $encrypted_d794587a8a8a_iv -in private_key.enc -out ${TRAVIS_BUILD_DIR}/private_key.pem -d
       deploy:
-        cleanup: false
-        edge: true # opt in to dpl v2
-        local_dir: ${TRAVIS_BUILD_DIR}/output
-        keep_history: false
         provider: pages:git
-        deploy_key: safehaven_rw_rsa4096
-        strategy: git
-        target_branch: autodocs
-        token: $GITHUB_TOKEN
+        edge: true # opt in to dpl v2
+        deploy_key: ${TRAVIS_BUILD_DIR}/private_key.pem
+        keep_history: false
+        local_dir: ${TRAVIS_BUILD_DIR}/output
+        target_branch: autodocs2
+        verbose: true
+        email: deploy@travis-ci.com
+        name: Deployment Bot
         on:
           branch: 1004-automated-documentation
 
