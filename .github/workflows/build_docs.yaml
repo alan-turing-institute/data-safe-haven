@@ -70,3 +70,4 @@ jobs:
           folder: ${{env.OUTPUTDIR}}          # The folder the action should deploy.
           git-config-name: Deployment Bot     # Name of the committer
           git-config-email: deploy@github.com # Email of the committer
+          single-commit: true                 # Only keep one commit on the branch
