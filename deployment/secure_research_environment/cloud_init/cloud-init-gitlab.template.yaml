@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 
 # Create files
 write_files:
@@ -46,7 +46,7 @@ apt:
   sources:
     gitlab.list:
       source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
-      keyid: F6403F6544A38863DAA0B6E03F01618A51312F3F # GitLab B.V. (package repository signing key) <packages@gitlab.com>
+      keyid: F6403F6544A38863DAA0B6E03F01618A51312F3F  # GitLab B.V. (package repository signing key) <packages@gitlab.com>
 
 # Install necessary apt packages
 packages:
@@ -65,8 +65,8 @@ package_upgrade: true
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
-    layout: True
-    overwrite: True
+    layout: true
+    overwrite: true
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     partition: 1
@@ -123,4 +123,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

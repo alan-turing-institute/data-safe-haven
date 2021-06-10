@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 
 fqdn: <vm-fqdn>
 

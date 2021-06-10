@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 
 write_files:
   - path: "/opt/pg-ldap-sync/configuration.yaml"
@@ -57,7 +57,7 @@ apt:
   sources:
     docker.list:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
 packages:
@@ -134,4 +134,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

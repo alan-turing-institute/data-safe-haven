@@ -1,0 +1,39 @@
+/* Sidebar header */
+.wy-side-nav-search {
+    background-color: #f5f6f7;
+}
+/* .wy-side-nav-search .wy-dropdown>a,  */
+.wy-side-nav-search>a, .wy-side-nav-search>div.version {
+    color: #2980b9;
+}
+
+/* Sidebar body */
+.wy-nav-side {
+    background: #f5f6f7;
+}
+.wy-menu-vertical a {
+    color: #404040;
+}
+
+/* Sidebar popup footer body */
+.rst-versions {
+    background: #f5f6f7;
+}
+.rst-versions .rst-other-versions dd a {
+    color: #2980b9;
+}
+
+/* Sidebar popup footer header */
+.rst-versions .rst-current-version {
+    background: #cbd0d5;
+    color: #2980b9;
+}
+.rst-versions .rst-current-version .fa {
+    color: #404040;
+}
+
+/* Main content */
+.wy-nav-content {
+    background: #f5f6f7;
+    max-width: none;
+}

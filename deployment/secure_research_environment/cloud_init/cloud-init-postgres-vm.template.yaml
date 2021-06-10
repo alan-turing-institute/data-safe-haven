@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 
 # Update package database on first boot (ie. run `apt-get update`)
 package_update: true
@@ -20,8 +20,8 @@ apt:
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
-    layout: True
-    overwrite: True
+    layout: true
+    overwrite: true
 
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
@@ -333,7 +333,7 @@ write_files:
 
 # List of packages to install with apt-get
 packages:
-  - adcli=0.8.2-1 # https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/1868703 note that '0.8.2-1ubuntu1' attempts to use ad_use_ldaps but `realm` does not yet support this
+  - adcli=0.8.2-1  # https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/1868703 note that '0.8.2-1ubuntu1' attempts to use ad_use_ldaps but `realm` does not yet support this
   - gcc
   - krb5-user
   - ldap-utils
@@ -374,9 +374,9 @@ runcmd:
   # Check timezone and NTP server
   - echo ">=== Current timezone... ===<"
   - echo "Date     $(date)"
-  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
-  - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
+  - systemctl status systemd-timesyncd  # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # Configure the postgres database
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
@@ -427,4 +427,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

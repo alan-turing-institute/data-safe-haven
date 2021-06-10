@@ -5,9 +5,9 @@
 # No default rule set. We want to allow updates to documents with only usual peer review.
 
 # Set owners for code used to deploy Safe Haven
-# This is a protection to allow us to accept PRs from 
+# This is a protection to allow us to accept PRs from
 # our early adopters but ensure strict review to start
-# We only plan to require code owner review for 
-# master and other branches that may be deployed from.
+# We only plan to require code owner review for
+# main and other branches that may be deployed from.
 # Note: /dir/ applies to directory and all subdirectories
 /deployment/      @martintoreilly @jemrobinson @JimMadge

@@ -16,5 +16,9 @@ deployment/administration/.dependency_cache.json
 
 # PDF versions of our Markdown documents
 docs/*.pdf
-# Except the tiers flowchart, as we have not source for this
+# ... except the tiers flowchart
 !docs/tiersflowchart.pdf
+
+# Sphinx output
+docs/_build
+docs/output

@@ -1,4 +1,4 @@
-#cloud-config
+# cloud-config
 package_upgrade: false
 
 disk_setup:
@@ -449,9 +449,9 @@ runcmd:
   # Check timezone and NTP server
   - echo ">=== Current timezone... ===<"
   - echo "Date     $(date)"
-  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')" # strip leading spaces
+  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
-  - systemctl status systemd-timesyncd # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
+  - systemctl status systemd-timesyncd  # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
   # PyCharm configuration
   - echo ">=== Configuring PyCharm... ===<"
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
@@ -475,14 +475,14 @@ runcmd:
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
   # Configure xrdp login window
   - echo ">=== Setting xrdp defaults... ===<"
-  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                         # title bar colour (unselected)
-  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                                   # title bar colour (selected)
-  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini                   # teal background colour
-  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                                         # grey box colour
-  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini                                                 # window title
-  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini # logo
-  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini                                     # centre OK button
-  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini                            # centre cancel button
+  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                          # title bar colour (unselected)
+  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                                    # title bar colour (selected)
+  - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini                    # teal background colour
+  - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                                          # grey box colour
+  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini                                                  # window title
+  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini  # logo
+  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini                                      # centre OK button
+  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini                             # centre cancel button
   # Remove all sessions except Xorg
   - sed -i '/\[X11rdp\]/,/^$/d' /etc/xrdp/xrdp.ini           # delete lines from [X11rdp] until next empty line
   - sed -i '/\[Xvnc\]/,/^$/d' /etc/xrdp/xrdp.ini             # delete lines from [Xvnc] until next empty line
@@ -527,4 +527,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

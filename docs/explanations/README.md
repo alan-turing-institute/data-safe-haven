@@ -26,3 +26,18 @@ We detail our processes for moving data into (ingress) and out of (egress) the S
 
 + [Data and software ingress](ingress_and_egress/ingress.md) - An overview of the process for bringing data or software into the environment
 + [Data and software egress](ingress_and_egress/egress.md) - An overview of the process for bringing data or software out of the environment
+
+```{toctree}
+:hidden: true
+
+classification/classification-overview.md
+classification/unconsented-data.md
+ingress_and_egress/egress.md
+ingress_and_egress/ingress.md
+overview/azure-implementation-details.md
+security_decisions/physical-resilence-and-availability.md
+security_decisions/risk_register.md
+security_decisions/security-controls.md
+security_decisions/security_policies.md
+security_decisions/supplier_and_software_policy.md
+```

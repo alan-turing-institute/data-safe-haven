@@ -140,7 +140,7 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
-```pwsh
+```powershell
 PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
@@ -152,7 +152,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds) at :file_folder: `./deployment`
 
-```pwsh
+```powershell
 PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -163,7 +163,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <AAD tenant ID> -VMs <VM sizes>
 ```
 
@@ -179,7 +179,7 @@ This will perform the following actions, which can be run individually if desire
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -195,7 +195,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -211,23 +211,21 @@ This step will register service accounts with the SHM and also create a Key Vaul
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
-  <p align="center">
-    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="subdomain_ns_record"/>
-  </p>
+  ![subdomain_ns_record](../../images/deploy_sre/subdomain_ns_record.png)
 + Duplicate these records to the parent DNS system as follows:
   + If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
     + The name should be set to the subdomain (e.g. `sandbox` ) or `@` if using a custom domain, and the values duplicated from above.
@@ -241,14 +239,14 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :pencil: Notes
+### :pencil: Notes
 
 The VNet peerings may take a few minutes to provision after the script completes.
 
@@ -259,7 +257,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -275,7 +273,7 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <tenant ID>
 ```
 
@@ -290,7 +288,7 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -304,7 +302,7 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: up to seventy minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=up%20to%20seventy%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -325,7 +323,7 @@ The following script will be run once for each VM that you specified using the `
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -vmSize <VM size> -ipLastOctet <IP last octet>
 ```
 
@@ -336,7 +334,7 @@ PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -vmSize <VM size> -ipLastOcte
 
 This will deploy a new compute VM into the SRE environment
 
-#### :pencil: Notes
+### :pencil: Notes
 
 ![Alan Turing Institute](https://img.shields.io/badge/Alan%20Turing%20Institute-555?&logo=canonical&logoColor=white) our convention is that:
 
@@ -355,7 +353,7 @@ If this SRE needs additional software or settings that are not in your default V
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -373,7 +371,7 @@ This will apply the locked-down network settings which will restrict access into
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
@@ -387,14 +385,14 @@ PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 
 The API call that installs the logging extensions to the VMs will time out after a few minutes, so you may get some extension installation failure messages if installation of the loggin agent takes longer than this to complete.
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
@@ -448,7 +446,7 @@ You should have already set up a non-privileged user account upon setting up the
   + Click `Ok` again to exit the `Add users` dialogue
 + Synchronise with Azure Active Directory by running following `Powershell` command on the SHM primary domain controller
 
-```pwsh
+```powershell
 PS> C:\Installation\Deploy_RDS_Environment.ps1
 ```
 
@@ -477,15 +475,11 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
  + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
 + You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
-  <p align="center">
-    <img src="../../images/deploy_sre/guacamole_dashboard.png" width="80%" title="guacamole_dashboard"/>
-  </p>
+  ![guacamole_dashboard](../../images/deploy_sre/guacamole_dashboard.png)
 + At this point you should double click on the :computer: `Ubuntu0` link under `All Connections` which should bring you to an Ubuntu login screen
 + You will need the short-form of the user name (ie. without the `@<safe haven domain>` part) and the same password as before
 + This should bring you to an Ubuntu desktop that will look like the following
-  <p align="center">
-    <img src="../../images/deploy_sre/guacamole_desktop.png" width="80%" title="guacamole_desktop"/>
-  </p>
+  ![guacamole_desktop](../../images/deploy_sre/guacamole_desktop.png)
 
 #### :pencil: Notes
 
@@ -496,9 +490,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 
 If you see an error like the following when attempting to log in, it is likely that the AzureAD application is not registered as an `ID token` provider. Please follow the instructions below to check:
 
-<p align="center">
-  <img src="../../images/deploy_sre/aad_idtoken_failure.png" width="80%" title="aad_idtoken_failure"/>
-</p>
+![aad_idtoken_failure](../../images/deploy_sre/aad_idtoken_failure.png)
 
 ![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
@@ -507,9 +499,7 @@ If you see an error like the following when attempting to log in, it is likely t
 + Click on `Authentication` on the left-hand sidebar
 + Ensure that the `ID tokens` checkbox is ticked and click on the `Save` icon if you had to make any changes
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-        <img src="../../images/deploy_sre/aad_app_registration_idtoken.png" width="80%" title="AAD Tenant ID"/>
-    </p>
+    ![AAD Tenant ID](../../images/deploy_sre/aad_app_registration_idtoken.png)
   </details>
 
 ### :fire: 4.2 Run smoke tests on DSVM

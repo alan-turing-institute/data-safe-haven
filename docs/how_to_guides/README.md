@@ -20,17 +20,17 @@ They are more advanced than tutorials and assume some basic knowledge of how our
 
 + [Data ingress guide for data providers](data_provider/how-to-ingress-data-as-provider.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
-+ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application. The classification process can also be seen in [flow chart form](../explanations/classification/Full-Classification-Flow-Diagram.pdf).
++ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart.
 
-This application will guide you through our [classification process]() for determining the classification tier for a work package.
+This application will guide you through our classification process for determining the classification tier for a work package.
 
 ## How to be the principal investigator for a project
 
-+ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application. The classification process can also be seen in [flow chart form](../explanations/classification/Full-Classification-Flow-Diagram.pdf).
++ [Data classification guide](general/how-to-use-classification-web-app-guide.md) - Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart.
 
 + [Software package request form](general/software-package-request-form.md) - Guidance on how to request a new package to be added to the environment.
 
-+ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our policy for approving software packages.
++ [Software package allowlist policy](general/software-package-approval-policy.md) - Guidance on our policy for approving software packages.
 
 + [Data egress guide for principal investigators](principal_investigator/how-to-egress-data.md) - Instructions for principal investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
@@ -44,8 +44,25 @@ Once an SRE has been set up for a project within a Safe Haven, users need to kno
 
 + [Safe Havens Cheat Sheet](user_guides/user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
-+ [Software package allowlist policy](general/software-package-allowlist-policy.md) - Guidance on our software package approval policy.
++ [Software package allowlist policy](general/software-package-approval-policy.md) - Guidance on our software package approval policy.
 
 ## How to contribute to the development of the Safe Haven project
 
 + [Getting started as a developer](developer/how-to-contribute.md)
+
+```{toctree}
+:hidden: true
+
+administrator/how-to-be-a-sysadmin.md
+data_provider/how-to-ingress-data-as-provider.md
+developer/how-to-contribute.md
+general/how-to-use-classification-web-app-guide.md
+general/software-package-approval-policy.md
+general/software-package-request-form.md
+principal_investigator/how-to-egress-data.md
+project_manager/data-ingress.md
+project_manager/how-to-start-a-project.md
+user_guides/user-cheat-sheet.md
+user_guides/user-guide.md
+user_guides/user-guide-tier1.md
+```

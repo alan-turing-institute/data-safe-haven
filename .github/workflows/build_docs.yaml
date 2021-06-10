@@ -1,0 +1,73 @@
+name: Build documentation
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop]
+
+# checkout needs 'contents:read'
+# deploy needs 'contents:write'
+permissions:
+  contents: write
+
+jobs:
+  build_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.3.0'
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git
+          npm install -g pretty-markdown-pdf
+          pip install -r docs/requirements.txt
+      - name: Create common directories
+        shell: bash
+        run: |
+          echo "BACKUPDIR=$(mktemp -d)" >> $GITHUB_ENV
+          echo "OUTPUTDIR=$(mktemp -d)" >> $GITHUB_ENV
+      - name: Build latest documentation
+        shell: bash
+        run: |
+          # Save config to BACKUPDIR then build
+          ./docs/build_config_backup.sh -b -d ${{env.BACKUPDIR}}
+          ./docs/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n develop
+          latest_stable=$(git tag | grep -v beta | sort | tail -n 1)
+          sed "s|{{latest_stable}}|$latest_stable|g" docs/meta/index.html > ${{env.OUTPUTDIR}}/index.html
+          touch ${{env.OUTPUTDIR}}/.nojekyll
+      - name: Build tagged documentation
+        shell: bash
+        run: |
+          git config --global advice.detachedHead false
+          for tag in $(git tag); do
+            echo -e "\n\n✨ Generating documention for ${tag}"
+            git checkout $tag
+            # Remove the software request form which contains invalid markdown in old releases
+            if [ ! -e "docs/conf.py" ]; then
+              find docs -name "software-package-request-form.md" -exec rm {} \;
+            fi
+            cp ${BACKUPDIR}/build*.sh docs/
+            # Reload Sphinx config to get a consistent HTML style then build
+            ./docs/build_config_backup.sh -l -d ${BACKUPDIR}
+            ./docs/build_docs_instance.sh -d ${OUTPUTDIR} -n ${tag}
+            echo "✅ Finished working on ${tag}"
+          done
+      - name: Deploy documentation to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@5dc1d5a192aeb5ab5b7d5a77b7d36aea4a7f5c92  # This commit corresponds to tag (4.1.4)
+        with:
+          branch: autodocs                     # The branch the action should deploy to.
+          folder: ${{env.OUTPUTDIR}}           # The folder the action should deploy.
+          git-config-name: Deployment Bot      # Name of the committer
+          git-config-email: deploy@github.com  # Email of the committer
+          single-commit: true                  # Only keep one commit on the branch

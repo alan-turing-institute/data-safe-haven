@@ -36,23 +36,20 @@ Actually uploading data will from these IP addresses will also require the perso
 Checklist:
 
 + Access secure emails on work computer
-
 + Send Turing the public IP address (s) of the computer that will conduct the transfer
 
 When we receive the IP address, we will send the person responsible for the data transfer a temporary secure access link via secure email.
 This "write-only" access link has write, list and delete privileges, which will allow you to upload files, verify they have been successfully uploaded and remove or overwrite uploaded files if you need to amend the uploaded data.
 It will not allow you to download the contents of the uploaded files.
-This provides an added layer of protection in case the upload link is inadvertantly
+This provides an added layer of protection in case the upload link is inadvertently leaked.
 
-(Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it  – if a malicious actor got hold of the link, they could poison your data)
+**Note:** Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it  – if a malicious actor got hold of the link, they could poison your data
 
 ### Uploading
 
 1. Open Azure Storage explorer
 2. Click the socket image on the left hand side
-      <p align="center">
-         <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
-      </p>
+   ![Azurestorageexplorer1](../../images/provider_data_ingress/Azurestorageexplorer1.png)
 3. On `Select Resource`, choose `Blob container`
 4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 5. On `Enter Connection Info`:
@@ -66,7 +63,7 @@ This provides an added layer of protection in case the upload link is inadvertan
 
 Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file. Click `Yes`.
 
-<img width="492" alt="Screenshot 2021-04-28 at 14 25 09" src="https://user-images.githubusercontent.com/5486164/116411935-176e5200-a82e-11eb-9f5f-fc6c15f34d77.png">
+![azcopy_warning](../../images/provider_data_ingress/azcopy_warning.png)
 
 ### Common issues
 

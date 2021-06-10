@@ -145,9 +145,7 @@ Here we go through the login procedure and discuss possible problems at each ste
 
 If the certificate for the SRE domain has expired, users will not be able to login.
 
-<p align="center">
-  <img src="../../images/administrator_guide/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
-</p>
+![login_certificate_expiry](../../images/administrator_guide/login_certificate_expiry.png)
 
 **Solution**: Replace the SSL certificate with a new one
 
@@ -160,18 +158,15 @@ If the certificate for the SRE domain has expired, users will not be able to log
 
 If users give the wrong username or password they will not be able to progress past the login screen.
 
-<p align="center">
-  <img src="../../images/administrator_guide/login_password_login.png" width="80%" title="login_password_login">
-</p>
+![login_password_login](../../images/administrator_guide/login_password_login.png)
 
 **Solution**: Check user credentials, password may need to be reset.
 
 ### :train: Unable to open any remote apps
 
 Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
-<p align="center">
-  <img src="../../images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
-</p>
+
+![login_shared_vm](../../images/administrator_guide/login_shared_vm.png)
 
 **Solution**: Check MFA setup
 
@@ -182,15 +177,11 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 
 If users can get to the login screen:
 
-<p align="center">
-  <img src="../../images/administrator_guide/login_compute_vm_login.png" width="80%" title="Shared VM login screen">
-</p>
+![Shared VM login screen](../../images/administrator_guide/login_compute_vm_login.png)
 
 but then see this error message:
 
-<p align="center">
-  <img src="../../images/administrator_guide/login_compute_vm_login_failure.png" width="80%" title="Login failure message">
-</p>
+![Login failure message](../../images/administrator_guide/login_compute_vm_login_failure.png)
 
 there are a couple of possible causes.
 
@@ -497,9 +488,7 @@ On your **deployment machine**.
 To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
 Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
-<p align="center">
-  <img src="../../images/administrator_guide/internal_mirror_packages.png" width="80%" title="Package list">
-</p>
+![Package list](../../images/administrator_guide/internal_mirror_packages.png)
 
 If the requested is expected to be available (i.e. it is on the appropriate allowlist), then you can force a mirror update by rebooting the `EXTERNAL` mirrors.
 This will trigger the following actions:
@@ -611,9 +600,7 @@ Software ingress is performed in a similar manner to data.
   + Leave this portal window open and move to the next step
 + Open Azure Storage explorer ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
 + Click the socket image on the left hand side
-    <p align="center">
-       <img src="../../images/provider_data_ingress/Azurestorageexplorer1.png" width="80%" title="Azurestorageexplorer1">
-    </p>
+  ![Azurestorageexplorer1](../../images/provider_data_ingress/Azurestorageexplorer1.png)
 + On `Select Resource`, choose `Blob container`
 + On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 + On `Enter Connection Info`:

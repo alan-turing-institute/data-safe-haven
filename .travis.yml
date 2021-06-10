@@ -2,10 +2,16 @@
 os: linux
 dist: focal
 
-language: minimal
+language: shell
 
 jobs:
   include:
+    - name: Test Powershell
+      before_script:
+        - sudo snap install powershell --classic
+        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
+      script: pwsh -c './tests/Run_Pester_Tests.ps1'
+
     - name: Lint Ansible
       addons:
         apt:
@@ -23,6 +29,7 @@ jobs:
 
     - name: Lint Markdown
       language: ruby
+      rvm: ruby-head
       install: gem install mdl
       script: mdl --style .mdlstyle.rb *.md docs/
 
@@ -47,12 +54,6 @@ jobs:
       python: 3.9
       before_script: pip install yamllint
       script: yamllint .
-
-    - name: Test Powershell
-      before_script:
-        - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
-      script: pwsh -c './tests/Run_Pester_Tests.ps1'
 
     - name: Check for dead links in Markdown
       language: node_js
