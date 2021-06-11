@@ -7,13 +7,13 @@ It will help you update the SHM to a newer release by deploying a new SHM and mi
 ## :mailbox_with_mail: Table of contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-+ [:unlock: 2. Disconnect the old domain controller from the Azure Active Directory](#-unlock-2-disconnect-the-old-domain-controller-from-the-azure-active-directory])
++ [:unlock: 2. Disconnect the old domain controller from the Azure Active Directory](#unlock-2-disconnect-the-old-domain-controller-from-the-azure-active-directory)
 + [:clipboard: 3. Safe Haven Management configuration](#clipboard-3-safe-haven-management-configuration)
 + [:door: 4. Configure DNS for the custom domain](#door-4-configure-dns-for-the-custom-domain)
 + [:file_folder: 5 Ensure the Azure Active Directory domain is registered](#file_folder-5-ensure-the-azure-active-directory-domain-is-registered)
 + [:key: 6. Deploy Key Vault for SHM secrets and create emergency admin account](#key-6-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
 + [:station: 7. Deploy network and VPN gateway](#station-7-deploy-network-and-vpn-gateway)
-+ [:house_with_garden: 8. Deploy the domain controllers](#house_with_garden-8-deploy-and-configure-domain-controllers)
++ [:house_with_garden: 8. Deploy the domain controllers](#house_with_garden-8-deploy-the-domain-controllers)
 + [:zap: 9. Configure the new domain controllers](#zap-9-configure-the-new-domain-controllers)
   + [:lock_with_ink_pen: Suspend MFA for all users](#lock_with_ink_pen-suspend-mfa-for-all-users)
   + [:busts_in_silhouette: Copy SHM users from old domain controller](#busts_in_silhouette-copy-shm-users-from-old-domain-controller)
