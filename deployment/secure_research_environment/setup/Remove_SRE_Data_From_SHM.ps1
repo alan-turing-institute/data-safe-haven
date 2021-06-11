@@ -22,8 +22,10 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Look for resources in this subscription
 # ---------------------------------------
-$sreResourceGroups = Get-SreResourceGroups -shmId $config.shm.id -sreId $config.sre.id
-$sreResources = Get-SreResources -shmId $config.shm.id -sreId $config.sre.id
+$sreResourceGroups = Get-SreResourceGroups -sreConfig $config
+$sreResourceGroupNames = $sreResourceGroups | ForEach-Object { $_.ResourceGroupName }
+$sreResources = Get-AzResource | Where-Object { $sreResourceGroupNames.Contains($_.ResourceGroupName) }
+
 
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
