@@ -1,4 +1,4 @@
-# cloud-config
+#cloud-config
 
 # Update package database on first boot
 package_update: true

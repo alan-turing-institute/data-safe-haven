@@ -1,4 +1,4 @@
-# cloud-config
+#cloud-config
 
 # Update package database on first boot (ie. run `apt-get update`)
 package_update: true
