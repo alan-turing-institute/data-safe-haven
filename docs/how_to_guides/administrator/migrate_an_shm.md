@@ -156,7 +156,7 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
 
 ### :pencil: Notes
 
-+ Do not configure the domain controller yet
++ Do **not** run any of the domain controller configuration steps yet
 
 ## :zap: 9. Configure the new domain controllers
 
