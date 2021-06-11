@@ -3,6 +3,8 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
+    [Parameter(Mandatory = $false, HelpMessage = "Azure Active Directory tenant ID")]
+    [string]$tenantId,
     [Parameter(Mandatory = $false, HelpMessage = "No-op mode which will not remove anything")]
     [Switch]$dryRun
 )
@@ -17,6 +19,13 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+
+# If this SRE uses Guacamole then we need the tenant ID for the SHM AAD
+# ---------------------------------------------------------------------
+if (($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") -and -not $tenantId) {
+    Add-LogMessage -Level Fatal "Tearing down SRE '$($config.sre.id)' requires the -tenantId argument! Use the ID for the '$($config.shm.id)' Azure Active Directory."
+}
 
 
 # Make user confirm before beginning deletion
@@ -97,11 +106,8 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         Add-LogMessage -Level Info "'$azureAdApplicationName' would be removed from Azure Active Directory..."
     } else {
         Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is removed from Azure Active Directory..."
-        if (Get-MgContext) {
-            Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
-        } else {
-            Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
-        }
+        if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
+        Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
         try {
             Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
             Add-LogMessage -Level Success "'$azureAdApplicationName' has been removed from Azure Active Directory"

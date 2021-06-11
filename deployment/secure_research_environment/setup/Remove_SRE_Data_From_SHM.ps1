@@ -52,7 +52,7 @@ if ($sreResources -or $sreResourceGroups) {
 
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
-    Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
+    Add-LogMessage -Level Info "Removing peerings between SRE and SHM virtual networks..."
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
     foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
         foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
