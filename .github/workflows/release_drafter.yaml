@@ -11,7 +11,8 @@ jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@v5
+      # Pin release drafter version to a commit hash, this corresponds to the v5.15.0 tag
+      - uses: release-drafter/release-drafter@fe52e97d262833ae07d05efaf1a239df3f1b5cd4
         with:
           config-name: release_drafter.yaml
         env:
