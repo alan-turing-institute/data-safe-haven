@@ -26,7 +26,7 @@ if ($dryRun.IsPresent) {
     Add-LogMessage -Level Warning "This would remove $($sreResourceGroups.Length) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
     $nIterations = 1
 } else {
-    Add-LogMessage -Level Warning "This will remove the following resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
+    Add-LogMessage -Level Warning "This will remove $($sreResourceGroups.Length) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
     $sreResourceGroups | ForEach-Object { Add-LogMessage -Level Warning "... $($_.ResourceGroupName)" }
     $confirmation = Read-Host "Are you sure you want to proceed? [y/n]"
     while ($confirmation -ne "y") {
