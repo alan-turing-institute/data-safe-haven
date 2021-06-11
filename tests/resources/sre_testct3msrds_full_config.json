@@ -422,7 +422,8 @@
           "usernameSecretName": "shm-testc-aad-localsync-username"
         }
       }
-    }
+    },
+    "vmImagesRgPrefix": "RG_SH"
   },
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",

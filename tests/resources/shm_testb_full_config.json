@@ -421,5 +421,6 @@
         "usernameSecretName": "shm-testb-aad-localsync-username"
       }
     }
-  }
+  },
+  "vmImagesRgPrefix": "RG_SH"
 }
