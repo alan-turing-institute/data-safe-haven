@@ -498,6 +498,27 @@ function Get-ShmConfig {
 Export-ModuleMember -Function Get-ShmConfig
 
 
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-ShmResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$shmConfig
+    )
+    $originalContext = Get-AzContext
+    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.dsvmImage -Key "rg"
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig -Key "rg" | Where-Object { -not $excludedResourceGroups.Contains($_) }
+    try {
+        $null = Set-AzContext -SubscriptionId $shmConfig.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-ShmResourceGroups
+
+
 # Add a new SRE configuration
 # ---------------------------
 function Get-SreConfig {
@@ -1039,6 +1060,26 @@ function Get-SreConfig {
 Export-ModuleMember -Function Get-SreConfig
 
 
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-SreResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$sreConfig
+    )
+    $originalContext = Get-AzContext
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $sreConfig.sre -Key "rg"
+    try {
+        $null = Set-AzContext -SubscriptionId $sreConfig.sre.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-SreResourceGroups
+
+
 # Show SRE or SHM full config
 # ---------------------
 function Show-FullConfig {
@@ -1058,31 +1099,3 @@ function Show-FullConfig {
 }
 Export-ModuleMember -Function Show-FullConfig
 
-
-# Get a list of resource groups belonging to a particular SRE
-# -----------------------------------------------------------
-function Get-SreResourceGroups {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "SHM ID")]
-        [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "SRE ID")]
-        [string]$sreId
-    )
-    return @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_${shmId}_SRE_${sreId}*" })
-}
-Export-ModuleMember -Function Get-SreResourceGroups
-
-
-# Get a list of resources belonging to a particular SRE
-# -----------------------------------------------------
-function Get-SreResources {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
-        [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID")]
-        [string]$sreId
-    )
-    $resourceGroups = Get-SreResourceGroups -shmId $shmId -sreId $sreId
-    return @(Get-AzResource | Where-Object { $resourceGroups.Contains($_.ResourceGroupName) })
-}
-Export-ModuleMember -Function Get-SreResources
