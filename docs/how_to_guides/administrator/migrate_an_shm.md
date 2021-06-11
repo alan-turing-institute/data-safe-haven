@@ -98,7 +98,7 @@ The following variables will be used during deploying
 
 + :warning: Do not attempt to add users to the old SHM after this point as they will not be synchronised to the Azure Active Directory!
 
-#### :pencil: Notes
+### :pencil: Notes
 
 + Full disconnection of the Azure Active Directory can take up to 72 hours but will typically take around one day
 
@@ -157,7 +157,6 @@ See the [Safe Haven Management](../../tutorial/deployment_tutorials/how-to-deplo
 ### :pencil: Notes
 
 + Do not configure the domain controller yet
-
 
 ## :zap: 9. Configure the new domain controllers
 
