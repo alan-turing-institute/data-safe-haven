@@ -973,11 +973,8 @@ function Get-SreConfig {
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{
-            subscription = $config.shm.dsvmImage.subscription
-            rg           = $config.shm.dsvmImage.gallery.rg
-            gallery      = $config.shm.dsvmImage.gallery.sig
-            type         = $sreConfigBase.computeVmImage.type
-            version      = $sreConfigBase.computeVmImage.version
+            type    = $sreConfigBase.computeVmImage.type
+            version = $sreConfigBase.computeVmImage.version
         }
         vmSizeDefault           = "Standard_D2s_v3"
         disks                   = [ordered]@{
@@ -991,7 +988,6 @@ function Get-SreConfig {
             }
         }
     }
-    $config.shm.Remove("dsvmImage")
 
     # Package repositories
     # --------------------

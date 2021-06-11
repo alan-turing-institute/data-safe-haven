@@ -92,6 +92,52 @@
         }
       }
     },
+    "dsvmImage": {
+      "bootdiagnostics": {
+        "accountName": "buildimgbootdiagscmtvwne",
+        "rg": "RG_SH_BOOT_DIAGNOSTICS"
+      },
+      "build": {
+        "nsg": {
+          "allowedIpAddresses": [
+            "193.60.220.240",
+            "193.60.220.253"
+          ],
+          "name": "NSG_IMAGE_BUILD"
+        },
+        "rg": "RG_SH_BUILD_CANDIDATES",
+        "subnet": {
+          "cidr": "10.48.0.0/24",
+          "name": "ImageBuildSubnet"
+        },
+        "vm": {
+          "diskSizeGb": 64,
+          "size": "Standard_F4s_v2"
+        },
+        "vnet": {
+          "cidr": "10.48.0.0/16",
+          "name": "VNET_IMAGE_BUILD"
+        }
+      },
+      "gallery": {
+        "imageMajorVersion": 0,
+        "imageMinorVersion": 3,
+        "rg": "RG_SH_IMAGE_GALLERY",
+        "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
+      },
+      "images": {
+        "rg": "RG_SH_IMAGE_STORAGE"
+      },
+      "keyVault": {
+        "name": "kv-shm-testb-dsvm-imgs",
+        "rg": "RG_SH_SECRETS"
+      },
+      "location": "uksouth",
+      "network": {
+        "rg": "RG_SH_NETWORKING"
+      },
+      "subscription": "[Prod] Safe Haven VM Images"
+    },
     "firewall": {
       "name": "FIREWALL-SHM-TESTB",
       "routeTableName": "ROUTE-TABLE-SHM-TESTB"
@@ -461,9 +507,6 @@
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
       "vmImage": {
-        "gallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-        "rg": "RG_SH_IMAGE_GALLERY",
-        "subscription": "[Prod] Safe Haven VM Images",
         "type": "Ubuntu",
         "version": "0.3.2021032200"
       },
