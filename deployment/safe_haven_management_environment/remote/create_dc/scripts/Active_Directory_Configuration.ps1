@@ -187,6 +187,7 @@ foreach ($ouName in ("<ou-research-users-name>",
     }
 }
 
+
 # Create security groups
 # ----------------------
 Write-Output "Creating security groups..."

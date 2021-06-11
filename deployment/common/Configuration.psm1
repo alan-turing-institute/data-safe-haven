@@ -61,7 +61,6 @@ function Get-ShmConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-CoreConfig -shmId $shmId
-    $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
     if ($shmConfigBase.name.Replace(" ", "").Length -gt 27) {
@@ -80,6 +79,9 @@ function Get-ShmConfig {
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
     }
+    # For normal usage this does not need to be user-configurable.
+    # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
+    $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
 
     # Set timezone and NTP configuration
     # Google is one of the few NTP services to provide an exhaustive, stable list of IP addresses.
