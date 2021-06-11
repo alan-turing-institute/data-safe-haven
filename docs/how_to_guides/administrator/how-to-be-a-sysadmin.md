@@ -631,7 +631,6 @@ On your **deployment machine**.
   + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
   + If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
-
 ### :fire: Tear down the SHM
 
 In order to tear down the SHM, use the following procedure (you may skip the tearing down of package mirrors, unless this is the specific thing you wanted to do):

@@ -11,8 +11,8 @@ We currently support three different end-user interfaces:
 + :bento: `Microsoft Remote Desktop` :sparkles: **recommended for Tier 2 or above production SREs** :sparkles:
   + [Tiers 2/3/4](how-to-deploy-sre-microsoft-rds.md)
 
-Deployment of an SRE using Apache Guacamole is more fully automated and cheaper than using Microsoft Remote Desktop.
-However, we have not yet run a penetration test for a Guacamole based SRE so would not yet recommend it's use in production environments at Tier 2 or above.
+:exclamation: Deployment of an SRE using Apache Guacamole is more fully automated and cheaper than using Microsoft Remote Desktop. However, we have not yet run a penetration test for a Guacamole-based SRE so we cannot currently recommend its use in production environments at Tier 2 or above.
+
 + [:seedling: Prerequisites](#seedling-prerequisites)
   + [:beginner: Software](#beginner-software)
   + [:key: VPN connection to the SHM VNet](#key-vpn-connection-to-the-shm-vnet)
