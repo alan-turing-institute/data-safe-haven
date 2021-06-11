@@ -64,7 +64,7 @@ for ($i = 0; $i -lt $nIterations; $i++) {
 if (-not $dryRun.IsPresent) {
     $shmResourceGroups = Get-ShmResourceGroups -shmConfig $config
     if ($shmResourceGroups) {
-        Add-LogMessage -Level Error "There are still $($shmResourceGroups.Length) undeleted resource(s) and group(s) remaining!"
+        Add-LogMessage -Level Error "There are still $($shmResourceGroups.Length) undeleted resource group(s) remaining!"
         foreach ($resourceGroup in $shmResourceGroups) {
             Add-LogMessage -Level Error "$($resourceGroup.ResourceGroupName)"
             Get-AzResource | `

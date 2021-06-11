@@ -74,7 +74,7 @@ for ($i = 0; $i -lt $nIterations; $i++) {
 if (-not $dryRun.IsPresent) {
     $sreResourceGroups = Get-SreResourceGroups -sreConfig $config
     if ($sreResourceGroups) {
-        Add-LogMessage -Level Error "There are still $($sreResourceGroups.Length) undeleted resource(s) and group(s) remaining!"
+        Add-LogMessage -Level Error "There are still $($sreResourceGroups.Length) undeleted resource group(s) remaining!"
         foreach ($resourceGroup in $sreResourceGroups) {
             Add-LogMessage -Level Error "$($resourceGroup.ResourceGroupName)"
             Get-AzResource | `
