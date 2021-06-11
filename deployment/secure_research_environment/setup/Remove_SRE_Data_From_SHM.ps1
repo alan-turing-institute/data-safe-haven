@@ -22,22 +22,22 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Look for resources in this subscription
 # ---------------------------------------
-$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
-$sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+$sreResourceGroups = Get-SreResourceGroups -sreConfig $config
+$sreResourceGroupNames = $sreResourceGroups | ForEach-Object { $_.ResourceGroupName }
+$sreResources = Get-AzResource | Where-Object { $sreResourceGroupNames.Contains($_.ResourceGroupName) }
 
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
-    Add-LogMessage -Level Warning "********************************************************************************"
-    Add-LogMessage -Level Warning "*** SRE $shmId $sreId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
-    Add-LogMessage -Level Warning "********************************************************************************"
-    Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
-    Add-LogMessage -Level Warning " "
-    Add-LogMessage -Level Warning "Resource Groups present in SRE subscription:"
-    Add-LogMessage -Level Warning "--------------------------------------------"
-    $sreResourceGroups
-    Add-LogMessage -Level Warning "Resources present in SRE subscription:"
-    Add-LogMessage -Level Warning "--------------------------------------"
-    $sreResources
+    Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription!"
+    Add-LogMessage -Level Warning "There are still $($sreResourceGroups.Length) undeleted resource group(s) remaining!"
+    $sreResourceGroups | ForEach-Object { Add-LogMessage -Level Warning "$($_.ResourceGroupName)" }
+    Add-LogMessage -Level Warning "There are still $($sreResources.Length) undeleted resource(s) remaining!"
+    $sreResources | ForEach-Object { Add-LogMessage -Level Warning "... $($_.Name) [$($_.ResourceType)]" }
+    $confirmation = Read-Host "Do you want to proceed with unregistering SRE $($config.sre.id) from SHM $($config.shm.id) (unsafe)? [y/n]"
+    while ($confirmation -ne "y") {
+        if ($confirmation -eq "n") { exit 0 }
+        $confirmation = Read-Host "Do you want to proceed with unregistering SRE $($config.sre.id) from SHM $($config.shm.id) (unsafe)? [y/n]"
+    }
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
@@ -45,7 +45,7 @@ if ($sreResources -or $sreResourceGroups) {
 
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
-    Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
+    Add-LogMessage -Level Info "Removing peerings between SRE and SHM virtual networks..."
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
     foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
         foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {

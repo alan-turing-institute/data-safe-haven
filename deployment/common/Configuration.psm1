@@ -78,6 +78,7 @@ function Get-ShmConfig {
         rgPrefix            = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
+        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_SH"
     }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
@@ -108,7 +109,7 @@ function Get-ShmConfig {
     $originalContext = Get-AzContext
     if ($originalContext) {
         $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
-        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
+        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "$($shm.vmImagesRgPrefix)_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
         if ($locations.Count -gt 1) {
             Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
         } elseif ($locations.Count -eq 1) {
@@ -126,11 +127,11 @@ function Get-ShmConfig {
         subscription    = $vmImagesSubscriptionName
         location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
-            rg          = "RG_SH_BOOT_DIAGNOSTICS"
+            rg          = "$($shm.vmImagesRgPrefix)_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build           = [ordered]@{
-            rg     = "RG_SH_BUILD_CANDIDATES"
+            rg     = "$($shm.vmImagesRgPrefix)_BUILD_CANDIDATES"
             nsg    = [ordered]@{
                 name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
@@ -151,20 +152,20 @@ function Get-ShmConfig {
             }
         }
         gallery         = [ordered]@{
-            rg                = "RG_SH_IMAGE_GALLERY"
+            rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
             sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
             imageMajorVersion = 0
             imageMinorVersion = 3
         }
         images          = [ordered]@{
-            rg = "RG_SH_IMAGE_STORAGE"
+            rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
         }
         keyVault        = [ordered]@{
-            rg   = "RG_SH_SECRETS"
+            rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
             name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
-            rg = "RG_SH_NETWORKING"
+            rg = "$($shm.vmImagesRgPrefix)_NETWORKING"
         }
     }
 
@@ -495,6 +496,27 @@ function Get-ShmConfig {
     return (ConvertTo-SortedHashtable -Sortable $shm)
 }
 Export-ModuleMember -Function Get-ShmConfig
+
+
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-ShmResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$shmConfig
+    )
+    $originalContext = Get-AzContext
+    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.dsvmImage -Key "rg"
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig -Key "rg" | Where-Object { -not $excludedResourceGroups.Contains($_) }
+    try {
+        $null = Set-AzContext -SubscriptionId $shmConfig.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-ShmResourceGroups
 
 
 # Add a new SRE configuration
@@ -973,11 +995,8 @@ function Get-SreConfig {
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{
-            subscription = $config.shm.dsvmImage.subscription
-            rg           = $config.shm.dsvmImage.gallery.rg
-            gallery      = $config.shm.dsvmImage.gallery.sig
-            type         = $sreConfigBase.computeVmImage.type
-            version      = $sreConfigBase.computeVmImage.version
+            type    = $sreConfigBase.computeVmImage.type
+            version = $sreConfigBase.computeVmImage.version
         }
         vmSizeDefault           = "Standard_D2s_v3"
         disks                   = [ordered]@{
@@ -991,7 +1010,6 @@ function Get-SreConfig {
             }
         }
     }
-    $config.shm.Remove("dsvmImage")
 
     # Package repositories
     # --------------------
@@ -1040,3 +1058,44 @@ function Get-SreConfig {
     return (ConvertTo-SortedHashtable -Sortable $config)
 }
 Export-ModuleMember -Function Get-SreConfig
+
+
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-SreResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$sreConfig
+    )
+    $originalContext = Get-AzContext
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $sreConfig.sre -Key "rg"
+    try {
+        $null = Set-AzContext -SubscriptionId $sreConfig.sre.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-SreResourceGroups
+
+
+# Show SRE or SHM full config
+# ---------------------
+function Show-FullConfig {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [string]$shmId,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
+        [string]$sreId
+    )
+    # Generate and return the full config for the SHM or SRE
+    if ($sreId -eq "") {
+        $config = Get-ShmConfig -shmId $shmId
+    } else {
+        $config = Get-SreConfig -configId "${shmId}${sreId}"
+    }
+    Write-Output ($config | ConvertTo-Json -Depth 10)
+}
+Export-ModuleMember -Function Show-FullConfig
+

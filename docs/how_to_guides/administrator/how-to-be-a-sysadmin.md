@@ -629,6 +629,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+  + If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
 ### :fire: Tear down the SHM
 
@@ -656,4 +657,5 @@ On your **deployment machine**.
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + For each SRE attached to the SHM, do the following:
   + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
+  + If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 + Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
