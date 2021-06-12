@@ -395,7 +395,7 @@ You should have already set up a non-privileged user account upon setting up the
 + Synchronise with Azure Active Directory by running following `Powershell` command on the SHM primary domain controller
 
 ```powershell
-PS> C:\Installation\Deploy_RDS_Environment.ps1
+PS> C:\Installation\Run_ADSync.ps1
 ```
 
 #### Ensure that your user account has MFA enabled
