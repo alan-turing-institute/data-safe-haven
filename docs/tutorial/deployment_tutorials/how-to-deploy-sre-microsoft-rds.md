@@ -446,9 +446,9 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 
 + Ensure that the user you have logged in with is a member of the `SG <SRE ID> Research Users` group on the domain controller
 
-## :snowflake: 7. Deploy web applications (GitLab and CodiMD)
+## :snowflake: 7. Deploy web applications (CoCalc, CodiMD and GitLab)
 
-![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
+![Powershell: fifty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=fifty%20minutes) at :file_folder: `./deployment/secure_research_environment/setup`
 
 ```powershell
 PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
@@ -457,19 +457,23 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
-### Test GitLab and CodiMD servers
+### Test CoCalc, CodiMD and GitLab servers
 
 + Launch a local web browser on your **deployment machine**  and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   + for example for `<safe haven domain> = testa.dsgroupdev.co.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.testa.dsgroupdev.co.uk/`
-  + Test `GitLab` by clicking on the `GitLab` app icon.
++ Test `CoCalc` by clicking on the `CoCalc` app icon.
   + You should receive an MFA request to your phone or authentication app.
-  + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
+  + Once you have approved the sign in, you should see a Chrome window with the CoCalc login page.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 + Test `CodiMD` by clicking on the `CodiMD` app icon.
   + You should receive an MFA request to your phone or authentication app.
   + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
-+ If you do not get an MFA prompt or you cannot connect to the `GitLab` and `CodiMD` servers, follow the **troubleshooting** instructions below.
++ Test `GitLab` by clicking on the `GitLab` app icon.
+  + You should receive an MFA request to your phone or authentication app.
+  + Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
+  + Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
++ If you do not get an MFA prompt or you cannot connect to one of the servers, follow the **troubleshooting** instructions below.
 
 #### :warning: Troubleshooting
 
