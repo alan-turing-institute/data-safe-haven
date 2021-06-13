@@ -13,6 +13,26 @@ setup_python () {
     assert_output --partial "${1}."
 }
 
+test_python_packages() {
+    setup_python "$1"
+    run python tests/test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
+    pyenv shell --unset
+}
+
+test_python_functionality() {
+    setup_python "$1"
+    run python tests/test_functionality_python.py 2>&1
+    assert_output --partial 'All functionality tests passed'
+    pyenv shell --unset
+}
+
+test_python_package_mirrors() {
+    setup_python "$1"
+    run bash tests/test_mirrors_pypi.sh 2>&1
+    assert_output --partial 'PyPI working OK'
+    pyenv shell --unset
+}
 
 # Julia
 # -----
@@ -31,65 +51,40 @@ setup_python () {
 
 # Python
 # ------
-# Test Python packages
-@test "Python 3.6 packages" {
-    setup_python '3.6'
-    run python tests/test_packages_installed_python.py 2> /dev/null
-    assert_output --regexp 'All [0-9]+ packages are installed'
-    pyenv shell --unset
+# Test Python 3.6
+@test "Python packages (3.6)" {
+    test_python_packages '3.6'
 }
-@test "Python 3.7 packages" {
-    setup_python '3.7'
-    run python tests/test_packages_installed_python.py 2> /dev/null
-    assert_output --regexp 'All [0-9]+ packages are installed'
-    pyenv shell --unset
-}
-@test "Python 3.8 packages" {
-    setup_python '3.8'
-    run python tests/test_packages_installed_python.py 2> /dev/null
-    assert_output --regexp 'All [0-9]+ packages are installed'
-    pyenv shell --unset
-}
-
 # Test Python functionality
-@test "Python 3.6 functionality" {
-    setup_python '3.6'
-    run python tests/test_functionality_python.py 2>&1
-    assert_output --partial 'All functionality tests passed'
-    pyenv shell --unset
+@test "Python functionality (3.6)" {
+    test_python_functionality '3.6'
 }
-@test "Python 3.7 functionality" {
-    setup_python '3.7'
-    run python tests/test_functionality_python.py 2>&1
-    assert_output --partial 'All functionality tests passed'
-    pyenv shell --unset
-}
-@test "Python 3.8 functionality" {
-    setup_python '3.8'
-    run python tests/test_functionality_python.py 2>&1
-    assert_output --partial 'All functionality tests passed'
-    pyenv shell --unset
+@test "Python package mirrors (3.6)" {
+    test_python_package_mirrors '3.6'
 }
 
-# Test Python package mirrors
-@test "Python 3.6 package mirrors" {
-    setup_python '3.6'
-    run bash tests/test_mirrors_pypi.sh 2>&1
-    assert_output --partial 'PyPI working OK'
-    pyenv shell --unset
+# Test Python 3.7
+@test "Python packages (3.7)" {
+    test_python_packages '3.7'
 }
-@test "Python 3.7 package mirrors" {
-    setup_python '3.7'
-    run bash tests/test_mirrors_pypi.sh 2>&1
-    assert_output --partial 'PyPI working OK'
-    pyenv shell --unset
+@test "Python functionality (3.7)" {
+    test_python_functionality '3.7'
 }
-@test "Python 3.8 package mirrors" {
-    setup_python '3.8'
-    run bash tests/test_mirrors_pypi.sh 2>&1
-    assert_output --partial 'PyPI working OK'
-    pyenv shell --unset
+@test "Python package mirrors (3.7)" {
+    test_python_package_mirrors '3.7'
 }
+
+# Test Python 3.8
+@test "Python packages (3.8)" {
+    test_python_packages '3.8'
+}
+@test "Python functionality (3.8)" {
+    test_python_functionality '3.8'
+}
+@test "Python package mirrors (3.8)" {
+    test_python_package_mirrors '3.8'
+}
+
 
 # R
 # -
