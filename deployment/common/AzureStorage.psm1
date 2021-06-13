@@ -23,16 +23,16 @@ function Deploy-SasAccessPolicy {
     )
     $Identifier = $ContainerName ? "container '$ContainerName'" : $ShareName ? "share '$ShareName'" : ""
     $PolicyName = "${identifier}${Name}".Replace(" ", "").Replace("'", "").ToLower()
-    Add-LogMessage -Level Info "Ensuring that SAS policy '$PolicyName' exists for $Identifier in '$($StorageAccount.StorageAccountName)..."
+    Add-LogMessage -Level Info "Ensuring that SAS policy '$PolicyName' exists for $Identifier in '$($StorageAccount.StorageAccountName)'..."
     if ($ContainerName) {
         $policy = Get-AzStorageContainerStoredAccessPolicy -Container $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     } elseif ($ShareName) {
         $policy = Get-AzStorageShareStoredAccessPolicy -ShareName $ContainerName -Policy $PolicyName -Context $StorageAccount.Context -ErrorAction SilentlyContinue
     }
     if ($policy) {
-        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+        Add-LogMessage -Level InfoSuccess "Found existing SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)'"
     } else {
-        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+        Add-LogMessage -Level Info "[ ] Creating new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)'"
         $StartTime = (Get-Date).AddMinutes(-1) # allow for possible clock-skew between different systems
         $ExpiryTime = $StartTime.AddYears($ValidityYears)
         $success = $false
@@ -46,9 +46,9 @@ function Deploy-SasAccessPolicy {
             $success = $?
         }
         if ($success) {
-            Add-LogMessage -Level Success "Created new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)"
+            Add-LogMessage -Level Success "Created new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)!"
+            Add-LogMessage -Level Fatal "Failed to create new SAS policy '$PolicyName' for $Identifier in '$($StorageAccount.StorageAccountName)'!"
         }
     }
     return $policy
@@ -185,7 +185,7 @@ function Deploy-StorageContainer {
         Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         try {
             $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
-            Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)"
+            Add-LogMessage -Level Success "Created storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         } catch {
             # Sometimes the storage container exists but Powershell does not recognise this until it attempts to create it
             $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -218,7 +218,7 @@ function Deploy-StorageShare {
         Add-LogMessage -Level Info "[ ] Creating storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         $storageShare = New-AzStorageShare -Name $Name -Context $StorageAccount.Context
         if ($?) {
-            Add-LogMessage -Level Success "Created storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)"
+            Add-LogMessage -Level Success "Created storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
@@ -263,7 +263,7 @@ function Deploy-StorageNfsShare {
         } | Receive-Job -Wait -AutoRemoveJob
         if ($success) {
             $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
-            Add-LogMessage -Level Success "Created NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)"
+            Add-LogMessage -Level Success "Created NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
