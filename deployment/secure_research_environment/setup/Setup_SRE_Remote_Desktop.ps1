@@ -64,7 +64,7 @@ $null = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountN
 # Ensure that SRE resource group and storage accounts exist
 # ---------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
-$sreStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName$config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
+$sreStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
 
 # Get SHM storage account
 # -----------------------
