@@ -265,7 +265,7 @@ if ($doInstall) {
         }
         $scriptType = "UnixShell"
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName | Remove-AzVMSecret
         $scriptParams = @{
             rdsFqdn         = $additionalFdqn
             certThumbPrint  = $kvCertificate.Thumbprint
