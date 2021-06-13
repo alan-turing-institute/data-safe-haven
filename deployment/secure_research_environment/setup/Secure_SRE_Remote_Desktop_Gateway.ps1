@@ -3,8 +3,6 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
-    [string]$emailAddress = "dsgbuild@turing.ac.uk",
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [switch]$dryRun,
     [Parameter(Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
@@ -40,7 +38,7 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Configure_SRE_RDS_CA
 
 # Update the SSL certificates on the RDS gateway
 # ----------------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_SSL_Certificate.ps1')" -shmId $shmId -sreId $sreId -emailAddress $emailAddress -dryRun:$dryRun -forceInstall:$forceInstall }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_SSL_Certificate.ps1')" -shmId $shmId -sreId $sreId -dryRun:$dryRun -forceInstall:$forceInstall }
 
 
 # Switch back to original subscription
