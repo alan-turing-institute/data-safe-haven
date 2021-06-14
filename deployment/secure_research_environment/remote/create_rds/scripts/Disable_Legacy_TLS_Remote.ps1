@@ -64,16 +64,32 @@ $recommended = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.
 
 # ... however we also need at least one cipher from the 'secure' list since none
 # of the 'recommended' ciphers are currently supported by the Microsoft Remote
-# Desktop webclient. We choose the three RSA + AES + CBC + SHA256 algorithms.
+# Desktop webclient. We choose the ones which are recommended by SSL labs:
+# (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
 # ------------------------------------------------------------------------------
+$ssllabsRecommended = @(
+    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+    "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+    "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+    "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+    "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+    "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+    "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+    "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+    "TLS_DHE_RSA_WITH_AES_256_CBC_SHA25"
+)
 $response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
-# Note that we overwrite gnutls_name in the Values hashtable with the `Name` property for later use
-$secure = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Value.gnutls_name = $_.PSObject.Properties.Name; $_.PSObject.Properties.Value } `
-                                 | Where-Object { $_.kex_algorithm -eq "ECDHE" } `
-                                 | Where-Object { $_.auth_algorithm -eq "RSA" } `
-                                 | Where-Object { $_.enc_algorithm -like "AES * CBC" } `
-                                 | Where-Object { $_.hash_algorithm -eq "SHA256" } `
-                                 | ForEach-Object { $_.gnutls_name }
+$secure = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Name } | Where-Object { $ssllabsRecommended.Contains($_) }
+
 
 # Construct allowed/disallowed lists
 # ----------------------------------
