@@ -1,3 +1,15 @@
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# and remote execution will stall waiting for the non-present user to enter the missing parameter on the
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
+# C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
+# job, but this does not seem to have an immediate effect
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
+param(
+    [Parameter(Mandatory = $false, HelpMessage = "Base64-encoded list of TLS ciphers")]
+    [string]$allowedCiphersB64
+)
+
+
 # Throwing an exception in a remote script means we have to wait 90 minutes for the remote call to time out
 # Accordingly we don't validate any parameters or make them mandatory
 # In reality, all three parameters are required and both 'Role' and 'Action' will only accept certain values
@@ -56,44 +68,10 @@ Set-Protocol -Protocol "TLS 1.0" -Action Disable
 Set-Protocol -Protocol "TLS 1.1" -Action Disable
 
 
-# Get all 'recommended' ciphers from ciphersuite.info
-# ---------------------------------------------------
-$response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/recommended -ErrorAction Stop
-$recommended = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Name }
-
-
-# ... however we also need at least one cipher from the 'secure' list since none
-# of the 'recommended' ciphers are currently supported by the Microsoft Remote
-# Desktop webclient. We choose the ones which are recommended by SSL labs:
-# (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
-# ------------------------------------------------------------------------------
-$ssllabsRecommended = @(
-    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-    "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-    "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-    "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-    "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-    "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-    "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-    "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-    "TLS_DHE_RSA_WITH_AES_256_CBC_SHA25"
-)
-$response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
-$secure = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Name } | Where-Object { $ssllabsRecommended.Contains($_) }
-
-
-# Construct allowed/disallowed lists
-# ----------------------------------
-$allowedCiphers = @($secure) + @($recommended)
+# Construct allowed/disallowed cipher lists
+# - unserialise JSON and read into PSCustomObject
+# -----------------------------------------------
+$allowedCiphers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($allowedCiphersB64)) | ConvertFrom-Json
 $disallowedCiphers = Get-TlsCipherSuite | ForEach-Object { $_.Name } | Where-Object { -not $allowedCiphers.Contains($_) }
 
 
