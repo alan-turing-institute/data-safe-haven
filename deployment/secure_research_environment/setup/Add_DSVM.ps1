@@ -277,7 +277,9 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_
 
 # Update Guacamole dashboard to include this new VM
 # -------------------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_Guacamole_Dashboard.ps1')" -shmId $shmId -sreId $sreId }
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Update_SRE_Guacamole_Dashboard.ps1')" -shmId $shmId -sreId $sreId }
+}
 
 
 # Switch back to original subscription
