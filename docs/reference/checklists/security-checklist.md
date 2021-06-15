@@ -149,11 +149,10 @@ SREs in the same SHM are still isolated from one another.
 
 + Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + Connect to the SHM VPN
-  + Connect to the SHM DC
-  + Connect to the SHM NPS
+  + Attempt to connect to the SHM DC and SHM NPS
   + :white_check_mark: **Verify:** Connection works
   + Disconnect from the SHM VPN
-  + Attempt to connect to the SHM DC and NPS again
+  + Attempt to connect to the SHM DC and SHM NPS
   + :white_check_mark: **Verify:** Connection fails
 + Fail to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
@@ -164,17 +163,20 @@ SREs in the same SHM are still isolated from one another.
       ![dsvm_no_internet](../../images/security_checklist/dsvm_no_internet.png)
     </details>
   + <details>
-      <summary>:camera: <b>Verify:</b> that when you "curl" a website, you do not receive a response</summary>
+      <summary>:camera: <b>Verify:</b> that you cannot access a website using curl</summary>
 
       ![dsvm_no_curl](../../images/security_checklist/dsvm_no_curl.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> that you cannot get the IP address for a website using nslookup</summary>
+
+      ![dsvm_no_nslookup](../../images/security_checklist/dsvm_no_nslookup.png)
     </details>
 + Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
   + Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
   + Connect to SRE A as the **SRE standard user** by using the web client.
-  + Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
-  + Right click on the PuTTY terminal and click `New Session...`
-  + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
-  + Click `Open`
+  + Log in to the DSVM remote desktop:
+  + Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for a DSVM in SRE B (you can find this in the Azure portal)
   + <details>
       <summary>:camera: <b>Verify:</b> Connection fails </summary>
 
