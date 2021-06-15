@@ -48,7 +48,7 @@ The following users will be needed for this checklist
 + **SRE standard user** who is a member of the **SRE A** research users group
   + Create a new user **without** MFA
     + Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
-    + Visit https://aka.ms/mfasetup in an incognito browser
+    + Visit https://aka.ms/sspr in an incognito browser
     + Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
 + **System administrator** who has `Contributor` permissions (or higher) on the underlying Azure subscription
 + **Data provider** who has no accounts on the Safe Haven system
@@ -68,24 +68,35 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 ### Verify by:
 
 + Check that the **SRE standard user** cannot access the apps
-  + Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + Attempt to login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + <details>
-      <summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary>
+      <summary>:camera: <b>Verify before adding to group:</b> Guacamole: User is prompted to setup MFA</summary>
 
-      ![msrds_dashboard_no_apps](../../images/security_checklist/msrds_dashboard_no_apps.png)
+      ![login_no_mfa_guacamole](../../images/security_checklist/login_no_mfa_guacamole.png)
     </details>
   + <details>
-      <summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary>
+      <summary>:camera: <b>Verify before adding to group:</b> Microsoft Remote Desktop: Login works but apps cannot be viewed</summary>
+
+      ![login_no_mfa_msrds](../../images/security_checklist/login_no_mfa_msrds.png)
+    </details>
++ Check that adding the **SRE standard user** to the relevant `Research Users` group under `Safe Haven Security Groups` on the domain controller does not give them access
+  + <details>
+      <summary>:camera: <b>Verify after adding to group:</b> Guacamole: User is prompted to setup MFA</summary>
+
+      ![login_no_mfa_guacamole](../../images/security_checklist/login_no_mfa_guacamole.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify after adding to group:</b> Microsoft Remote Desktop: Login works and apps can be viewed</summary>
 
       ![msrds_dashboard_with_apps](../../images/security_checklist/msrds_dashboard_with_apps.png)
     </details>
-+ <details>
-    <summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary>
+  + <details>
+    <summary>:camera: <b>Verify after adding to group:</b> Microsoft Remote Desktop: attempt to login to DSVM Main (Desktop) fails</summary>
 
-    ![msrds_failed_to_connect](../../images/security_checklist/msrds_failed_to_connect.png)
-  </details>
+      ![msrds_failed_to_connect](../../images/security_checklist/msrds_failed_to_connect.png)
+    </details>
 + Check that the **SRE standard user** is able to successfully set up MFA
-  + Visit https://aka.ms/mfasetup again
+  + Visit https://aka.ms/mfasetup in an incognito browser
   + Login as the user you set up
   + :white_check_mark: **Verify:** user guided to set up MFA
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
@@ -94,14 +105,31 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
       ![aad_additional_security_verification](../../images/security_checklist/aad_additional_security_verification.png)
     </details>
-+ Check that the **SRE standard user** can now access the apps
++ Check that the **SRE standard user** can authenticate with MFA
+  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
   + <details>
-      <summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary>
+      <summary>:camera: <b>Verify:</b> Guacamole: respond to the MFA prompt</summary>
 
       ![aad_mfa_approve_signin_request](../../images/security_checklist/aad_mfa_approve_signin_request.png)
     </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> Microsoft Remote Desktop: attempt to log in to DSVM Main (Desktop) and respond to the MFA prompt</summary>
+
+      ![aad_mfa_approve_signin_request](../../images/security_checklist/aad_mfa_approve_signin_request.png)
+    </details>
++ Check that the **SRE standard user** can access the DSVM desktop
   + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
+  + <details>
+      <summary>:camera: <b>Verify:</b> Guacamole: connect to <i>Desktop: Ubuntu0</i> </summary>
+
+      ![dsvm_desktop](../../images/security_checklist/dsvm_desktop.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> Microsoft Remote Desktop: connect to <i>DSVM Main (Desktop)</i></summary>
+
+      ![dsvm_desktop](../../images/security_checklist/dsvm_desktop.png)
+    </details>
+
 
 ## 2. Isolated Network
 
