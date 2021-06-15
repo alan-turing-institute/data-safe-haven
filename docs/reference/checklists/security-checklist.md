@@ -213,19 +213,11 @@ Network rules for the higher tier Environments can permit access only from Restr
 
 For tier 2:
 
-+ One can connect regardless of device as long as one has the correct VPN and credentials
-  + Using a personal device, connect to the environment using the correct VPN and credentials
++ One can connect regardless of device as long as one has an allowlisted IP address and credentials
+  + Using a personal device, connect to the environment using an allowlisted IP address and credentials
   + :white_check_mark: **Verify:** Connection succeeds
-  + Using a managed device, connect to the environment using the correct VPN and credentials.
+  + Using a managed device, connect to the environment using an allowlisted IP address and credentials.
   + :white_check_mark: **Verify:** Connection succeeds
-+ There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
-  + Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  + <details>
-      <summary>:camera: <b>Verify:</b> The RDS NSG has network rules allowing <b>inbound</b> access from the IP address of the tier 2 SRE </summary>
-
-      ![nsg_inbound_access](../../images/security_checklist/nsg_inbound_access.png)
-    </details>
-  + :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
 
@@ -237,6 +229,19 @@ For tier 3:
   + :white_check_mark: **Verify:** Connection fails
   + Using a managed device, attempt to connect to the environment using the correct VPN and credentials
   + :white_check_mark: **Verify:** Connection succeeds
+
+For tiers 2 and above:
+
++ There are are network rules permitting access only from allowlisted IP addresses
+  + Navigate to the NSG for this SRE in the portal:
+    + *Microsoft Remote Desktop:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
+    + *Guacamole:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+  + <details>
+      <summary>:camera: <b>Verify:</b> The NSG has network rules allowing <b>inbound</b> access from allowlisted IP addresses only</summary>
+
+      ![nsg_inbound_access](../../images/security_checklist/nsg_inbound_access.png)
+    </details>
+  + :white_check_mark: **Verify:** All other NSGs (apart from `NSG_SHM_<SHM ID>_SRE_<SRE ID>_DEPLOYMENT`) have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network (apart from the Admin VPN in some cases).
 
 ## 4. Physical security
 
