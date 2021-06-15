@@ -68,7 +68,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 ### Verify by:
 
 + Check that the **SRE standard user** cannot access the apps
-  + Attempt to login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + Attempt to login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
   + <details>
       <summary>:camera: <b>Verify before adding to group:</b> Guacamole: User is prompted to setup MFA</summary>
 
@@ -106,7 +106,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
       ![aad_additional_security_verification](../../images/security_checklist/aad_additional_security_verification.png)
     </details>
 + Check that the **SRE standard user** can authenticate with MFA
-  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
   + <details>
       <summary>:camera: <b>Verify:</b> Guacamole: respond to the MFA prompt</summary>
 
@@ -118,7 +118,7 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
       ![aad_mfa_approve_signin_request](../../images/security_checklist/aad_mfa_approve_signin_request.png)
     </details>
 + Check that the **SRE standard user** can access the DSVM desktop
-  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
   + <details>
       <summary>:camera: <b>Verify:</b> Guacamole: connect to <i>Desktop: Ubuntu0</i> </summary>
 
@@ -280,15 +280,21 @@ User can connect via remote desktop but cannot connect through other means such 
 
 ### Verify by:
 
-+ Unable to connect as the **SRE standard user** to the DSVM via SSH
-  + Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-  + Attempt ssh login with `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)
++ Unable to connect as the **SRE standard user** to the remote desktop server via SSH
+  + Attempt `ssh` login with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`)
   + <details>
-      <summary>:camera: <b>Verify:</b> ssh login fails </summary>
+      <summary>:camera: <b>Verify:</b> ssh login by fully-qualified domain name fails </summary>
 
-      ![dsvm_no_ssh](../../images/security_checklist/dsvm_no_ssh.png)
+      ![dsvm_no_ssh_by_fqdn](../../images/security_checklist/dsvm_no_ssh_by_fqdn.png)
     </details>
-  + :white_check_mark: **Verify:** The RDS server (`RDG-SRE-<SRE ID>`) is the only resource with a public IP address
+  + Find the public IP address for the remote desktop server VM (*Microsoft Remote Desktop:* `RDG-SRE-<SRE ID>`; *Guacamole*: `GUACAMOLE-SRE-<SRE ID>`) by searching for this VM in the portal, then looking at `Connect` under `Settings`.
+  + Attempt `ssh` login with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
+  + <details>
+      <summary>:camera: <b>Verify:</b> ssh login by public IP address fails </summary>
+
+      ![dsvm_no_ssh_by_ip](../../images/security_checklist/dsvm_no_ssh_by_ip.png)
+    </details>
++ :white_check_mark: **Verify:** The remote desktop server (`RDG-SRE-<SRE ID>`) is the only SRE resource with a public IP address
 
 ## 6. Copy-and-paste
 
