@@ -130,7 +130,6 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
       ![dsvm_desktop](../../images/security_checklist/dsvm_desktop.png)
     </details>
 
-
 ## 2. Isolated Network
 
 ### We claim:
@@ -213,10 +212,10 @@ Network rules for the higher tier Environments can permit access only from Restr
 
 For tier 2:
 
-+ One can connect regardless of device as long as one has an allowlisted IP address and credentials
-  + Using a personal device, connect to the environment using an allowlisted IP address and credentials
++ One can connect regardless of device as long as one has an allow-listed IP address and credentials
+  + Using a personal device, connect to the environment using an allow-listed IP address and credentials
   + :white_check_mark: **Verify:** Connection succeeds
-  + Using a managed device, connect to the environment using an allowlisted IP address and credentials.
+  + Using a managed device, connect to the environment using an allow-listed IP address and credentials.
   + :white_check_mark: **Verify:** Connection succeeds
 
 For tier 3:
@@ -232,12 +231,12 @@ For tier 3:
 
 For tiers 2 and above:
 
-+ There are are network rules permitting access only from allowlisted IP addresses
++ There are are network rules permitting access only from allow-listed IP addresses
   + Navigate to the NSG for this SRE in the portal:
     + *Microsoft Remote Desktop:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
     + *Guacamole:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
   + <details>
-      <summary>:camera: <b>Verify:</b> The NSG has network rules allowing <b>inbound</b> access from allowlisted IP addresses only</summary>
+      <summary>:camera: <b>Verify:</b> The NSG has network rules allowing <b>inbound</b> access from allow-listed IP addresses only</summary>
 
       ![nsg_inbound_access](../../images/security_checklist/nsg_inbound_access.png)
     </details>
@@ -316,10 +315,10 @@ One cannot copy something from outside the network and paste it into the network
   + Write some next in the note pad or terminal of the DSVM and copy it
   + Attempt to copy the text externally to deployment device (e.g. into URL of browser)
   + :white_check_mark: **Verify:** paste fails
-+ Users cannot copy between VMs inside the network
++ Users can copy between VMs inside the network
   + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
-  + Connect to another DSVM (for example, the SSH connection) via the remote desktop web client (as a second tab)
+  + In another tab or browser connect to a different DSVM (or to the same VM via the SSH connection) using the remote desktop web client
   + Attempt to paste the text to it.
   + :white_check_mark: **Verify:** paste succeeds
 
@@ -327,7 +326,7 @@ One cannot copy something from outside the network and paste it into the network
 
 ### We claim:
 
-All data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
+All data transfer to the Turing should be via our secure data transfer process, which gives the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
 
 Data is stored in a holding zone until approved to be added for user access.
 
@@ -434,7 +433,7 @@ Tier 3: User can only access approved packages from PyPI/CRAN
 
 Tier 2: The user can access any package from our mirrors. They can freely use these packages without restriction.
 
-Tier 3: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowlist.
+Tier 3: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
 
 ### Verify by:
 
@@ -452,10 +451,10 @@ Tier 2:
 
 Tier 3:
 
-+ Download packages on the allowlist (see the lists in `environment_configs/package_lists`)
++ Download packages on the allowed list (see the lists in `environment_configs/package_lists`)
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
-  + Attempt to install a package on the allowlist that is not included out-of-the-box (for example, try `pip install aero-calc`)
-  + Then attempt to download a package that is not included in the allowlist (for example, try `pip install botocore`)
+  + Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
+  + Then attempt to download a package that is not included in the allowed list (for example, try `pip install botocore`)
   + <details>
       <summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary>
 
