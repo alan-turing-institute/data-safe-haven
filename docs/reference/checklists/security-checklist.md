@@ -247,7 +247,7 @@ For tiers 2 and above:
 
 ### We claim:
 
-At tier 3 access is limited to certain research office spaces
+At tier 3 access is limited to certain secure physical spaces
 
 ### Which means:
 
@@ -259,14 +259,14 @@ Firewall rules for the Environments can permit access only from Restricted netwo
 
 For tier 3:
 
-+ Connection outside of the research office space is not possible.
++ Connection from outside the secure physical space is not possible.
   + Attempt to connect to the tier 3 SRE web client from home using a managed device and the correct VPN connection and credentials
   + :white_check_mark: **Verify:** connection fails
-+ Connection from within the research office space is possible.
++ Connection from within the secure physical space is possible.
   + Attempt to connect from research office using a managed device and the correct VPN connection and credentials
   + :white_check_mark: **Verify:** connection succeeds
 + :white_check_mark: **Verify:** Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
-+ :white_check_mark: **Verify:** Physically confirm that measures such as screen adaptions or desk partitions are present.
++ :white_check_mark: **Verify:** Confirm in person that physical measures such as screen adaptions or desk partitions are present.
 
 ## 5. Remote connections
 
