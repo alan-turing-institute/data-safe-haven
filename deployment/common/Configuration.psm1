@@ -583,7 +583,7 @@ function Get-SreConfig {
 
     # Domain config
     # -------------
-    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)"
+    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)".ToLower()
     $config.sre.domain = [ordered]@{
         dn          = "DC=$($sreDomain.Replace('.',',DC='))"
         fqdn        = $sreDomain
