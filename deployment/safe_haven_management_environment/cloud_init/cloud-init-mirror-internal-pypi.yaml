@@ -1,4 +1,4 @@
-# cloud-config
+#cloud-config
 
 apt:
   # Preserves the existing /etc/apt/sources.list

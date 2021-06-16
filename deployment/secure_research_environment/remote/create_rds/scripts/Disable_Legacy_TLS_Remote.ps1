@@ -1,3 +1,15 @@
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# and remote execution will stall waiting for the non-present user to enter the missing parameter on the
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
+# C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
+# job, but this does not seem to have an immediate effect
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
+param(
+    [Parameter(Mandatory = $false, HelpMessage = "Base64-encoded list of TLS ciphers")]
+    [string]$allowedCiphersB64
+)
+
+
 # Throwing an exception in a remote script means we have to wait 90 minutes for the remote call to time out
 # Accordingly we don't validate any parameters or make them mandatory
 # In reality, all three parameters are required and both 'Role' and 'Action' will only accept certain values
@@ -56,28 +68,10 @@ Set-Protocol -Protocol "TLS 1.0" -Action Disable
 Set-Protocol -Protocol "TLS 1.1" -Action Disable
 
 
-# Get all 'recommended' ciphers from ciphersuite.info
-# ---------------------------------------------------
-$response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/recommended -ErrorAction Stop
-$recommended = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Name }
-
-
-# ... however we also need at least one cipher from the 'secure' list since none
-# of the 'recommended' ciphers are currently supported by the Microsoft Remote
-# Desktop webclient. We choose the three RSA + AES + CBC + SHA256 algorithms.
-# ------------------------------------------------------------------------------
-$response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
-# Note that we overwrite gnutls_name in the Values hashtable with the `Name` property for later use
-$secure = $response.ciphersuites | ForEach-Object { $_.PSObject.Properties.Value.gnutls_name = $_.PSObject.Properties.Name; $_.PSObject.Properties.Value } `
-                                 | Where-Object { $_.kex_algorithm -eq "ECDHE" } `
-                                 | Where-Object { $_.auth_algorithm -eq "RSA" } `
-                                 | Where-Object { $_.enc_algorithm -like "AES * CBC" } `
-                                 | Where-Object { $_.hash_algorithm -eq "SHA256" } `
-                                 | ForEach-Object { $_.gnutls_name }
-
-# Construct allowed/disallowed lists
-# ----------------------------------
-$allowedCiphers = @($secure) + @($recommended)
+# Construct allowed/disallowed cipher lists
+# - unserialise JSON and read into PSCustomObject
+# -----------------------------------------------
+$allowedCiphers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($allowedCiphersB64)) | ConvertFrom-Json
 $disallowedCiphers = Get-TlsCipherSuite | ForEach-Object { $_.Name } | Where-Object { -not $allowedCiphers.Contains($_) }
 
 

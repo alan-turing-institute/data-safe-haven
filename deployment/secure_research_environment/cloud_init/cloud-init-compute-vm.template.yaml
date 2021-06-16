@@ -1,4 +1,6 @@
-# cloud-config
+#cloud-config
+
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
 package_upgrade: false
 
 disk_setup:

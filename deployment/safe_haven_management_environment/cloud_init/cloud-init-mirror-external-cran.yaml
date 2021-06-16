@@ -1,4 +1,4 @@
-# cloud-config
+#cloud-config
 
 apt:
   # Preserves the existing /etc/apt/sources.list
@@ -75,7 +75,6 @@ write_files:
       else
           # Download all allowed packages (which might be none)
           ALLOWED_PACKAGES=$(grep -v "^#" /home/mirrordaemon/package_allowlist.txt)
-          echo "" > /datadrive/mirrordaemon/pull_from_internet.log
           # Note that there is a server-side timeout (30s) which causes problems for complicated commands
           # By splitting into subdirectories we reduce the complexity of each rsync command
           # Additionally, using an initial '/' anchors the search path at the directory root, speeding up calculation time

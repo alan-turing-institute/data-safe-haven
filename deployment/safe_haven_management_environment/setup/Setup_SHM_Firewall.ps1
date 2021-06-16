@@ -7,6 +7,7 @@ Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -32,7 +33,7 @@ $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $conf
 # Enable logging for this firewall
 # --------------------------------
 Add-LogMessage -Level Info "Enable logging for this firewall"
-$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
+$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 if ($?) {
     Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"

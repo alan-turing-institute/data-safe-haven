@@ -48,7 +48,7 @@ The following users will be needed for this checklist
 + **SRE standard user** who is a member of the **SRE A** research users group
   + Create a new user **without** MFA
     + Following the [SRE deployment guide](../../tutorial/deployment_tutorials/how-to-deploy-sre.md#optional-set-up-a-non-privileged-user-account) for setting up a non privileged user account, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
-    + Visit https://aka.ms/mfasetup in an incognito browser
+    + Visit https://aka.ms/sspr in an incognito browser
     + Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
 + **System administrator** who has `Contributor` permissions (or higher) on the underlying Azure subscription
 + **Data provider** who has no accounts on the Safe Haven system
@@ -68,24 +68,35 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 ### Verify by:
 
 + Check that the **SRE standard user** cannot access the apps
-  + Login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
+  + Attempt to login to the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
   + <details>
-      <summary>:camera: <b>Verify before adding to group:</b> Login works but apps cannot be viewed</summary>
+      <summary>:camera: <b>Verify before adding to group:</b> Guacamole: User is prompted to setup MFA</summary>
 
-      ![msrds_dashboard_no_apps](../../images/security_checklist/msrds_dashboard_no_apps.png)
+      ![login_no_mfa_guacamole](../../images/security_checklist/login_no_mfa_guacamole.png)
     </details>
   + <details>
-      <summary>:camera: <b>Verify after adding to group:</b> Login again and check that apps can now be viewed</summary>
+      <summary>:camera: <b>Verify before adding to group:</b> Microsoft Remote Desktop: Login works but apps cannot be viewed</summary>
+
+      ![login_no_mfa_msrds](../../images/security_checklist/login_no_mfa_msrds.png)
+    </details>
++ Check that adding the **SRE standard user** to the relevant `Research Users` group under `Safe Haven Security Groups` on the domain controller does not give them access
+  + <details>
+      <summary>:camera: <b>Verify after adding to group:</b> Guacamole: User is prompted to setup MFA</summary>
+
+      ![login_no_mfa_guacamole](../../images/security_checklist/login_no_mfa_guacamole.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify after adding to group:</b> Microsoft Remote Desktop: Login works and apps can be viewed</summary>
 
       ![msrds_dashboard_with_apps](../../images/security_checklist/msrds_dashboard_with_apps.png)
     </details>
-+ <details>
-    <summary>:camera: <b>Verify:</b> attempt to login to DSVM Main (Desktop) fails</summary>
+  + <details>
+    <summary>:camera: <b>Verify after adding to group:</b> Microsoft Remote Desktop: attempt to login to DSVM Main (Desktop) fails</summary>
 
-    ![msrds_failed_to_connect](../../images/security_checklist/msrds_failed_to_connect.png)
-  </details>
+      ![msrds_failed_to_connect](../../images/security_checklist/msrds_failed_to_connect.png)
+    </details>
 + Check that the **SRE standard user** is able to successfully set up MFA
-  + Visit https://aka.ms/mfasetup again
+  + Visit https://aka.ms/mfasetup in an incognito browser
   + Login as the user you set up
   + :white_check_mark: **Verify:** user guided to set up MFA
   + Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
@@ -94,14 +105,30 @@ Users must set up MFA before accessing the secure analysis environment. Users ca
 
       ![aad_additional_security_verification](../../images/security_checklist/aad_additional_security_verification.png)
     </details>
-+ Check that the **SRE standard user** can now access the apps
++ Check that the **SRE standard user** can authenticate with MFA
+  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
   + <details>
-      <summary>:camera: <b>Verify:</b> login to the portal using the user account and check that MFA requested</summary>
+      <summary>:camera: <b>Verify:</b> Guacamole: respond to the MFA prompt</summary>
 
       ![aad_mfa_approve_signin_request](../../images/security_checklist/aad_mfa_approve_signin_request.png)
     </details>
-  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.dsgroupdev.co.uk/`)
-  + :white_check_mark: **Verify:** that MFA is requested on first attempt to log in to DSVM Main (Desktop)
+  + <details>
+      <summary>:camera: <b>Verify:</b> Microsoft Remote Desktop: attempt to log in to DSVM Main (Desktop) and respond to the MFA prompt</summary>
+
+      ![aad_mfa_approve_signin_request](../../images/security_checklist/aad_mfa_approve_signin_request.png)
+    </details>
++ Check that the **SRE standard user** can access the DSVM desktop
+  + Login into the remote desktop web client (`https://<SRE ID>.<safe haven domain> (eg. https://sandbox.turingsafehaven.ac.uk/`)
+  + <details>
+      <summary>:camera: <b>Verify:</b> Guacamole: connect to <i>Desktop: Ubuntu0</i> </summary>
+
+      ![dsvm_desktop](../../images/security_checklist/dsvm_desktop.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> Microsoft Remote Desktop: connect to <i>DSVM Main (Desktop)</i></summary>
+
+      ![dsvm_desktop](../../images/security_checklist/dsvm_desktop.png)
+    </details>
 
 ## 2. Isolated Network
 
@@ -121,11 +148,10 @@ SREs in the same SHM are still isolated from one another.
 
 + Connect to the SHM DC, NPS, Data server if and only if connected to the SHM VPN:
   + Connect to the SHM VPN
-  + Connect to the SHM DC
-  + Connect to the SHM NPS
+  + Attempt to connect to the SHM DC and SHM NPS
   + :white_check_mark: **Verify:** Connection works
   + Disconnect from the SHM VPN
-  + Attempt to connect to the SHM DC and NPS again
+  + Attempt to connect to the SHM DC and SHM NPS
   + :white_check_mark: **Verify:** Connection fails
 + Fail to connect to the internet from within a DSVM on the SRE network.
   + Login as a user to a DSVM from within the SRE by using the web client.
@@ -136,17 +162,20 @@ SREs in the same SHM are still isolated from one another.
       ![dsvm_no_internet](../../images/security_checklist/dsvm_no_internet.png)
     </details>
   + <details>
-      <summary>:camera: <b>Verify:</b> that when you "curl" a website, you do not receive a response</summary>
+      <summary>:camera: <b>Verify:</b> that you cannot access a website using curl</summary>
 
       ![dsvm_no_curl](../../images/security_checklist/dsvm_no_curl.png)
+    </details>
+  + <details>
+      <summary>:camera: <b>Verify:</b> that you cannot get the IP address for a website using nslookup</summary>
+
+      ![dsvm_no_nslookup](../../images/security_checklist/dsvm_no_nslookup.png)
     </details>
 + Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
   + Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
   + Connect to SRE A as the **SRE standard user** by using the web client.
-  + Click on `DSVM Main (SSH)` from the `All Resources` tab of the web client window you have open for SRE A
-  + Right click on the PuTTY terminal and click `New Session...`
-  + Enter the IP address for SRE B (you can find this by clicking `DSVM Main (SSH)` in the SRE B window you have open)
-  + Click `Open`
+  + Log in to the DSVM remote desktop:
+  + Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for a DSVM in SRE B (you can find this in the Azure portal)
   + <details>
       <summary>:camera: <b>Verify:</b> Connection fails </summary>
 
@@ -183,19 +212,11 @@ Network rules for the higher tier Environments can permit access only from Restr
 
 For tier 2:
 
-+ One can connect regardless of device as long as one has the correct VPN and credentials
-  + Using a personal device, connect to the environment using the correct VPN and credentials
++ One can connect regardless of device as long as one has an allow-listed IP address and credentials
+  + Using a personal device, connect to the environment using an allow-listed IP address and credentials
   + :white_check_mark: **Verify:** Connection succeeds
-  + Using a managed device, connect to the environment using the correct VPN and credentials.
+  + Using a managed device, connect to the environment using an allow-listed IP address and credentials.
   + :white_check_mark: **Verify:** Connection succeeds
-+ There are are network rules permitting access only from the Turing Tier 2 and Tier 3 VPNs
-  + Navigate to the NSG for this SRE in the portal: `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  + <details>
-      <summary>:camera: <b>Verify:</b> The RDS NSG has network rules allowing <b>inbound</b> access from the IP address of the tier 2 SRE </summary>
-
-      ![nsg_inbound_access](../../images/security_checklist/nsg_inbound_access.png)
-    </details>
-  + :white_check_mark: **Verify:** All other NSGs have an inbound Deny All rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 
 For tier 3:
 
@@ -208,11 +229,24 @@ For tier 3:
   + Using a managed device, attempt to connect to the environment using the correct VPN and credentials
   + :white_check_mark: **Verify:** Connection succeeds
 
+For tiers 2 and above:
+
++ There are are network rules permitting access only from allow-listed IP addresses
+  + Navigate to the NSG for this SRE in the portal:
+    + *Microsoft Remote Desktop:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
+    + *Guacamole:* `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+  + <details>
+      <summary>:camera: <b>Verify:</b> The NSG has network rules allowing <b>inbound</b> access from allow-listed IP addresses only</summary>
+
+      ![nsg_inbound_access](../../images/security_checklist/nsg_inbound_access.png)
+    </details>
+  + :white_check_mark: **Verify:** All other NSGs (apart from `NSG_SHM_<SHM ID>_SRE_<SRE ID>_DEPLOYMENT`) have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network (apart from the Admin VPN in some cases).
+
 ## 4. Physical security
 
 ### We claim:
 
-At tier 3 access is limited to certain research office spaces
+At tier 3 access is limited to certain secure physical spaces
 
 ### Which means:
 
@@ -224,14 +258,14 @@ Firewall rules for the Environments can permit access only from Restricted netwo
 
 For tier 3:
 
-+ Connection outside of the research office space is not possible.
++ Connection from outside the secure physical space is not possible.
   + Attempt to connect to the tier 3 SRE web client from home using a managed device and the correct VPN connection and credentials
   + :white_check_mark: **Verify:** connection fails
-+ Connection from within the research office space is possible.
++ Connection from within the secure physical space is possible.
   + Attempt to connect from research office using a managed device and the correct VPN connection and credentials
   + :white_check_mark: **Verify:** connection succeeds
 + :white_check_mark: **Verify:** Check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
-+ :white_check_mark: **Verify:** Physically confirm that measures such as screen adaptions or desk partitions are present.
++ :white_check_mark: **Verify:** Confirm in person that physical measures such as screen adaptions or desk partitions are present.
 
 ## 5. Remote connections
 
@@ -245,15 +279,21 @@ User can connect via remote desktop but cannot connect through other means such 
 
 ### Verify by:
 
-+ Unable to connect as the **SRE standard user** to the DSVM via SSH
-  + Find the public IP address for the `RDG-SRE-<SRE ID>` VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-  + Attempt ssh login with `ssh user.name@<SRE ID>.<Domain>.co.uk@<Public IP>` (e.g. `ssh john.doe@testa.dsgroupdev.co.uk@<Public IP>`)
++ Unable to connect as the **SRE standard user** to the remote desktop server via SSH
+  + Attempt `ssh` login with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`)
   + <details>
-      <summary>:camera: <b>Verify:</b> ssh login fails </summary>
+      <summary>:camera: <b>Verify:</b> ssh login by fully-qualified domain name fails </summary>
 
-      ![dsvm_no_ssh](../../images/security_checklist/dsvm_no_ssh.png)
+      ![dsvm_no_ssh_by_fqdn](../../images/security_checklist/dsvm_no_ssh_by_fqdn.png)
     </details>
-  + :white_check_mark: **Verify:** The RDS server (`RDG-SRE-<SRE ID>`) is the only resource with a public IP address
+  + Find the public IP address for the remote desktop server VM (*Microsoft Remote Desktop:* `RDG-SRE-<SRE ID>`; *Guacamole*: `GUACAMOLE-SRE-<SRE ID>`) by searching for this VM in the portal, then looking at `Connect` under `Settings`.
+  + Attempt `ssh` login with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
+  + <details>
+      <summary>:camera: <b>Verify:</b> ssh login by public IP address fails </summary>
+
+      ![dsvm_no_ssh_by_ip](../../images/security_checklist/dsvm_no_ssh_by_ip.png)
+    </details>
++ :white_check_mark: **Verify:** The remote desktop server (`RDG-SRE-<SRE ID>`) is the only SRE resource with a public IP address
 
 ## 6. Copy-and-paste
 
@@ -275,10 +315,10 @@ One cannot copy something from outside the network and paste it into the network
   + Write some next in the note pad or terminal of the DSVM and copy it
   + Attempt to copy the text externally to deployment device (e.g. into URL of browser)
   + :white_check_mark: **Verify:** paste fails
-+ Users cannot copy between VMs inside the network
++ Users can copy between VMs inside the network
   + Login to a DSVM as the **SRE standard user** via the remote desktop web client
   + Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
-  + Connect to another DSVM (for example, the SSH connection) via the remote desktop web client (as a second tab)
+  + In another tab or browser connect to a different DSVM (or to the same VM via the SSH connection) using the remote desktop web client
   + Attempt to paste the text to it.
   + :white_check_mark: **Verify:** paste succeeds
 
@@ -286,7 +326,7 @@ One cannot copy something from outside the network and paste it into the network
 
 ### We claim:
 
-All data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
+All data transfer to the Turing should be via our secure data transfer process, which gives the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
 
 Data is stored in a holding zone until approved to be added for user access.
 
@@ -393,7 +433,7 @@ Tier 3: User can only access approved packages from PyPI/CRAN
 
 Tier 2: The user can access any package from our mirrors. They can freely use these packages without restriction.
 
-Tier 3: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowlist.
+Tier 3: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
 
 ### Verify by:
 
@@ -411,10 +451,10 @@ Tier 2:
 
 Tier 3:
 
-+ Download packages on the allowlist (see the lists in `environment_configs/package_lists`)
++ Download packages on the allowed list (see the lists in `environment_configs/package_lists`)
   + Login as the **SRE standard user** into a DSVM via remote desktop web client
-  + Attempt to install a package on the allowlist that is not included out-of-the-box (for example, try `pip install aero-calc`)
-  + Then attempt to download a package that is not included in the allowlist (for example, try `pip install botocore`)
+  + Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
+  + Then attempt to download a package that is not included in the allowed list (for example, try `pip install botocore`)
   + <details>
       <summary>:camera: <b>Verify:</b> the first download succeeds and the second fails</summary>
 

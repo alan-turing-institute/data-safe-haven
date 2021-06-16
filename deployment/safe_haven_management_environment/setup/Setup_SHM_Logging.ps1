@@ -21,9 +21,9 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.logging.rg -Location $config.location
 
 
-# Get Log Analytics Workspace details
-# -----------------------------------
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
+# Deploy Log Analytics workspace
+# ------------------------------
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
 $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 
 

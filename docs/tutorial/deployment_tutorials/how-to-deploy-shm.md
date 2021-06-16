@@ -15,9 +15,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:fire_engine: 12. Deploy firewall](#fire_engine-12-deploy-firewall)
-+ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
++ [:package: 12. Deploy Python/R package repositories](#package-12-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 13. Deploy logging](#chart_with_upwards_trend-13-deploy-logging)
++ [:fire_engine: 14. Deploy firewall](#fire_engine-14-deploy-firewall)
 
 ## Explanation of symbols used in this guide
 
@@ -779,6 +779,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + Configure NPS to log to a local text file:
   + Select `NPS (Local) > Accounting` on the left-hand sidebar
     <details><summary><b>Screenshots</b></summary>
+
       ![NPS accounting](../../images/deploy_shm/nps_accounting.png)
     </details>
   + Click on `Accounting > Configure Accounting`
@@ -810,7 +811,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + When prompted to `Provide your Tenant ID`, enter the Tenant ID that you [obtained from Azure Active Directory](#get-the-azure-active-directory-tenant-id) earlier
 + At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
-#### :pencil: notes
+#### :pencil: Notes
 
 + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
 
@@ -824,6 +825,8 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Add these webpages to the exceptions allowlist by clicking `Add` and clicking `Close`
 + If you see a Windows Security Warning when connecting to Azure AD, check `Don't show this message again` and click `Yes`.
 + If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
+  <details>
+
   + Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
   + Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
     + Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
@@ -833,11 +836,14 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
     + If you are using the trial `Azure Active Directory Premium P2` licences, you may find that enabling a trial of `Enterprise Mobility + Security E5` licences will resolve this.
   + Make sure that you have added a P1 licence to at least one user in the `Azure Active Directory` and have gone through the MFA setup procedure for that user. You may have to wait a few minutes after doing this
   + If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`. Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
+  </details>
 + If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
+  <details>
   + Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
     + The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
   + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and configured MFA on your account.
+  </details>
 
 ## :closed_lock_with_key: 11. Require MFA for all users
 
@@ -874,28 +880,19 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## :fire_engine: 12. Deploy firewall
-<!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
-
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
-## :package: 13. Deploy Python/R package repositories
+## :package: 12. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
-+ Local mirror (Tier-2 and Tier-3)
++ Local mirror (Tier-2 and/or Tier-3)
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
 
 ### How to deploy a Nexus package repository
 
-![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+We **recommend** deploying this for use with tier-2 SREs
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
 PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
@@ -906,7 +903,7 @@ PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 
 ### How to deploy a local package mirror
 
-:exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+We **recommend** deploying this for use with tier-3 SREs
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -917,7 +914,11 @@ PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 + where `<desired tier>` is either `2` or `3`
 
-## :chart_with_upwards_trend: 14. Deploy logging
+#### :pencil: Notes
+
+:exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+
+## :chart_with_upwards_trend: 13. Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -929,3 +930,14 @@ PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 
 ### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.
+
+## :fire_engine: 14. Deploy firewall
+<!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM

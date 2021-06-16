@@ -39,6 +39,17 @@ $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
 
+# Get any additional FQDNs for this VM
+# ------------------------------------
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    $remoteDesktopVmFqdn = $config.sre.remoteDesktop.guacamole.fqdn
+} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+    $remoteDesktopVmFqdn = $config.sre.remoteDesktop.gateway.fqdn
+} else {
+    Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
+}
+
+
 # Check for existing certificate in Key Vault
 # -------------------------------------------
 Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in Key Vault..."
@@ -73,13 +84,6 @@ if ($null -eq $kvCertificate) {
 $userFriendlyFqdn = $config.sre.domain.fqdn
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
-        $additionalFdqn = $config.sre.remoteDesktop.guacamole.fqdn
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $additionalFdqn = $config.sre.remoteDesktop.gateway.fqdn
-    } else {
-        Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
-    }
 
     # Get token for DNS subscription
     # ------------------------------
@@ -98,7 +102,7 @@ if ($requestCertificate) {
     # -------------------------------------------------------
     Add-LogMessage -Level Info "Generating a certificate signing request for $($userFriendlyFqdn) to be signed by Let's Encrypt..."
     $SubjectName = "CN=$($userFriendlyFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$additionalFdqn" -KeySize 4096
+    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 3 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$remoteDesktopVmFqdn" -KeySize 4096
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
@@ -249,6 +253,7 @@ if ($doInstall) {
 
     # Get the appropriate VM, script and parameters for configuring the remote server
     # -------------------------------------------------------------------------------
+    $addSecretParams = @{}
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.guacamole.vmName | Remove-AzVMSecret
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "scripts" "install_ssl_certificate.sh"
@@ -265,14 +270,15 @@ if ($doInstall) {
         }
         $scriptType = "UnixShell"
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
+        $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName | Remove-AzVMSecret
         $scriptParams = @{
-            rdsFqdn         = $additionalFdqn
+            rdsFqdn         = $remoteDesktopVmFqdn
             certThumbPrint  = $kvCertificate.Thumbprint
-            remoteDirectory = $remoteDirectory
+            remoteDirectory = "/Certificates"
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
         $scriptType = "PowerShell"
+        $addSecretParams["CertificateStore"] = "My"
     } else {
         Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }
@@ -281,7 +287,7 @@ if ($doInstall) {
     # Add signed Key Vault certificate to the target VM
     # -------------------------------------------------
     Add-LogMessage -Level Info "Adding SSL certificate to $($targetVM.Name)"
-    $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL
+    $targetVM = Add-AzVMSecret -VM $targetVM -SourceVaultId $vaultId -CertificateUrl $secretURL @addSecretParams
     $null = Update-AzVM -ResourceGroupName $targetVM.ResourceGroupName -VM $targetVM
     if ($?) {
         Add-LogMessage -Level Success "Adding certificate with thumbprint $($kvCertificate.Thumbprint) succeeded"

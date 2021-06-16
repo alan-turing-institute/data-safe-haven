@@ -145,9 +145,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -DestinationPortRange *
 $subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' failed!"
 }
 
 
