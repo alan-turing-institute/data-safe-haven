@@ -1,4 +1,6 @@
+Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -191,7 +193,11 @@ function Set-NetworkSecurityGroupRules {
     } catch {
         Add-LogMessage -Level Fatal "Error adding provided rules. Network Security Group '$($NetworkSecurityGroup.Name)' left unchanged." -Exception $_.Exception
     }
-    $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup
+    try {
+        $NetworkSecurityGroup = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NetworkSecurityGroup -ErrorAction Stop
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to add one or more NSG rules!" -Exception $_.Exception
+    }
     $updatedRules = @(Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup)
     foreach ($updatedRule in $updatedRules) {
         $sourceAddressText = ($updatedRule.SourceAddressPrefix -eq "*") ? "any source" : $updatedRule.SourceAddressPrefix
@@ -213,7 +219,7 @@ function Update-VMDnsRecords {
         [Parameter(Mandatory = $true, HelpMessage = "Resource group of primary DC VM")]
         [string]$DcResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "FQDN for this SHM")]
-        [string]$ShmFqdn,
+        [string]$BaseFqdn,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the SHM subscription")]
         [string]$ShmSubscriptionName,
         [Parameter(Mandatory = $true, HelpMessage = "Hostname of VM whose records need to be updated")]
@@ -227,7 +233,7 @@ function Update-VMDnsRecords {
         $null = Set-AzContext -SubscriptionId $ShmSubscriptionName -ErrorAction Stop
         Add-LogMessage -Level Info "[ ] Resetting DNS record for VM '$VmHostname'..."
         $params = @{
-            Fqdn      = $ShmFqdn
+            Fqdn      = $BaseFqdn
             HostName  = ($VmHostname | Limit-StringLength -MaximumLength 15)
             IpAddress = $VMIpAddress
         }

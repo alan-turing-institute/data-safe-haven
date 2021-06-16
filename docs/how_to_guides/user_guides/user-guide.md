@@ -20,7 +20,9 @@
 + [:link: Share files with collaborators](#link-share-files-with-collaborators)
   + [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
   + [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
-+ [:couple: Collaborate on code using GitLab](#couple-collaborate-on-code-using-gitlab)
++ [:couple: Collaborate on code using CoCalc](#couple-collaborate-on-code-using-cocalc)
+  + [:unlock: Access CoCalc](#unlock-access-cocalc)
++ [:file_cabinet: Versioning code using GitLab](#file_cabinet-versioning-code-using-gitlab)
   + [:books: Maintaining an archive of the project](#books-maintaining-an-archive-of-the-project)
   + [:unlock: Access GitLab](#unlock-access-gitlab)
   + [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
@@ -89,6 +91,7 @@ Make sure you have all of the following in front of you when connecting to the S
 + :european_castle: The [domain name and URL](#domain-names) for the SRE, given in an email from your SRE administrator.
 + :computer: Your computer.
 + :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
++ :lock: [Data security training](#data-security-training-requirements) for those working on health datasets.
 + :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
 
 You should also know who the **designated contact** for your SRE is.
@@ -118,6 +121,26 @@ You will be told what these requirements are for your particular environment.
 
 > :point_right: Make sure you know the networks from which you must connect to your SRE.
 > This information will be available in the email you received with your connection information.
+
+#### Data security training requirements
+
+This only applies to DSH users working on health data.
+
+Users required to undertake data security awareness training:
+
++ Safe Haven code owners and those with admin access to the Safe Haven Github (including organisational admins). This is to ensure integrity of the Safe Haven supply chain.
++ Safe Haven administrators
++ IT Azure admin team, as they have admin access to all subscriptions
++ Safe Haven programme and project managers, as they can create a new project and request an SRE is created
++ All Researchers with access to data in scope of DSPT that is currently managed by Turing
++ Data Provider Representatives, Principal Investigators and Referees for data in scope of DSPT that is currently managed by Turing
+
+The requirement is documented proof of (within 1 year):
+
++ Organisational Data Protection training (or Turing's training)
++ Organisational Information Security training (or Turing's training)
++ [NHS Data Security Awareness training](https://www.e-lfh.org.uk/programmes/data-security-awareness)
++ We may accept equivalent qualifications from another organisations that meet their own DSPT requirements
 
 #### Your phone for multi-factor authentication
 
@@ -163,23 +186,17 @@ Please follow these steps carefully.
 
    The first time you log in you need to click **"Forgotten my password"**.
 
-   <p align="center">
-      <img src="../../images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password"/>
-   </p>
+   ![Forgotten my password](../../images/user_guide/resetpassword_1.png)
 
    > :warning: If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
 
 + Fill out the requested CAPTCHA (your username should be pre-filled).
 
-   <p align="center">
-      <img src="../../images/user_guide/resetpassword_2.png" width="80%" title="CAPTCHA"/>
-   </p>
+   ![CAPTCHA](../../images/user_guide/resetpassword_2.png)
 
 + Confirm your phone number, which you provided to the SRE administrator when you registered for access to the environment.
 
-   <p align="center">
-      <img src="../../images/user_guide/resetpassword_3.png" width="80%" title="resetpassword_3"/>
-   </p>
+   ![resetpassword_3](../../images/user_guide/resetpassword_3.png)
 
 + Select a password.
 
@@ -205,21 +222,15 @@ Please follow these steps carefully.
 
 + Enter your password into the `Enter new password` and `Confirm new password` fields.
 
-   <p align="center">
-      <img src="../../images/user_guide/resetpassword_4.png" width="80%" title="resetpassword_4"/>
-   </p>
+  ![resetpassword_4](../../images/user_guide/resetpassword_4.png)
 
-   Then continue to the next step
++ Then continue to the next step
 
-   <p align="center">
-      <img src="../../images/user_guide/resetpassword_5.png" width="80%" title="resetpassword_5"/>
-   </p>
+  ![resetpassword_5](../../images/user_guide/resetpassword_5.png)
 
 + Log into your account when prompted and at this point you will be asked for additional security verification.
 
-   <p align="center">
-      <img src="../../images/user_guide/more_information_required.png" width="80%" title="more_information_required">
-   </p>
+  ![more_information_required](../../images/user_guide/more_information_required.png)
 
 ### :door: Set up multi-factor authentication
 
@@ -228,28 +239,22 @@ This additional security verification is to make it harder for people to imperso
 
 + Choose how you would like to be contacted for the additional security verification.
 
-  <p align="center">
-    <img src="../../images/user_guide/additional_security_verification.png" width="80%" title="additional_security_verification"/>
-  </p>
+  ![additional_security_verification](../../images/user_guide/additional_security_verification.png)
 
   + If you select phone verification, go to step 2.
   + If you select app verification, go to step 3.
 
 + :telephone_receiver: **Phone option**:
 
-   If you choose to set up the authentication by phone call you will receive a call straight away.
+  If you choose to set up the authentication by phone call you will receive a call straight away.
 
-   <p align="center">
-      <img src="../../images/user_guide/setup_mfa_phone_1.png" width="80%" title="setup_mfa_phone_1"/>
-   </p>
+  ![setup_mfa_phone_1](../../images/user_guide/setup_mfa_phone_1.png)
 
-   > :pencil2: Note that some people get a call that says, *press the pound key* and others receive *press the hash key* – both mean hit the `#` button.
+  > :pencil2: Note that some people get a call that says, *press the pound key* and others receive *press the hash key* – both mean hit the `#` button.
 
-   <p align="center">
-      <img src="../../images/user_guide/setup_mfa_phone_2.png" width="80%" title="setup_mfa_phone_2">
-   </p>
+  ![setup_mfa_phone_2](../../images/user_guide/setup_mfa_phone_2.png)
 
-   When you click `close` the page will switch to your dashboard.
+  When you click `close` the page will switch to your dashboard.
 
 + :iphone: **App option**:
 
@@ -271,31 +276,23 @@ This additional security verification is to make it harder for people to imperso
   + Select `Work or School account`
   + Scan the QR code on the screen
 
-  <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_1.png" width="80%" title="setup_mfa_app_1"/>
-  </p>
+  ![setup_mfa_app_1](../../images/user_guide/setup_mfa_app_1.png)
 
   + Click `Next` to start verification
 
-  <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_2.png" width="80%" title="setup_mfa_app_2"/>
-  </p>
+  ![setup_mfa_app_2](../../images/user_guide/setup_mfa_app_2.png)
 
   + Click `Next` again to test the app, you will get a verification on your app.
 
-  <p align="center">
-    <img src="../../images/user_guide/setup_mfa_app_3.png" width="80%" title="setup_mfa_app_3"/>
-  </p>
+  ![setup_mfa_app_3](../../images/user_guide/setup_mfa_app_3.png)
 
 + Check that your MFA is completed.
 
-    > :warning: It is confusing that the "save" button is not available to click, but if your phone or app appears on this screen you **are** set up for MFA.
+  > :warning: It is confusing that the "save" button is not available to click, but if your phone or app appears on this screen you **are** set up for MFA.
 
-   <p align="center">
-      <img src="../../images/user_guide/setup_mfa_app_4.png" width="80%" title="setup_mfa_app_4"/>
-   </p>
+  ![setup_mfa_app_4](../../images/user_guide/setup_mfa_app_4.png)
 
-   Close the browser once MFA is confirmed.
+  Close the browser once MFA is confirmed.
 
 #### Troubleshooting MFA
 
@@ -332,21 +329,17 @@ After going through the account setup procedure, you should have access to:
 
 + You should arrive at a login page that looks like this.
 
-   <p align="center">
-      <img src="../../images/user_guide/logon_environment.PNG" width="80%" title="logon_environment">
-   </p>
+  ![logon_environment](../../images/user_guide/logon_environment.png)
 
-   Enter your username (either as `username` or as `username@<username domain>` ) and password here, then click `Sign in` .
+  Enter your username (either as `username` or as `username@<username domain>` ) and password here, then click `Sign in` .
 
-   > :information_source: Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would enter `ada.lovelace` in the User name box, enter her password and then click `Sign in` .
+  > :information_source: Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would enter `ada.lovelace` in the User name box, enter her password and then click `Sign in` .
 
 + If you are successful, you'll see the a screen with icons for the available apps.
 
-   <p align="center">
-      <img src="../../images/user_guide/RDS_app_selection_options.png" width="80%" title="RDS_app_selection_options"/>
-   </p>
+  ![RDS_app_selection_options](../../images/user_guide/RDS_app_selection_options.png)
 
-   Welcome to the Turing Safe Haven SRE! :wave:
+  Welcome to the Turing Safe Haven SRE! :wave:
 
 ### :penguin: Log into the Linux Data Science desktop
 
@@ -364,48 +357,36 @@ Once connected to it, you can carry out data science research while remaining co
    :iphone: For the app you will see a notification saying _"You have received a sign in verification request"_.
    Go to the app to approve the request.
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_connection_screen.png" width="80%" title="dsvm_connection_screen"/>
-   </p>
+   ![dsvm_connection_screen](../../images/user_guide/dsvm_connection_screen.png)
 
    > :warning: If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_connection_failure.png" width="80%" title="dsvm_connection_failure"/>
-   </p>
+   ![dsvm_connection_failure](../../images/user_guide/dsvm_connection_failure.png)
 
 + After verifying using MFA, you might get a security alert like this one. If you do, it is safe to tick the box and to click `Yes` .
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_security_fingerprint.png" width="80%" title="dsvm_security_fingerprint"/>
-   </p>
+  ![dsvm_security_fingerprint](../../images/user_guide/dsvm_security_fingerprint.png)
 
 + Insert your username and password.
 
-    > :information_source: Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
+  > :information_source: Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_login_screen.png" width="80%" title="dsvm_login_screen"/>
-   </p>
+  ![dsvm_login_screen](../../images/user_guide/dsvm_login_screen.png)
 
-   If you enter your username and / or password incorrect you will see a warning:
+  If you enter your username and / or password incorrect you will see a warning:
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_login_failure.png" width="80%" title="dsvm_login_failure"/>
-   </p>
+  ![dsvm_login_failure](../../images/user_guide/dsvm_login_failure.png)
 
-   > :point_right: Please try again, entering your username and password carefully.
-   >
-   > :warning: If you have special characters in your password, your keyboard mapping may be incorrect.
-   > We recommend _not_ including these characters in your password.
-   > You can re-set your password using the steps defined in the [**Set your password**](#set-your-password) section above.
-   > To check that the characters you are typing are being interpreted correctly, try entering these special characters into the username field, so that you can read them as you enter them.
+  > :point_right: Please try again, entering your username and password carefully.
+  >
+  > :warning: If you have special characters in your password, your keyboard mapping may be incorrect.
+  > We recommend _not_ including these characters in your password.
+  > You can re-set your password using the steps defined in the [**Set your password**](#set-your-password) section above.
+  > To check that the characters you are typing are being interpreted correctly, try entering these special characters into the username field, so that you can read them as you enter them.
 
 + You should now be greeted by a Linux desktop.
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial"/>
-   </p>
+  ![dsvm_desktop_initial](../../images/user_guide/dsvm_desktop_initial.png)
 
 You are now inside the Turing Safe Haven SRE!
 Welcome :wave:
@@ -476,9 +457,7 @@ For example:
 + Open Terminal -> `jupyter notebook &` if you want to use python within a jupyter notebook.
 + Open Terminal -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
 
-<p align="center">
-  <img src="../../images/user_guide/access-applications.png" width="80%" title="screen capture to show how to access applications from the desktop"/>
-</p>
+![How to access applications from the desktop](../../images/user_guide/access-applications.png)
 
 ### :snake: Initiate the correct version of R or python
 
@@ -563,9 +542,9 @@ pip install --user <package-name>
 Depending on the type of data you are accessing, different `R` and `python` packages will be available to you (in addition to the ones that are pre-installed):
 
 + Tier-2 (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
-+ Tier-3 (high security) environments only have pre-authorised "whitelisted" packages available.
++ Tier-3 (high security) environments only have pre-authorised packages available.
 
-If you need to use a package that is not on the approved whitelist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
+If you need to use a package that is not on the allowlist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
 
 ## :link: Share files with collaborators
 
@@ -638,15 +617,45 @@ They will have to discuss whether this is an acceptable risk to the data securit
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
-## :couple: Collaborate on code using GitLab
+## :couple: Collaborate on code using CoCalc
+
+CoCalc is a collaborative calculation and data science environment.
+It lets you work with others on projects, using Jupyter, LaTeX, Octave, Python or R in collaborative notebooks.
+
+The CoCalc instance within the SRE is the easiest way to work directly with others in your team (for example pair-programming) who might not be physically near you.
+You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
+
+### :unlock: Access CoCalc
+
+You can access CoCalc from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+
+The first time that you login, you will see a security warning. This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
+
+![cocalc_security_warning](../../images/user_guide/cocalc_security_warning.png)
+
+You will then get to the CoCalc homepage where you should click on `Sign In`
+
+![cocalc_homepage](../../images/user_guide/cocalc_homepage.png)
+
+You will need to create a new account. You can use any username/password here - it is not connected to your main Safe Haven account.
+
+> :information_source: Our example user, Ada Lovelace has used `ada.lovelace@apr20.turingsafehaven.ac.uk` as her username and set her own password
+
+![cocalc_account_creation](../../images/user_guide/cocalc_account_creation.png)
+
+> The CoCalc instance within the SRE is entirely separate from the https://cocalc.com service
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CoCalc from the `CoCalc` icon on the Work Resources page.
+
+## :file_cabinet: Versioning code using GitLab
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
-It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
+It allows you to use git to **version control** your work, coordinate tasks using GitLab **issues** and review work using GitLab **merge requests**.
 
 As GitLab make all their source code publicly available for reuse, anyone can host their own version of GitLab.
 So while there is a central service run by the GitLab organisation at https://gitlab.com, an organisation can run their own version - which looks exactly the same - at their own web address.
 
-The GitLab instance within the SRE can contain code, documentation and results from you and your team's analyses.
+The GitLab instance within the SRE can contain code, documentation and results from your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
 
 ### :books: Maintaining an archive of the project
@@ -663,30 +672,19 @@ Anything that you think should be considered for **egress** from the environment
 
 ### :unlock: Access GitLab
 
-You can access GitLab from the `GitLab` icon on the Work Resources page.
+You can access GitLab from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
-   > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in` .
+> :information_source: Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in` .
 
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login"/>
-   </p>
+![gitlab_screenshot_login](../../images/user_guide/gitlab_screenshot_login.png)
 
-  > :warning: Do not use your username and password from a pre-existing GitLab account.
-  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-You can also access GitLab from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access GitLab from the Work Resources page.
-
-> :point_right: Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the "All Resources" tab ever time you want to launch GitLab (although you can do if that's easiest!)
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD.
-+ If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :warning: Do not use your username and password from a pre-existing GitLab account! The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access GitLab from the `GitLab` icon on the Work Resources page.
 
 ### :open_hands: Public repositories within the SRE
 
@@ -721,27 +719,17 @@ We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/ad
 
 ### :unlock: Access CodiMD
 
-You can access CodiMD from the `CodiMD` icon on the Work Resources page.
+You can access CodiMD from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
 
 Login with your long-form username `firstname.lastname@<username domain>` and `password`.
 
-   > :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
+> :information_source: Our example user, Ada Lovelace would enter `ada.lovelace@apr20.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
 
-   <p align="center">
-      <img src="../../images/user_guide/codimd_logon.png" width="80%" title="codimd_logon"/>
-   </p>
+![codimd_logon](../../images/user_guide/codimd_logon.png)
 
-You can also access CodiMD from an internet browser from the Linux Data Science Desktop by navigating to the same URL as when you access CodiMD from the Work Resources page.
+Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
 
-> :point_right: Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
-> You do not have to return to the `All Resources` tab ever time you want to launch CodiMD.
-
-+ Point Firefox to the url provided by the resource dashboard for GitLab/CodiMD
-+ Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
-
-   <p align="center">
-      <img src="../../images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot"/>
-   </p>
+> :point_right: If your SRE uses Microsoft Remote Desktop you can also access CodiMD from the `CodiMD` icon on the Work Resources page.
 
 ### :busts_in_silhouette: Editing other people's documents
 
@@ -752,9 +740,7 @@ They will have the right to change the file if they are signed into the CodiMD i
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
-   <p align="center">
-      <img src="../../images/user_guide/codimd_access_options.png" width="80%" title="codimd_logon"/>
-   </p>
+![codimd_access_options](../../images/user_guide/codimd_access_options.png)
 
 > :handshake: We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
 > Alternatively, the **locked** option allows others to read but not edit the document.
@@ -765,9 +751,7 @@ A **published** document has a shorter URL which is easier to share with others.
 Click the `Publish` button to publish the document and generate the short URL.
 Click the pen button (shown in the image below) to return to the editable markdown view.
 
-   <p align="center">
-      <img src="../../images/user_guide/codimd_screenshot.png" width="80%" title="codimd_screenshot"/>
-   </p>
+![codimd_screenshot](../../images/user_guide/codimd_screenshot.png)
 
 > :pencil2: We recommend **publishing** the document to get a much shorter URL to share with your team.
 >
@@ -799,9 +783,7 @@ You will need to know the IP address of the new machine, which you will be told 
 + When you click on the `DSVM Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
 + Enter the IP address of the additional virtual machine.
 
-   <p align="center">
-      <img src="../../images/user_guide/dsvm_rdc_screen.png" width="80%" title="dsvm_rdc_screen"/>
-   </p>
+  ![dsvm_rdc_screen](../../images/user_guide/dsvm_rdc_screen.png)
 
 + After entering the IP address, you will get the normal login screen, where you use the same `username` and `password` credentials as before.
 + Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
@@ -835,9 +817,7 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using Azure Data Studio as follows:
 
-   <p align="center">
-      <img src="../../images/user_guide/db_azure_data_studio.png" width="80%" title="db_AzureDataStudio"/>
-   </p>
+![db_azure_data_studio](../../images/user_guide/db_azure_data_studio.png)
 
 > :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database.
 
@@ -853,9 +833,7 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
-   <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_mssql.png" width="80%" title="DBeaver MS SQL connection"/>
-   </p>
+![db_dbeaver_mssql](../../images/user_guide/db_dbeaver_mssql.png)
 
 > :point_right: it is important to use `Kerberos` authentication so that your username and password will be passed through to the database
 
@@ -867,15 +845,11 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 
 > :information_source: Our example user Ada Lovelace, working in the `sandbox` SRE on the `apr20.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
-   <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_postgres1.png" width="80%" title="DBeaver PostgreSQL connection"/>
-   </p>
+![db_dbeaver_postgres1](../../images/user_guide/db_dbeaver_postgres1.png)
 
 > :point_right: If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
 
-   <p align="center">
-      <img src="../../images/user_guide/db_dbeaver_postgres2.png" width="80%" title="DBeaver PostgreSQL connection"/>
-   </p>
+![db_dbeaver_postgres2](../../images/user_guide/db_dbeaver_postgres2.png)
 
 ### :snake: Connecting using Python
 
@@ -1131,9 +1105,7 @@ In Git, when you copy a project you say you "clone" it. To work on a git project
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](<https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html>). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
-   <p align="center">
-      <img src="../../images/user_guide/project_clone_url.png" width="80%" title="project_clone_url"/>
-   </p>
+![project_clone_url](../../images/user_guide/project_clone_url.png)
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
 
@@ -1240,18 +1212,14 @@ For more information, check the [merge requests documentation](<https://docs.git
 
    The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
-   <p align="center">
-      <img src="../../images/user_guide/merge1.png" width="80%" title="merge1"/>
-   </p>
+   ![merge1](../../images/user_guide/merge1.png)
 
 + When ready, click on the Compare branches and continue button.
 + At a minimum, add a title and a description to your merge request.
 
    Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
-   <p align="center">
-      <img src="../../images/user_guide/merge2.png" width="80%" title="merge2"/>
-   </p>
+   ![merge2](../../images/user_guide/merge2.png)
 
 + When ready, click on the `Submit merge request` button.
 
@@ -1269,9 +1237,7 @@ Your merge request will be ready to be approved and merged.
 
 + You do not see any available apps
 
-   <p align="center">
-      <img src="../../images/user_guide/no_folders_present.png" width="80%" title="no_folders_present">
-   </p>
+  ![no_folders_present](../../images/user_guide/no_folders_present.png)
 
 #### Cause
 
@@ -1292,9 +1258,7 @@ Follow the two factor authentication section from the [logging in section](#hous
 + You can see several apps, but when you try to launch one of them, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
 + When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
 
-   <p align="center">
-      <img src="../../images/user_guide/unexpected_certificate_error.png" width="80%" title="unexpected_certificate_error"/>
-   </p>
+![unexpected_certificate_error](../../images/user_guide/unexpected_certificate_error.png)
 
 #### Cause
 
@@ -1305,6 +1269,6 @@ This downloaded certificate is cached by your browser, which means that the old 
 
 #### Solution
 
-Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/>) of the page (instructions vary by browser and operating system>).
+Get your browser to do a [hard reload](<https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/>) of the page (instructions vary by browser and operating system).
 You may also need to [clear your cache](<https://www.refreshyourcache.com/en/home/>) for this site.
 In either case, removing locally cached data should mean that you retrieve a copy of the new certificate.

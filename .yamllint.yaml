@@ -2,7 +2,5 @@
 extends: default
 
 rules:
-  # Make long lines a wanring rather than error
-  line-length:
-    max: 80
-    level: warning
+  document-start: disable  # Remove requirement to start with '---'
+  line-length: disable     # Disable long line errors

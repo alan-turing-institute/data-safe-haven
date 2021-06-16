@@ -20,23 +20,23 @@ $ExistingDnsRecord = Get-DnsServerResourceRecord -ZoneName $Fqdn -Name $HostName
 if (-not $ExistingDnsRecord) {
     try {
         Add-DnsServerResourceRecord -ZoneName $Fqdn -A -Name $HostName -IPv4Address $IpAddress
-        Write-Output " [o] Successfully added DNS record for '$HostName'"
+        Write-Output " [o] Successfully added DNS record for '$HostName' in '$Fqdn'"
     } catch [Microsoft.Management.Infrastructure.CimException] {
-        Write-Output " [x] Failed to add new DNS record for '$HostName'!"
+        Write-Output " [x] Failed to add new DNS record for '$HostName' in '$Fqdn'!"
     }
 
 # Update the record if it does exist
 } else {
     if ($ExistingDnsRecord.RecordData.IPv4Address.ToString() -eq $IpAddress) {
-        Write-Output " [o] DNS record for '$HostName' is already set to '$IpAddress'"
+        Write-Output " [o] DNS record for '$HostName' in '$Fqdn' is already set to '$IpAddress'"
     } else {
         try {
             $NewDnsRecord = $ExistingDnsRecord.Clone()
             $NewDnsRecord.RecordData.IPv4Address = [System.Net.IPAddress]::parse($IpAddress)
             $null = Set-DnsServerResourceRecord -NewInputObject $NewDnsRecord -OldInputObject $ExistingDnsRecord -ZoneName $Fqdn -PassThru
-            Write-Output " [o] Successfully updated DNS record for '$HostName' to point to '$IpAddress'"
+            Write-Output " [o] Successfully updated DNS record for '$HostName' in '$Fqdn' to point to '$IpAddress'"
         } catch [Microsoft.Management.Infrastructure.CimException] {
-            Write-Output " [x] Failed to update DNS record for '$HostName'!"
+            Write-Output " [x] Failed to update DNS record for '$HostName' in '$Fqdn'!"
         }
     }
 }

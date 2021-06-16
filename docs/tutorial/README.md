@@ -20,7 +20,21 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
 
 + [Safe Haven Management (SHM) deployment guide](deployment_tutorials/how-to-deploy-shm.md)
   + Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
-+ [Data Science virtual machine build instructions](deployment_tutorials/how-to-customise-dsvm-image.md)
++ [Data Science virtual machine build instructions](deployment_tutorials/how-to-build-compute-vm-image.md)
   + Build and publish our "batteries included" Data Science Compute virtual machine image. Customise if necessary.
 + [Secure Research Environment (SRE) deployment guide](deployment_tutorials/how-to-deploy-sre.md)
   + Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
+
+```{toctree}
+:hidden: true
+
+deployment_tutorials/how-to-build-compute-vm-image.md
+deployment_tutorials/how-to-deploy-shm.md
+deployment_tutorials/how-to-deploy-sre.md
+deployment_tutorials/how-to-deploy-sre-apache-guacamole.md
+deployment_tutorials/how-to-deploy-sre-cocalc.md
+deployment_tutorials/how-to-deploy-sre-microsoft-rds.md
+quick_overview/is-this-safe-haven-suitable-for-you.md
+quick_overview/what-is-a-safe-haven.md
+quick_overview/why-might-you-use-a-safe-haven.md
+```

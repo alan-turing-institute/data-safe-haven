@@ -194,7 +194,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
             Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
             Replace("<ldap-search-user-password>", $ldapSearchPassword).
             Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-            Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+            Replace("<ldap-user-base-dn>", $config.shm.domain.ous.researchUsers.path).
             Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
             Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
@@ -225,7 +225,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
         # Update DNS records for this VM
-        Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -ShmFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $databaseCfg.vmName -VmIpAddress $databaseCfg.ip
+        Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $databaseCfg.vmName -VmIpAddress $databaseCfg.ip
     }
 }
 

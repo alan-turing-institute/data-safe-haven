@@ -11,18 +11,20 @@
         "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
         "sourcePortRange": "*"
     },
-    {
-        "name": "AllowRdsApplicationHostInbound",
-        "access": "Allow",
-        "description": "Allow inbound http(s) connections from application session host",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "destinationPortRange": ["80", "443"],
-        "direction": "Inbound",
-        "priority": 2000,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.rds.appSessionHost.ip}}",
-        "sourcePortRange": "*"
-    },
+    {{#sre.remoteDesktop.appSessionHost.ip?}}
+        {
+            "name": "AllowRdsApplicationHostInbound",
+            "access": "Allow",
+            "description": "Allow inbound http(s) connections from application session host",
+            "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+            "destinationPortRange": ["80", "443"],
+            "direction": "Inbound",
+            "priority": 2000,
+            "protocol": "TCP",
+            "sourceAddressPrefix": "{{sre.remoteDesktop.appSessionHost.ip}}",
+            "sourcePortRange": "*"
+        },
+    {{/sre.remoteDesktop.appSessionHost.ip?}}
     {
         "name": "AllowComputeVMsInbound",
         "access": "Allow",
@@ -51,7 +53,11 @@
         "name": "AllowNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": ["{{shm.time.ntp.serverAddresses}}"],
+        "destinationAddressPrefix": [
+            {{#shm.time.ntp.serverAddresses}}
+                "{{.}}",
+            {{/shm.time.ntp.serverAddresses}}
+        ],
         "destinationPortRange": 123,
         "direction": "Outbound",
         "priority": 1000,
@@ -72,9 +78,33 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "{{sre.rds.gateway.networkRules.outboundInternet}}InternetOutbound",
-        "access": "{{sre.rds.gateway.networkRules.outboundInternet}}",
-        "description": "{{sre.rds.gateway.networkRules.outboundInternet}} outbound connections to internet",
+        "name": "AllowPackageRepositoriesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the SHM package repositories",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 2500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowPrivateDataEndpointsOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to private endpoints in the VNet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}InternetOutbound",
+        "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+        "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",

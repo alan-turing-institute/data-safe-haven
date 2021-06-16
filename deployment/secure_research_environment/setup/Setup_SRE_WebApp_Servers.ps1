@@ -8,10 +8,12 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -24,8 +26,9 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Retrieve passwords from the Key Vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
 $ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
+$config.sre.storage.persistentdata.ingressSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName -AsPlaintext
 
 
 # Retrieve VNET and subnets
@@ -49,26 +52,49 @@ $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
 
 
+# Deploy and configure CoCalc VM
+# -------------------------------
+Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
+# Load the cloud-init template then add resources and expand mustache placeholders
+$cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.template.yaml" | Get-Item | Get-Content -Raw
+$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
+# Deploy CoCalc VM
+$cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
+$params = @{
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.cocalc.adminPasswordSecretName -DefaultLength 20)
+    AdminUsername          = $vmAdminUsername
+    BootDiagnosticsAccount = $bootDiagnosticsAccount
+    CloudInitYaml          = $cocalcCloudInitTemplate
+    DataDiskIds            = @($cocalcDataDisk.Id)
+    ImageSku               = $config.sre.webapps.cocalc.osVersion
+    Location               = $config.sre.location
+    Name                   = $config.sre.webapps.cocalc.vmName
+    OsDiskSizeGb           = $config.sre.webapps.cocalc.disks.os.sizeGb
+    OsDiskType             = $config.sre.webapps.cocalc.disks.os.type
+    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
+    ResourceGroupName      = $config.sre.webapps.rg
+    Size                   = $config.sre.webapps.cocalc.vmSize
+    Subnet                 = $deploymentSubnet
+}
+$cocalcVm = Deploy-UbuntuVirtualMachine @params
+# Change subnets and IP address while CoCalc VM is off then restart
+Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.sre.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.cocalc.hostname -VmIpAddress $config.sre.webapps.cocalc.ip
+
+
 # Deploy and configure CodiMD VM
 # ------------------------------
 Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
-$codimdCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Raw
-# Expand placeholders in the cloud-init template
-$codimdCloudInitTemplate = $codimdCloudInitTemplate.
-    Replace("<codimd-bind-creds>", $ldapSearchUserPassword).
-    Replace("<codimd-bind-dn>", $ldapSearchUserDn).
-    Replace("<codimd-fqdn>", "$($config.sre.webapps.codimd.hostname).$($config.sre.domain.fqdn)").
-    Replace("<codimd-hostname>", $config.sre.webapps.codimd.hostname).
-    Replace("<codimd-ip>", $config.sre.webapps.codimd.ip).
-    Replace("<codimd-ldap-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<codimd-ldap-netbios>", $config.shm.domain.netbiosName).
-    Replace("<codimd-ldap-url>", "ldap://$($config.shm.dc.fqdn)").
-    Replace("<codimd-postgres-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)).
-    Replace("<codimd-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))").
-    Replace("<docker-codimd-version>", $config.sre.webapps.codimd.codimd.dockerVersion).
-    Replace("<docker-postgres-version>", $config.sre.webapps.codimd.postgres.dockerVersion).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-    Replace("<timezone>", $config.sre.time.timezone.linux)
+# Load the cloud-init template and expand mustache placeholders
+$config["codimd"] = @{
+    ldapSearchUserDn       = $ldapSearchUserDn
+    ldapSearchUserPassword = $ldapSearchUserPassword
+    ldapUserFilter         = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
+    postgresPassword       = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
+}
+$codimdCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Parameters $config
 # Deploy CodiMD VM
 $codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
@@ -90,26 +116,21 @@ $params = @{
 $codimdVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while CodiMD VM is off then restart
 Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.codimd.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.sre.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.codimd.hostname -VmIpAddress $config.sre.webapps.codimd.ip
 
 
 # Deploy and configure GitLab VM
 # ------------------------------
 Add-LogMessage -Level Info "Constructing GitLab cloud-init from template..."
-$gitlabCloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Raw
-# Expand placeholders in the cloud-init template
-$gitlabCloudInitTemplate = $gitlabCloudInitTemplate.
-    Replace("<gitlab-rb-host>", "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
-    Replace("<gitlab-rb-bind-dn>", $ldapSearchUserDn).
-    Replace("<gitlab-rb-pw>", $ldapSearchUserPassword).
-    Replace("<gitlab-rb-base>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<gitlab-rb-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
-    Replace("<gitlab-ip>", $config.sre.webapps.gitlab.ip).
-    Replace("<gitlab-hostname>", $config.sre.webapps.gitlab.hostname).
-    Replace("<gitlab-fqdn>", "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
-    Replace("<gitlab-root-password>", $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)).
-    Replace("<gitlab-login-domain>", $config.shm.domain.fqdn).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-    Replace("<timezone>", $config.sre.time.timezone.linux)
+# Load the cloud-init template and expand mustache placeholders
+$config["gitlab"] = @{
+    ldapSearchUserDn       = $ldapSearchUserDn
+    ldapSearchUserPassword = $ldapSearchUserPassword
+    ldapUserFilter         = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
+    rootPassword           = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
+}
+$gitlabCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Parameters $config
 # Deploy GitLab VM
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
@@ -131,6 +152,8 @@ $params = @{
 $gitlabVm = Deploy-UbuntuVirtualMachine @params
 # Change subnets and IP address while GitLab VM is off then restart
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
+# Update DNS records for this VM
+Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.sre.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.gitlab.hostname -VmIpAddress $config.sre.webapps.gitlab.ip
 
 
 # Switch back to original subscription

@@ -11,8 +11,8 @@ apt:
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
-    layout: True
-    overwrite: True
+    layout: true
+    overwrite: true
 
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
@@ -49,8 +49,8 @@ write_files:
 users:
   - default
   - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
+    lock_passwd: true
+    sudo: false
     ssh_authorized_keys:
       - <external-mirror-public-key>
 
@@ -95,4 +95,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

@@ -14,48 +14,48 @@ apt:
   sources:
     atom.list:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
-      keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09 # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
+      keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
     azure-cli.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     # Official DBeaver PPA (from https://dbeaver.io/download/)
     dbeaver.list:
       source: "deb http://ppa.launchpad.net/serge-rider/dbeaver-ce/ubuntu bionic main"
-      keyid: 30ECE32520D438C21E16BF884A71B51882788FD2
+      keyid: 30ECE32520D438C21E16BF884A71B51882788FD2  # Launchpad PPA for Serge Rider
 
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     postgresql.list:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
-      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8 # PostgreSQL Debian Repository
+      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
 
     mono-project.list:
       source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
-      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
+      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF  # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
 
     nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
-      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
-      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80 # cudatools <cudatools@nvidia.com>
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
-      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9 # Michael Rutter <marutter@gmail.com>
+      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
     sbt.list:
       source: "deb https://dl.bintray.com/sbt/debian /"
-      keyid: 2EE0EA64E40A89B84B2DF73499E82A75642AC823 # sbt build tool <scalasbt@gmail.com>
+      keyid: 2EE0EA64E40A89B84B2DF73499E82A75642AC823  # sbt build tool <scalasbt@gmail.com>
 
     vscode.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
 
 write_files:
@@ -199,7 +199,7 @@ runcmd:
   # Suppress apt prompts and warning messages
   - echo "Suppressing apt prompts"
   - export DEBIAN_FRONTEND=noninteractive
-  - sleep 1 # ensure that run commands are cleanly time-separated from other cloud-init commands
+  - sleep 1  # ensure that run commands are cleanly time-separated from other cloud-init commands
 
   - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
   # Install python packages used in the rest of the build
@@ -269,7 +269,7 @@ runcmd:
   - echo "Installing pyenv..."
   - export PYENV_ROOT="/opt/pyenv"
   - rm -rf $PYENV_ROOT 2> /dev/null
-  - PATH="$PYENV_ROOT/bin:$PATH" # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
+  - PATH="$PYENV_ROOT/bin:$PATH"  # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
 
@@ -310,7 +310,7 @@ runcmd:
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   # Set some Julia environment variables before installing/building the packages
   - export JULIA_COPY_STACKS=1
-  - export PYTHON="$(which python3)" # link Julia against system Python 3
+  - export PYTHON="$(which python3)"  # link Julia against system Python 3
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   # Move the locally-installed Julia kernel to the main directory
   - mv /root/.local/share/jupyter ${JULIA_BASE_DIR}/share || exit 1
@@ -355,8 +355,8 @@ runcmd:
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
-  - export HOME=/root # this is needed for the installation of the 'credentials' package
-  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc # this ensures that all users will pick up system R when running RStudio
+  - export HOME=/root  # this is needed for the installation of the 'credentials' package
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - echo "Preparing to install $(echo $CRAN_PACKAGES | wc -w) CRAN packages\n${CRAN_PACKAGES}"
@@ -395,8 +395,8 @@ runcmd:
   # Clean up any build artifacts
   - echo ">=== $(date +%s) Cleaning up the build environment ===<"
   - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
-  - find /root/ -mindepth 1 -delete # remove all files from root's home directory
-  - tmpreaper 10m /tmp/ /var/tmp/   # remove temporary files that have not been accessed in 10 minutes
+  - find /root/ -mindepth 1 -delete  # remove all files from root's home directory
+  - tmpreaper 10m /tmp/ /var/tmp/    # remove temporary files that have not been accessed in 10 minutes
   # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
   # Remove xscreensaver (unnecessary)
   - apt-get remove -y netcat-openbsd xscreensaver
@@ -467,4 +467,4 @@ power_state:
   mode: poweroff
   message: "Shutting down after cloud-init is finished"
   timeout: 30
-  condition: True
+  condition: true

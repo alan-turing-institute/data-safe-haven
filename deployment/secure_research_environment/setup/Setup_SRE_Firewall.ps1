@@ -21,7 +21,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Load the SRE VNet and gateway IP
 # --------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-# $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg | Where-Object { $_.Name -match "$($config.sre.rds.gateway.vmName).*" } | Select-Object -First 1).IpAddress
+# $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg | Where-Object { $_.Name -match "$($config.sre.remoteDesktop.gateway.vmName).*" } | Select-Object -First 1).IpAddress
 
 
 # Load the SHM firewall and ensure it is started (it can be deallocated to save costs or if credit has run out)
@@ -39,10 +39,8 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 
 # Load all traffic rules from template
 # ------------------------------------
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
-    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-    Replace("<subnet-sre-deployment-cidr>", $config.sre.network.vnet.subnets.deployment.cidr).
-    Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
+$config.shm.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "sre-$($config.sre.id)*"
 
 
@@ -59,7 +57,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the RDG and deployment subnets to the firewall route table
 # ------------------------------------------------------------------------------------
-$excludedSubnetNames = @($config.sre.network.vnet.subnets.rds.name, $config.sre.network.vnet.subnets.deployment.name)
+$excludedSubnetNames = @($config.sre.network.vnet.subnets.remoteDesktop.name, $config.sre.network.vnet.subnets.deployment.name)
 foreach ($subnet in $VirtualNetwork.Subnets) {
     if ($excludedSubnetNames.Contains($subnet.Name)) {
         Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is NOT attached to any route table..."

@@ -331,6 +331,7 @@
   },
   "nsgPrefix": "NSG_SHM_TESTA",
   "organisation": {
+    "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
     "name": "The Alan Turing Institute",
     "stateCountyRegion": "London",
@@ -351,11 +352,11 @@
   "storage": {
     "artifacts": {
       "accountName": "shmtestaartifactslubiehy",
-      "rg": "RG_SHM_TESTA_ARTIFACTS"
+      "rg": "RG_SHM_TESTA_STORAGE"
     },
     "bootdiagnostics": {
       "accountName": "shmtestabootdiagslubiehy",
-      "rg": "RG_SHM_TESTA_ARTIFACTS"
+      "rg": "RG_SHM_TESTA_STORAGE"
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTA_PERSISTENT_DATA"
@@ -420,5 +421,6 @@
         "usernameSecretName": "shm-testa-aad-localsync-username"
       }
     }
-  }
+  },
+  "vmImagesRgPrefix": "RG_SH"
 }

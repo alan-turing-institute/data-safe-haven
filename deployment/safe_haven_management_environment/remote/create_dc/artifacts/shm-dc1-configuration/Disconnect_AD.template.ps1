@@ -10,16 +10,19 @@ if (-Not (Get-Module -ListAvailable -Name MSOnline)) {
 if (Get-Module -ListAvailable -Name MSOnline) {
     Write-Output "Please use the username and password for an Azure AD global admin. Don't forget the @<shm-fqdn> on the end of the username!"
     Connect-MsolService
-    # Disable synchronisation if it is currently enabled
-    if ((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled) {
-        Write-Output "Disabling directory synchronisation..."
-        Set-MsolDirSyncEnabled -EnableDirSync $False -Force
-    }
     # Print the current synchronisation status
     if ((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled) {
-        Write-Output "[x] Directory synchronisation is currently ENABLED"
+        Write-Output "[ ] Directory synchronisation is ENABLED"
+        Write-Output "Disabling directory synchronisation..."
+        Set-MsolDirSyncEnabled -EnableDirSync $False -Force
+        # Print the current synchronisation status
+        if ((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled) {
+            Write-Output "[x] Directory synchronisation is still ENABLED"
+        } else {
+            Write-Output "[o] Directory synchronisation is now DISABLED"
+        }
     } else {
-        Write-Output "[o] Directory synchronisation is currently DISABLED"
+        Write-Output "[o] Directory synchronisation is already DISABLED"
     }
     # Remove user-added service principals except the MFA service principal
     Write-Output "Removing any user-added service principals..."

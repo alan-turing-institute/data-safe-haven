@@ -2,9 +2,16 @@
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 1 environment, follow [these instructions](./how-to-deploy-sre-tier1.md) instead.
+We currently support three different end-user interfaces:
 
-## Contents
++ :pear: `Apache Guacamole` :sparkles: **recommended for development and testing or for Tier 0/1 production SREs requiring full remote desktop** :sparkles:
+  + [Tiers 0/1 only](how-to-deploy-sre-apache-guacamole.md)
++ :beginner: `CoCalc` :sparkles: **recommended for Tier 0/1 SREs requiring collaborative notebook editing** :sparkles:
+  + [Tiers 0/1 only](how-to-deploy-sre-cocalc.md)
++ :bento: `Microsoft Remote Desktop` :sparkles: **recommended for Tier 2 or above production SREs** :sparkles:
+  + [Tiers 2/3/4](how-to-deploy-sre-microsoft-rds.md)
+
+:exclamation: Deployment of an SRE using Apache Guacamole is more fully automated and cheaper than using Microsoft Remote Desktop. However, we have not yet run a penetration test for a Guacamole-based SRE so we cannot currently recommend its use in production environments at Tier 2 or above.
 
 + [:seedling: Prerequisites](#seedling-prerequisites)
   + [:beginner: Software](#beginner-software)
@@ -92,7 +99,9 @@ The core properties for the new SRE environment must be present in the `environm
 
 > :pencil: You should decide on an `<SRE ID>` at this point. This should be 7 characters or fewer
 
-The following core SRE properties must be defined in a JSON file named `sre_<SHM ID><SRE ID>_core_config.json`.
+This also gives you the `<SRE Config ID>`, which is the combination: `<SHM ID><SRE ID>` (eg. `testcsandbox` for SRE `sandbox` in SHM `testc`).
+
+The following core SRE properties must be defined in a JSON file named `sre_<SRE Config ID>_core_config.json`.
 
 ``` json
 {
@@ -156,13 +165,13 @@ On your **deployment machine**.
 On your **deployment machine**.
 
 + :pencil: If the subscription is not empty, confirm that it is not being used before deleting any resources in it.
-+ Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 
 ### :registered: Register SRE with the SHM
 
 On your **deployment machine**.
 
-+ Register service accounts with the SHM by running `./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Register service accounts with the SHM by running `./Setup_SRE_Key_Vault_And_Users.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + This step also creates a Key Vault in the SRE subscription in `Resource Groups -> RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS -> kv-<SHM ID>-sre-<SRE ID>` . Additional deployment steps will add secrets to this Key Vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :station: Deploy networking components
@@ -171,7 +180,7 @@ On your **deployment machine**.
 
 On your **deployment machine**.
 
-+ Run `./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>` .
++ Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
   <details>
@@ -198,7 +207,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run `./Setup_SRE_Networking.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` qual to `testcsandbox` .
 + The deployment will take **around 5 minutes**.
 + The VNet peerings may take a few minutes to provision after the script completes.
 
@@ -211,7 +220,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run `./Setup_SRE_Remote_Desktop.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + The deployment will take **around 50 minutes**.
 + **Troubleshooting** If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them. If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#tropical_fish-deploy-remote-desktop-servers).
 
@@ -238,7 +247,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run `./Secure_SRE_Remote_Desktop_Gateway.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + This will perform the following actions, which can be run individually if desired:
 
 <details>
@@ -249,7 +258,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run `./Disable_Legacy_TLS.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + The deployment will take **less than 5 minutes**.
   + NB. If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run this script to update the list of accepted protocols
 
@@ -263,7 +272,7 @@ On your **deployment machine**.
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-+ Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config you are using. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 
 </details>
 
@@ -276,7 +285,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run `./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailAddress <email>`.
++ Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE Config ID> -emailAddress <email>` , where the `<SRE Config ID>` is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 + **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 + **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk` ). For production environments this should usually not be an issue. The signed certificates are also stored in the Key Vault for easy redeployment. However, if you find yourself needing to re-run this step without the Key Vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
@@ -384,7 +393,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run the `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + The deployment will take **around 30 minutes**.
 
 ### :microscope: Test GitLab and CodiMD servers
@@ -437,8 +446,9 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy an SRE storage account using `./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>`
-  + This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
++ Deploy an SRE storage account using `./Setup_SRE_Storage_Accounts.ps1 -configId <SRE Config ID>`
+  + Where the `<SRE Config ID>` is the name specified in the config, equal to `<SHMID><SREID>`. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox`.
+  + This script will create a storage account in the `RG_SHM_<SHMID>_PERSISTENT_DATA` resource group, a corresponding private end point in `RG_SHM_<SHMID>_SRE_<SREID>_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
 + The deployment will take **around 5 minutes** to complete.
 
 ## :baseball: Deploy databases
@@ -449,7 +459,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run the `./Setup_SRE_Databases.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
   + The deployment of an `MS-SQL` database will take **around 60 minutes** to complete.
   + The deployment of a `PostgreSQL` database will take **around 10 minutes** to complete.
@@ -473,7 +483,7 @@ On your **deployment machine**.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 + Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-+ Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet>`.
++ Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE Config ID> -ipLastOctet <IP last octet>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using and `<IP last octet>` is the desired last octet of the IP address.
   + The initial shared `DSVM Main` shared VM should be deployed with the last octet `160`
   + The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199` .
   + You can also provide a VM size by passing the optional `-vmSize` parameter.
@@ -499,7 +509,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Run the `./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Run the `./Apply_SRE_Network_Configuration.ps1 -configId <SRE Config ID>` script, where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .  you are using.
 
 ## :fire_engine: Configure firewall
 
@@ -509,7 +519,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
++ Deploy and configure the firewall by running `./Setup_SRE_Firewall.ps1 -configId <SRE Config ID>` , where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 + This will take **a few minutes** to run.
 
 ## :chart_with_upwards_trend: Configure logging
@@ -518,7 +528,7 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-+ Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -shmId $shmId -sreId $sreId`.
++ Deploy and configure logging by running `./Setup_SRE_Logging.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox` .
 + This will take **a few minutes** to run.
 + If configuration fails for one or more of the VMs, see the **troubleshooting** instructions below.
 
@@ -529,7 +539,7 @@ The API call that installs the logging extensions to the VMs will time out after
 When this happens, you will see a failure message reporting that installation of the extension was not successful for the VM(s) for which the API timed out.
 You may also get this message for other failures in installation.
 
-In any case, re-running `./Setup_SRE_Logging.ps1 -shmId $shmId -sreId $sreId` will attempt to install the extensions again, skipping any VMs that already have the extensions installed.
+In any case, re-running `./Setup_SRE_Logging.ps1 -configId <SRE Config ID>` will attempt to install the extensions again, skipping any VMs that already have the extensions installed.
 Where the issue was an API timeout, these VMs will report that the extension is already installed when the logging set up script is run again.
 
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
@@ -561,4 +571,6 @@ On your **deployment machine**.
 + Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+  + Run `./SRE_Teardown.ps1 -configId <SRE Config ID> -dryRun` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>` . For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox`.
+    + The `-dryRun` option will activate the no-op mode which will print the names of resource groups before their deletion.
+  + If the list of resource groups is as expected, run `./SRE_Teardown.ps1 -configId <SRE Config ID>` , where the `<SRE Config ID>` is the  name specified in the config, equal to `<SHMID><SREID>`. For example, the config `sre_testcsandbox_full_config` will have `<SRE Config ID>` equal to `testcsandbox`.

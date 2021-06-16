@@ -7,6 +7,8 @@
 param(
     [Parameter(Mandatory = $false, HelpMessage = "FQDN for the SHM")]
     [string]$ShmFqdn,
+    [Parameter(Mandatory = $false, HelpMessage = "FQDN for the SRE")]
+    [string]$SreFqdn,
     [Parameter(Mandatory = $false, HelpMessage = "SRE ID")]
     [string]$SreId,
     [Parameter(Mandatory = $false, HelpMessage = "Base-64 encoded list of private DNS zone name-fragments to remove")]
@@ -18,8 +20,8 @@ param(
 $PrivateEndpointFragments = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($PrivateEndpointFragmentsB64)) | ConvertFrom-Json
 
 
-# Remove records for domain-joined SRE VMs
-# ----------------------------------------
+# Remove any records for domain-joined SRE VMs in the SHM zone
+# ------------------------------------------------------------
 Write-Output "Removing SRE DNS records..."
 foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$ShmFqdn" | Where-Object { $_.HostName -like "*$SreId" })) {
     $dnsRecord | Remove-DnsServerResourceRecord -ZoneName "$ShmFqdn" -Force
@@ -27,6 +29,20 @@ foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$ShmFqdn" | Where
         Write-Output " [o] Successfully removed DNS record '$($dnsRecord.HostName)'"
     } else {
         Write-Output " [x] Failed to remove DNS record '$($dnsRecord.HostName)'!"
+    }
+}
+
+
+# Remove the forward lookup zone if it exists
+# -------------------------------------------
+Write-Output "Removing SRE DNS zone..."
+if (Get-DnsServerZone -Name $SreFqdn -ErrorAction SilentlyContinue) {
+    Write-Output " [ ] Removing DNS zone for '$SreFqdn'..."
+    Remove-DnsServerZone -Name $SreFqdn -Force
+    if ($?) {
+        Write-Output " [o] Successfully removed DNS zone for '$SreFqdn'"
+    } else {
+        Write-Output " [x] Failed to removed DNS zone for '$SreFqdn'!"
     }
 }
 
