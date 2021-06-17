@@ -58,7 +58,7 @@ apt:
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
     qgis.list:
-      source: "deb https://qgis.org/ubuntu $(lsb_release -c -s) main"
+      source: "deb https://qgis.org/ubuntu bionic main"
       keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
 
     sbt.list:

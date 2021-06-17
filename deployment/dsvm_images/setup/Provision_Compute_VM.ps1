@@ -15,6 +15,7 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
@@ -73,41 +74,19 @@ $vnet = Deploy-VirtualNetwork -Name $config.dsvmImage.build.vnet.name -ResourceG
 $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwork $vnet -AddressPrefix $config.dsvmImage.build.subnet.cidr
 
 
-# Set up the build NSG
-# --------------------
+# Ensure that build NSG exists with correct rules and attach it to the build subnet
+# ---------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
 # Get list of IP addresses which are allowed to connect to the VM candidates
+$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Name -eq "AllowBuildAdminSshInbound" }
 $allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
-$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Priority -eq 1000 }
-if ($existingRule) {
-    $allowedIpAddresses += @($existingRule.SourceAddressPrefix)
-}
-$allowedIpAddresses = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
-# Add the necessary rules
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Allow `
-                             -Name "AllowBuildAdminSSH" `
-                             -Description "Allow port 22 for management over ssh" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 22 `
-                             -Direction Inbound `
-                             -Priority 1000 `
-                             -Protocol TCP `
-                             -SourceAddressPrefix $allowedIpAddresses `
-                             -SourcePortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Deny `
-                             -Name "DenyAll" `
-                             -Description "Inbound deny all" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange * `
-                             -Direction Inbound `
-                             -Priority 3000 `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange *
-$null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+$allowedIpAddresses += $existingRule ? @($existingRule.SourceAddressPrefix) : @()
+$config["buildAdminIpAddresses"] = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
+# Update the NSG and ensure it is connected to the correct subnet
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.dsvmImage.build.nsg.rules) -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $buildNsg -Rules $rules
+$subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Convert PyPI package lists into requirements files
