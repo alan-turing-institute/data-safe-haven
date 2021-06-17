@@ -1,6 +1,6 @@
 {
-    "mssql_jdbc": "9.2.0.jre8",
+    "mssql_jdbc": "9.2.1.jre8",
     "pgjdbc": "1.1.6",
     "postgis_jdbc": "2.5.0",
-    "postgresl": "42.2.9"
+    "postgresl": "42.2.19"
 }
