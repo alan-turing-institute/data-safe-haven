@@ -1,0 +1,4 @@
+hash: 3b5d38351d27868b1829b07471c0f5d883c0b1449e682634029a57afb96539a8
+version: 1.4.1106
+debfile: rstudio-|VERSION|-amd64.deb
+remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|

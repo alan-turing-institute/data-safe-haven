@@ -61,8 +61,8 @@ function Expand-CloudInitResources {
 
     # Insert resources into the cloud-init template
     foreach ($resource in (Get-ChildItem $ResourcePath)) {
-        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
-        $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{{")[0] } | Select-Object -First 1
+        $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
         $Template = $Template.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
     }
     return $Template

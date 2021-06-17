@@ -1,5 +1,9 @@
 #cloud-config
 
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: Etc/UTC
+
 # Update package database on first boot
 package_update: true
 
@@ -74,33 +78,26 @@ write_files:
           renewTGT=true
           doNotPrompt=true;
       };
-  # NB. the URL contains the commit this release was made from
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 063ef01c23fbcab4a34d18c0acf0e504ecda03f80e3502761945075ec87f1102
-      version: 1.26.1
-      debfile: azuredatastudio-linux-|VERSION|.deb
-      remote: https://sqlopsbuilds.azureedge.net/stable/796abbdf5fdd341e3528e30a6b777c93e115eb02/|DEBFILE|
+      {{deb-azuredatastudio.version}}
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
-      hash: 3b5d38351d27868b1829b07471c0f5d883c0b1449e682634029a57afb96539a8
-      version: 1.4.1106
-      debfile: rstudio-|VERSION|-amd64.deb
-      remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
+      {{deb-rstudio.version}}
   - path: "/opt/verification/analyse_build.py"
     permissions: "0755"
     content: |
-      <analyse_build.py>
+      {{analyse_build.py}}
   - path: "/opt/build/install_python_version.sh"
     permissions: "0500"
     content: |
-      <install_python_version.sh>
+      {{install_python_version.sh}}
   - path: "/opt/build/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
-      <dbeaver_drivers_config.xml>
+      {{dbeaver_drivers_config.xml}}
   - path: "/opt/build/deprovision.log"
     permissions: "0600"
     content: |
@@ -108,23 +105,23 @@ write_files:
   - path: "/opt/build/deprovision_vm.sh"
     permissions: "0500"
     content: |
-      <deprovision_vm.sh>
+      {{deprovision_vm.sh}}
   - path: "/opt/build/download_and_install_deb.sh"
     permissions: "0500"
     content: |
-      <download_and_install_deb.sh>
+      {{download_and_install_deb.sh}}
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
-      <packages-julia.list>
+      {{packages-julia.list}}
   - path: "/opt/build/packages/packages-r-bioconductor.list"
     permissions: "0444"
     content: |
-      <packages-r-bioconductor.list>
+      {{packages-r-bioconductor.list}}
   - path: "/opt/build/packages/packages-r-cran.list"
     permissions: "0444"
     content: |
-      <packages-r-cran.list>
+      {{packages-r-cran.list}}
   - path: "/opt/build/performance_log.csv"
     permissions: "0644"
     content: |
@@ -132,15 +129,15 @@ write_files:
   - path: "/opt/build/python-requirements-py36.txt"
     permissions: "0444"
     content: |
-      <python-requirements-py36.txt>
+      {{python-requirements-py36.txt}}
   - path: "/opt/build/python-requirements-py37.txt"
     permissions: "0444"
     content: |
-      <python-requirements-py37.txt>
+      {{python-requirements-py37.txt}}
   - path: "/opt/build/python-requirements-py38.txt"
     permissions: "0444"
     content: |
-      <python-requirements-py38.txt>
+      {{python-requirements-py38.txt}}
   - path: "/opt/build/python-pyproject-template.toml"
     permissions: "0400"
     content: |
@@ -181,17 +178,19 @@ write_files:
 
 # List of packages to install with apt-get
 packages:
-  - <apt packages>
+  - {{packages-apt.list}}
 
-# Set locale and timezone
-locale: en_GB.UTF-8
-timezone: <timezone>
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
+
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.
@@ -226,27 +225,19 @@ runcmd:
   # Install drivers from maven
   - echo "Installing DBeaver drivers..."
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
-  - MSSQL_JDBC_VERSION="9.2.0.jre8"
-  - PGJDBC_VERSION="1.1.6"
-  - POSTGIS_JDBC_VERSION="2.5.0"
-  - POSTGRESQL_VERSION="42.2.9"
   # Note that the filenames specified here have to be kept synchronised with the names in the dbeaver_drivers_config.xml file.
   # Adding new drivers therefore involves changing both this file and the XML file.
   - mkdir -p ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/${MSSQL_JDBC_VERSION}/mssql-jdbc-${MSSQL_JDBC_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/${MSSQL_JDBC_VERSION}/mssql-jdbc-${MSSQL_JDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/{{dbeaver.drivers.mssql_jdbc}}/mssql-jdbc-{{dbeaver.drivers.mssql_jdbc}}.jar -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/{{dbeaver.drivers.mssql_jdbc}}/mssql-jdbc-{{dbeaver.drivers.mssql_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
   - mkdir -p ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/${PGJDBC_VERSION}/pgjdbc-core-parent-${PGJDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/${PGJDBC_VERSION}/pgjdbc-versions-${PGJDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/{{dbeaver.drivers.pgjdbc}}/pgjdbc-core-parent-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/{{dbeaver.drivers.pgjdbc}}/pgjdbc-versions-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - mkdir -p ${DBEAVER_DRIVER_DIR}/net.postgis/
-  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
-  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
-  # Expand driver configuration template
-  - sed -i "s/|POSTGRESQL_VERSION|/${POSTGRESQL_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
-  - sed -i "s/|MSSQL_JDBC_VERSION|/${MSSQL_JDBC_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
-  - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /opt/build/dbeaver_drivers_config.xml
+  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
+  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - mv /opt/build/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
@@ -287,7 +278,7 @@ runcmd:
   # - disable this source as suggested here: https://bugs.launchpad.net/ubuntu/+source/clamav-unofficial-sigs/+bug/1643172
   - sed -i '/si_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   - sed -i '/si_update_hours/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
-  # Calls to MalwarePatrol faile with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
+  # Calls to MalwarePatrol fail with 'MalwarePatrol mbl.ndb database integrity tested BAD - SKIPPING'
   # - disable this source as suggested here: https://www.mail-archive.com/pkg-clamav-devel@lists.alioth.debian.org/msg05014.html
   - sed -i '/mbl_dbs=/,/^"$/d' /usr/share/clamav-unofficial-sigs/conf.d/00-clamav-unofficial-sigs.conf
   # Update unofficial signatures (strangely this gives no output in the cloud-init logs)

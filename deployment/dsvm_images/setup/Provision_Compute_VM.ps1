@@ -16,6 +16,7 @@ Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -109,45 +110,29 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
 $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
-# Insert scripts into the cloud-init template
-# -------------------------------------------
-$resources = Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
-$resources += Get-ChildItem (Join-Path $PSScriptRoot ".." "packages")
-foreach ($resource in $resources) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
-}
-
-
-# Insert apt packages into the cloud-init template
-# ------------------------------------------------
-$indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<apt packages>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-$indentedContent = (Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indentedContent)
-
-
-# Convert PyPI package lists into requirements files and add to cloud-init template
-# ---------------------------------------------------------------------------------
+# Convert PyPI package lists into requirements files
+# --------------------------------------------------
+$temporaryDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString()))
 $packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
-$packageLists = Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")
-foreach ($packageList in $packageLists) {
+foreach ($packageList in Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")) {
     $pythonVersion = ($packageList.BaseName -split "-")[-1]
-    $pythonPackageVersions = Get-Content $packageList | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<python-requirements-py${pythonVersion}.txt>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
+    Get-Content $packageList | `
+        ForEach-Object {
+            if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" }
+        } | Out-File (Join-Path $temporaryDir "python-requirements-py${pythonVersion}.txt")
 }
 
 
-# Make any other cloud-init template replacements
-# -----------------------------------------------
-$cloudInitTemplate = $cloudInitTemplate.
-    Replace("<timezone>", $config.time.timezone.linux).
-    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
-    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
-    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
-    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3])
+# Load the cloud-init template then add resources and expand mustache placeholders
+# --------------------------------------------------------------------------------
+$config["dbeaver"] = @{
+    drivers = $(Get-Content -Raw -Path "../packages/dbeaver-driver-versions.json" | ConvertFrom-Json -AsHashtable)
+}
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath $temporaryDir.FullName
+$cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
+$null = Remove-Item -Path $temporaryDir -Recurse -Force -ErrorAction SilentlyContinue
 
 
 # Construct build VM parameters
@@ -180,7 +165,7 @@ $params = @{
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
-    location               = $config.dsvmImage.location
+    Location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
     OsDiskSizeGb           = $config.dsvmImage.build.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
