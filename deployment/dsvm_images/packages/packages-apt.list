@@ -31,6 +31,7 @@ gdebi-core
 gfortran
 git
 git-core
+imagemagick
 jags
 jupyter
 jupyter-nbconvert

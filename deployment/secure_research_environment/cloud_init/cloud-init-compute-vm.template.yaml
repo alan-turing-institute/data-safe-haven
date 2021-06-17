@@ -147,7 +147,7 @@ write_files:
       Type=Link
       Name=CoCalc
       Comment=
-      Icon=/opt/icons/cocalc.svg
+      Icon=/opt/icons/cocalc.png
       URL=https://{{sre.webapps.cocalc.fqdn}}
 
   - path: "/etc/skel/Desktop/CodiMD.desktop"
@@ -427,11 +427,6 @@ ntp:
     - {{ntp-server-2}}
     - {{ntp-server-3}}
 
-# Install blobfuse for mounting Azure storage
-packages:
-  - blobfuse
-  - nfs-common
-
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Set permissions on scratch directory
@@ -464,11 +459,6 @@ runcmd:
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
   - python3 /opt/configuration/configure_pycharm.py /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
-  # Download web application icons
-  - mkdir -p /opt/icons
-  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
-  - wget https://share.cocalc.com/share/cocalc-icon.svg -O /opt/icons/cocalc.svg
-  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
