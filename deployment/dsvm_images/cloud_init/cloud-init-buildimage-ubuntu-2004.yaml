@@ -17,36 +17,40 @@ apt:
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
     azure-cli.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     # Official DBeaver PPA (from https://dbeaver.io/download/)
     dbeaver.list:
-      source: "deb http://ppa.launchpad.net/serge-rider/dbeaver-ce/ubuntu bionic main"
+      source: "deb http://ppa.launchpad.net/serge-rider/dbeaver-ce/ubuntu focal main"
       keyid: 30ECE32520D438C21E16BF884A71B51882788FD2  # Launchpad PPA for Serge Rider
 
     microsoft-general.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
-    postgresql.list:
-      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
-      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
-
     mono-project.list:
-      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+      source: "deb https://download.mono-project.com/repo/ubuntu stable-focal main"
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF  # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
 
     nvidia-cuda.list:
-      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
+      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
-      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
+    postgresql.list:
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
+      keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
+
+    qgis.list:
+      source: "deb https://qgis.org/ubuntu focal main"
+      keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
+
     rproject-updates.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
     sbt.list:
@@ -186,13 +190,8 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
-  enabled: true
-  ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    - <ntp-server>
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.

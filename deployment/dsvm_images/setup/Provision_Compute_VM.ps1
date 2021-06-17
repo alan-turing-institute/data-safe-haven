@@ -3,7 +3,7 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' [default], 'Ubuntu1810', 'Ubuntu1904', 'Ubuntu1910'")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004")]
-    [string]$sourceImage = "Ubuntu1804",
+    [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
@@ -40,15 +40,16 @@ if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
 # --------------------------------------------
 if ($sourceImage -eq "Ubuntu1804") {
     $baseImageSku = "18.04-LTS"
-    $buildVmName = "ComputeVM-Ubuntu1804Base"
+    $shortVersion = "1804"
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
 } elseif ($sourceImage -eq "Ubuntu2004") {
-    # $baseImageSku = "20.04-LTS"
-    # $buildVmName = "ComputeVM-Ubuntu2004Base"
-    Add-LogMessage -Level Fatal "Source image '$sourceImage' is not yet available but it will be shortly!"
+    $baseImageSku = "20.04-LTS"
+    $shortVersion = "2004"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu.yaml") -Raw
+$buildVmName = "ComputeVM-Ubuntu${shortVersion}"
+$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.yaml") -Raw
 
 
 # Create resource groups if they do not exist
