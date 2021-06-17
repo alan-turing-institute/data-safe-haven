@@ -119,7 +119,7 @@ foreach ($packageList in Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" 
     Get-Content $packageList | `
         ForEach-Object {
             if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" }
-        } | Out-File (Join-Path $temporaryDir "python-requirements-py${pythonVersion}.txt")
+        } | Out-File (Join-Path $temporaryDir.FullName "python-requirements-py${pythonVersion}.txt")
 }
 
 
@@ -128,7 +128,7 @@ foreach ($packageList in Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" 
 $config["dbeaver"] = @{
     drivers = $(Get-Content -Raw -Path "../packages/dbeaver-driver-versions.json" | ConvertFrom-Json -AsHashtable)
 }
-$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath $temporaryDir.FullName
 $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
