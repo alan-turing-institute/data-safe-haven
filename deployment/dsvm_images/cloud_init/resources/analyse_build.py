@@ -41,15 +41,13 @@ def main():
     with suppress(IndexError):
         _ = list(
             filter(
-                lambda entry: entry["event_type"] == "start"
-                and entry["name"] == "azure-ds/write_files",
+                lambda entry: entry["event_type"] == "start" and entry["name"] == "azure-ds/write_files",
                 cloud_init_log_events,
             )
         )[0]
         end_entries = list(
             filter(
-                lambda entry: entry["event_type"] == "finish"
-                and entry["name"] == "azure-ds/write_files",
+                lambda entry: entry["event_type"] == "finish" and entry["name"] == "azure-ds/write_files",
                 cloud_init_log_events,
             )
         )
@@ -72,17 +70,9 @@ def main():
 
     # Get initial cloud-init setup time
     with suppress(IndexError):
-        _ = list(
-            filter(
-                lambda entry: entry["event_type"] == "start"
-                and entry["name"] == "modules-config",
-                cloud_init_log_events,
-            )
-        )[0]
         end_entries = list(
             filter(
-                lambda entry: entry["event_type"] == "finish"
-                and entry["name"] == "modules-config",
+                lambda entry: entry["event_type"] == "finish" and entry["name"] == "modules-config",
                 cloud_init_log_events,
             )
         )
@@ -105,19 +95,9 @@ def main():
 
     # Get package install/update time
     with suppress(IndexError):
-        _ = list(
-            filter(
-                lambda entry: entry["event_type"] == "start"
-                and entry["name"]
-                == "modules-final/config-package-update-upgrade-install",
-                cloud_init_log_events,
-            )
-        )[0]
         end_entries = list(
             filter(
-                lambda entry: entry["event_type"] == "finish"
-                and entry["name"]
-                == "modules-final/config-package-update-upgrade-install",
+                lambda entry: entry["event_type"] == "finish" and entry["name"] == "modules-final/config-package-update-upgrade-install",
                 cloud_init_log_events,
             )
         )
@@ -141,23 +121,23 @@ def main():
     # Get total time
     build_end_status = None
     with suppress(IndexError):
-        entry = list(
+        last_entry = list(
             filter(
-                lambda x: x["event_type"] == "finish" and x["name"] == "modules-final",
+                lambda entry: entry["event_type"] == "finish" and entry["name"] == "modules-final",
                 cloud_init_log_events,
             )
         )[0]
         events.append(
             {
-                "timestamp": datetime.fromtimestamp(entry["timestamp"]),
-                "level": entry["result"],
+                "timestamp": datetime.fromtimestamp(last_entry["timestamp"]),
+                "level": last_entry["result"],
                 "message": "Finished build",
             }
         )
-        if entry["result"]:
+        if last_entry["result"]:
             build_end_status = (
-                datetime.fromtimestamp(entry["timestamp"] - 1),
-                entry["result"],
+                datetime.fromtimestamp(last_entry["timestamp"] - 1),
+                last_entry["result"],
             )
 
     # Load events from runcmd echo statements
@@ -252,17 +232,14 @@ def main():
                     if build_end_status:
                         timestamp = datetime.strptime(
                             "{}-{}".format(datetime.today().year, row["time"]),
-                            "%Y-%d-%m %H:%M:%S",
+                            r"%Y-%d-%m %H:%M:%S",
                         )
                         if timestamp > build_end_status[0]:
                             break
                     mem_bytes.append(
-                        sum(
-                            map(
-                                float,
-                                (row["used"], row["free"], row["buff"], row["cach"]),
-                            )
-                        )
+                        sum(map(
+                            float, (row["used"], row["free"], row["buff"], row["cach"])
+                        ))
                     )
                     mem_usage.append(100 * float(row["used"]) / mem_bytes[-1])
                     cpu_usage.append(100 - float(row["idl"]))
@@ -296,11 +273,8 @@ def main():
         )
         # CPU
         print("{} CPU available: {:d} cores".format(prefix, int(n_cores)))
-        cpu_mean, cpu_min, cpu_max = (
-            sum(cpu_usage) / len(cpu_usage),
-            min(cpu_usage),
-            max(cpu_usage),
-        )
+        cpu_min, cpu_max = min(cpu_usage), max(cpu_usage)
+        cpu_mean = sum(cpu_usage) / len(cpu_usage)
         print(
             "{} ..... mean usage: {: >6.2f}% => {: >4.1f} cores".format(
                 prefix, cpu_mean, n_cores * cpu_mean / 100
