@@ -7,7 +7,6 @@ Cython
 dash
 dask
 dataclasses
-fbprophet
 flair
 flake8
 folium
@@ -27,6 +26,7 @@ pathos
 pg8000
 Pillow
 plotly
+prophet
 psycopg2
 pydot
 pygrib
