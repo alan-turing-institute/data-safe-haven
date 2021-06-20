@@ -16,6 +16,7 @@ START_TIME=$(date +%s)
 echo ">=== ${START_TIME} Installing Python ($PYTHON_ENV_NAME) and packages ===<"
 echo "Starting at $(date -u --iso-8601=seconds)"
 PYTHON_BASE_VERSION=$(echo "$PYTHON_ENV_NAME" | sed -E "s|py([0-9])([0-9]*)|\1.\2|")  # TODO: revisit this logic if/when Python 10 is released!
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 PYTHON_VERSION=$(pyenv install --list | grep -e "^ *${PYTHON_BASE_VERSION}." | tail -n 1 | sed 's/ //g')
 

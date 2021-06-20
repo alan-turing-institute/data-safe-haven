@@ -347,6 +347,7 @@ runcmd:
   - echo '# Set up pyenv' >> /etc/bash.bashrc
   - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
   - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
+  - echo 'eval "$(pyenv init --path)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv global $(ls /opt/pyenv/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
