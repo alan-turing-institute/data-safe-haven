@@ -295,9 +295,9 @@ runcmd:
 
   # Install Spark and Hadoop - approximately 10 minutes
   - echo ">=== $(date +%s) Installing Spark/Hadoop ===<"
-  - shui install --latest --target /opt/spark
-  - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
-  - PATH=$PATH:${SPARK_BASE_DIR}/bin
+  - shui install --latest --target /opt
+  - mv /opt/spark* /opt/spark
+  - PATH=$PATH:/opt/spark/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark/Hadoop!"; exit 1; else echo "... successfully installed Spark/Hadoop"; fi
 
   # Install Julia and packages - approximately 20 minutes
