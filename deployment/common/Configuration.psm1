@@ -154,8 +154,6 @@ function Get-ShmConfig {
         gallery         = [ordered]@{
             rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
             sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
-            imageMajorVersion = 0
-            imageMinorVersion = 3
         }
         images          = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"

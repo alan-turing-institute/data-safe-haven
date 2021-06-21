@@ -23,9 +23,7 @@ $null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorActio
 
 # Useful constants
 # ----------------
-$supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-Ubuntu2004Base")
-$majorVersion = $config.dsvmImage.gallery.imageMajorVersion
-$minorVersion = $config.dsvmImage.gallery.imageMinorVersion
+$supportedImages = @("ComputeVM-Ubuntu")
 
 
 # Ensure that gallery resource group exists
@@ -58,13 +56,13 @@ foreach ($supportedImage in $supportedImages) {
 # Ensure that image exists in the image resource group
 # ----------------------------------------------------
 $image = Get-AzResource -ResourceType Microsoft.Compute/images -ResourceGroupName $config.dsvmImage.images.rg -Name $imageName
-if (-Not $image) {
+if (-not $image) {
     Add-LogMessage -Level Error "Could not find an image called '$imageName' in resource group $($config.dsvmImage.images.rg)"
     Add-LogMessage -Level Info "Available images are:"
     foreach ($image in Get-AzResource -ResourceType Microsoft.Compute/images -ResourceGroupName $config.dsvmImage.images.rg) {
         Add-LogMessage -Level Info "  $($image.Name)"
     }
-    throw "Could not find an image called '$imageName'!"
+    Add-LogMessage -Level Fatal "Could not find an image called '$imageName'!"
 }
 
 
@@ -72,7 +70,9 @@ if (-Not $image) {
 # -----------------------------------
 Add-LogMessage -Level Info "Checking whether $($image.Name) is a supported image..."
 $imageDefinition = $supportedImages | Where-Object { $image.Name -Like "*$_*" } | Select-Object -First 1
-if (-Not $imageDefinition) {
+$majorVersion = ($image.Name -split "-")[1].Replace("Ubuntu", "").Substring(0, 2)
+$minorVersion = ($image.Name -split "-")[1].Replace("Ubuntu", "").Substring(2, 2)
+if (-not ($imageDefinition -and $majorVersion -and $minorVersion)) {
     Add-LogMessage -Level Fatal "Could not identify $($image.Name) as a supported image"
 }
 
@@ -80,7 +80,7 @@ if (-Not $imageDefinition) {
 # Determine the appropriate image version
 # ---------------------------------------
 Add-LogMessage -Level Info "[ ] Determining appropriate image version..."
-if (-Not $imageVersion) {
+if (-not $imageVersion) {
     $baseImageVersion = "${majorVersion}.${minorVersion}.$(Get-Date -Format "yyyyMMdd")"
     $mostRecentImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $config.dsvmImage.gallery.rg -GalleryName $config.dsvmImage.gallery.sig -GalleryImageDefinitionName $imageDefinition | Where-Object { $_.Name -Like "${baseImageVersion}*" } | ForEach-Object { $_.Name } | Sort-Object -Descending | Select-Object -First 1
     if ($mostRecentImageVersion) {

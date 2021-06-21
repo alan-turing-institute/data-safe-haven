@@ -1044,13 +1044,11 @@ function Get-ImageDefinition {
     )
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
     if ($Type -eq "Ubuntu") {
+        $imageDefinition = "ComputeVM-Ubuntu"
+    } elseif ($Type -eq "Ubuntu18") {
         $imageDefinition = "ComputeVM-Ubuntu1804Base"
     } elseif ($Type -eq "UbuntuTorch") {
         $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-    } elseif ($Type -eq "DataScience") {
-        $imageDefinition = "ComputeVM-DataScienceBase"
-    } elseif ($Type -eq "DSG") {
-        $imageDefinition = "ComputeVM-DsgBase"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }
