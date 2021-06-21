@@ -13,12 +13,8 @@ apt:
   # Add repositories
   sources:
     atom.list:
-      source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
+      source: "deb https://packagecloud.io/AtomEditor/atom/any/ any main"
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
-
-    azure-cli.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ focal main"
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     # Official DBeaver PPA (from https://dbeaver.io/download/)
     dbeaver.list:
@@ -26,7 +22,7 @@ apt:
       keyid: 30ECE32520D438C21E16BF884A71B51882788FD2  # Launchpad PPA for Serge Rider
 
     microsoft-general.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     mono-project.list:
@@ -37,7 +33,11 @@ apt:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
-    nvidia-ml.list:
+    nvidia-ml-1804.list:
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
+
+    nvidia-ml-2004.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
@@ -58,7 +58,7 @@ apt:
       keyid: 2EE0EA64E40A89B84B2DF73499E82A75642AC823  # sbt build tool <scalasbt@gmail.com>
 
     vscode.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      source: "deb https://packages.microsoft.com/repos/vscode stable main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
 
@@ -251,7 +251,7 @@ runcmd:
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
-  - echo "... successfully installed DBeaver drivers"; fi
+  - echo "... successfully installed DBeaver drivers";
   # Install PyCharm
   - echo "Installing PyCharm..."
   - snap install pycharm-community --classic

@@ -146,7 +146,7 @@ function Get-ShmConfig {
             # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
             # We want a compute-optimised VM, since per-core performance is the bottleneck
             vm     = [ordered]@{
-                diskSizeGb = 64
+                diskSizeGb = 128
                 size       = "Standard_F4s_v2"
             }
         }

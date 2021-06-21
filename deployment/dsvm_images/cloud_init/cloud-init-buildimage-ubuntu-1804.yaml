@@ -256,7 +256,7 @@ runcmd:
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
-  - echo "... successfully installed DBeaver drivers"; fi
+  - echo "... successfully installed DBeaver drivers";
   # Install PyCharm
   - echo "Installing PyCharm..."
   - snap install pycharm-community --classic
