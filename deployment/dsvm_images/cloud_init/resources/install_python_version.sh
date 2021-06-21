@@ -75,7 +75,7 @@ echo "Generating requirements took $SECTION_ELAPSED"
 # -------------------------------------------
 echo "Installing packages with poetry..."
 SECTION_START_TIME=$(date +%s)
-sed -e "s/{{PYTHON_ENV_NAME}}/$PYTHON_ENV_NAME/g" -e "s/{{PYTHON_VERSION}}/$PYTHON_VERSION/" /opt/build/python-pyproject-template.toml > /opt/build/python-pyproject-${PYTHON_ENV_NAME}.toml
+sed -e "s/PYTHON_ENV_NAME/$PYTHON_ENV_NAME/g" -e "s/PYTHON_VERSION/$PYTHON_VERSION/" /opt/build/python-pyproject-template.toml > /opt/build/python-pyproject-${PYTHON_ENV_NAME}.toml
 poetry config virtualenvs.create false
 poetry config virtualenvs.in-project true
 rm poetry.lock pyproject.toml 2> /dev/null

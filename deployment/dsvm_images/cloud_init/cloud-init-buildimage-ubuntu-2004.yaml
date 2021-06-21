@@ -141,14 +141,7 @@ write_files:
   - path: "/opt/build/python-pyproject-template.toml"
     permissions: "0400"
     content: |
-      [tool.poetry]
-      name = "<PYTHON_ENV_NAME>"
-      version = "1.0.0"
-      description = "<PYTHON_ENV_NAME>"
-      authors = ["ROOT <root@localhost>"]
-
-      [tool.poetry.dependencies]
-      python = "<PYTHON_VERSION>"
+      {{python_pyproject_template.toml}}
   - path: "/opt/build/python-system-packages.txt"
     permissions: "0444"
     content: |
