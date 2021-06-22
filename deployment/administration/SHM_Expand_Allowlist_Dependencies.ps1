@@ -23,8 +23,21 @@ function Test-PackageExistence {
         $ApiKey
     )
     try {
-        $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
-        return $response
+        if ($Repository -eq "pypi") {
+            # The best PyPI results come from the package JSON files
+            $response = Invoke-RestMethod -Uri https://pypi.org/${Repository}/${Package}/json -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            $versions = $response.releases | Get-Member -MemberType NoteProperty | ForEach-Object { $_.Name }
+            $name = $response.info.name
+        } else {
+            # For other repositories we use libraries.io
+            $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
+            $versions = $response.versions | ForEach-Object { $_.number }
+            $name = $response.Name
+        }
+        return @{
+            versions = ($versions | Sort-Object -Unique)
+            name = $name
+        }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
         throw $_.Exception # rethrow the original exception
@@ -48,7 +61,6 @@ function Get-Dependencies {
         $Cache,
         [Parameter(Mandatory = $true, HelpMessage = "Only consider the most recent NVersions. Set to -1 to consider all versions.")]
         [int]$NVersions
-
     )
     $dependencies = @()
     if ($Package -notin $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
@@ -57,8 +69,19 @@ function Get-Dependencies {
     try {
         foreach ($Version in $MostRecentVersions) {
             if ($Version -notin $Cache[$Repository][$Package].Keys) {
-                $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
-                $Cache[$Repository][$Package][$Version] = @($response.dependencies | Where-Object { $_.requirements -ne "extra" } | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name.Replace(";", "") }) | Sort-Object -Unique
+                if ($Repository -eq "pypi") {
+                    # The best PyPI results come from the package JSON files
+                    try {
+                        $response = Invoke-RestMethod -Uri https://pypi.org/${Repository}/${Package}/${Version}/json -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+                        $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;\[( ]')[0].Trim() } | Sort-Object -Unique)
+                    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+                        Add-LogMessage -Level Warning "${Package} (${Version}) not found on PyPI!"
+                    }
+                } else {
+                    # For other repositories we use libraries.io
+                    $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
+                    $Cache[$Repository][$Package][$Version] = @($response.dependencies | Where-Object { $_.requirements -ne "extra" } | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name.Replace(";", "") }) | Sort-Object -Unique
+                }
             }
             $dependencies += $Cache[$Repository][$Package][$Version]
         }
@@ -111,20 +134,19 @@ while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
         # Check that the package exists and add it to the allowlist if so
-        Add-LogMessage -Level Info "Determining canonical name for '$unverifiedName'"
-        $response = Test-PackageExistence -Repository $MirrorType -Package $unverifiedName -ApiKey $ApiKey
-        $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
-        $packageAllowlist += @($response.Name)
+        Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${MirrorType}..."
+        $packageData = Test-PackageExistence -Repository $MirrorType -Package $unverifiedName -ApiKey $ApiKey
+        $packageAllowlist += @($packageData.name)
         # Look for dependencies and add them to the queue
-        if ($versions) {
-            Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
-            $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
+        if ($packageData.versions) {
+            Add-LogMessage -Level Info "... finding dependencies for $($packageData.name)"
+            $dependencies = Get-Dependencies -Repository $MirrorType -Package $packageData.name -Versions $packageData.versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
             Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
             $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
             $newPackages | ForEach-Object { $queue.Enqueue($_) }
             $allDependencies += $dependencies
         } else {
-            Add-LogMessage -Level Warning "... could not find any versions of $($response.Name)"
+            Add-LogMessage -Level Warning "... could not find any versions of $($packageData.name)"
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then mark it as unavailable
