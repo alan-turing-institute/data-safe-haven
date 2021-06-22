@@ -3,7 +3,6 @@ from contextlib import suppress
 import csv
 from datetime import datetime, timedelta
 import glob
-import itertools
 import json
 import multiprocessing
 import subprocess
@@ -11,6 +10,8 @@ import subprocess
 
 def human_readable(timedelta_):
     """Human readable string from timedelta"""
+    if not isinstance(timedelta_, timedelta):
+        return ""
     seconds = int(timedelta_.total_seconds())
     days, seconds = divmod(seconds, 86400)
     hours, seconds = divmod(seconds, 3600)
@@ -22,6 +23,10 @@ def human_readable(timedelta_):
     if minutes > 0:
         return f"{minutes:d}m{seconds:d}s"
     return f"{seconds:d}s"
+
+
+def log(timestamp, level, message):
+    print(f"[{timestamp.strftime(r'%Y-%m-%d %H:%M:%S')}: {level:<7}] {message}")
 
 
 def main():
@@ -44,7 +49,6 @@ def main():
 
     # Get initial cloud-init setup time
     with suppress(IndexError):
-        _ = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "modules-config", cloud_init_log_events))[0]
         end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-config", cloud_init_log_events))
         if end_entries:
             events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Running cloud-init modules"})
@@ -53,7 +57,6 @@ def main():
 
     # Get package install/update time
     with suppress(IndexError):
-        _ = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))[0]
         end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))
         if end_entries:
             events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Installing/updating Ubuntu packages"})
@@ -101,54 +104,42 @@ def main():
                 time_elapsed = event["timestamp"] - events[0]["timestamp"]
             else:
                 time_elapsed = event["timestamp"] - previous_event_time
-        if isinstance(time_elapsed, timedelta):
-            time_elapsed = ": {}".format(human_readable(time_elapsed))
-        # print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
-        print(f"[{event['timestamp'].strftime(r'%Y-%m-%d %H:%M:%S')}: {event['level']:<7}] {event['message']}{time_elapsed}")
+        log(event["timestamp"], event["level"], f"{event['message']}: {human_readable(time_elapsed)}")
         previous_event_time = event["timestamp"]
 
     # Check system performance
     # ------------------------
-    mem_usage, cpu_usage, mem_bytes = [], [], []
+    n_cores = multiprocessing.cpu_count()
+    mem_usage, cpu_usage = [], []
     with suppress(FileNotFoundError):
         with open("/opt/monitoring/performance_log.csv", "r") as system_log:
-            first_lines = list(itertools.islice(system_log, 10))
-        with suppress(IndexError):
-            lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0]  # skip version info in the header
-            with open("/opt/monitoring/performance_log.csv", "r") as system_log:
-                for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
-                    if build_end_status:
-                        timestamp = datetime.strptime("{}-{}".format(datetime.today().year, row["time"]), "%Y-%d-%m %H:%M:%S")
-                        if timestamp > build_end_status[0]:
-                            break
-                    mem_bytes.append((float(row["used"]) + float(row["free"]) + float(row["buff"]) + float(row["cach"])))
-                    mem_usage.append(100 * float(row["used"]) / mem_bytes[-1])
-                    cpu_usage.append(100 - float(row["idl"]))
+            for row in csv.DictReader(system_log):
+                if build_end_status:
+                    timestamp = datetime.strptime(row["now"], r"%Y-%m-%d %H:%M:%S %Z")
+                    if timestamp > build_end_status[0]:
+                        break
+                mem_usage.append(100 * float(row["mem.used"]) / float(row["mem.total"]))
+                cpu_usage.append(100 - float(row["cpu.idle"]))
+    # Calculate total memory using the last row
+    try:
+        mem_gb = float(row["mem.total"]) / (1000 * 1000 * 1000)
+    except UnboundLocalError:
+        mem_gb = 0
 
     timestamp = build_end_status[0] if build_end_status else datetime.now()
     with suppress(ZeroDivisionError):
-        mem_gb = (sum(mem_bytes) / len(mem_bytes)) / (1000 * 1000 * 1000)
-        n_cores = multiprocessing.cpu_count()
         # Memory
-        prefix = "[{}: {: <7}]".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "INFO")
-        # print("{} Memory available: {:d} GB".format(prefix, int(round(mem_gb))))
-        print(f"{prefix} Memory available: {int(round(mem_gb)):d} GB")
+        log(timestamp, "INFO", f"Memory available: {int(round(mem_gb)):d} GB")
         mem_mean, mem_min, mem_max = sum(mem_usage) / len(mem_usage), min(mem_usage), max(mem_usage)
-        # print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_mean, mem_gb * mem_mean / 100))
-        print(f"{prefix} ..... mean usage: {mem_mean:>6.2f}% => {(mem_gb * mem_mean / 100):>4.1f} GB")
-        # print("{} ...... min usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_min, mem_gb * mem_min / 100))
-        print(f"{prefix} ...... min usage: {mem_min:>6.2f}% => {mem_gb * mem_min / 100:>4.1f} GB")
-        # print("{} ...... max usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_max, mem_gb * mem_max / 100))
-        print(f"{prefix} ...... max usage: {mem_max:>6.2f}% => {mem_gb * mem_max / 100:>4.1f} GB")
+        log(timestamp, "INFO", f"..... mean usage: {mem_mean:>6.2f}% => {(mem_gb * mem_mean / 100):>4.1f} GB")
+        log(timestamp, "INFO", f"...... min usage: {mem_min:>6.2f}% => {mem_gb * mem_min / 100:>4.1f} GB")
+        log(timestamp, "INFO", f"...... max usage: {mem_max:>6.2f}% => {mem_gb * mem_max / 100:>4.1f} GB")
         # CPU
-        print("{} CPU available: {:d} cores".format(prefix, int(n_cores)))
+        log(timestamp, "INFO", f"CPU available: {int(n_cores):d} cores")
         cpu_mean, cpu_min, cpu_max = sum(cpu_usage) / len(cpu_usage), min(cpu_usage), max(cpu_usage)
-        # print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_mean, n_cores * cpu_mean / 100))
-        print(f"{prefix} ..... mean usage: {cpu_mean:>6.2f}% => {(n_cores * cpu_mean / 100):>4.1f} cores")
-        # print("{} ...... min usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_min, n_cores * cpu_min / 100))
-        print(f"{prefix} ...... min usage: {cpu_min:>6.2f}% => {(n_cores * cpu_min / 100):>4.1f} cores")
-        # print("{} ...... max usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_max, n_cores * cpu_max / 100))
-        print(f"{prefix} ...... max usage: {cpu_max:>6.2f}% => {(n_cores * cpu_max / 100):>4.1f} cores")
+        log(timestamp, "INFO", f"..... mean usage: {cpu_mean:>6.2f}% => {(n_cores * cpu_mean / 100):>4.1f} cores")
+        log(timestamp, "INFO", f"...... min usage: {cpu_min:>6.2f}% => {(n_cores * cpu_min / 100):>4.1f} cores")
+        log(timestamp, "INFO", f"...... max usage: {cpu_max:>6.2f}% => {(n_cores * cpu_max / 100):>4.1f} cores")
 
     # Check python installations
     # --------------------------
@@ -158,14 +149,11 @@ def main():
                 packages = json.load(f_safety_check)
             if packages:
                 python_version = fname.split("-")[3].replace(".json", "")
-                # print("[{}: {: <7}] Safety check found problems with Python {}".format(timestamp.strftime("%Y-%m-%d %H:%M:%S"), "WARNING", python_version))
-                print(f"[{timestamp.strftime(r'%Y-%m-%d %H:%M:%S')}: {'WARNING':<7}] Safety check found problems with Python {python_version}")
+                log(timestamp, "WARNING", f"Safety check found problems with Python {python_version}")
             for package in packages:
-                # print("    {} [{}] is affected by issue {} (for versions {})".format(package[0], package[2], package[4], package[1]))
                 print(f"    {package[0]} [{package[2]}] is affected by issue {package[4]} (for versions {package[1]})")
                 lines = package[3].replace(". ", ".\n")
                 for sentence in lines.split("\n"):
-                    # print("       {}".format(sentence))
                     print(f"       {sentence}")
 
 

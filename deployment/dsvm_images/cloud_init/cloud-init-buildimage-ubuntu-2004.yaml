@@ -98,10 +98,6 @@ write_files:
     permissions: "0500"
     content: |
       {{download_and_install_deb.sh}}
-  - path: "/opt/build/dstat.patch"
-    permissions: "0755"
-    content: |
-      {{dstat.patch}}
   - path: "/opt/build/install_python_version.sh"
     permissions: "0500"
     content: |
@@ -137,9 +133,7 @@ write_files:
   - path: "/opt/build/python-system-packages.txt"
     permissions: "0444"
     content: |
-      jill       # for installing Julia
-      matplotlib # for PyPlot Julia package
-      shui       # for installing Spark/Hadoop
+      {{python-system-packages.txt}}
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
@@ -152,10 +146,6 @@ write_files:
     permissions: "0600"
     content: |
       # Deprovisioning log
-  - path: "/opt/monitoring/performance_log.csv"
-    permissions: "0644"
-    content: |
-      # Performance log
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     permissions: "0644"
     content: |
@@ -198,13 +188,14 @@ ntp:
 # If any of the installation/configuration checks fail then end the cloud-init process immediately by calling `exit 1`.
 # This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
-  # Log system performance during the installation and record it each minute
-  - patch /usr/bin/dstat /opt/build/dstat.patch
-  - nohup dstat --mem --cpu --time --output /opt/monitoring/performance_log.csv 60 > /dev/null &
-  # Suppress apt prompts and warning messages
-  - echo "Suppressing apt prompts"
-  - export DEBIAN_FRONTEND=noninteractive
   - sleep 1  # ensure that run commands are cleanly time-separated from other cloud-init commands
+  - echo ">=== $(date +%s) Installing monitoring tools ===<"
+  # Log system performance during the installation and record it each minute
+  - echo "Setting up glances..."
+  - nohup glances --stdout-csv now,mem.used,mem.total,cpu.idle --time 30 > /opt/monitoring/performance_log.csv &
+  # Suppress apt prompts and warning messages
+  - echo "Suppressing apt prompts..."
+  - export DEBIAN_FRONTEND=noninteractive
 
   - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
   # Install python packages used in the rest of the build
