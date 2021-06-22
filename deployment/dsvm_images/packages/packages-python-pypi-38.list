@@ -1,8 +1,6 @@
-aesara
 arviz
 beautifulsoup4
 black
-colorama
 Cython
 dash
 dask
