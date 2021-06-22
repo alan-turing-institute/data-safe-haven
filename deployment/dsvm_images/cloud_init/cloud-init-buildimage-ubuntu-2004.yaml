@@ -82,30 +82,14 @@ write_files:
     permissions: "0400"
     content: |
       {{deb-azuredatastudio.version}}
-  - path: "/opt/build/rstudio.debinfo"
-    permissions: "0400"
-    content: |
-      {{deb-rstudio.version}}
-  - path: "/opt/verification/analyse_build.py"
-    permissions: "0755"
-    content: |
-      {{analyse_build.py}}
   - path: "/opt/build/check_installation.py"
     permissions: "0400"
     content: |
       {{check_installation.py}}
-  - path: "/opt/build/install_python_version.sh"
-    permissions: "0500"
-    content: |
-      {{install_python_version.sh}}
   - path: "/opt/build/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
       {{dbeaver_drivers_config.xml}}
-  - path: "/opt/build/deprovision.log"
-    permissions: "0600"
-    content: |
-      # Deprovisioning log
   - path: "/opt/build/deprovision_vm.sh"
     permissions: "0500"
     content: |
@@ -114,6 +98,14 @@ write_files:
     permissions: "0500"
     content: |
       {{download_and_install_deb.sh}}
+  - path: "/opt/build/dstat.patch"
+    permissions: "0755"
+    content: |
+      {{dstat.patch}}
+  - path: "/opt/build/install_python_version.sh"
+    permissions: "0500"
+    content: |
+      {{install_python_version.sh}}
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
@@ -126,10 +118,6 @@ write_files:
     permissions: "0444"
     content: |
       {{packages-r-cran.list}}
-  - path: "/opt/build/performance_log.csv"
-    permissions: "0644"
-    content: |
-      # Performance log
   - path: "/opt/build/python-requirements-py36.txt"
     permissions: "0444"
     content: |
@@ -152,6 +140,22 @@ write_files:
       jill       # for installing Julia
       matplotlib # for PyPlot Julia package
       shui       # for installing Spark/Hadoop
+  - path: "/opt/build/rstudio.debinfo"
+    permissions: "0400"
+    content: |
+      {{deb-rstudio.version}}
+  - path: "/opt/monitoring/analyse_build.py"
+    permissions: "0755"
+    content: |
+      {{analyse_build.py}}
+  - path: "/opt/monitoring/deprovision.log"
+    permissions: "0600"
+    content: |
+      # Deprovisioning log
+  - path: "/opt/monitoring/performance_log.csv"
+    permissions: "0644"
+    content: |
+      # Performance log
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     permissions: "0644"
     content: |
@@ -195,7 +199,8 @@ ntp:
 # This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
   # Log system performance during the installation and record it each minute
-  - nohup dstat --mem --cpu --time --output /opt/verification/performance_log.csv 60 > /dev/null &
+  - patch /usr/bin/dstat /opt/build/dstat.patch
+  - nohup dstat --mem --cpu --time --output /opt/monitoring/performance_log.csv 60 > /dev/null &
   # Suppress apt prompts and warning messages
   - echo "Suppressing apt prompts"
   - export DEBIAN_FRONTEND=noninteractive
@@ -353,7 +358,7 @@ runcmd:
   - chmod -R o=u,o-w ${PYENV_ROOT}
   - chmod go+w /opt/pyenv/shims
 
-  # Install any missing R packages - approximately 1 hr
+  # Install any missing R packages - approximately 40 minutes
   - echo ">=== $(date +%s) Installing R packages ===<"
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio

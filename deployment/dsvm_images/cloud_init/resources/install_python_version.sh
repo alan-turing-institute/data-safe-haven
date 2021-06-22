@@ -84,8 +84,8 @@ poetry add $(tr '\n' ' ' < requirements.poetry) || exit 3
 if [ $DEBUG -eq 1 ]; then awk '{print "[DEBUG] "$1}' pyproject.toml; fi
 echo "Installed packages:"
 poetry show
-poetry show > "/opt/verification/python-package-versions-${PYTHON_VERSION}.log"
-poetry show --tree >> "/opt/verification/python-package-versions-${PYTHON_VERSION}.log"
+poetry show > "/opt/monitoring/python-package-versions-${PYTHON_VERSION}.log"
+poetry show --tree >> "/opt/monitoring/python-package-versions-${PYTHON_VERSION}.log"
 rm requirements.poetry poetry.lock pyproject.toml 2> /dev/null
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")
@@ -130,8 +130,8 @@ fi
 # Run safety check and log any problems
 # -------------------------------------
 echo "Running safety check on Python ${PYTHON_VERSION} installation..."
-safety check --json --output "/opt/verification/python-safety-check-${PYTHON_VERSION}.json"
-safety review --full-report -f "/opt/verification/python-safety-check-${PYTHON_VERSION}.json"
+safety check --json --output "/opt/monitoring/python-safety-check-${PYTHON_VERSION}.json"
+safety review --full-report -f "/opt/monitoring/python-safety-check-${PYTHON_VERSION}.json"
 
 # Set the Jupyter kernel name to the full Python version name
 # This ensures that different python3 versions show up separately

@@ -51,7 +51,7 @@ Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 # Check the VM build status and ask for user confirmation
 # -------------------------------------------------------
 Add-LogMessage -Level Info "Obtaining build status for candidate: $($vm.Name)..."
-$null = Invoke-RemoteScript -VMName $vm.Name -ResourceGroupName $config.dsvmImage.build.rg -Shell "UnixShell" -Script "python3 /opt/verification/analyse_build.py"
+$null = Invoke-RemoteScript -VMName $vm.Name -ResourceGroupName $config.dsvmImage.build.rg -Shell "UnixShell" -Script "python3 /opt/monitoring/analyse_build.py"
 Add-LogMessage -Level Info "Please check that the output of the build analysis script (above) before continuing. All steps should have completed with a 'SUCCESS' message."
 $confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
 while ($confirmation -ne "y") {
@@ -67,7 +67,7 @@ $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*$($vm.Name)-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
 Add-LogMessage -Level Info "... the password for this account is in the '${adminPasswordName}' secret in the '$($config.dsvmImage.keyVault.name)' Key Vault"
-ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | sudo tee /opt/verification/deprovision.log'
+ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | sudo tee /opt/monitoring/deprovision.log'
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
 }
