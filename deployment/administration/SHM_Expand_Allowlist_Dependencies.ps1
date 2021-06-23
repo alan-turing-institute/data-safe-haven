@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Mirror type to expand (either 'pypi' or 'cran')")]
     [ValidateSet("pypi", "cran")]
-    [string]$MirrorType,
+    [string]$Repository,
     [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
     [string]$ApiKey,
     [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
@@ -73,7 +73,7 @@ function Get-Dependencies {
                     # The best PyPI results come from the package JSON files
                     try {
                         $response = Invoke-RestMethod -Uri https://pypi.org/${Repository}/${Package}/${Version}/json -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
-                        $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;\[( ]')[0].Trim() } | Sort-Object -Unique)
+                        $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=]')[0].Trim() } | Sort-Object -Unique)
                     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
                         Add-LogMessage -Level Warning "${Package} (${Version}) not found on PyPI!"
                     }
@@ -95,15 +95,15 @@ function Get-Dependencies {
 
 # Load appropriate allowlists
 # ---------------------------
-$languageName = @{cran = "r"; pypi = "python" }[$MirrorType]
-$coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${MirrorType}-tier3.list"
-$fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${MirrorType}-tier3.list"
+$languageName = @{cran = "r"; pypi = "python" }[$Repository]
+$coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
+$fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
 
 # Combine base image package lists with the core allowlist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
 $corePackageList = Get-Content $coreAllowlistPath
-foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
+foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${Repository}*.list"))) {
     $corePackageList += $buildtimePackageList
 }
 $corePackageList = $corePackageList | Sort-Object -Unique
@@ -121,28 +121,33 @@ $dependencyCache = [ordered]@{}
 if (Test-Path $dependencyCachePath -PathType Leaf) {
     $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
 }
-if ($MirrorType -notin $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
+if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
-if ($MirrorType -notin $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$MirrorType] = @() }
+if ($Repository -notin $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$Repository] = @() }
 
 
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageAllowlist = @()
-Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $MirrorType"
+Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $Repository"
 while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
+        # Ignore this packages if it has already been processed
+        if ($unverifiedName -in $packageAllowlist) { continue }
         # Check that the package exists and add it to the allowlist if so
-        Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${MirrorType}..."
-        $packageData = Test-PackageExistence -Repository $MirrorType -Package $unverifiedName -ApiKey $ApiKey
+        Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${Repository}..."
+        $packageData = Test-PackageExistence -Repository $Repository -Package $unverifiedName -ApiKey $ApiKey
+        if ($packageData.name -cne $unverifiedName) {
+            Add-LogMessage -Level Warning "Package '${unverifiedName}' should be '$($packageData.name)'"
+        }
         $packageAllowlist += @($packageData.name)
         # Look for dependencies and add them to the queue
         if ($packageData.versions) {
             Add-LogMessage -Level Info "... finding dependencies for $($packageData.name)"
-            $dependencies = Get-Dependencies -Repository $MirrorType -Package $packageData.name -Versions $packageData.versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
+            $dependencies = Get-Dependencies -Repository $Repository -Package $packageData.name -Versions $packageData.versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
             Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-            $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
+            $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$Repository] }
             $newPackages | ForEach-Object { $queue.Enqueue($_) }
             $allDependencies += $dependencies
         } else {
@@ -151,7 +156,7 @@ while ($queue.Count) {
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then mark it as unavailable
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"
-        $dependencyCache["unavailable_packages"][$MirrorType] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
+        $dependencyCache["unavailable_packages"][$Repository] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$Repository] }
     }
     Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) packages on the expanded allowlist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -184,9 +189,9 @@ $unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencie
 if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }
-$unavailablePackages = $sortedDependencies["unavailable_packages"][$MirrorType]
+$unavailablePackages = $sortedDependencies["unavailable_packages"][$Repository]
 if ($unavailablePackages) {
-    Add-LogMessage -Level Warning "... ignored $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
+    Add-LogMessage -Level Warning "... ignored $($unavailablePackages.Count) dependencies that could not be found in ${Repository}: $unavailablePackages"
 }
 
 
