@@ -194,6 +194,9 @@ ntp:
 runcmd:
   - sleep 1  # ensure that run commands are cleanly time-separated from other cloud-init commands
   - echo ">=== $(date +%s) Installing monitoring tools ===<"
+  # Install python packages used in the rest of the build
+  - echo "Installing python packages..."
+  - pip3 install -r /opt/build/python-system-packages.txt
   # Log system performance during the installation and record it each minute
   - echo "Setting up glances..."
   - nohup glances --stdout-csv now,mem.used,mem.total,cpu.idle --time 30 > /opt/monitoring/performance_log.csv &
@@ -202,8 +205,6 @@ runcmd:
   - export DEBIAN_FRONTEND=noninteractive
 
   - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
-  # Install python packages used in the rest of the build
-  - pip3 install -r /opt/build/python-system-packages.txt
   # NVidia setup (necessary packages from https://www.tensorflow.org/install/gpu are in our apt install list)
   - echo "Checking NVidia requirements for tensorflow..."
   - if [ "$(which nvidia-smi)" = "" ]; then echo "Could not install NVidia tools!"; exit 1; else echo "... successfully installed NVidia requirements"; fi

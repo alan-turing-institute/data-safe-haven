@@ -1,3 +1,4 @@
+glances    # for system monitoring
 jill       # for installing Julia
 matplotlib # for PyPlot Julia package
 shui       # for installing Spark/Hadoop
