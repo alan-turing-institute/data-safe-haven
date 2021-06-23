@@ -5,7 +5,9 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
     [string]$ApiKey,
     [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
-    [int]$NVersions = -1
+    [int]$NVersions = -1,
+    [Parameter(Mandatory = $false, HelpMessage = "Do not use a cache file.")]
+    [switch]$NoCache
 )
 
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
@@ -118,8 +120,10 @@ $allDependencies = @()
 
 # Load any previously-cached dependencies
 $dependencyCache = [ordered]@{}
-if (Test-Path $dependencyCachePath -PathType Leaf) {
-    $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
+if (-not $NoCache) {
+    if (Test-Path $dependencyCachePath -PathType Leaf) {
+        $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
+    }
 }
 if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
@@ -161,7 +165,9 @@ while ($queue.Count) {
     Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) packages on the expanded allowlist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
     # Write to the dependency file after each package in case the script terminates early
-    $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    if (-not $NoCache) {
+        $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    }
 }
 
 # After processing all packages ensure that the dependencies cache is sorted
@@ -180,7 +186,9 @@ foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Obj
     $sortedDependencies["unavailable_packages"][$repoName] = @()
     $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object -Unique
 }
-$sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+if (-not $NoCache) {
+    $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+}
 
 
 # Add a log message for any problematic packages
