@@ -100,7 +100,7 @@ function Get-Dependencies {
 $languageName = @{cran = "r"; pypi = "python" }[$Repository]
 $coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
 $fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
-$dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
+$dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
 
 # Combine base image package lists with the core allowlist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------

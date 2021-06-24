@@ -5,9 +5,6 @@
 secrets/
 temp/
 
-# Dependency cache for package whitelisting
-deployment/administration/.dependency_cache.json
-
 # Any environment configs apart from those used as examples
 environment_configs/*.json
 
