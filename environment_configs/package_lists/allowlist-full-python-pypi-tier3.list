@@ -374,6 +374,7 @@ requests-file
 requests-ftp
 requests-oauthlib
 requests-toolbelt
+requests-unixsocket
 retrying
 rich
 rpy2
