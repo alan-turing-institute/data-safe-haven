@@ -38,7 +38,7 @@ function Test-PackageExistence {
         }
         return @{
             versions = ($versions | Sort-Object -Unique)
-            name = $name
+            name     = $name
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"

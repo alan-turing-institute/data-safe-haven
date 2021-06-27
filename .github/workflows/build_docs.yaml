@@ -1,3 +1,4 @@
+---
 name: Build documentation
 
 # Run workflow on pushes to matching branches

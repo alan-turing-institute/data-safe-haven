@@ -1,9 +1,10 @@
+---
 name: Build allow lists
 
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [update-full-tier3-lists]
+    branches: [develop]
 
 # checkout needs 'contents:read'
 permissions:

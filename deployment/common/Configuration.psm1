@@ -1098,4 +1098,3 @@ function Show-FullConfig {
     Write-Output ($config | ConvertTo-Json -Depth 10)
 }
 Export-ModuleMember -Function Show-FullConfig
-
