@@ -46,6 +46,7 @@ pandas-profiling
 patsy
 pdfminer
 Pint
+poetry
 pycosat
 pycurl
 pyLDAvis

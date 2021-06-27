@@ -33,6 +33,7 @@ awkward
 awkward0
 Babel
 backcall
+backpack
 backports.functools-lru-cache
 backports.lzma
 backports.os
@@ -54,8 +55,10 @@ bpemb
 branca
 bson
 bulwark
+CacheControl
 cached-property
 cachetools
+cachy
 Cartopy
 catalogue
 catboost
@@ -65,6 +68,7 @@ cffi
 cftime
 characteristic
 chardet
+cleo
 click
 click-plugins
 cligj
@@ -109,6 +113,7 @@ fastprogress
 fbprophet
 filelock
 Fiona
+first
 flair
 flake8
 Flask
@@ -134,6 +139,7 @@ geopy
 gitdb
 gitdb2
 GitPython
+glob2
 gnureadline
 google-api-core
 google-auth
@@ -182,6 +188,7 @@ isort
 itsdangerous
 Janome
 jedi
+jeepney
 Jinja2
 jmespath
 joblib
@@ -204,6 +211,7 @@ keras
 Keras-Applications
 keras-nightly
 Keras-Preprocessing
+keyring
 kiwisolver
 konoha
 korean-lunar-calendar
@@ -213,6 +221,7 @@ lifelines
 lightgbm
 llvmlite
 locket
+lockfile
 lunardate
 lxml
 lz4
@@ -290,6 +299,7 @@ pathy
 patsy
 pbr
 pdfminer
+pep517
 pep8
 pexpect
 pg8000
@@ -298,12 +308,16 @@ pickleshare
 Pillow
 Pint
 pip
+pip-tools
 pipenv
 pkgconfig
+pkginfo
 plac
 plotly
 pluggy
 plumbum
+poetry
+poetry-core
 pooch
 pox
 ppft
@@ -356,11 +370,13 @@ python-gitlab
 python-json-logger
 python-louvain
 python-oauth2
+pytoml
 pytorch-pretrained-bert
 pytorch-transformers
 pytz
 PyWavelets
 pywin32
+pywin32-ctypes
 pywinpty
 PyYAML
 pyzmq
@@ -395,12 +411,14 @@ scikit-validate
 scipy
 scramp
 seaborn
+SecretStorage
 segtok
 semver
 Send2Trash
 sentencepiece
 setuptools
 Shapely
+shellingham
 simplegeneric
 simplejson
 singledispatch
@@ -514,5 +532,6 @@ xlrd
 XlsxWriter
 yarl
 zict
+zipfile36
 zipp
 zope.interface
