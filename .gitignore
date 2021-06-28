@@ -8,6 +8,9 @@ temp/
 # Any environment configs apart from those used as examples
 environment_configs/*.json
 
+# The package dependency cache
+environment_configs/package_lists/dependency-cache.json
+
 # Development tools
 .vscode
 .python-version
