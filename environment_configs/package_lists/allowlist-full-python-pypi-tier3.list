@@ -7,7 +7,6 @@ aiobotocore
 aiohttp
 aioitertools
 alabaster
-alembic
 altair
 annoy
 anyio
@@ -63,11 +62,11 @@ Cartopy
 catalogue
 catboost
 certifi
-certipy
 cffi
 cftime
 characteristic
 chardet
+clang
 cleo
 click
 click-plugins
@@ -200,8 +199,6 @@ jupyter-client
 jupyter-core
 jupyter-packaging
 jupyter-server
-jupyter-telemetry
-jupyterhub
 jupyterlab
 jupyterlab-launcher
 jupyterlab-pygments
@@ -225,7 +222,6 @@ lockfile
 lunardate
 lxml
 lz4
-Mako
 mapclassify
 Markdown
 markdown2
@@ -278,7 +274,6 @@ opt-einsum
 ordereddict
 overrides
 packaging
-pamela
 pandas
 pandas-datareader
 pandas-profiling
@@ -351,7 +346,6 @@ PyMeeus
 pymongo
 pyodbc
 PyOpenGL
-pyOpenSSL
 pyparsing
 PyPDF2
 pypiwin32
@@ -364,12 +358,9 @@ pystan
 pytest
 pytest-pylint
 python-dateutil
-python-editor
 python-geohash
 python-gitlab
-python-json-logger
 python-louvain
-python-oauth2
 pytoml
 pytorch-pretrained-bert
 pytorch-transformers
@@ -396,9 +387,6 @@ rich
 rpy2
 rsa
 Rtree
-ruamel.base
-ruamel.ordereddict
-ruamel.yaml
 s3fs
 sacremoses
 safety
@@ -449,7 +437,6 @@ sputnik
 SQLAlchemy
 sqlitedict
 srsly
-statsd
 statsmodels
 stumpy
 subprocess32
