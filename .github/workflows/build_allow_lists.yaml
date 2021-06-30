@@ -1,0 +1,40 @@
+---
+name: Build allow lists
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop]
+
+# checkout needs 'contents:read'
+permissions:
+  contents: read
+
+jobs:
+  build_allow_lists:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: environment_configs/package_lists/dependency-cache.json
+          key: dependencies # use the same cache for all jobs
+
+      - name: Check PyPI allow list
+        shell: pwsh
+        env:
+          LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -ApiKey "$env:LIBRARIES_IO_API_KEY"
+
+      - name: Check CRAN allow list
+        shell: pwsh
+        env:
+          LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -ApiKey "$env:LIBRARIES_IO_API_KEY"
+
+      - name: Check for changes
+        shell: bash
+        run: git diff --exit-code -- . ':!environment_configs/package_lists/dependency-cache.json'

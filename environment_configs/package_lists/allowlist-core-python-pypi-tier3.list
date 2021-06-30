@@ -25,7 +25,6 @@ imageio
 Jinja2
 joblib
 jupyter
-jupyterhub
 jupyterlab
 Keras-Applications
 kiwisolver
@@ -37,15 +36,14 @@ mock
 mpctools
 mypy
 NavPy
-netCDF4
 nose
 numpydoc
 odo
 pandas-datareader
 pandas-profiling
-patsy
 pdfminer
 Pint
+poetry
 pycosat
 pycurl
 pyLDAvis
@@ -61,11 +59,9 @@ Rtree
 scikit-multilearn
 scikit-survival
 scikit-validate
-sentencepiece
 Shapely
 six
 sklearn-contrib-lightning
-smart-open
 suod
 syntok
 tdda
@@ -77,5 +73,4 @@ transformers
 Twisted
 unicodecsv
 vincent
-xhtml2pdf
 XlsxWriter

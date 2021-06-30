@@ -15,7 +15,7 @@ geopandas
 gym
 html5lib
 ipykernel
-Keras
+keras
 lightgbm
 lxml
 matplotlib

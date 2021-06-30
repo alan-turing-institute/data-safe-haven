@@ -1,8 +1,9 @@
 #! /bin/bash
-# We need to test packages that are not pre-installed
-# - by using ones which are on the tier-3 list we can test all tiers
-# - by using ones which are alphabetically early and late we can test the progress of the mirror synchronisation
-packages=("ahaz" "yum")
+# We need to test packages that are:
+# - *not* pre-installed
+# - on the tier-3 list (so we can test all tiers)
+# - alphabetically early and late (so we can test the progress of the mirror synchronisation)
+packages=("argon2" "zeallot")
 
 # Create local user library directory (not present by default)
 Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, recursive = TRUE)"
