@@ -149,7 +149,7 @@ if ($Repository -notin $dependencyCache["unavailable_packages"].Keys) { $depende
 # --------------------------------------
 if ($Repository -eq "cran") {
     $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
-    $RepositoryId = $response | Where-Object { $_.name -eq $Repository }  | ForEach-Object { $_.id } | Select-Object -First 1
+    $RepositoryId = $response | Where-Object { $_.name -eq $Repository } | ForEach-Object { $_.id } | Select-Object -First 1
 } else {
     $RepositoryId = $null
 }
