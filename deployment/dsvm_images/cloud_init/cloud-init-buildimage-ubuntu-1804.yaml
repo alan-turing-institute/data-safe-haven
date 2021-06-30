@@ -118,10 +118,6 @@ write_files:
     permissions: "0444"
     content: |
       {{packages-r-cran.list}}
-  - path: "/opt/build/python-requirements-py36.txt"
-    permissions: "0444"
-    content: |
-      {{python-requirements-py36.txt}}
   - path: "/opt/build/python-requirements-py37.txt"
     permissions: "0444"
     content: |
@@ -130,6 +126,10 @@ write_files:
     permissions: "0444"
     content: |
       {{python-requirements-py38.txt}}
+  - path: "/opt/build/python-requirements-py39.txt"
+    permissions: "0444"
+    content: |
+      {{python-requirements-py39.txt}}
   - path: "/opt/build/python-pyproject-template.toml"
     permissions: "0400"
     content: |
