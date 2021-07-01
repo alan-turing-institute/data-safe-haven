@@ -129,7 +129,6 @@ foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.ds
 }
 
 
-
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
