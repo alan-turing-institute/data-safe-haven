@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+import glob
 import subprocess
 import sys
 
@@ -34,6 +35,8 @@ def run_tests(success, failure, *tests):
 
 # Run all tests
 print("Programming languages:")
+python_environments = [os.path.splitext(path)[0].split("-")[-1] for path in glob.glob("/opt/build/python-requirements-py*")]
+python_versions = [(name.replace("py3", "python 3."), name) for name in sorted(python_environments)]
 (success, failure) = run_tests(
     0,
     0,
@@ -43,9 +46,7 @@ print("Programming languages:")
     ("gfortran", "gfortran --version | grep Fortran | awk '{print $NF}'"),
     ("java", "java -version 2>&1 | grep 'openjdk version' | cut -d '\"' -f 2"),
     ("julia", "julia --version | awk '{print $NF}'"),
-    ("python 3.6", None),
-    ("python 3.7", None),
-    ("python 3.8", None),
+    *python_versions,
     ("R", "R --version | grep 'R version' | awk '{print $3}'"),
     ("scala", "scalac -version 2>&1 | awk '{print $4}'"),
     ("spark-shell", "spark-shell --version 2>&1 | grep version | grep -v Scala | awk '{print $NF}'"),

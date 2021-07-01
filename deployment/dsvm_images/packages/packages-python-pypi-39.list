@@ -4,7 +4,6 @@ black
 Cython
 dash
 dask
-dataclasses
 flair
 flake8
 folium
@@ -24,7 +23,6 @@ pathos
 pg8000
 Pillow
 plotly
-prophet
 protobuf
 psycopg2
 pydot

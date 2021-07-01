@@ -8,7 +8,6 @@
         "pystan": "<3.0"
     },
     "py39": {
-        "protobuf": ">3.17",
-        "pystan": "<3.0"
+        "protobuf": ">3.17"
     }
 }
