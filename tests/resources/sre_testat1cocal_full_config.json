@@ -466,7 +466,7 @@
       "rg": "RG_SHM_TESTA_SRE_T1COCAL_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2021070500"
+        "version": "20.04.2021070700"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
