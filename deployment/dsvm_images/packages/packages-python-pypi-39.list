@@ -25,6 +25,7 @@ pg8000
 Pillow
 plotly
 prophet
+protobuf
 psycopg2
 pydot
 pygrib

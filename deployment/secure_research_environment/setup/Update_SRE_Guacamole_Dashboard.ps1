@@ -41,6 +41,7 @@ $VMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | `
         }
     } | Sort-Object -Property ipAddress
 
+
 # Add an index to each Ubuntu and Windows VM
 # The number increases with IP address
 # ------------------------------------------
