@@ -1,15 +1,21 @@
 import glob
 import os
 import shutil
+import subprocess
 import sys
 import warnings
 import pkg_resources
 
+versions = {
+    pkg.split(" ")[0]: pkg.split(" ")[-1]                               # get package name and version
+    for pkg in subprocess.run(["pip", "list"], stdout=subprocess.PIPE)  # ... from pip list
+        .stdout.decode().split("\n")[1:]                                # after splitting on each line and discarding the header
+}
 
 # Some packages cannot be imported so we skip them.
 KNOWN_RESOURCE_ISSUES = [
-    "backports",  # not a single package
-    "xgboost",  # has dependencies on external library
+    "backports",  # does not define a package
+    "xgboost",    # has dependencies on an external library
 ]
 
 # For these packages we check for an executable as they are not importable
@@ -28,6 +34,7 @@ IMPORTABLE_NAMES = {
     "Pillow": "PIL",
     "protobuf": "google.protobuf",
     "pyshp": "shapefile",
+    "pystan": ("stan" if int(versions["pystan"][0]) >= 3 else "pystan"),
     "python-dateutil": "dateutil",
     "PyWavelets": "pywt",
     "scikit-image": "skimage",
@@ -123,21 +130,13 @@ def test_packages():
         print("Testing {} Python packages".format(len(packages)))
         warning, missing = get_missing_packages(packages)
         if warning:
-            print(
-                "\nThe following {} packages may be missing resources:".format(
-                    len(warning)
-                )
-            )
+            print(f"The following {len(warning)} packages may be missing resources:")
             print("\n".join(warning))
         if missing:
-            print(
-                "\nThe following {} packages are missing or broken:".format(
-                    len(missing)
-                )
-            )
+            print(f"The following {len(missing)} packages are missing or broken:")
             print("\n".join(missing))
         if (not warning) and (not missing):
-            print("All {} packages are installed".format(len(packages)))
+            print(f"All {len(packages)} packages are installed")
 
 
 if __name__ == "__main__":
