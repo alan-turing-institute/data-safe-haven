@@ -1020,7 +1020,12 @@ function Get-ImageFromGallery {
             $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
         }
         if ($image) {
-            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            $commitHash = $image.Tags["Build commit hash"]
+            if ($commitHash) {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery created from commit $commitHash"
+            } else {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            }
         } else {
             Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
         }
