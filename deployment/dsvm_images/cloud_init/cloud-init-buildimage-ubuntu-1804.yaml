@@ -62,7 +62,7 @@ apt:
       keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
 
     sbt.list:
-      source: "deb https://dl.bintray.com/sbt/debian /"
+      source: "deb https://repo.scala-sbt.org/scalasbt/debian all main"
       keyid: 2EE0EA64E40A89B84B2DF73499E82A75642AC823  # sbt build tool <scalasbt@gmail.com>
 
     vscode.list:
