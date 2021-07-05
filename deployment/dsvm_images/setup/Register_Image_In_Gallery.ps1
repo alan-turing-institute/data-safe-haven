@@ -101,7 +101,7 @@ $targetRegions = @(
     @{Name = "West Europe"; ReplicaCount = 1 }
 )
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
-Add-LogMessage -Level Info "Please note, this may take about 1 hour to complete"
+Add-LogMessage -Level Warning "Please note, this may take around one hour to complete"
 $null = New-AzGalleryImageVersion `
     -GalleryImageDefinitionName $imageDefinition `
     -GalleryImageVersionName "$imageVersion" `

@@ -102,9 +102,9 @@ $imageConfig = New-AzImageConfig -Location $config.dsvmImage.location -SourceVir
 $image = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.dsvmImage.images.rg
 # Apply VM tags to the image
 $null = New-AzTag -ResourceId $image.Id -Tag @{"Build commit hash" = $vm.Tags["Build commit hash"] }
-Add-LogMessage -Level Info "Finished creating image $imageName"
 # If the image has been successfully created then remove build artifacts
 if ($image) {
+    Add-LogMessage -Level Success "Finished creating image $imageName"
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
     Add-LogMessage -Level Info "... virtual machine: $vmName"
     $null = Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force -ErrorAction SilentlyContinue
