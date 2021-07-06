@@ -188,7 +188,7 @@ ntp:
 # If any of the installation/configuration checks fail then end the cloud-init process immediately by calling `exit 1`.
 # This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
-  - sleep 1  # ensure that run commands are cleanly time-separated from other cloud-init commands
+  - sleep 10  # ensure that run commands are cleanly time-separated from other cloud-init commands
   - echo ">=== $(date +%s) Installing monitoring tools ===<"
   # Install python packages used in the rest of the build
   - echo "Installing python packages..."
