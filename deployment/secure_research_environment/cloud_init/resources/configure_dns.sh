@@ -1,9 +1,14 @@
 #! /bin/bash
+if [ $# -ne 1 ]; then
+    echo "FATAL: Incorrect number of arguments"
+    exit 1
+fi
+SHM_FQDN=$1
 
 # Update resolv.conf
 echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
 rm /etc/resolv.conf
-sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
+sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=${SHM_FQDN}/" /etc/systemd/resolved.conf
 ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 # Output current settings to check that they are correct

@@ -17,8 +17,8 @@ fs_setup:
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
   - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec"]
-  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
-  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
+  - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/shared", /shared, nfs, "_netdev,sec=sys"]
+  - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
   - path: "/etc/bash.bashrc"
@@ -58,7 +58,7 @@ write_files:
   - path: "/etc/domain-join.secret"
     permissions: "0400"
     content: |
-      <domain-join-password>
+      {{dsvm.domainJoinPassword}}
 
   - path: "/etc/jaas.conf"
     permissions: "0444"
@@ -75,32 +75,32 @@ write_files:
     permissions: "0444"
     content: |
       # The distinguished name of the search base.
-      base <ou-research-users-path>
+      base {{shm.domain.ous.researchUsers.path}}
       # Restrict users to those in the security group of this SRE
-      filter <ldap-sre-user-filter>
+      filter {{{dsvm.ldapUserFilter}}}
       # Specify the LDAP server by URI
-      uri ldap://<shm-dc-hostname-upper>.<shm-fqdn-lower>:389
+      uri ldap://{{shm.dc.hostnameUpper}}.{{shm.domain.fqdnLower}}:389
       # The LDAP version to use (defaults to 3 if supported by client library)
       ldap_version 3
       # The distinguished name used to bind to the server
-      rootbinddn <ldap-search-user-dn>
+      rootbinddn {{dsvm.ldapSearchUserDn}}
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
 
   - path: "/etc/ldap.secret"
     permissions: "0400"
     content: |
-      <ldap-search-user-password>
+      {{dsvm.ldapSearchUserPassword}}
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     permissions: "0500"
     content: |
       #! /bin/bash
       echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
-      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'"
-      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
+      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.linuxServers.path}}' '{{shm.users.computerManagers.linuxServers.samAccountName}}' '{{dsvm.hostname}}'"
+      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.linuxServers.path}}" "{{shm.users.computerManagers.linuxServers.samAccountName}}" "{{dsvm.hostname}}"
 
   - path: "/etc/local/runonce.d/01-remount-nfs.sh"
     permissions: "0500"
@@ -120,9 +120,9 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = <mirror-index-pypi>
-      index-url = <mirror-index-url-pypi>
-      trusted-host = <mirror-host-pypi>
+      index = {{sre.repositories.pypi.index}}
+      index-url = {{sre.repositories.pypi.indexUrl}}
+      trusted-host = {{sre.repositories.pypi.host}}
 
   - path: "/etc/realmd.conf"
     permissions: "0400"
@@ -135,7 +135,7 @@ write_files:
       ## Set Rprofile.site to the appropriate CRAN mirror
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "<mirror-url-cran>"
+          r["CRAN"] <- "{{sre.repositories.cran.url}}"
           options(repos = r)
       })
 
@@ -356,16 +356,16 @@ write_files:
   - path: "/opt/configuration/credentials-ingress.secret"
     permissions: "0400"
     content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-ingress-sastoken>
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{dsvm.ingressContainerSasToken}}}
       authType SAS
       containerName ingress
 
   - path: "/opt/configuration/credentials-egress.secret"
     permissions: "0400"
     content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-egress-sastoken>
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{dsvm.egressContainerSasToken}}}
       authType SAS
       containerName egress
 
@@ -410,11 +410,11 @@ write_files:
     encoding: gz+b64
     permissions: "0644"
     content: |
-      {{xrdpCustomLogoEncoded}}
+      {{dsvm.xrdpCustomLogoEncoded}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: <timezone>
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -422,10 +422,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
@@ -435,8 +434,8 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure_dns.sh
-  - /opt/configuration/configure_hostname.sh
+  - /opt/configuration/configure_dns.sh {{shm.domain.fqdnLower}}
+  - /opt/configuration/configure_hostname.sh {{dsvm.hostname}} {{dsvm.ipAddress}} {{shm.domain.fqdnLower}}
   - /opt/configuration/configure_pam.sh
   - systemctl enable sssd
   # Check Kerberos settings

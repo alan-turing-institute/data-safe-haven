@@ -152,8 +152,8 @@ function Get-ShmConfig {
             }
         }
         gallery         = [ordered]@{
-            rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
-            sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
+            rg  = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
         }
         images          = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
@@ -184,6 +184,8 @@ function Get-ShmConfig {
             identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
+    $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
+    $shm.domain.fqdnUpper = ($shm.domain.fqdn).ToUpper()
     foreach ($ouName in $shm.domain.ous.Keys) {
         $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
     }
@@ -355,6 +357,8 @@ function Get-ShmConfig {
         vmName                     = $hostname
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
+        hostnameLower              = $hostname.ToLower()
+        hostnameUpper              = $hostname.ToUpper()
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16

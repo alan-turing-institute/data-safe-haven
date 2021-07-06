@@ -368,8 +368,8 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure_dns.sh
-  - /opt/configuration/configure_hostname.sh
+  - /opt/configuration/configure_dns.sh <shm-fqdn-lower>
+  - /opt/configuration/configure_hostname.sh <vm-hostname> <vm-ipaddress> <shm-fqdn-lower>
   - systemctl enable sssd
   # Check Kerberos settings
   - echo "Checking Kerberos config"
