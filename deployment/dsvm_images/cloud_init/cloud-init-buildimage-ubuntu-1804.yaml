@@ -50,16 +50,12 @@ apt:
       keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
 
     qgis.list:
-      source: "deb https://qgis.org/ubuntu focal main"
+      source: "deb https://qgis.org/ubuntu bionic main"
       keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
 
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
-
-    qgis.list:
-      source: "deb https://qgis.org/ubuntu bionic main"
-      keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
 
     sbt.list:
       source: "deb https://repo.scala-sbt.org/scalasbt/debian all main"

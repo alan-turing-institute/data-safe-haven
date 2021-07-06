@@ -7,9 +7,12 @@ import warnings
 import pkg_resources
 
 versions = {
-    pkg.split(" ")[0]: pkg.split(" ")[-1]                               # get package name and version
-    for pkg in subprocess.run(["pip", "list"], stdout=subprocess.PIPE)  # ... from pip list
-        .stdout.decode().split("\n")[1:]                                # after splitting on each line and discarding the header
+    pkg.split(" ")[0]: pkg.split(" ")[-1]  # get package name and version
+    for pkg in subprocess.run(
+        ["pip", "list"], stdout=subprocess.PIPE
+    )                                      # ... from pip list
+    .stdout.decode()                       # ... stdout converted to string
+    .split("\n")[1:]                       # ... splitting into lines and discard the header
 }
 
 # Some packages cannot be imported so we skip them.
