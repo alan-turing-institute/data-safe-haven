@@ -175,7 +175,7 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 # Load the cloud-init template then add resources and expand mustache placeholders
 $config["dsvm"] = @{
     domainJoinPassword       = $domainJoinPassword
-    ldapUserFilter           = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))))"
+    ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))))"
     ldapSearchUserDn         = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
     ldapSearchUserPassword   = $ldapSearchPassword
     ingressContainerSasToken = $ingressContainerSasToken
