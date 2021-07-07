@@ -200,6 +200,11 @@ write_files:
     content: |
       {{project.default.xml}}
 
+  - path: "/etc/skel/.config/xfce4/terminal/terminalrc"
+    permissions: "0644"
+    content: |
+      [Configuration]
+
   - path: "/etc/skel/.xsession"
     permissions: "0444"
     content: |
@@ -469,6 +474,15 @@ runcmd:
   - echo ">=== Setting xfce default terminal and panel... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+  # Set terminal colour scheme
+  - |
+    THEME="dark-pastels"
+    if [[ -f /usr/share/xfce4/terminal/colorschemes/${THEME}.theme ]];
+      grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/${THEME}.theme >> /etc/skel/.config/xfce4/terminal/terminalrc
+    else
+      echo "Could not find terminal colour scheme $THEME"
+      rm -rf /etc/skel/.config/xfce4/terminal/terminalrc
+    fi
   # Configure xrdp login window
   - echo ">=== Setting xrdp defaults... ===<"
   - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                          # title bar colour (unselected)
