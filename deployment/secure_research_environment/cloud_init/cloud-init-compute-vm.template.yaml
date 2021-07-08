@@ -450,7 +450,7 @@ runcmd:
   - echo ">=== end of /etc/ldap.conf ===<"
   - echo "Checking Kerberos config"
   - echo ">=== /etc/krb5.conf ===<"
-  - cat /etc/krb5.conf | grep -v "^$"
+  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf
   - echo ">=== end of /etc/krb5.conf ===<"
   # Check timezone and NTP server
   - echo ">=== Current timezone... ===<"
@@ -458,9 +458,8 @@ runcmd:
   - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
   # Note that 'timedatectl show-timesync --all' should be a more informative option but does not work as expected
-  - cat /etc/systemd/timesyncd.conf.d/cloud-init.conf
+  - grep -v -e '^[[:space:]]*$' /etc/systemd/timesyncd.conf.d/cloud-init.conf
   - timedatectl
-  - systemctl status systemd-timesyncd | grep "Status:"
   - systemctl status systemd-timesyncd
   # PyCharm configuration
   - echo ">=== Configuring PyCharm... ===<"
@@ -471,8 +470,8 @@ runcmd:
   - echo ">=== Configuring keyboard... ===<"
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
-  - grep -v "^[# ]" /etc/default/keyboard
-    # Set default terminal and panel for xfce
+  - grep -v -e '^[[:space:]]*$' /etc/default/keyboard
+  # Set default terminal and panel for xfce
   - echo ">=== Setting xfce default panel and terminal and disabling screen lock... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
@@ -505,7 +504,7 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
-  - cat /etc/xrdp/xrdp.ini
+  - grep -v -e '^[[:space:]]*$' /etc/xrdp/xrdp.ini
   # Ensure that xrdp is running and enabled at startup
   - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
@@ -521,7 +520,7 @@ runcmd:
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
   - echo ">=== /etc/fstab ===<"
-  - cat /etc/fstab
+  - grep -v -e '^[[:space:]]*$' /etc/fstab
   - echo ">=== end of /etc/fstab ===<"
   - mount -fav 2> /dev/null
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
