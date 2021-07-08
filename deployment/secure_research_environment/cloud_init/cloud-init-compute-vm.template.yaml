@@ -422,7 +422,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Install blobfuse for mounting Azure storage
 packages:

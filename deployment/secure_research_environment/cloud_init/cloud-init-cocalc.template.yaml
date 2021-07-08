@@ -86,7 +86,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{shm.time.ntp.poolFqdn}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
@@ -131,7 +133,6 @@ users:
   - name: cocalcdaemon
     lock_passwd: true  # Lock the password to disable password login
     sudo: false        # This user will not have sudo privileges
-
 
 # Run other commands
 runcmd:

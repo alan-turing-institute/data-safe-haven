@@ -189,7 +189,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.

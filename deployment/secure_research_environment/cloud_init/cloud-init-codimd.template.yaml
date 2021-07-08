@@ -57,7 +57,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{shm.time.ntp.poolFqdn}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
