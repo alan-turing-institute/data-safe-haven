@@ -331,27 +331,29 @@ write_files:
       # Start xfce4
       startxfce4
 
-  - path: "/opt/configuration/configure_dns.sh"
+  - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"
     content: |
-      {{configure_dns.sh}}
+      {{check_dns.sh}}
 
-  - path: "/opt/configuration/configure_hostname.sh"
+  - path: "/opt/configuration/check_hostname.sh"
     permissions: "0500"
     content: |
-      {{configure_hostname.sh}}
+      {{check_hostname.sh}}
+
+  - path: "/opt/configuration/check_ntp.sh"
+    permissions: "0500"
+    content: |
+      {{check_ntp.sh}}
 
   - path: "/opt/configuration/configure_pam.sh"
     permissions: "0500"
     content: |
       # Edit the PAM session configuration file
-      echo "Updating PAM configuration..."
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /etc/pam.d/common-session.tmp
       mv /etc/pam.d/common-session.tmp /etc/pam.d/common-session
-      echo ">=== /etc/pam.d/common-session ===<"
-      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
-      echo ">=== end of /etc/pam.d/common-session ===<"
+      grep -v -e '^[[:space:]]*$' /etc/pam.d/common-session | grep -v "^#" | sed 's|^|  /etc/pam.d/common-session  |'
 
   - path: "/opt/configuration/configure_pycharm.py"
     permissions: "0500"
@@ -431,6 +433,13 @@ ntp:
     - {{.}}
     {{/shm.time.ntp.serverAddresses}}
 
+# Set hostname
+# We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
+fqdn: "{{dsvm.hostname}}.{{shm.domain.fqdnLower}}"
+hostname: {{dsvm.hostname}}
+manage_etc_hosts: true
+prefer_fqdn_over_hostname: true
+
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Set permissions on scratch directory
@@ -439,28 +448,21 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure_dns.sh {{shm.domain.fqdnLower}}
-  - /opt/configuration/configure_hostname.sh {{dsvm.hostname}} {{dsvm.ipAddress}} {{shm.domain.fqdnLower}}
+  - echo ">=== Checking DNS... ===<"
+  - /opt/configuration/check_dns.sh
+  - echo ">=== Checking hostname... ===<"
+  - /opt/configuration/check_hostname.sh
+  - echo ">=== Updating PAM configuration... ===<"
   - /opt/configuration/configure_pam.sh
   - systemctl enable sssd
   # Check Kerberos settings
-  - echo "Checking LDAP config"
-  - echo ">=== /etc/ldap.conf ===<"
-  - grep -v "^#" /etc/ldap.conf | grep -v "^$"
-  - echo ">=== end of /etc/ldap.conf ===<"
-  - echo "Checking Kerberos config"
-  - echo ">=== /etc/krb5.conf ===<"
-  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf
-  - echo ">=== end of /etc/krb5.conf ===<"
+  - echo ">=== Checking LDAP config... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/ldap.conf | grep -v "^#" | sed 's|^|  /etc/ldap.conf  |'
+  - echo ">=== Checking Kerberos config... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf | sed 's|^|  /etc/krb5.conf  |'
   # Check timezone and NTP server
-  - echo ">=== Current timezone... ===<"
-  - echo "Date     $(date)"
-  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
-  # Note that 'timedatectl show-timesync --all' should be a more informative option but does not work as expected
-  - grep -v -e '^[[:space:]]*$' /etc/systemd/timesyncd.conf.d/cloud-init.conf
-  - timedatectl
-  - systemctl status systemd-timesyncd
+  - /opt/configuration/check_ntp.sh
   # PyCharm configuration
   - echo ">=== Configuring PyCharm... ===<"
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
@@ -470,7 +472,7 @@ runcmd:
   - echo ">=== Configuring keyboard... ===<"
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
-  - grep -v -e '^[[:space:]]*$' /etc/default/keyboard
+  - grep -v -e '^[[:space:]]*$' /etc/default/keyboard | sed 's|^|  /etc/default/keyboard  |'
   # Set default terminal and panel for xfce
   - echo ">=== Setting xfce default panel and terminal and disabling screen lock... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
@@ -481,12 +483,12 @@ runcmd:
   - |
     THEME="dark-pastels"
     if [ -f /usr/share/xfce4/terminal/colorschemes/${THEME}.theme ]; then
+      echo "Setting terminal colour scheme to $THEME"
       grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/${THEME}.theme >> /etc/xdg/xfce4/terminal/terminalrc
     else
       echo "Could not find terminal colour scheme $THEME"
       rm -rf /etc/xdg/xfce4/terminal/terminalrc
     fi
-  - ls -alh /etc/xdg/xfce4
   # Configure xrdp login window
   - echo ">=== Setting xrdp defaults... ===<"
   - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                          # title bar colour (unselected)
@@ -504,7 +506,7 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
-  - grep -v -e '^[[:space:]]*$' /etc/xrdp/xrdp.ini
+  - grep -v -e '^[[:space:]]*$' /etc/xrdp/xrdp.ini | grep -v -e '^[;#]' | sed 's|^|  /etc/xrdp/xrdp.ini  |'
   # Ensure that xrdp is running and enabled at startup
   - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
@@ -519,9 +521,8 @@ runcmd:
   - systemctl enable data.automount
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
-  - echo ">=== /etc/fstab ===<"
-  - grep -v -e '^[[:space:]]*$' /etc/fstab
-  - echo ">=== end of /etc/fstab ===<"
+  - echo ">=== Checking disk mounts... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav 2> /dev/null
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
   - echo ">=== Update ClamAV... ===<"
@@ -536,6 +537,8 @@ runcmd:
   - systemctl enable clamav-clamonacc
   - systemctl enable clamav-clamdscan.timer
   - systemctl enable clamav-freshclam
+
+final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
