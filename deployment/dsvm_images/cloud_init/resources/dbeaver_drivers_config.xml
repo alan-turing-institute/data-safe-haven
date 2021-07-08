@@ -14,7 +14,10 @@
             </library>
             <library type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE" custom="false" version="{{dbeaver.drivers.postgis_jdbc}}">
                 <file id="net.postgis:postgis-jdbc" version="{{dbeaver.drivers.postgis_jdbc}}" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.jar"/>
-        </library>
+            </library>
+            <library type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE" custom="false" version="{{dbeaver.drivers.postgis_geometry}}">
+                <file id="net.postgis:postgis-geometry" version="{{dbeaver.drivers.postgis_geometry}}" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.jar"/>
+            </library>
         </driver>
     </provider>
 </drivers>
