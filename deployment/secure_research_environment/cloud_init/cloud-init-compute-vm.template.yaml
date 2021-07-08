@@ -200,11 +200,6 @@ write_files:
     content: |
       {{project.default.xml}}
 
-  - path: "/etc/skel/.config/xfce4/terminal/terminalrc"
-    permissions: "0644"
-    content: |
-      [Configuration]
-
   - path: "/etc/skel/.xsession"
     permissions: "0444"
     content: |
@@ -319,6 +314,11 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
+  - path: "/etc/xdg/xfce4/terminal/terminalrc"
+    permissions: "0644"
+    content: |
+      [Configuration]
 
   - path: "/etc/xrdp/startwm.sh"
     permissions: "0755"
@@ -481,10 +481,10 @@ runcmd:
   - |
     THEME="dark-pastels"
     if [ -f /usr/share/xfce4/terminal/colorschemes/${THEME}.theme ]; then
-      grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/${THEME}.theme >> /etc/skel/.config/xfce4/terminal/terminalrc
+      grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/${THEME}.theme >> /etc/xdg/xfce4/terminal/terminalrc
     else
       echo "Could not find terminal colour scheme $THEME"
-      rm -rf /etc/skel/.config/xfce4/terminal/terminalrc
+      rm -rf /etc/xdg/xfce4/terminal/terminalrc
     fi
   - ls -alh /etc/xdg/xfce4
   # Configure xrdp login window
