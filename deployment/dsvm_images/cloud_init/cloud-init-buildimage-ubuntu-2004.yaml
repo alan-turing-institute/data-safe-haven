@@ -321,6 +321,8 @@ runcmd:
   # Check for missing packages
   - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); @eval using \$(Symbol(package)); catch e; println(package); end; end;")
   - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; else echo "... successfully installed Julia"; fi
+  # Add the Julia kernel to Jupyter
+  - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || echo "Could not install Julia kernel!" && exit 1
 
   # Install python versions
   - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//')"
@@ -351,6 +353,14 @@ runcmd:
   - echo "Updating ${PYENV_ROOT} permissions"
   - chmod -R o=u,o-w ${PYENV_ROOT}
   - chmod go+w /opt/pyenv/shims
+  # Mark the system Python kernel as not to be used
+  - |
+    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
+  # Add the new Python kernels to Jupyter
+  - |
+    for python_version in $PYTHON_VERSIONS; do
+      jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || echo "Could not install Python $python_version kernel!" && exit 1
+    done
 
   # Install any missing R packages - approximately 40 minutes
   - echo ">=== $(date +%s) Installing R packages ===<"
@@ -368,47 +378,18 @@ runcmd:
   - Rscript -e "options('Ncpus' = parallel::detectCores()); requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); remaining_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; if(length(remaining_pkgs)) { print(paste('Installing', paste(remaining_pkgs, collapse=', '))); BiocManager::install(remaining_pkgs, quiet = TRUE) } else { print('No packages left to install') }"
   - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "requested_pkgs <- c($BIOCONDUCTOR_PACKAGES); missing_pkgs <- requested_pkgs[!(requested_pkgs %in% installed.packages()[,'Package'])]; print(missing_pkgs)" | sed "s/character(0)//")
   - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n${MISSING_BIOCONDUCTOR_PACKAGES}"; exit 1; else echo "... successfully installed BioConductor packages"; fi
-
-  # Configure jupyter kernels
-  - echo ">=== $(date +%s) Configuring Jupyter with Julia, Python and R kernels ===<"
-  # Mark the system kernel as not to be used
-  - |
-    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
-  # Add the Julia kernel
-  - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || exit 1
-  # Add the python kernels
-  - |
-    for python_version in $PYTHON_VERSIONS; do
-      jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || exit 1
-    done
-  # Add the R kernel
+  # Add the R kernel to Jupyter
   - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
-  - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || exit 1
-  # Log the output kernels
-  - echo "Checking installed Jupyter kernels"
-  - jupyter kernelspec list
-
-  # Clean up any build artifacts
-  - echo ">=== $(date +%s) Cleaning up the build environment ===<"
-  - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
-  - find /root/ -mindepth 1 -delete  # remove all files from root's home directory
-  - tmpreaper 10m /tmp/ /var/tmp/    # remove temporary files that have not been accessed in 10 minutes
-  # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
-  # Remove xscreensaver (unnecessary)
-  - apt-get remove -y netcat-openbsd xscreensaver
-  # Remove any unused auto-installed packages
-  - apt-get autoclean -y
-  - apt-get autoremove -y --purge
-  - apt-get clean
-  # Log space saved
-  - USED_BYTES_NEW=$(df / | tail -n 1 | awk '{printf $3}')
-  - echo "Successfully reclaimed $(numfmt --to=iec-i --suffix=B $(($USED_BYTES_OLD - $USED_BYTES_NEW))) of disk space"
+  - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || echo "Could not install R kernel!" &&exit 1
 
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"
+  # Check that Jupyter kernels are correctly configured
+  - echo "Checking installed Jupyter kernels"
+  - jupyter kernelspec list
   # Set PATH to the current working version which contains all installed packages
   # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
   # We do this at the end of the script so that
@@ -420,6 +401,23 @@ runcmd:
   - sed -i "s|^PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || exit 1
+
+  # Clean up any build artifacts
+  - echo ">=== $(date +%s) Cleaning up the build environment ===<"
+  - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
+  # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
+  # Remove xscreensaver (unnecessary)
+  - apt-get remove -y netcat-openbsd xscreensaver
+  # Remove any unused auto-installed packages
+  - apt-get autoclean -y
+  - apt-get autoremove -y --purge
+  - apt-get clean
+  # Remove temporary files
+  - find /root/ -mindepth 1 -delete  # remove all files from root's home directory
+  - tmpreaper 10m /tmp/ /var/tmp/    # remove temporary files that have not been accessed in 10 minutes
+  # Log space saved
+  - USED_BYTES_NEW=$(df / | tail -n 1 | awk '{printf $3}')
+  - echo "Successfully reclaimed $(numfmt --to=iec-i --suffix=B $(($USED_BYTES_OLD - $USED_BYTES_NEW))) of disk space"
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
