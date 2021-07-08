@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' [default], 'Ubuntu1810', 'Ubuntu1904', 'Ubuntu1910'")]
+    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004")]
     [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
