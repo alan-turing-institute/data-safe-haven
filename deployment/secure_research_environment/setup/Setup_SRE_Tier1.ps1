@@ -139,12 +139,14 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitYaml.
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
     Replace("<storage-account-data-egress-name>", $dataStorageAccount.StorageAccountName).
     Replace("<storage-account-data-ingress-name>", $dataStorageAccount.StorageAccountName).
     Replace("<storage-account-data-egress-key>", $dataStorageAccountKey).
     Replace("<storage-account-data-ingress-key>", $dataStorageAccountKey).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 
 

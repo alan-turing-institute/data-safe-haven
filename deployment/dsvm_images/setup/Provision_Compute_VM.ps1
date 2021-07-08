@@ -143,7 +143,10 @@ foreach ($packageList in $packageLists) {
 # -----------------------------------------------
 $cloudInitTemplate = $cloudInitTemplate.
     Replace("<timezone>", $config.time.timezone.linux).
-    Replace("<ntp-server>", $config.time.ntp.poolFqdn)
+    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3])
 
 
 # Construct build VM parameters
