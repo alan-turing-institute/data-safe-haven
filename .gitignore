@@ -20,4 +20,4 @@ docs/*.pdf
 !docs/tiersflowchart.pdf
 
 # test environment configs
-environment_configs/shm_testtf_core_config.json
+environment_configs/shm_tftest_core_config.json
