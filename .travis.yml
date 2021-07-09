@@ -52,8 +52,15 @@ jobs:
     - name: Lint YAML
       language: python
       python: 3.9
-      before_script: pip install yamllint
-      script: yamllint .
+      before_script: pip install pystache-cli yamllint
+      script: |
+        echo '{"array": ["dummy"], "variable": "dummy"}' > mustache_config.json
+        for yamlfile in $(find . -name "*.yaml"); do
+          sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > ${yamlfile}.bak  # replace mustache arrays
+          sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" ${yamlfile}.bak           # replace mustache variables
+          pystache-cli $yamlfile ${yamlfile}.bak mustache_config.json          # perform mustache expansion
+        done
+        yamllint -s .
 
     - name: Check for dead links in Markdown
       language: node_js

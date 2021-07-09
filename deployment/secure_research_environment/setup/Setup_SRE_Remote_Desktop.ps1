@@ -276,7 +276,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $params = @{}
     # The RDS Gateway needs the RDWebClientManagement Powershell module
     if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn @params
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] @params
 }
 
 

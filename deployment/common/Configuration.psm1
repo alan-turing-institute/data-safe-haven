@@ -95,7 +95,6 @@ function Get-ShmConfig {
             windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
         }
         ntp      = [ordered]@{
-            poolFqdn        = "time.google.com"
             serverAddresses = @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12")
             serverFqdns     = @("time.google.com", "time1.google.com", "time2.google.com", "time3.google.com", "time4.google.com")
         }

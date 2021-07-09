@@ -189,7 +189,10 @@ $cloudInitTemplate = $cloudInitTemplate.
     Replace("<mirror-index-url-pypi>", $config.sre.repositories.pypi.indexUrl).
     Replace("<mirror-host-pypi>", $config.sre.repositories.pypi.host).
     Replace("<mirror-url-cran>", $config.sre.repositories.cran.url).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
     Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
     Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
