@@ -366,7 +366,6 @@
     "subscriptionName": "Safe Haven Management Test C",
     "time": {
       "ntp": {
-        "poolFqdn": "time.google.com",
         "serverAddresses": [
           "216.239.35.0",
           "216.239.35.4",
