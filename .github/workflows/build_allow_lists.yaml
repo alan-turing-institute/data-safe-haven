@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: environment_configs/package_lists/dependency-cache.json
-          key: dependencies # use the same cache for all jobs
+          key: dependencies  # use the same cache for all jobs
 
       - name: Check PyPI allow list
         shell: pwsh
