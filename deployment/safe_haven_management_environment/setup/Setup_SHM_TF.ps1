@@ -18,19 +18,19 @@ $originalContext = Get-AzContext
 $az_context = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# # Setup terraform resource group 
-# # ------------------------------------------------------------
-# $null = Deploy-ResourceGroup -Name $config.terraform.rg -Location $config.location
+# Setup terraform resource group 
+# ------------------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.terraform.rg -Location $config.location
 
 
-# # Setup terraform storage account
-# # ------------------------------------------------------------
-# $storageAccount = Deploy-StorageAccount -Name $config.terraform.accountName -ResourceGroupName $config.terraform.rg -Location $config.location
+# Setup terraform storage account
+# ------------------------------------------------------------
+$storageAccount = Deploy-StorageAccount -Name $config.terraform.accountName -ResourceGroupName $config.terraform.rg -Location $config.location
 
 
-# # Create blob storage container
-# # ------------------------------------------------------------
-# $null = Deploy-StorageContainer -Name $config.terraform.containerName -StorageAccount $storageAccount
+# Create blob storage container
+# ------------------------------------------------------------
+$null = Deploy-StorageContainer -Name $config.terraform.containerName -StorageAccount $storageAccount
 
 
 # Prepare main.tf file

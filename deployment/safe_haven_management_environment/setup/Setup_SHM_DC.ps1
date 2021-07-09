@@ -183,22 +183,22 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 #                           Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 
 
-$userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
-foreach ($user in $userAccounts.Keys) {
-    $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
-}
+# $userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
+# foreach ($user in $userAccounts.Keys) {
+#     $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
+# }
 
-$params = @{
-    domainAdminUsername    = $domainAdminUsername
-    domainControllerVmName = $config.dc.vmName
-    domainOuBase           = $config.domain.dn
-    gpoBackupPath          = "$($config.dc.installationDirectory)\GPOs"
-    netbiosName            = $config.domain.netbiosName
-    shmFdqn                = $config.domain.fqdn
-    userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
-    securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64
-}
-$null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+# $params = @{
+#     domainAdminUsername    = $domainAdminUsername
+#     domainControllerVmName = $config.dc.vmName
+#     domainOuBase           = $config.domain.dn
+#     gpoBackupPath          = "$($config.dc.installationDirectory)\GPOs"
+#     netbiosName            = $config.domain.netbiosName
+#     shmFdqn                = $config.domain.fqdn
+#     userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
+#     securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64
+# }
+# $null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure group policies
