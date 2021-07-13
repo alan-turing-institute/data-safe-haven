@@ -134,6 +134,7 @@ function Get-ShmConfig {
             nsg    = [ordered]@{
                 name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
+                rules              = "vm-images-nsg-rules-build.json"
             }
             vnet   = [ordered]@{
                 name = "VNET_IMAGE_BUILD"
@@ -146,15 +147,13 @@ function Get-ShmConfig {
             # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
             # We want a compute-optimised VM, since per-core performance is the bottleneck
             vm     = [ordered]@{
-                diskSizeGb = 64
+                diskSizeGb = 128
                 size       = "Standard_F4s_v2"
             }
         }
         gallery         = [ordered]@{
-            rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
-            sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
-            imageMajorVersion = 0
-            imageMinorVersion = 3
+            rg  = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
         }
         images          = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
@@ -185,6 +184,8 @@ function Get-ShmConfig {
             identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
+    $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
+    $shm.domain.fqdnUpper = ($shm.domain.fqdn).ToUpper()
     foreach ($ouName in $shm.domain.ous.Keys) {
         $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
     }
@@ -356,6 +357,8 @@ function Get-ShmConfig {
         vmName                     = $hostname
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
+        hostnameLower              = $hostname.ToLower()
+        hostnameUpper              = $hostname.ToUpper()
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16

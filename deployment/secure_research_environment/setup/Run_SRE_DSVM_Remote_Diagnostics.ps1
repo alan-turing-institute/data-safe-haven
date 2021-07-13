@@ -25,7 +25,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Use the IP last octet to get the VM name
 # ----------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
-$vmName = (Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }).Name
+$vmName = (Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d{1,2}-\d{1,2}-\d{10}" }).Name
 if (-not $vmName) {
     Add-LogMessage -Level Fatal "Could not find a VM with last IP octet equal to '$ipLastOctet'"
 }

@@ -1,13 +1,9 @@
-aesara
 arviz
 beautifulsoup4
 black
-colorama
 Cython
 dash
 dask
-dataclasses
-fbprophet
 flair
 flake8
 folium
@@ -27,6 +23,7 @@ pathos
 pg8000
 Pillow
 plotly
+protobuf
 psycopg2
 pydot
 pygrib

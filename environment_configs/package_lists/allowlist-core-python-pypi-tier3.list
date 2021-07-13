@@ -1,4 +1,5 @@
 aero-calc
+aesara
 altair
 annoy
 arviz
@@ -7,6 +8,7 @@ bokeh
 bulwark
 Cartopy
 catboost
+colorama
 Deprecated
 descartes
 dill

@@ -200,13 +200,16 @@ foreach ($keyName in $config.sre.databases.Keys) {
             Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
             Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
             Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
+            Replace("<shm-dc-hostname-upper>", $config.shm.dc.hostnameUpper).
+            Replace("{{shm.dc.hostnameUpper}}", $config.shm.dc.hostnameUpper).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
-            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+            Replace("{{shm.domain.fqdnLower}}", $config.shm.domain.fqdnLower).
+            Replace("{{shm.domain.fqdnUpper}}", $config.shm.domain.fqdnUpper).
+            Replace("<shm-fqdn-lower>", $config.shm.domain.fqdnLower).
+            Replace("<shm-fqdn-upper>", $config.shm.domain.fqdnUpper).
             Replace("<timezone>", $config.sre.time.timezone.linux).
             Replace("<vm-hostname>", $databaseCfg.vmName).
-            Replace("<vm-ipaddress>", $databaseCfg.ip)
+            Replace("<vm-ipaddress>", $databaseCfg.ip).
 
         # Deploy the VM
         $params = @{

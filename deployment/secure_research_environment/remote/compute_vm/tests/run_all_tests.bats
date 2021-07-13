@@ -1,7 +1,7 @@
 #! /usr/bin/env bats
-load "../../bats/bats-assert/load"
-load "../../bats/bats-file/load"
-load "../../bats/bats-support/load"
+load "../bats/bats-assert/load"
+load "../bats/bats-file/load"
+load "../bats/bats-support/load"
 
 
 # Helper functions
@@ -51,18 +51,6 @@ test_python_package_mirrors() {
 
 # Python
 # ------
-# Test Python 3.6
-@test "Python packages (3.6)" {
-    test_python_packages '3.6'
-}
-# Test Python functionality
-@test "Python functionality (3.6)" {
-    test_python_functionality '3.6'
-}
-@test "Python package mirrors (3.6)" {
-    test_python_package_mirrors '3.6'
-}
-
 # Test Python 3.7
 @test "Python packages (3.7)" {
     test_python_packages '3.7'
@@ -83,6 +71,18 @@ test_python_package_mirrors() {
 }
 @test "Python package mirrors (3.8)" {
     test_python_package_mirrors '3.8'
+}
+
+# Test Python 3.9
+@test "Python packages (3.9)" {
+    test_python_packages '3.9'
+}
+# Test Python functionality
+@test "Python functionality (3.9)" {
+    test_python_functionality '3.9'
+}
+@test "Python package mirrors (3.9)" {
+    test_python_package_mirrors '3.9'
 }
 
 
