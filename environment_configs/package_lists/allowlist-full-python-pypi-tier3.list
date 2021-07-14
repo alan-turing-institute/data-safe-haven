@@ -33,6 +33,7 @@ awkward0
 Babel
 backcall
 backpack
+backports.entry-points-selectable
 backports.functools-lru-cache
 backports.lzma
 backports.os
@@ -81,7 +82,6 @@ constantly
 contextily
 contextlib2
 contextvars
-convertdate
 crashtest
 crcmod
 cryptography
@@ -107,9 +107,7 @@ dtw
 eli5
 entrypoints
 enum34
-ephem
 fastprogress
-fbprophet
 filelock
 Fiona
 first
@@ -157,8 +155,6 @@ grpcio
 gym
 h5py
 HeapDict
-hijri-converter
-holidays
 html5lib
 htmlmin
 httplib2
@@ -211,7 +207,6 @@ Keras-Preprocessing
 keyring
 kiwisolver
 konoha
-korean-lunar-calendar
 langdetect
 lazy-object-proxy
 lifelines
@@ -219,7 +214,6 @@ lightgbm
 llvmlite
 locket
 lockfile
-lunardate
 lxml
 lz4
 mapclassify
@@ -308,6 +302,7 @@ pipenv
 pkgconfig
 pkginfo
 plac
+platformdirs
 plotly
 pluggy
 plumbum
@@ -320,6 +315,7 @@ pprintpp
 preshed
 prometheus-client
 prompt-toolkit
+prophet
 protobuf
 psutil
 psycopg2
@@ -342,7 +338,6 @@ pyLDAvis
 pylev
 pylint
 pymc3
-PyMeeus
 pymongo
 pyodbc
 PyOpenGL
