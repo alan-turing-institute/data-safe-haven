@@ -84,10 +84,6 @@ $artNpsConfigFilesPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "art
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<net_rg_name>>>', $config.network.vnet.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_rg_location>>>', $config.location) | Set-Content $tfvars_file
-$netTemplatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json"
-(Get-Content $tfvars_file).replace('<<<net_template_path>>>', $netTemplatePath) | Set-Content $tfvars_file
-$netTemplateName = Split-Path -Path "$netTemplatePath" -LeafBase
-(Get-Content $tfvars_file).replace('<<<net_name>>>', $netTemplateName) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_ipaddresses_externalntp>>>', $config.time.ntp.serverAddresses -join '", "') | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<net_nsg_identity_name>>>', $config.network.vnet.subnets.identity.nsg.name) | Set-Content $tfvars_file
 $p2sVpnCertificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
@@ -141,11 +137,8 @@ $dcSafemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.na
 (Get-Content $tfvars_file).replace('<<<dc_shm_id>>>', $config.id) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_virtual_network_subnet>>>', $config.network.vnet.subnets.identity.name) | Set-Content $tfvars_file
 
-
-
 # Script to configure Active Directory remotely
 # -----------------------------------
-
 $ad_conf_templ_file = '../remote/create_dc/scripts/Active_Directory_Configuration_template.ps1'
 $ad_conf_file = '../remote/create_dc/scripts/Active_Directory_Configuration.ps1'
 Copy-Item $ad_conf_templ_file $ad_conf_file
@@ -167,14 +160,15 @@ foreach ($user in $dcUserAccounts.Keys) {
 (Get-Content $tfvars_file).replace('<<<dc_user_accounts_b64>>>', ($dcUserAccounts | ConvertTo-Json | ConvertTo-Base64)) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<dc_security_groups_b64>>>', ($config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64)) | Set-Content $tfvars_file
 
+
 # NPS
 # ------------------------------------------------------------
 (Get-Content $tfvars_file).replace('<<<nps_rg_name>>>', $config.nps.rg) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<nps_rg_location>>>', $config.location) | Set-Content $tfvars_file
-$npsVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-(Get-Content $tfvars_file).replace('<<<nps_administrator_password>>>', (ConvertTo-SecureString $npsVmAdminPassword -AsPlainText -Force)) | Set-Content $tfvars_file
 $npsVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<nps_administrator_user>>>', $npsVmAdminUsername) | Set-Content $tfvars_file
+$npsVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+(Get-Content $tfvars_file).replace('<<<nps_administrator_password>>>', $npsVmAdminPassword) | Set-Content $tfvars_file
 (Get-Content $tfvars_file).replace('<<<nps_bootdiagnostics_account_name>>>', $config.storage.bootdiagnostics.accountName) | Set-Content $tfvars_file
 $npsDomainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 (Get-Content $tfvars_file).replace('<<<nps_domain_join_password>>>', $npsDomainJoinPassword) | Set-Content $tfvars_file

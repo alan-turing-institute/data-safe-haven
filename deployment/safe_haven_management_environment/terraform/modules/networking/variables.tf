@@ -6,14 +6,6 @@ variable "rg_location" {
   type = string
 }
 
-variable "name" {
-  type = string
-}
-
-variable "template_path" {
-  type = string
-}
-
 variable "ipaddresses_externalntp" {
   type = list
 }

@@ -21,10 +21,6 @@ art_nps_config_files_path = "<<<art_nps_config_files_path>>>"
 
 net_rg_name = "<<<net_rg_name>>>"
 net_rg_location = "<<<net_rg_location>>>"
-
-# NET ARM template variables
-net_name = "<<<net_name>>>"
-net_template_path = "<<<net_template_path>>>"
 net_ipaddresses_externalntp = ["<<<net_ipaddresses_externalntp>>>"]
 net_nsg_identity_name = "<<<net_nsg_identity_name>>>"
 net_p2s_vpn_certificate = "<<<net_p2s_vpn_certificate>>>"

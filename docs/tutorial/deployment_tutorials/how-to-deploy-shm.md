@@ -308,7 +308,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 
 ## :cloud: 7. Establish the infrastructure
 
-![Powershell: unknown](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=unknown) at :file_folder: `./deployment/safe_haven_management_environment/terraform`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=unknown) at :file_folder: `./deployment/safe_haven_management_environment/terraform`
 
 + Initialise a working directory containing Terraform configuration files.
 
@@ -868,7 +868,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
 ```pwsh
-& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1
+& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
 ```
 
 + Enter `A` if prompted to install `Powershell` modules
