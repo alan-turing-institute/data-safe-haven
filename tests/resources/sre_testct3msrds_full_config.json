@@ -367,7 +367,7 @@
       },
       "scripts": {
         "accountName": "shmtestcscriptslubiehyqx",
-        "rg": "RG_SHM_TESTC_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_STORAGE"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
@@ -700,7 +700,7 @@
       },
       "scripts": {
         "accountName": "scripts",
-        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
+        "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },
       "userdata": {
         "account": {
