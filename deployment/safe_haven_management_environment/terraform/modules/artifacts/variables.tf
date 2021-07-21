@@ -39,6 +39,10 @@ variable "dc_config_files" {
 variable "dc_config_file_disconnect_ad" {
   type = string
 }
+variable "dc_azureadconnect_source_uri" {
+  type = string
+  default = "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi"
+}
 variable "dc_chrome_source_uri" {
   type = string
   default = "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"

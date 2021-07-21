@@ -74,6 +74,14 @@ resource "azurerm_storage_blob" "Active_Directory_Configuration_ps1" {
   source                 = var.dc_active_directory_configuration_path
 }
 
+resource "azurerm_storage_blob" "adconnect" {
+  name                   = "AzureADConnect.msi"
+  storage_account_name   = azurerm_storage_account.artifacts.name
+  storage_container_name = azurerm_storage_container.scripts_shm_configuration_dc.name
+  type                   = "Block"
+  source_uri             = var.dc_azureadconnect_source_uri
+}
+
 resource "azurerm_storage_account" "artifacts" {
   name                     = var.art_sa_name
   resource_group_name      = azurerm_resource_group.artifacts.name
