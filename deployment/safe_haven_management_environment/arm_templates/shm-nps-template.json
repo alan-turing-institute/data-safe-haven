@@ -29,8 +29,8 @@
         "Domain_Name": {
             "type": "string"
         },
-        "NPS_Data_Disk_Size_GB": {
-            "type": "int"
+        "NPS_Data_Disk_Size_GB_str": {
+            "type": "string"
         },
         "NPS_Data_Disk_Type": {
             "type": "string"
@@ -41,8 +41,8 @@
         "NPS_IP_Address": {
             "type": "string"
         },
-        "NPS_Os_Disk_Size_GB": {
-            "type": "int"
+        "NPS_Os_Disk_Size_GB_str": {
+            "type": "string"
         },
         "NPS_Os_Disk_Type": {
             "type": "string"
@@ -70,6 +70,8 @@
         }
     },
     "variables": {
+        "NPS_Data_Disk_Size_GB": "[int(parameters('NPS_Data_Disk_Size_GB_str'))]",
+        "NPS_Os_Disk_Size_GB": "[int(parameters('NPS_Os_Disk_Size_GB_str'))]",
         "npsnic": "[concat(parameters('NPS_VM_Name'),'-','NIC')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
@@ -101,7 +103,7 @@
                         "managedDisk": {
                             "storageAccountType": "[parameters('Nps_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": "[parameters('Nps_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[variables('Nps_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -113,7 +115,7 @@
                             "managedDisk": {
                                 "storageAccountType": "[parameters('NPS_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": "[parameters('Nps_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[variables('Nps_Data_Disk_Size_GB')]"
                         }
                     ]
                 },

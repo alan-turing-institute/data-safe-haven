@@ -426,6 +426,10 @@ function Get-ShmConfig {
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
+        scripts         = [ordered]@{
+            rg          = $storageRg
+            accountName = "${shmStoragePrefix}scripts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        }
         artifacts       = [ordered]@{
             rg          = $storageRg
             accountName = "${shmStoragePrefix}artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -487,6 +491,15 @@ function Get-ShmConfig {
                 }
             }
         }
+    }
+
+    # Terraform config
+    # ---------------------
+    $shm.terraform = [ordered]@{
+        rg            = "$($shm.rgPrefix)_TERRAFORM".ToUpper()
+        accountName   = "${shmStoragePrefix}terraform${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+        containerName = "tfcontainer"
+        keyName       = "shm.tfstate"
     }
 
     # Apply overrides (if any exist)
@@ -676,6 +689,10 @@ function Get-SreConfig {
             readWrite = [ordered]@{
                 permissions = "racwdl"
             }
+        }
+        scripts         = [ordered]@{
+            rg          = $storageRg
+            accountName = "${shmStoragePrefix}scripts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         artifacts       = [ordered]@{
             account = [ordered]@{
@@ -1060,7 +1077,6 @@ function Get-SreConfig {
     return (ConvertTo-SortedHashtable -Sortable $config)
 }
 Export-ModuleMember -Function Get-SreConfig
-
 
 # Get a list of resource groups belonging to a particular SRE
 # -----------------------------------------------------------

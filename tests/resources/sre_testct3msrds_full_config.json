@@ -364,9 +364,19 @@
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
+      },
+      "scripts": {
+        "accountName": "shmtestcscriptslubiehyqx",
+        "rg": "RG_SHM_TESTC_ARTIFACTS"
       }
     },
     "subscriptionName": "Safe Haven Management Test C",
+    "terraform": {
+      "accountName": "shmtestcterraformlubiehy",
+      "containerName": "tfcontainer",
+      "keyName": "shm.tfstate",
+      "rg": "RG_SHM_TESTC_TERRAFORM"
+    },
     "time": {
       "ntp": {
         "serverAddresses": [
@@ -687,6 +697,10 @@
             "mountType": "BlobSMB"
           }
         }
+      },
+      "scripts": {
+        "accountName": "scripts",
+        "rg": "RG_SHM_TESTC_SRE_SANDBOX_ARTIFACTS"
       },
       "userdata": {
         "account": {

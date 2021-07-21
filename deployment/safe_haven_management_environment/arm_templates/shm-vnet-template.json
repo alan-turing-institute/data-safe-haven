@@ -2,8 +2,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "IPAddresses_ExternalNTP": {
-            "type": "array"
+        "IPAddresses_ExternalNTP_list": {
+            "type": "string"
         },
         "NSG_Identity_Name": {
             "type": "string"
@@ -47,6 +47,9 @@
         "VPN_CIDR": {
             "type": "string"
         }
+    },
+    "variables": {
+        "IPAddresses_ExternalNTP": "[split(parameters('IPAddresses_ExternalNTP_list'),',')]"
     },
     "resources": [
         {
@@ -342,7 +345,7 @@
                             "sourcePortRanges": [],
                             "destinationPortRanges": [],
                             "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": "[parameters('IPAddresses_ExternalNTP')]"
+                            "destinationAddressPrefixes": "[variables('IPAddresses_ExternalNTP')]"
                         }
                     },
                     {

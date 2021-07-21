@@ -631,7 +631,23 @@ On your **deployment machine**.
   + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
   + If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
+<<<<<<< HEAD
 ### :fire: Tear down the SHM
+=======
+## :fire: Tearing down an SRE
+
+In order to tear down an SRE, use the following procedure:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
++ Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+  + Run `./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>`.
+
+## :fire: Tearing down the SHM
+>>>>>>> 346-terraform
 
 In order to tear down the SHM, use the following procedure (you may skip the tearing down of package mirrors, unless this is the specific thing you wanted to do):
 
@@ -651,6 +667,8 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
 
 On your **deployment machine**.
 
+On your **deployment machine**.
+
 + Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
 + Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 + Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
@@ -659,3 +677,19 @@ On your **deployment machine**.
   + Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
   + If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 + Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
+<<<<<<< HEAD
+=======
+
+## :anger: Tearing down SHM package mirrors
+
+During normal usage of the SHM, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
+
+On your **deployment machine**.
+
++ Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](<https://github.com/alan-turing-institute/data-safe-haven>).
++ Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
++ Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+  + NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
++ Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the [management environment ID](#management-environment-id) specified in the configuration file.
++ This will take **a few minutes** to run.
+>>>>>>> 346-terraform

@@ -1,0 +1,128 @@
+# Configure the Microsoft Azure Provider
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.58.0"
+    }
+  }
+  backend "azurerm" {
+      subscription_id = "<<<subscription_id>>>"
+      resource_group_name = "<<<resource_group_name>>>"
+      storage_account_name = "<<<storage_account_name>>>"
+      container_name = "<<<container_name>>>"
+      key = "<<<key>>>"
+  }
+}
+
+# Declare Azure provider
+provider "azurerm" {
+  subscription_id = "<<<subscription_id>>>"
+  features {}
+}
+
+data "azurerm_client_config" "current" {
+}
+
+module "artifacts" {
+  source = "./modules/artifacts"
+
+  rg_name = var.art_rg_name
+  rg_location = var.art_rg_location
+  script_sa_name = var.art_script_sa_name
+  boot_sa_name = var.art_boot_sa_name
+  art_sa_name = var.art_art_sa_name
+  dc_active_directory_configuration_path = var.art_dc_active_directory_configuration_path
+  dc_createadpdc_path = var.art_dc_createadpdc_path
+  dc_createadbdc_path = var.art_dc_createadbdc_path
+  dc_config_files_path = var.art_dc_config_files_path
+  dc_config_file_disconnect_ad = var.art_dc_config_file_disconnect_ad
+  dc_putty_source_uri = var.art_dc_putty_source_uri
+  nps_config_files_path = var.art_nps_config_files_path
+}
+
+module "networking" {
+  source = "./modules/networking"
+
+  rg_name = var.net_rg_name
+  rg_location = var.net_rg_location
+  ipaddresses_externalntp = var.net_ipaddresses_externalntp
+  nsg_identity_name = var.net_nsg_identity_name
+  p2s_vpn_certificate = var.net_p2s_vpn_certificate
+  shm_id = var.net_shm_id
+  subnet_firewall_cidr = var.net_subnet_firewall_cidr
+  subnet_firewall_name = var.net_subnet_firewall_name
+  subnet_gateway_cidr = var.net_subnet_gateway_cidr
+  subnet_gateway_name = var.net_subnet_gateway_name
+  subnet_identity_cidr = var.net_subnet_identity_cidr
+  subnet_identity_name = var.net_subnet_identity_name
+  virtual_network_name = var.net_virtual_network_name
+  vnet_cidr = var.net_vnet_cidr
+  vnet_dns_dc1 = var.net_vnet_dns_dc1
+  vnet_dns_dc2 = var.net_vnet_dns_dc2
+  vpn_cidr = var.net_vpn_cidr
+}
+
+module "dc" {
+  source = "./modules/dc"
+
+  rg_name = var.dc_rg_name
+  rg_location = var.dc_rg_location
+  administrator_password = var.dc_administrator_password
+  administrator_user = var.dc_administrator_user
+  scripts_location = var.dc_scripts_location
+  scripts_location_sas_token = module.artifacts.dc_scripts_sas_token
+  artifacts_location = var.dc_artifacts_location
+  artifacts_location_sas_token = module.artifacts.dc_artifact_sas_token
+  bootdiagnostics_account_name = var.dc_bootdiagnostics_account_name
+  dc1_data_disk_size_gb = var.dc_dc1_data_disk_size_gb
+  dc1_data_disk_type = var.dc_dc1_data_disk_type
+  dc1_host_name = var.dc_dc1_host_name
+  dc1_ip_address = var.dc_dc1_ip_address
+  dc1_os_disk_size_gb = var.dc_dc1_os_disk_size_gb
+  dc1_os_disk_type = var.dc_dc1_os_disk_type
+  dc1_vm_name = var.dc_dc1_vm_name
+  dc1_vm_size = var.dc_dc1_vm_size
+  dc2_host_name = var.dc_dc2_host_name
+  dc2_data_disk_size_gb = var.dc_dc2_data_disk_size_gb
+  dc2_data_disk_type = var.dc_dc2_data_disk_type
+  dc2_ip_address = var.dc_dc2_ip_address
+  dc2_os_disk_size_gb = var.dc_dc2_os_disk_size_gb
+  dc2_os_disk_type = var.dc_dc2_os_disk_type
+  dc2_vm_name = var.dc_dc2_vm_name
+  dc2_vm_size = var.dc_dc2_vm_size
+  domain_name = var.dc_domain_name
+  domain_netbios_name = var.dc_domain_netbios_name
+  external_dns_resolver = var.dc_external_dns_resolver
+  safemode_password = var.dc_safemode_password
+  shm_id = var.dc_shm_id
+  virtual_network_subnet = module.networking.subnet_identity_id
+  domain_ou_base = var.dc_domain_ou_base
+  gpo_backup_path_b64 = var.dc_gpo_backup_path_b64
+  user_accounts_b64 = var.dc_user_accounts_b64
+  security_groups_b64 = var.dc_security_groups_b64
+}
+
+module "nps" {
+  source = "./modules/nps"
+  
+  rg_name = var.nps_rg_name
+  rg_location = var.nps_rg_location
+  
+  administrator_password = var.nps_administrator_password
+  administrator_user = var.nps_administrator_user
+  bootdiagnostics_account_name = var.nps_bootdiagnostics_account_name
+  domain_join_password = var.nps_domain_join_password
+  domain_join_user = var.nps_domain_join_user
+  domain_name = var.nps_domain_name
+  data_disk_size_gb = var.nps_data_disk_size_gb
+  data_disk_type = var.nps_data_disk_type
+  host_name = var.nps_host_name
+  ip_address = var.nps_ip_address
+  os_disk_size_gb = var.nps_os_disk_size_gb
+  os_disk_type = var.nps_os_disk_type
+  vm_name = var.nps_vm_name
+  vm_size = var.nps_vm_size
+  ou_path = var.nps_ou_path
+  virtual_network_subnet = module.networking.subnet_identity_id
+}

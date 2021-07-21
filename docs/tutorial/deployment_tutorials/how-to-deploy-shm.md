@@ -9,15 +9,17 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:door: 3. Configure DNS for the custom domain](#door-3-configure-dns-for-the-custom-domain)
 + [:file_folder: 4. Setup Azure Active Directory (AAD)](#file_folder-4-setup-azure-active-directory-aad)
 + [:key: 5. Deploy Key Vault for SHM secrets and create emergency admin account](#key-5-deploy-key-vault-for-shm-secrets-and-create-emergency-admin-account)
-+ [:iphone: 6. Enable MFA and self-service password reset](#iphone-6-enable-mfa-and-self-service-password-reset)
-+ [:id: 7. Configure internal administrator accounts](#id-7-configure-internal-administrator-accounts)
-+ [:station: 8. Deploy network and VPN gateway](#station-8-deploy-network-and-vpn-gateway)
-+ [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
-+ [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
-+ [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:package: 12. Deploy Python/R package repositories](#package-12-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 13. Deploy logging](#chart_with_upwards_trend-13-deploy-logging)
-+ [:fire_engine: 14. Deploy firewall](#fire_engine-14-deploy-firewall)
++ [:hammer: 6. Configure Terraform](#hammer-6-configure-terraform)
++ [:cloud: 7. Establish the infrastructure](#cloud-7-establish-the-infrastructure)
++ [:iphone: 8. Enable MFA and self-service password reset](#iphone-8-enable-mfa-and-self-service-password-reset)
++ [:id: 9. Configure internal administrator accounts](#id-9-configure-internal-administrator-accounts)
++ [:station: 10. Deploy network and VPN gateway](#station-10-deploy-network-and-vpn-gateway)
++ [:house_with_garden: 11. Deploy and configure domain controllers](#house_with_garden-11-deploy-and-configure-domain-controllers)
++ [:police_car: 12. Deploy and configure network policy server](#police_car-12-deploy-and-configure-network-policy-server)
++ [:closed_lock_with_key: 13. Require MFA for all users](#closed_lock_with_key-13-require-mfa-for-all-users)
++ [:package: 14. Deploy Python/R package repositories](#package-14-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 15. Deploy logging](#chart_with_upwards_trend-15-deploy-logging)
++ [:fire_engine: 16. Deploy firewall](#fire_engine-16-deploy-firewall)
 
 ## Explanation of symbols used in this guide
 
@@ -86,6 +88,8 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
     + :warning: If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
   + ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manage or install manually following the [instructions on Github](https://github.com/openssl/openssl)
++ `Terraform`
+  + Install [Terraform v0.14.5 or above](<https://learn.hashicorp.com/tutorials/terraform/install-cli>)
 
 ## :clipboard: 2. Safe Haven Management configuration
 
@@ -282,7 +286,45 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
       ![AAD Global Admin](../../images/deploy_shm/aad_global_admin.png)
     </details>
 
-## :iphone: 6. Enable MFA and self-service password reset
+## :hammer: 6. Configure Terraform
+
+![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
+
+## :cloud: 7. Establish the infrastructure
+
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=unknown) at :file_folder: `./deployment/safe_haven_management_environment/terraform`
+
++ Initialise a working directory containing Terraform configuration files.
+
+  ```powershell
+  PS> terraform init
+  ```
+
+  You should see the following message `Terraform has been successfully initialized!`
+
++ Create an execution plan to check if the set of changes matches your expectations without making any changes to real resources or to the state.
+
+  ```powershell
+  PS> terraform plan
+  ```
+
+  You should see a message that starts with `Terraform will perform the following actions:` and then lists resources to be added/changed/destroyed.
+
++ Apply the changes required to reach the desired state of the configuration, or the pre-determined set of actions generated by a terraform plan execution plan.
+
+  ```powershell
+  PS> terraform apply
+  ```
+
+  When asked `Do you want to perform these actions?` type `yes` to approve the actions.
+
+## :iphone: 8. Enable MFA and self-service password reset
 
 To enable MFA and self-service password reset, you must have sufficient licences for all users.
 
@@ -378,7 +420,7 @@ Click the heading that applies to you to expand the instructions for that scenar
       ![AAD MFA settings](../../images/deploy_shm/aad_mfa_settings.png)
     </details>
 
-## :id: 7. Configure internal administrator accounts
+## :id: 9. Configure internal administrator accounts
 
 The emergency access admin account should not be used except in a genuine emergency. In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
 
@@ -480,7 +522,7 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 </details>
 
-## :station: 8. Deploy network and VPN gateway
+## :station: 10. Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -544,7 +586,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may get a `Windows protected your PC` pop up. If so, click `More info -> Run anyway`.
 + ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.
 
-## :house_with_garden: 9. Deploy and configure domain controllers
+## :house_with_garden: 11. Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -750,7 +792,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 </details>
 
-## :police_car: 10. Deploy and configure network policy server
+## :police_car: 12. Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -801,7 +843,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
 ```powershell
-& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1
+& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
 ```
 
 + Enter `A` if prompted to install `Powershell` modules
@@ -880,7 +922,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## :package: 12. Deploy Python/R package repositories
+## :package: 14. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
@@ -918,7 +960,7 @@ PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 
 :exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
-## :chart_with_upwards_trend: 13. Deploy logging
+## :chart_with_upwards_trend: 15. Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -931,7 +973,7 @@ PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 ### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.
 
-## :fire_engine: 14. Deploy firewall
+## :fire_engine: 16. Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`

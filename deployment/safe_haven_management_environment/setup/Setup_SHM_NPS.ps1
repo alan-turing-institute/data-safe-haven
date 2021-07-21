@@ -18,9 +18,9 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
+# # Create resource group if it does not exist
+# # ------------------------------------------
+# $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
 # Retrieve passwords from the Key Vault
@@ -32,56 +32,57 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 
 
-# Ensure that artifacts resource group, storage account and storage container exist
-# ---------------------------------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-$storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
+# # Ensure that artifacts resource group, storage account and storage container exist
+# # ---------------------------------------------------------------------------------
+# $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
+# $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 $storageContainerName = "shm-configuration-nps"
-$null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+# $null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+$storageAccount = Get-AzStorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 
 
-# Upload artifacts
-# ----------------
-Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
-Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
-$success = $true
-foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
-    $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
-    $success = $success -and $?
-}
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded NPS configuration files"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
-}
+# # Upload artifacts
+# # ----------------
+# # Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
+# # Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
+# $success = $true
+# foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
+#     $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
+#     $success = $success -and $?
+# }
+# if ($success) {
+#     Add-LogMessage -Level Success "Uploaded NPS configuration files"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
+# }
 
 
 # Deploy NPS from template
 # ------------------------
-Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
-# NB. We do not currently use the dedicated service-servers computer management user.
-# This will need some deeper thought about which OU each VM should belong to.
-$params = @{
-    Administrator_Password         = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    Administrator_User             = $vmAdminUsername
-    BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
-    Domain_Join_Password           = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
-    Domain_Join_User               = $domainJoinUsername
-    Domain_Name                    = $config.domain.fqdn
-    NPS_Data_Disk_Size_GB          = [int]$config.nps.disks.data.sizeGb
-    NPS_Data_Disk_Type             = $config.nps.disks.data.type
-    NPS_Host_Name                  = $config.nps.hostname
-    NPS_IP_Address                 = $config.nps.ip
-    NPS_Os_Disk_Size_GB            = [int]$config.nps.disks.os.sizeGb
-    NPS_Os_Disk_Type               = $config.nps.disks.os.type
-    NPS_VM_Name                    = $config.nps.vmName
-    NPS_VM_Size                    = $config.nps.vmSize
-    OU_Path                        = $config.domain.ous.identityServers.path
-    Virtual_Network_Name           = $config.network.vnet.name
-    Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
+# Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
+# # NB. We do not currently use the dedicated service-servers computer management user.
+# # This will need some deeper thought about which OU each VM should belong to.
+# $params = @{
+#     Administrator_Password         = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+#     Administrator_User             = $vmAdminUsername
+#     BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
+#     Domain_Join_Password           = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+#     Domain_Join_User               = $domainJoinUsername
+#     Domain_Name                    = $config.domain.fqdn
+#     NPS_Data_Disk_Size_GB          = [int]$config.nps.disks.data.sizeGb
+#     NPS_Data_Disk_Type             = $config.nps.disks.data.type
+#     NPS_Host_Name                  = $config.nps.hostname
+#     NPS_IP_Address                 = $config.nps.ip
+#     NPS_Os_Disk_Size_GB            = [int]$config.nps.disks.os.sizeGb
+#     NPS_Os_Disk_Type               = $config.nps.disks.os.type
+#     NPS_VM_Name                    = $config.nps.vmName
+#     NPS_VM_Size                    = $config.nps.vmSize
+#     OU_Path                        = $config.domain.ous.identityServers.path
+#     Virtual_Network_Name           = $config.network.vnet.name
+#     Virtual_Network_Resource_Group = $config.network.vnet.rg
+#     Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
+# }
+# Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
 
 
 # Run configuration script remotely
