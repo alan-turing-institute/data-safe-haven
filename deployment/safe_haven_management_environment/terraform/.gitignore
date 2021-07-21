@@ -1,4 +1,5 @@
 /main.tf
+/terraform.tfvars
 
 .terraform.lock.hcl
 
