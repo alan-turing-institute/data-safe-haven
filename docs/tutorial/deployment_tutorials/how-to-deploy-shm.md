@@ -295,7 +295,6 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
       </p>
     </details>
 
-
 ## :hammer: 6. Configure Terraform
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
@@ -333,7 +332,6 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
   ```
 
   When asked `Do you want to perform these actions?` type `yes` to approve the actions.
-
 
 ## :iphone: 8. Enable MFA and self-service password reset
 

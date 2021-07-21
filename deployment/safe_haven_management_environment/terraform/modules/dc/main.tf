@@ -190,29 +190,6 @@ resource "azurerm_virtual_machine_extension" "dc1vmadforest" {
     PROTECTED_SETTINGS
 }
 
-resource "azurerm_virtual_machine_extension" "dc1activedirectoryconfig" {
-    name                       = "ActiveDirectoryConfiguration"
-    virtual_machine_id         = azurerm_virtual_machine.dc1vm.id
-    publisher                  = "Microsoft.Compute"
-    type                       = "CustomScriptExtension"
-    type_handler_version       = "1.10"
-    auto_upgrade_minor_version = true
-    
-    depends_on                 = [azurerm_virtual_machine_extension.dc1vmadforest]
-
-    settings = <<SETTINGS
-    {  
-    }
-    SETTINGS
-    protected_settings = <<PROTECTED_SETTINGS
-    {
-        "commandToExecute": "powershell.exe -File Active_Directory_Configuration.ps1 -domainAdminUsername ${var.administrator_user} -domainControllerVmName ${var.dc1_vm_name} -domainOuBase ${var.domain_ou_base} -gpoBackupPath ${var.gpo_backup_path_b64} -netbiosName ${var.domain_netbios_name} -shmFdqn ${var.domain_name} -securityGroupsB64 ${var.security_groups_b64} -userAccountsB64 ${var.user_accounts_b64}",
-        "fileUris": ["${var.scripts_location}/shm-configuration-dc/Active_Directory_Configuration.ps1${var.scripts_location_sas_token}"]
-    }
-   
-    PROTECTED_SETTINGS
-}
-
 resource "azurerm_virtual_machine_extension" "dc2vmadbdc" {
     name                       = "CreateADBDC"
     virtual_machine_id         = azurerm_virtual_machine.dc2vm.id
@@ -270,4 +247,27 @@ resource "azurerm_virtual_machine_extension" "dc2vmbginfo" {
     type                       = "bginfo"
     type_handler_version       = "2.1"
     auto_upgrade_minor_version = true
+}
+
+resource "azurerm_virtual_machine_extension" "dc1activedirectoryconfig" {
+    name                       = "ActiveDirectoryConfiguration"
+    virtual_machine_id         = azurerm_virtual_machine.dc1vm.id
+    publisher                  = "Microsoft.Compute"
+    type                       = "CustomScriptExtension"
+    type_handler_version       = "1.10"
+    auto_upgrade_minor_version = true
+    
+    depends_on                 = [azurerm_virtual_machine_extension.dc1vmadforest]
+
+    settings = <<SETTINGS
+    {  
+    }
+    SETTINGS
+    protected_settings = <<PROTECTED_SETTINGS
+    {
+        "commandToExecute": "powershell.exe -File Active_Directory_Configuration.ps1 -domainAdminUsername ${var.administrator_user} -domainControllerVmName ${var.dc1_vm_name} -domainOuBase ${var.domain_ou_base} -gpoBackupPath ${var.gpo_backup_path_b64} -netbiosName ${var.domain_netbios_name} -shmFdqn ${var.domain_name} -securityGroupsB64 ${var.security_groups_b64} -userAccountsB64 ${var.user_accounts_b64}",
+        "fileUris": ["${var.scripts_location}/shm-configuration-dc/Active_Directory_Configuration.ps1${var.scripts_location_sas_token}"]
+    }
+   
+    PROTECTED_SETTINGS
 }

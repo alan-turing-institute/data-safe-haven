@@ -46,8 +46,6 @@ module "networking" {
 
   rg_name = var.net_rg_name
   rg_location = var.net_rg_location
-  name = var.net_name
-  template_path = var.net_template_path
   ipaddresses_externalntp = var.net_ipaddresses_externalntp
   nsg_identity_name = var.net_nsg_identity_name
   p2s_vpn_certificate = var.net_p2s_vpn_certificate
@@ -105,7 +103,6 @@ module "dc" {
   security_groups_b64 = var.dc_security_groups_b64
 }
 
-/*
 module "nps" {
   source = "./modules/nps"
   
@@ -129,4 +126,3 @@ module "nps" {
   ou_path = var.nps_ou_path
   virtual_network_subnet = module.networking.subnet_identity_id
 }
-*/

@@ -49,12 +49,6 @@ variable "net_rg_name" {
 variable "net_rg_location" {
   type = string
 }
-variable "net_name" {
-  type = string
-}
-variable "net_template_path" {
-  type = string
-}
 variable "net_ipaddresses_externalntp" {
   type = list
 }

@@ -359,9 +359,19 @@
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
+    },
+    "scripts": {
+        "accountName": "shmtestbscriptslubiehyqx",
+        "rg": "RG_SHM_TESTB_ARTIFACTS"
     }
   },
   "subscriptionName": "Safe Haven Management Test B",
+  "terraform": {
+    "accountName": "shmtestbterraformlubiehy",
+    "containerName": "tfcontainer",
+    "keyName": "shm.tfstate",
+    "rg": "RG_SHM_TESTB_TERRAFORM"
+  },
   "time": {
     "ntp": {
       "poolFqdn": "time.google.com",

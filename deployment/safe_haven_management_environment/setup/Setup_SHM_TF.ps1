@@ -18,7 +18,7 @@ $originalContext = Get-AzContext
 $az_context = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Setup terraform resource group 
+# Setup terraform resource group
 # ------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.terraform.rg -Location $config.location
 

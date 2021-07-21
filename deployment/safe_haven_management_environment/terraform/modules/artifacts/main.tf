@@ -21,7 +21,6 @@ resource "azurerm_storage_account" "scripts" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
   access_tier              = "Hot"
-  allow_blob_public_access = true
 }
 
 data "azurerm_storage_account_sas" "dcscriptssas" {
@@ -43,7 +42,7 @@ data "azurerm_storage_account_sas" "dcscriptssas" {
     }
 
     start  = timestamp()
-    expiry = timeadd(timestamp(), "4h")
+    expiry = timeadd(timestamp(), "8h")
 
     permissions {
         read    = true
@@ -104,7 +103,7 @@ data "azurerm_storage_account_sas" "dcartifactssas" {
     }
 
     start  = timestamp()
-    expiry = timeadd(timestamp(), "4h")
+    expiry = timeadd(timestamp(), "8h")
 
     permissions {
         read    = true
