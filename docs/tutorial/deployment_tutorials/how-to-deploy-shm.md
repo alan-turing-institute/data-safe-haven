@@ -524,14 +524,6 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 ## :station: 10. Deploy network and VPN gateway
 
-![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
 <details><summary><b>Sanity check</b></summary>
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
