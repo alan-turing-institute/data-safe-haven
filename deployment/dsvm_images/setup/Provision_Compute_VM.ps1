@@ -1,9 +1,9 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' [default], 'Ubuntu1810', 'Ubuntu1904', 'Ubuntu1910'")]
+    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004")]
-    [string]$sourceImage = "Ubuntu1804",
+    [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
@@ -15,7 +15,9 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -40,15 +42,16 @@ if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
 # --------------------------------------------
 if ($sourceImage -eq "Ubuntu1804") {
     $baseImageSku = "18.04-LTS"
-    $buildVmName = "ComputeVM-Ubuntu1804Base"
+    $shortVersion = "1804"
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
 } elseif ($sourceImage -eq "Ubuntu2004") {
-    # $baseImageSku = "20.04-LTS"
-    # $buildVmName = "ComputeVM-Ubuntu2004Base"
-    Add-LogMessage -Level Fatal "Source image '$sourceImage' is not yet available but it will be shortly!"
+    $baseImageSku = "20.04-LTS"
+    $shortVersion = "2004"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu.yaml") -Raw
+$buildVmName = "ComputeVM-Ubuntu${shortVersion}"
+$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.yaml") -Raw
 
 
 # Create resource groups if they do not exist
@@ -71,79 +74,44 @@ $vnet = Deploy-VirtualNetwork -Name $config.dsvmImage.build.vnet.name -ResourceG
 $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwork $vnet -AddressPrefix $config.dsvmImage.build.subnet.cidr
 
 
-# Set up the build NSG
-# --------------------
+# Ensure that build NSG exists with correct rules and attach it to the build subnet
+# ---------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
 # Get list of IP addresses which are allowed to connect to the VM candidates
+$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Name -eq "AllowBuildAdminSshInbound" }
 $allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
-$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Priority -eq 1000 }
-if ($existingRule) {
-    $allowedIpAddresses += @($existingRule.SourceAddressPrefix)
-}
-$allowedIpAddresses = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
-# Add the necessary rules
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Allow `
-                             -Name "AllowBuildAdminSSH" `
-                             -Description "Allow port 22 for management over ssh" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 22 `
-                             -Direction Inbound `
-                             -Priority 1000 `
-                             -Protocol TCP `
-                             -SourceAddressPrefix $allowedIpAddresses `
-                             -SourcePortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Deny `
-                             -Name "DenyAll" `
-                             -Description "Inbound deny all" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange * `
-                             -Direction Inbound `
-                             -Priority 3000 `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange *
-$null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+$allowedIpAddresses += $existingRule ? @($existingRule.SourceAddressPrefix) : @()
+$config["buildAdminIpAddresses"] = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
+# Update the NSG and ensure it is connected to the correct subnet
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.dsvmImage.build.nsg.rules) -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $buildNsg -Rules $rules
+$subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
-# Insert scripts into the cloud-init template
-# -------------------------------------------
-$resources = Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "scripts")
-$resources += Get-ChildItem (Join-Path $PSScriptRoot ".." "packages")
-foreach ($resource in $resources) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
-}
-
-
-# Insert apt packages into the cloud-init template
-# ------------------------------------------------
-$indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<apt packages>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-$indentedContent = (Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indentedContent)
-
-
-# Convert PyPI package lists into requirements files and add to cloud-init template
-# ---------------------------------------------------------------------------------
+# Convert PyPI package lists into requirements files
+# --------------------------------------------------
+$temporaryDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString()))
 $packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
-$packageLists = Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")
-foreach ($packageList in $packageLists) {
+foreach ($packageList in Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")) {
     $pythonVersion = ($packageList.BaseName -split "-")[-1]
-    $pythonPackageVersions = Get-Content $packageList | ForEach-Object { if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" } }
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<python-requirements-py${pythonVersion}.txt>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = $pythonPackageVersions | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<python-requirements-py${pythonVersion}.txt>", $indentedContent)
+    Get-Content $packageList | `
+        ForEach-Object {
+            if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" }
+        } | Out-File (Join-Path $temporaryDir.FullName "python-requirements-py${pythonVersion}.txt")
 }
 
 
-# Make any other cloud-init template replacements
-# -----------------------------------------------
-$cloudInitTemplate = $cloudInitTemplate.
-    Replace("<timezone>", $config.time.timezone.linux).
-    Replace("<ntp-server>", $config.time.ntp.poolFqdn)
+# Load the cloud-init template then add resources and expand mustache placeholders
+# --------------------------------------------------------------------------------
+$config["dbeaver"] = @{
+    drivers = $(Get-Content -Raw -Path "../packages/dbeaver-driver-versions.json" | ConvertFrom-Json -AsHashtable)
+}
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath $temporaryDir.FullName
+$cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
+$null = Remove-Item -Path $temporaryDir -Recurse -Force -ErrorAction SilentlyContinue
 
 
 # Construct build VM parameters
@@ -176,7 +144,7 @@ $params = @{
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
-    location               = $config.dsvmImage.location
+    Location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
     OsDiskSizeGb           = $config.dsvmImage.build.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
@@ -198,7 +166,7 @@ Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account can be found in the '${adminPasswordName}' secret in the Azure Key Vault at:"
 Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
-Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/verification/analyse_build.py"
+Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/monitoring/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 
 

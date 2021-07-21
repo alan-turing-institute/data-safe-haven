@@ -1,3 +1,4 @@
+Import-Module Poshstache -Global -ErrorAction Stop # Note that we need -Global as Poshstache uses `Get-Module` to check where it is isntalled
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -12,34 +13,61 @@ function Expand-MustacheTemplate {
         [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to mustache template to be expanded.")]
         [string]$TemplatePath,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable (can be multi-level) with parameter key-value pairs.")]
-        [System.Collections.IDictionary]$Parameters,
-        [Parameter(Mandatory = $false, HelpMessage = "Start delimiter.")]
-        [string]$StartDelimeter = "{{",
-        [Parameter(Mandatory = $false, HelpMessage = "End delimiter.")]
-        [string]$EndDelimiter = "}}",
-        [Parameter(Mandatory = $false, HelpMessage = "Delimiter to wrap around each element of an array")]
-        [string]$ArrayJoiner = $null
+        [System.Collections.IDictionary]$Parameters
     )
     # If we are given a path then we need to extract the content
     if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
 
-    # Get all unique mustache tags
-    $tags = ($Template | Select-String -Pattern "$StartDelimeter(.*)$EndDelimiter" -AllMatches).Matches.Value | Get-Unique
+    # Define the delimiters
+    $MustacheOpen = "{"
+    $MustacheClose = "}"
+    $StartDelimiter = "${MustacheOpen}${MustacheOpen}"
+    $EndDelimiter = "${MustacheClose}${MustacheClose}"
 
-    # Replace each mustache tag with a value from parameters if there is one
+    # Get all unique mustache tags
+    $tags = ($Template | Select-String -Pattern "$StartDelimiter[^${MustacheOpen}${MustacheClose}]*$EndDelimiter" -AllMatches).Matches.Value | `
+        Where-Object { $_ -and ($_ -ne "{{.}}") } | `
+        ForEach-Object { $_.Replace("#", "").Replace("/", "").Replace("?", "").Replace("^", "").Replace("&", "") } | `
+        Get-Unique
+
+    # As '.' is not an allowed character in standard Mustache syntax, we replace these with '_' in both the template and the parameter table
+    $PoshstacheParameters = @{}
     foreach ($tag in $tags) {
-        $tagKey = $tag.Replace($StartDelimeter, "").Replace($EndDelimiter, "").Trim()
-        $value = Get-MultilevelKey -Hashtable $Parameters -Key $tagKey
-        if ($null -eq $value) {
-            Add-LogMessage -Level Fatal "No value for '$tagKey' found in Parameters hashtable."
-        } else {
-            if (($value -is [array]) -and $ArrayJoiner) { $value = $value -join "${ArrayJoiner}, ${ArrayJoiner}" }
-            $Template = $Template.Replace($tag, $value)
-        }
+        $tagKey = $tag.Replace($StartDelimiter, "").Replace($EndDelimiter, "").Trim()
+        $normalisedTagKey = $tagKey.Replace(".", "_")
+        $Template = $Template.Replace($tagKey, $normalisedTagKey)
+        $PoshstacheParameters[$normalisedTagKey] = Get-MultilevelKey -Hashtable $Parameters -Key $tagKey
+    }
+
+    # Use Poshstache to expand the template
+    return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json $PoshstacheParameters)
+}
+Export-ModuleMember -Function Expand-MustacheTemplate
+
+
+# Expand a cloud-init file by inserting any referenced resources
+# --------------------------------------------------------------
+function Expand-CloudInitResources {
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFile", HelpMessage = "Cloud-init template to be expanded.")]
+        [string]$Template,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to cloud-init template to be expanded.")]
+        [string]$TemplatePath,
+        [Parameter(Mandatory = $true, HelpMessage = "Path to resource files.")]
+        [string]$ResourcePath
+    )
+    # If we are given a path then we need to extract the content
+    if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
+
+    # Insert resources into the cloud-init template
+    foreach ($resource in (Get-ChildItem $ResourcePath -Attributes !Directory)) {
+        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{{")[0] } | Select-Object -First 1
+        $indentedContent = (Get-Content $resource.FullName -Raw -ErrorAction Stop) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+        $Template = $Template.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
     }
     return $Template
 }
-Export-ModuleMember -Function Expand-MustacheTemplate
+Export-ModuleMember -Function Expand-CloudInitResources
 
 
 # Get patched JSON from template
@@ -53,14 +81,12 @@ function Get-JsonFromMustacheTemplate {
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable (can be multi-level) with parameter key-value pairs.")]
         [System.Collections.IDictionary]$Parameters,
         [Parameter(Mandatory = $false, HelpMessage = "Return patched JSON as hashtable.")]
-        [switch]$AsHashtable,
-        [Parameter(Mandatory = $false, HelpMessage = "Delimiter to wrap around each element of an array")]
-        [string]$ArrayJoiner = $null
+        [switch]$AsHashtable
     )
     if ($Template) {
-        $templateJson = Expand-MustacheTemplate -Template $Template -ArrayJoiner $ArrayJoiner -Parameters $Parameters
+        $templateJson = Expand-MustacheTemplate -Template $Template -Parameters $Parameters
     } else {
-        $templateJson = Expand-MustacheTemplate -TemplatePath $TemplatePath -ArrayJoiner $ArrayJoiner -Parameters $Parameters
+        $templateJson = Expand-MustacheTemplate -TemplatePath $TemplatePath -Parameters $Parameters
     }
     return ($templateJson | ConvertFrom-Json -AsHashtable:$AsHashtable)
 }

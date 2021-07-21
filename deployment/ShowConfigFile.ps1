@@ -9,9 +9,9 @@ Import-Module $PSScriptRoot/common/Configuration -ErrorAction Stop -Force
 
 
 # Generate and return the full config for the SHM or SRE
-if (-not $sreId) {
-    $config = Get-ShmConfig -shmId $shmId
-} else {
+if ($sreId) {
     $config = Get-SreConfig -shmId $shmId -sreId $sreId
+} else {
+    $config = Get-ShmConfig -shmId $shmId
 }
 Write-Output ($config | ConvertTo-Json -Depth 10)

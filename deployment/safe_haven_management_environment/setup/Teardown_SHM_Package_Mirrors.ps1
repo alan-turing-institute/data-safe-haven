@@ -30,7 +30,7 @@ function Remove-PackageMirror {
         $MirrorDirection
     )
     $vmName = "$MirrorType-$MirrorDirection-MIRROR-TIER-$tier".ToUpper()
-    Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.mirrors.rg
+    Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.mirrors.rg -Force
     Remove-VirtualMachineDisk -Name "$vmName-OS-DISK" -ResourceGroupName $config.mirrors.rg
     Remove-VirtualMachineDisk -Name "$vmName-DATA-DISK" -ResourceGroupName $config.mirrors.rg
     Remove-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg

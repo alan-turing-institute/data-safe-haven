@@ -15,3 +15,9 @@ These reference guides assume some knowledge of how our Safe Havens work.
 + [Security checklist](checklists/security-checklist.md) - A checklist of the claims that we make about the Safe Haven together with suggested methods for verifying them.
 + [DSPT evidence](checklists/DSPT.md) - A list of the requirements for the NHS DSPT certification together with our evidence that we meet each requirement
 
+```{toctree}
+:hidden: true
+
+checklists/DSPT.md
+checklists/security-checklist.md
+```

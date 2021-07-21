@@ -5,8 +5,11 @@
 secrets/
 temp/
 
-# Dependency cache for package whitelisting
-deployment/administration/.dependency_cache.json
+# Any environment configs apart from those used as examples
+environment_configs/*.json
+
+# The package dependency cache
+environment_configs/package_lists/dependency-cache.json
 
 # Development tools
 .vscode
@@ -16,8 +19,9 @@ deployment/administration/.dependency_cache.json
 
 # PDF versions of our Markdown documents
 docs/*.pdf
-# Except the tiers flowchart, as we have not source for this
+# ... except the tiers flowchart
 !docs/tiersflowchart.pdf
 
-# test environment configs
-environment_configs/shm_tftest_core_config.json
+# Sphinx output
+docs/_build
+docs/output

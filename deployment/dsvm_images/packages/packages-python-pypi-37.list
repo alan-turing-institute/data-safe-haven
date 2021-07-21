@@ -1,11 +1,9 @@
-aesara
+arviz
 beautifulsoup4
 black
-colorama
 Cython
 dash
 dask
-fbprophet
 flair
 flake8
 folium
@@ -13,7 +11,7 @@ geopandas
 gym
 html5lib
 ipykernel
-Keras
+keras
 lightgbm
 lxml
 matplotlib
@@ -25,6 +23,8 @@ pathos
 pg8000
 Pillow
 plotly
+prophet
+protobuf
 psycopg2
 pydot
 pygrib

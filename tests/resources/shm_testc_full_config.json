@@ -14,6 +14,8 @@
     "external_dns_resolver": "168.63.129.16",
     "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
     "hostname": "DC1-SHM-TESTC",
+    "hostnameLower": "dc1-shm-testc",
+    "hostnameUpper": "DC1-SHM-TESTC",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTC_DC",
@@ -45,6 +47,8 @@
   "domain": {
     "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
     "fqdn": "testc.dsgroupdev.co.uk",
+    "fqdnLower": "testc.dsgroupdev.co.uk",
+    "fqdnUpper": "TESTC.DSGROUPDEV.CO.UK",
     "netbiosName": "TESTC",
     "ous": {
       "databaseServers": {
@@ -102,7 +106,8 @@
           "193.60.220.240",
           "193.60.220.253"
         ],
-        "name": "NSG_IMAGE_BUILD"
+        "name": "NSG_IMAGE_BUILD",
+        "rules": "vm-images-nsg-rules-build.json"
       },
       "rg": "RG_SH_BUILD_CANDIDATES",
       "subnet": {
@@ -110,7 +115,7 @@
         "name": "ImageBuildSubnet"
       },
       "vm": {
-        "diskSizeGb": 64,
+        "diskSizeGb": 128,
         "size": "Standard_F4s_v2"
       },
       "vnet": {
@@ -119,8 +124,6 @@
       }
     },
     "gallery": {
-      "imageMajorVersion": 0,
-      "imageMinorVersion": 3,
       "rg": "RG_SH_IMAGE_GALLERY",
       "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
     },
@@ -331,6 +334,7 @@
   },
   "nsgPrefix": "NSG_SHM_TESTC",
   "organisation": {
+    "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
     "name": "The Alan Turing Institute",
     "stateCountyRegion": "London",
@@ -351,11 +355,11 @@
   "storage": {
     "artifacts": {
       "accountName": "shmtestcartifactslubiehy",
-      "rg": "RG_SHM_TESTC_ARTIFACTS"
+      "rg": "RG_SHM_TESTC_STORAGE"
     },
     "bootdiagnostics": {
       "accountName": "shmtestcbootdiagslubiehy",
-      "rg": "RG_SHM_TESTC_ARTIFACTS"
+      "rg": "RG_SHM_TESTC_STORAGE"
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
@@ -374,7 +378,6 @@
   },
   "time": {
     "ntp": {
-      "poolFqdn": "time.google.com",
       "serverAddresses": [
         "216.239.35.0",
         "216.239.35.4",
@@ -430,5 +433,6 @@
         "usernameSecretName": "shm-testc-aad-localsync-username"
       }
     }
-  }
+  },
+  "vmImagesRgPrefix": "RG_SH"
 }

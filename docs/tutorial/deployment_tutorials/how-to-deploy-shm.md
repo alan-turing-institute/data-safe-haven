@@ -17,9 +17,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:house_with_garden: 11. Deploy and configure domain controllers](#house_with_garden-11-deploy-and-configure-domain-controllers)
 + [:police_car: 12. Deploy and configure network policy server](#police_car-12-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 13. Require MFA for all users](#closed_lock_with_key-13-require-mfa-for-all-users)
-+ [:fire_engine: 14. Deploy firewall](#fire_engine-14-deploy-firewall)
-+ [:package: 15. Deploy Python/R package repositories](#package-15-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 16. Deploy logging](#chart_with_upwards_trend-16-deploy-logging)
++ [:package: 14. Deploy Python/R package repositories](#package-14-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 15. Deploy logging](#chart_with_upwards_trend-15-deploy-logging)
++ [:fire_engine: 16. Deploy firewall](#fire_engine-16-deploy-firewall)
 
 ## Explanation of symbols used in this guide
 
@@ -117,7 +117,8 @@ The following core SHM properties are required - look at `shm_testa_core_config.
         "name": "Name of your organisation, used when generating SSL certificates (eg. 'The Alan Turing Institute')",
         "townCity": "Town where your organisation is located, used when generating SSL certificates (eg. 'London')",
         "stateCountyRegion": "Region where your organisation is located, used when generating SSL certificates (eg. 'London')",
-        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')"
+        "countryCode": "Country where your organisation is located, used when generating SSL certificates (eg. 'GB')",
+        "contactEmail": "Email address at your organisation that will receive notifications when SSL certificates are about to expire."
     },
     "dnsRecords": {
         "subscriptionName": "[Optional] Azure subscription which holds DNS records (if not specified then the value from the 'azure' block will be used).",
@@ -146,7 +147,7 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
-```pwsh
+```powershell
 PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
@@ -158,7 +159,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds) at :file_folder: `./deployment`
 
-```pwsh
+```powershell
 PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 ```
 
@@ -168,7 +169,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
 ```
 
@@ -184,9 +185,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 + Duplicate these records to the parent DNS system as follows:
   + If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above
     + For example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`
-  <p align="center">
-    <img src="../../images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record"/>
-  </p>
+  ![Subdomain NS record](../../images/deploy_sre/subdomain_ns_record.png)
   + If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 
 </details>
@@ -199,9 +198,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 
 + From the Azure portal, click `Create a Resource` and search for `Azure Active Directory`
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory"/>
-    </p>
+    ![Azure Active Directory](../../images/deploy_shm/AAD.png)
   </details>
 + Click `Create`
 + Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Development Safe Haven A`)
@@ -209,9 +206,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 + Set the `Initial Domain Name` to the `Organisation Name` all lower case with spaces removed (e.g. `turingdevelopmentsafehavena`)
 + Set the `Country or Region` to whatever region is appropriate for your deployment (e.g. `United Kingdom`)
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/aad_creation.png" width="80%" title="Azure Active Directory creation"/>
-    </p>
+    ![Azure Active Directory creation](../../images/deploy_shm/aad_creation.png)
   </details>
 + Click `Create`
 + Wait for the AAD to be created
@@ -226,16 +221,14 @@ If you see a message `You need to add the following NS records to the parent DNS
 + If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 + Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-        <img src="../../images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID"/>
-    </p>
+    ![AAD Tenant ID](../../images/deploy_shm/aad_tenant_id.png)
   </details>
 
 ### Add the SHM domain to the Azure Active Directory
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
@@ -256,7 +249,7 @@ Note the bracketing `pwsh { ... }` which runs this command in a new Powershell e
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
 ```
 
@@ -290,16 +283,14 @@ To support these rare cases, and to allow access to the Safe Haven Azure AD in t
   + Check `Global Administrator`
   + Click the `Add` button
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_global_admin.png" width="80%" title="AAD Global Admin"/>
-      </p>
+      ![AAD Global Admin](../../images/deploy_shm/aad_global_admin.png)
     </details>
 
 ## :hammer: 6. Configure Terraform
 
 ![Powershell: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20minute) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 ```
 
@@ -311,7 +302,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 
 + Initialise a working directory containing Terraform configuration files.
 
-  ```pwsh
+  ```powershell
   PS> terraform init
   ```
 
@@ -319,7 +310,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 
 + Create an execution plan to check if the set of changes matches your expectations without making any changes to real resources or to the state.
 
-  ```pwsh
+  ```powershell
   PS> terraform plan
   ```
 
@@ -327,7 +318,7 @@ PS> ./Setup_SHM_TF.ps1 -shmId <SHM ID>
 
 + Apply the changes required to reach the desired state of the configuration, or the pre-determined set of actions generated by a terraform plan execution plan.
 
-  ```pwsh
+  ```powershell
   PS> terraform apply
   ```
 
@@ -406,9 +397,7 @@ Click the heading that applies to you to expand the instructions for that scenar
   + If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 + Click the `Save` icon
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/aad_sspr.png" width="80%" title="AAD self-service password reset"/>
-    </p>
+    ![AAD self-service password reset](../../images/deploy_shm/aad_sspr.png)
   </details>
 
 ### Configure MFA on Azure Active Directory
@@ -428,9 +417,7 @@ Click the heading that applies to you to expand the instructions for that scenar
     + ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
   + Click "Save" and close window
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings"/>
-      </p>
+      ![AAD MFA settings](../../images/deploy_shm/aad_mfa_settings.png)
     </details>
 
 ## :id: 9. Configure internal administrator accounts
@@ -472,13 +459,12 @@ Several later steps will require the use of a **native** administrator account w
   + Click the `Save` icon at the top of the user details panel
 + Add an authentication email
   + Click `Authentication methods` in the left hand sidebar
+  + Enter the user's mobile phone number in the `Phone` field, using the same format as above
   + Enter the user's institutional email address in the `Email` field
   + Note that you do **not** need to fill out either of the `Phone` fields here
   + Click the `Save` icon at the top of the panel
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/aad_create_admin.png" width="80%" title="AAD create admin account"/>
-      </p>
+      ![AAD create admin account](../../images/deploy_shm/aad_create_admin.png)
     </details>
 
 ### Activate and configure your new internal admin account
@@ -538,9 +524,9 @@ Administrator accounts can use MFA and reset their passwords without a licence n
 
 ## :station: 10. Deploy network and VPN gateway
 
-<!-- ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ```
 
@@ -551,15 +537,13 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 + Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
-  <p align="center">
-    <img src="../../images/deploy_shm/vnet_resource_groups.png" width="80%" title="Resource groups"/>
-  </p>
+  ![Resource groups](../../images/deploy_shm/vnet_resource_groups.png)
 + If you cannot see these resource groups:
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
   + Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 
-</details> -->
+</details>
 
 ### Download a client VPN certificate for the Safe Haven Management network
 
@@ -581,9 +565,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 + Once there open the `Point-to-site configuration` page under the `Settings` section in the left hand sidebar
 + Click the `Download VPN client` link at the top of the page to download a zip file
   <details><summary><b>Screenshots</b></summary>
-    <p align="center">
-      <img src="../../images/deploy_shm/certificate_details.png" width="80%" title="Certificate details"/>
-    </p>
+    ![Certificate details](../../images/deploy_shm/certificate_details.png)
   </details>
 + Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
 + Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
@@ -608,7 +590,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 ```
 
@@ -617,9 +599,7 @@ PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 <details><summary><b>Sanity check</b></summary>
 
 + Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
-  <p align="center">
-    <img src="../../images/deploy_shm/dc_resource_groups.png" width="80%" title="Resource groups"/>
-  </p>
+  ![Resource groups](../../images/deploy_shm/dc_resource_groups.png)
 + If you cannot see these resource groups:
   + Ensure you are logged into the portal using the account that you are building the environment with.
   + Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
@@ -726,7 +706,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 + Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained from the portal above
 + Run the following command on the remote domain controller VM to update the AAD rules
 
-```pwsh
+```powershell
 PS> C:\Installation\UpdateAADSyncRule.ps1
 ```
 
@@ -755,7 +735,7 @@ This step validates that your local Active Directory users are correctly synchro
 
 + Run the following command on the remote domain controller VM to create and synchronise the users
 
-```pwsh
+```powershell
 PS> C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 ```
 
@@ -781,9 +761,7 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 + Select `Password reset` from the left hand menu
 + Select `On-premises integration` from the left hand side bar
   + Ensure `Write back passwords to your on-premises directory` is set to yes.
-    <p align="center">
-      <img src="../../images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback"/>
-    </p>
+    ![Enable writeback](../../images/deploy_shm/enable_writeback.png)
   + If you changed this setting, click the `Save` icon
 
 #### Manually add an MFA licence for the user
@@ -818,13 +796,13 @@ If you get the message `New-ADUser:  The specified account already exists` you s
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure the network policy server (NPS) via Remote Desktop
@@ -843,9 +821,8 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + Configure NPS to log to a local text file:
   + Select `NPS (Local) > Accounting` on the left-hand sidebar
     <details><summary><b>Screenshots</b></summary>
-      <p align="center">
-        <img src="../../images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting"/>
-      </p>
+
+      ![NPS accounting](../../images/deploy_shm/nps_accounting.png)
     </details>
   + Click on `Accounting > Configure Accounting`
     + On the `Introduction` screen, click `Next`.
@@ -865,7 +842,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + Run the following command on the remote network policy server VM to configure MFA
 + On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
-```pwsh
+```powershell
 & "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
 ```
 
@@ -876,7 +853,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 + When prompted to `Provide your Tenant ID`, enter the Tenant ID that you [obtained from Azure Active Directory](#get-the-azure-active-directory-tenant-id) earlier
 + At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
-#### :pencil: notes
+#### :pencil: Notes
 
 + Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password
 
@@ -887,9 +864,11 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Close the dialog by clicking `X`
 + If you get a Javascript error that prevents the script from running then simply run this script again.
 + If you receive an Internet Explorer pop-up dialog like `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration`
-  + Add these webpages to the exceptions whitelist by clicking `Add` and clicking `Close`
+  + Add these webpages to the exceptions allowlist by clicking `Add` and clicking `Close`
 + If you see a Windows Security Warning when connecting to Azure AD, check `Don't show this message again` and click `Yes`.
 + If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
+  <details>
+
   + Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
   + Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
     + Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
@@ -899,13 +878,16 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
     + If you are using the trial `Azure Active Directory Premium P2` licences, you may find that enabling a trial of `Enterprise Mobility + Security E5` licences will resolve this.
   + Make sure that you have added a P1 licence to at least one user in the `Azure Active Directory` and have gone through the MFA setup procedure for that user. You may have to wait a few minutes after doing this
   + If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`. Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
+  </details>
 + If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
+  <details>
   + Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
     + The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
     + If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-  + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
+  + Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and configured MFA on your account.
+  </details>
 
-## :closed_lock_with_key: 13. Require MFA for all users
+## :closed_lock_with_key: 11. Require MFA for all users
 
 :exclamation: Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement
 
@@ -940,30 +922,21 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## :fire_engine: 14. Deploy firewall
-<!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
-
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
-
-```pwsh
-PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
-```
-
-+ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
-
-## :package: 15. Deploy Python/R package repositories
+## :package: 14. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
-+ Local mirror (Tier-2 and Tier-3)
++ Local mirror (Tier-2 and/or Tier-3)
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
 
 ### How to deploy a Nexus package repository
 
-![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+We **recommend** deploying this for use with tier-2 SREs
 
-```pwsh
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```powershell
 PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
@@ -972,26 +945,41 @@ PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 
 ### How to deploy a local package mirror
 
-:exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+We **recommend** deploying this for use with tier-3 SREs
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 + where `<desired tier>` is either `2` or `3`
 
-## :chart_with_upwards_trend: 16. Deploy logging
+#### :pencil: Notes
+
+:exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
+
+## :chart_with_upwards_trend: 15. Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
-```pwsh
+```powershell
 PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 
-#### :warning: Troubleshooting
+### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.
+
+## :fire_engine: 16. Deploy firewall
+<!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
+```
+
++ where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM

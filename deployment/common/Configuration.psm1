@@ -26,11 +26,13 @@ function Get-CoreConfig {
         [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
         [string]$sreId = $null
     )
-    if (-not $sreId) {
-        $configFilename = "shm_${shmId}_core_config.json"
-    } else {
+    # Construct filename for this config file
+    if ($sreId) {
         $configFilename = "sre_${shmId}${sreId}_core_config.json"
+    } else {
+        $configFilename = "shm_${shmId}_core_config.json"
     }
+    # Try to load the file
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configFilename -Resolve -ErrorAction Stop
         $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
@@ -38,6 +40,13 @@ function Get-CoreConfig {
         Add-LogMessage -Level Fatal "Could not find a config file named '$configFilename'..."
     } catch [System.ArgumentException] {
         Add-LogMessage -Level Fatal "'$configPath' is not a valid JSON config file..."
+    }
+    # Ensure that naming structure is being adhered to
+    if ($sreId -and ($sreId -ne $configJson.sreId)) {
+        Add-LogMessage -Level Fatal "Config file '$configFilename' has an incorrect SRE ID: $($configJson.sreId)!"
+    }
+    if ($shmId -ne $configJson.shmId) {
+        Add-LogMessage -Level Fatal "Config file '$configFilename' has an incorrect SHM ID: $($configJson.shmId)!"
     }
     return $configJson
 }
@@ -52,7 +61,6 @@ function Get-ShmConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-CoreConfig -shmId $shmId
-    $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Ensure the name in the config is < 27 characters excluding spaces
     if ($shmConfigBase.name.Replace(" ", "").Length -gt 27) {
@@ -70,11 +78,16 @@ function Get-ShmConfig {
         rgPrefix            = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
+        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_SH"
     }
+    # For normal usage this does not need to be user-configurable.
+    # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
+    $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
 
     # Set timezone and NTP configuration
-    # NB. Very few NTP services provide an exhaustive, stable list of IP addresses. The Google NTP servers are incompatible with others due to leap-second smearing
-    # -------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Google is one of the few NTP services to provide an exhaustive, stable list of IP addresses.
+    # However, note that the Google NTP servers are incompatible with others due to leap-second smearing
+    # --------------------------------------------------------------------------------------------------
     $timezoneLinux = $shmConfigBase.timezone ? $shmConfigBase.timezone : "Europe/London"
     $shm.time = [ordered]@{
         timezone = [ordered]@{
@@ -82,7 +95,6 @@ function Get-ShmConfig {
             windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
         }
         ntp      = [ordered]@{
-            poolFqdn        = "time.google.com"
             serverAddresses = @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12")
             serverFqdns     = @("time.google.com", "time1.google.com", "time2.google.com", "time3.google.com", "time4.google.com")
         }
@@ -96,7 +108,7 @@ function Get-ShmConfig {
     $originalContext = Get-AzContext
     if ($originalContext) {
         $null = Set-AzContext -SubscriptionId $vmImagesSubscriptionName -ErrorAction Stop
-        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
+        $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "$($shm.vmImagesRgPrefix)_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
         if ($locations.Count -gt 1) {
             Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
         } elseif ($locations.Count -eq 1) {
@@ -114,14 +126,15 @@ function Get-ShmConfig {
         subscription    = $vmImagesSubscriptionName
         location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
-            rg          = "RG_SH_BOOT_DIAGNOSTICS"
+            rg          = "$($shm.vmImagesRgPrefix)_BOOT_DIAGNOSTICS"
             accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build           = [ordered]@{
-            rg     = "RG_SH_BUILD_CANDIDATES"
+            rg     = "$($shm.vmImagesRgPrefix)_BUILD_CANDIDATES"
             nsg    = [ordered]@{
                 name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
+                rules              = "vm-images-nsg-rules-build.json"
             }
             vnet   = [ordered]@{
                 name = "VNET_IMAGE_BUILD"
@@ -134,25 +147,23 @@ function Get-ShmConfig {
             # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
             # We want a compute-optimised VM, since per-core performance is the bottleneck
             vm     = [ordered]@{
-                diskSizeGb = 64
+                diskSizeGb = 128
                 size       = "Standard_F4s_v2"
             }
         }
         gallery         = [ordered]@{
-            rg                = "RG_SH_IMAGE_GALLERY"
-            sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
-            imageMajorVersion = 0
-            imageMinorVersion = 3
+            rg  = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
         }
         images          = [ordered]@{
-            rg = "RG_SH_IMAGE_STORAGE"
+            rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
         }
         keyVault        = [ordered]@{
-            rg   = "RG_SH_SECRETS"
+            rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
             name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
-            rg = "RG_SH_NETWORKING"
+            rg = "$($shm.vmImagesRgPrefix)_NETWORKING"
         }
     }
 
@@ -173,6 +184,8 @@ function Get-ShmConfig {
             identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
+    $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
+    $shm.domain.fqdnUpper = ($shm.domain.fqdn).ToUpper()
     foreach ($ouName in $shm.domain.ous.Keys) {
         $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
     }
@@ -344,6 +357,8 @@ function Get-ShmConfig {
         vmName                     = $hostname
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
+        hostnameLower              = $hostname.ToLower()
+        hostnameUpper              = $hostname.ToUpper()
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -409,7 +424,7 @@ function Get-ShmConfig {
     # --------------
     $shmStoragePrefix = "shm$($shm.id)"
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
-    $storageRg = "$($shm.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
         scripts         = [ordered]@{
             rg          = $storageRg
@@ -498,6 +513,27 @@ function Get-ShmConfig {
 Export-ModuleMember -Function Get-ShmConfig
 
 
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-ShmResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$shmConfig
+    )
+    $originalContext = Get-AzContext
+    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.dsvmImage -Key "rg"
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig -Key "rg" | Where-Object { -not $excludedResourceGroups.Contains($_) }
+    try {
+        $null = Set-AzContext -SubscriptionId $shmConfig.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-ShmResourceGroups
+
+
 # Add a new SRE configuration
 # ---------------------------
 function Get-SreConfig {
@@ -512,8 +548,23 @@ function Get-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
-    # Set default Nexus usage
-    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false
+    # Check that one of the allowed remote desktop providers is selected
+    $remoteDesktopProviders = @("ApacheGuacamole", "CoCalc", "MicrosoftRDS")
+    if (-not $sreConfigBase.remoteDesktopProvider) {
+        Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
+        $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
+    }
+    if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
+        Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
+    }
+    if (
+        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$sreConfigBase.tier)) -or
+        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
+    ) {
+        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
+    }
+    # Setup the basic config
+    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false # Nexus is the default for tier-2 SREs
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
@@ -524,6 +575,9 @@ function Get-SreConfig {
             subscriptionName = $sreConfigBase.subscriptionName
             tier             = $sreConfigBase.tier
             nexus            = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
+            remoteDesktop    = [ordered]@{
+                provider = $sreConfigBase.remoteDesktopProvider
+            }
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -544,7 +598,7 @@ function Get-SreConfig {
 
     # Domain config
     # -------------
-    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)"
+    $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)".ToLower()
     $config.sre.domain = [ordered]@{
         dn          = "DC=$($sreDomain.Replace('.',',DC='))"
         fqdn        = $sreDomain
@@ -571,7 +625,7 @@ function Get-SreConfig {
             name    = "VNET_SHM_$($config.shm.id)_SRE_$($config.sre.id)".ToUpper()
             cidr    = "${sreBasePrefix}.${sreThirdOctet}.0/21"
             subnets = [ordered]@{
-                deployment = [ordered]@{
+                deployment    = [ordered]@{
                     name = "DeploymentSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
                     nsg  = [ordered]@{
@@ -579,15 +633,15 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-compute-deployment.json"
                     }
                 }
-                rds        = [ordered]@{
-                    name = "RDSSubnet"
+                remoteDesktop = [ordered]@{ # note that further details are added below
+                    name = "RemoteDesktopSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
                 }
-                data       = [ordered]@{
+                data          = [ordered]@{
                     name = "PrivateDataSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
                 }
-                databases  = [ordered]@{
+                databases     = [ordered]@{
                     name = "DatabasesSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
                     nsg  = [ordered]@{
@@ -595,7 +649,7 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-databases.json"
                     }
                 }
-                compute    = [ordered]@{
+                compute       = [ordered]@{
                     name = "ComputeSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 4).0/24"
                     nsg  = [ordered]@{
@@ -603,7 +657,7 @@ function Get-SreConfig {
                         rules = "sre-nsg-rules-compute.json"
                     }
                 }
-                webapps    = [ordered]@{
+                webapps       = [ordered]@{
                     name = "WebappsSubnet"
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 5).0/24"
                     nsg  = [ordered]@{
@@ -615,6 +669,7 @@ function Get-SreConfig {
         }
     }
 
+
     # Firewall config
     # ---------------
     $config.sre.firewall = [ordered]@{
@@ -623,10 +678,9 @@ function Get-SreConfig {
 
     # Storage config
     # --------------
-    $storageRg = "$($config.sre.rgPrefix)_ARTIFACTS".ToUpper()
+    $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
     $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
-    # Storage configuration entries
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
             readOnly  = [ordered]@{
@@ -641,8 +695,14 @@ function Get-SreConfig {
             accountName = "${shmStoragePrefix}scripts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         artifacts       = [ordered]@{
-            accountName = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-            rg          = $storageRg
+            account = [ordered]@{
+                name               = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+                storageKind        = "BlobStorage"
+                performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier         = "Cool"
+                allowedIpAddresses = $sreConfigBase.deploymentIpAddresses ? @($sreConfigBase.deploymentIpAddresses) : "any"
+            }
+            rg      = $storageRg
         }
         bootdiagnostics = [ordered]@{
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -653,7 +713,7 @@ function Get-SreConfig {
                 name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
                 performance = "Premium_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier  = "hot"
+                accessTier  = "Hot"
                 rg          = $storageRg
             }
             containers = [ordered]@{
@@ -672,19 +732,19 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = ($config.sre.tier -eq "1") ? "FileStorage" : "BlobStorage"
-                performance        = ($config.sre.tier -eq "1") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
-                accessTier         = "hot"
+                storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
+                performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = ($config.sre.tier -eq "1") ? "ShareSMB" : "BlobSMB"
+                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
                 }
             }
         }
@@ -723,21 +783,38 @@ function Get-SreConfig {
         }
     }
 
-    # RDS Servers
-    # -----------
-    $config.sre.rds = [ordered]@{
-        rg             = "$($config.sre.rgPrefix)_RDS".ToUpper()
-        gateway        = [ordered]@{
+    # Remote desktop either through Apache Guacamole or Microsoft RDS
+    # ---------------------------------------------------------------
+    $config.sre.remoteDesktop.rg = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
+            name  = "$($config.sre.nsgPrefix)_GUACAMOLE".ToUpper()
+            rules = "sre-nsg-rules-guacamole.json"
+        }
+        $config.sre.remoteDesktop.guacamole = [ordered]@{
+            adminPasswordSecretName         = "$($config.sre.shortName)-vm-admin-password-guacamole"
+            databaseAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-guacamole"
+            vmName                          = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
+            vmSize                          = "Standard_DS2_v2"
+            ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
+            disks                           = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type   = "Standard_LRS"
+                }
+            }
+        }
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $config.sre.remoteDesktop.gateway = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             installationDirectory   = "C:\Installation"
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
                 rules = "sre-nsg-rules-gateway.json"
             }
-            networkRules            = [ordered]@{}
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1023"
@@ -749,11 +826,11 @@ function Get-SreConfig {
                 }
             }
         }
-        appSessionHost = [ordered]@{
+        $config.sre.remoteDesktop.appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
             vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
             nsg                     = [ordered]@{
                 name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
                 rules = "sre-nsg-rules-session-hosts.json"
@@ -765,54 +842,70 @@ function Get-SreConfig {
                 }
             }
         }
+    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM
-    foreach ($server in $config.sre.rds.Keys) {
-        if ($config.sre.rds[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.rds[$server].hostname = $config.sre.rds[$server].vmName
-        $config.sre.rds[$server].fqdn = "$($config.sre.rds[$server].vmName).$($config.shm.domain.fqdn)"
+    foreach ($server in $config.sre.remoteDesktop.Keys) {
+        if (-not $config.sre.remoteDesktop[$server].vmName) { continue }
+        $config.sre.remoteDesktop[$server].hostname = $config.sre.remoteDesktop[$server].vmName
+        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)"
     }
-    # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
+
+    # Set the appropriate tier-dependent network rules for the remote desktop server
+    # ------------------------------------------------------------------------------
+    $config.sre.remoteDesktop.networkRules = [ordered]@{}
+    # Inbound: which IPs can access the Safe Haven (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.inboundAccessFrom -eq "default") {
-        if (@("3", "4").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
+        if (@("0", "1").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
         } elseif ($config.sre.tier -eq "2") {
-            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
-        } elseif (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
+            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.253"
+        } elseif (@("3", "4").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.240"
         }
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
-        $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
+        $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
     } else {
-        $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
+        $config.sre.remoteDesktop.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
     }
-    # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
+    # Outbound: whether internet access is allowed (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
-        if (@("2", "3", "4").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
-        } elseif (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
+        if (@("0", "1").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
+        } elseif (@("2", "3", "4").Contains($config.sre.tier)) {
+            $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
         }
-    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
-        $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
     } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
-        $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
+        $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
+    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+        $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } else {
-        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.outboundInternet
+        $config.sre.remoteDesktop.networkRules.outboundInternet = $sreConfigBase.outboundInternet
     }
+    # Copy-and-paste
+    if (@("0", "1").Contains($config.sre.tier)) {
+        $config.sre.remoteDesktop.networkRules.copyAllowed = $true
+        $config.sre.remoteDesktop.networkRules.pasteAllowed = $true
+    } elseif (@("2", "3", "4").Contains($config.sre.tier)) {
+        $config.sre.remoteDesktop.networkRules.copyAllowed = $false
+        $config.sre.remoteDesktop.networkRules.pasteAllowed = $false
+    }
+    # Since we cannot 'Allow' the AzurePlatformDNS endpoint we set this flag which can be used to turn-off the section in the mustache template
+    $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CodiMD and Gitlab servers
-    # -------------------------
+    # CoCalc, CodiMD and Gitlab servers
+    # ---------------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        gitlab = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
-            vmName                  = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+        cocalc = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
+            dockerVersion           = "latest"
+            hostname                = "COCALC"
             vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
-            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
-            osVersion               = "18.04-LTS"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
+            osVersion               = "20.04-LTS"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -826,10 +919,10 @@ function Get-SreConfig {
         }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
-            vmName                  = "CODIMD-SRE-$($config.sre.id)".ToUpper()
+            hostname                = "CODIMD"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion               = "18.04-LTS"
+            osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
                 dockerVersion = "2.3.2"
             }
@@ -848,12 +941,30 @@ function Get-SreConfig {
                 }
             }
         }
+        gitlab = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
+            hostname                = "GITLAB"
+            vmSize                  = "Standard_D2s_v3"
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
+            rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
+            osVersion               = "20.04-LTS"
+            disks                   = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "512"
+                    type   = "Standard_LRS"
+                }
+                os   = [ordered]@{
+                    sizeGb = "32"
+                    type   = "Standard_LRS"
+                }
+            }
+        }
     }
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].hostname = $config.sre.webapps[$server].vmName
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
+        $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
     }
 
 
@@ -903,11 +1014,8 @@ function Get-SreConfig {
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{
-            subscription = $config.shm.dsvmImage.subscription
-            rg           = $config.shm.dsvmImage.gallery.rg
-            gallery      = $config.shm.dsvmImage.gallery.sig
-            type         = $sreConfigBase.computeVmImage.type
-            version      = $sreConfigBase.computeVmImage.version
+            type    = $sreConfigBase.computeVmImage.type
+            version = $sreConfigBase.computeVmImage.version
         }
         vmSizeDefault           = "Standard_D2s_v3"
         disks                   = [ordered]@{
@@ -921,7 +1029,44 @@ function Get-SreConfig {
             }
         }
     }
-    $config.shm.Remove("dsvmImage")
+
+    # Package repositories
+    # --------------------
+    if (@(0, 1).Contains([int]$config.sre.tier)) {
+        # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
+        $pypiUrl = "https://pypi.org"
+        $cranUrl = "https://cran.r-project.org"
+    } else {
+        # All Nexus repositories are accessed over the same port (currently 80)
+        if ($config.sre.nexus) {
+            $nexus_port = 80
+            if ([int]$config.sre.tier -ne 2) {
+                Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
+            }
+            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+        # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        } else {
+            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
+            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+        }
+    }
+    # We want to extract the hostname from PyPI URLs in any of the following forms
+    # 1. http://10.20.2.20:3128                      => 10.20.2.20
+    # 2. https://pypi.org                            => pypi.org
+    # 3. http://10.30.1.10:80/repository/pypi-proxy  => 10.30.1.10
+    $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
+    $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
+    $config.sre.repositories = [ordered]@{
+        cran = [ordered]@{
+            url = $cranUrl
+        }
+        pypi = [ordered]@{
+            host     = $pypiHost
+            index    = $pypiIndex
+            indexUrl = "${pypiUrl}/simple"
+        }
+    }
 
     # Apply overrides (if any exist)
     # ------------------------------
@@ -932,3 +1077,42 @@ function Get-SreConfig {
     return (ConvertTo-SortedHashtable -Sortable $config)
 }
 Export-ModuleMember -Function Get-SreConfig
+
+# Get a list of resource groups belonging to a particular SRE
+# -----------------------------------------------------------
+function Get-SreResourceGroups {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "SRE config")]
+        [System.Collections.IDictionary]$sreConfig
+    )
+    $originalContext = Get-AzContext
+    $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $sreConfig.sre -Key "rg"
+    try {
+        $null = Set-AzContext -SubscriptionId $sreConfig.sre.subscriptionName -ErrorAction Stop
+        $availableResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -in $potentialResourceGroups })
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $availableResourceGroups
+}
+Export-ModuleMember -Function Get-SreResourceGroups
+
+
+# Show SRE or SHM full config
+# ---------------------
+function Show-FullConfig {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+        [string]$shmId,
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID")]
+        [string]$sreId
+    )
+    # Generate and return the full config for the SHM or SRE
+    if ($sreId -eq "") {
+        $config = Get-ShmConfig -shmId $shmId
+    } else {
+        $config = Get-SreConfig -configId "${shmId}${sreId}"
+    }
+    Write-Output ($config | ConvertTo-Json -Depth 10)
+}
+Export-ModuleMember -Function Show-FullConfig

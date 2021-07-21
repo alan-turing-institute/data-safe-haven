@@ -145,9 +145,9 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -DestinationPortRange *
 $subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' succeeded"
+    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($config.network.mirrorVnets.subnets.internal.nsg.name)' failed!"
+    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' failed!"
 }
 
 
@@ -157,7 +157,7 @@ $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagno
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 
 
-# Resolve the cloud init file, applying a whitelist if needed
+# Resolve the cloud init file, applying an allowlist if needed
 # -----------------------------------------------------------
 function Resolve-CloudInit {
     param(
@@ -168,8 +168,8 @@ function Resolve-CloudInit {
         $MirrorDirection,
         [Parameter(Mandatory = $true, HelpMessage = "Path to cloud init file")]
         $CloudInitPath,
-        [Parameter(Mandatory = $true, HelpMessage = "Path to package whitelist (if any)")]
-        $WhitelistPath
+        [Parameter(Mandatory = $true, HelpMessage = "Path to package allowlist (if any)")]
+        $AllowlistPath
     )
 
     # Load template cloud-init file
@@ -191,12 +191,12 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
     }
 
-    # Populate initial package whitelist file defined in cloud init YAML
-    $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    # Populate initial package allowlist file defined in cloud init YAML
+    $allowlist = Get-Content $AllowlistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if (-Not $notExists) {
-        $packagesBefore = "      # PACKAGE_WHITELIST"
+        $packagesBefore = "      # PACKAGE_ALLOWLIST"
         $packagesAfter = ""
-        foreach ($package in $whitelist -split "`n") {
+        foreach ($package in $allowlist -split "`n") {
             $packagesAfter += "      $package`n"
         }
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
@@ -204,7 +204,10 @@ function Resolve-CloudInit {
 
     # Set the tier, NTP server and timezone
     $cloudInitYaml = $cloudInitYaml.
-        Replace("<ntp-server>", $config.time.ntp.poolFqdn).
+        Replace("{{ntp-server-0}}", ($config.time.ntp.serverAddresses)[0]).
+        Replace("{{ntp-server-1}}", ($config.time.ntp.serverAddresses)[1]).
+        Replace("{{ntp-server-2}}", ($config.time.ntp.serverAddresses)[2]).
+        Replace("{{ntp-server-3}}", ($config.time.ntp.serverAddresses)[3]).
         Replace("<tier>", "$tier").
         Replace("<timezone>", $config.time.timezone.linux)
     return $cloudInitYaml
@@ -225,8 +228,8 @@ function Deploy-PackageMirror {
     # --------------------
     $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
     $fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "whitelist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
-    $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
+    $allowlistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
+    $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -AllowlistPath $allowlistPath
 
     # Construct IP address for this mirror
     # ------------------------------------

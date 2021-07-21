@@ -5,10 +5,10 @@ These instructions will walk you through creating a new VM image for use in the 
 ## Contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)
-+ [:gift: 2. (Optional) Customising the build image](#new-2-customising-the-build-image)
-+ [:gift: 3. Provisioning a VM](#gift-3-provision-a-vm-with-all-configured-software)
-+ [:camera: 4. Converting candidate VMs to images](#camera-4-converting-candidate-vms-to-images)
-+ [:art: 5. Registering images in the gallery](#art-5-registering-images-in-the-gallery)
++ [:gift: 2. (Optional) Customise the build configuration](#gift-2-optional-customise-the-build-configuration)
++ [:construction_worker: 3. Build a release candidate](#construction_worker-3-build-a-release-candidate)
++ [:camera: 4. Convert candidate VM to an image](#camera-4-convert-candidate-vm-to-an-image)
++ [:art: 5. Register image in the gallery](#art-5-register-image-in-the-gallery)
 
 ## Explanation of symbols used in this guide
 
@@ -74,15 +74,27 @@ If you have cloned/forked the code from our GitHub repository, you can confirm w
 
 ![Powershell: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20seconds)
 
+<<<<<<< HEAD
+```powershell
+=======
 ```pwsh
+>>>>>>> 346-terraform
 PS> git fetch; git pull; git status; git log -1 --pretty="At commit %h (%H)"
 ```
 
 This will verify that you are on the correct branch and up to date with `origin`. You can include this confirmation in any record you keep of your deployment.
 
+<<<<<<< HEAD
+## :gift: 2. (Optional) Customise the build configuration
+
+Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages.
+
+In general, this image should cover most use cases, but it's possible that you may want to customise it for your particular circumstances, for example if you want to add a new package or to update the version of an existing package.
+=======
 ## :gift: 2. (Optional) Customising the build image
 
 Provisioning a VM with all the Safe Haven software is done using [cloud-init](https://cloudinit.readthedocs.io/en/latest/). This takes a basic Ubuntu image and installs and configures all the necessary software packages. The cloud-init file used here is in the `deployment/dsvm_images/cloud-init` folder. The most common changes to this image that you are likely to want to make are to add a new package or to update the version of an existing package.
+>>>>>>> 346-terraform
 
 ### Adding a new apt package
 
@@ -101,7 +113,11 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
   + `deployment/dsvm_images/packages/packages-python-pypi-37.list`
   + `deployment/dsvm_images/packages/packages-python-pypi-38.list`
 + If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/dsvm_images/packages/python-requirements.json`
+<<<<<<< HEAD
++ You should also add this package to the **allowlist** used by Tier-3 package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
+=======
 + You should also add this package to the **whitelist** used by Tier-3 package mirrors in `environment_configs/package_lists/whitelist-core-python-pypi-tier3.list`
+>>>>>>> 346-terraform
 
 ### Adding a new R package
 
@@ -109,6 +125,20 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
   + `deployment/dsvm_images/packages/packages-r-bioconductor.list`
   + `deployment/dsvm_images/packages/packages-r-cran.list`
 + If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind` ) then add it to `deployment/dsvm_images/packages/packages-apt.list` if so
+<<<<<<< HEAD
++ You should also add this package to the **allowlist** used by Tier-3 package mirrors in `environment_configs/package_lists/allowlist-core-r-cran-tier3.list`
+
+#### Adding packages to the package allowlist
+
++ When you add a new package to either the `PyPI` or `CRAN` allowlist you should also determine all of its dependencies (and their dependencies, recursively)
++ Once you have the list of packages you should add them to:
+  + **PyPI:** `environment_configs/package_lists/allowlist-full-python-pypi-tier3.list`
+  + **CRAN:** `environment_configs/package_lists/allowlist-full-r-cran-tier3.list`
+
+### Changing the version of a package
+
+If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+=======
 + You should also add this package to the **whitelist** used by Tier-3 package mirrors in `environment_configs/package_lists/whitelist-core-r-cran-tier3.list`
 
 #### Adding packages to the package whitelist
@@ -121,34 +151,62 @@ Provisioning a VM with all the Safe Haven software is done using [cloud-init](ht
 ### Changing the version of a package
 
 If you want to update the version of one of the packages we install from a `.deb` file (eg. `dbeaver` ), you will need to edit `deployment/dsvm_images/cloud-init`
+>>>>>>> 346-terraform
 
 + Find the appropriate `/installation/<package name>.debinfo` section under the `write_files:` key
 + Update the version number and the `sha256` hash for the file
 + Check that the file naming structure still matches the format described in this `.debinfo` file
 
+<<<<<<< HEAD
+## :construction_worker: 3. Build a release candidate
+=======
 ## :gift: 3. Provision a VM with all configured software
+>>>>>>> 346-terraform
 
 In order to provision a candidate VM you will need to do the following:
 
 ![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at :file_folder: ``./deployment/dsvm_images/setup`
 
+<<<<<<< HEAD
+```powershell
+=======
 ```pwsh
+>>>>>>> 346-terraform
 PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 ```
 
 + where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
 
+<<<<<<< HEAD
+### :pencil: Notes
+
++ Although the `./Provision_Compute_VM.ps1` script will finish running in a few minutes, the build itself will take several hours.
++ We recommend **monitoring** the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
++ Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the Azure portal.
+
+### :warning: Troubleshooting
+
++ If you are unable to access the VM over `ssh` please check whether you are trying to connect from one of the approved IP addresses that you defined under `vmImages > buildIpAddresses` in the SHM config file.
++ You can check which IP addresses are currently allowed by looking at the `AllowBuildAdminSSH` inbound connection rule in the `RG_SH_NETWORKING > NSG_IMAGE_BUILD` network security group in the subscription where you are building the candidate VM
+
+## :camera: 4. Convert candidate VM to an image
+=======
 Once you have launched a new build by running the `./Provision_Compute_VM.ps1` script, the build will take several hours to complete (currently this is approximately **2h30**).
 During this time, you can monitor the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py` .
 Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the Azure portal.
 
 ## :camera: 4. Converting candidate VMs to images
+>>>>>>> 346-terraform
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: ``./deployment/dsvm_images/setup`
 
+<<<<<<< HEAD
+```powershell
+=======
 ```pwsh
+>>>>>>> 346-terraform
 PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 ```
 
@@ -157,6 +215,19 @@ PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 
 This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
 
+<<<<<<< HEAD
+### :pencil: Notes
+
+The first step of this script will run the remote build analysis script. Please **check** that everything has built correctly before proceeding.
+
+## :art: 5. Register image in the gallery
+
+Once you have created an image, it can be registered in the image gallery for future use using the `Register_Image_In_Gallery.ps1` script.
+
+![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
+
+```powershell
+=======
 ## :art: 5. Registering images in the gallery
 
 Once you have created an image, it can be registered in the image gallery using the `Register_Image_In_Gallery.ps1` script.
@@ -164,6 +235,7 @@ Once you have created an image, it can be registered in the image gallery using 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
 
 ```pwsh
+>>>>>>> 346-terraform
 PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
 ```
 
@@ -171,4 +243,8 @@ PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image na
 + where `<Image Name>` is the name of the VM image created during the conversion step
 
 This will register the image in the shared gallery as a new version of the Ubuntu-based compute machine images.
+<<<<<<< HEAD
 This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
+=======
+This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
+>>>>>>> 346-terraform

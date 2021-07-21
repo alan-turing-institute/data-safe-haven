@@ -1,5 +1,47 @@
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
+# Purge a secret from the keyvault
+# --------------------------------
+function Get-SslCipherSuites {
+    # Start with 'recommended' ciphers from ciphersuite.info
+    $httpResponse = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/recommended -ErrorAction Stop
+    $recommended = $httpResponse.ciphersuites
+
+    # ... however we also need at least one cipher from the 'secure' list since none of the 'recommended' ciphers are supported by TLS 1.2
+    # We take the ones recommended by SSL Labs (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
+    $response = Invoke-RestMethod -Uri https://ciphersuite.info/api/cs/security/secure -ErrorAction Stop
+    $ssllabsRecommended = @(
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+        "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_DHE_RSA_WITH_AES_256_CBC_SHA25"
+    )
+    $secure = $response.ciphersuites | Where-Object { $ssllabsRecommended.Contains($_.PSObject.Properties.Name) }
+
+    # Construct a list of names in both OpenSSL and TLS format
+    $allowedCiphers = @($secure) + @($recommended)
+    return @{
+        openssl = @($allowedCiphers | ForEach-Object { $_.PSObject.Properties.Value.openssl_name } | Where-Object { $_ })
+        tls     = @($allowedCiphers | ForEach-Object { $_.PSObject.Properties.Name } | Where-Object { $_ })
+    }
+}
+Export-ModuleMember -Function Get-SslCipherSuites
+
+
 # Generate a random alphanumeric password
 # This gives a verifiably flat distribution across the characters in question
 # We introduce bias by the password requirements which increase the proportion of digits
@@ -122,7 +164,13 @@ function Remove-AndPurgeKeyVaultSecret {
         [string]$VaultName
     )
     Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -Force -ErrorAction Stop
-    Start-Sleep -Seconds 10
-    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+    # Wait up to five minutes for the secret to show up as purgeable
+    for ($i = 0; $i -lt 30; $i++) {
+        if (Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState) {
+            Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+            break
+        }
+        Start-Sleep -Seconds 10
+    }
 }
 Export-ModuleMember -Function Remove-AndPurgeKeyVaultSecret

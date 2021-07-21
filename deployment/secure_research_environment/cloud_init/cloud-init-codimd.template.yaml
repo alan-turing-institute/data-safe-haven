@@ -10,19 +10,19 @@ write_files:
         codimd:
           depends_on:
             - database
-          image: nabo.codimd.dev/hackmdio/hackmd:<docker-codimd-version>
+          image: nabo.codimd.dev/hackmdio/hackmd:{{sre.webapps.codimd.codimd.dockerVersion}}
           environment:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
-            - CMD_DB_URL=postgres://codimd:<codimd-postgres-password>@database:5432/codimd
+            - CMD_DB_URL=postgres://codimd:{{codimd.postgresPassword}}@database:5432/codimd
             - CMD_EMAIL=false
             - CMD_IMAGE_UPLOAD_TYPE=filesystem
-            - CMD_LDAP_BINDCREDENTIALS=<codimd-bind-creds>
-            - CMD_LDAP_BINDDN=<codimd-bind-dn>
-            - CMD_LDAP_PROVIDERNAME=<codimd-ldap-netbios>
-            - CMD_LDAP_SEARCHBASE=<codimd-ldap-base>
-            - CMD_LDAP_SEARCHFILTER=<codimd-user-filter>
-            - CMD_LDAP_URL=<codimd-ldap-url>
+            - CMD_LDAP_BINDCREDENTIALS={{codimd.ldapSearchUserPassword}}
+            - CMD_LDAP_BINDDN={{codimd.ldapSearchUserDn}}
+            - CMD_LDAP_PROVIDERNAME={{shm.domain.netbiosName}}
+            - CMD_LDAP_SEARCHBASE={{shm.domain.ous.researchUsers.path}}
+            - CMD_LDAP_SEARCHFILTER={{{codimd.ldapUserFilter}}}
+            - CMD_LDAP_URL=ldap://{{shm.dc.fqdn}}
             - CMD_LDAP_USERIDFIELD=sAMAccountName
             - CMD_USECDN=false
           ports:
@@ -34,10 +34,10 @@ write_files:
           volumes:
             - /data/codimd:/codimd/public/uploads
         database:
-          image: postgres:<docker-postgres-version>
+          image: postgres:{{sre.webapps.codimd.postgres.dockerVersion}}
           environment:
             - POSTGRES_USER=codimd
-            - POSTGRES_PASSWORD=<codimd-postgres-password>
+            - POSTGRES_PASSWORD={{codimd.postgresPassword}}
             - POSTGRES_DB=codimd
           networks:
             dockernet:
@@ -47,8 +47,19 @@ write_files:
       networks:
         dockernet:
 
-# Set locale
+# Set locale and timezone
 locale: en_GB.UTF-8
+timezone: {{sre.time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
+  pools:
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
@@ -56,7 +67,7 @@ apt:
   sources:
     gitlab.list:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 # Docker Release (CE deb) <docker@docker.com>
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
 packages:
@@ -74,8 +85,8 @@ package_upgrade: true
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
-    layout: True
-    overwrite: True
+    layout: true
+    overwrite: true
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     partition: 1
@@ -84,41 +95,46 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
-fqdn: <codimd-fqdn>
-hostname: <codimd-fqdn>
+fqdn: {{sre.webapps.codimd.fqdn}}
+hostname: {{sre.webapps.codimd.fqdn}}
 
 # Add the SRE admin (default) and codimddaemon users
 users:
   - default
   - name: codimddaemon
-    lock_passwd: True # Lock the password to disable password login
-    sudo: False       # This user will not have sudo privileges
-
-# Set the NTP server and timezone
-# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
-ntp:
-  pools:
-    - <ntp-server>
-timezone: <timezone>
+    lock_passwd: true  # Lock the password to disable password login
+    sudo: false        # This user will not have sudo privileges
 
 # Run other commands
 runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt-get -y autoremove
+  - apt-get clean
+
   # Check server settings
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"
   - timedatectl
+
   # Configuring attached disks
   - echo ">=== Configuring attached disks... ===<"
   - mkdir -p /data/postgresql
   - mkdir -p /data/codimd
-  - chown -R 1500:1500 /data/codimd # allow the 'codimd' user inside the docker container to access this volume
+  - chown -R 1500:1500 /data/codimd  # allow the 'codimd' user inside the docker container to access this volume
   - ls -alh /data/
+
   # Ensure that Docker is running
   - echo "Current Docker status..."
   - systemctl start docker
   - systemctl enable docker
   - systemctl status docker
+
   # Set up the codimddaemon user
   - echo "Configuring codimddaemon user..."
   - groupadd docker 2> /dev/null
@@ -126,9 +142,11 @@ runcmd:
   - newgrp docker
   - chown -R codimddaemon:codimddaemon /opt/codimd
   - ls -alh /opt/codimd
+
   # Deploy CodiMD using Docker
   - echo "Deploying CodiMD with Docker..."
   - su codimddaemon -c "docker-compose -f /opt/codimd/docker-compose.yml up -d"
+
   # Wait for deployment to finish
   - |
     while true; do
@@ -140,6 +158,7 @@ runcmd:
       sleep 5
     done
   - docker-compose -f /opt/codimd/docker-compose.yml logs
+
   # Print a final message
   - echo "Deploying CodiMD with Docker is complete:"
   - docker-compose -f /opt/codimd/docker-compose.yml ps
@@ -149,4 +168,4 @@ power_state:
   mode: poweroff
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
-  condition: True
+  condition: true

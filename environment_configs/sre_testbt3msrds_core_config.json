@@ -1,0 +1,16 @@
+{
+    "sreId": "t3msrds",
+    "tier": "3",
+    "shmId": "testb",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
+    "ipPrefix": "10.151.0",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "20.04.2021071100"
+    },
+    "databases": ["MSSQL", "PostgreSQL"],
+    "dataAdminIpAddresses": ["193.60.220.253"],
+    "remoteDesktopProvider": "MicrosoftRDS"
+}

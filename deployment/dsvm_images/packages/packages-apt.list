@@ -1,4 +1,4 @@
-adcli=0.8.2-1
+adcli
 apt-transport-https
 aspell
 atom
@@ -13,14 +13,11 @@ clamav-base
 clamav-daemon
 clamav-freshclam
 clamav-unofficial-sigs
-code
 cuda
 curl
-dbeaver-ce
 default-jdk
 docker.io
 dotnet-sdk-3.1
-dstat
 emacs
 firefox
 flex
@@ -31,6 +28,8 @@ gdebi-core
 gfortran
 git
 git-core
+grass
+imagemagick
 jags
 jupyter
 jupyter-nbconvert
@@ -85,6 +84,7 @@ pgadmin3
 postgresql-client-12
 python-openssl
 python3
+python3-pip
 qgis
 r-base
 r-base-core

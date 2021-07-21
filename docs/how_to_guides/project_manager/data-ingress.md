@@ -63,11 +63,11 @@ The data should be transferred to the staging area via [SCP transfer](https://en
 In order to set up the transfer, a secure email (via [Egress](https://www.egress.com/what-we-offer/email-and-file-protection) which is [certified](https://www.ncsc.gov.uk/information/commercial-product-assurance-cpa) by the UK National Cyber Security Centre (NCSC)) should be sent to the Data Owner by Turing to provide the access details and instructions for how they can load their data to the staging area in order for Turing to receive it.
 The following Turing staff members are authorised to send this email: Head of IT and Security, IT team member, Programme Manager, REG team member.
 
-On receipt of this email the data owner will need to provide Turing with a public IP address for a member of the Turing to whitelist in order for the files to be transferred.
-The whitelisting should be for a restricted period; the length of the period will be decided on a case-by-case basis depending on - for example - how responsive the Data Owner is.
+On receipt of this email, the data owner will need to provide Turing with a public IP address from where the files will be transferred.
+File transfer from this IP address will be allowed for a restricted period; the length of the period will be decided on a case-by-case basis depending on - for example - how responsive the Data Owner is.
 **The length of the period will not exceed one week.**
-If the data is not transferred during this period, the whitelisting will need to be re-set up.
-The following Turing staff members are authorised to whitelist the IP address: Head of IT and Security, IT team member, Programme Manager, REG team member.
+If the data is not transferred during this period, the IP address will need to be approved again.
+The following Turing staff members are authorised to approve the IP address: Head of IT and Security, IT team member, Programme Manager, REG team member.
 
 #### Alternate secure transfer process
 
@@ -95,7 +95,7 @@ If the data was encrypted when it was received it should **remain encrypted in t
 
 ### Tier 2: Official
 
-For this type of OFFICIAL data; the processes are be the same as for [Tier 3](#tier-3-sensitive) above, except IP whitelisting for SCP is not required.
+For this type of OFFICIAL data, the processes are be the same as for [Tier 3](#tier-3-sensitive) above with the exception that declaring an IP address for SCP is not required.
 
 Note that tier 2 data in physical form will not be accepted by the Turing Institute.
 It is the responsibility of the data owner to digitise the files.

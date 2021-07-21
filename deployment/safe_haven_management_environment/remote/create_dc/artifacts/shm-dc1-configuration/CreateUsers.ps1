@@ -49,5 +49,11 @@ Import-Csv $userFilePath | ForEach-Object {
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
 Write-Output "Synchronising locally Active Directory with Azure"
-Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
-Start-ADSyncSyncCycle -PolicyType Delta
+try {
+    Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
+    Start-ADSyncSyncCycle -PolicyType Delta
+} catch [System.IO.FileNotFoundException] {
+    Write-Output "Skipping as Azure AD Sync is not installed"
+} catch {
+    Write-Output "Unable to run Azure Active Directory synchronisation!"
+}

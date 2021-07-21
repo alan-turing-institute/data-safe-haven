@@ -1,0 +1,16 @@
+{
+    "sreId": "t1cocal",
+    "tier": "1",
+    "shmId": "testc",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+    "ipPrefix": "10.161.0",
+    "inboundAccessFrom": "default",
+    "outboundInternetAccess": "default",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "20.04.2021071100"
+    },
+    "databases": [],
+    "dataAdminIpAddresses": ["193.60.220.253"],
+    "remoteDesktopProvider": "CoCalc"
+}

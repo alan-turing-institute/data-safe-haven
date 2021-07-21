@@ -7,6 +7,7 @@ Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -32,7 +33,7 @@ $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $conf
 # Enable logging for this firewall
 # --------------------------------
 Add-LogMessage -Level Info "Enable logging for this firewall"
-$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
+$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 if ($?) {
     Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"
@@ -52,18 +53,9 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
-    Replace("<dc1-ip-address>", $config.dc.ip).
-    Replace("<ntp-server-fqdns>", $($config.time.ntp.serverFqdns -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
-    Replace("<ntp-server-ip-addresses>", $($config.time.ntp.serverAddresses -join '", "')).  # This join relies on <ntp-server-fqdns> being wrapped in double-quotes in the template JSON file
-    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-    Replace("<shm-id>", $config.id).
-    Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
-    Replace("<subnet-mirror-tier2-cidr>", $config.network.mirrorVnets.tier2.cidr).
-    Replace("<subnet-mirror-tier3-cidr>", $config.network.mirrorVnets.tier3.cidr).
-    Replace("<subnet-repository-cidr>", $config.network.repositoryVnet.subnets.repository.cidr).
-    Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr).
-    Replace("<logging-workspace-id>", $workspaceId) | ConvertFrom-Json -AsHashtable
+$config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
+$config.logging["workspaceId"] = $workspaceId
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 
 
@@ -142,13 +134,15 @@ $firewall = Set-AzFirewall -AzureFirewall $firewall -ErrorAction Stop
 Add-LogMessage -Level Success "Updated remote firewall with rule changes."
 
 
-# Restart primary domain controller if it is running
+# Restart domain controllers if they are running
 # --------------------------------------------------
-# This ensures that it establishes a new SSPR connection through the firewall in case
+# This ensures that they establish a new SSPR connection through the firewall in case
 # it was previously blocked due to incorrect firewall rules or a deallocated firewall
-
 if (Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg) {
     Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg -ForceRestart
+}
+if (Confirm-VmRunning -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg) {
+    Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg -ForceRestart
 }
 
 

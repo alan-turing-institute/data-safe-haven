@@ -27,6 +27,13 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Check that we are using the correct provider
+# --------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
+}
+
+
 # Get absolute path to users file
 # -------------------------------
 if ($usersYAMLPath) { $usersYAMLPath = (Resolve-Path -Path $usersYAMLPath).Path }
@@ -48,13 +55,13 @@ $subnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.compute.name -Vir
 # Ensure that NSG exists
 # ----------------------
 $nsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$outboundInternetAccessRuleName = "$($config.sre.rds.gateway.networkRules.outboundInternet)InternetOutbound"
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name $outboundInternetAccessRuleName `
                              -Description "Outbound internet access" `
                              -Priority 2000 `
                              -Direction Outbound `
-                             -Access $config.sre.rds.gateway.networkRules.outboundInternet `
+                             -Access $config.sre.remoteDesktop.networkRules.outboundInternet `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange * `
@@ -132,12 +139,14 @@ $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.loc
 # ------------------------------
 $cloudInitYaml = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-compute-vm-tier1.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitYaml.
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
     Replace("<storage-account-data-egress-name>", $dataStorageAccount.StorageAccountName).
     Replace("<storage-account-data-ingress-name>", $dataStorageAccount.StorageAccountName).
     Replace("<storage-account-data-egress-key>", $dataStorageAccountKey).
     Replace("<storage-account-data-ingress-key>", $dataStorageAccountKey).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
     Replace("<timezone>", $config.sre.time.timezone.linux)
 
 
@@ -208,7 +217,7 @@ $sshPrivateKey = Resolve-KeyVaultSecret -SecretName $privateKeySecretName -Vault
 # Get list of image definitions
 # -----------------------------
 $imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.sre.dsvm.vmImage.gallery -ResourceGroup $config.sre.dsvm.vmImage.rg -Subscription $config.sre.dsvm.vmImage.subscription
+$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.dsvmImage.gallery.sig -ResourceGroup $config.shm.dsvmImage.gallery.rg -Subscription $config.shm.dsvmImage.subscription
 
 
 # Set the OS disk size for this image

@@ -41,18 +41,27 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE admin usernames exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!" -Exception $_.Exception
 }
 # :: VM admin passwords
 try {
+    # Remote desktop
+    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.guacamole.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+    }
+    # Other VMs
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.rds.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.cocalc.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE VM admin passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!" -Exception $_.Exception
 }
 # :: Databases
 try {
@@ -65,7 +74,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SRE database secrets exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE database secrets exist!" -Exception $_.Exception
 }
 # :: Other secrets
 try {
@@ -73,13 +82,13 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that other SRE secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!" -Exception $_.Exception
 }
 
 
-# Tier-2 and above need to register service users with the SHM
-# ------------------------------------------------------------
-if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
+# All tiers need to register service users with the SHM except the tier-1 CoCalc deployment
+# -----------------------------------------------------------------------------------------
+if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
     # Retrieve passwords from the Key Vault
     # -------------------------------------
     Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
@@ -103,6 +112,17 @@ if (@(2, 3, 4).Contains([int]$config.sre.tier)) {
         serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+    # Add SRE DNS zone to SHM
+    # -----------------------
+    Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to SHM..."
+    $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
+    $params = @{
+        SreFqdn = $config.sre.domain.fqdn
+    }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 }

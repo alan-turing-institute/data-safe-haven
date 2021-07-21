@@ -74,12 +74,18 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 #     Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
 # }
 # Upload Windows package installers
+# AzureADConnect
+$filename = "AzureADConnect.msi"
+Start-AzStorageBlobCopy -AbsoluteUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/$filename" -DestContainer "shm-configuration-dc" -DestBlob $filename -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+
 # Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
 # $success = $true
 # # Chrome
 # $filename = "GoogleChromeStandaloneEnterprise64.msi"
 # Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
 # $success = $success -and $?
+
 # PuTTY
 # $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
 # $httpContent = Invoke-WebRequest -Uri $baseUri
@@ -230,9 +236,8 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer $config.time.ntp.poolFqdn -AdditionalPowershellModules "MSOnline"
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverFqdns)[0] -AdditionalPowershellModules "MSOnline"
 }
-
 
 # Switch back to original subscription
 # ------------------------------------

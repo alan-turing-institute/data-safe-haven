@@ -4,20 +4,20 @@
             "name": "ViaFirewall",
             "properties": {
                 "addressPrefix": "0.0.0.0/0",
-                "nextHop": "<shm-firewall-private-ip>"
+                "nextHop": "{{firewall.privateIpAddress}}"
             }
         },
         {
             "name": "ViaVpn",
             "properties": {
-                "addressPrefix": "<subnet-vpn-cidr>",
+                "addressPrefix": "{{network.vpn.cidr}}",
                 "nextHop": "VirtualNetworkGateway"
             }
         }
     ],
     "networkRuleCollections": [
         {
-            "name": "shm-<shm-id>-allow",
+            "name": "shm-{{id}}-allow",
             "properties": {
                 "priority": 1000,
                 "action": {
@@ -30,10 +30,25 @@
                             "UDP:123"
                         ],
                         "targetAddresses": [
-                            "<ntp-server-ip-addresses>"
+                            {{#time.ntp.serverAddresses}}
+                                "{{.}}",
+                            {{/time.ntp.serverAddresses}}
                         ],
                         "sourceAddresses": [
                             "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalDnsResolver",
+                        "protocols": [
+                            "TCP:53",
+                            "UDP:53"
+                        ],
+                        "targetAddresses": [
+                            "{{dc.external_dns_resolver}}"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     }
                 ]
@@ -42,7 +57,7 @@
     ],
     "applicationRuleCollections": [
         {
-            "name": "shm-<shm-id>-allow",
+            "name": "shm-{{id}}-allow",
             "properties": {
                 "priority": 1000,
                 "action": {
@@ -98,9 +113,9 @@
                             "security.ubuntu.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-mirror-tier2-cidr>",
-                            "<subnet-mirror-tier3-cidr>",
-                            "<subnet-repository-cidr>"
+                            "{{network.mirrorVnets.tier2.cidr}}",
+                            "{{network.mirrorVnets.tier3.cidr}}",
+                            "{{network.repositoryVnet.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -114,7 +129,7 @@
                             "*.docker.io"
                         ],
                         "sourceAddresses": [
-                            "<subnet-repository-cidr>"
+                            "{{network.repositoryVnet.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -140,7 +155,9 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "<ntp-server-fqdns>"
+                            {{#time.ntp.serverFqdns}}
+                                "{{.}}",
+                            {{/time.ntp.serverFqdns}}
                         ],
                         "sourceAddresses": [
                             "*"
@@ -153,10 +170,10 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "<logging-workspace-id>.ods.opinsights.azure.com",
-                            "<logging-workspace-id>.oms.opinsights.azure.com",
-                            "<logging-workspace-id>.blob.core.windows.net",
-                            "<logging-workspace-id>.azure-automation.net"
+                            "{{logging.workspaceId}}.ods.opinsights.azure.com",
+                            "{{logging.workspaceId}}.oms.opinsights.azure.com",
+                            "{{logging.workspaceId}}.blob.core.windows.net",
+                            "{{logging.workspaceId}}.agentsvc.azure-automation.net"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -173,7 +190,7 @@
                             "pypi.org"
                         ],
                         "sourceAddresses": [
-                            "<subnet-repository-cidr>"
+                            "{{network.repositoryVnet.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -186,7 +203,7 @@
                             "cran.r-project.org"
                         ],
                         "sourceAddresses": [
-                            "<subnet-repository-cidr>"
+                            "{{network.repositoryVnet.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -203,7 +220,7 @@
                             "login.live.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
@@ -218,7 +235,7 @@
                             "css.phonefactor.net"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
@@ -238,7 +255,7 @@
                             "*.adhybridhealth.azure.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
@@ -251,7 +268,7 @@
                             "provisioningapi.microsoftonline.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
@@ -265,7 +282,7 @@
                             "www.powershellgallery.com"
                         ],
                         "sourceAddresses": [
-                            "<dc1-ip-address>"
+                            "{{dc.ip}}"
                         ]
                     },
                     {
@@ -281,7 +298,7 @@
                             "policykeyservice.dc.ad.msft.net"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
@@ -298,7 +315,7 @@
                             "login.live.com"
                         ],
                         "sourceAddresses": [
-                            "<subnet-identity-cidr>"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     }
                 ]

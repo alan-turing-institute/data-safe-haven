@@ -1,8 +1,11 @@
 ---
 extends: default
-
 rules:
-  # Make long lines a wanring rather than error
+  # Remove requirement for comments to start with '# ' as this breaks cloud-init
+  comments:
+    require-starting-space: false
+  # Remove requirement to start with '---' as this breaks cloud-init
+  document-start: disable
+  # Allow longer lines
   line-length:
-    max: 80
-    level: warning
+    max: 400
