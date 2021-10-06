@@ -6,7 +6,8 @@
 SPHINXOPTS        ?=
 SPHINXBUILD       ?= sphinx-build
 SOURCEDIR         = .
-BUILDDIR          = _build
+CONFIGDIR         = build
+TARGETDIR         = _output
 
 # Determine which PDFs to build
 # If you want to add a PDF make the following changes
@@ -14,7 +15,7 @@ BUILDDIR          = _build
 # - Add <NAME>TARGET to PDFTARGETS rule
 # - Add a '<NAME>TARGET:  <NAME>SOURCE' rule
 # - Edit conf.py if you want them to be downloadable
-PDFTARGETDIR               = _build/html/pdf
+PDFTARGETDIR               = $(TARGETDIR)/pdf
 # User guide
 USERGUIDEMDSOURCE          = $(shell find . -type f -name "DSG-user-documentation.md" -o -name "safe_haven_user_guide.md" -o -name "user-guide.md")
 USERGUIDEMDTARGET          = $(PDFTARGETDIR)/safe_haven_user_guide.md
@@ -31,7 +32,7 @@ PDFTARGETS                 = $(patsubst %.md,%.pdf,$(USERGUIDEMDTARGET) $(PKGREQ
 
 # Put help first so that "make" without argument is like "make help".
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(TARGETDIR)" $(SPHINXOPTS) $(O)
 
 .PHONY: help Makefile
 
@@ -56,13 +57,13 @@ $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET):
 # Build single PDF using pretty-md-pdf
 %.pdf: %.md
 	@if test -f '$^'; then \
-		pretty-md-pdf -i $^ -o $@ -c markdown2pdf.json; \
+		pretty-md-pdf -i $^ -o $@ -c "$(CONFIGDIR)/markdown2pdf.json"; \
 		rm $^; \
 	fi
 
 # Convert emoji codes to Unicode in all Markdown files
 emojify:
-	find "$(SOURCEDIR)" -name "*.md" -exec python emojify.py {} \;
+	find "$(SOURCEDIR)" -name "*.md" -exec python "$(CONFIGDIR)/emojify.py" {} \;
 
 # Build all PDF targets
 pdf: $(PDFTARGETS)
@@ -70,8 +71,8 @@ pdf: $(PDFTARGETS)
 # Ensure that clean also removes the contents of $(PDFTARGETDIR)
 clean:
 	rm -rf $(PDFTARGETDIR)/*
-	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)"
+	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(TARGETDIR)"
 
 # Use Sphinx for other options. $(O) is meant as a shortcut for $(SPHINXOPTS).
 .DEFAULT: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -b $@ -c "$(CONFIGDIR)" "$(SOURCEDIR)" "$(TARGETDIR)" $(SPHINXOPTS) $(O)

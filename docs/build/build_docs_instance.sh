@@ -38,7 +38,8 @@ make -C docs html pdf
 
 # Store docs in the output directory
 echo "Moving output to ${output_directory}/${name}"
-mv docs/_build/html "${output_directory}/${name}"
+mv docs/_output "${output_directory}/${name}"
+ls -alh "${output_directory}/${name}"
 
 # Reset local changes
 git reset --hard HEAD

@@ -50,20 +50,16 @@ case $operation in
         fi
         echo "Loading files from $backup_directory"
         # Copy Sphinx configuration files
-        mkdir -p docs/_templates docs/_static
-        rm -rf docs/_templates/* docs/_static/*
-        cp -v "$backup_directory"/conf.py docs/
-        cp -v "$backup_directory"/emojify.py docs/
+        mkdir -p docs/build
+        rm -rf docs/build/*
+        cp -v -R "$backup_directory"/build/* docs/build
         cp -v "$backup_directory"/Makefile docs/
-        cp -v "$backup_directory"/markdown2pdf.json docs/
-        cp -v "$backup_directory"/_templates/* docs/_templates
-        cp -v "$backup_directory"/_static/* docs/_static
         # Use README.md if there is one, otherwise the default index
         if [ ! -e "docs/index.md" ]; then
             if [ -e "docs/README.md" ]; then
                 mv docs/README.md docs/index.md
             else
-                cp "$backup_directory"/meta/default.template docs/index.md
+                cp "${backup_directory}/build/meta/default.template" docs/index.md
             fi
         fi
         ;;

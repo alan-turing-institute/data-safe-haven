@@ -32,7 +32,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git
           npm install -g pretty-markdown-pdf
-          pip install -r docs/requirements.txt
+          pip install -r docs/build/requirements.txt
       - name: Create common directories
         shell: bash
         run: |
@@ -42,10 +42,10 @@ jobs:
         shell: bash
         run: |
           # Save config to BACKUPDIR then build
-          ./docs/build_config_backup.sh -b -d ${{env.BACKUPDIR}}
-          ./docs/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n develop
+          ./docs/build/build_config_backup.sh -b -d ${{env.BACKUPDIR}}
+          ./docs/build/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n develop
           latest_stable=$(git tag | grep -v beta | sort | tail -n 1)
-          sed "s|{{latest_stable}}|$latest_stable|g" docs/meta/index.html > ${{env.OUTPUTDIR}}/index.html
+          sed "s|{{latest_stable}}|$latest_stable|g" docs/build/meta/index.html > ${{env.OUTPUTDIR}}/index.html
           touch ${{env.OUTPUTDIR}}/.nojekyll
       - name: Build tagged documentation
         shell: bash
@@ -55,13 +55,14 @@ jobs:
             echo -e "\n\n✨ Generating documention for ${tag}"
             git checkout $tag
             # Remove the software request form which contains invalid markdown in old releases
-            if [ ! -e "docs/conf.py" ]; then
-              find docs -name "software-package-request-form.md" -exec rm {} \;
+            pwd
+            ls -alh
+            if [ ! -e "docs/build/conf.py" ]; then
+              find . -name "software-package-request-form.md" -exec rm {} \;
             fi
-            cp ${BACKUPDIR}/build*.sh docs/
             # Reload Sphinx config to get a consistent HTML style then build
-            ./docs/build_config_backup.sh -l -d ${BACKUPDIR}
-            ./docs/build_docs_instance.sh -d ${OUTPUTDIR} -n ${tag}
+            ${{env.BACKUPDIR}}/build/build_config_backup.sh -l -d ${{env.BACKUPDIR}}
+            ./docs/build/build_docs_instance.sh -d ${{env.OUTPUTDIR}} -n ${tag}
             echo "✅ Finished working on ${tag}"
           done
       - name: Deploy documentation to GitHub Pages
