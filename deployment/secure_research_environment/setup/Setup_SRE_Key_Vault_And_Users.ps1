@@ -51,7 +51,7 @@ try {
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    } else {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Other VMs
@@ -86,46 +86,42 @@ try {
 }
 
 
-# All tiers need to register service users with the SHM except the tier-1 CoCalc deployment
-# -----------------------------------------------------------------------------------------
-if ($config.sre.remoteDesktop.provider -ne "CoCalc") {
-    # Retrieve passwords from the Key Vault
-    # -------------------------------------
-    Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
-    # Load SRE groups
-    $groups = $config.sre.domain.securityGroups
-    # Load SRE service users
-    $serviceUsers = $config.sre.users.serviceAccounts
-    foreach ($user in $serviceUsers.Keys) {
-        $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
-    }
-
-    # Add SRE users and groups to SHM
-    # -------------------------------
-    Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
-    $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
-    $params = @{
-        shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
-        groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
-        serviceUsersB64              = $serviceUsers | ConvertTo-Json | ConvertTo-Base64
-        securityOuPath               = $config.shm.domain.ous.securityGroups.path
-        serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
-    }
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
-    # Add SRE DNS zone to SHM
-    # -----------------------
-    Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to SHM..."
-    $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
-    $params = @{
-        SreFqdn = $config.sre.domain.fqdn
-    }
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# Retrieve passwords from the Key Vault
+# -------------------------------------
+Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
+# Load SRE groups
+$groups = $config.sre.domain.securityGroups
+# Load SRE service users
+$serviceUsers = $config.sre.users.serviceAccounts
+foreach ($user in $serviceUsers.Keys) {
+    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
 }
+
+# Add SRE users and groups to SHM
+# -------------------------------
+Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
+$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
+$params = @{
+    shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
+    groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
+    serviceUsersB64              = $serviceUsers | ConvertTo-Json | ConvertTo-Base64
+    securityOuPath               = $config.shm.domain.ous.securityGroups.path
+    serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
+}
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+# Add SRE DNS zone to SHM
+# -----------------------
+Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to SHM..."
+$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
+$params = @{
+    SreFqdn = $config.sre.domain.fqdn
+}
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Switch back to original subscription
