@@ -906,11 +906,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
-                dockerVersion = "2.3.2"
+                dockerVersion = "2.4.1"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.1"
+                dockerVersion      = "11.6-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{

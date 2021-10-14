@@ -10,7 +10,7 @@ write_files:
         codimd:
           depends_on:
             - database
-          image: nabo.codimd.dev/hackmdio/hackmd:{{sre.webapps.codimd.codimd.dockerVersion}}
+          image: hackmdio/hackmd:{{sre.webapps.codimd.codimd.dockerVersion}}
           environment:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
