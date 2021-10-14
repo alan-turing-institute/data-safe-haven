@@ -534,7 +534,7 @@ function Get-SreConfig {
     # Secure research environment config
     # ----------------------------------
     # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "CoCalc", "MicrosoftRDS")
+    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
     if (-not $sreConfigBase.remoteDesktopProvider) {
         Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
         $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
@@ -543,7 +543,6 @@ function Get-SreConfig {
         Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
     }
     if (
-        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$sreConfigBase.tier)) -or
         ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
     ) {
         Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
@@ -713,19 +712,19 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
-                performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                storageKind        = "BlobStorage"
+                performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
             }
         }
@@ -823,7 +822,7 @@ function Get-SreConfig {
                 }
             }
         }
-    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    } else {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM

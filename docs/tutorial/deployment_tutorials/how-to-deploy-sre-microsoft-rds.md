@@ -2,8 +2,8 @@
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 0 or Tier 1 environment, or a development environment, we would suggest deploying with either [Guacamole](./how-to-deploy-sre-apache-guacamole.md) for a full remote desktop or [CoCalc](./how-to-deploy-sre-cocalc.md) for a collaborative notebook based interface.
-> These options are more fully automated and, while they do not yet provide the required security assurances for Tier 2 and above environments, they are suitably secure for Tier 0 or 1 environments.
+> :warning: If you are deploying a Tier 0 or Tier 1 environment, or a development environment, we would suggest deploying with either [Guacamole](./how-to-deploy-sre-apache-guacamole.md).
+> This option is more fully automated and, while it does not provide the required security assurances for Tier 2 and above environments, it is suitably secure for Tier 0 or 1 environments.
 
 ## Contents
 
@@ -122,7 +122,7 @@ The following core SRE properties are required - look at `sre_testasandbox_core_
         "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
         "version": "The version of the Compute VM image (e.g. 0.1.2019082900)",
     },
-    "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended) or 'CoCalc' (tier 0/1 only) or 'MicrosoftRDS' (tier 2/3 only)",
+    "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended) or 'MicrosoftRDS' (tier 2/3 only)",
     "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
     "deploymentIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using when deploying the SRE (if not specified then deployment commands from any IP address will be permitted).",
     "azureAdminGroupName" : "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
