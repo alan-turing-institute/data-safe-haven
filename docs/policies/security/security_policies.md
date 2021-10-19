@@ -1,67 +1,44 @@
-# Additional Security Policies for Data Safe Haven
+# Recommended Security Policies for Data Safe Haven
 
-Overview:
+## Data classification
 
-Before data is imported into a DSH will initially go through an assessment process to classify it into one of 5 sensitivity tiers (from least sensitive at Tier 0, to most sensitive at Tier 4). This classification is conducted by the dataset provider’s representative, The research project lead (Investigator) and an independent adviser (Referee). Currently, the data safe haven only covers data categorised as tier 2 or 3. A full overview of the classification process can be found [here](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/explanations/classification/classification-overview.md).
+Before data is imported into a Safe Haven it must go through an assessment process to classify it into one of 5 sensitivity tiers (from least sensitive at Tier 0, to most sensitive at Tier 4).
+This classification is conducted by the dataset provider's representative, the research project lead (Investigator) and an independent adviser (Referee). Currently, the data safe haven only covers data categorised as tier 2 or 3. A full overview of the classification process can be found [here](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/explanations/classification/classification-overview.md).
 
-Technical Controls in the DSH to prevent secure information being removed:
+## Data sharing agreement
 
-Any dataset that is rated as Tier 2 or above (which would include personal data that is not publicly available or commercially/politically/legally sensitive data) have technical controls in place to ensure data can’t be incorrectly removed from the DSH.
+This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice.
+It should be signed after the initial classification of a work package but before any dataset is received.
+Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must specify the legal basis under which the Dataset Provider is permitted to share this data.
+This agreement should include any specific commitments required from Researchers working with the dataset.
+The Alan Turing Institute has a template agreement that can be used to minimise the turnaround time and legal effort required.
 
-These cover three main areas:
+The classification tier may potentially be raised from that agreed prior to data ingress, once the Investigator and Referee have had a chance to view the actual data.
+The classification tier for later work packages in a project may also be higher than that for the original work package, depending on the planned analysis and any additional data required.
+We therefore recommend that the data sharing agreement is worded to permit this.
 
-+ There are technical controls that ensures you can’t copy and paste between the environment and outside
-+ You can’t connect to the internet from inside the environment
-+ You can’t connect to Azure services (e.g Azure file storage) apart from the one which are secured inside the environment.
+## User lifecycle
 
-Business Continuity Plan for DSH in case of data security incident, failure or compromise
+Projects should be recorded in a centralised system.
+They should be created by a {ref}`role_programme_manager` who then assigns a {ref}`role_project_manager` to them.
+The {ref}`role_project_manager` should record the {ref}`role_investigator` and {ref}`role_data_provider_representative` as well as the {ref}`role_referee` (if applicable).
+{ref}`Project Managers <role_project_manager>` also determine which {ref}`Researchers <role_researcher>` belong to each specific projects or work package.
 
-Data security incident process:
+{ref}`Researchers <role_researcher>` who wish to have access to the SRE first complete a form certifying they understand the confidentiality requirements.
+If a project or work package requires any specific additional commitments then all {ref}`Researchers <role_researcher>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` must agree to these before being granted access.0
 
-The DSH follows the Turing Institute’s data security incident process which can be found [here](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621&from=7c877b26-e14b-400c-9097-ae99267258fe).
+A {ref}`role_system_manager` creates an account for them within the SHM and adds them to the appropriate group(s).
+The {ref}`role_researcher` activates their account, setting their own password and multi-factor authentication.
 
-As an additional measure, when a potential data security incident was identified, the affected DSH would be shut down to ensure the security of the data. An investigation would be conducted simultaneously with the Data Security Team to identify any other potentially breached DSH’s and also shut these down.
+A {ref}`role_system_manager` should remove all users from a project or work package promptly once their involvement with it ends.
 
-Data back-up policy:
+## Data security incident process
 
-As the Data Safe Haven is not the canonical source of data a decision has been made to not back-up the data stored in the DSH.
+The Safe Haven follows the Alan Turing Institute's data security incident process which can be found [here](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621&from=7c877b26-e14b-400c-9097-ae99267258fe).
+As an additional measure, as soon as a potential data security incident were to be identified, the affected SRE would be shut down to ensure the integrity of the data.
+An investigation would be conducted with the Data Security Team to identify any other potentially breached SREs and also shut these down.
 
-The data safe haven is a secure environment to store the data in, and the risk of needing to reimport the data is minimal. As any backup copy of the data would decrease the security of the data, a security decision has been taken that it is preferable to have to reimport the data from the original source in the event that it would need to be restored.
+## Data back-up policy
 
-Requirements:
-
-+ 1.6.2: There are technical controls that prevent information from being inappropriately copied or downloaded
-
-    Any dataset that is rated as Tier 2 or above (which would include personal data that is not publicly available or commercially/politically/legally sensitive data) have technical controls in place to ensure data can’t be incorrectly removed from the DSH.
-    These cover three main areas:
-        + There are technical controls that ensures you can’t copy and paste between the environment and outside
-        + You can’t connect to the internet from inside the environment
-        + You can’t connect to Azure services (e.g Azure file storage) apart from the one which are secured inside the environment.
-
-+ 7.1.2: Do you have a business continuity plan in place to ensure continuity of services in event of data security incident, failure or compromise?
-
-    Data security incident process:
-
-    The DSH follows the Turing Institute’s data security incident process which can be found [here](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621&from=7c877b26-e14b-400c-9097-ae99267258fe)..
-
-    As an additional measure, when a potential data security incident was identified, the affected DSH would be shut down to ensure the security of the data. An investigation would be conducted simultaneously with the Data Security Team to identify any other potentially breached DSH’s and also shut these down.
-
-+ 7.2.1: Explain how your data security incident response and management plan has been tested to ensure all parties understand roles and responsibilities as part of the plan
-
-    The DSH follows the Turing Institute’s data security incident process which can be found [here](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621&from=7c877b26-e14b-400c-9097-ae99267258fe)..
-
-+ 7.3.4: Suitable backups are made, tested, documented and reviewed
-
-    Data back-up policy:
-
-    As the Data Safe Haven is not the canonical source of data a decision has been made to not back-up the data stored in the DSH.
-
-    The data safe haven is a secure environment to store the data in, and the risk of needing to reimport the data is minimal. As any backup copy of the data would decrease the security of the data, a security decision has been taken that it is preferable to have to reimport the data from the original source in the event that it would need to be restored.
-
-+ 7.3.5: When did you last successfully restore from backup?
-
-    Data back-up policy:
-
-    As the Data Safe Haven is not the canonical source of data a decision has been made to not back-up the data stored in the DSH.
-
-    The data safe haven is a secure environment to store the data in, and the risk of needing to reimport the data is minimal. As any backup copy of the data would decrease the security of the data, a security decision has been taken that it is preferable to have to reimport the data from the original source in the event that it would need to be restored.
+As the Safe Haven is not the canonical source of data we choose not back-up the data stored in any SRE.
+Since storing backups increases the risk of data breach while the cost of reimporting the data is minimal this is an acceptable risk.
