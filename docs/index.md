@@ -1,36 +1,73 @@
 # Safe Haven Documentation
 
-We organise our documentation into four types. Read in accordance to what might be most helpful to you.
+This is the documentation for the Alan Turing Institute's Data Safe Havens in the Cloud project.
+It contains instructions about how to deploy, administer and operate your own instance of the Turing's Data Safe Haven using Microsoft's Azure cloud platform.
 
-## Tutorials and overview
+```{Tip}
+If you're new to the Safe Haven project then this is [a good place to start](introduction/index.md).
+```
 
-**Recommended if**: you have no prior experience using our Safe Havens and want to be guided through the basics. Instructions about how to deploy your own Safe Haven are here.
+## Introduction
 
-See [Tutorials and overview](tutorial/README.md) for more information
+**Recommended if**: you're new to the Safe Haven project and want to be guided through the basics this is a good place to [find out more](introduction/index.md).
 
-## How-to guides
+## Roles
 
-**Recommended if**: You want to use a Safe Haven that you, or someone else, has already deployed (following the instructions in the tutorial).
+**Recommended if**: you're planning on deploying your own Safe Haven or you're going to be working with one that someone else has deployed you can read about [what you need to do here](roles/index.md).
 
-See [How-to guides](how_to_guides/README.md) for more information
+## Policies
 
-## Explanations and design decisions
+**Recommended if**: you're interested in reading about our recommended data governance and user management policies then [read about them here](policies/index.md).
 
-**Recommended if**: You want to develop a deeper understanding of the different aspects of Safe Haven design and the motivations behind them.
+## Design
 
-See [Explanations](explanations/README.md)
+**Recommended if**: you're interested in understanding the technical aspects of the Safe Haven project and the reasons why it was designed in this way, [read about them here](design/index.md).
 
-## Reference materials
+<!--
 
-**Recommended if**: You want a technical understanding of aspects of our Safe Haven implementation using Azure.
 
-See [Reference](reference/README.md)
+## How to contribute to the development of the Safe Haven project
+
++ [Getting started as a developer](developer/how-to-contribute.md) -->
+
 
 ```{toctree}
 :hidden: true
 
-explanations/README.md
-how_to_guides/README.md
-reference/README.md
-tutorial/README.md
+design/certifications/DSPT.md
+design/certifications/dspt/supplier_and_software_policy.md
+design/certifications/risk_register.md
+design/implementation/shm_details.md
+design/implementation/sre_details.md
+design/index.md
+design/security_decisions/data_access.md
+design/security_decisions/physical_resilence_and_availability.md
+introduction/index.md
+policies/data_sensitivity_classification/classification_process.md
+policies/data_sensitivity_classification/sensitivity_tiers.md
+policies/data_sensitivity_classification/unconsented_data.md
+policies/data_transfer/egress.md
+policies/data_transfer/ingress.md
+policies/index.md
+policies/security/security_policies.md
+policies/security/software_package_approval_policy.md
+policies/security/technical_controls.md
+roles/data_provider_representative/data_egress.md
+roles/data_provider_representative/data_ingress.md
+roles/index.md
+roles/investigator/data_egress.md
+roles/investigator/data_ingress.md
+roles/investigator/software_package_request_form.md
+roles/project_manager/data_ingress.md
+roles/project_manager/project_initiation.md
+roles/researcher/user_cheat_sheet.md
+roles/researcher/user_guide.md
+roles/system_deployer/build_compute_vm_image.md
+roles/system_deployer/deploy_shm.md
+roles/system_deployer/deploy_sre.md
+roles/system_deployer/deploy_sre_apache_guacamole.md
+roles/system_deployer/deploy_sre_microsoft_rds.md
+roles/system_deployer/security_checklist.md
+roles/system_manager/general.md
+roles/system_manager/migrate_an_shm.md
 ```
