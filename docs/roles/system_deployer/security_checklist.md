@@ -57,7 +57,7 @@ The following users will be needed for this checklist
 
 ### We claim:
 
-Users are required to authenticate with Multi Factor Authentication (MFin order to access the secure analysis environment.
+Users are required to authenticate with Multi Factor Authentication (MFA) in order to access the secure analysis environment.
 
 Passwords are strong
 
