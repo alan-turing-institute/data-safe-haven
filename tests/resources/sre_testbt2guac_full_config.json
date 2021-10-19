@@ -734,7 +734,7 @@
       "codimd": {
         "adminPasswordSecretName": "sre-t2guac-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.4.1"
+          "dockerVersion": "2.4.1-cjk"
         },
         "disks": {
           "data": {
