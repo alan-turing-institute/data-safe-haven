@@ -155,8 +155,6 @@ if ($sreResources -or $sreResourceGroups) {
                 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
             } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
                 $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
-            } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
-                $serverHostname = $null
             } else {
                 Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
             }

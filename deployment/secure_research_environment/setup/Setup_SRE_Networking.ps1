@@ -96,8 +96,6 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     $sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
     $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.appSessionHost.nsg.rules) -Parameters $config -AsHashtable
     $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules
-} elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
-    Add-LogMessage -Level Info "No remote desktop network is needed for CoCalc"
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
