@@ -910,7 +910,7 @@ function Get-SreConfig {
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "11.6-alpine"
+                dockerVersion      = "13.4-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{

@@ -773,7 +773,7 @@
         "ip": "10.151.5.6",
         "osVersion": "20.04-LTS",
         "postgres": {
-          "dockerVersion": "11.6-alpine",
+          "dockerVersion": "13.4-alpine",
           "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-T3MSRDS",
