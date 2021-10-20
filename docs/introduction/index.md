@@ -1,5 +1,10 @@
 # Introduction
 
+```{toctree}
+:hidden: true
+:maxdepth: 2
+```
+
 This documentation requires no prior knowledge and is a good place to start.
 
 ## What is a Safe Haven?

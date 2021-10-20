@@ -1,5 +1,14 @@
 # Design
 
+```{toctree}
+:hidden: true
+:glob:
+:maxdepth: 2
+
+certifications/*
+implementation/*
+security_decisions/*
+```
 ## Introduction
 
 The Safe Haven is designed to be deployed on the [Microsoft Azure](https://azure.microsoft.com/en-gb/) platform taking advantage of its cloud-computing infrastructure.
@@ -68,4 +77,3 @@ This includes reasoning for our different choices but also highlights potential 
 
 We have run a [self-assessment](certifications/DSPT.md) against the [NHS DSPT](https://www.dsptoolkit.nhs.uk/) criteria.
 We have also developed a [risk register](certifications/risk_register.md) of the most likely risks involved in running a Safe Haven.
-

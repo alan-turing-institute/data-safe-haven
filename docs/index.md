@@ -1,5 +1,15 @@
 # Safe Haven Documentation
 
+```{toctree}
+:hidden: true
+:maxdepth: 2
+
+introduction/index.md
+roles/index.md
+policies/index.md
+design/index.md
+```
+
 This is the documentation for the Alan Turing Institute's Data Safe Havens in the Cloud project.
 It contains instructions about how to deploy, administer and operate your own instance of the Turing's Data Safe Haven using Microsoft's Azure cloud platform.
 
@@ -31,10 +41,7 @@ If you're new to the Safe Haven project then this is [a good place to start](int
 + [Getting started as a developer](developer/how-to-contribute.md) -->
 
 
-```{toctree}
-:hidden: true
-
-design/certifications/DSPT.md
+<!-- design/certifications/DSPT.md
 design/certifications/dspt/supplier_and_software_policy.md
 design/certifications/risk_register.md
 design/implementation/shm_details.md
@@ -70,4 +77,4 @@ roles/system_deployer/deploy_sre_microsoft_rds.md
 roles/system_deployer/security_checklist.md
 roles/system_manager/general.md
 roles/system_manager/migrate_an_shm.md
-```
+``` -->

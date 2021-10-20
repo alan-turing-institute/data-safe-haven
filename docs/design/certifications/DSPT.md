@@ -1,5 +1,12 @@
 # NHS DSPT Security Assessment
 
+```{toctree}
+:hidden: true
+:glob:
+
+dspt/*
+```
+
 Here is an example of the NHS DSPT self-assessment for a category 3 organisation using the Safe Haven.
 Note that some of the responses are generic to any Safe Haven deployment while some are organisation-specific.
 

@@ -1,4 +1,18 @@
 # Roles
+
+```{toctree}
+:hidden: true
+:glob:
+:maxdepth: 2
+
+data_provider_representative/*
+investigator/*
+project_manager/*
+researcher/*
+system_deployer/*
+system_manager/*
+```
+
 Several aspects of the Safe Haven rely on role-based access controls.
 The different roles are detailed alphabetically below.
 

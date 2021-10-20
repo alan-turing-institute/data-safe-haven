@@ -1,5 +1,15 @@
 # Policies
 
+```{toctree}
+:hidden: true
+:glob:
+:maxdepth: 2
+
+data_sensitivity_classification/*
+data_transfer/*
+security/*
+```
+
 In this section we describe the data governance and user management policies that are used by the Safe Haven deployed at the Alan Turing Institute.
 Please note that these may be incompatible with your organisation's existing procedures and so they are presented here as recommendations, not requirements.
 
