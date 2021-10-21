@@ -25,7 +25,7 @@ Remember that Tier-0 is the least sensitive data tier (public data) and Tier-4 t
 
 The appropriate legal paperwork needs to be completed to ensure that a data sharing agreement is in place.
 This step should also cover ethical considerations of sharing the data.
-The project may need to be approved by the Turing Ethics Advisory Group (EAG; more information can be found at the [Turing Institute intranet site](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/service?unid=cb5e35246f474d1f90abae8ea262338c)) and permission to use the data (including [unconsented patient data](../../explanations/classification/unconsented-data.md)) should be obtained.
+The project may need to be approved by the Turing Ethics Advisory Group (EAG; more information can be found at the [Turing Institute intranet site](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/service?unid=cb5e35246f474d1f90abae8ea262338c)) and permission to use the data (including {ref}`unconsented patient data <policy_unconsented_patient_data>`) should be obtained.
 
 The data sharing paperwork must make very clear the tier to which the dataset has been assigned.
 
@@ -42,7 +42,7 @@ There should be a hash to confirm that the documents are indeed the same.
 
 ## Step 4: Transfer from data owner to Turing
 
-Different processes should be followed depending on the tier to which the data has been assigned (as described in the [data classification process](../../explanations/classification/classification-overview.md).
+Different processes should be followed depending on the tier to which the data has been assigned (as described in the {ref}`data classification process <policy_data_classification_process>`).
 
 It is the responsibility of the Turing staff member conducting this step to ensure that they are following the appropriate process for the assigned data classification tier.
 

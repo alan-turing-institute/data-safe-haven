@@ -1,4 +1,4 @@
-# Data Safe Havens - Cheat Sheet
+# Safe Haven User Documentation - Overview
 
 ## Introduction to Data Safe Havens
 

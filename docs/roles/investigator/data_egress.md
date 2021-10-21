@@ -1,4 +1,4 @@
-# Safe Haven - Egressing Data
+# Data egress process
 
 Data Safe Havens are used for doing secure data research on a single 'work package' of data. Once you're done working with the data for your project, you'll have to egress all of the work you've been doing from the environment, before shutting it down.
 

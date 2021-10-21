@@ -1,8 +1,5 @@
+(deploy_sre_apache_guacamole)=
 # Secure Research Environment Build Instructions (Guacamole remote desktop)
-
-> :warning: If you are deploying a Tier 2 or Tier 3 environment, you should deploy with an [RDS remote desktop](./how-to-deploy-sre-microsoft-rds.md) instead.
-> This Guacamole remote desktop interface has not yet been validated to provide the security assurances required for Tier 2 or above environments, but is suitable for Tier 0 or 1 environments or development and testing purposes.
-> For Tier 0 and 1 environments where a collaborative notebook based user interface is more appropriate, we would recommend deploying with [CoCalc](./how-to-deploy-sre-cocalc.md).
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
@@ -66,8 +63,8 @@ These instructions will walk you through deploying a Secure Research Environment
 ## :seedling: 1. Prerequisites
 
 + An `SHM environment` that has already been deployed in Azure
-  + Follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
-+ All [prerequisites needed for deploying the SHM](how-to-deploy-shm.md#prerequisites)
+  + Follow the {ref}`Safe Haven Management (SHM) deployment guide <deploy_shm>` if you have not done so already.
++ All {ref}`prerequisites needed for deploying the SHM <deploy_shm_prerequisites>`.
 + An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
   + This can be the same or different from the one where the SHM is deployed
   + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
@@ -156,7 +153,7 @@ A full configuration, which will be used in subsequent steps, will be automatica
 PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ## :computer: 3. Deploy SRE
@@ -167,9 +164,9 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID> -sreId <SRE ID>
 PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <AAD tenant ID> -VMs <VM sizes>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-+ where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](how-to-deploy-shm.md#get-the-azure-active-directory-tenant-id )
++ where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](deploy_shm.md#get-the-azure-active-directory-tenant-id )
 + where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create (for example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`)
 
 This will perform the following actions, which can be run individually if desired:
@@ -183,7 +180,7 @@ This will perform the following actions, which can be run individually if desire
 PS> ./Remove_SRE_Data_From_SHM.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM. This script will remove any such data.
@@ -199,7 +196,7 @@ If you are redeploying an SRE in the same subscription and did not use the `./SR
 PS> ./Setup_SRE_Key_Vault_And_Users.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This step will register service accounts with the SHM and also create a Key Vault in the SRE subscription (at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS > kv-<SHM ID>-sre-<SRE ID>`).
@@ -215,7 +212,7 @@ This step will register service accounts with the SHM and also create a Key Vaul
 PS> ./Setup_SRE_DNS_Zone.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :warning: Troubleshooting
@@ -243,7 +240,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 PS> ./deployment/secure_research_environment/setup/Setup_SRE_Networking.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :pencil: Notes
@@ -261,7 +258,7 @@ The VNet peerings may take a few minutes to provision after the script completes
 PS> ./Setup_SRE_Storage_Accounts.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT` resource group, a corresponding private end point in `RG_SRE_NETWORKING` and will configure the DNS zone of the storage account to the right IP address.
@@ -277,9 +274,9 @@ This script will create a storage account in the `RG_SHM_<shmId>_DATA_PERSISTENT
 PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <tenant ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
-+ where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](how-to-deploy-shm.md#get-the-azure-active-directory-tenant-id )
++ where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](deploy_shm.md#get-the-azure-active-directory-tenant-id )
 
 </details>
 
@@ -292,7 +289,7 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
@@ -306,7 +303,7 @@ PS> ./Setup_SRE_WebApp_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 PS> ./Setup_SRE_Databases.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This will deploy any databases that you specified in the core config file. The time taken will depend on which (if any) databases you chose.
@@ -327,7 +324,7 @@ The following script will be run once for each VM that you specified using the `
 PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -vmSize <VM size> -ipLastOctet <IP last octet>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 + where `<VM size>` is the VM size provided in the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
 + where `<IP last octet>` is the last octet of the IP address (automatically determined by `Deploy_SRE.ps1`)
@@ -357,7 +354,7 @@ If this SRE needs additional software or settings that are not in your default V
 PS> ./Apply_SRE_Network_Configuration.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 This will apply the locked-down network settings which will restrict access into/out of this SRE.
@@ -375,7 +372,7 @@ This will apply the locked-down network settings which will restrict access into
 PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 </details>
@@ -389,7 +386,7 @@ PS> ./Setup_SRE_Firewall.ps1 -shmId <SHM ID> -sreId <SRE ID>
 PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
-+ where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
++ where `<SHM ID>` is the [management environment ID](deploy_shm.md#management-environment-id) for this SRE
 + where `<SRE ID>` is the [secure research environment ID](#secure-research-environment-id) for this SRE
 
 ### :warning: Troubleshooting
@@ -415,15 +412,15 @@ If you get consistent failure messages after re-running the logging set up scrip
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
 
-You should have already set up a non-privileged user account upon setting up the SHM, when [validating the active directory synchronisation](./how-to-deploy-shm.md#validate-active-directory-synchronisation), but you may wish to set up another or verify that you have set one up already:
+You should have already set up a non-privileged user account upon setting up the SHM, when [validating the active directory synchronisation](./deploy_shm.md#validate-active-directory-synchronisation), but you may wish to set up another or verify that you have set one up already:
 
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
 
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
-+ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
-+ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
++ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](deploy_shm.md#configure-the-first-domain-controller-via-remote-desktop)
++ Follow the {ref}`user creation instructions <deploy_shm_validate_aadsync>` from the {ref}`SHM deployment guide <deploy_shm>` (everything under the `Validate Active Directory synchronisation` header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 + This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
@@ -434,7 +431,7 @@ You should have already set up a non-privileged user account upon setting up the
 
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
-+ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
++ Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](deploy_shm.md#configure-the-first-domain-controller-via-remote-desktop)
 + In Server Manager click `Tools > Active Directory Users and Computers`
 + In `Active Directory Users and Computers`, expand the domain in the left hand panel click `Safe Haven Security Groups`
 + Right click the `SG <SRE ID> Research Users` security group and select `Properties`

@@ -1,5 +1,5 @@
 (policy_technical_controls)=
-# Technical controls in the Safe Haven
+# Technical controls
 
 ## Multifactor Authentication and Password strength
 Once a user account is created by a {ref}`role_system_manager`, the user must then activates their account online.

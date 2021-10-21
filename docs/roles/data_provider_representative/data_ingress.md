@@ -1,11 +1,14 @@
-# Bringing data into the Turing Data Safe Haven
+(role_data_provider_representative_ingress)=
+# Data ingress process
 
 ## Intro
 
-Your data is precious to us. The utmost care is taken when transferring the data.
+Your data is precious to us.
+The utmost care is taken when transferring the data.
 However, you will need to follow the guidance to certify we are able to ensure your security.
 
-We have built a Safe Haven solution which uses cloud computing. This uses technology that keeps the data safe, but equally importantly, the processes and contractual agreements that enforce this safety, which your organisation are signing up to.
+We have built a Safe Haven solution which uses cloud computing.
+This uses technology that keeps the data safe, but equally importantly, the processes and contractual agreements that enforce this safety, which your organisation are signing up to.
 
 ## Loading data into the environment
 

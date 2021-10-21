@@ -351,7 +351,7 @@ To test all the above, you will need to act both as the administrator and data p
 
 + Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present.
   + As the **data provider**, ensure you're working from a device that has an allow-listed IP address
-  + Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the [ingress instructions for the data provider](../../how_to_guides/data_provider/how-to-ingress-data-as-provider.md)
+  + Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the {ref}`ingress instructions for the data provider <role_data_provider_representative_ingress>`
   + :white_check_mark: **Verify:** that writing succeeds by uploading a file
   + :white_check_mark: **Verify:** that attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window
   + Switch to a device that lacks an allow-listed IP address (or change your IP with a VPN)

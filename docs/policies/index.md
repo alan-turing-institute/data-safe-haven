@@ -2,12 +2,11 @@
 
 ```{toctree}
 :hidden: true
-:glob:
 :maxdepth: 2
 
-data_sensitivity_classification/*
-data_transfer/*
-security/*
+data_transfer/index.md
+data_sensitivity_classification/index.md
+security/index.md
 ```
 
 In this section we describe the data governance and user management policies that are used by the Safe Haven deployed at the Alan Turing Institute.

@@ -2,12 +2,11 @@
 
 ```{toctree}
 :hidden: true
-:glob:
 :maxdepth: 2
 
-certifications/*
-implementation/*
-security_decisions/*
+implementation/index.md
+security_decisions/index.md
+certifications/index.md
 ```
 ## Introduction
 
@@ -26,7 +25,8 @@ The identity provider is Microsoft Active Directory, which is synchronised with 
 :align: center
 ```
 
-The Management segment is connected to the SREs using Azure Virtual Network Peering. This connection passes authentication traffic between the servers in the SRE to AD servers within the Management subscription. While all SREs are peered with the Management segment, there is no connectivity between SREs directly.
+The Management segment is connected to the SREs using Azure Virtual Network Peering.
+This connection passes authentication traffic between the servers in the SRE to AD servers within the Management subscription. While all SREs are peered with the Management segment, there is no connectivity between SREs directly.
 
 ### Safe Haven Management component (SHM)
 

@@ -1,4 +1,4 @@
-# Safe Haven VM Image Build Instructions
+# Build an SRE compute image
 
 These instructions will walk you through creating a new VM image for use in the secure research environment.
 
@@ -66,7 +66,7 @@ These instructions will walk you through creating a new VM image for use in the 
   + Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
 + SSH or OpenSSH (not tested on Windows)
 + SHM configuration file
-  + The core properties for the environment must be present in the `environment_configs/core` folder as described in [the Safe Haven Management deployment instructions](how-to-deploy-shm.md).
+  + The core properties for the environment must be present in the `environment_configs/core` folder as described in the {ref}`Safe Haven Management deployment instructions <deploy_shm>`.
 
 ### (Optional) Verify code version
 

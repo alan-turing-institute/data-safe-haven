@@ -1,4 +1,5 @@
-# Safe Haven - software package approval policy
+(policy_software_package_approval)=
+# Software package approval policy
 
 ## Introduction
 
@@ -69,7 +70,7 @@ To meet this condition, a package should:
 
 ## Package request/review procedure
 
-- A user requests a package by completing the [software package request form](software-package-request-form.md), including responses to the following questions:
+- A user requests a package by completing the {ref}`software package request form <software_package_request_form>`, including responses to the following questions:
 
   - Is this package the mostly widely supported for the intended purpose?
   - What will you be able to do with this package that you can't currently do? What alternatives are there?

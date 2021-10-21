@@ -1,6 +1,6 @@
 # Migrating an SHM
 
-This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](../../tutorial/deployment_tutorials/how-to-deploy-shm.md) and one or more [Secure Research Environments (SRE)](../../tutorial/deployment_tutorials/how-to-deploy-sre.md) that are linked to it.
+This document assumes that you have already deployed a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 
 It will help you update the SHM to a newer release by deploying a new SHM and migrating the users to it.
 

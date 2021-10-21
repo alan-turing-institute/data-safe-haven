@@ -1,3 +1,4 @@
+(user_guide)=
 # Safe Haven User Documentation
 
 ## :mailbox_with_mail: Table of contents

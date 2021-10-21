@@ -1,4 +1,4 @@
-# Recommended Security Policies for Data Safe Haven
+# Recommended security policies
 
 ## Data classification
 

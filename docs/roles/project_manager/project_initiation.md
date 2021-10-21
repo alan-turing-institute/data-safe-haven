@@ -34,4 +34,4 @@ If there is data relating to individual people in the data set, it is necessary 
 
 ## Classification
 
-Step-by-step instructions on how to classify a work package using our web application or an equivalent flow-chart [are given here](../general/how-to-use-classification-web-app-guide.md).
+Step-by-step instructions on how to classify a work package {ref}`are given here <policy_data_classification_process>`.

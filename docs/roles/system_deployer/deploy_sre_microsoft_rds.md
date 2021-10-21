@@ -1,9 +1,9 @@
+(deploy_sre_microsoft_rds)=
 # Secure Research Environment Build Instructions (RDS remote desktop)
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
-> :warning: If you are deploying a Tier 0 or Tier 1 environment, or a development environment, we would suggest deploying with either [Guacamole](./how-to-deploy-sre-apache-guacamole.md).
-> This option is more fully automated and, while it does not provide the required security assurances for Tier 2 and above environments, it is suitably secure for Tier 0 or 1 environments.
+> :warning: If you are deploying a Tier 0 or Tier 1 environment, or a development environment, we would suggest deploying with {ref}`Guacamole <deploy_sre_apache_guacamole>`.
 
 ## Contents
 
@@ -72,8 +72,8 @@ These instructions will walk you through deploying a Secure Research Environment
 ## :seedling: 1. Prerequisites
 
 + An `SHM environment` that has already been deployed in Azure
-  + Follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
-+ All [prerequisites needed for deploying the SHM](how-to-deploy-shm.md#prerequisites)
+  + Follow the {ref}`Safe Haven Management (SHM) deployment guide <deploy_shm>` if you have not done so already.
++ All `prerequisites needed for deploying the SHM <deploy_shm_prerequisites>`.
 + An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
   + This can be the same or different from the one where the SHM is deployed
   + Ensure that the **Owner** of the subscription is an Azure Security group that all administrators can be added to.
@@ -371,7 +371,7 @@ You should have already set up a non-privileged user account upon setting up the
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
 + Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to [log into this VM](how-to-deploy-shm.md#configure-the-first-domain-controller-via-remote-desktop)
-+ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
++ Follow the {ref}`user creation instructions <deploy_shm_validate_aadsync>` from the {ref}`SHM deployment guide <deploy_shm>` (everything under the `Validate Active Directory synchronisation` header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 + This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.

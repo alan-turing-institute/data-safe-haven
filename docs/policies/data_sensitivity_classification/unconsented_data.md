@@ -1,3 +1,4 @@
+(policy_unconsented_patient_data)=
 # Unconsented data
 
 This document summarises some considerations that must be taken into account when dealing with **unconsented patient data**, but similar ideas may apply to the use of non-health related unconsented individual-level data. Unconsented patient data typically consists of routine electronic health records (EHR) that are collected by health providers (e.g. NHS). EHRs include but are not restricted to: blood test results, fMRI scans and free text notes recorded by medical practitioners. These are a powerful, low cost source of data that is expected to play a central role in the development of precision medicine strategies. However, working with unconsented patient data introduces a variety of challenges, covering data ingress, processing and egress.

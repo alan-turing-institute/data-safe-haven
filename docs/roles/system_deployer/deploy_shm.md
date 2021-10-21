@@ -1,4 +1,5 @@
-# Safe Haven Management Environment Build Instructions
+(deploy_shm)=
+# Deploy a Safe Haven Management Environment (SHM)
 
 These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and **must be** deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently, for example you may have a group of projects with the same lifecycle which share a different SHM to your other projects.
 
@@ -68,6 +69,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 
 + These indicate steps that depend on the OS that you are using to deploy the SHM
 
+(deploy_shm_prerequisites)=
 ## :seedling: 1. Prerequisites
 
 + An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in.
@@ -504,6 +506,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 
 </details>
 
+(deploy_shm_vpn)=
 ### Download a client VPN certificate for the Safe Haven Management network
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -669,6 +672,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 PS> C:\Installation\UpdateAADSyncRule.ps1
 ```
 
+(deploy_shm_validate_aadsync)=
 ### Validate Active Directory synchronisation
 This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory. Note that you can use the same script after deploying an SRE to add users in bulk.
 

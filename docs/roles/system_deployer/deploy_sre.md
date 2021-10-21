@@ -1,13 +1,22 @@
-# Secure Research Environment Build Instructions
+(deploy_sre)=
+# Deploy a Secure Research Environment (SRE)
+
+```{toctree}
+:hidden:
+
+deploy_sre_apache_guacamole.md
+deploy_sre_microsoft_rds.md
+```
+
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 
 We currently support three different end-user interfaces:
 
-+ :pear: `Apache Guacamole` :sparkles: **recommended for development and testing or for Tier 0/1 production SREs** :sparkles:
-  + [Tiers 0/1 only](how-to-deploy-sre-apache-guacamole.md)
-+ :bento: `Microsoft Remote Desktop` :sparkles: **recommended for Tier 2 or above production SREs** :sparkles:
-  + [Tiers 2/3/4](deploy_sre_microsoft_rds.md)
++ :pear: `Apache Guacamole` :sparkles: **recommended** :sparkles:
+  + {ref}`Tiers 0-3 <deploy_sre_apache_guacamole>`
++ :bento: `Microsoft Remote Desktop` **not supported for tier-0 or tier-1 SREs**
+  + {ref}`Tiers 2-4 <deploy_sre_microsoft_rds>`
 
 :exclamation: Deployment of an SRE using Apache Guacamole is more fully automated and cheaper than using Microsoft Remote Desktop. However, we have not yet run a penetration test for a Guacamole-based SRE so we cannot currently recommend its use in production environments at Tier 2 or above.
 
@@ -49,7 +58,7 @@ We currently support three different end-user interfaces:
 
 ## :seedling: Prerequisites
 
-+ An SHM environment that has already been deployed in Azure - follow the [Safe Haven Management (SHM) deployment guide](how-to-deploy-shm.md) if you have not done so already.
++ An SHM environment that has already been deployed in Azure - follow the {ref}`Safe Haven Management (SHM) deployment guide <deploy_shm>` if you have not done so already.
 + An Azure subscription with sufficient credits to build the SRE.
   + :notebook: Our convention is to name these `Turing SRE - <SRE ID> (SHM <SHM ID>)`
   + :information_source: We recommend allowing at least **$1,000** in Azure credits for setting up each SRE
@@ -69,11 +78,13 @@ We currently support three different end-user interfaces:
 
 ### :key: VPN connection to the SHM VNet
 
-For some operations, you will need to log on to some of the VMs that you deploy and make manual changes. This is done using the VPN which should have been deployed [when setting up the SHM environment](how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network).
+For some operations, you will need to log on to some of the VMs that you deploy and make manual changes.
+This is done using the VPN which should have been deployed {ref}`when setting up the SHM environment <deploy_shm_vpn>`.
 
 ### :name_badge: SRE domain name
 
-You will need access to a public routable domain name for the SRE and its name servers. This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk` , or a top-level domain (eg. `dsgroup100.co.uk` ).
+You will need access to a public routable domain name for the SRE and its name servers.
+This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk`, or a top-level domain (eg. `dsgroup100.co.uk`).
 
 ### :arrow_double_up: Deploying multiple SREs in parallel
 
@@ -294,7 +305,7 @@ On your **deployment machine**.
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
 
-You should have already set up a non-privileged user account upon setting up the SHM, when [validating the active directory synchronisation](./how-to-deploy-shm.md#validate-active-directory-synchronisation), but you may wish to set up another or verify that you have set one up already:
+You should have already set up a non-privileged user account upon setting up the SHM, when {ref}`validating the active directory synchronisation <deploy_shm_validate_aadsync>`, but you may wish to set up another or verify that you have set one up already:
 
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
@@ -308,7 +319,7 @@ Carry out the following on the **SHM Domain Controller (DC1)** via Microsoft Rem
   + The password is the `shm-<SHM ID>-domain-admin-password` secret.
 + If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
-+ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the [SHM deployment guide](./how-to-deploy-shm.md) (everything under the Validate Active Directory synchronisation header). In brief these involve:
++ Follow the [user creation instructions](./how-to-deploy-shm.md#validate-active-directory-synchronisation) from the {ref}`SHM deployment guide <deploy_shm>` (everything under the Validate Active Directory synchronisation header). In brief these involve:
   + adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   + running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 
@@ -329,7 +340,7 @@ This will create a user in the local Active Directory on the SHM domain controll
 
 #### Ensure that your user account has MFA enabled
 
-Please ensure that your account is fully set-up (including MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)).
+Please ensure that your account is fully set-up (including MFA as [detailed in the user guide](../researcher/user-guide.md#door-set-up-multi-factor-authentication)).
 In order to verify this switch to your custom Azure Active Directory in the Azure portal:
 
 + Go to `portal.azure.com` and click on your username in the top-right
@@ -347,7 +358,7 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 + A licence must be assigned to the user.
   + Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 + MFA must be enabled for the user.
-  + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication).
+  + The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../researcher/user-guide.md#door-set-up-multi-factor-authentication).
 
 </details>
 
