@@ -1,39 +1,44 @@
-/* Sidebar header */
-.wy-side-nav-search {
-    background-color: #f5f6f7;
+.left {
+  float: left;
 }
-/* .wy-side-nav-search .wy-dropdown>a,  */
-.wy-side-nav-search>a, .wy-side-nav-search>div.version {
-    color: #2980b9;
+.right {
+  float: right;
 }
-
-/* Sidebar body */
-.wy-nav-side {
-    background: #f5f6f7;
-}
-.wy-menu-vertical a {
-    color: #404040;
-}
-
-/* Sidebar popup footer body */
+/* Sidebar pop-up default */
 .rst-versions {
-    background: #f5f6f7;
+  z-index: 400;
 }
-.rst-versions .rst-other-versions dd a {
-    color: #2980b9;
+/* Sidebar pop-up open */
+.rst-versions.shift-up {
+  height: auto;
+  max-height: 100%;
 }
-
-/* Sidebar popup footer header */
-.rst-versions .rst-current-version {
-    background: #cbd0d5;
-    color: #2980b9;
+/* Add space to the right of the book icon */
+.fa-book {
+  padding-right: 5px;
 }
-.rst-versions .rst-current-version .fa {
-    color: #404040;
+/* Sidebar pop-up: on hover change the cursor to a pointer */
+.rst-current-version {
+  cursor: pointer;
+  display: block;
+  padding: 12px;
 }
-
-/* Main content */
-.wy-nav-content {
-    background: #f5f6f7;
-    max-width: none;
+/* Set all text spans to have the same height as the FontAwesome icons*/
+.rst-current-version > span {
+  line-height: 1;
+}
+/* Versions table when default */
+.rst-versions .rst-other-versions {
+  display: none;
+  padding: 12px;
+}
+/* Versions table when open */
+.rst-versions.shift-up .rst-other-versions {
+  display: block;
+}
+/* Display version items as single block rather than one per line */
+.rst-versions .rst-other-versions dd {
+  display: inline-block;
+  margin: 0;
+  padding: 5px;
 }
