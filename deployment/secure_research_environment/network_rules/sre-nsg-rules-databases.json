@@ -24,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMSSQLBrowserServiceInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections to MSSQL Browser Service from compute subnet",
+        "destinationAddressPrefix": "{{sre.databases.mssql.ip}}",
+        "destinationPortRange": "1434",
+        "direction": "Inbound",
+        "priority": 2100,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowMSSQLInbound",
         "access": "Allow",
         "description": "Allow inbound connections to MSSQL from compute subnet",
