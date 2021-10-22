@@ -12,14 +12,14 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowComputeVMsInbound",
+        "name": "AllowPostgresInbound",
         "access": "Allow",
-        "description": "Allow inbound connections from compute subnet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
-        "destinationPortRange": "*",
+        "description": "Allow inbound connections to postgres from compute subnet",
+        "destinationAddressPrefix": "{{sre.databases.dbpostgresql.ip}}",
+        "destinationPortRange": "{{sre.databases.dbpostgresql.port}}",
         "direction": "Inbound",
         "priority": 2000,
-        "protocol": "*",
+        "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
