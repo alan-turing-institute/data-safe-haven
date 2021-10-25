@@ -66,7 +66,7 @@ apt:
   preserve_sources_list: true
   sources:
     gitlab.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
       keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
