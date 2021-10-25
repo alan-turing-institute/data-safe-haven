@@ -1,9 +1,6 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
-    [ValidateSet("Ubuntu1804", "Ubuntu2004")]
-    [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
@@ -38,20 +35,9 @@ if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
 # Standard_E8_v3  => 8 cores; 64GB RAM; £0.4651/hr; 2.3 GHz :: build 17h8m17s  => £7.97
 
 
-# Select which source URN to base the build on
-# --------------------------------------------
-if ($sourceImage -eq "Ubuntu1804") {
-    $baseImageSku = "18.04-LTS"
-    $shortVersion = "1804"
-    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
-} elseif ($sourceImage -eq "Ubuntu2004") {
-    $baseImageSku = "20.04-LTS"
-    $shortVersion = "2004"
-} else {
-    Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
-}
-$buildVmName = "ComputeVM-Ubuntu${shortVersion}"
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.yaml") -Raw
+$baseImageSku = "20.04-LTS"
+$buildVmName = "ComputeVM-Ubuntu"
+$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu.yaml") -Raw
 
 
 # Create resource groups if they do not exist
