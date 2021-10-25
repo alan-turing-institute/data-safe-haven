@@ -3,7 +3,7 @@
 What Software is available in the Data Safe Haven Virtual Machines? (DSVM)
 The DSVM’s currently run the below operating system:
 
-+ Ubuntu 18.04 LTS release
++ Ubuntu 20.04 LTS release
 
 The DSVM will also come with the latest version of each of the below software packages (Note that the version is defined at build time, but any packages installed using apt are additionally updated to the latest version available at deploy time).
 It is easiest to update DSVMs by removing an existing VM and redeploying. The data, shared and home directories will be left untouched by this process.
@@ -64,7 +64,7 @@ DSPT Requirements breakdown:
 
 + 8.1.1: What Software do you use?
 
-  + Ubuntu 18.04 LTS release
+  + Ubuntu 20.04 LTS release
   The DSVM will also come with the latest version of each of the below software packages (Note that the version is defined at build time, but any packages installed using apt are additionally updated to the latest version available at deploy time).
   It is easiest to update DSVMs by removing an existing VM and redeploying. The data, shared and home directories will be left untouched by this process.
   It is also possible to ingress updated software packages and update in place on a running DSVMs. This is only done in the case of essential security fixes where the project cannot afford the downtime involved in a redeploy.
