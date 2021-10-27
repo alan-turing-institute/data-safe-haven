@@ -1,9 +1,9 @@
-(user_guide)=
-# Safe Haven User Documentation
+(role_researcher_user_guide)=
+# Data Safe Haven User Documentation
 
 ## :mailbox_with_mail: Table of contents
 
-+ [:beginner: Introduction: The Turing Safe Haven](#beginner-introduction-the-turing-safe-haven)
++ [:beginner: Introduction: The Turing Data Safe Haven](#beginner-introduction-the-turing-data-safe-haven)
   + [:calendar: Definitions](#calendar-definitions)
 + [:rocket: Set up your account](#rocket-set-up-your-account)
   + [:seedling: Prerequisites](#seedling-prerequisites)
@@ -47,7 +47,18 @@
   + [:exclamation: No applications available](#exclamation-no-applications-available)
   + [:exclamation: Unexpected certificate error](#exclamation-unexpected-certificate-error)
 
-## :beginner: Introduction: The Turing Safe Haven
+
+
+<!-- ## Data storage
+
+The following storage volumes are accessible in the SRE:
+
+- A Secure Scratch volume is a read-write volume used for data analysis. Its contents are automatically and regularly deleted. Users can clean and transform the sensitive data with their analysis scripts, and store the transformed data here.
+- An Output volume is a read-write area intended for the extraction of results, such as figures for publication.
+- A Home volume is a smaller read-write volume used for local programming and configuration files. Each user has their own space on the Home volume. It should not be used for data analysis outputs, though this is enforced only in policy, not technically.
+ -->
+
+## :beginner: Introduction: The Turing Data Safe Haven
 
 Welcome to the Turing Safe Haven!
 
@@ -549,6 +560,7 @@ If you need to use a package that is not on the allowlist see the section on how
 
 ## :link: Share files with collaborators
 
+(role_researcher_user_guide_shared_storage)=
 ### :open_file_folder: Shared directories within the SRE
 
 There are several shared areas on the data science machine that all collaborators within a research project team can see and access:

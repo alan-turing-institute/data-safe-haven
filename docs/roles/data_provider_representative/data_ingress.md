@@ -1,93 +1,133 @@
 (role_data_provider_representative_ingress)=
 # Data ingress process
 
-## Intro
+## Introduction
 
 Your data is precious to us.
 The utmost care is taken when transferring the data.
 However, you will need to follow the guidance to certify we are able to ensure your security.
 
-We have built a Safe Haven solution which uses cloud computing.
-This uses technology that keeps the data safe, but equally importantly, the processes and contractual agreements that enforce this safety, which your organisation are signing up to.
+The Data Safe Haven has various technical controls to ensure data security.
+However, the processes and contractual agreements that the **Dataset Provider** agrees to are equally important.
 
-## Loading data into the environment
+## Bringing data into the environment
 
-There are three methods of transferring data to the safe haven (in order of preference):
+```{attention}
+Before starting any data ingress, make sure that you have gone through the {ref}`policy_data_classification_process`.
+```
 
-- Microsoft Azure Storage Explorer
-- SFTP
-- Physical
+There are three methods of transferring data to the Data Safe Haven (in order of preference):
 
-Under no circumstance should sensitive data be sent via email, including encrypted.
+- {ref}`Microsoft Azure Storage Explorer <role_data_provider_representative_ingress_azure_storage_explorer>`
+- {ref}`SFTP <role_data_provider_representative_ingress_sftp>`
+- {ref}`Physical <role_data_provider_representative_ingress_physical>`
 
-## Azure
+```{danger}
+Under no circumstance should sensitive data be sent via email, even if encrypted.
+```
 
-The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
-You do not require log in credentials to upload data via the Azure Storage Explorer.
-Instead we will provide a temporary secure access link to allow you to upload data.
+(role_data_provider_representative_ingress_azure_storage_explorer)=
+### Azure Storage Explorer
 
-### Before we can begin…
+The Safe Haven is built on the Microsoft Azure platform.
+The most convenient way of safely transferring data from the Dataset Provider is to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+You will not need log-in credentials, as your {ref}`role_system_manager` will provide a short-lived secure access token which will let you upload data.
 
-You will need to confirm that you are able to receive a secure email.
-We use the [Egress secure email](https://www.egress.com/) service, which is free to setup for receiving secure emails.
+#### Before we can begin...
 
-You will need to send us the public IP address (or range of IP addresses) that are used by the people in your organisation with permission to upload the data.
-The data ingress volumes are by default not accessible outside of the Turing, and we will provide temporary access to the upload volume from your IP addresses during the upload period.
-Actually uploading data will from these IP addresses will also require the person uploading the data to have access to the temporary secure access link we provide.
+```{important}
+- You must be able to receive a secure email.
+  We recommend the [Egress secure email](https://www.egress.com/) service, which is free to setup for receiving secure emails.
+- You must know the public IP address(es) that are used by the people in your organisation who will be uploading the data.
+  Talk to your IT team if you're not sure what these are.
+```
 
-Checklist:
+When your {ref}`role_system_manager` receives the IP address(es) they will send a secure email to the designated uploader.
+This will contain the secure access token, which has **write**, **list** and **delete** privileges, allowing the uploader to:
 
-- Access secure emails on work computer
-- Send Turing the public IP address (s) of the computer that will conduct the transfer
+- upload files
+- verify that files are fully uploaded
+- remove or overwrite outdated files
 
-When we receive the IP address, we will send the person responsible for the data transfer a temporary secure access link via secure email.
-This "write-only" access link has write, list and delete privileges, which will allow you to upload files, verify they have been successfully uploaded and remove or overwrite uploaded files if you need to amend the uploaded data.
-It will not allow you to download the contents of the uploaded files.
-This provides an added layer of protection in case the upload link is inadvertently leaked.
+```{attention}
+The secure access token does **not** permit files to be downloaded.
+This provides additional protection in case the token is accidentally leaked.
+In the event that the token is leaked, inform your {ref}`role_system_manager` who can revoke it.
+```
 
-**Note:** Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it – if a malicious actor got hold of the link, they could poison your data
+```{danger}
+Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it – if a malicious actor were to get hold of the link, they could poison your data.
+```
 
-### Uploading
+#### Uploading your data
 
-1. Open Azure Storage explorer
+1. Open [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)
 2. Click the socket image on the left hand side
-   ![Azurestorageexplorer1](../../images/provider_data_ingress/Azurestorageexplorer1.png)
+   ```{image} azure_storage_explorer_connect.png
+   :alt: Azure Storage Explorer connection
+   :align: center
+   ```
 3. On `Select Resource`, choose `Blob container`
 4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 5. On `Enter Connection Info`:
-
-- Set the `Display name` to "ingress" (or choose an appropriate name)
-- Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
-
+   - Set the `Display name` to `ingress` (or choose an appropriate name)
+   - Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
 6. On the `Summary` page:
-
-- Ensure the permissions include `Write` & `List` (if not, you will be unable to upload data and should contact the administrator who sent you the token)
-- Hit `Connect`
-
-7. On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
+   - Ensure the permissions include `Write` & `List` (if not, you will be unable to upload data and should contact the administrator who sent you the token)
+   - Hit `Connect`
+7. On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers`->`ingress (SAS)`
+   ```{image} azure_storage_explorer_container.png
+   :alt: Azure Storage Explorer container
+   :align: center
+   ```
 8. You should now be able to upload data to the Safe Haven by clicking the `Upload` button, completing the ingress process
 
-Note: Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file. Click `Yes`.
+````{note}
+Since you were not given read permissions, it's expected that you will receive the following warning when uploading a file. Click `Yes`.
 
-![azcopy_warning](../../images/provider_data_ingress/azcopy_warning.png)
+```{image} azcopy_warning.png
+:alt: Azure Storage Explorer warning
+:align: center
+```
+````
 
-### Common issues
+````{error}
+If you receive an error like the following
 
-You may receive an error: _"this request is not authorized to perform this operation"_
+```{image} azure_storage_explorer_error.png
+:alt: Azure Storage Explorer error
+:align: center
+```
+- This means that your IP address is not one that you told the {ref}`role_system_manager` about.
+- Get your IT team to check with the {ref}`role_system_manager` and change the set of IP addresses you'll be using if necessary.
+````
 
-- This means that the IP address you have given us is not correct and is therefore being blocked.
-- You can open a browser and type “what is my IP” to confirm if the IP address you sent corresponds to what your externally facing IP address actually is, or contact your IT team.
+(role_data_provider_representative_ingress_sftp)=
+### SFTP
 
-## SFTP
+If you are unable to install Microsoft Azure Storage Explorer on your system, the next best option is to use `SFTP`.
+Check that your {ref}`role_system_manager` is able to set up an SFTP server for you to access.
 
-If you are unable to install the Microsoft Azure Storage Explorer on your system, we can offer you an SFTP server. This will not be as easy.
+In order to connect:
 
-We will send you a separate secure email with the address of the FTP server and a key to access the secure area.
+- The {ref}`role_system_manager` should send you a secure email with the address of the SFTP server.
+- They should send a separate secure email with connection details for accessing the server.
+- Please **encrypt** your data before uploading it.
+- Once uploaded, you should send the {ref}`role_system_manager` a secure email with the encryption key.
 
-You should encrypt your data prior for transit. Please send us the key via a separate secure channel for us to unlock it when we have received it.
+```{caution}
+Please ensure that you use a modern encryption algorithm and a strong key to secure your data.
+```
 
-## Physically bring in a disk
+(role_data_provider_representative_ingress_physical)=
+### Physically bring in a disk
 
-Alternatively, you can bring your data to us on a physical device.
+Alternatively, you provide your data on a physical disk/USB stick.
 
-Please let us know when you will come to the Turing to deliver the data.
+- Please **encrypt** your data before putting it onto the storage device.
+- Deliver/courier the device to the hosting institution.
+- Send the {ref}`role_system_manager` a secure email with the encryption key.
+
+```{caution}
+Please ensure that you use a modern encryption algorithm and a strong key to secure your data.
+```

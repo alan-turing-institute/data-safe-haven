@@ -20,7 +20,7 @@ PDFTARGETDIR               = $(TARGETDIR)/pdf
 USERGUIDEMDSOURCE          = $(shell find . -type f -name "DSG-user-documentation.md" -o -name "safe_haven_user_guide.md" -o -name "user-guide.md")
 USERGUIDEMDTARGET          = $(PDFTARGETDIR)/safe_haven_user_guide.md
 # User guide
-PKGREQUESTMDSOURCE         = $(shell find . -type f -name "software-package-request-form.md")
+PKGREQUESTMDSOURCE         = $(shell find . -type f -name "software-package-request-form.md" -o -name "software_package_request_form.md")
 PKGREQUESTMDTARGET         = $(PDFTARGETDIR)/safe_haven_software_request_form.md
 # Classification flowcharts
 CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "Full-Classification-Flow-Diagram.pdf")

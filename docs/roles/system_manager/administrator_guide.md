@@ -119,7 +119,7 @@ To automatically assign licences to all local AD users that do not currently hav
 
 We need to contact the users to tell them their user ID and.
 We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
-We should also send them a copy of the {ref}`Safe Haven User Guide <user_guide>` at this point.
+We should also send them a copy of the {ref}`Safe Haven User Guide <role_researcher_user_guide>` at this point.
 
 A sample email might look like the following
 
@@ -578,7 +578,7 @@ The following steps show how to generate a temporary write-only upload token tha
 
 Software ingress is performed in a similar manner to data.
 
-**IMPORTANT:** The software ingress must be signed off by the data provider (and referee) as is the case for data ingress.
+**IMPORTANT:** Software ingress must go through the {ref}`approval policy <policy_security_package_approval>`, including sign off by the data provider (and referee) as is the case for data ingress.
 
 + Follow the same steps as for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
 + Share the token with the project PI, so they can install software within the time window.
@@ -600,7 +600,10 @@ Software ingress is performed in a similar manner to data.
   + Leave this portal window open and move to the next step
 + Open Azure Storage explorer ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
 + Click the socket image on the left hand side
-  ![Azurestorageexplorer1](../../images/provider_data_ingress/Azurestorageexplorer1.png)
+   ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
+   :alt: Azure Storage Explorer connection
+   :align: center
+   ```
 + On `Select Resource`, choose `Blob container`
 + On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 + On `Enter Connection Info`:
@@ -614,7 +617,7 @@ Software ingress is performed in a similar manner to data.
 
 Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication. On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
 
-For more info on shared SRE storage volumes, consult the [user guide](../user_guides/user-guide.md/#open_file_folder-shared-directories-within-the-sre).
+For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_user_guide_shared_storage>`.
 
 ## :end: Remove a deployed Safe Haven
 

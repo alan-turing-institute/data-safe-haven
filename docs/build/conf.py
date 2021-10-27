@@ -103,5 +103,6 @@ html_js_files = ["toggle.js"]
 # MyST extensions to enable
 myst_enable_extensions = [
     "colon_fence",
+    "deflist",
     "html_admonition",
 ]

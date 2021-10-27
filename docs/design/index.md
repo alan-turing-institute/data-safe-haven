@@ -44,7 +44,7 @@ More details about the SRE design [can be found here](implementation/sre_details
   - Researchers access the SRE by connecting via SSL/TLS to the Remote Desktop Gateway
   - After authenticating with username/password and multi-factor authentication (phonecall or phone app notification) they use an HTML5 web application to access SRE resources
 - Connection
-  - Access to the gateway is only permitted from the IP addresses associated with specific networks at the Turing or its partner institutes.
+  - Access to the gateway is only permitted from the IP addresses associated with specific networks at the host organisation or its partner institutes.
   - For tier 2, we recommend permitting access only from institutionally managed networks, which might also be accessible by non-Researchers.
   - For tier 3, we recommend permitting access only from restricted networks, which are accessible only by a known subset of Researchers and, optionally, only available in certain physical locations.
 - Accounts
@@ -56,8 +56,8 @@ More details about the SRE design [can be found here](implementation/sre_details
   - For tier 2 and above, access to the internet from within the SRE is blocked by network-level rules.
 - Custom software
   - Researchers are not provided with any administrative rights that would allow them to install their own software
-  - Researchers **are** allowed to install Python and/or R packages into their userspace from the PyPI and CRAN package servers.
-  - For tier 2, a proxy server is used to access all packages in the official PyPI and CRAN servers.
+  - Researchers **are** allowed to install Python and/or R packages into their userspace from the `PyPI` and `CRAN` package servers.
+  - For tier 2, a proxy server is used to access all packages in the official `PyPI` and `CRAN` servers.
   - For tier 3, a local mirror provides access to an SRE-specific allowlist of packages
 
 ### Design decisions
@@ -70,8 +70,11 @@ Two assumptions about the research user community are critical to our design:
 We detail various design decisions that impact the security of our Safe Haven implementation.
 This includes reasoning for our different choices but also highlights potential limitations for our Safe Havens and how this may affect things like cyber security.
 
-- [Data access](security_decisions/data_access.md) - Documentation on how access to sensitive data is controlled in the Safe Haven.
-- [Physical resilience](security_decisions/physical_resilence_and_availability.md) - Documentation on the physical resilience of the Safe Haven and our design decisions involved.
+[Data access](security_decisions/data_access.md)
+: Documentation on how access to sensitive data is controlled in the Safe Haven.
+
+[Physical resilience](security_decisions/physical_resilence_and_availability.md)
+: Documentation on the physical resilience of the Safe Haven and our design decisions involved.
 
 ### Security assessments
 

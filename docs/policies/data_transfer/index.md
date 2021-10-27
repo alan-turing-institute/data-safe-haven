@@ -4,9 +4,16 @@
 :hidden: true
 :maxdepth: 2
 
-ingress.md
+data_ingress.md
+software_ingress.md
 egress.md
 ```
 
-- [Ingress of data or software](ingress.md) - Bringing code or data into the SRE
-- [Egress of data, software or other results](egress.md) - Extracting code, data or other results from the SRE
+[Data ingress](data_ingress.md)
+: Bringing data into the SRE
+
+[Software ingress](software_ingress.md)
+: Bringing code or software into the SRE
+
+[Egress of data, software or other results](egress.md)
+: Extracting code, data or other results from the SRE

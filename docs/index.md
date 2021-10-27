@@ -1,4 +1,4 @@
-# Safe Haven Documentation
+# Data Safe Haven Documentation
 
 ```{toctree}
 :hidden: true
@@ -10,25 +10,81 @@ policies/index.md
 design/index.md
 ```
 
-This is the documentation for the Alan Turing Institute's Data Safe Havens in the Cloud project.
-It contains instructions about how to deploy, administer and operate your own instance of the Turing's Data Safe Haven using Microsoft's Azure cloud platform.
+This is the documentation for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
+It contains instructions about how to deploy, administer and operate your own instance of the Turing's **Data Safe Haven** using Microsoft's Azure cloud platform.
 
-```{Tip}
-If you're new to the Safe Haven project then this is [a good place to start](introduction/index.md).
+## [Introduction](introduction/index.md)
+
+**Recommended if**:
+
+- you want an overview of what the Data Safe Haven project is about.
+
+## [Roles](roles/index.md)
+
+**Recommended if**:
+
+- you want to deploy your own Data Safe Haven
+- you need to work with one that someone else has deployed
+
+## [Policies](policies/index.md)
+
+**Recommended if**:
+
+- you want details about our data governance and user management recommendations
+
+## [Design](design/index.md)
+
+**Recommended if**:
+
+- you want details about the technical design of the Data Safe Haven
+- you are interested in contributing to the Data Safe Haven codebase
+
+
+
+
+
+<!-- YELLOW -->
+```{attention}
+This is my note
 ```
 
-## Introduction
+```{caution}
+This is my note
+```
 
-**Recommended if**: you're new to the Safe Haven project and want to be guided through the basics this is a good place to [find out more](introduction/index.md).
+```{warning}
+This is my note
+```
 
-## Roles
+<!-- RED -->
+```{danger}
+This is my note
+```
 
-**Recommended if**: you're planning on deploying your own Safe Haven or you're going to be working with one that someone else has deployed you can read about [what you need to do here](roles/index.md).
+```{error}
+This is my note
+```
 
-## Policies
+<!-- BLUE -->
+```{admonition} This is my title
+This is the ONLY one with a title
+```
 
-**Recommended if**: you're interested in reading about our recommended data governance and user management policies then [read about them here](policies/index.md).
+```{note}
+This is my note
+```
 
-## Design
+<!-- GREEN -->
+```{hint}
+This is my note
+```
 
-**Recommended if**: you're interested in understanding the technical aspects of the Safe Haven project and the reasons why it was designed in this way, [read about them here](design/index.md).
+```{important}
+This is my note
+```
+
+```{tip}
+This is my note
+```
+
+

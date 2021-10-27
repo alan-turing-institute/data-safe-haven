@@ -2,8 +2,10 @@
 
 ## Data classification
 
-Before data is imported into a Safe Haven it must go through an assessment process to classify it into one of 5 sensitivity tiers (from least sensitive at Tier 0, to most sensitive at Tier 4).
-This classification is conducted by the dataset provider's representative, the research project lead (Investigator) and an independent adviser (Referee). Currently, the data safe haven only covers data categorised as tier 2 or 3. A full overview of the classification process can be found [here](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/explanations/classification/classification-overview.md).
+Before data is imported into a Safe Haven it must go through an assessment process to classify it into one of five {ref}`sensitivity tiers <policy_classification_sensitivity_tiers>`.
+This classification is conducted by the {ref}`role_data_provider_representative`, the research project lead ({ref}`role_investigator`) and an independent adviser ({ref}`role_referee`).
+The least sensitive category is Tier 0, and most sensitive is Tier 4 - currently, we recommend the use of the Data Safe Haven for projects in tiers 2 or 3.
+A full overview of the classification process can be found `here <policy_data_classification_process>`.
 
 ## Data sharing agreement
 
@@ -11,9 +13,12 @@ This should be a formal data sharing agreement as required under data protection
 It should be signed after the initial classification of a work package but before any dataset is received.
 Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must specify the legal basis under which the Dataset Provider is permitted to share this data.
 This agreement should include any specific commitments required from Researchers working with the dataset.
-The Alan Turing Institute has a template agreement that can be used to minimise the turnaround time and legal effort required.
 
-The classification tier may potentially be raised from that agreed prior to data ingress, once the Investigator and Referee have had a chance to view the actual data.
+```{hint}
+Your organisation might have a template agreement that can be used to minimise the turnaround time and legal effort required.
+```
+
+The classification tier may potentially be raised from that agreed prior to data ingress, once the {ref}`role_investigator` and {ref}`role_referee` have had a chance to view the actual data.
 The classification tier for later work packages in a project may also be higher than that for the original work package, depending on the planned analysis and any additional data required.
 We therefore recommend that the data sharing agreement is worded to permit this.
 
@@ -25,18 +30,20 @@ The {ref}`role_project_manager` should record the {ref}`role_investigator` and {
 {ref}`Project Managers <role_project_manager>` also determine which {ref}`Researchers <role_researcher>` belong to each specific projects or work package.
 
 {ref}`Researchers <role_researcher>` who wish to have access to the SRE first complete a form certifying they understand the confidentiality requirements.
-If a project or work package requires any specific additional commitments then all {ref}`Researchers <role_researcher>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` must agree to these before being granted access.0
+If a project or work package requires any specific additional commitments then all {ref}`Researchers <role_researcher>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` must agree to these before being granted access.
 
-A {ref}`role_system_manager` creates an account for them within the SHM and adds them to the appropriate group(s).
-The {ref}`role_researcher` activates their account, setting their own password and multi-factor authentication.
+- A {ref}`role_system_manager` creates an account for them within the SHM and adds them to the appropriate group(s).
+- The {ref}`role_researcher` activates their account, setting their own password and multi-factor authentication.
 
+```{important}
 A {ref}`role_system_manager` should remove all users from a project or work package promptly once their involvement with it ends.
+```
 
 ## Data security incident process
 
-The Safe Haven follows the Alan Turing Institute's data security incident process which can be found [here](https://turingcomplete.topdesk.net/tas/public/ssp/content/detail/knowledgeitem?origin=sspTile&unid=6c4590be2c74466497f5239915717621&from=7c877b26-e14b-400c-9097-ae99267258fe).
-As an additional measure, as soon as a potential data security incident were to be identified, the affected SRE would be shut down to ensure the integrity of the data.
-An investigation would be conducted with the Data Security Team to identify any other potentially breached SREs and also shut these down.
+We recommend that {ref}`System Managers <role_system_manager>` follow the data security incident process of the wider organisation.
+As an additional measure, as soon as a potential data security incident is identified, the affected SRE should be shut down to ensure the integrity of the data.
+An investigation should be conducted in conjunction with your organisation's data security team to identify any other potentially breached SREs and also shut these down.
 
 ## Data back-up policy
 

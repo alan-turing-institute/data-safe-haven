@@ -1,7 +1,9 @@
 (policy_technical_controls)=
+
 # Technical controls
 
 ## Multifactor Authentication and Password strength
+
 Once a user account is created by a {ref}`role_system_manager`, the user must then activates their account online.
 They choose their own password, which must meet password strength requirements, and set up multi-factor authentication.
 
@@ -78,7 +80,6 @@ This can be enforced by requiring access from Restricted network IP ranges that 
 Inbound connections are only permitted via the remote desktop gateway.
 This allows Researchers access to a Linux desktop with graphical interface applications running in the remote SRE.
 
-
 ## Copy-and-paste
 
 At tier 2 and higher, the use of copy-and-paste is blocked by the remote desktop gateway.
@@ -120,9 +121,7 @@ For tier 3 or higher, an allowlist of packages which are explicitly marked as sa
 Installation of any packages which require administrative rights must be done by a {ref}`role_system_manager`
 ```
 
-
 ## Azure Firewalls
 
 While user-facing machines can be completely isolated from the internet, there are several machines that form part of the supporting infrastructure which need wider internet access.
 Although these can only be accessed by {ref}`System Managers <role_system_manager>` they are nevertheless restricted by firewall rules which limit them to only essential connections such as to update servers.
-
