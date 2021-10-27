@@ -1057,6 +1057,8 @@ function Get-ImageDefinition {
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
     if ($Type -eq "Ubuntu") {
         $imageDefinition = "ComputeVM-Ubuntu"
+    } elseif ($Type -eq "Ubuntu18") {
+        $imageDefinition = "ComputeVM-Ubuntu1804Base"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }
