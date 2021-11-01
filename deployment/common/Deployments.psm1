@@ -1059,8 +1059,6 @@ function Get-ImageDefinition {
         $imageDefinition = "ComputeVM-Ubuntu"
     } elseif ($Type -eq "Ubuntu18") {
         $imageDefinition = "ComputeVM-Ubuntu1804Base"
-    } elseif ($Type -eq "UbuntuTorch") {
-        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }

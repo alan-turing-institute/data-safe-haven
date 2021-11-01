@@ -469,7 +469,7 @@
         },
         "ip": "10.151.3.5",
         "port": "5432",
-        "sku": "18.04-LTS",
+        "sku": "20.04-LTS",
         "subnet": "databases",
         "type": "PostgreSQL",
         "vmName": "PSTGRS-T3MSRDS",

@@ -957,7 +957,7 @@ function Get-SreConfig {
     }
     $dbConfig = @{
         MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev" }
-        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "18.04-LTS" }
+        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
     }
     $ipOffset = 4
     foreach ($databaseType in $sreConfigBase.databases) {

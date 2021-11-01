@@ -291,7 +291,7 @@ function Deploy-PackageMirror {
                 NicId                  = $vmNic.Id
                 OsDiskType             = $config.mirrors.diskType
                 ResourceGroupName      = $config.mirrors.rg
-                ImageSku               = "18.04-LTS"
+                ImageSku               = "20.04-LTS"
                 DataDiskIds            = @($dataDisk.Id)
             }
             $null = Deploy-UbuntuVirtualMachine @params
