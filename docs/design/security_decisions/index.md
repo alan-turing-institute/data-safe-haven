@@ -6,8 +6,11 @@
 
 data_access.md
 data_transfer.md
-physical_resilence_and_availability.md
+security_defaults.md
 ```
+
+In this section we explain the decisions we have made about data flow in the Data Safe Haven.
+We also detail the security stance of the different default tiered environments.
 
 [Data access](data_access.md)
 : How access to sensitive data is controlled in the Data Safe Haven.
@@ -15,5 +18,5 @@ physical_resilence_and_availability.md
 [Data transfer](data_transfer.md)
 : How sensitive data is transfered into and out of the Data Safe Haven.
 
-[Physical resilience](physical_resilence_and_availability.md)
-: The physical resilience of the Data Safe Haven and our design decisions involved.
+[Security defaults](security_defaults.md)
+: Default security controls for each secure research environment tier.

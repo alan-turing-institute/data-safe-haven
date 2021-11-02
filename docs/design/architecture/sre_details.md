@@ -8,12 +8,12 @@ Each tier is associated with a baseline security configuration, individual eleme
 The infrastructure for each SRE is hosted in a separate Azure subscription.
 This infrastructure comprises:
 
-+ One or more compute VMs with a range of data science software preinstalled
-+ A file server to host the project data
-+ A Gitlab server to provide source code management and version control
-+ A CodiMD server for collaborative writing
-+ Remote Desktop Services Gateway and Session Host servers to provide secure remote desktop access to the SRE resources.
-+ A local Active Directory Domain Controller server to support the management of the Windows servers within the SRE.
+- One or more compute VMs with a range of data science software preinstalled
+- A file server to host the project data
+- A Gitlab server to provide source code management and version control
+- A CodiMD server for collaborative writing
+- Remote Desktop Services Gateway and Session Host servers to provide secure remote desktop access to the SRE resources.
+- A local Active Directory Domain Controller server to support the management of the Windows servers within the SRE.
 
 Hosting each secure project environment in its own subscription supports a clean lifecycle management process, making it easy to verifiably delete all project data and resources at the end of a project.
 
