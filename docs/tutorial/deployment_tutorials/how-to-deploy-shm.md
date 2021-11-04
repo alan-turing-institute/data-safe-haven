@@ -901,6 +901,10 @@ PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
 + where `<SHM ID>` is the [management environment ID](#management-environment-id) for this SHM
 + where `<desired tier>` is either `2` or `3`
 
+:exclamation: You should never attempt to manage Nexus through the web
+interface. Doing so from outside the Nexus subnet could expose the admin
+credentials.
+
 ### How to deploy a local package mirror
 
 We **recommend** deploying this for use with tier-3 SREs
