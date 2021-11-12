@@ -33,6 +33,7 @@ jobs:
           sudo apt-get install -y git
           npm install -g pretty-markdown-pdf
           pip install -r docs/build/requirements.txt
+          ./docs/build/patch_rinohtype.sh
       - name: Create common directories
         shell: bash
         run: |

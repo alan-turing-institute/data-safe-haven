@@ -3,6 +3,7 @@
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+import emoji
 from git import Repo
 
 
@@ -19,6 +20,18 @@ tags = [t for t in repo.tags if t.commit == repo.head.commit]
 version = tag2version(tags[0]) if tags else "develop"
 versions = ["develop"] + [tag2version(t) for t in repo.tags]
 
+# Construct list of emoji substitutions
+emoji_codes = set(
+    [
+        emoji_code.replace(":", "")
+        for emoji_list in (
+            emoji.EMOJI_UNICODE_ENGLISH.keys(),
+            emoji.EMOJI_ALIAS_UNICODE_ENGLISH.keys(),
+        )
+        for emoji_code in emoji_list
+    ]
+)
+
 # Set sidebar variables
 try:
     html_context
@@ -29,10 +42,10 @@ html_context["version"] = version
 html_context["current_version"] = version
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
 html_context["downloads"] = [
-    ("User guide PDF", f"/{repo_name}/{version}/pdf/safe_haven_user_guide.pdf"),
+    ("User guide PDF", f"/{repo_name}/{version}/pdf/data_safe_haven_user_guide.pdf"),
     (
-        "Software request form",
-        f"/{repo_name}/{version}/pdf/safe_haven_software_request_form.pdf",
+        "Software request form PDF",
+        f"/{repo_name}/{version}/pdf/data_safe_haven_software_request_form.pdf",
     ),
     (
         "Data classification full PDF",
@@ -64,7 +77,10 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["myst_parser"]
+extensions = [
+    "myst_parser",
+    "rinoh.frontend.sphinx",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -105,4 +121,24 @@ myst_enable_extensions = [
     "colon_fence",
     "deflist",
     "html_admonition",
+    "substitution",
+]
+
+# Emoji substitutions: replace {{emoji_name}} => unicode
+myst_substitutions = {
+    emoji_code: emoji.emojize(f":{emoji_code}:", use_aliases=True)
+    for emoji_code in emoji_codes
+}
+
+# -- Options for Rinoh  -------------------------------------------------------
+
+# List of documents to convert to PDF
+rinoh_documents = [
+    dict(
+        doc="roles/researcher/user_guide",
+        target="pdf/data_safe_haven_user_guide",
+        title="Data Safe Haven User Guide",
+        author=author,
+        template="emoji_support.rtt"
+    )
 ]
