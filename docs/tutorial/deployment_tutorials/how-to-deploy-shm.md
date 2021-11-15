@@ -15,8 +15,8 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:no_pedestrians: 12. Block portal access for normal users](#no_predestrians-12-block-portal-access-for-normal-users)
-+ [:package: 13. Deploy Python/R package repositories](#package-11-deploy-PythonR-package-repositories)
++ [:no_pedestrians: 12. Block portal access for normal users](#no_pedestrians-12-block-portal-access-for-normal-users)
++ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
 + [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
 + [:fire_engine: 15. Deploy firewall](#fire_engine-15-deploy-firewall)
 
