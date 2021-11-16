@@ -15,9 +15,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 + [:house_with_garden: 9. Deploy and configure domain controllers](#house_with_garden-9-deploy-and-configure-domain-controllers)
 + [:police_car: 10. Deploy and configure network policy server](#police_car-10-deploy-and-configure-network-policy-server)
 + [:closed_lock_with_key: 11. Require MFA for all users](#closed_lock_with_key-11-require-mfa-for-all-users)
-+ [:package: 12. Deploy Python/R package repositories](#package-12-deploy-PythonR-package-repositories)
-+ [:chart_with_upwards_trend: 13. Deploy logging](#chart_with_upwards_trend-13-deploy-logging)
-+ [:fire_engine: 14. Deploy firewall](#fire_engine-14-deploy-firewall)
++ [:no_pedestrians: 12. Block portal access for normal users](#no_pedestrians-12-block-portal-access-for-normal-users)
++ [:package: 13. Deploy Python/R package repositories](#package-13-deploy-PythonR-package-repositories)
++ [:chart_with_upwards_trend: 14. Deploy logging](#chart_with_upwards_trend-14-deploy-logging)
++ [:fire_engine: 15. Deploy firewall](#fire_engine-15-deploy-firewall)
 
 ## Explanation of symbols used in this guide
 
@@ -880,7 +881,47 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
   + Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   + Click the `Create` button
 
-## :package: 12. Deploy Python/R package repositories
+## :no_pedestrians: 12. Block portal access for normal users
+
+Most users have no reason to access the Azure portal using the SHM tenant.
+Therefore we will block access for all users other than Global Administrators.
+
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+
++ From the Azure portal, navigate to the AAD you have created.
++ Click `Security` in the left hand sidebar
++ Click `Conditional Access` in the left hand sidebar
++ Click on `New Policy` at the top of the panel
++ Configure the policy as follows
+  + In the `Name` field enter `Prevent Azure portal access`
+  + Under the heading `Users and groups` click `0 users and groups selected`
+    + With the `Include` tab selected, select the `All users` radio button
+    + With the `Exclude` tab selected, select the `Select users and groups`
+    + Tick the `Directory roles` tickbox
+    + In the drop-down menu select `Global administrator`. This will ensure that
+      only the administrator accounts you created in [the previous
+      section](#id-7-configure-internal-administrator-accounts) are able to
+      access the portal.
+  + Under the `Cloud apps or actions` heading click `No cloud apps, actions, or
+    authentication contexts selected`
+    + In the drop-down menu slect `Cloud apps`
+    + With the `Include` tab selected, select the `Select apps` radio button
+    + Under the `Select` heading click `None` and in the pop-up menu on the
+      right, slected `Microsoft Azure Management` and click `Select`
+  + Leave the Conditions condition unchanged (all showing as Not configured)
+  + Under the `Access controls` and `Grant` Headings click `0 controls selected`
+    + In the pop-up menu on the right select the `Block Access` radio button and
+      click `Select`
+  + Under `Enable policy` select `On`
+  + Click `Create`
+
+:warning: **Troubleshooting**
+
+Security defaults must be disabled in order to create this policy. This should
+have been done in done when creating a policy to [Require
+MFA](#closed_lock_with_key-11-require-mfa-for-all-users)
+
+## :package: 13. Deploy Python/R package repositories
 We currently support two different types of package repositories:
 
 + Nexus proxy (Tier-2 only)
@@ -922,7 +963,7 @@ PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 
 :exclamation: Note that a full set of local Tier 2 mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI now contains >10TB of packages.
 
-## :chart_with_upwards_trend: 13. Deploy logging
+## :chart_with_upwards_trend: 14. Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
 
@@ -935,7 +976,7 @@ PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
 ### :warning: Troubleshooting
 The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages. If so, try re-running the logging set up script. In most cases the extensions have actually been successfully installed.
 
-## :fire_engine: 14. Deploy firewall
+## :fire_engine: 15. Deploy firewall
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: `./deployment/safe_haven_management_environment/setup`
