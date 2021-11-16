@@ -39,6 +39,25 @@ If a project or work package requires any specific additional commitments then a
 A {ref}`role_system_manager` should remove all users from a project or work package promptly once their involvement with it ends.
 ```
 
+(policy_data_security_training)=
+## Data security training requirements
+
+We recommend requiring data security awareness training for the following categories of person:
+
+- Anyone with administrator access to the Data Safe Haven GitHub (including organisational admins). This is to ensure integrity of the code supply chain.
+- {ref}`System Managers <role_system_manager>` for any deployed Data Safe Haven
+- Anyone who has administrator access to the Azure subscriptions hosting any deployed Data Safe Haven.
+- {ref}`Programme <role_programme_manager>` and {ref}`project managers <role_project_manager>`.
+- All {ref}`Researchers <role_researcher>` with access to any data in scope of DSPT held in a Data Safe Haven.
+- {ref}`Data Provider Representatives <role_data_provider_representative>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` for any project containing data in scope of DSPT.
+
+The requirement is documented proof of (within 1 year):
+
+- Organisational Data Protection training
+- Organisational Information Security training
+- [NHS Data Security Awareness training](https://www.e-lfh.org.uk/programmes/data-security-awareness)
+
+or equivalent qualifications from another organisation.
 ## Data security incident process
 
 We recommend that {ref}`System Managers <role_system_manager>` follow the data security incident process of the wider organisation.

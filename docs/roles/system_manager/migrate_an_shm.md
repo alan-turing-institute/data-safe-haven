@@ -4,6 +4,8 @@ This document assumes that you have already deployed a {ref}`Safe Haven Manageme
 
 It will help you update the SHM to a newer release by deploying a new SHM and migrating the users to it.
 
+Testing |:e-mail:| |:wrench:|
+
 ## :mailbox_with_mail: Table of contents
 
 + [:seedling: 1. Prerequisites](#seedling-1-prerequisites)

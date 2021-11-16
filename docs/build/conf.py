@@ -88,8 +88,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_output", "Thumbs.db", ".DS_Store"]
-
+exclude_patterns = ["_output", "Thumbs.db", ".DS_Store", "**/*.partial.md"]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -135,7 +134,7 @@ myst_substitutions = {
 # List of documents to convert to PDF
 rinoh_documents = [
     dict(
-        doc="roles/researcher/user_guide",
+        doc="roles/researcher/user_guide_guacamole",
         target="pdf/data_safe_haven_user_guide",
         title="Data Safe Haven User Guide",
         author=author,
