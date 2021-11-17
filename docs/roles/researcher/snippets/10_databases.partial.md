@@ -6,13 +6,13 @@ The database server will use either `Microsoft SQL` or `PostgreSQL`.
 
 If you have access to one or more databases, you can access them using the following details, replacing `<SRE ID>` with the {ref}`SRE ID <user_guide_sre_id>` for your project.
 
-### Microsoft SQL
+### {{bento_box}} Microsoft SQL
 
 - Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX` )
 - Database name: \<provided by your {ref}`role_system_manager`>
 - Port: 1433
 
-### PostgreSQL
+### {{postbox}} PostgreSQL
 
 - Server name: `PSTGRS-<SRE ID>` (e.g. `PSTGRS-SANDBOX` )
 - Database name: \<provided by your {ref}`role_system_manager`>
@@ -128,7 +128,7 @@ df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
 ```
 
-### {{registered}} Connecting using R
+### {{rose}} Connecting using R
 
 Database connections can be made using `odbc` or `RPostgres` depending on which database flavour is being used.
 The data can be read into a dataframe for local analysis.

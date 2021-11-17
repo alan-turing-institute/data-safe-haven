@@ -149,9 +149,9 @@ Please follow these steps carefully.
   - alphanumeric
   - minimum 12 characters
   - at least one each of:
-    - {{capital_abcd}} uppercase character
-    - {{abcd}} lowercase character
-    - {{1234}} number
+    - {{input_latin_uppercase}} uppercase character
+    - {{input_latin_lowercase}} lowercase character
+    - {{input_numbers}} number
   - you should choose a unique password for the SRE to ensure it is secure
   ```
 
@@ -239,7 +239,7 @@ This additional security verification is to make it harder for people to imperso
 
   - {{apple}} iOS: `https://bit.ly/iosauthenticator`
   - {{robot}} Android: `https://bit.ly/androidauthenticator`
-  - {{house}} Windows mobile: `https://bit.ly/windowsauthenticator`
+  - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
 
   ```{important}
   You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.

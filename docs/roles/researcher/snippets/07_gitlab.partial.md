@@ -1,10 +1,10 @@
-## {{file_cabinet}} Versioning code using GitLab
+## {{pill}} Versioning code using GitLab
 
 `GitLab` is a code hosting platform for version control and collaboration - similar to `GitHub`.
 It allows you to use `git` to **version control** your work, coordinate tasks using `GitLab` **issues** and review work using `GitLab` **merge requests**.
 
 ```{note}
-{{earth_africa}} `GitLab` is a fully open source project.
+`GitLab` is a fully open source project.
 This information doesn't matter at all for how you use `GitLab` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
 You can read more about `GitLab` at [their code repository](<https://gitlab.com/gitlab-org/gitlab>).
 ```

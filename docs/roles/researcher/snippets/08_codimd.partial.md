@@ -4,7 +4,7 @@
 It uses `Markdown` which is a simple way to format your text so that it renders nicely in full HTML.
 
 ```{note}
-{{earth_africa}} `CodiMD` is a fully open source version of the `HackMD` software.
+`CodiMD` is a fully open source version of the `HackMD` software.
 This information doesn't matter at all for how you use `CodiMD` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
 You can read more about `CodiMD` at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
 ```
