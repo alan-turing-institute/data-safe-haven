@@ -40,8 +40,11 @@ Within this context, the Alan Turing Institute has developed a tiered sensitivit
 
 ## Data transfer
 
-[Ingress of data or software](data_transfer/ingress.md)
-: Bringing code or data into the SRE.
+[Data ingress](data_transfer/data_ingress.md)
+: Bringing data into the SRE.
+
+[Software ingress](data_transfer/software_ingress.md)
+: Bringing code or binary files into the SRE.
 
 [Egress of data, software or other results](data_transfer/egress.md)
 : Extracting code, data or other results from the SRE.

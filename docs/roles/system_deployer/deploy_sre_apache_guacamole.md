@@ -11,6 +11,7 @@ These instructions will walk you through deploying a Secure Research Environment
 :relative-images:
 ```
 
+(roles_deployer_sre_id)=
 ```{include} snippets/02_configuration.partial.md
 :relative-images:
 ```

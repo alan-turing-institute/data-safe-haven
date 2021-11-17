@@ -190,7 +190,6 @@ Please follow these steps carefully.
   :align: center
   ```
 
-(roles_researcher_user_guide_setup_mfa)=
 ### {{door}} Set up multi-factor authentication
 
 The next step in setting up your account is to authenticate your account from your phone.

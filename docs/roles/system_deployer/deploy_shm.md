@@ -129,6 +129,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
+(roles_deployer_shm_configure_dns)=
 ## 3. {{door}} Configure DNS for the custom domain
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -157,6 +158,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 </details>
 ```
 
+(roles_deployer_shm_setup_aad)=
 ## 4. {{file_folder}} Setup Azure Active Directory (AAD)
 
 ### Create a new Azure Active Directory
@@ -236,6 +238,7 @@ If it exhausts the number of retries a second time, wait an hour and try again.
 ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 ```
 
+(roles_deployer_shm_key_vault)=
 ## 5. {{key}} Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -520,6 +523,7 @@ To change directories click on your username at the top right corner of the scre
 
 </details>
 
+(roles_deployer_shm_vnet_gateway)=
 ## 8. {{station}} Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -606,6 +610,7 @@ This may mean that your antivirus is blocking the VPN client.
 You will need configure your antivirus software to make an exception.
 ```
 
+(roles_deployer_shm_domain_controllers)=
 ## 9. {{house_with_garden}} Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -643,6 +648,7 @@ If you cannot see these resource groups:
   - Add the SHM AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
 - `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
+(roles_deployer_shm_aad_connect)=
 #### Install Azure Active Directory Connect
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
@@ -739,6 +745,7 @@ You do not need to close the installer window while waiting.
 If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 ```
 
+(roles_system_deployer_shm_aad_connect_rules)=
 #### Update Azure Active Directory Connect rules
 
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
@@ -754,6 +761,7 @@ PS> C:\Installation\UpdateAADSyncRule.ps1
 
 (deploy_shm_validate_aadsync)=
 
+(roles_system_deployer_shm_validate_aad_synchronisation)=
 ### Validate Active Directory synchronisation
 
 This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory.
@@ -848,6 +856,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   - Follow the instructions to configure Microsoft Authenticator
 </details>
 
+(roles_system_deployer_shm_deploy_nps)=
 ## 10. {{police_car}} Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -969,6 +978,7 @@ If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `
 </details>
 ```
 
+(roles_system_deployer_shm_require_mfa)=
 ## 11. {{closed_lock_with_key}} Require MFA for all users
 
 ```{warning}
@@ -1007,6 +1017,7 @@ Before completing this step, **make sure you have confirmed you are able to succ
   Proceed anyway.`
   - Click the `Create` button
 
+(roles_system_deployer_shm_block_portal_access)=
 ## 12. {{no_pedestrians}} Block portal access for normal users
 
 Most users have no reason to access the Azure portal using the SHM tenant.
@@ -1043,6 +1054,7 @@ Security defaults must be disabled in order to create this policy.
 This should have been done in done when creating a policy to [require MFA for all users](#require-mfa-for-all-users).
 ```
 
+(roles_system_deployer_shm_deploy_mirrors)=
 ## 13. {{package}} Deploy Python/R package repositories
 
 We currently support two different types of package repositories:
@@ -1091,6 +1103,7 @@ PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
 Note that a full set of {ref}`policy_tier_2` local mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI contains >10TB of packages.
 ```
 
+(roles_system_deployer_shm_deploy_logging)=
 ## 14. {{chart_with_upwards_trend}} Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -1107,6 +1120,7 @@ If so, try re-running the logging set up script.
 In most cases the extensions have actually been successfully installed.
 ```
 
+(roles_system_deployer_shm_deploy_firewall)=
 ## 15. {{fire_engine}} Deploy firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
