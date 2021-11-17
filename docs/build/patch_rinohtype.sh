@@ -1,13 +1,16 @@
 #! /bin/bash
-echo "Patching rinohtype"
+
+# Get paths
+SCRIPT_DIR=$(realpath "$(dirname "$BASH_SOURCE")")
 BASEPATH=$(python -c "import rinoh as pkg; print(pkg.__path__[0])")
-echo $BASEPATH
+echo "Preparing to patch rinohtype at ${BASEPATH}"
+cd "$BASEPATH" || (echo "Could not find path!"; exit 1)
 
-# Generate patch
-echo "Generating patch"
-SCRIPT_DIR=$(realpath $(dirname "$BASH_SOURCE"))
-sed -e "s|{{BASEPATH}}|$BASEPATH|g" "$SCRIPT_DIR"/rinohtype.patch > "$BASEPATH"/apply.patch
-
-# Generate and apply patch
-cd $BASEPATH
-patch -p0 < apply.patch
+# Apply patch from rinohtype directory
+PATCH_PATH=$(ls "$SCRIPT_DIR/rinohtype.patch" 2> /dev/null)
+if [ ! "$PATCH_PATH" ]; then
+    echo "Could not find patch!"
+    exit 1
+fi
+echo "Applying patch from ${PATCH_PATH}"
+patch -p0 < "$PATCH_PATH"

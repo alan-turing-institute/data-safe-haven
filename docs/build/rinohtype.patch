@@ -1,5 +1,5 @@
---- {{BASEPATH}}/backend/pdf/cos.py	2021-11-12 15:57:28.000000000 +0000
-+++ {{BASEPATH}}/backend/pdf/cos.py	2021-11-12 16:05:49.000000000 +0000
+--- backend/pdf/cos.py	2021-11-12 15:57:28.000000000 +0000
++++ backend/pdf/cos.py	2021-11-12 16:05:49.000000000 +0000
 @@ -1000,7 +1000,12 @@
          self.print(' def')
 
@@ -14,8 +14,8 @@
          self.write(hex_str.bytes(None))
 
      def print(self, strng, end='\n'):
---- {{BASEPATH}}/font/opentype/__init__.py	2021-11-12 15:57:28.000000000 +0000
-+++ {{BASEPATH}}/font/opentype/__init__.py	2021-11-12 16:04:58.000000000 +0000
+--- font/opentype/__init__.py	2021-11-12 15:57:28.000000000 +0000
++++ font/opentype/__init__.py	2021-11-12 16:04:58.000000000 +0000
 @@ -84,8 +84,8 @@
          # TODO: properly handle encodings
          glyphs_by_char = {}
