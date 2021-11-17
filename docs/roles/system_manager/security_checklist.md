@@ -7,7 +7,7 @@ In this check list we aim to do the following things:
 - How we can verify that we actually do what we say
 
 This diagram shows the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
-The security checklist currently focuses on checks that can verify these security requirements for {ref}`{ref}`policy_tier_2` (or greater) <policy_classification_sensitivity_tiers>` SREs (with some steps noted as specific to a tier):
+The security checklist currently focuses on checks that can verify these security requirements for {ref}`policy_tier_2` (or greater) <policy_classification_sensitivity_tiers>` SREs (with some steps noted as specific to a tier):
 
 ```{image} security_checklist/recommended_controls.png
 :alt: Recommended security controls
