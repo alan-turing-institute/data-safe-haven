@@ -863,6 +863,7 @@ If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsof
 Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 ```
 
+(roles_system_deployer_shm_remote_desktop_nps)=
 ### Configure the network policy server (NPS) via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)

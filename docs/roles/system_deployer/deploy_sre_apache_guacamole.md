@@ -155,6 +155,7 @@ The `<VM size>` used for each compute VM size will be the one provided in the `-
 
 ## 4. {{microscope}} Test deployed SRE
 
+(deploy_sre_apache_guacamole_create_user_account)=
 ### {{bicyclist}} Verify non-privileged user account is set up
 
 ```{include} snippets/06_01_create_user_account.partial.md

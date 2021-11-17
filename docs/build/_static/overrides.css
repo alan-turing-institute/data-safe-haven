@@ -46,3 +46,9 @@
 :root {
   --pst-color-admonition-default: 100,100,100;
 }
+
+/* Move <details> boxes upwards */
+details summary {
+  margin-top: -15px;
+  margin-bottom: 15px;
+}

@@ -550,6 +550,7 @@ On your **deployment machine**.
 
 ## Ingress and Egress
 
+(roles_system_manager_data_ingress)=
 ### Data Ingress
 
 It is the data provider's responsibility to upload the data required by the safe haven.
@@ -574,16 +575,18 @@ The following steps show how to generate a temporary write-only upload token tha
 + The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
 + You can validate successful data ingress by logging into the DSVM for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
+(roles_system_manager_software_ingress)=
 ### Software Ingress
 
 Software ingress is performed in a similar manner to data.
 
 **IMPORTANT:** Software ingress must go through the {ref}`approval policy <policy_security_package_approval>`, including sign off by the data provider (and referee) as is the case for data ingress.
 
-+ Follow the same steps as for [data ingress](#data-ingress) above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
++ Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
 + Share the token with the project PI, so they can install software within the time window.
 + The PI can perform software ingress via Azure Storage Explorer (for instance as a zip file), by following the same instructions as [the data provider](../data_provider/how-to-ingress-data-as-provider.md#uploading)
 
+(roles_system_manager_data_egress)=
 ### Data egress
 
 + In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
