@@ -1,4 +1,5 @@
 (deploy_sre_apache_guacamole)=
+
 # Secure Research Environment Build Instructions (Guacamole remote desktop)
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
@@ -12,6 +13,7 @@ These instructions will walk you through deploying a Secure Research Environment
 ```
 
 (roles_deployer_sre_id)=
+
 ```{include} snippets/02_configuration.partial.md
 :relative-images:
 ```
@@ -157,6 +159,7 @@ The `<VM size>` used for each compute VM size will be the one provided in the `-
 ## 4. {{microscope}} Test deployed SRE
 
 (deploy_sre_apache_guacamole_create_user_account)=
+
 ### {{bicyclist}} Verify non-privileged user account is set up
 
 ```{include} snippets/06_01_create_user_account.partial.md

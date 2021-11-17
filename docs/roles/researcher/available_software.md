@@ -9,38 +9,32 @@ The data science desktops available in each SRE use the latest [Ubuntu LTS relea
 
 The easiest way to update a data science desktop is by redeploying it - it may be possible for your {ref}`role_system_manager` to update software packages in-place but this is only recommended in the case of essential security fixes where the project cannot afford the downtime involved in a redeploy.
 
-## Programming languages
+## Programming languages / compilers
 
-- `Microsoft .NET` framework
-- `gcc` compilers
-- `Java`
-- `Julia` (plus common data science libraries)
-- `Python` [three most recent versions] (plus common data science libraries)
-- `R` (plus common data science libraries)
-- `scala`
-- `spark-shell`
+```{include} software_languages.partial.md
+:relative-images:
+```
 
-## Editors/IDEs
+## Editors / IDEs
 
-- `atom`
-- `emacs`
-- `nano`
-- `PyCharm`
-- `RStudio`
-- `vim`
-- `Visual Studio Code`
+```{include} software_editors.partial.md
+:relative-images:
+```
 
-## Presentation tools
+## Writing / presentation tools
 
-- `LaTeX`
-- `LibreOffice`
+```{include} software_presentation.partial.md
+:relative-images:
+```
 
-## Development/data science tools
+## Database access
 
-- `Azure Data Studio`
-- `DBeaver`
-- `Firefox`
-- `git`
-- `psql`
-- `sqlcmd`
-- `weka`
+```{include} software_database.partial.md
+:relative-images:
+```
+
+## Other useful software
+
+```{include} software_other.partial.md
+:relative-images:
+```

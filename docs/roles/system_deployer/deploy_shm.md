@@ -811,26 +811,11 @@ Note that you can use the same script after deploying an SRE to add users in bul
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained from the portal above
-- Generating user CSV file
+- Add your details to create researcher accounts yourself and any other {ref}`deployers <role_system_deployer>`.
 
-  - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv` on the SHM DC1 domain controller.
-    We suggest naming this `YYYYMMDD-HHMM_user_details.csv` but this is up to you
-  - Add your details to create a researcher account for yourself.
-    - `SamAccountName`: Log in username **without** the @domain bit.
-      Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts.
-      Maximum length is 20 characters.
-    - `GivenName`: User's first / given name
-    - `Surname`: User's last name / surname
-    - `Mobile`: Phone number to use for initial password reset.
-      This must include country code in the format `+<country-code> <local number>` (e.g. `+44 7700900000`).
-      Include a space between the country code and local number parts but no other spaces.
-      Remove the leading `0` from local number if present.
-      This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
-      They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
-    - `SecondaryEmail`: An existing organisational email address for the user.
-      Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
-    - [Optional] `GroupName`: SRE group that the user will be added to.
-      As these groups are created during the SRE deployment you can leave this empty for this initial validation of the synchronisation process.
+```{include} snippets/user_csv_format.partial.md
+:relative-images:
+```
 
 - Run the following command on the remote domain controller VM to create and synchronise the users
 

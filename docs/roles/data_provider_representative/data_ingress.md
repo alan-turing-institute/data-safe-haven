@@ -1,4 +1,5 @@
 (role_data_provider_representative_ingress)=
+
 # Data ingress process
 
 ## Introduction
@@ -27,6 +28,7 @@ Under no circumstance should sensitive data be sent via email, even if encrypted
 ```
 
 (role_data_provider_representative_ingress_azure_storage_explorer)=
+
 ### Azure Storage Explorer
 
 The Safe Haven is built on the Microsoft Azure platform.
@@ -103,6 +105,7 @@ If you receive an error like the following
 ````
 
 (role_data_provider_representative_ingress_sftp)=
+
 ### SFTP
 
 If you are unable to install Microsoft Azure Storage Explorer on your system, the next best option is to use `SFTP`.
@@ -120,6 +123,7 @@ Please ensure that you use a modern encryption algorithm and a strong key to sec
 ```
 
 (role_data_provider_representative_ingress_physical)=
+
 ### Physically bring in a disk
 
 Alternatively, you provide your data on a physical disk/USB stick.

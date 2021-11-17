@@ -49,6 +49,7 @@ Tier 4 defaults are not discussed below as such environments are not currently s
 ### Inbound connections
 
 Access to the gateway is only permitted from defined IP addresses associated with specific networks at the host organisation or its partner institutes:
+
 - **Tier 3:** we recommend permitting access only from restricted networks, which are accessible only by a known subset of {ref}`Researchers <role_researcher>`.
 - **Tier 2:** we recommend permitting access only from institutionally managed networks, such as EduRoam, which might also be accessible by non-Researchers.
 - **Tier 0/1:** we recommend restricting access to IP addresses provided by researchers, but without restrictions about what these should correspond to.
@@ -71,7 +72,6 @@ Unrestricting which IP addresses can connect to the gateway increases the risk o
 
 - **Tier 3:** {ref}`Researchers <role_researcher>` must only connect from dedicated secure spaces (eg. from a known office at the host institute) [NB. This may be relaxed depending on COVID restrictions]
 - **Tier 0/1/2:** {ref}`Researchers <role_researcher>` can connect from anywhere
-
 
 ### Data transfer from user device
 
@@ -96,7 +96,6 @@ Note that this means that eg. password managers cannot be used]
 
 - **Tier 3:** {ref}`role_investigator` and {ref}`role_referee`
 - **Tier 0/1/2:** {ref}`role_investigator`
-
 
 ### Python/R package availability:
 

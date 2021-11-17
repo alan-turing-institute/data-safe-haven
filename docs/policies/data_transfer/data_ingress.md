@@ -41,6 +41,7 @@ Different processes should be followed depending on the tier to which the data h
 It is the responsibility of the {ref}`role_system_manager` conducting this step to ensure that they are following the appropriate process for the assigned data classification tier.
 
 (policy_ingress_into_tier_3)=
+
 ### Transfer into Tier 3
 
 There are several methods of transfering sensitive data to the Data Safe Haven which are listed below in order of preference.
@@ -91,11 +92,13 @@ The decryption key must not be delivered in the same physical package as the enc
 ```
 
 (policy_ingress_into_tier_2)=
+
 ### Transfer into Tier 2
 
 For this category, the processes are be the same as for {ref}`Tier 3 <policy_ingress_into_tier_3>` above with the exception that pre-declaring an IP address for the `SFTP/SCP` option is not required.
 
 (policy_ingress_into_tier_1)=
+
 ### Transfer into Tier 1
 
 The same transfer processes as {ref}`Tier 2 <policy_ingress_into_tier_3>` is available to the data owners.
@@ -106,6 +109,7 @@ Under no circumstance should sensitive data be sent via email, even if encrypted
 ```
 
 (policy_ingress_into_tier_0)=
+
 ### Transfer into Tier 0
 
 This is publicly available, open data, and as such is likely to be hosted on a public website and can therefore simply be downloaded directly to the staging area.

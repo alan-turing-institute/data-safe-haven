@@ -10,7 +10,7 @@ One of the [NHS Cloud Security Principles](https://digital.nhs.uk/data-and-infor
 In the future we will look into creating alternative cloud implementations, for example the use of Amazon Web Services (AWS).
 This might also allow for cross-cloud redundancy.
 At present, however our implementation uses Microsoft Azure and we are therefore reliant on the availability of a single cloud infrastructure provider.
-Azure data centres have [99.9% availability](<https://azure.microsoft.com/en-gb/support/legal/sla/summary/>) which should be sufficient for most Data Safe Haven users.
+Azure data centres have [99.9% availability](https://azure.microsoft.com/en-gb/support/legal/sla/summary/) which should be sufficient for most Data Safe Haven users.
 
 ## Use multiple availability zones / data centres
 

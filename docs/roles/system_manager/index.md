@@ -1,4 +1,5 @@
 (role_system_manager)=
+
 # System Manager
 
 ```{toctree}
@@ -19,4 +20,3 @@ Typically these might be members of an institutional IT team.
 
 {ref}`Software package allowlist policy <policy_software_package_approval>`
 : Guidance on our policy for approving software packages.
-

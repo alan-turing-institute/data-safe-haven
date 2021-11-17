@@ -40,6 +40,7 @@ A {ref}`role_system_manager` should remove all users from a project or work pack
 ```
 
 (policy_data_security_training)=
+
 ## Data security training requirements
 
 We recommend requiring data security awareness training for the following categories of person:
@@ -58,6 +59,7 @@ The requirement is documented proof of (within 1 year):
 - [NHS Data Security Awareness training](https://www.e-lfh.org.uk/programmes/data-security-awareness)
 
 or equivalent qualifications from another organisation.
+
 ## Data security incident process
 
 We recommend that {ref}`System Managers <role_system_manager>` follow the data security incident process of the wider organisation.

@@ -1,4 +1,5 @@
 (policy_software_package_approval)=
+
 # Software package approval policy
 
 ## Introduction
@@ -54,6 +55,7 @@ Specific risks which this policy aims to mitigate include:
 - The DSVM image will be updated every month to ensure that changes to the image package list are propagated to new safe haven deployments.
 
 (policy_software_package_inclusion_criteria)=
+
 ### Criteria for inclusion in the DSVM image
 
 Allowed software that is considered broadly useful to a cross section of researchers will be included in the DSVM image.
@@ -67,6 +69,7 @@ To meet this condition, a package should:
 - OR enhance the usability of the programming language or development environment (e.g. RStudio, PyCharm).
 
 (policy_software_package_review_procedure)=
+
 ## Package request/review procedure
 
 - A user requests a package by completing the {ref}`software package request form <software_package_request_form>`, including responses to the following questions:

@@ -9,7 +9,7 @@ data_transfer/index.md
 security/index.md
 ```
 
-In this section we describe the data governance and user management policies that are used by the Safe Haven deployed at the Alan Turing Institute.
+In this section we describe the data governance and user management policies that are used by the Data Safe Haven deployed at the Alan Turing Institute.
 Please note that these may be incompatible with your organisation's existing procedures and so they are presented here as recommendations, not requirements.
 
 Note that this is not a complete description of the Institute's core enterprise information security practices, which are described elsewhere.

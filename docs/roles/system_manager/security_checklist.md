@@ -540,7 +540,7 @@ Connection from within the secure physical space is possible.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
 
-- Access to the ingress volume is restricted to a limited range of IP addresses associated with the Dataset Provider and the Turing.
+- Access to the ingress volume is restricted to a limited range of IP addresses associated with the **Dataset Provider** and the **host organisation**.
 - The {ref}`role_data_provider_representative` receives a write-only upload token.
   - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
   - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.

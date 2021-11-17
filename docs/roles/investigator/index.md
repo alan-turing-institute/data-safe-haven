@@ -1,4 +1,5 @@
 (role_investigator)=
+
 # Investigator
 
 ```{toctree}
@@ -13,7 +14,6 @@ The research project lead, this individual is responsible for ensuring that proj
 Multiple collaborating institutions may have their own lead staff members, and staff members might delegate responsibilities for the SRE to other researchers.
 However, each project must have a single lead **Investigator** who takes responsibility for it.
 These concerns are not relevant to decide who should act as **Investigator** - it is simply important that this individual is
-
 
 ```{warning}
 The **Investigator** must be able and willing to accept responsibility for the conduct of the project and its members.
@@ -36,4 +36,3 @@ The **Investigator** must be able and willing to accept responsibility for the c
 
 [Software requests](request_software_package.md)
 : Fill out this form and send it to your {ref}`role_system_manager` to request the installation of new software in your SRE.
-

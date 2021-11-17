@@ -38,5 +38,3 @@ Our example user, Ada Lovelace has used `ada.lovelace@projects.turingsafehaven.a
 :align: center
 ```
 ````
-
-

@@ -26,7 +26,6 @@
 For some operations, you will need to log on to some of the VMs that you deploy and make manual changes.
 This is done using the VPN which should have been deployed {ref}`when setting up the SHM environment <deploy_shm_vpn>`.
 
-
 ### {{name_badge}} SRE domain name
 
 You will need access to a public routable domain name for the SRE and its name servers.

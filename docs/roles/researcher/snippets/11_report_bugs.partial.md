@@ -1,6 +1,6 @@
 ## {{bug}} Report a bug
 
-The Turing Safe Haven SRE has been developed in close collaboration with our users: you!
+The Data Safe Haven SRE has been developed in close collaboration with our users: you!
 
 We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from projects participants and researchers going through the process for the first time.
 We are constantly working to improve the SRE and we really appreciate your input and support as we develop the infrastructure.
@@ -14,18 +14,22 @@ If you find problems with the IT infrastructure, please contact the designated c
 To help us fix your issues please do the following:
 
 - Make sure you have **read this document** and checked if it answers your query.
+
   - Please do not log an issue before you have read all of the sections in this document.
 
-- Log out and log back in again (whether this is to the Turing Safe Haven SRE or the Linux data science desktop) at least once.
+- Log out of the SRE and log back in again at least once
+
   - Re-attempt the process leading to the bug/error at least twice.
   - We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
   - The multi-factor authentication step in particular is known to have quite a few gremlins.
   - If you are getting frustrated, log out of everything, turn off your computer, take a 15 minute coffee break, and then start the process from the beginning.
 
 - Write down a comprehensive summary of the issue.
+
   - A really good bug report makes it much easier to pin down what the problem is.
 
   Please include:
+
   - Your computer's operating system and operating system version.
   - Precise condition under which the error occurs.
     - What steps would someone need to take to get the exact same error?

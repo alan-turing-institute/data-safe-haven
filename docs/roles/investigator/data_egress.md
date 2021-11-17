@@ -23,4 +23,3 @@ Once the classification is agreed, make sure that your {ref}`role_data_provider_
 ```{note}
 You might want to define multiple data collections for egress, which would each have their own sensitivity classification. For example, you might separate a low-sensitivity written report from a high-sensitivity derived dataset.
 ```
-

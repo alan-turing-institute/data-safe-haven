@@ -7,6 +7,7 @@
 ```
 
 (roles_researcher_user_guide_setup_mfa)=
+
 ```{include} snippets/02_account_setup.partial.md
 :relative-images:
 ```

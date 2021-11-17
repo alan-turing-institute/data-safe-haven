@@ -36,4 +36,3 @@ All of the choices described below are configurable on an environment-by-environ
 - **Tier 3+:** the Data Provider Representative, Investigator and Referee are all required to sign off all egress of data or code from the Environment.
 - **Tier 2:** only the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
 - **Tier 0/1:** users are permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
-

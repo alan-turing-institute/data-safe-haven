@@ -3,35 +3,35 @@
 You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
 You can work with any of the pre-installed applications and programming languages.
 
-- Installed programming languages / compilers include:
-  - `.Net`
-  - `C`
-  - `C++`
-  - `Fortran`
-  - `Java`
-  - `Julia`
-  - `Python`
-  - `R`
-  - `scala`
-- Editors / IDEs include:
-  - `atom`
-  - `emacs`
-  - `nano`
-  - `PyCharm`
-  - `RStudio`
-  - `Spyder`
-  - `vim`
-  - `Visual Studio Code`
-- Database access through the following applications:
-  - `Azure Data Studio`
-  - `DBeaver`
-  - `psql`
-- Writing tools include:
-  - `LaTeX` and `TeXStudio` for technical writing
-  - `LibreOffice` for creating presentations
-- Other applications include:
-  - `firefox`
-  - `git`
+### Programming languages / compilers
+
+```{include} software_languages.partial.md
+:relative-images:
+```
+
+### Editors / IDEs
+
+```{include} software_editors.partial.md
+:relative-images:
+```
+
+### Writing / presentation tools
+
+```{include} software_presentation.partial.md
+:relative-images:
+```
+
+### Database access
+
+```{include} software_database.partial.md
+:relative-images:
+```
+
+### Other useful software
+
+```{include} software_other.partial.md
+:relative-images:
+```
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
@@ -102,7 +102,7 @@ You can change your preferred Python version globally or on a folder-by-folder b
 
 ### {{gift}} Install R and python packages
 
-There are local copies of the `PyPI` and `CRAN` package repositories available within the Turing SRE.
+There are local copies of the `PyPI` and `CRAN` package repositories available within the SRE.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
 ```{caution}

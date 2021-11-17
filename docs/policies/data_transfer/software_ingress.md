@@ -38,5 +38,5 @@ In this case, software is ingressed in a similar manner as data:
 - Your {ref}`role_system_manager` will provide temporary **write-only** access to a software ingress volume
 - Once the {ref}`role_researcher` transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
 - Once any required review has been passed, the {ref}`role_system_manager` transfers the software into the environment.
-    - For software that does not require administrative rights to install, the {ref}`role_researcher` can then install the software or transfer the source to a version control repository within the Environment as appropriate.
-    - For software that requires administrative rights to install, a {ref}`role_system_manager` must run the installation process.
+  - For software that does not require administrative rights to install, the {ref}`role_researcher` can then install the software or transfer the source to a version control repository within the Environment as appropriate.
+  - For software that requires administrative rights to install, a {ref}`role_system_manager` must run the installation process.

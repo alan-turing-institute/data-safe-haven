@@ -9,7 +9,7 @@ This information doesn't matter at all for how you use `CodiMD` within the SRE, 
 You can read more about `CodiMD` at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
 ```
 
-We recommend [this Markdown cheat sheet](<https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet>).
+We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
 ### {{unlock}} Access CodiMD
 
@@ -29,7 +29,7 @@ Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy w
 
 ### {{busts_in_silhouette}} Editing other people's documents
 
-The CodiMD instance inside the secure research environment is entirely contained *inside* the SRE.
+The CodiMD instance inside the secure research environment is entirely contained _inside_ the SRE.
 
 When you make a markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
 They will have the right to change the file if they are signed into the CodiMD instance.
@@ -81,4 +81,3 @@ Rather than proliferate lots of documents, we recommend that one person is taske
 ```{tip}
 You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
 ```
-

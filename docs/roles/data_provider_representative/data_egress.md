@@ -1,4 +1,5 @@
 (role_data_provider_representative_egress)=
+
 # Data egress process
 
 The outputs of the work being done in a Data Safe Haven are also stored in the SRE.
@@ -20,6 +21,7 @@ Each time you want to bring code or data out of the environment, you'll have to 
 Once the outputs are classified, the classification team should let the {ref}`role_system_manager` know who will be performing the egress and how they want this to be done.
 
 ## Downloading data from the environment
+
 As for ingress, there are three methods for transferring data out of the Data Safe Haven (in order of preference):
 
 - {ref}`Microsoft Azure Storage Explorer <role_data_provider_representative_egress_azure_storage_explorer>`
@@ -31,6 +33,7 @@ Under no circumstance should sensitive data be sent via email, even if encrypted
 ```
 
 (role_data_provider_representative_egress_azure_storage_explorer)=
+
 ### Azure Storage Explorer
 
 Similarly to the {ref}`equivalent data ingress process <role_data_provider_representative_egress_azure_storage_explorer>`
@@ -89,6 +92,7 @@ If you receive an error like the following
 ````
 
 (role_data_provider_representative_egress_sftp)=
+
 ### SFTP
 
 If you are unable to install Microsoft Azure Storage Explorer on your system, the next best option is to use `SFTP`.
@@ -106,6 +110,7 @@ Please check with your {ref}`role_system_manager` to ensure that they use an enc
 ```
 
 (role_data_provider_representative_egress_physical)=
+
 ### Request a physical disk
 
 Alternatively, you can request your data on a physical disk/USB stick.

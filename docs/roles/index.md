@@ -41,4 +41,3 @@ The different roles are detailed alphabetically below.
 
 {ref}`role_system_manager`
 : a designated staff member at the hosting institution who is responsible for administrating the Data Safe Haven.
-

@@ -9,10 +9,10 @@ sre_details.md
 physical_resilence_and_availability.md
 ```
 
-
 The Data Safe Haven is designed to be deployed on the [Microsoft Azure](https://azure.microsoft.com/en-gb/) platform taking advantage of its cloud-computing infrastructure.
 
 Each deployment of the Data Safe Haven consists of two components:
+
 - one **Safe Haven Management** (SHM) component
 - one or more **Secure Research Environments** (SREs).
 
@@ -26,7 +26,6 @@ The identity provider is Microsoft Active Directory, which is synchronised with 
 
 The SHM is connected to each SRE through virtual network peering, which allows authentication requests from the SRE servers to be resolved by the SHM Active Directory.
 Although all SREs are peered with the SHM, they are not able to connect directly to one another, ensuring the isolation of each project.
-
 
 [Safe Haven Management (SHM)](shm_details.md)
 : details about the design of the SHM component

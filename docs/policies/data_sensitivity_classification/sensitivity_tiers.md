@@ -1,4 +1,5 @@
 (policy_classification_sensitivity_tiers)=
+
 # Sensitivity tiers
 
 Our recommendation for secure information processing tiers is based on work which has gone before.
@@ -25,6 +26,7 @@ In the below, "personal data" follows the GDPR definition: information from whic
 It excludes information about individuals who are dead.
 
 (policy_tier_0)=
+
 ## Tier 0
 
 **Tier 0** Environments are used to handle open information, which is legally available to the general public with no restrictions, where all generated and combined information is also suitable for open handling.
@@ -50,6 +52,7 @@ Finally, audit trails as to the handling of **Tier 0** information reduce risks 
 ```
 
 (policy_tier_1)=
+
 ## Tier 1
 
 **Tier 1** Environments are used to handle, process and generate data that is intended for eventual publication or that could be published without reputational damage.
@@ -71,6 +74,7 @@ Both the datasets and the proposed processing must otherwise meet the criteria f
   If this is not the case, then the minimum tier environment such data can be processed in is {ref}`policy_tier_2`.
 
 (policy_tier_2)=
+
 ## Tier 2
 
 **Tier 2** Environments are used to handle, combine or generate information which is not linked to identifiable personal data.
@@ -78,7 +82,10 @@ Both the datasets and the proposed processing must otherwise meet the criteria f
 It may be used for pseudonymised, synthetic or anonymised information generated from personal data, where we have **strong**, but not absolute, confidence that the personal data cannot be re-identified.
 This assessment should consider the risk of processing the data in a manner that permits personal data to be re-identified, including by combining it with other data available within the environment.
 
-The pseudonymisation, synthesis or anonymisation process itself, if carried out in the Turing, should take place in a {ref}`policy_tier_3` Environment.
+```{tip}
+We recommend using a {ref}`policy_tier_3` environment to perform the pseudonymisation, synthesis or anonymisation process itself,
+```
+
 A typical model for a project will be to instantiate both **Tier 2** and {ref}`policy_tier_3` Environments, with pseudonymised, synthetic or anonymised data generated in the {ref}`policy_tier_3` Environment and then transferred to the **Tier 2** Environment.
 
 ```{caution}
@@ -104,6 +111,7 @@ At **Tier 2**, the most significant risks are "workaround breach" and the risk o
 - All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is **Tier 2**.
 
 (policy_tier_3)=
+
 ## Tier 3
 
 **Tier 3** Environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be {ref}`policy_tier_4`).
@@ -130,6 +138,7 @@ At **Tier 3**, the risk of hostile actors attempting to break into the Environme
 - All non-pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is **Tier 3**.
 
 (policy_tier_4)=
+
 ## Tier 4
 
 **Tier 4** Environments are used to handle, combine or generate personal data where disclosure poses a substantial threat to the personal safety, health or security of the data subjects.

@@ -1,4 +1,5 @@
 (policy_data_classification_process)=
+
 # Classification process
 
 ## Work Packages
@@ -62,12 +63,14 @@ This is also the case if the team wishes to ingress another dataset in combinati
 Flowcharts demonstrating how we classify work packages can be seen here:
 
 (policy_classification_flowchart_full)=
+
 ```{image} full_classification_flow.png
 :alt: Full data classification workflow
 :align: center
 ```
 
 (policy_classification_flowchart_simple)=
+
 ```{image} simple_classification_flow.png
 :alt: Simplified data classification workflow
 :align: center
