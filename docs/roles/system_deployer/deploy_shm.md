@@ -12,6 +12,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 ```
 
 (deploy_shm_prerequisites)=
+
 ## 1. {{seedling}} Prerequisites
 
 - An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in: we recommend around $3,000 as a reasonable starting point.
@@ -46,8 +47,8 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 
 ## 2. {{clipboard}} Safe Haven Management configuration
 
-
 (roles_deployer_shm_id)=
+
 ### Management environment ID
 
 ```{important}
@@ -56,6 +57,7 @@ This can have a maximum of **seven alphanumeric characters**.
 ```
 
 (roles_system_deployer_shm_configuration_file)=
+
 ### Create configuration file
 
 The core properties for the Safe Haven Management (SHM) environment must be defined in a JSON file named `shm_<SHM ID>_core_config.json` in the `environment_configs` folder.
@@ -130,6 +132,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
 (roles_deployer_shm_configure_dns)=
+
 ## 3. {{door}} Configure DNS for the custom domain
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -140,7 +143,7 @@ PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
-```{error}
+````{error}
 If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
 
 <details><summary><b>Manual DNS configuration instructions</b></summary>
@@ -156,9 +159,10 @@ If you see a message `You need to add the following NS records to the parent DNS
     ```
 - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 </details>
-```
+````
 
 (roles_deployer_shm_setup_aad)=
+
 ## 4. {{file_folder}} Setup Azure Active Directory (AAD)
 
 ### Create a new Azure Active Directory
@@ -172,7 +176,9 @@ If you see a message `You need to add the following NS records to the parent DNS
   :alt: Azure Active Directory
   :align: center
   ```
+
   </details>
+
 - Click `Create`
 - Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Production Safe Haven`)
   - Note: be careful not to confuse this with the `<name>` under `<organisation>` used in the config file
@@ -184,17 +190,20 @@ If you see a message `You need to add the following NS records to the parent DNS
   :alt: Azure Active Directory creation
   :align: center
   ```
+
   </details>
+
 - Click `Create`
 - Wait for the Azure Active Directory to be created
 
 (roles_deployer_aad_tenant_id)=
+
 ### Get the Azure Active Directory Tenant ID
 
 ![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
 - From the Azure portal, navigate to the AAD you have created.
-You can do this by:
+  You can do this by:
   - Clicking the link displayed at the end of the initial AAD deployment.
   - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 - If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
@@ -205,6 +214,7 @@ You can do this by:
   :alt: AAD Tenant ID
   :align: center
   ```
+
   </details>
 
 ### Add the SHM domain to the Azure Active Directory
@@ -239,6 +249,7 @@ If it exhausts the number of retries a second time, wait an hour and try again.
 ```
 
 (roles_deployer_shm_key_vault)=
+
 ## 5. {{key}} Deploy Key Vault for SHM secrets and create emergency admin account
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -323,7 +334,7 @@ As activating self-service password reset requires active MFA licences, this is 
   - Enter `aad.admin.emergency.access@<SHM domain>` as the username
   - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
   - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
-  Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
+    Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
   - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
   - Click on the Safe Haven SHM subscription
   - Click on `Resource Groups` in the left hand sidebar then `RG_SHM_<SHM ID>_SECRETS`
@@ -350,7 +361,7 @@ As activating self-service password reset requires active MFA licences, this is 
 - Switch back to your original administrator account
   - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
   - Log in as the user you used to create the Safe Haven Azure AD
-</details>
+  </details>
 
 ### Enable self-service password reset
 
@@ -381,6 +392,7 @@ If you see a message about buying licences, you may need to refresh the page for
 - Click `Multi-Factor authentication` icon in the top bar of the users list.
 - Click on `Service settings` at the top of the panel
 - Configure MFA as follows:
+
   - In the `App passwords` section select `Do not allow users to create app passwords to sign in to non-browser apps`
   - Ensure the `Verification options` are set as follows:
     - **check** `Call to phone` and `Notification through mobile app` (`Call to phone` is not available with a trial P2 licence)
@@ -394,6 +406,7 @@ If you see a message about buying licences, you may need to refresh the page for
     :alt: AAD MFA settings
     :align: center
     ```
+
     </details>
 
 ## 7. {{id}} Configure internal administrator accounts
@@ -412,6 +425,7 @@ In order to avoid being a single point of failure, we strongly recommend that yo
 ```
 
 (roles_deploy_add_additional_admins)=
+
 ### Add internal administrator accounts for yourself and others
 
 Several later steps will require the use of a **native** administrator account with a valid mobile phone and email address.
@@ -431,7 +445,7 @@ We strongly recommend that you delete the default external administrator account
   - User name: `aad.admin.firstname.lastname@<SHM domain>`
   - Name: `AAD Admin - Firstname Lastname`
   - Leave `Auto-generate password` set.
-  Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
+    Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
   - Click the `User` link in the `Roles` field and make the user an administrator:
     - Search for `Global Administrator`
     - Check `Global Administrator`
@@ -443,10 +457,11 @@ We strongly recommend that you delete the default external administrator account
   - Navigate to `Users` and click on the account you have just created.
   - Edit the `Contact info` section and:
     - Add the the user's mobile phone number to the `Mobile phone` field.
-    Make sure to prefix it with the country code and **do not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
+      Make sure to prefix it with the country code and **do not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
     - They will need to enter their number in **exactly this format** when performing a self-service password reset.
   - Click the `Save` icon at the top of the user details panel
 - Add an authentication email
+
   - Click `Authentication methods` in the left hand sidebar
   - Enter the user's mobile phone number in the `Phone` field, using the same format as above
   - Enter the user's institutional email address in the `Email` field
@@ -458,6 +473,7 @@ We strongly recommend that you delete the default external administrator account
     :alt: AAD create admin account
     :align: center
     ```
+
     </details>
 
 ### Activate and configure your new internal admin account
@@ -509,8 +525,8 @@ However, if any non-admin users are set up and are unable to reset their own pas
 
 - Ensure you are logged in to the Azure Portal in with the **native** administrator account you created.
 - Ensure your session is using the new Safe Haven Management (SHM) AAD directory.
-The name of the current directory is under your username in the top right corner of the Azure portal screen.
-To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+  The name of the current directory is under your username in the top right corner of the Azure portal screen.
+  To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 - Click `Licences` in the left hand sidebar
 - Click `All products` in the left hand sidebar
@@ -524,6 +540,7 @@ To change directories click on your username at the top right corner of the scre
 </details>
 
 (roles_deployer_shm_vnet_gateway)=
+
 ## 8. {{station}} Deploy network and VPN gateway
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -539,6 +556,7 @@ PS> ./Setup_SHM_Networking.ps1 -shmId <SHM ID>
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
 Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
+
 ```{image} deploy_shm/vnet_resource_groups.png
 :alt: Resource groups
 :align: center
@@ -550,9 +568,11 @@ If you cannot see these resource groups:
 - Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
 - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 ```
+
 </details>
 
 (deploy_shm_vpn)=
+
 ### Download a client VPN certificate for the Safe Haven Management network
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -578,20 +598,34 @@ If you cannot see these resource groups:
   :alt: Certificate details
   :align: center
   ```
+
   </details>
+
 - Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
 - Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
-  - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white)
-    - Use SSTP for the VPN type
-    - Name the VPN connection `Safe Haven Management Gateway (<SHM ID>)`
-    - **Do not** rename the VPN client as this will break it
-  - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white)
-    - Start from step 3 of the macOS instructions.
-    - Use IKEv2 for the VPN type
-    - Name the VPN connection `Safe Haven Management Gateway (<SHM ID>)`
-    - You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar.
-      You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry.
-      If the details match the certificate has been successfully installed.
+
+```{admonition} ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) instructions
+- Use SSTP for the VPN type
+- Name the VPN connection `Safe Haven Management Gateway (<SHM ID>)`
+- **Do not** rename the VPN client as this will break it
+```
+
+````{admonition} ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) instructions
+- Start from step 3 of the `macOS` instructions.
+- Use IKEv2 for the VPN type
+  <details><summary><b>For users of <i>macOS Catalina</i> or later</b></summary>
+
+  You must select `None` from the drop-down (not `Certificate`) and then select the `Certificate` radio button underneath as shown in the image below.
+  ```{image} deploy_shm/catalina_authentication.png
+  :alt: Certificate details
+  :align: center
+  ```
+  </details>
+- Name the VPN connection `Safe Haven Management Gateway (<SHM ID>)`
+- You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar.
+- You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry.
+- If the details match the certificate has been successfully installed.
+````
 
 You should now be able to connect to the SHM virtual network via the VPN.
 
@@ -600,17 +634,18 @@ Each time you need to access the virtual network ensure you are connected via th
 ```
 
 ```{error}
-![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may get a `Windows protected your PC` pop up.
+![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) You may get a `Windows protected your PC` pop up.
 If so, click `More info -> Run anyway`.
 ```
 
 ```{error}
-![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`.
+![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) You may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`.
 This may mean that your antivirus is blocking the VPN client.
 You will need configure your antivirus software to make an exception.
 ```
 
 (roles_deployer_shm_domain_controllers)=
+
 ## 9. {{house_with_garden}} Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -624,6 +659,7 @@ PS> ./Setup_SHM_DC.ps1 -shmId <SHM ID>
 <details><summary><b>Sanity check</b></summary>
 
 Once the script exits successfully you should see the following resource groups in the Azure Portal under the SHM subscription, with the appropriate `<SHM ID>` for your deployment e.g. `RG_SHM_<SHM ID>_NETWORKING`:
+
 ```{image} deploy_shm/dc_resource_groups.png
 :alt: Resource groups
 :align: center
@@ -635,9 +671,11 @@ If you cannot see these resource groups:
 - Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
 - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 ```
+
 </details>
 
 (roles_system_deployer_shm_remote_desktop)=
+
 ### Configure the first domain controller via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -649,6 +687,7 @@ If you cannot see these resource groups:
 - `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
 (roles_deployer_shm_aad_connect)=
+
 #### Install Azure Active Directory Connect
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
@@ -746,6 +785,7 @@ If you need to, you can disconnect from the DC and VPN and reconnect later befor
 ```
 
 (roles_system_deployer_shm_aad_connect_rules)=
+
 #### Update Azure Active Directory Connect rules
 
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
@@ -762,6 +802,7 @@ PS> C:\Installation\UpdateAADSyncRule.ps1
 (deploy_shm_validate_aadsync)=
 
 (roles_system_deployer_shm_validate_aad_synchronisation)=
+
 ### Validate Active Directory synchronisation
 
 This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory.
@@ -776,8 +817,8 @@ Note that you can use the same script after deploying an SRE to add users in bul
     We suggest naming this `YYYYMMDD-HHMM_user_details.csv` but this is up to you
   - Add your details to create a researcher account for yourself.
     - `SamAccountName`: Log in username **without** the @domain bit.
-    Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts.
-    Maximum length is 20 characters.
+      Use `firstname.lastname` format and please stick to unnaccented lower case ascii letters with a period separating the name parts.
+      Maximum length is 20 characters.
     - `GivenName`: User's first / given name
     - `Surname`: User's last name / surname
     - `Mobile`: Phone number to use for initial password reset.
@@ -789,7 +830,7 @@ Note that you can use the same script after deploying an SRE to add users in bul
     - `SecondaryEmail`: An existing organisational email address for the user.
       Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
     - [Optional] `GroupName`: SRE group that the user will be added to.
-    As these groups are created during the SRE deployment you can leave this empty for this initial validation of the synchronisation process.
+      As these groups are created during the SRE deployment you can leave this empty for this initial validation of the synchronisation process.
 
 - Run the following command on the remote domain controller VM to create and synchronise the users
 
@@ -854,9 +895,10 @@ Once you're certain that you're adding a new user, make sure that the following 
   - Enter the username (`firstname.lastname@<SHM domain>>`)and the new password
   - Click `Next` at the `Help us to protect your account` prompt
   - Follow the instructions to configure Microsoft Authenticator
-</details>
+  </details>
 
 (roles_system_deployer_shm_deploy_nps)=
+
 ## 10. {{police_car}} Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -873,6 +915,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 ```
 
 (roles_system_deployer_shm_remote_desktop_nps)=
+
 ### Configure the network policy server (NPS) via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -895,6 +938,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
     :alt: NPS accounting
     :align: center
     ```
+
     </details>
 
   - Click on `Accounting > Configure Accounting`
@@ -979,6 +1023,7 @@ If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `
 ```
 
 (roles_system_deployer_shm_require_mfa)=
+
 ## 11. {{closed_lock_with_key}} Require MFA for all users
 
 ```{warning}
@@ -1013,11 +1058,11 @@ Before completing this step, **make sure you have confirmed you are able to succ
     - Click `Select`
   - Leave the `Session` condition unchanged
   - Under `Enable policy` select `On`
-  - Check `I understand that my account will be impacted by this policy.
-  Proceed anyway.`
+  - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
   - Click the `Create` button
 
 (roles_system_deployer_shm_block_portal_access)=
+
 ## 12. {{no_pedestrians}} Block portal access for normal users
 
 Most users have no reason to access the Azure portal using the SHM tenant.
@@ -1036,7 +1081,7 @@ Therefore we will block access for all users other than Global Administrators.
     - With the `Exclude` tab selected, select the `Select users and groups`
     - Tick the `Directory roles` tickbox
     - In the drop-down menu select `Global administrator`.
-    This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
+      This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
   - Under the `Cloud apps or actions` heading click `No cloud apps, actions, or authentication contexts selected`
     - In the drop-down menu slect `Cloud apps`
     - With the `Include` tab selected, select the `Select apps` radio button
@@ -1055,6 +1100,7 @@ This should have been done in done when creating a policy to [require MFA for al
 ```
 
 (roles_system_deployer_shm_deploy_mirrors)=
+
 ## 13. {{package}} Deploy Python/R package repositories
 
 We currently support two different types of package repositories:
@@ -1104,6 +1150,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 ```
 
 (roles_system_deployer_shm_deploy_logging)=
+
 ## 14. {{chart_with_upwards_trend}} Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -1121,6 +1168,7 @@ In most cases the extensions have actually been successfully installed.
 ```
 
 (roles_system_deployer_shm_deploy_firewall)=
+
 ## 15. {{fire_engine}} Deploy firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->

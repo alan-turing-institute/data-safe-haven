@@ -383,6 +383,10 @@ Software ingress must go through the same {ref}`approval policy <policy_security
     - `List`
   - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
   - Leave everything else as default click `Generate SAS token and URL`
+    ```{image} administrator_guide/read_only_sas_token.png
+    :alt: Read-only SAS token
+    :align: center
+    ```
   - Leave this portal window open and move to the next step
 - Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
 - Click the socket image on the left hand side
@@ -392,11 +396,15 @@ Software ingress must go through the same {ref}`approval policy <policy_security
   ```
 - On `Select Resource`, choose `Blob container`
 - On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
+  ```{image} administrator_guide/connect_azure_storage.png
+  :alt: Connect with SAS token
+  :align: center
+  ```
 - On `Enter Connection Info`:
   - Set the `Display name` to "egress" (or choose an informative name)
   - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 - On the `Summary` page, hit `Connect`
-- On the left hand side, the connection should show up under `Local & Attached`->`Storage Accounts`->`(Attached Containers)`->`Blob Containers`->`ingress (SAS)`
+- On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers > ingress (SAS)`
 - You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
 
 #### The output volume

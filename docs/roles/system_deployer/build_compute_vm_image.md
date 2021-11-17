@@ -84,7 +84,7 @@ If you want to update the version of one of the packages we install from a `.deb
 
 In order to provision a candidate VM you will need to do the following:
 
-![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at :file_folder: ``./deployment/dsvm_images/setup`
+![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at {{file_folder}} ``./deployment/dsvm_images/setup`
 
 ```powershell
 PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
@@ -107,7 +107,7 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at :file_folder: ``./deployment/dsvm_images/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} ``./deployment/dsvm_images/setup`
 
 ```powershell
 PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
@@ -127,7 +127,7 @@ Please **check** that everything has built correctly before proceeding.
 
 Once you have created an image, it can be registered in the image gallery for future use using the `Register_Image_In_Gallery.ps1` script.
 
-![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at :file_folder: ``./deployment/dsvm_images/setup`
+![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} ``./deployment/dsvm_images/setup`
 
 ```powershell
 PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
