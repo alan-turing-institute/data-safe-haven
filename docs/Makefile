@@ -17,9 +17,9 @@ TARGETDIR         = _output
 # - Edit conf.py if you want them to be downloadable
 PDFTARGETDIR               = $(TARGETDIR)/pdf
 # Classification flowcharts
-CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "Full-Classification-Flow-Diagram.pdf")
+CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "data_classification_flowchart_full.pdf")
 CLASSIFICATIONFULLTARGET   = $(PDFTARGETDIR)/data_classification_flow_full.pdf
-CLASSIFICATIONSIMPLESOURCE = $(shell find . -type f -name "Simple-Classification-Flow-Diagram.pdf")
+CLASSIFICATIONSIMPLESOURCE = $(shell find . -type f -name "data_classification_flowchart_simplified.pdf")
 CLASSIFICATIONSIMPLETARGET = $(PDFTARGETDIR)/data_classification_flow_simple.pdf
 # List of PDFs to build
 PDFTARGETS                 = $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET)
