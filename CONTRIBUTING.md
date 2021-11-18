@@ -8,7 +8,7 @@ It can truly only succeed with a interdisciplinary team working together.
 The point of these contributing guidelines are to help you participate as easily as possible.
 If you have any questions that aren't discussed below, please let us know by [opening an issue](#project-management-through-issues).
 
-## Table of contents
+## Contents
 
 Been here before?
 Already know what you're looking for in this guide?
