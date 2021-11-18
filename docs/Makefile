@@ -42,6 +42,8 @@ $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET):
 # Build local PDF targets then call rinoh
 pdf: $(PDFTARGETS)
 	make rinoh
+	rm $(PDFTARGETDIR)/*.rtc
+	rm $(PDFTARGETDIR)/*.stylelog
 
 # Ensure that clean also removes the contents of $(PDFTARGETDIR)
 clean:
