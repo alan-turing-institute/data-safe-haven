@@ -1,7 +1,15 @@
 # Migrating an SHM
 
+These instructions will walk you through migrating an existing Safe Haven Management (SHM) environment to a newer **Data Safe Haven** release and migrating the users to it.
+
+```{note}
 This document assumes that you have already deployed a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
-It will help you update the SHM to a newer release by deploying a new SHM and migrating the users to it.
+```
+
+```{danger}
+This is a complex operation and may not always work. You may lose data or user accounts in the migration process.
+```
+
 
 ```{include} snippets/00_symbols.partial.md
 :relative-images:
@@ -176,7 +184,7 @@ See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_aad
 - Select `Azure AD Connect` from the left hand menu
 - Under `Health And Analytics` click `Azure AD Connect Health`
 - Select `Sync services` from the left hand menu
-- Click on `<Safe Haven identifier>.onmicrosoft.com` whose `Status` will be marked as `Unhealthy`
+- Click on `<Safe Haven identifier>.onmicrosoft.com`
 - Click on the `Azure Active Directory Connect Server` that corresponds to the **old** DC (marked as `Unhealthy`)
 - Click `Delete` in the top bar, type the server name when prompted then click `Delete`
 

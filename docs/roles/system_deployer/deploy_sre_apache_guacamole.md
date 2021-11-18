@@ -1,6 +1,6 @@
 (deploy_sre_apache_guacamole)=
 
-# Secure Research Environment Build Instructions (Guacamole remote desktop)
+# Deploy an SRE with Apache Guacamole
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 

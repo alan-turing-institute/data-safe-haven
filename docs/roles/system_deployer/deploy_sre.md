@@ -13,8 +13,8 @@ These instructions will walk you through deploying a Secure Research Environment
 
 We currently support two different end-user remote desktop interfaces.
 
-[User guide: Apache Guacamole](deploy_sre_apache_guacamole.md) {{sparkles}} **recommended** {{sparkles}}
-: Step-by-step instructions to deploy an SRE using `Apache Guacamole` (tiers 0-3)
+[User guide: Apache Guacamole](deploy_sre_apache_guacamole.md)
+: {{sparkles}} **Recommended** {{sparkles}} Step-by-step instructions to deploy an SRE using `Apache Guacamole` (**tiers 0-3**)
 
-[User guide: Microsoft Remote Desktop](deploy_sre_microsoft_rds.md) **not supported for tier-0 or tier-1 SREs**
-: Step-by-step instructions to deploy an SRE using `Microsoft Remote Desktop` (tiers 2-3)
+[User guide: Microsoft Remote Desktop](deploy_sre_microsoft_rds.md)
+: Step-by-step instructions to deploy an SRE using `Microsoft Remote Desktop` (**tiers 2-3 only**)

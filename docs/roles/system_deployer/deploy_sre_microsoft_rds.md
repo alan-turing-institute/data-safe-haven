@@ -1,6 +1,6 @@
 (deploy_sre_microsoft_rds)=
 
-# Secure Research Environment Build Instructions (RDS remote desktop)
+# Deploy an SRE with Microsoft RDS
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
 

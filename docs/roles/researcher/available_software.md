@@ -11,30 +11,30 @@ The easiest way to update a data science desktop is by redeploying it - it may b
 
 ## Programming languages / compilers
 
-```{include} software_languages.partial.md
+```{include} snippets/software_languages.partial.md
 :relative-images:
 ```
 
 ## Editors / IDEs
 
-```{include} software_editors.partial.md
+```{include} snippets/software_editors.partial.md
 :relative-images:
 ```
 
 ## Writing / presentation tools
 
-```{include} software_presentation.partial.md
+```{include} snippets/software_presentation.partial.md
 :relative-images:
 ```
 
 ## Database access
 
-```{include} software_database.partial.md
+```{include} snippets/software_database.partial.md
 :relative-images:
 ```
 
 ## Other useful software
 
-```{include} software_other.partial.md
+```{include} snippets/software_other.partial.md
 :relative-images:
 ```
