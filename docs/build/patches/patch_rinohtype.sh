@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Get paths
-SCRIPT_DIR=$(realpath "$(dirname "$BASH_SOURCE")")
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 BASEPATH=$(python -c "import rinoh as pkg; print(pkg.__path__[0])")
 echo "Preparing to patch rinohtype at ${BASEPATH}"
 cd "$BASEPATH" || (echo "Could not find path!"; exit 1)
