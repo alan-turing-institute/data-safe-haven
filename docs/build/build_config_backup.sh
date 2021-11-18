@@ -54,13 +54,19 @@ case $operation in
         rm -rf docs/build/*
         cp -v -R "$backup_directory"/build/* docs/build
         cp -v "$backup_directory"/Makefile docs/
-        # Use README.md if there is one, otherwise the default index
-        if [ ! -e "docs/index.md" ]; then
-            if [ -e "docs/README.md" ]; then
-                mv docs/README.md docs/index.md
-            else
-                cp "${backup_directory}/build/meta/default.template" docs/index.md
-            fi
+        # Use the first of these files that exists as the index:
+        # - index.md
+        # - README.md
+        # - DSG-user-documentation.md
+        # - An empty index.md
+        if [ -e "docs/index.md" ]; then
+            true
+        elif [ -e "docs/README.md" ]; then
+            mv docs/README.md docs/index.md
+        elif [ -e "docs/DSG-user-documentation.md" ]; then
+            mv docs/DSG-user-documentation.md docs/index.md
+        else
+            cp "${backup_directory}/build/meta/index.empty.md" docs/index.md
         fi
         ;;
 esac
