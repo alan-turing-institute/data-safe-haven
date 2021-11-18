@@ -7,18 +7,26 @@ import emoji
 from git import Repo
 
 
-def tag2version(tag):
-    return tag.name
+# -- Project information -----------------------------------------------------
 
+project = "Data Safe Haven"
+copyright = "2021, The Alan Turing Institute"
+author = "The Alan Turing Institute"
+development_branch = "develop"
 
 # -- Customisation  -----------------------------------------------------------
+
+def tag2version(tag):
+    return tag.name
 
 # Find name of current version plus names of all tags
 repo = Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 tags = [t for t in repo.tags if t.commit == repo.head.commit]
-version = tag2version(tags[0]) if tags else "develop"
-versions = ["develop"] + [tag2version(t) for t in repo.tags]
+versions = [development_branch] + [tag2version(t) for t in repo.tags]
+
+# The most recently released version, including alpha/beta/rc tags
+release = tag2version(tags[0]) if tags else development_branch
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -33,34 +41,36 @@ emoji_codes = set(
 )
 
 # Set sidebar variables
-try:
-    html_context
-except NameError:
+if not "html_context" in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["version"] = version
-html_context["current_version"] = version
+html_context["version"] = release
+html_context["current_version"] = release
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
+# Downloadable PDFs
 html_context["downloads"] = [
-    ("User guide PDF", f"/{repo_name}/{version}/pdf/data_safe_haven_user_guide.pdf"),
     (
-        "Software request form PDF",
-        f"/{repo_name}/{version}/pdf/data_safe_haven_software_request_form.pdf",
+        "User guide (Apache Guacamole)",
+        f"/{repo_name}/{development_branch}/pdf/data_safe_haven_user_guide_guacamole.pdf",
     ),
     (
-        "Data classification full PDF",
-        f"/{repo_name}/{version}/pdf/data_classification_flow_full.pdf",
+        "User guide (Microsoft RDS)",
+        f"/{repo_name}/{development_branch}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
     (
-        "Data classification simplified PDF",
-        f"/{repo_name}/{version}/pdf/data_classification_flow_simple.pdf",
+        "Classification flowchart",
+        f"/{repo_name}/{development_branch}/pdf/data_classification_flow_full.pdf",
+    ),
+    (
+        "Simplified classification  flowchart",
+        f"/{repo_name}/{development_branch}/pdf/data_classification_flow_simple.pdf",
     ),
 ]
 # Add 'Edit on GitHub' link
 html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
-html_context["github_version"] = "develop/docs/"
+html_context["github_version"] = f"{development_branch}/docs/"
 
 # -- Project information -----------------------------------------------------
 
@@ -68,8 +78,6 @@ project = "Data Safe Haven"
 copyright = "2021, The Alan Turing Institute"
 author = "The Alan Turing Institute"
 
-# The full version, including alpha/beta/rc tags
-release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -88,7 +96,13 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_output", "Thumbs.db", ".DS_Store", "**/*.partial.md"]
+exclude_patterns = [
+    "build",
+    "_output",
+    "Thumbs.db",
+    ".DS_Store",
+    "**/*.partial.md",
+]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -135,9 +149,18 @@ myst_substitutions = {
 rinoh_documents = [
     dict(
         doc="roles/researcher/user_guide_guacamole",
-        target="pdf/data_safe_haven_user_guide",
+        target="pdf/data_safe_haven_user_guide_guacamole",
         title="Data Safe Haven User Guide",
+        subtitle="Apache Guacamole",
         author=author,
-        template="emoji_support.rtt"
-    )
+        template="emoji_support.rtt",
+    ),
+    dict(
+        doc="roles/researcher/user_guide_msrds",
+        target="pdf/data_safe_haven_user_guide_msrds",
+        title="Data Safe Haven User Guide",
+        subtitle="Microsoft RDS",
+        author=author,
+        template="emoji_support.rtt",
+    ),
 ]
