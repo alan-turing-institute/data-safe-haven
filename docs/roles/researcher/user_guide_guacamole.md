@@ -22,7 +22,7 @@
 
 - Open a **private/incognito** browser session, so that you don't pick up any existing Microsoft logins
 
-- Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`role_system_manager`.
+- Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
 
   ```{note}
   Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would navigate to `https://sandbox.projects.turingsafehaven.ac.uk`.

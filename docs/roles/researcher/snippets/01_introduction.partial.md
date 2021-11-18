@@ -25,10 +25,10 @@ In many cases the answer is already here, but if you think this resource could b
 The following definitions might be useful during the rest of this guide
 
 Secure Research Environment (SRE)
-: The environment that you will be using to access the sensitive data.
+: the environment that you will be using to access the sensitive data.
 
 Data Safe Haven
-: The overall project that details how to create and manage one or more SREs.
+: the overall project that details how to create and manage one or more SREs.
 
 (user_guide_username_domain)=
 Username domain
@@ -36,7 +36,7 @@ Username domain
 
 (user_guide_sre_id)=
 SRE ID
-: each SRE has a unique short ID, for example `sandbox` which your {ref}`role_system_manager` will use to distinguish different SREs in the same Data Safe Haven.
+: each SRE has a unique short ID, for example `sandbox` which your {ref}`System Manager <role_system_manager>` will use to distinguish different SREs in the same Data Safe Haven.
 
 (user_guide_sre_url)=
 SRE URL

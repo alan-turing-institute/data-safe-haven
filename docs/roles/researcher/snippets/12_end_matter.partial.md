@@ -289,7 +289,7 @@ You have not been added to the correct SRE security group.
 
 #### Solution
 
-Ask your {ref}`role_system_manager` to add you to the appropriate SRE security group.
+Ask your {ref}`System Manager <role_system_manager>` to add you to the appropriate SRE security group.
 
 ### {{exclamation}} Unexpected certificate error
 

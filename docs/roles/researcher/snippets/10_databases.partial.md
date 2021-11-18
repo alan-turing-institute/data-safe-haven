@@ -9,13 +9,13 @@ If you have access to one or more databases, you can access them using the follo
 ### {{bento_box}} Microsoft SQL
 
 - Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX` )
-- Database name: \<provided by your {ref}`role_system_manager`>
+- Database name: \<provided by your {ref}`System Manager <role_system_manager>`>
 - Port: 1433
 
 ### {{postbox}} PostgreSQL
 
 - Server name: `PSTGRS-<SRE ID>` (e.g. `PSTGRS-SANDBOX` )
-- Database name: \<provided by your {ref}`role_system_manager`>
+- Database name: \<provided by your {ref}`System Manager <role_system_manager>`>
 - Port: 5432
 
 Examples are given below for connecting using `Azure Data Studio`, `DBeaver`, `Python` and `R`.

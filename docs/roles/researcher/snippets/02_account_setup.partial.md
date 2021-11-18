@@ -6,11 +6,11 @@ This section of the user guide will help you set up your new account on the SRE 
 
 Make sure you have all of the following in front of you when connecting to the SRE.
 
-- {{email}} The email from your {ref}`role_system_manager` with your account details.
-- {{wrench}} Your [username](#username), given in an email from your {ref}`role_system_manager`.
-- {{european_castle}} The [domain name and URL](#domain-names) for the SRE, given in an email from your {ref}`role_system_manager`.
+- {{email}} The email from your {ref}`System Manager <role_system_manager>` with your account details.
+- {{wrench}} Your [username](#username), given in an email from your {ref}`System Manager <role_system_manager>`.
+- {{european_castle}} The [domain name and URL](#domain-names) for the SRE, given in an email from your {ref}`System Manager <role_system_manager>`.
 - {{computer}} Your computer.
-- {{satellite}} [Access](#network-access) to the specific wired or wireless network detailed in the email from your {ref}`role_system_manager`.
+- {{satellite}} [Access](#network-access) to the specific wired or wireless network detailed in the email from your {ref}`System Manager <role_system_manager>`.
 - {{lock}} [Data security training](#data-security-training-requirements) for those working on health datasets.
 - {{iphone}} Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
 
@@ -28,7 +28,7 @@ Your username will usually be in the format `firstname.lastname`.
 In some places, you will need to enter it in the form `username@<username domain>`
 
 ```{tip}
-You can find your username in the email you received from your {ref}`role_system_manager`.
+You can find your username in the email you received from your {ref}`System Manager <role_system_manager>`.
 ```
 
 ```{caution}
@@ -79,7 +79,7 @@ The SRE is not set up to allow you to authenticate through other methods.
 
 #### Domain names
 
-You should be given the {ref}`username domain <user_guide_username_domain>` in the initial email from your {ref}`role_system_manager`.
+You should be given the {ref}`username domain <user_guide_username_domain>` in the initial email from your {ref}`System Manager <role_system_manager>`.
 You might receive the {ref}`SRE URL <user_guide_sre_url>` at this time, or you might be assigned to a particular SRE at a later point.
 
 ```{note}
@@ -134,7 +134,7 @@ Please follow these steps carefully.
   :align: center
   ```
 
-- Confirm your phone number, which you provided to the {ref}`role_system_manager` when you registered for access to the environment.
+- Confirm your phone number, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
   ```{image} user_guide/verify_phone.png
   :alt: Verify phone number
