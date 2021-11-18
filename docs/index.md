@@ -1,4 +1,4 @@
-# Data Safe Haven Documentation
+# The Turing Data Safe Haven
 
 ```{toctree}
 :hidden: true
@@ -10,31 +10,38 @@ policies/index.md
 design/index.md
 ```
 
-This is the documentation for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
-It contains instructions about how to deploy, administer and operate your own instance of the Turing's **Data Safe Haven** using Microsoft's Azure cloud platform.
+The **Data Safe Haven** has its origins in the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
+Here you will find instructions to to deploy, administer and use your own instance of the Turing's **Data Safe Haven** using Microsoft's Azure cloud platform.
 
-## [Introduction](introduction/index.md)
+## Overview
 
-**Recommended if**:
+Many of the important questions we want to answer for society require the use of sensitive data.
+In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
 
-- you want an overview of what the Data Safe Haven project is about.
+In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to address some of the above challenges.
 
-## [Roles](roles/index.md)
+We have developed:
 
-**Recommended if**:
+- A shared model for classifying data sets and projects into common sensitivity tiers, with recommended security measures for each tier and a web-based tool to support this process.
+- A cloud-based Data Safe Haven implementation using software defined infrastructure to support the reliable, efficient and safe deployment of project specific secure research environments tailored to the agreed sensitivity tier for the project.
+- A productive environment for curiosity-driven research, including access to a wide range of data science software packages and community provided code.
 
-- you want to deploy your own Data Safe Haven
-- you need to work with one that someone else has deployed
+## Documentation structure
 
-## [Policies](policies/index.md)
+The documentation for this project covers into several different topics.
+You can read them through in order or simply jump to the section that you are most interested in.
 
-**Recommended if**:
+- [**Introduction**](introduction/index.md)
+  - if you want an overview of what the **Data Safe Haven** project is about.
 
-- you want details about our data governance and user management recommendations
+- [**Roles**](roles/index.md)
+  - if you want to deploy your own **Data Safe Haven**
+  - if you need to work with one that someone else has deployed
+  - if you want to evaluate how **Data Safe Haven** works in practice
 
-## [Design](design/index.md)
+- [**Policies**](policies/index.md)
+  - if you want details about our data governance and user management recommendations
 
-**Recommended if**:
-
-- you want details about the technical design of the Data Safe Haven
-- you are interested in contributing to the Data Safe Haven codebase
+- [**Design**](design/index.md)
+  - if you want details about the technical design of the **Data Safe Haven**
+  - if you are interested in contributing to the **Data Safe Haven** codebase
