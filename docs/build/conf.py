@@ -43,7 +43,7 @@ emoji_codes = set(
 )
 
 # Set sidebar variables
-if not "html_context" in globals():
+if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
 html_context["version"] = release
