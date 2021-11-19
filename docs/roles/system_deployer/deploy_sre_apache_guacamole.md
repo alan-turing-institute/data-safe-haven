@@ -168,10 +168,6 @@ The `<VM size>` used for each compute VM size will be the one provided in the `-
 
 ### {{pear}} Test the Apache Guacamole remote desktop
 
-```{include} snippets/06_02_test_rds.partial.md
-:relative-images:
-```
-
 - Launch a local web browser on your **deployment machine** and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   - For example for `<safe haven domain> = project.turingsafehaven.ac.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.project.turingsafehaven.ac.uk/`
 - You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.

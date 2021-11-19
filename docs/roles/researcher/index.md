@@ -19,9 +19,5 @@ We use the lower case term when considering the population of researchers more w
 [Available software](available_software.md)
 : List of the software available in the secure research environment.
 
-```{note}
-The user guide was written with [Turing Data Study Groups](https://www.turing.ac.uk/collaborate-turing/data-study-groups) in mind.
-```
-
 {ref}`Software package allowlist policy <policy_software_package_approval>`
 : Guidance on our policy for approving software packages.

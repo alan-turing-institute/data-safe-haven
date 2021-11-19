@@ -14,7 +14,7 @@
 
 ## {{unlock}} Access the Secure Research Environment
 
-```{include} 03_01_prerequisites.partial.md
+```{include} snippets/03_01_prerequisites.partial.md
 :relative-images:
 ```
 
