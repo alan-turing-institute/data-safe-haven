@@ -4,7 +4,7 @@ name: Build documentation
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [1031-documentation-refactor]
+    branches: [develop]
 
 # checkout needs 'contents:read'
 # deploy needs 'contents:write'
