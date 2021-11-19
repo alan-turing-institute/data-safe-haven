@@ -24,3 +24,7 @@ docs/*.pdf
 
 # Sphinx output
 docs/_output
+
+# Files produced during testing
+.mustache_config.json
+expanded.yaml
