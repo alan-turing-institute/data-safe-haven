@@ -90,7 +90,7 @@ In order to provision a candidate VM you will need to do the following:
 PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 
 ```{note}
 - Although the `./Provision_Compute_VM.ps1` script will finish running in a few minutes, the build itself will take several hours.
@@ -113,7 +113,7 @@ Once you are happy with a particular candidate, you can convert it into an image
 PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 - where `<VM name>` is the name of the virtual machine created during the provisioning step
 
 This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
@@ -133,7 +133,7 @@ Once you have created an image, it can be registered in the image gallery for fu
 PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
 ```
 
-- where `<SHM ID>` is the [management environment ID](how-to-deploy-shm.md#management-environment-id) for this SRE
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 - where `<Image Name>` is the name of the VM image created during the conversion step
 
 This will register the image in the shared gallery as a new version of the Ubuntu-based compute machine images.

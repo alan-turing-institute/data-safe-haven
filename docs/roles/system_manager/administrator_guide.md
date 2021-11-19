@@ -154,7 +154,7 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 **Solution**: Check MFA setup
 
 - Ensure that the user has been assigned a license in Azure Active Directory
-- Check that the user has set up MFA (at `aka.ms/mfasetup` ) and is using the phone-call or app authentication method
+- Check that the user has set up MFA (at [https://aka.ms/mfasetup](https://aka.ms/mfasetup) ) and is using the phone-call or app authentication method
 ```
 
 ### {{interrobang}} xrdp login failure on the DSVM
@@ -321,7 +321,7 @@ The following steps show how to generate a temporary write-only upload token tha
   - Leave everything else as default click `Generate SAS token and URL`
   - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
-- The data provider should now be able to upload data by following [these instructions](../data_provider/how-to-ingress-data-as-provider.md#uploading)
+- The data provider should now be able to upload data by following {ref}`these instructions <role_data_provider_representative_ingress_upload>`.
 - You can validate successful data ingress by logging into the DSVM for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
 (roles_system_manager_software_ingress)=

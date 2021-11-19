@@ -37,7 +37,7 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 - **VPN access** to the SHM that you are testing
 
 ```{important}
-- If you haven't already, you'll need download a VPN certificate and configure [VPN access](../../tutorial/deployment_tutorials/how-to-deploy-shm.md#download-a-client-vpn-certificate-for-the-safe-haven-management-network) for the SHM
+- If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
 - Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>` and the {ref}`network policy server (NPS) <roles_system_deployer_shm_remote_desktop_nps>`.
 ```
 
@@ -47,7 +47,7 @@ The following users will be needed for this checklist
   - Create a new user **without** MFA
     - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
     - Visit https://aka.ms/sspr in an incognito browser
-    - Attempt to login and reset password, but **do not complete MFA** (see [these steps](../../how_to_guides/user_guides/user-guide.md#closed_lock_with_key-set-a-password))
+    - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 - {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
 - **Data provider** who has no accounts on the Safe Haven system
 
@@ -137,7 +137,7 @@ Check that the **SRE standard user** is able to successfully set up MFA
 {{white_check_mark}} **Verify that:** user is guided to set up MFA
 ```
 
-- Set up MFA as per [the user guide instructions](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication)
+- Set up MFA as per `{ref}the user guide instructions <roles_researcher_user_guide_setup_mfa>`.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>

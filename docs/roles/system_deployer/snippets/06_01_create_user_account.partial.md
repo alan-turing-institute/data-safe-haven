@@ -53,6 +53,6 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
 - A licence must be assigned to the user.
   - Navigate to `Azure Active Directory > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 - MFA must be enabled for the user.
-  - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](../../how_to_guides/user_guides/user-guide.md#door-set-up-multi-factor-authentication).
+  - The user must log into [https://aka.ms/mfasetup](https://aka.ms/mfasetup) and set up MFA as `detailed in the user guide <roles_researcher_user_guide_setup_mfa>`.
 
 </details>

@@ -61,6 +61,7 @@ In the event that the token is leaked, inform your {ref}`role_system_manager` wh
 Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it – if a malicious actor were to get hold of the link, they could poison your data.
 ```
 
+(role_data_provider_representative_ingress_upload)=
 #### Uploading your data
 
 1. Open [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)
