@@ -16,8 +16,10 @@ development_branch = "develop"
 
 # -- Customisation  -----------------------------------------------------------
 
+
 def tag2version(tag):
     return tag.name
+
 
 # Find name of current version plus names of all tags
 repo = Repo(search_parent_directories=True)
@@ -70,14 +72,8 @@ html_context["downloads"] = [
 html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
-html_context["github_version"] = f"{development_branch}/docs/"
-
-# -- Project information -----------------------------------------------------
-
-project = "Data Safe Haven"
-copyright = "2021, The Alan Turing Institute"
-author = "The Alan Turing Institute"
-
+html_context["github_version"] = development_branch
+html_context["doc_path"] = "docs"
 
 
 # -- General configuration ---------------------------------------------------
@@ -112,6 +108,7 @@ html_theme = "pydata_sphinx_theme"
 
 # Options for the chosen theme
 html_theme_options = {
+    "use_edit_page_button": True,
     "logo_link": "index",
     "github_url": f"https://github.com/{html_context['github_user']}/{html_context['github_repo']}",
 }
