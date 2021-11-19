@@ -3,31 +3,33 @@
 You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
 You can work with any of the pre-installed applications and programming languages.
 
-### Programming languages / compilers
+### {{package}} Pre-installed applications
+
+**Programming languages / compilers**
 
 ```{include} snippets/software_languages.partial.md
 :relative-images:
 ```
 
-### Editors / IDEs
+**Editors / IDEs**
 
 ```{include} snippets/software_editors.partial.md
 :relative-images:
 ```
 
-### Writing / presentation tools
+**Writing / presentation tools**
 
 ```{include} snippets/software_presentation.partial.md
 :relative-images:
 ```
 
-### Database access
+**Database access tools**
 
 ```{include} snippets/software_database.partial.md
 :relative-images:
 ```
 
-### Other useful software
+**Other useful software**
 
 ```{include} snippets/software_other.partial.md
 :relative-images:
@@ -75,7 +77,7 @@ For example:
 :align: center
 ```
 
-### {{snake}} Initiate the correct version of R or python
+### {{snake}} Available Python and R versions
 
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
 

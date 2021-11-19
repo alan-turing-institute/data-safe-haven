@@ -27,7 +27,7 @@ The easiest way to update a data science desktop is by redeploying it - it may b
 :relative-images:
 ```
 
-## Database access
+## Database access tools
 
 ```{include} snippets/software_database.partial.md
 :relative-images:
