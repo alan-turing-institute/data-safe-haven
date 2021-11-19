@@ -61,6 +61,7 @@ We usually deploy the latest version of the Safe Haven for each of these to take
 | December 2019    | DSG 2019-12                   | [v1.1.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v1.1.0-beta) |
 | April 2020       | DSG 2020-04 (event cancelled) | [v2.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v2.0.0-beta) |
 | June 2020        | DSSG 2020                     | [v3.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.0.0-beta) |
+| December 2021    | DSSG 2021-12                  | [v3.3.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.0.0-beta) |
 
 ## Versions that have undergone formal security evaluation
 
@@ -69,7 +70,8 @@ The following versions have been evaluated by third party security consultants.
 | Version                                                                                | Evaluation date | Evaluation performed                                                                                                                                                                                            | Outcome                             |
 | -------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | [v3.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.1.0) | 13 July 2020    | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate priviliges on the Data Science VM | No major security issues identified |
+| [v3.3.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.0) | 15 July 2021    | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate priviliges on the Data Science VM | No major security issues identified |
 
 ## Questions
 
-If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](#project-management-through-issues).
+If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](https://github.com/alan-turing-institute/data-safe-haven/issues).
