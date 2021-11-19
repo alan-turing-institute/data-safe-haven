@@ -238,7 +238,7 @@ Check that the **SRE standard user** can access the DSVM desktop.
 {{white_check_mark}} **Verify that:** connection fails
 ```
 
-#### Fail to connect to the internet from within a DSVM on the SRE network.
+#### Fail to connect to the internet from within a DSVM on the SRE network
 
 - Login as a user to a DSVM from within the SRE by using the web client.
 - Choose your favourite three websites and attempt to access the internet using a browser
@@ -586,7 +586,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 {{white_check_mark}} **Verify that:** the access token fails.
 ```
 
-#### Check that the upload fails if the token has expired.
+#### Check that the upload fails if the token has expired
 
 - Create a write-only token with short duration
 
@@ -646,7 +646,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed, as well as package mirrors.
 - Additional software must be added separately via ingress.
-<!-- - Software is stored in a holding zone until approved to be added for user access. -->
 
 ### Which means:
 

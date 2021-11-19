@@ -8,11 +8,15 @@ These instructions will walk you through deploying a Secure Research Environment
 :relative-images:
 ```
 
+## 1. {{seedling}} Prerequisites
+
 ```{include} snippets/01_prerequisites.partial.md
 :relative-images:
 ```
 
 (roles_deployer_sre_id)=
+
+## 2. {{clipboard}} Secure Research Environment configuration
 
 ```{include} snippets/02_configuration.partial.md
 :relative-images:
@@ -94,6 +98,7 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
 - where `<AAD tenant ID>` is the `Tenant ID` for the AzureAD that you [created during SHM deployment](deploy_shm.md#get-the-azure-active-directory-tenant-id)
+
 </details>
 
 <details>
@@ -171,13 +176,16 @@ The `<VM size>` used for each compute VM size will be the one provided in the `-
 - Launch a local web browser on your **deployment machine** and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   - For example for `<safe haven domain> = project.turingsafehaven.ac.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.project.turingsafehaven.ac.uk/`
 - You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
+
   ```{image} ../researcher/user_guide/guacamole_dashboard.png
   :alt: Guacamole dashboard
   :align: center
   ```
+
 - At this point you should double click on the {{computer}} `Ubuntu0` link under `All Connections` which should bring you to an Ubuntu login screen
 - You will need the short-form of the user name (ie. without the `@<safe haven domain>` part) and the same password as before
 - This should bring you to an Ubuntu desktop that will look like the following
+
   ```{image} deploy_sre/guacamole_desktop.png
   :alt: Guacamole dashboard
   :align: center

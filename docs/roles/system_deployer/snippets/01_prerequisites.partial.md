@@ -1,14 +1,14 @@
-## 1. {{seedling}} Prerequisites
-
 - An `SHM environment` that has already been deployed in Azure
   - Follow the {ref}`Safe Haven Management (SHM) deployment guide <deploy_shm>` if you have not done so already.
 - All {ref}`prerequisites needed for deploying the SHM <deploy_shm_prerequisites>`.
 - An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in: we recommend around $1,000 as a reasonable starting point.
   - This can be the same or different from the one where the SHM is deployed
+
   ```{tip}
   - Ensure that the **Owner** of the subscription is an `Azure Security group` that contains all administrators and no-one else.
   - We recommend using separate `Azure Active Directories` for users and administrators
   ```
+
 - Access to a **global administrator** account on the SHM Azure Active Directory
 
 ### {{beginner}} Software

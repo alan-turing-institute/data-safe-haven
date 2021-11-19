@@ -22,6 +22,7 @@ A helper script for doing this is already uploaded to the domain controller - yo
   - To export all users, select `Users > Export UserCreate.csv`
   - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
 - Upload the user details CSV file to a sensible location on the SHM domain controller
+
   ```{note}
   We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
   ```
@@ -352,23 +353,29 @@ Software ingress must go through the same {ref}`approval policy <policy_security
     - `List`
   - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
   - Leave everything else as default click `Generate SAS token and URL`
+
     ```{image} administrator_guide/read_only_sas_token.png
     :alt: Read-only SAS token
     :align: center
     ```
+
   - Leave this portal window open and move to the next step
 - Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
 - Click the socket image on the left hand side
+
   ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
   :alt: Azure Storage Explorer connection
   :align: center
   ```
+
 - On `Select Resource`, choose `Blob container`
 - On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
+
   ```{image} administrator_guide/connect_azure_storage.png
   :alt: Connect with SAS token
   :align: center
   ```
+
 - On `Enter Connection Info`:
   - Set the `Display name` to "egress" (or choose an informative name)
   - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
@@ -395,9 +402,11 @@ On your **deployment machine**.
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   - Run the following script:
+
     ```powershell
     ./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>
     ```
+
   - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
 ### {{bomb}} Tear down the SHM
@@ -427,20 +436,28 @@ On your **deployment machine**.
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+
   ```{attention}
   If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   ```
+
 - For each SRE attached to the SHM, do the following:
   - Tear down the SRE by running:
+
     ```powershell
     ./SRE_Teardown.ps1 -sreId <SRE ID>
     ```
+
     where the SRE ID is the one specified in the relevant config file
+
     ```{note}
     If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
     ```
+
 - Tear down the SHM by running:
+
   ```powershell
   ./SHM_Teardown.ps1 -shmId <SHM ID>
   ```
+
   where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.

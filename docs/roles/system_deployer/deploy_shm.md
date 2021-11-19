@@ -16,23 +16,28 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 ## 1. {{seedling}} Prerequisites
 
 - An [Azure subscription](https://portal.azure.com) with sufficient credits to build the environment in: we recommend around $3,000 as a reasonable starting point.
+
   ```{tip}
   - Ensure that the **Owner** of the subscription is an `Azure Security group` that contains all administrators and no-one else.
   - We recommend using separate `Azure Active Directories` for users and administrators
   ```
+
 - `PowerShell`
   - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 - `Powershell` cross-platform modules
+
   ````{tip}
   Check whether you are missing any required modules by running
   ```powershell
   PS> ./deployment/CheckRequirements.ps1
   ```
   ````
+
   ```{warning}
   The version of the `AzureAD` module available from the standard Powershell Gallery only works on Windows.
   We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
   ```
+
 - `Microsoft Remote Desktop`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
@@ -40,9 +45,11 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 - `OpenSSL`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
+
     ```{error}
     If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
     ```
+
   - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
 
 ## 2. {{clipboard}} Safe Haven Management configuration
@@ -291,10 +298,12 @@ You must now make this account into a **native** Global Administrator.
   - Click `Assigned roles` in the left hand menu
   - Click `Add assignments` in the top menu above the (empty) list of roles
   - Search for `Global Administrator`
+
     ```{image} deploy_shm/aad_global_admin.png
     :alt: AAD Global Admin
     :align: center
     ```
+
   - Check `Global Administrator`
   - Click the `Add` button
 
@@ -373,10 +382,12 @@ As activating self-service password reset requires active MFA licences, this is 
 - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 - Click `Password reset` in the left hand sidebar
 - Set the `Self service password reset enabled` toggle to `All`
+
   ```{image} deploy_shm/aad_sspr.png
   :alt: AAD self-service password reset
   :align: center
   ```
+
 - Click the `Save` icon
 
 ```{error}
@@ -849,10 +860,12 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Select `Password reset` from the left hand menu
 - Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
+
     ```{image} deploy_shm/enable_password_writeback.png
     :alt: Enable password writeback
     :align: center
     ```
+
   - If you changed this setting, click the `Save` icon
 
 #### Manually add an MFA licence for the user

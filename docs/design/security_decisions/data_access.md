@@ -26,12 +26,12 @@ Access to the underlying Azure resources requires administrators to log into Azu
 We strongly recommend using institutional credentials that are separate from the Data Safe Haven `Azure Active Directory` together with multifactor authentication.
 ```
 
-### Administrative access to the Safe Haven Management (SHM) segment.
+### Administrative access to the Safe Haven Management (SHM) segment
 
 Used primarily to manage users and security groups within the Safe Haven, as well as to troubleshoot any authentication issues.
 Access is via an `Azure` point-to-site (P2S) VPN service, and requires both a client certificate and administrative login credentials.
 
-### Administrative access to all project SREs.
+### Administrative access to all project SREs
 
 Used to troubleshoot any issues and ingress data and code following review.
 Access is via an `Azure` point-to-site (P2S) VPN service, and requires both a client certificate and administrative login credentials.

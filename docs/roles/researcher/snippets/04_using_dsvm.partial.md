@@ -15,7 +15,6 @@ You can work with any of the pre-installed applications and programming language
 :relative-images:
 ```
 
-
 ### Writing / presentation tools
 
 ```{include} snippets/software_presentation.partial.md
@@ -89,7 +88,7 @@ You can see the default version (indicated by a '\*') and all other installed ve
 
 This will give output like:
 
-```
+```bash
   system
   3.6.11
   3.7.8

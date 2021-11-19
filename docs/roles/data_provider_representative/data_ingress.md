@@ -35,7 +35,7 @@ The Safe Haven is built on the Microsoft Azure platform.
 The most convenient way of safely transferring data from the Dataset Provider is to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 You will not need log-in credentials, as your {ref}`role_system_manager` will provide a short-lived secure access token which will let you upload data.
 
-#### Before we can begin...
+#### Prerequisites
 
 ```{important}
 - You must be able to receive a secure email.
@@ -65,23 +65,27 @@ Whilst the connection between your computers and our repository is one way – y
 
 1. Open [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/)
 2. Click the socket image on the left hand side
+
    ```{image} azure_storage_explorer_connect.png
    :alt: Azure Storage Explorer connection
    :align: center
    ```
+
 3. On `Select Resource`, choose `Blob container`
 4. On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 5. On `Enter Connection Info`:
-   - Set the `Display name` to `ingress` (or choose an appropriate name)
-   - Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
+  - Set the `Display name` to `ingress` (or choose an appropriate name)
+  - Copy the SAS URL that the administrator sent you via secure email into the `Blob container SAS URL` box and hit `Next`
 6. On the `Summary` page:
-   - Ensure the permissions include `Write` & `List` (if not, you will be unable to upload data and should contact the administrator who sent you the token)
-   - Hit `Connect`
+  - Ensure the permissions include `Write` & `List` (if not, you will be unable to upload data and should contact the administrator who sent you the token)
+  - Hit `Connect`
 7. On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers`->`ingress (SAS)`
+
    ```{image} azure_storage_explorer_container.png
    :alt: Azure Storage Explorer container
    :align: center
    ```
+
 8. You should now be able to upload data to the Safe Haven by clicking the `Upload` button, completing the ingress process
 
 ````{note}

@@ -12,6 +12,8 @@ If you are deploying a {ref}`policy_tier_0` or {ref}`policy_tier_1` environment,
 :relative-images:
 ```
 
+## 1. {{seedling}} Prerequisites
+
 ```{include} snippets/01_prerequisites.partial.md
 :relative-images:
 ```
@@ -20,6 +22,8 @@ If you are deploying a {ref}`policy_tier_0` or {ref}`policy_tier_1` environment,
 
 For some operations, you will need to log on to some of the VMs that you deploy and make manual changes.
 This is done using the VPN which should have been deployed {ref}`when setting up the SHM environment <deploy_shm_vpn>`.
+
+## 2. {{clipboard}} Secure Research Environment configuration
 
 ```{include} snippets/02_configuration.partial.md
 :relative-images:
@@ -194,6 +198,7 @@ These certificates will **not** be trusted by your browser, and so should not be
 - Launch a local web browser on your **deployment machine** and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
   - For example for `<safe haven domain> = project.turingsafehaven.ac.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.project.turingsafehaven.ac.uk/`
 - You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
+
   ```{image} deploy_sre/msrds_desktop.png
   :alt: Microsoft RDS desktop
   :align: center

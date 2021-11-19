@@ -1,16 +1,21 @@
 - Make a new copy of the user details template file from `C:\Installation\user_details_template.csv`
+
   ```{tip}
   We suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
   ```
+
 - Remove the example user and add the required details for each user
 
   - `SamAccountName`: Log in username **without** the `@<SRE domain>` part.
+
     ```{tip}
     We recommend using `firstname.lastname` format.
     ```
+
     ```{warning}
     Ensure that usernames have a maximum of **20 characters** from the 7-bit ASCII set (unnaccented letters, numbers and some punctuation) or synchronisation will fail.
     ```
+
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
   - `Mobile`: Phone number to use for initial password reset.
@@ -30,6 +35,7 @@
     ```
 
   - `GroupName`: [Optional] The name of the Active Directory security group(s) that the users should be added (eg. `SG SANDBOX Research Users` ).
+
     ```{tip}
     If the user needs to be added to multiple groups, separate them with a pipe-character ( `|` ).
     ```
