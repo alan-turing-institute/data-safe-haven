@@ -1,8 +1,23 @@
 {% if READTHEDOCS or display_lower_left %}
-{# Add rst-badge after rst-versions for small badge style. #}
+  {% if downloads|length >= 1 %}
+  <div class="rst-versions" data-toggle="rst-downloads" role="note" aria-label="downloads">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-file-pdf fa-fw left"></span>
+      <span class="left">Download <strong>latest</strong> PDFs</span>
+      <span class="fa fa-caret-down right"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl>
+        {% for type, url in downloads %}
+          <dd><a href="{{ url }}">{{ type }}</a></dd>
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+  {% endif %}
   <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
-      <span class="fa fa-book left"></span>
+      <span class="fa fa-book fa-fw left"></span>
       <span class="left">Currently reading: <strong>{{ current_version }}</strong></span>
       <span class="fa fa-caret-down right"></span>
     </span>
@@ -24,15 +39,6 @@
           {% if slug == current_version %} <strong> {% endif %}
           <dd><a href="{{ url }}">{{ slug }}</a></dd>
           {% if slug == current_version %} </strong> {% endif %}
-        {% endfor %}
-      </dl>
-      {% endif %}
-      {% if downloads|length >= 1 %}
-      <hr/>
-      <dl>
-        <dt>{{ _('Download latest PDFs') }}</dt>
-        {% for type, url in downloads %}
-          <dd><a href="{{ url }}">{{ type }}</a></dd>
         {% endfor %}
       </dl>
       {% endif %}

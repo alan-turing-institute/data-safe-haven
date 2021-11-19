@@ -14,7 +14,7 @@
   max-height: 100%;
 }
 /* Add space to the right of the book icon */
-.fa-book {
+.fa-book,.fa-file-pdf {
   padding-right: 5px;
 }
 /* Sidebar pop-up: on hover change the cursor to a pointer */
@@ -27,12 +27,12 @@
 .rst-current-version > span {
   line-height: 1;
 }
-/* Versions table when default */
+/* Toggleable tables when default */
 .rst-versions .rst-other-versions {
   display: none;
   padding: 12px;
 }
-/* Versions table when open */
+/* Toggleable tables when open */
 .rst-versions.shift-up .rst-other-versions {
   display: block;
 }
