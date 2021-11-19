@@ -44,7 +44,7 @@ if [ -n "$SOFTWARE_PACKAGE_REQUEST_FORM_PATH" ]; then
     sed -i "/[ -]|[ -]/d" "$(find . -name 'software-package-request-form.md')"
 fi
 # Output the fixes that have been made
-git diff "**/*.md" ':(exclude)docs/README.md'
+git diff --exit-code "**/*.md" ':(exclude)docs/README.md'
 
 # Build the docs
 make -C docs clean
