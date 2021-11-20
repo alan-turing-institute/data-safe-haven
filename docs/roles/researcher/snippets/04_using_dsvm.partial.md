@@ -5,31 +5,31 @@ You can work with any of the pre-installed applications and programming language
 
 ### {{package}} Pre-installed applications
 
-**Programming languages / compilers**
+#### Programming languages / compilers
 
 ```{include} snippets/software_languages.partial.md
 :relative-images:
 ```
 
-**Editors / IDEs**
+#### Editors / IDEs
 
 ```{include} snippets/software_editors.partial.md
 :relative-images:
 ```
 
-**Writing / presentation tools**
+#### Writing / presentation tools
 
 ```{include} snippets/software_presentation.partial.md
 :relative-images:
 ```
 
-**Database access tools**
+#### Database access tools
 
 ```{include} snippets/software_database.partial.md
 :relative-images:
 ```
 
-**Other useful software**
+#### Other useful software
 
 ```{include} snippets/software_other.partial.md
 :relative-images:
