@@ -4,24 +4,25 @@ This is the repository for the Alan Turing Institute's [Data Safe Havens in the 
 
 ## Introduction
 
-Many of the important questions we want to answer for society require the use of sensitive data. In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
+Many of the important questions we want to answer for society require the use of sensitive data.
+In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
 
 In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to address some of the above challenges.
 
 We have developed:
 
-+ A shared model for classifying data sets and projects into common sensitivity tiers, with recommended security measures for each tier and a web-based tool to support this process.
-+ A cloud-based Safe Haven implementation using software defined infrastructure to support the reliable, efficient and safe deployment of project specific secure research environments tailored to the agreed sensitivity tier for the project.
-+ A productive environment for curiosity-driven research, including access to a wide range of data science software packages and community provided code.
+- A shared model for classifying data sets and projects into common sensitivity tiers, with recommended security measures for each tier and a web-based tool to support this process.
+- A cloud-based Safe Haven implementation using software defined infrastructure to support the reliable, efficient and safe deployment of project specific secure research environments tailored to the agreed sensitivity tier for the project.
+- A productive environment for curiosity-driven research, including access to a wide range of data science software packages and community provided code.
 
 ## Overview
 
 To get a good overview of the Safe Haven, see the resources below.
 
-+ [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
-+ [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from our standard presentation about the Safe Haven giving a more in-depth overview.
-+ [Overview video](https://youtu.be/uAGhnAnxtvo): An extended version of our overview presentation that also demonstrates our data classification web application and using the environment as a researcher.
-+ [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
+- [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
+- [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from our standard presentation about the Safe Haven giving a more in-depth overview.
+- [Overview video](https://youtu.be/uAGhnAnxtvo): An extended version of our overview presentation that also demonstrates our data classification web application and using the environment as a researcher.
+- [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "_Design choices for productive, secure, data-intensive research at scale in the cloud_", outlining our policies, processes and design decisions for the Safe Haven.
 
 ## Documentation
 
@@ -43,6 +44,6 @@ We welcome contributions from anyone who is interested in the project. There are
 
 We are grateful for the following support for this project:
 
-+ The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
-+ The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
-+ Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.
+- The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
+- The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
+- Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.

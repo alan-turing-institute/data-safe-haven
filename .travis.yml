@@ -52,7 +52,7 @@ jobs:
     - name: Lint Python
       language: python
       python: 3.9
-      before_script: pip install flake8
+      install: pip install flake8
       script: flake8 . --statistics --count
 
     - name: Lint shell
@@ -63,17 +63,20 @@ jobs:
       script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
 
     - name: Lint YAML
-      language: python
-      python: 3.9
-      before_script: pip install pystache-cli yamllint
+      language: node_js
+      python: node
+      before_script: |
+        npm install -g mustache
+        pip install yamllint
       script: |
-        echo '{"array": ["dummy"], "variable": "dummy"}' > mustache_config.json
-        for yamlfile in $(find . -name "*.yaml"); do
-          sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > ${yamlfile}.bak  # replace mustache arrays
-          sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" ${yamlfile}.bak           # replace mustache variables
-          pystache-cli $yamlfile ${yamlfile}.bak mustache_config.json          # perform mustache expansion
+        echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
+        for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
+          sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.yaml  # replace mustache arrays
+          sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.yaml           # replace mustache variables
+          mustache .mustache_config.json expanded.yaml | yamllint -s -       # perform mustache expansion and lint from stdin
+          test $? -eq 0 && echo "✅ YAML linting succeeded for $yamlfile" || echo "❌ YAML linting failed for $yamlfile"
         done
-        yamllint -s .
+        rm .mustache_config.json expanded.yaml
 
     - name: Check for dead links in Markdown
       language: node_js

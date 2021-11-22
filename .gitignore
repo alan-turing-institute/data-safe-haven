@@ -23,5 +23,8 @@ docs/*.pdf
 !docs/tiersflowchart.pdf
 
 # Sphinx output
-docs/_build
-docs/output
+docs/_output
+
+# Files produced during testing
+.mustache_config.json
+expanded.yaml

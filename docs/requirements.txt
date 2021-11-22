@@ -1,6 +1,0 @@
-docutils==0.16
-GitPython==3.1.17
-myst-parser==0.14.0
-sphinx-rtd-theme==0.5.2
-Sphinx==3.5.4
-emoji==1.2.0
