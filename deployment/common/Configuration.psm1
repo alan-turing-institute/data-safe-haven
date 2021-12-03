@@ -1093,7 +1093,7 @@ function Show-FullConfig {
     if ($sreId -eq "") {
         $config = Get-ShmConfig -shmId $shmId
     } else {
-        $config = Get-SreConfig -configId "${shmId}${sreId}"
+        $config = Get-SreConfig -shmId ${shmId} -sreId ${sreId}
     }
     Write-Output ($config | ConvertTo-Json -Depth 10)
 }
