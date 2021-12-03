@@ -55,9 +55,15 @@ foreach ($route in $rules.routes) {
 }
 
 
-# Attach all subnets except the RDG and deployment subnets to the firewall route table
-# ------------------------------------------------------------------------------------
+# Attach all non-excluded subnets to the route table that will send traffic through the firewall
+# ----------------------------------------------------------------------------------------------
+# The RDG and deployment subnets always have internet access
 $excludedSubnetNames = @($config.sre.network.vnet.subnets.remoteDesktop.name, $config.sre.network.vnet.subnets.deployment.name)
+# The compute subnet will have internet access according to what is in the config file (eg. for Tier 0 and Tier 1)
+if ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") {
+    $excludedSubnetNames += $config.sre.network.vnet.subnets.compute.name
+}
+# Attach all remaining subnets to the route table
 foreach ($subnet in $VirtualNetwork.Subnets) {
     if ($excludedSubnetNames.Contains($subnet.Name)) {
         Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is NOT attached to any route table..."
