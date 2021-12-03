@@ -204,7 +204,7 @@ In the event of any conflict of interest such that Martyin is not able to evalua
 
 ## 5. Acknowledgements
 
-This project has adopted this Code of Conduct from the [Turing Way Code of Conduct](https://github.com/alan-turing-institute/the-turing-way/edit/master/CODE_OF_CONDUCT.md), which is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license, which means you are free to share and adapt the work so long as the attribution to Kirstie Whitaker and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
+This project has adopted this Code of Conduct from the [Turing Way Code of Conduct](https://github.com/alan-turing-institute/the-turing-way/blob/main/CODE_OF_CONDUCT.md), which is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license, which means you are free to share and adapt the work so long as the attribution to Kirstie Whitaker and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
 
 The Turing Way Code of Conduct was adapted from the [Carpentries Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html)  with sections from the [Alan Turing Institute Data Study Group Code of Conduct](https://docs.google.com/document/d/1iv2cizNPUwtEhHqaezAzjIoKkaIX02f7XbYmFMXDTGY/edit).
 Both are used under the creative commons attribution license.
