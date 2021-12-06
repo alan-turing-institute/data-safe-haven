@@ -479,6 +479,9 @@ runcmd:
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
   # Disable light-locker which can cause irritating error messages
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  # Ensure that if xscreensave is installed it will use blank mode
+  - |
+    echo "xscreensaver.mode: blank" >> /etc/X11/Xresources/x11-common
   # Set terminal colour scheme
   - |
     THEME="dark-pastels"
