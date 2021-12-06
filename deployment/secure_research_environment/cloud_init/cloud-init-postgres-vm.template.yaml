@@ -32,7 +32,12 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
-  - path: /etc/crontab
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
+  - path: "/etc/crontab"
     append: true
     content: |
       */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
@@ -48,7 +53,7 @@ write_files:
     owner: root:root
     permissions: "0444"
     content: |
-      <krb5.conf>
+      {{krb5.conf}}
 
   - path: "/etc/ldap.secret"
     owner: root:root
@@ -158,22 +163,22 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      <realmd.conf>
+      {{realmd.conf}}
 
   - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"
     content: |
-      <check_dns.sh>
+      {{check_dns.sh}}
 
   - path: "/opt/configuration/check_hostname.sh"
     permissions: "0500"
     content: |
-      <check_hostname.sh>
+      {{check_hostname.sh}}
 
   - path: "/opt/configuration/check_ntp.sh"
     permissions: "0500"
     content: |
-      <check_ntp.sh>
+      {{check_ntp.sh}}
 
   - path: "/opt/configuration/create-postgres-triggers.sql"
     owner: root:root
@@ -259,7 +264,7 @@ write_files:
     owner: root:root
     permissions: "0500"
     content: |
-      <join_domain.sh>
+      {{join_domain.sh}}
 
   - path: "/opt/configuration/pg-ldap-sync.yaml"
     owner: root:root
@@ -374,22 +379,29 @@ manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
 runcmd:
-  - echo ">=== Beginning PostgreSQL server configuration... ===<"
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - echo ">=== Checking DNS... ===<"
+  # Check DNS
+  - echo "Checking DNS..."
   - /opt/configuration/check_dns.sh
-  - echo ">=== Checking hostname... ===<"
+  # Check hostname
+  - echo "Checking hostname..."
   - /opt/configuration/check_hostname.sh
   - systemctl enable sssd
   # Check Kerberos settings
   - echo "Checking Kerberos config"
   - grep -v -e '^[[:space:]]*$' /etc/krb5.conf | sed 's|^| /etc/krb5.conf |'
   # Check timezone and NTP server
-  - echo ">=== Current time synchronisation status... ===<"
+  - echo "Current time synchronisation status..."
   - /opt/configuration/check_ntp.sh
+
   # Configure the postgres database
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
@@ -408,6 +420,7 @@ runcmd:
   # Restart the server with all the above changes
   - systemctl start postgresql@12-main
   - systemctl status postgresql@12-main
+
   # Create the required LDAP groups on the postgres server
   - echo ">=== Creating necessary LDAP roles... ===<"
   - |
@@ -420,16 +433,22 @@ runcmd:
             echo "${ROLE} role already exists"
         fi
     done
+
   # Install postgres extensions
   - echo ">=== Installing postgis schema and extensions... ===<"
   - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
+
   # Install pg-ldap-sync for adding LDAP users
-  - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
+  - echo ">=== Configuring pg-ldap-sync... ===<"
+  # Add users
+  - echo "Adding LDAP users with pg-ldap-sync..."
   - gem install pg-ldap-sync
   - mv /opt/configuration/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
-  - echo ">=== Checking that LDAP user sync is scheduled every 10 minutes... ===<"
+  # Add cronjob
+  - echo "Checking that LDAP user sync is scheduled every 10 minutes..."
   - grep pg_ldap_sync /etc/crontab
+
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
   - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf

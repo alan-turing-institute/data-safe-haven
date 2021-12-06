@@ -2,7 +2,12 @@
 
 # Create files
 write_files:
-  - path: /etc/gitlab/gitlab.rb
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
+  - path: "/etc/gitlab/gitlab.rb"
     permissions: "0600"
     content: |
       external_url 'http://{{sre.webapps.gitlab.ip}}'
@@ -96,6 +101,11 @@ runcmd:
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
 
   # Check server settings
   - echo ">=== Hostname ===<"
