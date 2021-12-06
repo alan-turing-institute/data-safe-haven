@@ -5,11 +5,11 @@
 secrets/
 temp/
 
-# Dependency cache for package whitelisting
-deployment/administration/.dependency_cache.json
-
 # Any environment configs apart from those used as examples
 environment_configs/*.json
+
+# The package dependency cache
+environment_configs/package_lists/dependency-cache.json
 
 # Development tools
 .vscode
@@ -23,5 +23,8 @@ docs/*.pdf
 !docs/tiersflowchart.pdf
 
 # Sphinx output
-docs/_build
-docs/output
+docs/_output
+
+# Files produced during testing
+.mustache_config.json
+expanded.yaml

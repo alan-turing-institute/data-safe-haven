@@ -17,8 +17,8 @@ fs_setup:
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
   - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec"]
-  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/shared", /shared, nfs, "_netdev,sec=sys"]
-  - ["<storage-account-userdata-name>.file.core.windows.net:/<storage-account-userdata-name>/home", /home, nfs, "_netdev,sec=sys"]
+  - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/shared", /shared, nfs, "_netdev,sec=sys"]
+  - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
   - path: "/etc/bash.bashrc"
@@ -58,7 +58,7 @@ write_files:
   - path: "/etc/domain-join.secret"
     permissions: "0400"
     content: |
-      <domain-join-password>
+      {{dsvm.domainJoinPassword}}
 
   - path: "/etc/jaas.conf"
     permissions: "0444"
@@ -75,32 +75,32 @@ write_files:
     permissions: "0444"
     content: |
       # The distinguished name of the search base.
-      base <ou-research-users-path>
+      base {{shm.domain.ous.researchUsers.path}}
       # Restrict users to those in the security group of this SRE
-      filter <ldap-sre-user-filter>
+      filter {{{dsvm.ldapUserFilter}}}
       # Specify the LDAP server by URI
-      uri ldap://<shm-dc-hostname-upper>.<shm-fqdn-lower>:389
+      uri ldap://{{shm.dc.hostnameUpper}}.{{shm.domain.fqdnLower}}:389
       # The LDAP version to use (defaults to 3 if supported by client library)
       ldap_version 3
       # The distinguished name used to bind to the server
-      rootbinddn <ldap-search-user-dn>
+      rootbinddn {{dsvm.ldapSearchUserDn}}
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
 
   - path: "/etc/ldap.secret"
     permissions: "0400"
     content: |
-      <ldap-search-user-password>
+      {{dsvm.ldapSearchUserPassword}}
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     permissions: "0500"
     content: |
       #! /bin/bash
       echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
-      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-linux-servers-path>' '<domain-join-username>' '<vm-hostname>'"
-      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>"
+      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.linuxServers.path}}' '{{shm.users.computerManagers.linuxServers.samAccountName}}' '{{dsvm.hostname}}'"
+      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.linuxServers.path}}" "{{shm.users.computerManagers.linuxServers.samAccountName}}" "{{dsvm.hostname}}"
 
   - path: "/etc/local/runonce.d/01-remount-nfs.sh"
     permissions: "0500"
@@ -120,9 +120,9 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = <mirror-index-pypi>
-      index-url = <mirror-index-url-pypi>
-      trusted-host = <mirror-host-pypi>
+      index = {{sre.repositories.pypi.index}}
+      index-url = {{sre.repositories.pypi.indexUrl}}
+      trusted-host = {{sre.repositories.pypi.host}}
 
   - path: "/etc/realmd.conf"
     permissions: "0400"
@@ -135,7 +135,7 @@ write_files:
       ## Set Rprofile.site to the appropriate CRAN mirror
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "<mirror-url-cran>"
+          r["CRAN"] <- "{{sre.repositories.cran.url}}"
           options(repos = r)
       })
 
@@ -147,7 +147,7 @@ write_files:
       Type=Link
       Name=CoCalc
       Comment=
-      Icon=/opt/icons/cocalc.svg
+      Icon=/opt/icons/cocalc.png
       URL=https://{{sre.webapps.cocalc.fqdn}}
 
   - path: "/etc/skel/Desktop/CodiMD.desktop"
@@ -315,6 +315,11 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
+  - path: "/etc/xdg/xfce4/terminal/terminalrc"
+    permissions: "0644"
+    content: |
+      [Configuration]
+
   - path: "/etc/xrdp/startwm.sh"
     permissions: "0755"
     content: |
@@ -326,27 +331,29 @@ write_files:
       # Start xfce4
       startxfce4
 
-  - path: "/opt/configuration/configure_dns.sh"
+  - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"
     content: |
-      {{configure_dns.sh}}
+      {{check_dns.sh}}
 
-  - path: "/opt/configuration/configure_hostname.sh"
+  - path: "/opt/configuration/check_hostname.sh"
     permissions: "0500"
     content: |
-      {{configure_hostname.sh}}
+      {{check_hostname.sh}}
+
+  - path: "/opt/configuration/check_ntp.sh"
+    permissions: "0500"
+    content: |
+      {{check_ntp.sh}}
 
   - path: "/opt/configuration/configure_pam.sh"
     permissions: "0500"
     content: |
       # Edit the PAM session configuration file
-      echo "Updating PAM configuration..."
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /etc/pam.d/common-session.tmp
       mv /etc/pam.d/common-session.tmp /etc/pam.d/common-session
-      echo ">=== /etc/pam.d/common-session ===<"
-      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
-      echo ">=== end of /etc/pam.d/common-session ===<"
+      grep -v -e '^[[:space:]]*$' /etc/pam.d/common-session | grep -v "^#" | sed 's|^|  /etc/pam.d/common-session  |'
 
   - path: "/opt/configuration/configure_pycharm.py"
     permissions: "0500"
@@ -356,16 +363,16 @@ write_files:
   - path: "/opt/configuration/credentials-ingress.secret"
     permissions: "0400"
     content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-ingress-sastoken>
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{dsvm.ingressContainerSasToken}}}
       authType SAS
       containerName ingress
 
   - path: "/opt/configuration/credentials-egress.secret"
     permissions: "0400"
     content: |
-      accountName <storage-account-persistentdata-name>
-      sasToken <storage-account-persistentdata-egress-sastoken>
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{dsvm.egressContainerSasToken}}}
       authType SAS
       containerName egress
 
@@ -410,22 +417,28 @@ write_files:
     encoding: gz+b64
     permissions: "0644"
     content: |
-      {{xrdpCustomLogoEncoded}}
+      {{dsvm.xrdpCustomLogoEncoded}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: <timezone>
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
-# Install blobfuse for mounting Azure storage
-packages:
-  - blobfuse
-  - nfs-common
+# Set hostname
+# We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
+fqdn: "{{dsvm.hostname}}.{{shm.domain.fqdnLower}}"
+hostname: {{dsvm.hostname}}
+manage_etc_hosts: true
+prefer_fqdn_over_hostname: true
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
@@ -435,46 +448,47 @@ runcmd:
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure_dns.sh
-  - /opt/configuration/configure_hostname.sh
+  - echo ">=== Checking DNS... ===<"
+  - /opt/configuration/check_dns.sh
+  - echo ">=== Checking hostname... ===<"
+  - /opt/configuration/check_hostname.sh
+  - echo ">=== Updating PAM configuration... ===<"
   - /opt/configuration/configure_pam.sh
   - systemctl enable sssd
   # Check Kerberos settings
-  - echo "Checking LDAP config"
-  - echo ">=== /etc/ldap.conf ===<"
-  - grep -v "^#" /etc/ldap.conf | grep -v "^$"
-  - echo ">=== end of /etc/ldap.conf ===<"
-  - echo "Checking Kerberos config"
-  - echo ">=== /etc/krb5.conf ===<"
-  - cat /etc/krb5.conf | grep -v "^$"
-  - echo ">=== end of /etc/krb5.conf ===<"
+  - echo ">=== Checking LDAP config... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/ldap.conf | grep -v "^#" | sed 's|^|  /etc/ldap.conf  |'
+  - echo ">=== Checking Kerberos config... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf | sed 's|^|  /etc/krb5.conf  |'
   # Check timezone and NTP server
-  - echo ">=== Current timezone... ===<"
-  - echo "Date     $(date)"
-  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
-  - systemctl status systemd-timesyncd  # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
+  - /opt/configuration/check_ntp.sh
   # PyCharm configuration
   - echo ">=== Configuring PyCharm... ===<"
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
   - python3 /opt/configuration/configure_pycharm.py /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
-  # Download web application icons
-  - mkdir -p /opt/icons
-  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
-  - wget https://share.cocalc.com/share/cocalc-icon.svg -O /opt/icons/cocalc.svg
-  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
   # Set default keyboard to a generic 105 key en-GB
+  - echo ">=== Configuring keyboard... ===<"
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
-  - grep -v "^[# ]" /etc/default/keyboard
-  # Disable light-locker which can cause irritating error messages
-  - echo ">=== Disabling screen lock... ===<"
-  - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  - grep -v -e '^[[:space:]]*$' /etc/default/keyboard | sed 's|^|  /etc/default/keyboard  |'
   # Set default terminal and panel for xfce
-  - echo ">=== Setting xfce default terminal and panel... ===<"
+  - echo ">=== Setting xfce default panel and terminal and disabling screen lock... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+  # Disable light-locker which can cause irritating error messages
+  - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  # Set terminal colour scheme
+  - |
+    THEME="dark-pastels"
+    if [ -f /usr/share/xfce4/terminal/colorschemes/${THEME}.theme ]; then
+      echo "Setting terminal colour scheme to $THEME"
+      grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/${THEME}.theme >> /etc/xdg/xfce4/terminal/terminalrc
+    else
+      echo "Could not find terminal colour scheme $THEME"
+      rm -rf /etc/xdg/xfce4/terminal/terminalrc
+    fi
   # Configure xrdp login window
   - echo ">=== Setting xrdp defaults... ===<"
   - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                                          # title bar colour (unselected)
@@ -492,6 +506,7 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
+  - grep -v -e '^[[:space:]]*$' /etc/xrdp/xrdp.ini | grep -v -e '^[;#]' | sed 's|^|  /etc/xrdp/xrdp.ini  |'
   # Ensure that xrdp is running and enabled at startup
   - echo ">=== Enabling xrdp services... ===<"
   - systemctl enable xrdp
@@ -506,10 +521,9 @@ runcmd:
   - systemctl enable data.automount
   - systemctl enable output.automount
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
-  - echo ">=== /etc/fstab ===<"
-  - cat /etc/fstab
-  - echo ">=== end of /etc/fstab ===<"
-  - mount -fav
+  - echo ">=== Checking disk mounts... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
+  - mount -fav 2> /dev/null
   # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
   - echo ">=== Update ClamAV... ===<"
   - systemctl stop clamav-freshclam
@@ -523,6 +537,8 @@ runcmd:
   - systemctl enable clamav-clamonacc
   - systemctl enable clamav-clamdscan.timer
   - systemctl enable clamav-freshclam
+
+final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

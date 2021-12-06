@@ -37,15 +37,19 @@ timezone: {{sre.time.timezone.linux}}
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - {{shm.time.ntp.poolFqdn}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
   preserve_sources_list: true
   sources:
     gitlab.list:
-      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
+      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu focal main"
       keyid: F6403F6544A38863DAA0B6E03F01618A51312F3F  # GitLab B.V. (package repository signing key) <packages@gitlab.com>
 
 # Install necessary apt packages

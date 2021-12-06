@@ -14,6 +14,8 @@
     "external_dns_resolver": "168.63.129.16",
     "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
     "hostname": "DC1-SHM-TESTB",
+    "hostnameLower": "dc1-shm-testb",
+    "hostnameUpper": "DC1-SHM-TESTB",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTB_DC",
@@ -45,6 +47,8 @@
   "domain": {
     "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
     "fqdn": "testb.dsgroupdev.co.uk",
+    "fqdnLower": "testb.dsgroupdev.co.uk",
+    "fqdnUpper": "TESTB.DSGROUPDEV.CO.UK",
     "netbiosName": "TESTB",
     "ous": {
       "databaseServers": {
@@ -102,7 +106,8 @@
           "193.60.220.240",
           "193.60.220.253"
         ],
-        "name": "NSG_IMAGE_BUILD"
+        "name": "NSG_IMAGE_BUILD",
+        "rules": "vm-images-nsg-rules-build.json"
       },
       "rg": "RG_SH_BUILD_CANDIDATES",
       "subnet": {
@@ -110,7 +115,7 @@
         "name": "ImageBuildSubnet"
       },
       "vm": {
-        "diskSizeGb": 64,
+        "diskSizeGb": 128,
         "size": "Standard_F4s_v2"
       },
       "vnet": {
@@ -119,8 +124,6 @@
       }
     },
     "gallery": {
-      "imageMajorVersion": 0,
-      "imageMinorVersion": 3,
       "rg": "RG_SH_IMAGE_GALLERY",
       "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
     },
@@ -365,7 +368,6 @@
   "subscriptionName": "Safe Haven Management Test B",
   "time": {
     "ntp": {
-      "poolFqdn": "time.google.com",
       "serverAddresses": [
         "216.239.35.0",
         "216.239.35.4",

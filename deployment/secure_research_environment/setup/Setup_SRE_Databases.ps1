@@ -106,7 +106,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Set locale, install updates and reboot
         Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."
-        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn -AdditionalPowershellModules @("SqlServer")
+        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
 
         # Change subnets and IP address while the VM is off
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
@@ -185,25 +185,31 @@ foreach ($keyName in $config.sre.databases.Keys) {
             Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
             Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
             Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
-            Replace("<domain-join-username>", $config.shm.users.computerManagers.databaseServers.samAccountName).
             Replace("<domain-join-password>", $domainJoinPassword).
+            Replace("<domain-join-username>", $config.shm.users.computerManagers.databaseServers.samAccountName).
             Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
             Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
             Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
             Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
             Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
             Replace("<ldap-search-user-password>", $ldapSearchPassword).
-            Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
             Replace("<ldap-user-base-dn>", $config.shm.domain.ous.researchUsers.path).
-            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
+            Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+            Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+            Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+            Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+            Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
             Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
+            Replace("<shm-dc-hostname-upper>", $config.shm.dc.hostnameUpper).
+            Replace("{{shm.dc.hostnameUpper}}", $config.shm.dc.hostnameUpper).
             Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
-            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+            Replace("{{shm.domain.fqdnLower}}", $config.shm.domain.fqdnLower).
+            Replace("{{shm.domain.fqdnUpper}}", $config.shm.domain.fqdnUpper).
+            Replace("<shm-fqdn-lower>", $config.shm.domain.fqdnLower).
+            Replace("<shm-fqdn-upper>", $config.shm.domain.fqdnUpper).
             Replace("<timezone>", $config.sre.time.timezone.linux).
             Replace("<vm-hostname>", $databaseCfg.vmName).
-            Replace("<vm-ipaddress>", $databaseCfg.ip)
+            Replace("<vm-ipaddress>", $databaseCfg.ip).
 
         # Deploy the VM
         $params = @{

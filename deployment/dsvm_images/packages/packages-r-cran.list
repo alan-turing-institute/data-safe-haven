@@ -1,12 +1,12 @@
 BiocManager
 caret
 csv
+data.table
 dataCompareR
 DataExplorer
 DBI
 esquisse
 ggforce
-ggmap
 ggvis
 glmnet
 IRkernel
@@ -25,8 +25,9 @@ ranger
 RMariaDB
 RMySQL
 RPostgres
-RSQL
+RSQLite
 rstan
+shiny
 sqldf
 testthat
 text2vec

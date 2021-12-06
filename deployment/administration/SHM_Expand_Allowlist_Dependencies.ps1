@@ -1,11 +1,13 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Mirror type to expand (either 'pypi' or 'cran')")]
     [ValidateSet("pypi", "cran")]
-    [string]$MirrorType,
+    [string]$Repository,
     [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
     [string]$ApiKey,
     [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
-    [int]$NVersions = -1
+    [int]$NVersions = -1,
+    [Parameter(Mandatory = $false, HelpMessage = "Do not use a cache file.")]
+    [switch]$NoCache
 )
 
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
@@ -16,15 +18,37 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 function Test-PackageExistence {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of package repository")]
-        $Repository,
+        [string]$Repository,
         [Parameter(Mandatory = $true, HelpMessage = "Name of package to get dependencies for")]
-        $Package,
-        [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
-        $ApiKey
+        [string]$Package,
+        [Parameter(Mandatory = $false, HelpMessage = "Repository ID for RStudio package manager")]
+        [string]$RepositoryId,
+        [Parameter(Mandatory = $false, HelpMessage = "API key for libraries.io")]
+        [string]$ApiKey
     )
     try {
-        $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
-        return $response
+        if ($Repository -eq "pypi") {
+            # The best PyPI results come from the package JSON files
+            $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            $versions = $response.releases | Get-Member -MemberType NoteProperty | ForEach-Object { $_.Name }
+            $name = $response.info.name
+        } elseif ($Repository -eq "cran") {
+            # Use the RStudio package manager for CRAN packages
+            $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages?name=${Package}&case_insensitive=true" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            $name = $response.name
+            $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages/${name}" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            $versions = @($response.version) + ($response.archived | ForEach-Object { $_.version })
+        } else {
+            # For other repositories we use libraries.io
+            # As we are rate-limited to 60 requests per minute this request can fail. If it does, we retry every few seconds for 1 minute
+            $response = Invoke-RestMethod -Uri "https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey}" -MaximumRetryCount 16 -RetryIntervalSec 4 -ErrorAction Stop
+            $versions = $response.versions | ForEach-Object { $_.number }
+            $name = $response.Name
+        }
+        return @{
+            versions = ($versions | Sort-Object -Unique)
+            name     = $name
+        }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
         throw $_.Exception # rethrow the original exception
@@ -42,28 +66,42 @@ function Get-Dependencies {
         [string]$Package,
         [Parameter(Mandatory = $true, HelpMessage = "Versions of package to get dependencies for")]
         $Versions,
-        [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
-        [string]$ApiKey,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable containing cached dependencies")]
         $Cache,
         [Parameter(Mandatory = $true, HelpMessage = "Only consider the most recent NVersions. Set to -1 to consider all versions.")]
-        [int]$NVersions
-
+        [int]$NVersions,
+        [Parameter(Mandatory = $false, HelpMessage = "API key for libraries.io")]
+        [string]$ApiKey
     )
     $dependencies = @()
     if ($Package -notin $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
     Add-LogMessage -Level Info "... found $($Versions.Count) versions of $Package"
     $MostRecentVersions = ($NVersions -gt 0) ? ($Versions | Select-Object -Last $NVersions) : $Versions
-    try {
-        foreach ($Version in $MostRecentVersions) {
-            if ($Version -notin $Cache[$Repository][$Package].Keys) {
-                $response = Invoke-RestMethod -Uri https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 15 -RetryIntervalSec 5 -ErrorAction Stop
-                $Cache[$Repository][$Package][$Version] = @($response.dependencies | Where-Object { $_.requirements -ne "extra" } | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name.Replace(";", "") }) | Sort-Object -Unique
+    foreach ($Version in $MostRecentVersions) {
+        if ($Version -notin $Cache[$Repository][$Package].Keys) {
+            try {
+                if ($Repository -eq "pypi") {
+                    # The best PyPI results come from the package JSON files
+                    $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/${Version}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=]')[0].Trim() } | Sort-Object -Unique)
+                } else {
+                    # For other repositories we use libraries.io
+                    try {
+                        # Make an initial attempt without any retries
+                        $response = Invoke-RestMethod -Uri "https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey}" -ErrorAction Stop
+                    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+                        # If the failure is due to TooManyRequests (429) then retry for 1 minute
+                        if ($_.Exception.Response.StatusCode -eq "TooManyRequests") {
+                            $response = Invoke-RestMethod -Uri "https://libraries.io/api/${Repository}/${Package}/${Version}/dependencies?api_key=${ApiKey}" -MaximumRetryCount 16 -RetryIntervalSec 4 -ErrorAction Stop
+                        }
+                    }
+                    $Cache[$Repository][$Package][$Version] = @($response.dependencies | Where-Object { $_.requirements -ne "extra" } | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name.Replace(";", "") }) | Sort-Object -Unique
+                }
+            } catch {
+                Add-LogMessage -Level Warning "No dependencies found for ${Package} (${Version}) from ${Repository}!"
             }
-            $dependencies += $Cache[$Repository][$Package][$Version]
         }
-    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
-        Add-LogMessage -Level Error "... could not load dependencies for all versions of $Package"
+        $dependencies += $Cache[$Repository][$Package][$Version]
     }
     if (-not $dependencies) { return @() }
     return $($dependencies | Where-Object { $_ } | Sort-Object -Unique)
@@ -72,15 +110,16 @@ function Get-Dependencies {
 
 # Load appropriate allowlists
 # ---------------------------
-$languageName = @{cran = "r"; pypi = "python" }[$MirrorType]
-$coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${MirrorType}-tier3.list"
-$fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${MirrorType}-tier3.list"
-$dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
+$languageName = @{cran = "r"; pypi = "python" }[$Repository]
+$coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
+$fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
+$dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
+
 
 # Combine base image package lists with the core allowlist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
 $corePackageList = Get-Content $coreAllowlistPath
-foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
+foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${Repository}*.list"))) {
     $corePackageList += $buildtimePackageList
 }
 $corePackageList = $corePackageList | Sort-Object -Unique
@@ -94,47 +133,66 @@ $allDependencies = @()
 
 
 # Load any previously-cached dependencies
+# ---------------------------------------
 $dependencyCache = [ordered]@{}
-if (Test-Path $dependencyCachePath -PathType Leaf) {
-    $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
+if (-not $NoCache) {
+    if (Test-Path $dependencyCachePath -PathType Leaf) {
+        $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
+    }
 }
-if ($MirrorType -notin $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
+if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
-if ($MirrorType -notin $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$MirrorType] = @() }
+if ($Repository -notin $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$Repository] = @() }
+
+
+# Load RStudio repository ID if relevant
+# --------------------------------------
+if ($Repository -eq "cran") {
+    $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+    $RepositoryId = $response | Where-Object { $_.name -eq $Repository } | ForEach-Object { $_.id } | Select-Object -First 1
+} else {
+    $RepositoryId = $null
+}
 
 
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageAllowlist = @()
-Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $MirrorType"
+Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $Repository"
 while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
+        # Ignore this packages if it has already been processed
+        if ($unverifiedName -in $packageAllowlist) { continue }
         # Check that the package exists and add it to the allowlist if so
-        Add-LogMessage -Level Info "Determining canonical name for '$unverifiedName'"
-        $response = Test-PackageExistence -Repository $MirrorType -Package $unverifiedName -ApiKey $ApiKey
-        $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
-        $packageAllowlist += @($response.Name)
+        Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${Repository}..."
+        $packageData = Test-PackageExistence -Repository $Repository -Package $unverifiedName -ApiKey $ApiKey -RepositoryId $RepositoryId
+        if ($packageData.name -cne $unverifiedName) {
+            Add-LogMessage -Level Warning "Package '${unverifiedName}' should be '$($packageData.name)'"
+        }
+        $packageAllowlist += @($packageData.name)
         # Look for dependencies and add them to the queue
-        if ($versions) {
-            Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
-            $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
+        if ($packageData.versions) {
+            Add-LogMessage -Level Info "... finding dependencies for $($packageData.name)"
+            $dependencies = Get-Dependencies -Repository $Repository -Package $packageData.name -Versions $packageData.versions -ApiKey $ApiKey -Cache $dependencyCache -NVersions $NVersions
             Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-            $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
+            $newPackages = $dependencies | Where-Object { $_ -notin $packageAllowlist } | Where-Object { $_ -notin $allDependencies } | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$Repository] }
             $newPackages | ForEach-Object { $queue.Enqueue($_) }
             $allDependencies += $dependencies
         } else {
-            Add-LogMessage -Level Warning "... could not find any versions of $($response.Name)"
+            Add-LogMessage -Level Warning "... could not find any versions of $($packageData.name)"
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then mark it as unavailable
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"
-        $dependencyCache["unavailable_packages"][$MirrorType] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$MirrorType] }
+        $dependencyCache["unavailable_packages"][$Repository] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$Repository] }
     }
     Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) packages on the expanded allowlist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
     # Write to the dependency file after each package in case the script terminates early
-    $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    if (-not $NoCache) {
+        $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    }
 }
 
 # After processing all packages ensure that the dependencies cache is sorted
@@ -153,18 +211,20 @@ foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Obj
     $sortedDependencies["unavailable_packages"][$repoName] = @()
     $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object -Unique
 }
-$sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+if (-not $NoCache) {
+    $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+}
 
 
 # Add a log message for any problematic packages
 # ----------------------------------------------
 $unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies } | Sort-Object -Unique
 if ($unneededCorePackages) {
-    Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
+    Add-LogMessage -Level Info "... found $($unneededCorePackages.Count) explicitly requested packages that would have been allowed as dependencies of other packages: $unneededCorePackages"
 }
-$unavailablePackages = $sortedDependencies["unavailable_packages"][$MirrorType]
+$unavailablePackages = $sortedDependencies["unavailable_packages"][$Repository]
 if ($unavailablePackages) {
-    Add-LogMessage -Level Warning "... ignored $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
+    Add-LogMessage -Level Warning "... ignored $($unavailablePackages.Count) dependencies that could not be found in ${Repository}: $unavailablePackages"
 }
 
 

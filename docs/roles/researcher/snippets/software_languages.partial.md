@@ -1,0 +1,11 @@
+- `C`
+- `C++`
+- `Fortran`
+- `gcc` compilers
+- `Java`
+- `Julia` (plus common data science libraries)
+- `Microsoft .NET` framework
+- `Python` [three most recent versions] (plus common data science libraries)
+- `R` (plus common data science libraries)
+- `scala`
+- `spark-shell`

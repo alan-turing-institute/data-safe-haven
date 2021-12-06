@@ -13,7 +13,7 @@ apt:
   # Add repositories
   sources:
     postgresql.list:
-      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
       keyid: 7FCC7D46ACCC4CF8
 
 # We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
@@ -160,17 +160,20 @@ write_files:
     content: |
       <realmd.conf>
 
-  - path: "/opt/configuration/configure_dns.sh"
-    owner: root:root
+  - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"
     content: |
-      <configure_dns.sh>
+      <check_dns.sh>
 
-  - path: "/opt/configuration/configure_hostname.sh"
-    owner: root:root
+  - path: "/opt/configuration/check_hostname.sh"
     permissions: "0500"
     content: |
-      <configure_hostname.sh>
+      <check_hostname.sh>
+
+  - path: "/opt/configuration/check_ntp.sh"
+    permissions: "0500"
+    content: |
+      <check_ntp.sh>
 
   - path: "/opt/configuration/create-postgres-triggers.sql"
     owner: root:root
@@ -355,28 +358,38 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    - {{ntp-server-0}}
+    - {{ntp-server-1}}
+    - {{ntp-server-2}}
+    - {{ntp-server-3}}
+
+# Set hostname
+# We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
+fqdn: "<vm-hostname>.<shm-fqdn-lower>"
+hostname: <vm-hostname>
+manage_etc_hosts: true
+prefer_fqdn_over_hostname: true
 
 runcmd:
+  - echo ">=== Beginning PostgreSQL server configuration... ===<"
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
-  - /opt/configuration/configure_dns.sh
-  - /opt/configuration/configure_hostname.sh
+  - echo ">=== Checking DNS... ===<"
+  - /opt/configuration/check_dns.sh
+  - echo ">=== Checking hostname... ===<"
+  - /opt/configuration/check_hostname.sh
   - systemctl enable sssd
   # Check Kerberos settings
   - echo "Checking Kerberos config"
-  - echo ">=== /etc/krb5.conf ===<"
-  - cat /etc/krb5.conf | grep -v "^$"
-  - echo ">=== end of /etc/krb5.conf ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf | sed 's|^| /etc/krb5.conf |'
   # Check timezone and NTP server
-  - echo ">=== Current timezone... ===<"
-  - echo "Date     $(date)"
-  - echo "Timezone $(timedatectl | grep "Time zone" | cut -d ':' -f 2 | sed -e 's/^[[:space:]]*//')"  # strip leading spaces
   - echo ">=== Current time synchronisation status... ===<"
-  - systemctl status systemd-timesyncd  # Note that 'timedatectl show-timesync --all' is a more informative option here but does not work on Ubuntu 18.04
+  - /opt/configuration/check_ntp.sh
   # Configure the postgres database
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
@@ -421,6 +434,8 @@ runcmd:
   - echo ">=== Restricting login types... ===<"
   - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf
   - cat /etc/postgresql/12/main/pg_hba.conf
+
+final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

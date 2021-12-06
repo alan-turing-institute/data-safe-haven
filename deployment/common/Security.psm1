@@ -164,7 +164,13 @@ function Remove-AndPurgeKeyVaultSecret {
         [string]$VaultName
     )
     Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -Force -ErrorAction Stop
-    Start-Sleep -Seconds 10
-    Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+    # Wait up to five minutes for the secret to show up as purgeable
+    for ($i = 0; $i -lt 30; $i++) {
+        if (Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState) {
+            Remove-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -InRemovedState -Force -ErrorAction Stop
+            break
+        }
+        Start-Sleep -Seconds 10
+    }
 }
 Export-ModuleMember -Function Remove-AndPurgeKeyVaultSecret

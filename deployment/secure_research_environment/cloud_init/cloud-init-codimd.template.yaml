@@ -10,7 +10,7 @@ write_files:
         codimd:
           depends_on:
             - database
-          image: nabo.codimd.dev/hackmdio/hackmd:{{sre.webapps.codimd.codimd.dockerVersion}}
+          image: hackmdio/hackmd:{{sre.webapps.codimd.codimd.dockerVersion}}
           environment:
             - CMD_ALLOW_ANONYMOUS=false
             - CMD_ALLOW_FREEURL=true
@@ -54,15 +54,19 @@ timezone: {{sre.time.timezone.linux}}
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - {{shm.time.ntp.poolFqdn}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
   preserve_sources_list: true
   sources:
     gitlab.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
       keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
