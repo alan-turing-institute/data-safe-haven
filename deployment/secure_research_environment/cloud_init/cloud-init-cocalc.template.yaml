@@ -109,6 +109,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - auditd
   - blobfuse
   - docker-ce
   - docker-compose

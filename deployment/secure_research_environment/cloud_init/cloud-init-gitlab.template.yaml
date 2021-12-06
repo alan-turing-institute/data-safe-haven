@@ -60,6 +60,7 @@ apt:
 # Install necessary apt packages
 packages:
   - apt-transport-https
+  - auditd
   - ca-certificates
   - curl
   - gitlab-ce

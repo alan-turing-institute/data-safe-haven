@@ -71,6 +71,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - auditd
   - docker-ce
   - docker-compose
   - gcc

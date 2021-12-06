@@ -337,11 +337,12 @@ write_files:
     owner: root:root
     permissions: "0500"
     content: |
-      <runonce.sh>
+      {{runonce.sh}}
 
 # List of packages to install with apt-get
 packages:
   - adcli=0.8.2-1  # https://bugs.launchpad.net/ubuntu/+source/sssd/+bug/1868703 note that '0.8.2-1ubuntu1' attempts to use ad_use_ldaps but `realm` does not yet support this
+  - auditd
   - gcc
   - krb5-user
   - ldap-utils
