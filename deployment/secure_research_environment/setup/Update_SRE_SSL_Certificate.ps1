@@ -262,13 +262,6 @@ if ($doInstall) {
             CERT_THUMBPRINT    = $kvCertificate.Thumbprint
         }
         $scriptType = "UnixShell"
-    } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Select-Object -First 1 | Remove-AzVMSecret
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "install_ssl_certificate_tier1.sh"
-        $scriptParams = @{
-            CERT_THUMBPRINT = $kvCertificate.Thumbprint
-        }
-        $scriptType = "UnixShell"
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName | Remove-AzVMSecret
         $scriptParams = @{
