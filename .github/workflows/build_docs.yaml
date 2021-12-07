@@ -78,6 +78,7 @@ jobs:
           ls -alh ${{env.OUTPUTDIR}}/*
           if [ "$FAILED" = "1" ]; then exit 1; fi
       - name: Deploy documentation to GitHub Pages
+        if: ${{ !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@60b5e92fe9331f02fa1cdad4d19ddf875be0361c  # This commit corresponds to tag (4.1.6)
         with:
           branch: autodocs                     # The branch the action should deploy to.
