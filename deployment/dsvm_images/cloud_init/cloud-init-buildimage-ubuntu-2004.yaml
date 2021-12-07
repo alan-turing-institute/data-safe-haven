@@ -250,6 +250,9 @@ runcmd:
   - PATH="$PYENV_ROOT/bin:$PATH"  # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
+  # Install VSCode extensions
+  - echo ">=== Install VSCode extensions... ===<"
+  - code --install-extension ms-python.python
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
