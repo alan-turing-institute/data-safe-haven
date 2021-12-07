@@ -698,9 +698,9 @@ If you cannot see these resource groups:
   - `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
 ```{danger}
-These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
-Do not use them except where specified and never write them down!
-Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
+- These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
+- Do not use them except where specified and never write them down!
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
 ```
 
 (roles_deployer_shm_aad_connect)=
