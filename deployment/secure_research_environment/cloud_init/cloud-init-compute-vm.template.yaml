@@ -21,6 +21,11 @@ mounts:
   - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
   - path: "/etc/bash.bashrc"
     permissions: "0644"
     append: true
@@ -50,7 +55,7 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
 
-  - path: /etc/crontab
+  - path: "/etc/crontab"
     append: true
     content: |
       @reboot root /usr/local/bin/runonce | logger -t SafeHaven
@@ -444,6 +449,10 @@ runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')

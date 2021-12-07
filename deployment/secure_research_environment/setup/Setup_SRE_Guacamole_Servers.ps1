@@ -96,12 +96,7 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init"
 $cloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
-# Insert resources into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
-}
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 # Expand mustache template variables
 $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
                                     Replace("{{disable_copy}}", ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')).

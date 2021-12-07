@@ -2,6 +2,11 @@
 
 # Create files
 write_files:
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
   - path: "/opt/cocalc/docker-compose.yml"
     permissions: "0400"
     content: |
@@ -104,6 +109,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - auditd
   - blobfuse
   - docker-ce
   - docker-compose
@@ -144,6 +150,11 @@ runcmd:
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
 
   # Check server settings
   - echo ">=== Hostname ===<"
@@ -197,6 +208,7 @@ runcmd:
   # Print a final message
   - echo "Deploying CoCalc with Docker is complete:"
   - docker-compose -f /opt/cocalc/docker-compose.yml ps
+
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
