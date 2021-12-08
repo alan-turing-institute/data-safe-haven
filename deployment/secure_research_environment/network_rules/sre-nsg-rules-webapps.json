@@ -11,7 +11,7 @@
         "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
         "sourcePortRange": "*"
     },
-    {{#sre.remoteDesktop.appSessionHost.ip?}}
+    {{#sre.remoteDesktop.appSessionHost.ip}}
         {
             "name": "AllowRdsApplicationHostInbound",
             "access": "Allow",
@@ -24,7 +24,7 @@
             "sourceAddressPrefix": "{{sre.remoteDesktop.appSessionHost.ip}}",
             "sourcePortRange": "*"
         },
-    {{/sre.remoteDesktop.appSessionHost.ip?}}
+    {{/sre.remoteDesktop.appSessionHost.ip}}
     {
         "name": "AllowComputeVMsInbound",
         "access": "Allow",
