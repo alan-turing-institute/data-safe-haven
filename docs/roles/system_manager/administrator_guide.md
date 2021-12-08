@@ -40,8 +40,7 @@ On the **SHM domain controller (DC1)**.
 Upload the user details `CSV` file to a sensible location on the SHM domain controller (recommended: `C:\Installation`).
 This can be done by copying and pasting the file from your deployment device to the SHM DC.
 
-On the **SHM domain controller (DC1)**.
-
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`.
 - Open a `Powershell` command window with elevated privileges.
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 - This script will add the users and trigger synchronisation with Azure Active Directory
@@ -57,6 +56,12 @@ Once you're certain that you're adding a new user, make sure that the following 
 - `DistinguishedName`
   - Formed of `CN=<DisplayName>,<OUPath>` by `Active Directory` on user creation.
   - If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <middle initials> <Surname>` .
+```
+
+```{danger}
+These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
+Do not use them except where specified and never write them down!
+Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
 ```
 
 ## {{calling}} Assign MFA licences

@@ -693,9 +693,15 @@ If you cannot see these resource groups:
 
 - Navigate to the **SHM primary domain controller** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_DC > DC1-SHM-<SHM ID>` and note the `Private IP address` for this VM
 - Next, navigate to the `RG_SHM_<SHM ID>_SECRETS` resource group and then the `kv-shm-<SHM ID>` Key Vault and then select `secrets` on the left hand panel and retrieve the following:
-- `<admin username>` is in the `shm-<SHM ID>-domain-admin-username` secret.
-  - Add the SHM AD domain to the username so the `<admin login>` is `<admin username>@<SHM domain>` rather than simply `<admin username>`.
-- `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
+  - `<admin username>` is in the `shm-<SHM ID>-domain-admin-username` secret.
+  - `<admin login>` is the `<admin username>` followed by the SHM AD domain: `<admin username>@<SHM domain>`.
+  - `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
+
+```{danger}
+These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
+Do not use them except where specified and never write them down!
+Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
+```
 
 (roles_deployer_shm_aad_connect)=
 
@@ -703,7 +709,7 @@ If you cannot see these resource groups:
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
-- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained from the portal above
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Navigate to `C:\Installation`
 - Run the `AzureADConnect` Windows Installer Package
   - On the `Welcome to Azure AD Connect` screen:
@@ -803,7 +809,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
-- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained from the portal above
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Run the following command on the remote domain controller VM to update the AAD rules
 
 ```powershell
@@ -821,7 +827,7 @@ Note that you can use the same script after deploying an SRE to add users in bul
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
-- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained from the portal above
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Add your details to create researcher accounts yourself and any other {ref}`deployers <role_system_deployer>`.
 
 ```{include} snippets/user_csv_format.partial.md
@@ -925,7 +931,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
-- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained above
+- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Open Server Manager and select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 - Configure NPS to log to a local text file:
 
@@ -953,7 +959,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
-- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you obtained above
+- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Run the following command on the remote network policy server VM to configure MFA
 - On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
