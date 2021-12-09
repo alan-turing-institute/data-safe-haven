@@ -86,3 +86,9 @@ jobs:
           git-config-name: Deployment Bot      # Name of the committer
           git-config-email: deploy@github.com  # Email of the committer
           single-commit: true                  # Only keep one commit on the branch
+      - name: Finalise build if running locally
+        if: ${{ env.ACT }}
+        shell: bash
+        run: |
+          echo "Deliberately causing job to fail so that container is kept alive..."
+          exit 1
