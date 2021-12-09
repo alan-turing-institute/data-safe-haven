@@ -81,7 +81,7 @@
         "name": "AllowPackageRepositoriesOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to the SHM package repositories",
-        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
         "destinationPortRange": "*",
         "direction": "Outbound",
         "priority": 2500,

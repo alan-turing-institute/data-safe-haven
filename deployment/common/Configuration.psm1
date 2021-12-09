@@ -1015,8 +1015,10 @@ function Get-SreConfig {
     # --------------------
     if (@(0, 1).Contains([int]$config.sre.tier)) {
         # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
-        $pypiUrl = "https://pypi.org"
-        $cranUrl = "https://cran.r-project.org"
+        $pypiUrl            = "https://pypi.org"
+        $cranUrl            = "https://cran.r-project.org"
+        $repositoryVNetName = $null
+        $repositoryVNetCidr = $null
     } else {
         # All Nexus repositories are accessed over the same port (currently 80)
         if ($config.sre.nexus) {
@@ -1024,12 +1026,16 @@ function Get-SreConfig {
             if ([int]$config.sre.tier -ne 2) {
                 Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
             }
-            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
-            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $cranUrl            = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl            = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $repositoryVNetName = $config.shm.network.repositoryVnet.name
+            $repositoryVNetCidr = $config.shm.network.repositoryVnet.cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } else {
-            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
-            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+            $cranUrl            = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
+            $pypiUrl            = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+            $repositoryVNetName = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].cidr
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
@@ -1046,6 +1052,10 @@ function Get-SreConfig {
             host     = $pypiHost
             index    = $pypiIndex
             indexUrl = "${pypiUrl}/simple"
+        }
+        network= [ordered]@{
+            name = $repositoryVNetName
+            cidr = $repositoryVNetCidr
         }
     }
 
