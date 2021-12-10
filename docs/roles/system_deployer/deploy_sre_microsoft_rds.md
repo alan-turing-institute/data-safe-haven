@@ -68,6 +68,7 @@ This is done using the VPN which should have been deployed {ref}`when setting up
 ```
 
 (deploy_sre_microsoft_deploy_remote_desktop)=
+
 ## 6. {{satellite}} Deploy remote desktop
 
 ### {{tropical_fish}} Deploy the remote desktop servers
@@ -121,6 +122,7 @@ PS> ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
 This will perform the following actions, which can be run individually if desired:
 
 #### Disable insecure TLS connections
+
 <details>
 <summary><strong>Details</strong></summary>
 
@@ -136,11 +138,13 @@ PS> ./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```{tip}
 If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run `./Disable_Legacy_TLS.ps1` to update the list of accepted protocols
 ```
+
 </details>
 
-
 (deploy_sre_microsoft_rds_configure_cap_rap)=
+
 #### Configure RDS CAP and RAP settings
+
 <details>
 <summary><strong>Details</strong></summary>
 
@@ -156,7 +160,9 @@ PS> ./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
 </details>
 
 (deploy_sre_microsoft_update_ssl_certificate)=
+
 #### Update SSL certificate
+
 <details>
 <summary><strong>Details</strong></summary>
 
@@ -190,6 +196,7 @@ If you find yourself frequently redeploying a test environment and hit the `Let'
 to use the `Let's Encrypt` staging server, which will issue certificates more frequently.
 These certificates will **not** be trusted by your browser, and so should not be used in production.
 ````
+
 </details>
 
 ### {{bicyclist}} Verify non-privileged user account is set up
