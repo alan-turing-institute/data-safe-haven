@@ -1017,6 +1017,8 @@ function Get-SreConfig {
         # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
         $pypiUrl = "https://pypi.org"
         $cranUrl = "https://cran.r-project.org"
+        $repositoryVNetName = $null
+        $repositoryVNetCidr = $null
     } else {
         # All Nexus repositories are accessed over the same port (currently 80)
         if ($config.sre.nexus) {
@@ -1026,10 +1028,14 @@ function Get-SreConfig {
             }
             $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
             $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $repositoryVNetName = $config.shm.network.repositoryVnet.name
+            $repositoryVNetCidr = $config.shm.network.repositoryVnet.cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } else {
             $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
             $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+            $repositoryVNetName = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].cidr
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
@@ -1039,13 +1045,17 @@ function Get-SreConfig {
     $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
     $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
     $config.sre.repositories = [ordered]@{
-        cran = [ordered]@{
+        cran    = [ordered]@{
             url = $cranUrl
         }
-        pypi = [ordered]@{
+        pypi    = [ordered]@{
             host     = $pypiHost
             index    = $pypiIndex
             indexUrl = "${pypiUrl}/simple"
+        }
+        network = [ordered]@{
+            name = $repositoryVNetName
+            cidr = $repositoryVNetCidr
         }
     }
 
@@ -1098,4 +1108,3 @@ function Show-FullConfig {
     Write-Output ($config | ConvertTo-Json -Depth 10)
 }
 Export-ModuleMember -Function Show-FullConfig
-

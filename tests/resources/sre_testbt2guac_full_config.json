@@ -612,6 +612,10 @@
       "cran": {
         "url": "http://10.30.1.10:80/repository/cran-proxy"
       },
+      "network": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_2"
+      },
       "pypi": {
         "host": "10.30.1.10",
         "index": "http://10.30.1.10:80/repository/pypi-proxy/pypi",
