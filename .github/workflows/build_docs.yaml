@@ -19,6 +19,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0.3
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -77,6 +81,26 @@ jobs:
           done
           ls -alh ${{env.OUTPUTDIR}}/*
           if [ "$FAILED" = "1" ]; then exit 1; fi
+      - name: Install html-proofer
+        shell: bash
+        run: |
+          echo $PATH
+          bundle env
+          gem install html-proofer
+      - name: Run HTML proofer
+        shell: bash
+        run: |
+          # - allow links to "#"
+          # - rewrite the base URL
+          # - ignore links to:
+          #   - the data-safe-haven repo (as it is private)
+          #   - the data-classification-app repo (as it is private)
+          #   - turing.ac.uk (as it requires a CAPTCHA)
+          export LC_CTYPE="C.UTF-8"
+          htmlproofer ${{env.OUTPUTDIR}}/develop \
+            --allow-hash-href \
+            --url-swap "^\/data-safe-haven:/.." \
+            --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
       - name: Deploy documentation to GitHub Pages
         if: ${{ !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@60b5e92fe9331f02fa1cdad4d19ddf875be0361c  # This commit corresponds to tag (4.1.6)
