@@ -636,6 +636,10 @@
       "cran": {
         "url": "http://10.20.3.21"
       },
+      "network": {
+        "cidr": "10.20.3.0/24",
+        "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER3"
+      },
       "pypi": {
         "host": "10.20.3.20",
         "index": "http://10.20.3.20:3128",
