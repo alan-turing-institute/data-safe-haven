@@ -5,7 +5,7 @@
 This risk rating was undertaken on the 2/02/2021.
 All risks identified have been rated as **low risk**, with the exception of an Azure platform compromise being rated **medium**.
 
-Risk register rating has been calculated using [this guide](http://intaver.com/risk-scores/) to create a simple reference to measure the risks.
+Risk register rating has been calculated using [this guide](https://intaver.com/risk-scores/) to create a simple reference to measure the risks.
 
 | Risk                           | Description                                                                                                                                                                   | Likelihood | Severity | Score |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------- | ----- |

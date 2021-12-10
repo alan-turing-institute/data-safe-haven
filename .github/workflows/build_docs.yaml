@@ -83,10 +83,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
       - name: Install html-proofer
         shell: bash
-        run: |
-          echo $PATH
-          bundle env
-          gem install html-proofer
+        run: gem install html-proofer
       - name: Run HTML proofer
         shell: bash
         run: |
@@ -99,6 +96,9 @@ jobs:
           export LC_CTYPE="C.UTF-8"
           htmlproofer ${{env.OUTPUTDIR}}/develop \
             --allow-hash-href \
+            --check-html \
+            --check-img-http \
+            --enforce-https \
             --file-ignore "/_static/" \
             --url-swap "^\/data-safe-haven:/.." \
             --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
