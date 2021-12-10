@@ -96,6 +96,7 @@ jobs:
           export LC_CTYPE="C.UTF-8"
           htmlproofer ${{env.OUTPUTDIR}}/develop \
             --allow-hash-href \
+            --check-favicon \
             --check-html \
             --check-img-http \
             --enforce-https \

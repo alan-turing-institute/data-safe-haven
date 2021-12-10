@@ -113,8 +113,9 @@ html_theme_options = {
     "github_url": f"https://github.com/{html_context['github_user']}/{html_context['github_repo']}",
 }
 
-# Location of logo
+# Location of logo and favicon
 html_logo = "_static/logo_turing.jpg"
+html_favicon = "_static/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
