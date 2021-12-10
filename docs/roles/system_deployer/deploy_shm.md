@@ -971,7 +971,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 - On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 - Back on the `Connect to Azure AD` screen, click `Next`
 - Approve the login with MFA if required
-- When prompted to `Provide your Tenant ID`, enter the Tenant ID that you [obtained from Azure Active Directory](#get-the-azure-active-directory-tenant-id) earlier
+- When prompted to `Provide your Tenant ID`, enter the Tenant ID that you {ref}`obtained from Azure Active Directory <roles_deployer_aad_tenant_id>` earlier
 - At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 ```{note}

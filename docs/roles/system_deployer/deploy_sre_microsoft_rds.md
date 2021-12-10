@@ -67,6 +67,7 @@ This is done using the VPN which should have been deployed {ref}`when setting up
 :relative-images:
 ```
 
+(deploy_sre_microsoft_deploy_remote_desktop)=
 ## 6. {{satellite}} Deploy remote desktop
 
 ### {{tropical_fish}} Deploy the remote desktop servers
@@ -78,11 +79,11 @@ PS> ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
 ```{error}
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them.
-If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and [attempt to rerun this step again](#deploy-remote-desktop-servers).
+If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and {ref}`attempt to run this step again <deploy_sre_microsoft_deploy_remote_desktop>`.
 ```
 
 ### {{satellite}} Configure RDS webclient
@@ -115,12 +116,13 @@ PS> ./Secure_SRE_Remote_Desktop_Gateway.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
 This will perform the following actions, which can be run individually if desired:
 
+#### Disable insecure TLS connections
 <details>
-<summary><strong>Disable insecure TLS connections</strong></summary>
+<summary><strong>Details</strong></summary>
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
@@ -129,16 +131,18 @@ PS> ./Disable_Legacy_TLS.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
-
-</details>
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
 ```{tip}
 If additional TLS protocols become available (or existing ones are found to be insecure) during the lifetime of the SRE, then you can re-run `./Disable_Legacy_TLS.ps1` to update the list of accepted protocols
 ```
+</details>
 
+
+(deploy_sre_microsoft_rds_configure_cap_rap)=
+#### Configure RDS CAP and RAP settings
 <details>
-<summary><strong>Configure RDS CAP and RAP settings</strong></summary>
+<summary><strong>Details</strong></summary>
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
@@ -147,12 +151,14 @@ PS> ./Configure_SRE_RDS_CAP_And_RAP.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
 </details>
 
+(deploy_sre_microsoft_update_ssl_certificate)=
+#### Update SSL certificate
 <details>
-<summary><strong>Update SSL certificate</strong></summary>
+<summary><strong>Details</strong></summary>
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
@@ -161,10 +167,8 @@ PS> ./Update_SRE_RDS_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID> -emailA
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<email>` is an email address that you want to be notified when certificates are close to expiry
-
-</details>
 
 ```{tip}
 `./Update_SRE_RDS_SSL_Certificate.ps1` should be run again whenever you want to update the certificate for this SRE.
@@ -186,6 +190,7 @@ If you find yourself frequently redeploying a test environment and hit the `Let'
 to use the `Let's Encrypt` staging server, which will issue certificates more frequently.
 These certificates will **not** be trusted by your browser, and so should not be used in production.
 ````
+</details>
 
 ### {{bicyclist}} Verify non-privileged user account is set up
 
@@ -216,7 +221,7 @@ Clicking on the apps will not work until the other servers have been deployed.
 ```{error}
 If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
 - Go back to the previous section and rerun the `C:\Installation\Deploy_RDS_Environment.ps1` script on the RDS gateway.
-- After doing this, follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) and to [update the SSL certificate](#closed_lock_with_key-update-ssl-certificate).
+- After doing this, follow the instructions to {ref}`configure RDS CAP and RAP settings <deploy_sre_microsoft_rds_configure_cap_rap>` and to {ref}`update the SSL certificate <deploy_sre_microsoft_update_ssl_certificate>`.
 ```
 
 ```{error}
@@ -258,7 +263,7 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
 
 - Ensure that both the SHM NPS server and the RDS Gateway are running
-- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the configuration of the RDS gateway and NPS VMs.
+- Follow the instructions to {ref}`configure RDS CAP and RAP settings <deploy_sre_microsoft_rds_configure_cap_rap>` to reset the configuration of the RDS gateway and NPS VMs.
 - Ensure that the default UDP ports `1812` , `1813` , `1645` and `1646` are all open on the SHM NPS network security group ( `NSG_SHM_SUBNET_IDENTITY` ). [This documentation](<https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)>) gives further details.
 
 If this does not resolve the issue, trying checking the Windows event logs
@@ -273,11 +278,13 @@ If this does not resolve the issue, trying checking the Windows event logs
 
 ```{error}
 If you get a `We couldn't connect to the gateway because of an error` message, it's likely that the `Remote RADIUS Server` authentication timeouts have not been set correctly.
+- Follow the instructions to {ref}`configure RDS CAP and RAP settings <deploy_sre_microsoft_rds_configure_cap_rap>` to reset the authentication timeouts on the RDS gateway.
+```
 
-- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the authentication timeouts on the RDS gateway.
-  - If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
-- Follow the instructions to [configure RDS CAP and RAP settings](#accept-configure-rds-cap-and-rap-settings) to reset the secret on both the RDS gateway and NPS VMs.
-- This can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
+```{error}
+If you get multiple MFA requests with no change in the `Opening ports` message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway.
+- Follow the instructions to {ref}`configure RDS CAP and RAP settings <deploy_sre_microsoft_rds_configure_cap_rap>` to reset the secret on both the RDS gateway and NPS VMs.
+- Alternatively, this can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 ```
 
 ## 8. {{baseball}} Deploy databases

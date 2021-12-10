@@ -5,7 +5,7 @@ PS> ./Add_DSVM.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> 
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address
 - [optional] where `<VM size>` is the [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for this compute VM
 

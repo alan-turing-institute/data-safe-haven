@@ -161,4 +161,4 @@ Depending on the type of data you are accessing, different `R` and `python` pack
 - {ref}`Tier 2 <policy_tier_2>` (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
 - {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
 
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#bring-in-software-or-data-to-the-environment) below.
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#bring-in-new-files-to-the-sre) below.

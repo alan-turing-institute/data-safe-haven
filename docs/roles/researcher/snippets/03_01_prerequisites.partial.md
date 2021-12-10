@@ -8,5 +8,5 @@ After going through the account setup procedure, you should have access to:
 - Multifactor authentication
 
 ```{tip}
-If you aren't sure about any of these then please return to the [**Set up your account**](#2-set-up-your-account) section above.
+If you aren't sure about any of these then please return to the [**Set up your account**](#set-up-your-account) section above.
 ```

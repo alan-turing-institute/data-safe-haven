@@ -5,7 +5,7 @@ PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>`for this SRE
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
 ````{error}
 Installing the logging agent can take several minutes, so the API call that installs the logging extensions to the VMs might time out before installation is complete.
