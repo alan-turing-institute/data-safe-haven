@@ -1015,8 +1015,8 @@ function Get-SreConfig {
     # --------------------
     if (@(0, 1).Contains([int]$config.sre.tier)) {
         # For tiers 0 and 1 use pypi.org and cran.r-project.org directly.
-        $pypiUrl            = "https://pypi.org"
-        $cranUrl            = "https://cran.r-project.org"
+        $pypiUrl = "https://pypi.org"
+        $cranUrl = "https://cran.r-project.org"
         $repositoryVNetName = $null
         $repositoryVNetCidr = $null
     } else {
@@ -1026,14 +1026,14 @@ function Get-SreConfig {
             if ([int]$config.sre.tier -ne 2) {
                 Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
             }
-            $cranUrl            = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
-            $pypiUrl            = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
             $repositoryVNetName = $config.shm.network.repositoryVnet.name
             $repositoryVNetCidr = $config.shm.network.repositoryVnet.cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } else {
-            $cranUrl            = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
-            $pypiUrl            = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
+            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
+            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
             $repositoryVNetName = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name
             $repositoryVNetCidr = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].cidr
         }
@@ -1045,15 +1045,15 @@ function Get-SreConfig {
     $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
     $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
     $config.sre.repositories = [ordered]@{
-        cran = [ordered]@{
+        cran    = [ordered]@{
             url = $cranUrl
         }
-        pypi = [ordered]@{
+        pypi    = [ordered]@{
             host     = $pypiHost
             index    = $pypiIndex
             indexUrl = "${pypiUrl}/simple"
         }
-        network= [ordered]@{
+        network = [ordered]@{
             name = $repositoryVNetName
             cidr = $repositoryVNetCidr
         }
@@ -1108,4 +1108,3 @@ function Show-FullConfig {
     Write-Output ($config | ConvertTo-Json -Depth 10)
 }
 Export-ModuleMember -Function Show-FullConfig
-

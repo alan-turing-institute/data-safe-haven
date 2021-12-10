@@ -548,6 +548,10 @@
       "cran": {
         "url": "https://cran.r-project.org"
       },
+      "network": {
+        "cidr": null,
+        "name": null
+      },
       "pypi": {
         "host": "pypi.org",
         "index": "https://pypi.org",
