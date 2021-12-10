@@ -95,7 +95,6 @@ function Get-ShmConfig {
             windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
         }
         ntp      = [ordered]@{
-            poolFqdn        = "time.google.com"
             serverAddresses = @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12")
             serverFqdns     = @("time.google.com", "time1.google.com", "time2.google.com", "time3.google.com", "time4.google.com")
         }
@@ -135,6 +134,7 @@ function Get-ShmConfig {
             nsg    = [ordered]@{
                 name               = "NSG_IMAGE_BUILD"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
+                rules              = "vm-images-nsg-rules-build.json"
             }
             vnet   = [ordered]@{
                 name = "VNET_IMAGE_BUILD"
@@ -147,15 +147,13 @@ function Get-ShmConfig {
             # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
             # We want a compute-optimised VM, since per-core performance is the bottleneck
             vm     = [ordered]@{
-                diskSizeGb = 64
+                diskSizeGb = 128
                 size       = "Standard_F4s_v2"
             }
         }
         gallery         = [ordered]@{
-            rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
-            sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
-            imageMajorVersion = 0
-            imageMinorVersion = 3
+            rg  = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
         }
         images          = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
@@ -186,6 +184,8 @@ function Get-ShmConfig {
             identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
+    $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
+    $shm.domain.fqdnUpper = ($shm.domain.fqdn).ToUpper()
     foreach ($ouName in $shm.domain.ous.Keys) {
         $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
     }
@@ -357,6 +357,8 @@ function Get-ShmConfig {
         vmName                     = $hostname
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
+        hostnameLower              = $hostname.ToLower()
+        hostnameUpper              = $hostname.ToUpper()
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -534,7 +536,7 @@ function Get-SreConfig {
     # Secure research environment config
     # ----------------------------------
     # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "CoCalc", "MicrosoftRDS")
+    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
     if (-not $sreConfigBase.remoteDesktopProvider) {
         Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
         $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
@@ -543,7 +545,6 @@ function Get-SreConfig {
         Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
     }
     if (
-        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$sreConfigBase.tier)) -or
         ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
     ) {
         Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
@@ -713,19 +714,19 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
-                performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                storageKind        = "BlobStorage"
+                performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
             }
         }
@@ -823,7 +824,7 @@ function Get-SreConfig {
                 }
             }
         }
-    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    } else {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM
@@ -905,11 +906,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
-                dockerVersion = "2.3.2"
+                dockerVersion = "2.4.1-cjk"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.1"
+                dockerVersion      = "13.4-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{
@@ -956,7 +957,7 @@ function Get-SreConfig {
     }
     $dbConfig = @{
         MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev" }
-        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "18.04-LTS" }
+        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
     }
     $ipOffset = 4
     foreach ($databaseType in $sreConfigBase.databases) {

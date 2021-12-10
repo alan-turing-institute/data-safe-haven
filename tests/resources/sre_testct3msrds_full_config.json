@@ -15,6 +15,8 @@
       "external_dns_resolver": "168.63.129.16",
       "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
       "hostname": "DC1-SHM-TESTC",
+      "hostnameLower": "dc1-shm-testc",
+      "hostnameUpper": "DC1-SHM-TESTC",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.4",
       "rg": "RG_SHM_TESTC_DC",
@@ -46,6 +48,8 @@
     "domain": {
       "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "testc.dsgroupdev.co.uk",
+      "fqdnLower": "testc.dsgroupdev.co.uk",
+      "fqdnUpper": "TESTC.DSGROUPDEV.CO.UK",
       "netbiosName": "TESTC",
       "ous": {
         "databaseServers": {
@@ -103,7 +107,8 @@
             "193.60.220.240",
             "193.60.220.253"
           ],
-          "name": "NSG_IMAGE_BUILD"
+          "name": "NSG_IMAGE_BUILD",
+          "rules": "vm-images-nsg-rules-build.json"
         },
         "rg": "RG_SH_BUILD_CANDIDATES",
         "subnet": {
@@ -111,7 +116,7 @@
           "name": "ImageBuildSubnet"
         },
         "vm": {
-          "diskSizeGb": 64,
+          "diskSizeGb": 128,
           "size": "Standard_F4s_v2"
         },
         "vnet": {
@@ -120,8 +125,6 @@
         }
       },
       "gallery": {
-        "imageMajorVersion": 0,
-        "imageMinorVersion": 3,
         "rg": "RG_SH_IMAGE_GALLERY",
         "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
       },
@@ -366,7 +369,6 @@
     "subscriptionName": "Safe Haven Management Test C",
     "time": {
       "ntp": {
-        "poolFqdn": "time.google.com",
         "serverAddresses": [
           "216.239.35.0",
           "216.239.35.4",
@@ -467,7 +469,7 @@
         },
         "ip": "10.151.3.5",
         "port": "5432",
-        "sku": "18.04-LTS",
+        "sku": "20.04-LTS",
         "subnet": "databases",
         "type": "PostgreSQL",
         "vmName": "PSTGRS-T3MSRDS",
@@ -509,7 +511,7 @@
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "0.3.2021032200"
+        "version": "20.04.2021071100"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
@@ -758,7 +760,7 @@
       "codimd": {
         "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.3.2"
+          "dockerVersion": "2.4.1-cjk"
         },
         "disks": {
           "data": {
@@ -775,7 +777,7 @@
         "ip": "10.151.5.6",
         "osVersion": "20.04-LTS",
         "postgres": {
-          "dockerVersion": "13.1",
+          "dockerVersion": "13.4-alpine",
           "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-T3MSRDS",

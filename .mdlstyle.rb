@@ -1,9 +1,11 @@
 all
+exclude_rule 'MD002' # this conflicts with the use of partial Markdown snippets
 rule 'MD003', :style => :atx
-rule 'MD004', :style => :plus
+rule 'MD004', :style => :dash
 exclude_rule 'MD013'
 exclude_rule 'MD024'
 rule 'MD026', :punctuation => ".,;"
 rule 'MD029', :style => :ordered
 exclude_rule 'MD033'
 exclude_rule 'MD034'
+exclude_rule 'MD041' # this conflicts with MyST target anchors

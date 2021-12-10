@@ -100,7 +100,10 @@ foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))
 # Expand placeholders in the cloud-init template
 $cloudInitTemplate = $cloudInitTemplate.
     Replace("<nexus-admin-password>", $nexusAppAdminPassword).
-    Replace("<ntp-server>", $config.time.ntp.poolFqdn).
+    Replace("{{ntp-server-0}}", ($config.time.ntp.serverAddresses)[0]).
+    Replace("{{ntp-server-1}}", ($config.time.ntp.serverAddresses)[1]).
+    Replace("{{ntp-server-2}}", ($config.time.ntp.serverAddresses)[2]).
+    Replace("{{ntp-server-3}}", ($config.time.ntp.serverAddresses)[3]).
     Replace("<tier>", $tier).
     Replace("<timezone>", $config.time.timezone.linux)
 
@@ -119,7 +122,7 @@ $params = @{
     NicId                  = $vmNic.Id
     OsDiskType             = $config.repository.diskType
     ResourceGroupName      = $config.repository.rg
-    ImageSku               = "18.04-LTS"
+    ImageSku               = "20.04-LTS"
 }
 $null = Deploy-UbuntuVirtualMachine @params
 Start-VM -Name $vmName -ResourceGroupName $config.repository.rg

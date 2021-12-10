@@ -43,67 +43,67 @@ if ($sreResources -or $sreResourceGroups) {
 } else {
     $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 
-    # # Remove SHM side of peerings involving this SRE
-    # # ----------------------------------------------
-    # Add-LogMessage -Level Info "Removing peerings between SRE and SHM virtual networks..."
-    # $peeringName = "PEER_$($config.sre.network.vnet.name)"
-    # foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
-    #     foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
-    #         $null = Remove-AzVirtualNetworkPeering -Name $peering.Name -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
-    #         if ($?) {
-    #             Add-LogMessage -Level Success "Removal of peering '$($peering.Name)' succeeded"
-    #         } else {
-    #             Add-LogMessage -Level Fatal "Removal of peering '$($peering.Name)' failed!"
-    #         }
-    #     }
-    # }
+    # Remove SHM side of peerings involving this SRE
+    # ----------------------------------------------
+    Add-LogMessage -Level Info "Removing peerings between SRE and SHM virtual networks..."
+    $peeringName = "PEER_$($config.sre.network.vnet.name)"
+    foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
+        foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
+            $null = Remove-AzVirtualNetworkPeering -Name $peering.Name -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Removal of peering '$($peering.Name)' succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Removal of peering '$($peering.Name)' failed!"
+            }
+        }
+    }
 
 
-    # # Remove SRE users and groups from SHM DC
-    # # ---------------------------------------
-    # Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
-    # # Load data to remove
-    # $groupNames = $config.sre.domain.securityGroups.Values | ForEach-Object { $_.name }
-    # $userNames = $config.sre.users.computerManagers.Values | ForEach-Object { $_.samAccountName }
-    # $userNames += $config.sre.users.serviceAccounts.Values | ForEach-Object { $_.samAccountName }
-    # $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
-    # # Remove SRE users and groups from SHM DC
-    # $params = @{
-    #     groupNamesB64           = $groupNames | ConvertTo-Json | ConvertTo-Base64
-    #     userNamesB64            = $userNames | ConvertTo-Json | ConvertTo-Base64
-    #     computerNamePatternsB64 = $computerNamePatterns | ConvertTo-Json | ConvertTo-Base64
-    # }
-    # $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
-    # $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    # Remove SRE users and groups from SHM DC
+    # ---------------------------------------
+    Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
+    # Load data to remove
+    $groupNames = $config.sre.domain.securityGroups.Values | ForEach-Object { $_.name }
+    $userNames = $config.sre.users.computerManagers.Values | ForEach-Object { $_.samAccountName }
+    $userNames += $config.sre.users.serviceAccounts.Values | ForEach-Object { $_.samAccountName }
+    $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
+    # Remove SRE users and groups from SHM DC
+    $params = @{
+        groupNamesB64           = $groupNames | ConvertTo-Json | ConvertTo-Base64
+        userNamesB64            = $userNames | ConvertTo-Json | ConvertTo-Base64
+        computerNamePatternsB64 = $computerNamePatterns | ConvertTo-Json | ConvertTo-Base64
+    }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
-    # # Remove SRE DNS records and private endpoint DNS Zones from SHM DC
-    # # ----------------------------------------------------------------
-    # Add-LogMessage -Level Info "Removing SRE private DNS records from SHM DC..."
-    # $privateEndpointNames = @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name) |
-    #     ForEach-Object { Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $_ -ErrorAction SilentlyContinue } |
-    #     Where-Object { $_ } |
-    #     ForEach-Object { $_.Context.Name }
-    # $params = @{
-    #     ShmFqdn                     = $config.shm.domain.fqdn
-    #     SreFqdn                     = $config.sre.domain.fqdn
-    #     SreId                       = $config.sre.id
-    #     PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
-    # }
-    # $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
-    # $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    # Remove SRE DNS records and private endpoint DNS Zones from SHM DC
+    # ----------------------------------------------------------------
+    Add-LogMessage -Level Info "Removing SRE private DNS records from SHM DC..."
+    $privateEndpointNames = @($config.sre.storage.persistentdata.account.name, $config.sre.storage.userdata.account.name) |
+        ForEach-Object { Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $_ -ErrorAction SilentlyContinue } |
+        Where-Object { $_ } |
+        ForEach-Object { $_.Context.Name }
+    $params = @{
+        ShmFqdn                     = $config.shm.domain.fqdn
+        SreFqdn                     = $config.sre.domain.fqdn
+        SreId                       = $config.sre.id
+        PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
+    }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
-    # # Remove RDS Gateway RADIUS Client from SHM NPS
-    # # ---------------------------------------------
-    # if ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    #     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
-    #     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
-    #     $params = @{
-    #         rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
-    #     }
-    #     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-    # }
+    # Remove RDS Gateway RADIUS Client from SHM NPS
+    # ---------------------------------------------
+    if ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
+        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
+        $params = @{
+            rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
+        }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
+    }
 
 
     # Remove SRE DNS Zone
@@ -155,8 +155,6 @@ if ($sreResources -or $sreResourceGroups) {
                 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
             } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
                 $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
-            } elseif ($config.sre.remoteDesktop.provider -eq "CoCalc") {
-                $serverHostname = $null
             } else {
                 Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
             }

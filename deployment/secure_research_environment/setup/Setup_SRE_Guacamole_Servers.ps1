@@ -96,12 +96,7 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init"
 $cloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
-# Insert resources into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
-}
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 # Expand mustache template variables
 $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
                                     Replace("{{disable_copy}}", ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')).
@@ -119,7 +114,10 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
                                     Replace("{{ldap-search-user-password}}", $ldapSearchPassword).
                                     Replace("{{ldap-user-base-dn}}", $config.shm.domain.ous.researchUsers.path).
                                     Replace("{{ldap-user-filter}}", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-                                    Replace("{{ntp-server}}", $config.shm.time.ntp.poolFqdn).
+                                    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
+                                    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
+                                    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
+                                    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
                                     Replace("{{postgres-password}}", $guacamoleDbPassword).
                                     Replace("{{public_ip_address}}", $publicIp.IpAddress).
                                     Replace("{{shm_dc_ip_address}}", $config.shm.dc.ip).

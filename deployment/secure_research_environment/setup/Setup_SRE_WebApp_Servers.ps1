@@ -94,7 +94,9 @@ $config["codimd"] = @{
     ldapUserFilter         = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
     postgresPassword       = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
 }
-$codimdCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml") -Parameters $config
+$codimdCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml" | Get-Item | Get-Content -Raw
+$codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$codimdCloudInitTemplate = Expand-MustacheTemplate -Template $codimdCloudInitTemplate -Parameters $config
 # Deploy CodiMD VM
 $codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{
@@ -130,7 +132,9 @@ $config["gitlab"] = @{
     ldapUserFilter         = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
     rootPassword           = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
 }
-$gitlabCloudInitTemplate = Expand-MustacheTemplate -TemplatePath (Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml") -Parameters $config
+$gitlabCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$gitlabCloudInitTemplate = Expand-MustacheTemplate -Template $gitlabCloudInitTemplate -Parameters $config
 # Deploy GitLab VM
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
 $params = @{

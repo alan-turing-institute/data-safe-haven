@@ -1,0 +1,8 @@
+- `atom`
+- `emacs`
+- `nano`
+- `PyCharm`
+- `RStudio`
+- `Spyder`
+- `vim`
+- `Visual Studio Code`

@@ -1,4 +1,11 @@
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Dns -ErrorAction Stop
+Import-Module Az.KeyVault -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.OperationalInsights -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -1020,7 +1027,12 @@ function Get-ImageFromGallery {
             $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
         }
         if ($image) {
-            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            $commitHash = $image.Tags["Build commit hash"]
+            if ($commitHash) {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery created from commit $commitHash"
+            } else {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            }
         } else {
             Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
         }
@@ -1044,13 +1056,9 @@ function Get-ImageDefinition {
     )
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
     if ($Type -eq "Ubuntu") {
+        $imageDefinition = "ComputeVM-Ubuntu"
+    } elseif ($Type -eq "Ubuntu18") {
         $imageDefinition = "ComputeVM-Ubuntu1804Base"
-    } elseif ($Type -eq "UbuntuTorch") {
-        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-    } elseif ($Type -eq "DataScience") {
-        $imageDefinition = "ComputeVM-DataScienceBase"
-    } elseif ($Type -eq "DSG") {
-        $imageDefinition = "ComputeVM-DsgBase"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }

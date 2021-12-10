@@ -172,42 +172,22 @@ Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-
-# Insert resources into the cloud-init template
+# Load the cloud-init template then add resources and expand mustache placeholders
+$config["dsvm"] = @{
+    domainJoinPassword       = $domainJoinPassword
+    ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))))"
+    ldapSearchUserDn         = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+    ldapSearchUserPassword   = $ldapSearchPassword
+    ingressContainerSasToken = $ingressContainerSasToken
+    egressContainerSasToken  = $egressContainerSasToken
+    hostname                 = ($vmHostname | Limit-StringLength -MaximumLength 15)
+    ipAddress                = $finalIpAddress
+    xrdpCustomLogoEncoded    = (ConvertTo-Base64GZip -Path (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp"))
+}
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
-# Expand placeholders in the cloud-init template
-# Note that the xrdp logo has to be an 8-bit RGB .bmp with no alpha. If using a size other than the default (240x140) xrdp.ini needs to be modified.
-$cloudInitTemplate = $cloudInitTemplate.
-    Replace("<domain-join-password>", $domainJoinPassword).
-    Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
-    Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
-    Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
-    Replace("<ldap-search-user-password>", $ldapSearchPassword).
-    Replace("<mirror-index-pypi>", $config.sre.repositories.pypi.index).
-    Replace("<mirror-index-url-pypi>", $config.sre.repositories.pypi.indexUrl).
-    Replace("<mirror-host-pypi>", $config.sre.repositories.pypi.host).
-    Replace("<mirror-url-cran>", $config.sre.repositories.cran.url).
-    Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-    Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
-    Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
-    Replace("<storage-account-persistentdata-name>", $config.sre.storage.persistentdata.account.name).
-    Replace("<storage-account-persistentdata-ingress-sastoken>", $ingressContainerSasToken).
-    Replace("<storage-account-persistentdata-egress-sastoken>", $egressContainerSasToken).
-    Replace("<storage-account-userdata-name>", $config.sre.storage.userdata.account.name).
-    Replace("{{sre.webapps.cocalc.fqdn}}", $config.sre.webapps.cocalc.fqdn).
-    Replace("{{sre.webapps.codimd.fqdn}}", $config.sre.webapps.codimd.fqdn).
-    Replace("{{sre.webapps.gitlab.fqdn}}", $config.sre.webapps.gitlab.fqdn).
-    Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
-    Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-    Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-    Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-    Replace("<timezone>", $config.sre.time.timezone.linux).
-    Replace("<vm-hostname>", ($vmHostname | Limit-StringLength -MaximumLength 15)).
-    Replace("<vm-ipaddress>", $finalIpAddress).
-    Replace("{{xrdpCustomLogoEncoded}}", (ConvertTo-Base64GZip -Path (Join-Path $cloudInitBasePath "resources" "xrdp_custom_logo.bmp")))
 
 # Deploy the VM
 # -------------
@@ -254,15 +234,11 @@ Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
-$template = Join-Path $localSmokeTestDir "tests" "test_databases.sh" | Get-Item | Get-Content -Raw
-$template.Replace("<mssql-port>", $config.sre.databases.dbmssql.port).
-          Replace("<mssql-server-name>", "$($config.sre.databases.dbmssql.vmName).$($config.shm.domain.fqdn)").
-          Replace("<postgres-port>", $config.sre.databases.dbpostgresql.port).
-          Replace("<postgres-server-name>", "$($config.sre.databases.dbpostgresql.vmName).$($config.shm.domain.fqdn)") | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
 # Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the DSVM)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
-Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/verification" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/tests" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
 Remove-Item -Path $localSmokeTestDir -Recurse -Force
 # Set smoke test permissions
 Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"

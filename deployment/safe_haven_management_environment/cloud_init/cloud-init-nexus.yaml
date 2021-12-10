@@ -37,8 +37,13 @@ timezone: <timezone>
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - <ntp-server>
+    - {{ntp-server-0}}
+    - {{ntp-server-1}}
+    - {{ntp-server-2}}
+    - {{ntp-server-3}}
 
 runcmd:
   # Ensure that Docker will run on restart

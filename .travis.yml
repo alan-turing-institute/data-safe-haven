@@ -9,8 +9,18 @@ jobs:
     - name: Test Powershell
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
-      script: pwsh -c './tests/Run_Pester_Tests.ps1'
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Accounts"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Compute"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Dns"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.KeyVault"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Network"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.OperationalInsights"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.RecoveryServices"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Resources"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Storage"
+        - pwsh -c "Install-Module -Force -Verbose -Name Pester"
+        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
+      script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
     - name: Lint Ansible
       addons:
@@ -36,24 +46,37 @@ jobs:
     - name: Lint PowerShell
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
+        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
       script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
 
     - name: Lint Python
       language: python
       python: 3.9
-      before_script: pip install flake8
+      install: pip install flake8
       script: flake8 . --statistics --count
 
     - name: Lint shell
-      before_script: sudo apt-get install -y shellcheck
+      addons:
+        apt:
+          packages:
+            shellcheck
       script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
 
     - name: Lint YAML
-      language: python
-      python: 3.9
-      before_script: pip install yamllint
-      script: yamllint .
+      language: node_js
+      python: node
+      before_script: |
+        npm install -g mustache
+        pip install yamllint
+      script: |
+        echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
+        for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
+          sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.yaml  # replace mustache arrays
+          sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.yaml           # replace mustache variables
+          mustache .mustache_config.json expanded.yaml | yamllint -s -       # perform mustache expansion and lint from stdin
+          test $? -eq 0 && echo "✅ YAML linting succeeded for $yamlfile" || echo "❌ YAML linting failed for $yamlfile"
+        done
+        rm .mustache_config.json expanded.yaml
 
     - name: Check for dead links in Markdown
       language: node_js

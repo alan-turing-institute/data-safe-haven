@@ -1,6 +1,11 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
   - path: "/opt/pg-ldap-sync/configuration.yaml"
     permissions: "0700"
     content: |
@@ -48,8 +53,13 @@ timezone: {{timezone}}
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
+  enabled: true
+  ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server}}
+    - {{ntp-server-0}}
+    - {{ntp-server-1}}
+    - {{ntp-server-2}}
+    - {{ntp-server-3}}
 
 # Configure apt repositories
 apt:
@@ -61,6 +71,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - auditd
   - docker-ce
   - docker-compose
   - gcc
@@ -84,6 +95,11 @@ runcmd:
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
 
   # Ensure that Docker is running
   - echo ">=== Current Docker status... ===<"
