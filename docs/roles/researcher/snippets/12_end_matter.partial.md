@@ -83,7 +83,7 @@ A comparison in terms of features can be found [here](https://usersnap.com/blog/
 ### Getting started with Git
 
 If you have never used `git` before, you might want to take a look at an introductory guide.
-There are multiple `git` cheat sheets such as[this one from the JIRA authors](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet) and [this interactive one](http://ndpsoftware.com/git-cheatsheet.html) and .
+There are multiple `git` cheat sheets such as[this one from the JIRA authors](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet) and [this interactive one](https://ndpsoftware.com/git-cheatsheet.html) and .
 
 ### Repositories
 

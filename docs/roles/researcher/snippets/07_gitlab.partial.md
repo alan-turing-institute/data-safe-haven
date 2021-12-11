@@ -66,7 +66,7 @@ We recommend that you make your repositories public to facilitate collaboration 
 
 If you have not used GitLab before:
 
-- There is a small tutorial available as an [Appendix](#-appendix-a-gitlab-tutorial-notes) to this user guide.
+- There is a small tutorial available as an [Appendix](#appendix-b-gitlab-tutorial-notes) to this user guide.
 - You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html).
 - Ask your team mates for help.
 - Ask the designated contact for your SRE.

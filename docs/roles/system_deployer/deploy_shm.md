@@ -698,9 +698,9 @@ If you cannot see these resource groups:
   - `<admin password>` is in the `shm-<SHM ID>-domain-admin-password` secret.
 
 ```{danger}
-These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
-Do not use them except where specified and never write them down!
-Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
+- These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
+- Do not use them except where specified and never write them down!
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
 ```
 
 (roles_deployer_shm_aad_connect)=
@@ -971,7 +971,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 - On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 - Back on the `Connect to Azure AD` screen, click `Next`
 - Approve the login with MFA if required
-- When prompted to `Provide your Tenant ID`, enter the Tenant ID that you [obtained from Azure Active Directory](#get-the-azure-active-directory-tenant-id) earlier
+- When prompted to `Provide your Tenant ID`, enter the Tenant ID that you {ref}`obtained from Azure Active Directory <roles_deployer_aad_tenant_id>` earlier
 - At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 ```{note}

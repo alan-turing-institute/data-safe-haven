@@ -625,7 +625,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the permissions of other storage volumes match that described in the [user guide](../../how_to_guides/user_guides/user-guide.md#open_file_folder-shared-directories-within-the-sre)
+{{white_check_mark}} **Verify that:** the permissions of other storage volumes match that {ref}`described in the user guide <role_researcher_user_guide_shared_storage>`.
 ```
 
 #### Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions

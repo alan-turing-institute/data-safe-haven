@@ -41,7 +41,7 @@ jobs:
       language: ruby
       rvm: ruby-head
       install: gem install mdl
-      script: mdl --style .mdlstyle.rb *.md docs/
+      script: mdl --style .mdlstyle.rb .
 
     - name: Lint PowerShell
       before_script:

@@ -22,7 +22,7 @@ As such, prior to data ingress, it is important to establish that the study sati
 In the case of medical data, the Health Research Authority has issued [guidelines](https://www.hra.nhs.uk/hra-guidance-general-data-protection-regulation/) for the lawful use of unconsented data.
 In particular, it states that _the legal basis is determined by the type of organisation that is the data controller for the processing_:
 
-- For universities, NHS organisations, Research Council institutes or [other public authority](http://www.legislation.gov.uk/ukpga/2000/36/schedule/1) the processing of personal data for research should be a "task in the public interest".
+- For universities, NHS organisations, Research Council institutes or [other public authority](https://www.legislation.gov.uk/ukpga/2000/36/schedule/1) the processing of personal data for research should be a "task in the public interest".
 - For commercial companies and charitable research organisations the processing of personal data for research should be undertaken within "legitimate interests".
 
 As such, prior to data ingress, it is important that researchers (or commercial partners) provide valid evidence regarding these conditions being satisfied.
@@ -49,7 +49,7 @@ We recommend that the following conditions be met by all users who will be given
 
 - Completion of at least one of the following accredited courses, documented by an electronic certificate dated no longer than **3 months** prior to the start of the data access.
   - [MRC Research Data and Confidentiality](https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
-  - [ADRC SURE Training](http://adrc-scotland-sure-training.weebly.com)
+  - [ADRC SURE Training](https://adrc-scotland-sure-training.weebly.com/)
 - The researcher must be named as an approved data user by the data controller (Caldicott Guardian, PBPP or NHS digital depending on the data source; see data ingress conditions).
   The data controller can remove a researcher from the list of approved data users at any time throughout the project.
 - The researcher must be an employee of the institute hosting the Data Safe Haven.
@@ -59,7 +59,7 @@ We recommend that the following conditions be met by all users who will be given
 
 During the data access period, the following conditions must be satisfied:
 
-- At all times, researchers must abide to the [Data Protection Act 2018](http://www.legislation.gov.uk/ukpga/2018/12/contents/enacted).
+- At all times, researchers must abide to the [Data Protection Act 2018](https://www.legislation.gov.uk/ukpga/2018/12/contents/enacted).
 - The data can **only** be used for purposes that are approved by the data controller (Caldicott Guardian, PBPP or NHS digital depending on the data source; see data ingress conditions), as specified in the data access agreement.
 - Researchers must never attempt to uncover the identify of any subject present in the data (including himself/herself).
 - Researcher must never allow data access (even visual inspection in a computer screen) to people that have not been approved by the data controller.
