@@ -37,8 +37,8 @@ The SRD has several pre-installed applications and programming languages to help
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
 ```{attention}
-This desktop is your interface to a "virtual machine".
-You may have access to [additional virtual machines](#access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
+This secure research desktop SRD is your interface to a single computer running in the cloud.
+You may have access to [additional SRDs](#access-additional-srds) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
 ```
 
 ### {{musical_keyboard}} Keyboard mapping
@@ -46,7 +46,7 @@ You may have access to [additional virtual machines](#access-additional-virtual-
 When you access the SRD you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
 
 ```{caution}
-You may find that the keyboard mapping on your computer is not the same as the one in the SRE.
+You may find that the keyboard mapping on your computer is not the same as the one set for the SRD.
 ```
 
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.

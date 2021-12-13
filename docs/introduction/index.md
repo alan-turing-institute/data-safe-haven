@@ -46,7 +46,7 @@ This gives configurability while minimising human error at deployment time.
 
 ```{admonition} Usable
 We want to maximise the productivity of our users within the security constraints imposed by the sensitivity of the data with which they are working.
-The primary user interface consists of one or more data analysis virtual machines.
+The primary user interface consists of one or more Secure Research Desktop (SRD) virtual machines.
 These are Ubuntu desktop environments with many data science tools pre-installed.
 They also have access to database and file storage and locally-hosted collaborative services such as GitLab.
 ```

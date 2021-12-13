@@ -23,14 +23,14 @@ The best way to do this is to open an issue on the [Data Safe Haven issue tracke
 ## Adding software for a single project
 
 If software is needed for a particular project and this requirement is known in advance then it might be possible to install this at deployment time.
-In this case, software installation is performed while the virtual machine is outside of the Environment with outbound internet access available, but no access to any project data.
-Once the additional software has been installed, the virtual machine is ingressed to the Environment via a one-way airlock.
+In this case, software installation is performed while the Secure Research Desktop (SRD) is outside of the Environment with outbound internet access available, but no access to any project data.
+Once the additional software has been installed, the SRD is ingressed to the Environment via a one-way airlock.
 
 Please contact your {ref}`role_system_manager` if you want to do this.
 
 ## Adding software to a running project
 
-Once a virtual machine has been deployed into a secure analysis Environment, it cannot be moved outside of the Environment, as is has had access to the data in the Environment and therefore represents an unauthorised data egress risk.
+Once an SRD has been deployed into a secure analysis Environment, it cannot be moved outside of the Environment, as is has had access to the data in the Environment and therefore represents an unauthorised data egress risk.
 As higher tier Environments do not have access to the internet, any additional software required must be brought into the Environment in order to be installed.
 
 In this case, software is ingressed in a similar manner as data:

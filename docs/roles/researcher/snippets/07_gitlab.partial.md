@@ -18,7 +18,7 @@ The `GitLab` instance within the SRE is entirely separate from the https://gitla
 
 ### {{books}} Maintaining an archive of the project
 
-The Data Safe Haven SRE uses virtual machines hosted on the Microsoft Azure cloud platform.
+The Data Safe Haven SRE is hosted on the Microsoft Azure cloud platform.
 One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 

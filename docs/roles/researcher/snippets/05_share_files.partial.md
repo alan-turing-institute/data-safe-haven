@@ -20,7 +20,7 @@ You will not be able to change any of the files in `/data/` .
 If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared/` or `/output/` directories.
 ```
 
-The contents of `/data/` will be **identical** on all virtual machines in your SRE.
+The contents of `/data/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
 
 ```{tip}
@@ -32,7 +32,7 @@ If you are participating in a Turing Data Study Group you will find example slid
 The `/shared/` folder should be used for any work that you want to share with your group.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
-The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
+The contents of `/shared/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`

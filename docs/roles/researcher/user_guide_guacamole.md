@@ -110,9 +110,9 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 :relative-images:
 ```
 
-## {{unlock}} Access additional virtual machines
+## {{unlock}} Access additional SRDs
 
-Your project might make use of additional virtual machines other than the main shared desktop.
+Your project might make use of further SRDs in addition to the main shared desktop.
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.

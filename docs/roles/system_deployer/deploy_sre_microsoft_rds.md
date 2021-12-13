@@ -300,7 +300,7 @@ If you get multiple MFA requests with no change in the `Opening ports` message, 
 :relative-images:
 ```
 
-## 9. {{computer}} Deploy secure research desktop (SRD) virtual machines
+## 9. {{computer}} Deploy secure research desktops (SRDs)
 
 ```{include} snippets/09_single_srd.partial.md
 :relative-images:
