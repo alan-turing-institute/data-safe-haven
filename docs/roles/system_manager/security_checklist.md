@@ -238,7 +238,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 {{white_check_mark}} **Verify that:** connection fails
 ```
 
-#### Fail to connect to the internet from within a SRD on the SRE network
+#### Fail to connect to the internet from within an SRD on the SRE network
 
 - Login as a user to an SRD from within the SRE by using the web client.
 - Choose your favourite three websites and attempt to access the internet using a browser
