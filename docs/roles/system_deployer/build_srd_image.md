@@ -136,5 +136,5 @@ PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image na
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 - where `<Image Name>` is the name of the VM image created during the conversion step
 
-This will register the image in the shared gallery as a new version of the Ubuntu-based compute machine images.
+This will register the image in the shared gallery as a new version of the relevant SRD image.
 This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.

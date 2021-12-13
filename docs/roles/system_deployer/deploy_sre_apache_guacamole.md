@@ -183,9 +183,9 @@ If you specify the same size more than once, you will create multiple SRDs of th
   :align: center
   ```
 
-- At this point you should double click on the {{computer}} `Ubuntu0` link under `All Connections` which should bring you to an Ubuntu login screen
+- At this point you should double click on the {{computer}} `Ubuntu0` link under `All Connections` which should bring you to the secure remote desktop (SRD) login screen
 - You will need the short-form of the user name (ie. without the `@<safe haven domain>` part) and the same password as before
-- This should bring you to an Ubuntu desktop that will look like the following
+- This should bring you to the SRD that will look like the following
 
   ```{image} deploy_sre/guacamole_desktop.png
   :alt: Guacamole dashboard
