@@ -4,16 +4,21 @@ aero-calc
 aesara
 affine
 aiobotocore
+aiocontextvars
 aiohttp
 aioitertools
+aiosignal
 alabaster
 altair
 annoy
+ansimarkup
 anyio
 apispec
 appdirs
 appnope
+argcomplete
 argon2-cffi
+argon2-cffi-bindings
 argparse
 arviz
 asn1crypto
@@ -23,6 +28,7 @@ astropy
 astunparse
 async_generator
 async-timeout
+asynctest
 atomicwrites
 attrs
 autograd
@@ -41,8 +47,10 @@ backports.shutil_get_terminal_size
 backports.shutil_which
 backports.tempfile
 backports.weakref
+backports.zoneinfo
 bcdoc
 beautifulsoup4
+better-exceptions-fork
 black
 bleach
 blis
@@ -53,6 +61,7 @@ botocore
 Bottleneck
 bpemb
 branca
+Brotli
 bson
 bulwark
 CacheControl
@@ -67,6 +76,7 @@ cffi
 cftime
 characteristic
 chardet
+charset-normalizer
 clang
 cleo
 click
@@ -78,6 +88,7 @@ colorama
 commonmark
 configparser
 confuse
+conllu
 constantly
 contextily
 contextlib2
@@ -85,10 +96,13 @@ contextvars
 crashtest
 crcmod
 cryptography
-Cycler
+cycler
 cymem
 Cython
 dash
+dash-core-components
+dash-html-components
+dash-table
 dask
 dataclasses
 ddt
@@ -103,6 +117,7 @@ distlib
 distributed
 docutils
 dparse
+dragonmapper
 dtw
 eli5
 entrypoints
@@ -115,9 +130,11 @@ flair
 flake8
 Flask
 Flask-Bootstrap
+Flask-Compress
 flatbuffers
 folium
 formulaic
+frozenlist
 fsspec
 ftfy
 funcsigs
@@ -207,13 +224,16 @@ Keras-Preprocessing
 keyring
 kiwisolver
 konoha
+langcodes
 langdetect
 lazy-object-proxy
+libclang
 lifelines
 lightgbm
 llvmlite
 locket
 lockfile
+loguru
 lxml
 lz4
 mapclassify
@@ -256,6 +276,7 @@ networkx
 nltk
 nose
 notebook
+notifiers
 numba
 numexpr
 numpy
@@ -313,6 +334,7 @@ pox
 ppft
 pprintpp
 preshed
+prettytable
 prometheus-client
 prompt-toolkit
 prophet
@@ -321,6 +343,7 @@ psutil
 psycopg2
 ptyprocess
 py
+py4j
 pyasn1
 pyasn1-modules
 pycodestyle
@@ -360,6 +383,7 @@ pytoml
 pytorch-pretrained-bert
 pytorch-transformers
 pytz
+pytz-deprecation-shim
 PyWavelets
 pywin32
 pywin32-ctypes
@@ -378,11 +402,16 @@ requests-oauthlib
 requests-toolbelt
 requests-unixsocket
 retrying
+rfc3987
 rich
 rpy2
 rsa
 Rtree
+ruamel.base
+ruamel.ordereddict
+ruamel.yaml
 s3fs
+s3transfer
 sacremoses
 safety
 scandir
@@ -420,6 +449,7 @@ soupsieve
 spacy
 spacy-langdetect
 spacy-legacy
+spacy-loggers
 Sphinx
 sphinxcontrib-applehelp
 sphinxcontrib-devhelp
@@ -441,7 +471,6 @@ syntok
 tables
 tabulate
 tangled-up-in-unicode
-tb-nightly
 tblib
 tdda
 tenacity
@@ -452,6 +481,7 @@ tensorflow
 tensorflow-estimator
 tensorflow-gpu
 tensorflow-gpu-estimator
+tensorflow-io-gcs-filesystem
 tensorflow-tensorboard
 termcolor
 terminado
@@ -467,6 +497,7 @@ tiny-tokenizer
 tokenize-rt
 tokenizers
 toml
+tomli
 tomlkit
 toolz
 torch
@@ -483,6 +514,7 @@ typer
 typing
 typing-extensions
 typing-utils
+tzdata
 tzlocal
 ujson
 unicodecsv
@@ -503,7 +535,9 @@ websocket-client
 Werkzeug
 wheel
 widgetsnbextension
+Wikipedia-API
 win_unicode_console
+win32-setctime
 woops
 wordcloud
 wrapt
@@ -512,6 +546,7 @@ xgboost
 xhtml2pdf
 xlrd
 XlsxWriter
+xyzservices
 yarl
 zict
 zipfile36
