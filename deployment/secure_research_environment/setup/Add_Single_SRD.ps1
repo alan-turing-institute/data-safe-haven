@@ -248,7 +248,7 @@ $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_SRD_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
 
 
 # Update Guacamole dashboard to include this new VM

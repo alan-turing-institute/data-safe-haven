@@ -36,7 +36,7 @@ if ($?) {
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_SRD_Remote_Diagnostics.ps1') -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet"
 
 
 # Get LDAP secret from the Key Vault

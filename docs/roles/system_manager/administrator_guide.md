@@ -196,7 +196,7 @@ there are a couple of possible causes.
 **Solution**: run diagnostics
 
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
-- Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
+- Run the script under `deployment/administration/SRE_SRD_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - This will run a series of diagnostics intended to fix some common problems including
   - LDAP configuration
   - DNS configuration

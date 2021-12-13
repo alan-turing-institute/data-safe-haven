@@ -113,10 +113,10 @@ $cpuIpOffset = 160
 $gpuIpOffset = 180
 foreach ($VmSize in $VmSizes) {
     if ($VmSize.Replace("Standard_", "").StartsWith("N")) {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
         $gpuIpOffset += 1
     } else {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
         $cpuIpOffset += 1
     }
 }
