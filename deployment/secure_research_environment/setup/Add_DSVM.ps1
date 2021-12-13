@@ -232,7 +232,7 @@ Wait-For -Target "domain joining to complete" -Seconds 120
 Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 # Arrange files in temporary directory
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
 Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir

@@ -119,7 +119,7 @@ $dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "
 # Combine base image package lists with the core allowlist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
 $corePackageList = Get-Content $coreAllowlistPath
-foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${Repository}*.list"))) {
+foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "secure_research_desktop" "packages" "packages-${languageName}-${Repository}*.list"))) {
     $corePackageList += $buildtimePackageList
 }
 $corePackageList = $corePackageList | Sort-Object -Unique
