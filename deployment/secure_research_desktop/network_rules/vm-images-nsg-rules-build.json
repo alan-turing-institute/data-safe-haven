@@ -36,7 +36,7 @@
         "direction": "Outbound",
         "priority": 1000,
         "protocol": "*",
-        "sourceAddressPrefix": "{{dsvmImage.build.subnet.cidr}}",
+        "sourceAddressPrefix": "{{srdImage.build.subnet.cidr}}",
         "sourcePortRange": "*"
     },
     {

@@ -144,7 +144,7 @@ if ($orphanedDisks) {
 # Check that this is a valid image version and get its ID
 # -------------------------------------------------------
 $imageDefinition = Get-ImageDefinition -Type $config.sre.srd.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.dsvmImage.gallery.sig -ResourceGroup $config.shm.dsvmImage.gallery.rg -Subscription $config.shm.dsvmImage.subscription
+$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.sig -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
 
 
 # Set the OS disk size for this image
