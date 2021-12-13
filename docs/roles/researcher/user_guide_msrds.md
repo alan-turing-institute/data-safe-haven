@@ -61,7 +61,7 @@ The primary method of performing data analysis in the SRE is using the Linux dat
 This is a virtual machine (VM) with many different applications and programming languages pre-installed on it.
 Once connected to it, you can carry out data science research while remaining completely isolated from the internet.
 
-- Click on the `DSVM Main (Desktop)` app to start running the desktop.
+- Click on the `SRD Main (Desktop)` app to start running the desktop.
 
   You will now **receive a call or mobile app notification** to authenticate using MFA.
 
@@ -70,7 +70,7 @@ Once connected to it, you can carry out data science research while remaining co
   {{iphone}} For the app you will see a notification saying _"You have received a sign in verification request"_. Go to the app to approve the request.
 
   ```{image} user_guide/msrds_dsvm_connection.png
-  :alt: DSVM connection attempt
+  :alt: SRD connection attempt
   :align: center
   ```
 
@@ -78,7 +78,7 @@ Once connected to it, you can carry out data science research while remaining co
   If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
 
   ```{image} user_guide/msrds_dsvm_connection_failure.png
-  :alt: DSVM connection failure
+  :alt: SRD connection failure
   :align: center
   ```
   ````
@@ -86,7 +86,7 @@ Once connected to it, you can carry out data science research while remaining co
 - After verifying using MFA, you might get a security alert like this one. If you do, it is safe to tick the box and to click `Yes` .
 
   ```{image} user_guide/msrds_dsvm_security_fingerprint.png
-  :alt: DSVM security fingerprint
+  :alt: SRD security fingerprint
   :align: center
   ```
 
@@ -131,14 +131,14 @@ You can also access `CodiMD` from the `CodiMD` icon on the `Work Resources` dash
 Your project might make use of additional virtual machines other than the main shared desktop.
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
-You will access this machine in a similar way to the main shared desktop, but by using the `DSVM Other (Desktop)` icon inside of the usual `DSVM Main (Desktop)` icon.
+You will access this machine in a similar way to the main shared desktop, but by using the `SRD Other (Desktop)` icon inside of the usual `SRD Main (Desktop)` icon.
 You will need to know the IP address of the new machine, which you will be told by the designated contact for your SRE.
 
-- When you click on the `DSVM Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
+- When you click on the `SRD Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
 - Enter the IP address of the additional virtual machine.
 
 ```{image} user_guide/msrds_dsvm_rdc_screen.png
-:alt: DSVM IP address input
+:alt: SRD IP address input
 :align: center
 ```
 

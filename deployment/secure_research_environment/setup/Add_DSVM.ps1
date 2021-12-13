@@ -36,11 +36,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # -----------------------------------------------------------------
 if ($vmSize -eq "default") { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
-$vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
+$vmNamePrefix = "${vmHostname}-SRD".ToUpper()
 $vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
 
 
-# Create DSVM resource group if it does not exist
+# Create SRD resource group if it does not exist
 # ----------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
@@ -227,16 +227,16 @@ Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 Wait-For -Target "domain joining to complete" -Seconds 120
 
 
-# Upload smoke tests to DSVM
-# --------------------------
-Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
+# Upload smoke tests to SRD
+# -------------------------
+Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 # Arrange files in temporary directory
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
 Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
-# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the DSVM)
+# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
 Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/tests" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
 Remove-Item -Path $localSmokeTestDir -Recurse -Force

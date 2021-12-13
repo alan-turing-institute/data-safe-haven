@@ -3,7 +3,7 @@ They are automatically uploaded to the compute VM during the deployment step.
 
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
-- Use the remote desktop interface at `https://<SRE ID>.<safe haven domain>` to log in to the **DSVM** (`SRE-<SRE ID>-<IP last octet>-<version number>`) that you have deployed using the scripts above
+- Use the remote desktop interface at `https://<SRE ID>.<safe haven domain>` to log in to the **SRD** (`SRE-<SRE ID>-<IP last octet>-<version number>`) that you have deployed using the scripts above
 - Open a terminal session
 - Enter the test directory using `cd /opt/tests`
 - Run `bats run_all_tests.bats` .

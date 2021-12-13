@@ -24,11 +24,11 @@ if ($config.sre.remoteDesktop.provider -ne "ApacheGuacamole") {
 }
 
 
-# Get list of DSVMs
-# -----------------
-Add-LogMessage -Level Info "Retrieving list of compute VMs..."
+# Get list of SRDs
+# ----------------
+Add-LogMessage -Level Info "Retrieving list of SRD VMs..."
 $VMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | `
-    Where-Object { $_.Name -like "*DSVM*" } | `
+    Where-Object { $_.Name -like "*SRD*" } | `
     ForEach-Object {
         $VM = $_;
         $VMSize = Get-AzVMSize -Location $config.sre.location | Where-Object { $_.Name -eq $VM.HardwareProfile.VmSize };

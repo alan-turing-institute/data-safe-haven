@@ -100,8 +100,8 @@ function Get-ShmConfig {
         }
     }
 
-    # DSVM build images
-    # -----------------
+    # SRD build images
+    # ----------------
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
     # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists

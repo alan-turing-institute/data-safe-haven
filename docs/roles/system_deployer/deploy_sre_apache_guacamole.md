@@ -232,7 +232,7 @@ If you see an error like the following when attempting to log in, it is likely t
   - This should open a web browser inside the remote desktop
   - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 
-### {{fire}} Run smoke tests on DSVM
+### {{fire}} Run smoke tests on SRD
 
 ```{include} snippets/13_run_smoke_tests.partial.md
 :relative-images:

@@ -3,7 +3,7 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $false, HelpMessage = "Last octet of IP address for DSVM to test DNS lockdown. Defaults to '160'")]
+    [Parameter(Mandatory = $false, HelpMessage = "Last octet of IP address for SRD to test DNS lockdown. Defaults to '160'")]
     [string]$dsvmIpLastOctet
 )
 Import-Module Az -ErrorAction Stop
@@ -21,8 +21,8 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Configure external DNS resolution for DSVMs via SHM DNS servers
-# ---------------------------------------------------------------
+# Configure external DNS resolution for SRDs via SHM DNS servers
+# --------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $cidrsToBlock = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
 $cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
@@ -33,25 +33,25 @@ $params = @{
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Configure_External_DNS_Queries_Remote.ps1"
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
-    Add-LogMessage -Level Info "Configuring external DNS resolution for DSVMs via ${dnsServerName}..."
+    Add-LogMessage -Level Info "Configuring external DNS resolution for SRDs via ${dnsServerName}..."
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $dnsServerName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 }
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Validate external DNS resolution is blocked from DSVMs
-# ------------------------------------------------------
+# Validate external DNS resolution is blocked from SRDs
+# -----------------------------------------------------
 # Get VM for provided IP address
 $computeVmIds = @(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Id })
 $computeVmIpAddresses = @(Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -in $computeVmIds } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress })
 if (-not $dsvmIpLastOctet) {
     $dsvmIpLastOctet = $computeVmIpAddresses[0].Split(".")[3]
-    Add-LogMessage -Level Warning "Test DSVM not specified by providing last octet of its IP address. Attempting to test on DSVM with last octet of '$dsvmIpLastOctet'."
+    Add-LogMessage -Level Warning "Test SRD not specified by providing last octet of its IP address. Attempting to test on SRD with last octet of '$dsvmIpLastOctet'."
 }
 $vmIpAddress = @($computeVmIpAddresses | Where-Object { $_.Split(".")[3] -eq $dsvmIpLastOctet })[0]
-Add-LogMessage -Level Info "Looking for DSVM with IP address '$vmIpAddress'..."
+Add-LogMessage -Level Info "Looking for SRD with IP address '$vmIpAddress'..."
 if (-not $vmIpAddress) {
-    Add-LogMessage -Level Fatal "No DSVM found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
+    Add-LogMessage -Level Fatal "No SRD found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
 } else {
     $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
     Add-LogMessage -Level Info "Testing external DNS resolution on VM '$vmName'..."

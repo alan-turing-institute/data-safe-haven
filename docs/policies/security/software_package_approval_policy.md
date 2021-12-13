@@ -8,9 +8,9 @@ The secure research environments available in the Data Safe Haven have access to
 At Tier 3 and above, these mirrors do not include all of the packages available from the parent repository.
 Instead they provide access to a subset of approved packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
 
-To improve the usability of the research environment, approved packages that are deemed broadly useful to a cross section of researchers are also included in the data science virtual machine (DSVM) image, making them directly available to all users without requiring installation from the package mirror.
+To improve the usability of the research environment, approved packages that are deemed broadly useful to a cross section of researchers are also included in the secure research desktop (SRD) image, making them directly available to all users without requiring installation from the package mirror.
 
-This page sets out the policy for approving software packages and the criteria for including them in the DSVM image.
+This page sets out the policy for approving software packages and the criteria for including them in the SRD image.
 It also describes the procedure that users of the secure environment should follow to request new additions to the allowlist.
 
 ## Background
@@ -38,7 +38,7 @@ Specific risks which this policy aims to mitigate include:
 
 - For each supported programming language, three package lists will be maintained:
   - an allowlist of packages that are available from the package mirrors deployed in Tier 3 secure environments
-  - a core list of broadly useful packages from the allowlist that are included in the DSVM image
+  - a core list of broadly useful packages from the allowlist that are included in the SRD image
   - where applicable, a denylist of packages (with specific version numbers) that have been specifically rejected due to known security vulnerabilities or other issues.
 - Users may request to add packages to the allowlist via the {ref}`procedure described below <policy_software_package_review_procedure>`.
   In the interests of improving researcher productivity the aim will be to accommodate such requests, provided there are no outweighing security concerns associated with the package or its dependencies.
@@ -51,14 +51,14 @@ Specific risks which this policy aims to mitigate include:
     - download statistics (recent and longer-term, current and previous versions)
     - publicly-accessible CVE databases (listing Common Vulnerabilities and Exposures)
 - If approved, a requested package will be added to the Tier 3 package allowlist making it available to all future SRE deployments via the package mirror (as long as it remains on the allowlist).
-- New additions to the allowlist will be judged against the {ref}`criteria for inclusion <policy_software_package_inclusion_criteria>` in the DSVM image and, where appropriate, also added to that list.
-- The DSVM image will be updated every month to ensure that changes to the image package list are propagated to new safe haven deployments.
+- New additions to the allowlist will be judged against the {ref}`criteria for inclusion <policy_software_package_inclusion_criteria>` in the SRD image and, where appropriate, also added to that list.
+- The SRD image will be updated every month to ensure that changes to the image package list are propagated to new safe haven deployments.
 
 (policy_software_package_inclusion_criteria)=
 
-### Criteria for inclusion in the DSVM image
+### Criteria for inclusion in the SRD image
 
-Allowed software that is considered broadly useful to a cross section of researchers will be included in the DSVM image.
+Allowed software that is considered broadly useful to a cross section of researchers will be included in the SRD image.
 
 To meet this condition, a package should:
 

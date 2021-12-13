@@ -446,7 +446,7 @@ manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
 runcmd:
-  - echo ">=== Beginning DSVM configuration... ===<"
+  - echo ">=== Beginning SRD configuration... ===<"
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
   # Ensure that auditd is running and enabled at startup

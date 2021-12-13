@@ -1,5 +1,5 @@
 {
-    "SRE-SREID-160-DSVM-VERSION": {
+    "SRE-SREID-160-SRD-VERSION": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"

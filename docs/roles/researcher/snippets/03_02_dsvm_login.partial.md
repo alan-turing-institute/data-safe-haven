@@ -3,7 +3,7 @@
   ````{note}
   Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
   ```{image} user_guide/dsvm_login_screen.png
-  :alt: DSVM login screen
+  :alt: SRD login screen
   :align: center
   ```
   ````
@@ -13,7 +13,7 @@
   If this happens, please try again, entering your username and password carefully.
 
   ```{image} user_guide/dsvm_login_failure.png
-  :alt: DSVM login failure
+  :alt: SRD login failure
   :align: center
   ```
   ````
@@ -27,7 +27,7 @@
 - You should now be greeted by a Linux desktop.
 
   ```{image} user_guide/dsvm_desktop_initial.png
-  :alt: DSVM initial desktop
+  :alt: SRD initial desktop
   :align: center
   ```
 

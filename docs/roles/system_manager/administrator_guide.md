@@ -61,7 +61,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 ```{danger}
 - These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
 - Do not use them except where specified and never write them down!
-- Be particularly careful never to use them to log in to any user-accessible VMs (such as the DSVMs).
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs).
 ```
 
 ## {{calling}} Assign MFA licences
@@ -162,19 +162,19 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 - Check that the user has set up MFA (at [https://aka.ms/mfasetup](https://aka.ms/mfasetup) ) and is using the phone-call or app authentication method
 ```
 
-### {{interrobang}} xrdp login failure on the DSVM
+### {{interrobang}} xrdp login failure on the SRD
 
 If users can get to the login screen:
 
 ```{image} administrator_guide/login_compute_vm_login.png
-:alt: Shared VM login screen
+:alt: SRD login screen
 :align: center
 ```
 
 but then see this error message:
 
 ```{image} administrator_guide/login_compute_vm_login_failure.png
-:alt: Shared VM login failure
+:alt: SRD login failure
 :align: center
 ```
 
@@ -327,7 +327,7 @@ The following steps show how to generate a temporary write-only upload token tha
   - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 - The data provider should now be able to upload data by following {ref}`these instructions <role_data_provider_representative_ingress_upload>`.
-- You can validate successful data ingress by logging into the DSVM for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
+- You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
 (roles_system_manager_software_ingress)=
 
@@ -391,7 +391,7 @@ Software ingress must go through the same {ref}`approval policy <policy_security
 #### The output volume
 
 Once you have set up the egress connection in `Azure Storage Explorer`, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication.
-On the DSVM, this volume is `/output` and is shared between all DSVMs in an SRE.
+On the SRD, this volume is `/output` and is shared between all SRDs in an SRE.
 For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_user_guide_shared_storage>`.
 
 ## {{end}} Remove a deployed Safe Haven
