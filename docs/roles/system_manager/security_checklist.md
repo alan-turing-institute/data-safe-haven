@@ -179,9 +179,9 @@ Check that the **SRE standard user** can authenticate with MFA.
 </details>
 ````
 
-#### Authenticated user can access the SRD desktop
+#### Authenticated user can access the Secure Research Desktop (SRD) desktop
 
-Check that the **SRE standard user** can access the SRD desktop.
+Check that the **SRE standard user** can access the Secure Research Desktop (SRD) desktop.
 
 - Login to the remote desktop web client as the **SRE standard user**.
 
@@ -191,7 +191,7 @@ Check that the **SRE standard user** can access the SRD desktop.
 {{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
-```{image} security_checklist/dsvm_desktop.png
+```{image} security_checklist/srd_xfce.png
 :alt: SRD desktop
 :align: center
 ```
@@ -200,7 +200,7 @@ Check that the **SRE standard user** can access the SRD desktop.
 {{bento_box}} **Microsoft Remote Desktop**:
 <details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
 
-```{image} security_checklist/dsvm_desktop.png
+```{image} security_checklist/srd_xfce.png
 :alt: SRD desktop
 :align: center
 ```
@@ -248,7 +248,7 @@ Check that the **SRE standard user** can access the SRD desktop.
 
 <details><summary>browsing to the website fails</i></summary>
 
-```{image} security_checklist/dsvm_no_internet.png
+```{image} security_checklist/srd_no_internet.png
 :alt: SRD no internet
 :align: center
 ```
@@ -256,7 +256,7 @@ Check that the **SRE standard user** can access the SRD desktop.
 
 <details><summary>you cannot access the website using curl</summary>
 
-```{image} security_checklist/dsvm_no_curl.png
+```{image} security_checklist/srd_no_curl.png
 :alt: SRD no curl
 :align: center
 ```
@@ -264,7 +264,7 @@ Check that the **SRE standard user** can access the SRD desktop.
 
 <details><summary>you cannot look up the IP address for the website using nslookup</summary>
 
-```{image} security_checklist/dsvm_no_nslookup.png
+```{image} security_checklist/srd_no_nslookup.png
 :alt: SRD no curl
 :align: center
 ```
@@ -457,7 +457,7 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by fully-qualified domain name fails</summary>
 
-```{image} security_checklist/dsvm_no_ssh_by_fqdn.png
+```{image} security_checklist/srd_no_ssh_by_fqdn.png
 :alt: SRD SSH connection by FQDN not possible
 :align: center
 ```
@@ -474,7 +474,7 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by public IP address fails</summary>
 
-```{image} security_checklist/dsvm_no_ssh_by_ip.png
+```{image} security_checklist/srd_no_ssh_by_ip.png
 :alt: SRD SSH connection by IP address not possible
 :align: center
 ```
@@ -644,7 +644,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### We claim:
 
-- The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed, as well as package mirrors.
+- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
 - Additional software must be added separately via ingress.
 
 ### Which means:
@@ -673,7 +673,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>the following programmes can be opened without issue: <i>DBeaver</i>, <i>RStudio</i>, <i>PyCharm</i> and <i>Visual Studio Code</i></summary>
 
-```{image} security_checklist/dsvm_installed_software.png
+```{image} security_checklist/srd_installed_software.png
 :alt: SRD installed software
 :align: center
 ```
@@ -725,7 +725,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/dsvm_pypi_tier2.png
+```{image} security_checklist/srd_pypi_tier2.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -743,7 +743,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>the first download succeeds and the second fails</summary>
 
-```{image} security_checklist/dsvm_pypi_tier3.png
+```{image} security_checklist/srd_pypi_tier3.png
 :alt: SRD PyPI Tier 3
 :align: center
 ```

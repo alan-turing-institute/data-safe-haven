@@ -302,17 +302,7 @@ If you get multiple MFA requests with no change in the `Opening ports` message, 
 
 ## 9. {{computer}} Deploy secure research desktop (SRD) virtual machines
 
-```{include} snippets/09_single_dsvm.partial.md
-:relative-images:
-```
-
-```{tip}
-If you want to deploy several SRDs, simply repeat the above steps with a different IP address last octet.
-```
-
-### Deploy a single SRD
-
-```{include} snippets/09_single_dsvm.partial.md
+```{include} snippets/09_single_srd.partial.md
 :relative-images:
 ```
 

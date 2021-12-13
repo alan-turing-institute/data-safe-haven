@@ -116,7 +116,7 @@ $null = Remove-Item -Path $temporaryDir -Recurse -Force -ErrorAction SilentlyCon
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "srdbuildadmin" -AsPlaintext
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.srdImage.bootdiagnostics.accountName -ResourceGroupName $config.srdImage.bootdiagnostics.rg -Location $config.srdImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location

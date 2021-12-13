@@ -120,11 +120,11 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 </details>
 
 <details>
-<summary><strong>Deploy data science VMs</strong></summary>
+<summary><strong>Deploy Secure Research Desktops (SRDs)</strong></summary>
 
 The following script will be run **once for each VM** that you specified using the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
 
-```{include} snippets/09_single_dsvm.partial.md
+```{include} snippets/09_single_srd.partial.md
 :relative-images:
 ```
 

@@ -2,7 +2,7 @@
 
 ### {{open_file_folder}} Shared directories within the SRE
 
-There are several shared areas on the data science machine that all collaborators within a research project team can see and access:
+There are several shared areas on the SRD that all collaborators within a research project team can see and access:
 
 - [input data](#input-data-data): `/data/`
 - [shared space](#shared-space-shared): `/shared/`
@@ -45,7 +45,7 @@ For example, if your group requests a GPU-enabled machine, this will have its ow
 
 #### Output resources: `/output/`
 
-Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the data science linux desktop.
+Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the SRD.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 

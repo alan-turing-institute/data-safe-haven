@@ -107,8 +107,8 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_WebApp_Ser
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Databases.ps1')" -shmId $shmId -sreId $sreId }
 
 
-# Deploy data science VMs
-# -----------------------
+# Deploy SRD VMs
+# --------------
 $cpuIpOffset = 160
 $gpuIpOffset = 180
 foreach ($VmSize in $VmSizes) {

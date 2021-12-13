@@ -69,7 +69,7 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 
   {{iphone}} For the app you will see a notification saying _"You have received a sign in verification request"_. Go to the app to approve the request.
 
-  ```{image} user_guide/msrds_dsvm_connection.png
+  ```{image} user_guide/msrds_srd_connection.png
   :alt: SRD connection attempt
   :align: center
   ```
@@ -77,7 +77,7 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
   ````{caution}
   If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
 
-  ```{image} user_guide/msrds_dsvm_connection_failure.png
+  ```{image} user_guide/msrds_srd_connection_failure.png
   :alt: SRD connection failure
   :align: center
   ```
@@ -85,16 +85,16 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 
 - After verifying using MFA, you might get a security alert like this one. If you do, it is safe to tick the box and to click `Yes` .
 
-  ```{image} user_guide/msrds_dsvm_security_fingerprint.png
+  ```{image} user_guide/msrds_srd_security_fingerprint.png
   :alt: SRD security fingerprint
   :align: center
   ```
 
-```{include} snippets/03_02_dsvm_login.partial.md
+```{include} snippets/03_02_srd_login.partial.md
 :relative-images:
 ```
 
-```{include} snippets/04_using_dsvm.partial.md
+```{include} snippets/04_using_srd.partial.md
 :relative-images:
 ```
 
@@ -137,7 +137,7 @@ You will need to know the IP address of the new machine, which you will be told 
 - When you click on the `SRD Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
 - Enter the IP address of the additional virtual machine.
 
-```{image} user_guide/msrds_dsvm_rdc_screen.png
+```{image} user_guide/msrds_srd_rdc_screen.png
 :alt: SRD IP address input
 :align: center
 ```

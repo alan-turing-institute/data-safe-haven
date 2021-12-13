@@ -21,7 +21,7 @@ $null = Set-AzContext -SubscriptionId $config.srdImage.subscription -ErrorAction
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "srdbuildadmin" -AsPlaintext
 
 
 # Setup image resource group if it does not already exist

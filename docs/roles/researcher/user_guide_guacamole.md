@@ -82,11 +82,11 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 
 - Click on one of the `Desktop` connections (for example `Ubuntu0_CPU2_8GB (Desktop)` to connect to the desktop.
 
-```{include} snippets/03_02_dsvm_login.partial.md
+```{include} snippets/03_02_srd_login.partial.md
 :relative-images:
 ```
 
-```{include} snippets/04_using_dsvm.partial.md
+```{include} snippets/04_using_srd.partial.md
 :relative-images:
 ```
 
