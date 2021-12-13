@@ -78,6 +78,31 @@ jobs:
         done
         rm .mustache_config.json expanded.yaml
 
+    - name: Check HTML documentation building
+      language: ruby
+      rvm: 3.0.3
+      before_script: |
+        gem install html-proofer
+        pip install -r docs/build/requirements.txt
+        ./docs/build/patches/patch_rinohtype.sh
+      script: |
+        DOCS_DIR=$(mktemp -d)
+        ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
+        for tag in $(git tag); do
+          mkdir -p ${DOCS_DIR}/${tag}
+          echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
+        done
+        export LC_CTYPE="C.UTF-8"
+        htmlproofer ${DOCS_DIR}/develop \
+          --allow-hash-href \
+          --check-favicon \
+          --check-html \
+          --check-img-http \
+          --enforce-https \
+          --file-ignore "/_static/" \
+          --url-swap "^\/data-safe-haven:/.." \
+          --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
+
     - name: Check for dead links in Markdown
       language: node_js
       node_js: node
