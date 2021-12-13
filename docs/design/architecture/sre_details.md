@@ -8,7 +8,7 @@ Each tier is associated with a baseline security configuration, individual eleme
 The infrastructure for each SRE is hosted in a separate Azure subscription.
 This infrastructure comprises:
 
-- One or more compute VMs with a range of data science software preinstalled
+- One or more Secure Research Desktops (SRDs) with a range of data science software preinstalled
 - A file server to host the project data
 - A `Gitlab` server to provide source code management and version control
 - A `CodiMD` server for collaborative writing

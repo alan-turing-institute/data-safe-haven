@@ -150,7 +150,7 @@ If users give the wrong username or password they will not be able to progress p
 
 Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
 
-```{image} administrator_guide/login_shared_vm.png
+```{image} administrator_guide/srd_login_opening_port.png
 :alt: Login failure - no MFA prompt
 :align: center
 ```
@@ -166,14 +166,14 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 
 If users can get to the login screen:
 
-```{image} administrator_guide/login_compute_vm_login.png
+```{image} administrator_guide/srd_login_prompt.png
 :alt: SRD login screen
 :align: center
 ```
 
 but then see this error message:
 
-```{image} administrator_guide/login_compute_vm_login_failure.png
+```{image} administrator_guide/srd_login_failure.png
 :alt: SRD login failure
 :align: center
 ```
@@ -195,8 +195,8 @@ there are a couple of possible causes.
 
 **Solution**: run diagnostics
 
-- This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
-- Run the script under `deployment/administration/SRE_SRD_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
+- This can happen for a variety of reasons (DNS problems, broken services on the SRD etc.)
+- Run the script under `deployment/administration/SRE_SRD_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic SRD
 - This will run a series of diagnostics intended to fix some common problems including
   - LDAP configuration
   - DNS configuration

@@ -1,5 +1,5 @@
 These tests should be run **after** the network lock down and peering the SRE and package mirror VNets.
-They are automatically uploaded to the compute VM during the deployment step.
+They are automatically uploaded to the SRD during the deployment step.
 
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 

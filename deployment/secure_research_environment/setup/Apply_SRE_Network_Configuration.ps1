@@ -64,8 +64,8 @@ $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name 
 $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 $webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
 
-# Compute VMs
-Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
+# SRDs
+Add-LogMessage -Level Info "Ensure SRDs are bound to correct NSG..."
 $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
@@ -115,7 +115,7 @@ if (-not $config.sre.repositories.network.name) {
 
 # Update SRE package repository details
 # -------------------------------------
-# Set PyPI and CRAN locations on the compute VM
+# Set PyPI and CRAN locations on the SRD
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
 $repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }

@@ -122,14 +122,15 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 <details>
 <summary><strong>Deploy Secure Research Desktops (SRDs)</strong></summary>
 
-The following script will be run **once for each VM** that you specified using the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
+The `-VmSizes` parameter that you provided to the `Deploy_SRE.ps1` script determines how many SRDs are created and how large each one will be.
+
+```{note}
+The following script will be run once for each `<VM size>` that you specified.
+If you specify the same size more than once, you will create multiple SRDs of that size.
+```
 
 ```{include} snippets/09_single_srd.partial.md
 :relative-images:
-```
-
-```{note}
-The `<VM size>` used for each compute VM size will be the one provided in the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
 ```
 
 </details>

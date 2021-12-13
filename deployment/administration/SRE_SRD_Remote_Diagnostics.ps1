@@ -3,7 +3,7 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter last octet of SRD IP address (e.g. 160)")]
     [string]$ipLastOctet
 )
 
@@ -23,12 +23,12 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Find VM with private IP address matching the provided last octet
 # ----------------------------------------------------------------
-Add-LogMessage -Level Info "Finding compute VM with last IP octet: $ipLastOctet"
+Add-LogMessage -Level Info "Finding SRD with last IP octet: $ipLastOctet"
 $vmId = Get-AzNetworkInterface -ResourceGroupName $config.sre.srd.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
 $vmIpAddress = (Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }).IpConfigurations.PrivateIpAddress
 $vm = Get-AzVM -ResourceGroupName $config.sre.srd.rg | Where-Object { $_.Id -eq $vmId }
 if ($?) {
-    Add-LogMessage -Level Success "Found compute VM '$($vm.Name)'"
+    Add-LogMessage -Level Success "Found SRD '$($vm.Name)'"
 } else {
     Add-LogMessage -Level Fatal "Could not find VM with last IP octet '$ipLastOctet'"
 }
@@ -50,8 +50,8 @@ if ($ldapSearchPassword) {
 }
 
 
-# Update LDAP secret on the compute VM
-# ------------------------------------
+# Update LDAP secret on the SRD
+# -----------------------------
 Update-VMLdapSecret -Name $vm.Name -ResourceGroupName $config.sre.srd.rg -LdapSearchPassword $ldapSearchPassword
 
 

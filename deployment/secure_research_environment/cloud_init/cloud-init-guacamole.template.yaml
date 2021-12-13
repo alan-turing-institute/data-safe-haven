@@ -44,7 +44,7 @@ write_files:
   - path: "/opt/postgresql/data/connections.csv"
     permissions: "0444"
     content: |
-      SRD Main;{{initial_compute_vm_ip}}
+      SRD Main;{{initial_srd_ip}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8

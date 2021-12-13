@@ -170,8 +170,8 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
-if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-srd-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
+if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-srd.template.yaml" }
 # Load the cloud-init template then add resources and expand mustache placeholders
 $config["srd"] = @{
     domainJoinPassword       = $domainJoinPassword
@@ -233,8 +233,8 @@ Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 # Arrange files in temporary directory
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
-Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Copy-Item (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
+Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
 # Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
@@ -242,7 +242,7 @@ Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/te
 Remove-Item -Path $localSmokeTestDir -Recurse -Force
 # Set smoke test permissions
 Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "set_smoke_test_permissions.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "set_smoke_test_permissions.sh"
 $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.srd.rg
 
 

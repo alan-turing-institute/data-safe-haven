@@ -6,7 +6,7 @@
 :hidden:
 
 deploy_shm.md
-build_compute_vm_image.md
+build_srd_image.md
 deploy_sre.md
 migrate_an_shm.md
 ```
@@ -17,7 +17,7 @@ Typically these might be members of an institutional IT team or external contrac
 [Safe Haven Management (SHM) deployment guide](deploy_shm.md)
 : deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
 
-[Secure Research Desktop (SRD) build instructions](build_compute_vm_image.md)
+[Secure Research Desktop (SRD) build instructions](build_srd_image.md)
 : build and publish our "batteries included" Secure Research Desktop (SRD) virtual machine image. Instructions about how to customise this are also available here.
 
 [Secure Research Environment (SRE) deployment guide](deploy_sre.md)
