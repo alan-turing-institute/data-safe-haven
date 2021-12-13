@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "Last octet of IP address for SRD to test DNS lockdown. Defaults to '160'")]
-    [string]$dsvmIpLastOctet
+    [string]$srdIpLastOctet
 )
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
@@ -44,11 +44,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Get VM for provided IP address
 $computeVmIds = @(Get-AzVM -ResourceGroupName $config.sre.srd.rg | ForEach-Object { $_.Id })
 $computeVmIpAddresses = @(Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -in $computeVmIds } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress })
-if (-not $dsvmIpLastOctet) {
-    $dsvmIpLastOctet = $computeVmIpAddresses[0].Split(".")[3]
-    Add-LogMessage -Level Warning "Test SRD not specified by providing last octet of its IP address. Attempting to test on SRD with last octet of '$dsvmIpLastOctet'."
+if (-not $srdIpLastOctet) {
+    $srdIpLastOctet = $computeVmIpAddresses[0].Split(".")[3]
+    Add-LogMessage -Level Warning "Test SRD not specified by providing last octet of its IP address. Attempting to test on SRD with last octet of '$srdIpLastOctet'."
 }
-$vmIpAddress = @($computeVmIpAddresses | Where-Object { $_.Split(".")[3] -eq $dsvmIpLastOctet })[0]
+$vmIpAddress = @($computeVmIpAddresses | Where-Object { $_.Split(".")[3] -eq $srdIpLastOctet })[0]
 Add-LogMessage -Level Info "Looking for SRD with IP address '$vmIpAddress'..."
 if (-not $vmIpAddress) {
     Add-LogMessage -Level Fatal "No SRD found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
