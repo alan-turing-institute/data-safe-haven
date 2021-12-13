@@ -1,7 +1,6 @@
-## {{computer}} Develop analyses via the Linux Data Science desktop
+## {{computer}} Analysing sensitive data
 
-You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
-You can work with any of the pre-installed applications and programming languages.
+The SRD has several pre-installed applications and programming languages to help with your data analysis.
 
 ### {{package}} Pre-installed applications
 
@@ -44,7 +43,7 @@ You may have access to [additional virtual machines](#access-additional-virtual-
 
 ### {{musical_keyboard}} Keyboard mapping
 
-When you access the Data Science desktop you are actually connecting through "the cloud" to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
+When you access the SRD you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
 
 ```{caution}
 You may find that the keyboard mapping on your computer is not the same as the one in the SRE.

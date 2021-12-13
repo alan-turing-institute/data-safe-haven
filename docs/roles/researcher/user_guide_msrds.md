@@ -54,14 +54,14 @@
 
   Welcome to the Data Safe Haven! {{wave}}
 
-### {{penguin}} Log into the Linux Data Science desktop
+### {{penguin}} Log into the Secure Research Desktop
 
-The primary method of performing data analysis in the SRE is using the Linux data science desktop.
+The primary method of performing data analysis in the SRE is using the Secure Research Desktop (SRD).
 
 This is a virtual machine (VM) with many different applications and programming languages pre-installed on it.
-Once connected to it, you can carry out data science research while remaining completely isolated from the internet.
+Once connected to it, you can analyse the sensitive data belonging to your project while remaining completely isolated from the internet.
 
-- Click on the `SRD Main (Desktop)` app to start running the desktop.
+- Click on the `SRD Main (Desktop)` app to connect to the desktop.
 
   You will now **receive a call or mobile app notification** to authenticate using MFA.
 

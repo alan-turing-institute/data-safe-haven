@@ -32,7 +32,7 @@ If you are participating in a Turing Data Study Group, everything that is not st
 
 ### {{unlock}} Access GitLab
 
-You can access `GitLab` from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+You can access `GitLab` from an internet browser in the SRD using the desktop shortcut.
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
 ````{note}
@@ -44,7 +44,7 @@ Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username`
 ```
 ````
 
-Accessing `GitLab` from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
+Accessing `GitLab` from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
 
 ```{warning}
 Do not use your username and password from a pre-existing `GitLab` account!

@@ -12,7 +12,7 @@ The `CoCalc` instance within the SRE is entirely separate from the https://cocal
 
 ### {{unlock}} Access CoCalc
 
-You can access `CoCalc` from an internet browser in the Linux Data Science Desktop using the desktop shortcut.
+You can access `CoCalc` from an internet browser in the SRD using the desktop shortcut.
 The first time that you login, you will see a security warning.
 This is expected, please click on `Advanced` and then `Accept the Risk and Continue`.
 
