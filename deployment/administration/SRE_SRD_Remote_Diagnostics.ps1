@@ -24,9 +24,9 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Find VM with private IP address matching the provided last octet
 # ----------------------------------------------------------------
 Add-LogMessage -Level Info "Finding compute VM with last IP octet: $ipLastOctet"
-$vmId = Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
+$vmId = Get-AzNetworkInterface -ResourceGroupName $config.sre.srd.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
 $vmIpAddress = (Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }).IpConfigurations.PrivateIpAddress
-$vm = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Where-Object { $_.Id -eq $vmId }
+$vm = Get-AzVM -ResourceGroupName $config.sre.srd.rg | Where-Object { $_.Id -eq $vmId }
 if ($?) {
     Add-LogMessage -Level Success "Found compute VM '$($vm.Name)'"
 } else {
@@ -52,7 +52,7 @@ if ($ldapSearchPassword) {
 
 # Update LDAP secret on the compute VM
 # ------------------------------------
-Update-VMLdapSecret -Name $vm.Name -ResourceGroupName $config.sre.dsvm.rg -LdapSearchPassword $ldapSearchPassword
+Update-VMLdapSecret -Name $vm.Name -ResourceGroupName $config.sre.srd.rg -LdapSearchPassword $ldapSearchPassword
 
 
 # Update LDAP secret in local Active Directory on the SHM DC

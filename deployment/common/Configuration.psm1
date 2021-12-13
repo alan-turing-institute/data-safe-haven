@@ -160,7 +160,7 @@ function Get-ShmConfig {
         }
         keyVault        = [ordered]@{
             rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
+            name = "kv-shm-$($shm.id)-srd-imgs".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_NETWORKING"
@@ -990,9 +990,9 @@ function Get-SreConfig {
         $ipOffset += 1
     }
 
-    # Compute VMs
-    # -----------
-    $config.sre.dsvm = [ordered]@{
+    # Secure Research Desktop VMs
+    # ---------------------------
+    $config.sre.srd = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{

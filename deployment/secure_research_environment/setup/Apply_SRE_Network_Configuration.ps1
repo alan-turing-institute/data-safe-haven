@@ -118,7 +118,7 @@ if (-not $config.sre.repositories.network.name) {
 # Set PyPI and CRAN locations on the compute VM
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.dsvm.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
+$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
 foreach ($VM in $repositoryFacingVms) {
     Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{

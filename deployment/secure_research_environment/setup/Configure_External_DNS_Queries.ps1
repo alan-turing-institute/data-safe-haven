@@ -42,7 +42,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Validate external DNS resolution is blocked from SRDs
 # -----------------------------------------------------
 # Get VM for provided IP address
-$computeVmIds = @(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Id })
+$computeVmIds = @(Get-AzVM -ResourceGroupName $config.sre.srd.rg | ForEach-Object { $_.Id })
 $computeVmIpAddresses = @(Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -in $computeVmIds } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress })
 if (-not $dsvmIpLastOctet) {
     $dsvmIpLastOctet = $computeVmIpAddresses[0].Split(".")[3]
@@ -62,7 +62,7 @@ if (-not $vmIpAddress) {
         OUTBOUND_INTERNET = $config.sre.remoteDesktop.networkRules.outboundInternet
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "test_external_dns_resolution_fails.sh"
-    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    $null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.srd.rg -Parameter $params
 }
 
 
