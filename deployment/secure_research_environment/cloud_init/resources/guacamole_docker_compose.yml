@@ -54,13 +54,6 @@ services:
         environment:
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: debug
-            # LDAP_HOSTNAME: {{ldap-hostname}}
-            # LDAP_PORT: {{ldap-port}}
-            # LDAP_USER_BASE_DN: {{ldap-user-base-dn}}
-            # LDAP_USERNAME_ATTRIBUTE: sAMAccountName
-            # LDAP_GROUP_BASE_DN: {{ldap-group-base-dn}}
-            # LDAP_SEARCH_BIND_DN: {{ldap-search-user-dn}}
-            # LDAP_SEARCH_BIND_PASSWORD: {{ldap-search-user-password}}
             POSTGRES_HOSTNAME: postgres
             POSTGRES_DATABASE: guacamole
             POSTGRES_USER: guacamole

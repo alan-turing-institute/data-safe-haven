@@ -102,13 +102,10 @@ $cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.A
                                     Replace("{{disable_copy}}", ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')).
                                     Replace("{{disable_paste}}", ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')).
                                     Replace("{{initial_srd_ip}}", (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160)).
-                                    Replace("{{ldap-group-base-dn}}", $config.shm.domain.securityOuPath).
                                     Replace("{{ldap-group-filter}}", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
                                     Replace("{{ldap-group-researchers}}", $config.sre.domain.securityGroups.researchUsers.name).
                                     Replace("{{ldap-group-system-administrators}}", $config.sre.domain.securityGroups.systemAdministrators.name).
                                     Replace("{{ldap-groups-base-dn}}", $config.shm.domain.ous.securityGroups.path).
-                                    Replace("{{ldap-hostname}}", "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
-                                    Replace("{{ldap-port}}", 389).
                                     Replace("{{ldap-search-user-dn}}", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
                                     Replace("{{ldap-search-user-password}}", $ldapSearchPassword).
                                     Replace("{{ldap-user-base-dn}}", $config.shm.domain.ous.researchUsers.path).
