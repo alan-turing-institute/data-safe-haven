@@ -28,21 +28,17 @@ jobs:
           key: dependencies-${{ github.sha }}  # request a cache that does not yet exist
           restore-keys: dependencies-          # use prefix matching to fallback to the most recently created SHA-specific cache
 
-      - name: View cache
-        shell: bash
-        run: cat environment_configs/package_lists/dependency-cache.json
-
       - name: Check PyPI allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 1 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 60 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check CRAN allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 1 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 240 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check for changes
         shell: bash
@@ -50,7 +46,7 @@ jobs:
 
       - name: Get current date
         uses: srfrnk/current-time@5a4163ad035ccd9a407ec9e519c3b6ba1b633d1e  # This commit correponds to tag 1.1.0
-        id: current-time
+        id: date
         with:
           format: YYYY-MM-DD
 
@@ -64,10 +60,10 @@ jobs:
           base: develop
           branch: package-allowlist-updates
           delete-branch: true
-          title: 'Update PyPI and CRAN allow lists'
+          title: Update PyPI and CRAN allow lists
           body: |
             ### :arrow_heading_up: Summary
-            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.current-time.outputs.time }}
+            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.time }}
 
             ### :closed_umbrella: Related issues
             None
