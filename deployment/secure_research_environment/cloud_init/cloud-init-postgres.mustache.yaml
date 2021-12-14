@@ -47,19 +47,19 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      <domain-join-password>
+      {{{postgres.domainJoinPassword}}}
 
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
-      {{krb5.conf}}
+      {{krb5.mustache.conf}}
 
   - path: "/etc/ldap.secret"
     owner: root:root
     permissions: "0400"
     content: |
-      <ldap-search-user-password>
+      {{{postgres.ldapSearchUserPassword}}}
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     owner: root:root
@@ -67,10 +67,10 @@ write_files:
     content: |
       #! /bin/bash
       echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover <shm-fqdn-lower> 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
-      echo ">=== Joining domain '<shm-fqdn-lower>'... ===<"
-      echo "/opt/configuration/join_domain.sh '<shm-fqdn-lower>' '<ou-database-servers-path>' '<domain-join-username>' '<vm-hostname>'"
-      /opt/configuration/join_domain.sh "<shm-fqdn-lower>" "<ou-database-servers-path>" "<domain-join-username>" "<vm-hostname>"
+      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.databaseServers.path}}' '{{shm.users.computerManagers.databaseServers.samAccountName}}' '{{postgres.vmName}}'"
+      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.databaseServers.path}}" "{{shm.users.computerManagers.databaseServers.samAccountName}}" "{{postgres.vmName}}"
 
   - path: "/etc/local/runonce.d/01-generate-keytab.sh"
     owner: root:root
@@ -79,11 +79,11 @@ write_files:
       #! /bin/bash
       # Generate a keytab and verify by getting a Kerberos ticket
       echo ">=== Generating service principal credentials... ===<"
-      SERVICE_PRINCIPAL="POSTGRES/<vm-hostname>.<shm-fqdn-lower>"
+      SERVICE_PRINCIPAL="POSTGRES/{{postgres.vmName}}.{{shm.domain.fqdnLower}}"
       KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
       install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
-      echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-search-user-dn>' -W msDS-KeyVersionNumber"
-      KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+      echo "ldapsearch -b '{{postgres.ldapPostgresServiceAccountDn}}' -h {{shm.dc.hostnameUpper}}.{{shm.domain.fqdnLower}} -D '{{{postgres.ldapSearchUserDn}}}' -W msDS-KeyVersionNumber"
+      KVNO=$(ldapsearch -b "{{postgres.ldapPostgresServiceAccountDn}}" -h {{shm.dc.hostnameUpper}}.{{shm.domain.fqdnLower}} -D "{{{postgres.ldapSearchUserDn}}}" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
       echo "Current KVNO is $KVNO"
       # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
       # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab
@@ -151,19 +151,19 @@ write_files:
     owner: root:root
     permissions: "0600"
     content: |
-      <db-admin-password>
+      {{{postgres.dbAdminPassword}}}
 
   - path: "/etc/postgres-service-account.secret"
     owner: root:root
     permissions: "0600"
     content: |
-      <ldap-postgres-service-account-password>
+      {{{postgres.dbServiceAccountPassword}}}
 
   - path: "/etc/realmd.conf"
     owner: root:root
     permissions: "0400"
     content: |
-      {{realmd.conf}}
+      {{realmd.mustache.conf}}
 
   - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"
@@ -184,7 +184,7 @@ write_files:
     owner: root:root
     permissions: "0444"
     content: |
-      /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
+      /* Ensure that all members of '{{sre.domain.securityGroups.systemAdministrators.name}}' have superuser permissions */
       /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
       /* We require that CURRENT_USER has SUPERUSER permissions inside the function, otherwise the ALTER USER calls will fail*/
       CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
@@ -195,20 +195,20 @@ write_files:
         obj record;
       BEGIN
         IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
-          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '{{sre.domain.securityGroups.systemAdministrators.name}}', 'member')) LOOP
             EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
           END LOOP;
-          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '{{sre.domain.securityGroups.systemAdministrators.name}}', 'member')) LOOP
             EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);
           END LOOP;
         END IF;
       END;
       $$;
       CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
-      /* Restrict default privileges on public schema to '<db-users-group>' */
+      /* Restrict default privileges on public schema to '{{sre.domain.securityGroups.researchUsers.name}}' */
       REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
-      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
+      GRANT ALL PRIVILEGES ON SCHEMA public TO "{{sre.domain.securityGroups.researchUsers.name}}";
+      /* Add a trigger so that new tables under 'public' schema are readable by '{{sre.domain.securityGroups.researchUsers.name}}' */
       CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
         RETURNS event_trigger
         LANGUAGE plpgsql
@@ -217,16 +217,16 @@ write_files:
         obj record;
       BEGIN
         FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
-          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
+          EXECUTE format('GRANT SELECT ON TABLE %s TO "{{sre.domain.securityGroups.researchUsers.name}}";', obj.object_identity);
         END LOOP;
       END;
       $$;
       CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
-      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
-      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
-      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
-      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
+      /* Create the data schema: allow '{{sre.domain.securityGroups.researchUsers.name}}' to read and '{{sre.domain.securityGroups.dataAdministrators.name}}' to do anything */
+      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "{{sre.domain.securityGroups.dataAdministrators.name}}";
+      GRANT ALL PRIVILEGES ON SCHEMA data TO "{{sre.domain.securityGroups.dataAdministrators.name}}";
+      GRANT USAGE ON SCHEMA data TO "{{sre.domain.securityGroups.researchUsers.name}}";
+      /* Add a trigger so that new tables under 'data' schema are owned by '{{sre.domain.securityGroups.dataAdministrators.name}}' and readable by '{{sre.domain.securityGroups.researchUsers.name}}' */
       CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
         RETURNS event_trigger
         LANGUAGE plpgsql
@@ -235,7 +235,7 @@ write_files:
         obj record;
       BEGIN
         FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
-          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
+          EXECUTE format('ALTER TABLE %s OWNER TO "{{sre.domain.securityGroups.dataAdministrators.name}}"; GRANT SELECT ON TABLE %s TO "{{sre.domain.securityGroups.researchUsers.name}}";', obj.object_identity, obj.object_identity);
         END LOOP;
       END;
       $$;
@@ -278,21 +278,21 @@ write_files:
       # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
       # TODO: get SSL working on port 636
       ldap_connection:
-        host: <shm-dc-hostname>
+        host: {{shm.dc.hostname}}
         #port: 636
         port: 389
         auth:
           method: :simple
-          username: <ldap-search-user-dn>
-          password: <ldap-search-user-password>
+          username: {{{postgres.ldapSearchUserDn}}}
+          password: {{{postgres.ldapSearchUserPassword}}}
         #encryption:
         #  method: :simple_tls
 
       # Search parameters for LDAP users which should be synchronized
       ldap_users:
-        base: <ldap-user-base-dn>
+        base: {{shm.domain.ous.researchUsers.path}}
         # LDAP filter defining which LDAP users should be synchronized
-        filter: <ldap-user-filter>
+        filter: {{{postgres.ldapUserFilter}}}
         # this attribute is used as PG role name
         name_attribute: sAMAccountName
         # lowercase name for use as PG role name
@@ -300,9 +300,9 @@ write_files:
 
       # Search parameters for LDAP groups which should be synchronized
       ldap_groups:
-        base: <ldap-groups-base-dn>
+        base: {{shm.domain.ous.securityGroups.path}}
         # LDAP filter defining which LDAP groups should be synchronized
-        filter: <ldap-group-filter>
+        filter: {{{postgres.ldapGroupFilter}}}
         # this attribute is used as PG role name
         name_attribute: cn
         # lowercase name for use as PG role name
@@ -359,7 +359,7 @@ packages:
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: <timezone>
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -367,15 +367,15 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
+
 
 # Set hostname
 # We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
-fqdn: "<vm-hostname>.<shm-fqdn-lower>"
-hostname: <vm-hostname>
+fqdn: "{{postgres.vmName}}.{{shm.domain.fqdnLower}}"
+hostname: {{postgres.vmName}}
 manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
@@ -452,7 +452,7 @@ runcmd:
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
-  - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf
+  - echo "local all postgres peer\nhost all all {{sre.network.vnet.subnets.compute.cidr}} gss include_realm=0 krb_realm={{shm.domain.fqdnUpper}}" > /etc/postgresql/12/main/pg_hba.conf
   - cat /etc/postgresql/12/main/pg_hba.conf
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"

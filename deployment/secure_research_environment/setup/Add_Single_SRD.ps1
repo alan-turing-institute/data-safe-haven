@@ -170,12 +170,12 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-srd-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
-if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-srd.template.yaml" }
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-srd-shm-${shmId}-sre-${sreId}.mustache.yaml" } | ForEach-Object { $_.FullName }
+if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-srd.mustache.yaml" }
 # Load the cloud-init template then add resources and expand mustache placeholders
 $config["srd"] = @{
     domainJoinPassword       = $domainJoinPassword
-    ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))))"
+    ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
     ldapSearchUserDn         = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
     ldapSearchUserPassword   = $ldapSearchPassword
     ingressContainerSasToken = $ingressContainerSasToken
@@ -234,7 +234,7 @@ Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
-Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.mustache.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
 # Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop

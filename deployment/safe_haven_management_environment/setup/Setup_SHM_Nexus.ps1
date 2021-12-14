@@ -14,6 +14,7 @@ Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Check requested tier
@@ -90,22 +91,14 @@ $repositorySubnet = Set-SubnetNetworkSecurityGroup -Subnet $repositorySubnet -Ne
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-nexus.yaml") -Raw
-# Insert additional files into the cloud-init template
-foreach ($resource in (Get-ChildItem (Join-Path $cloudInitBasePath "resources"))) {
-    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-    $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
+$config["nexus"] = @{
+    adminPassword = $nexusAppAdminPassword
+    tier          = $tier
 }
-# Expand placeholders in the cloud-init template
-$cloudInitTemplate = $cloudInitTemplate.
-    Replace("<nexus-admin-password>", $nexusAppAdminPassword).
-    Replace("{{ntp-server-0}}", ($config.time.ntp.serverAddresses)[0]).
-    Replace("{{ntp-server-1}}", ($config.time.ntp.serverAddresses)[1]).
-    Replace("{{ntp-server-2}}", ($config.time.ntp.serverAddresses)[2]).
-    Replace("{{ntp-server-3}}", ($config.time.ntp.serverAddresses)[3]).
-    Replace("<tier>", $tier).
-    Replace("<timezone>", $config.time.timezone.linux)
+# Load the cloud-init template then add resources and expand mustache placeholders
+$cloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-nexus.mustache.yaml") -Raw
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
 
 # Deploy the VM

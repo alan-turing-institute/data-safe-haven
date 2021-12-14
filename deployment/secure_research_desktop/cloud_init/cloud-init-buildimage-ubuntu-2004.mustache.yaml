@@ -17,35 +17,39 @@ apt:
   # Add repositories
   sources:
     atom.list:
-      source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
+      source: "deb https://packagecloud.io/AtomEditor/atom/any/ any main"
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
     microsoft-general.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     mono-project.list:
-      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+      source: "deb https://download.mono-project.com/repo/ubuntu stable-focal main"
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF  # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
 
     nvidia-cuda.list:
-      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
+      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
-    nvidia-ml.list:
+    nvidia-ml-1804.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
+    nvidia-ml-2004.list:
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /"
+      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
+
     postgresql.list:
-      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
       keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
 
     qgis.list:
-      source: "deb https://qgis.org/ubuntu bionic main"
+      source: "deb https://qgis.org/ubuntu focal main"
       keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
 
     rproject-updates.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
     sbt.list:
@@ -76,7 +80,7 @@ write_files:
   - path: "/opt/build/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
-      {{dbeaver_drivers_config.xml}}
+      {{dbeaver_drivers_config.mustache.xml}}
   - path: "/opt/build/deprovision_vm.sh"
     permissions: "0500"
     content: |
@@ -193,7 +197,7 @@ runcmd:
   - echo "Adding snap to path..."
   - PATH=$PATH:/snap/bin
 
-  - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
+  - echo ">=== $(date +%s) Installing additional deb/source packages ===<"
   # Microsoft ODBC tools
   - echo "Installing Microsoft ODBC tools..."
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
@@ -347,7 +351,7 @@ runcmd:
       jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || (echo "Could not install Python $python_version kernel!" && exit 1)
     done
 
-  # Install any missing R packages - approximately 1 hr
+  # Install any missing R packages - approximately 40 minutes
   - echo ">=== $(date +%s) Installing R packages ===<"
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
@@ -365,9 +369,9 @@ runcmd:
   - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n${MISSING_BIOCONDUCTOR_PACKAGES}"; exit 1; else echo "... successfully installed BioConductor packages"; fi
   # Add the R kernel to Jupyter
   - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
+  - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
-  - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || (echo "Could not install R kernel!" && exit 1)
 
   # Check for successful installations

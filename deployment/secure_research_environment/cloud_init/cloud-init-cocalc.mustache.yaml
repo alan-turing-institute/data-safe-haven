@@ -7,10 +7,10 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/opt/cocalc/docker-compose.yml"
+  - path: "/opt/cocalc/docker-compose.yaml"
     permissions: "0400"
     content: |
-      {{cocalc_docker_compose.yml}}
+      {{cocalc_docker_compose.mustache.yaml}}
 
   - path: "/etc/pip.conf"
     permissions: "0444"
@@ -194,20 +194,20 @@ runcmd:
 
   # Deploy CoCalc using Docker
   - echo "Deploying CoCalc with Docker..."
-  - su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yml up -d"
+  - su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yaml up -d"
   # Wait for deployment to finish
   - |
     while true; do
-      STATUS=$(su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yml logs cocalc" | grep "finished exec of psql")
+      STATUS=$(su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yaml logs cocalc" | grep "finished exec of psql")
       if [ "$STATUS" != "" ]; then
         break
       fi
       sleep 5
     done
-  - docker-compose -f /opt/cocalc/docker-compose.yml logs
+  - docker-compose -f /opt/cocalc/docker-compose.yaml logs
   # Print a final message
   - echo "Deploying CoCalc with Docker is complete:"
-  - docker-compose -f /opt/cocalc/docker-compose.yml ps
+  - docker-compose -f /opt/cocalc/docker-compose.yaml ps
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state

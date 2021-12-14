@@ -38,7 +38,7 @@ In general, this image should cover most use cases, but it's possible that you m
 ### Adding a new apt package
 
 - Add the name of the package to `deployment/secure_research_desktop/packages/packages-apt.list`
-- If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+- If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu-<version>.mustache.yaml`
 
 ````{hint}
 For example, to check for `Azure Data Studio`, the following line was added:
@@ -74,7 +74,7 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 ### Changing the version of a package
 
-If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu-<version>.mustache.yaml`
 
 - Find the appropriate `/installation/<package name>.debinfo` section under the `write_files:` key
 - Update the version number and the `sha256` hash for the file

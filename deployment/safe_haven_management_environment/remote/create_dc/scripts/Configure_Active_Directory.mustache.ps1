@@ -165,14 +165,14 @@ if ($?) {
 # Ensure that OUs exist
 # ---------------------
 Write-Output "Creating management OUs..."
-foreach ($ouName in ("<ou-research-users-name>",
-                     "<ou-security-groups-name>",
-                     "<ou-service-accounts-name>",
-                     "<ou-database-servers-name>",
-                     "<ou-identity-servers-name>",
-                     "<ou-linux-servers-name>",
-                     "<ou-rds-session-servers-name>",
-                     "<ou-rds-gateway-servers-name>")
+foreach ($ouName in ("{{domain.ous.researchUsers.name}}",
+                     "{{domain.ous.securityGroups.name}}",
+                     "{{domain.ous.serviceAccounts.name}}",
+                     "{{domain.ous.databaseServers.name}}",
+                     "{{domain.ous.identityServers.name}}",
+                     "{{domain.ous.linuxServers.name}}",
+                     "{{domain.ous.rdsSessionServers.name}}",
+                     "{{domain.ous.rdsGatewayServers.name}}")
 ) {
     $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
     if ("$ouExists" -ne "") {
@@ -199,7 +199,7 @@ foreach ($groupCfg in $securityGroups.PSObject.Members) {
     if ($groupExists) {
         Write-Output " [o] Security group '$groupName' already exists"
     } else {
-        New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=<ou-security-groups-name>,$domainOuBase"
+        New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU={{domain.ous.securityGroups.name}},$domainOuBase"
         if ($?) {
             Write-Output " [o] Security group '$groupName' created successfully"
         } else {
@@ -212,7 +212,7 @@ foreach ($groupCfg in $securityGroups.PSObject.Members) {
 # Decode user accounts and create them
 # ------------------------------------
 $userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
-$serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
+$serviceOuPath = "OU={{domain.ous.serviceAccounts.name}},$domainOuBase"
 # Azure active directory synchronisation service account
 # NB. As of build 1.4.###.# it is no longer supported to use an enterprise admin or a domain admin account with AD Connect.
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
@@ -252,21 +252,21 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # Link GPO with OUs
 # -----------------
 Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-database-servers-name>"),
-                            ("All servers - Local Administrators", "<ou-identity-servers-name>"),
-                            ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
-                            ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "{{domain.ous.databaseServers.name}}"),
+                            ("All servers - Local Administrators", "{{domain.ous.identityServers.name}}"),
+                            ("All servers - Local Administrators", "{{domain.ous.rdsSessionServers.name}}"),
+                            ("All servers - Local Administrators", "{{domain.ous.rdsGatewayServers.name}}"),
                             ("All Servers - Windows Services", "Domain Controllers"),
-                            ("All Servers - Windows Services", "<ou-database-servers-name>"),
-                            ("All Servers - Windows Services", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
-                            ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
+                            ("All Servers - Windows Services", "{{domain.ous.databaseServers.name}}"),
+                            ("All Servers - Windows Services", "{{domain.ous.identityServers.name}}"),
+                            ("All Servers - Windows Services", "{{domain.ous.rdsSessionServers.name}}"),
+                            ("All Servers - Windows Services", "{{domain.ous.rdsGatewayServers.name}}"),
                             ("All Servers - Windows Update", "Domain Controllers"),
-                            ("All Servers - Windows Update", "<ou-database-servers-name>"),
-                            ("All Servers - Windows Update", "<ou-identity-servers-name>"),
-                            ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
-                            ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
-                            ("Session Servers - Remote Desktop Control", "<ou-rds-session-servers-name>"))) {
+                            ("All Servers - Windows Update", "{{domain.ous.databaseServers.name}}"),
+                            ("All Servers - Windows Update", "{{domain.ous.identityServers.name}}"),
+                            ("All Servers - Windows Update", "{{domain.ous.rdsSessionServers.name}}"),
+                            ("All Servers - Windows Update", "{{domain.ous.rdsGatewayServers.name}}"),
+                            ("Session Servers - Remote Desktop Control", "{{domain.ous.rdsSessionServers.name}}"))) {
     $gpoName, $ouName = $gpoOuNamePair
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
@@ -342,13 +342,13 @@ if ($success) {
 # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
-# Allow the database server user to register computers in the '<ou-database-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-database-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.databaseServers.samAccountName)"
-# Allow the identity server user to register computers in the '<ou-identity-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-identity-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
-# Allow the Linux server user to register computers in the '<ou-linux-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-linux-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
-# Allow the RDS gateway server user to register computers in the '<ou-rds-gateway-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-rds-gateway-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsGatewayServers.samAccountName)"
-# Allow the RDS session server user to register computers in the '<ou-rds-session-servers-name>' container
-Grant-ComputerRegistrationPermissions -ContainerName "<ou-rds-session-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsSessionServers.samAccountName)"
+# Allow the database server user to register computers in the '{{domain.ous.databaseServers.name}}' container
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.databaseServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.databaseServers.samAccountName)"
+# Allow the identity server user to register computers in the '{{domain.ous.identityServers.name}}' container
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.identityServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
+# Allow the Linux server user to register computers in the '{{domain.ous.linuxServers.name}}' container
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.linuxServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
+# Allow the RDS gateway server user to register computers in the '{{domain.ous.rdsGatewayServers.name}}' container
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsGatewayServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsGatewayServers.samAccountName)"
+# Allow the RDS session server user to register computers in the '{{domain.ous.rdsSessionServers.name}}' container
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsSessionServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsSessionServers.samAccountName)"

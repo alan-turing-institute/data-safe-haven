@@ -51,12 +51,12 @@ $DiskLabelMap = @{
 Write-Output "Removing any old RDS settings..."
 foreach ($collection in $(Get-RDSessionCollection -ErrorAction SilentlyContinue)) {
     Write-Output "... removing existing RDSessionCollection: '$($collection.CollectionName)'"
-    Remove-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName $collection.CollectionName -Force -ErrorAction SilentlyContinue
+    Remove-RDSessionCollection -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName $collection.CollectionName -Force -ErrorAction SilentlyContinue
 }
 foreach ($server in $(Get-RDServer -ErrorAction SilentlyContinue)) {
     Write-Output "... removing existing RDServer: '$($server.Server)'"
     foreach ($role in $server.Roles) {
-        Remove-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server $server.Server -Role $role -Force -ErrorAction SilentlyContinue
+        Remove-RDServer -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -Server $server.Server -Role $role -Force -ErrorAction SilentlyContinue
     }
 }
 foreach ($policyName in $(Get-Item "RDS:\GatewayServer\RAP" -ErrorAction SilentlyContinue | Get-ChildItem | ForEach-Object { $_.Name })) {
@@ -74,13 +74,13 @@ foreach ($policyName in $(Get-Item "RDS:\GatewayServer\CAP" -ErrorAction Silentl
 # ----------------------
 Write-Output "Creating RDS Environment..."
 try {
-    New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsAppSessionHostFqdn>") -ErrorAction Stop
+    New-RDSessionDeployment -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -WebAccessServer "{{sre.remoteDesktop.gateway.fqdn}}" -SessionHost @("{{sre.remoteDesktop.appSessionHost.fqdn}}") -ErrorAction Stop
     # Setup licensing server
-    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING -ErrorAction Stop
-    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser -Force -ErrorAction Stop
+    Add-RDServer -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -Server "{{sre.remoteDesktop.gateway.fqdn}}" -Role RDS-LICENSING -ErrorAction Stop
+    Set-RDLicenseConfiguration -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -LicenseServer "{{sre.remoteDesktop.gateway.fqdn}}" -Mode PerUser -Force -ErrorAction Stop
     # Setup gateway server
-    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreDomain>" -ErrorAction Stop
-    Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
+    Add-RDServer -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -Server "{{sre.remoteDesktop.gateway.fqdn}}" -Role RDS-GATEWAY -GatewayExternalFqdn "{{sre.domain.fqdn}}" -ErrorAction Stop
+    Set-RDWorkspace -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -Name "Safe Haven Applications"
     Write-Output " [o] RDS environment configuration update succeeded"
 } catch {
     Write-Output " [x] RDS environment configuration update failed!"
@@ -90,7 +90,7 @@ try {
 
 # Create collections
 # ------------------
-foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "<researchUserSgName>", "AppFileShares"))) {
+foreach ($rdsConfiguration in @(, @("Applications", "{{sre.remoteDesktop.appSessionHost.fqdn}}", "{{sre.domain.securityGroups.researchUsers.name}}", "AppFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $shareName = $rdsConfiguration
     $sharePath = Join-Path "$((Get-Volume | Where-Object { $_.FileSystemLabel -eq $DiskLabelMap[$shareName] }).DriveLetter):" $shareName
 
@@ -99,15 +99,15 @@ foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "
     $null = New-Item -ItemType Directory -Force -Path $sharePath
     $sessionHostComputerName = $sessionHost.Split(".")[0]
     if ($null -eq $(Get-SmbShare | Where-Object -Property Path -EQ $sharePath)) {
-        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$", "<shmNetbiosName>\${sessionHostComputerName}$", "<shmNetbiosName>\Domain Admins"
+        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "{{shm.domain.netbiosName}}\{{sre.remoteDesktop.gateway.vmName}}$", "{{shm.domain.netbiosName}}\${sessionHostComputerName}$", "{{shm.domain.netbiosName}}\Domain Admins"
     }
 
     # Create collections
     Write-Output "Creating '$collectionName' collection..."
     try {
-        $null = New-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -SessionHost "$sessionHost" -ErrorAction Stop
-        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -UserGroup "<shmNetbiosName>\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ErrorAction Stop
-        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\<rdsGatewayVmName>\$shareName" -ErrorAction Stop
+        $null = New-RDSessionCollection -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "$collectionName" -SessionHost "$sessionHost" -ErrorAction Stop
+        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "$collectionName" -UserGroup "{{shm.domain.netbiosName}}\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ErrorAction Stop
+        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\{{sre.remoteDesktop.gateway.vmName}}\$shareName" -ErrorAction Stop
         Write-Output " [o] Creating '$collectionName' collection succeeded"
     } catch {
         Write-Output " [x] Creating '$collectionName' collection failed!"
@@ -121,13 +121,13 @@ foreach ($rdsConfiguration in @(, @("Applications", "<rdsAppSessionHostFqdn>", "
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "SRD Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <initialSrdIpAddress>" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "SRD Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "CoCalc" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<cocalcIpAddress>" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "CodiMD" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<codimdIpAddress>" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "GitLab" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<gitlabIpAddress>" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "SRD Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <initialSrdIpAddress>" -ErrorAction Stop
-    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "Applications" -DisplayName "SRD Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "SRD Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v {{rdsTemplates.ipAddressFirstSRD}}" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "SRD Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "CoCalc" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://{{sre.webapps.cocalc.ip}}" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "CodiMD" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://{{sre.webapps.codimd.ip}}" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "GitLab" -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://{{sre.webapps.gitlab.ip}}" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "SRD Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh {{rdsTemplates.ipAddressFirstSRD}}" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "{{sre.remoteDesktop.gateway.fqdn}}" -CollectionName "Applications" -DisplayName "SRD Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
@@ -140,10 +140,10 @@ try {
 Write-Output "Updating server configuration..."
 try {
     Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
-    foreach ($targetDirectory in @("C:\Users\<domainAdminUsername>\AppData\Roaming\Microsoft\Windows\ServerManager",
-                                   "C:\Users\<domainAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
+    foreach ($targetDirectory in @("C:\Users\{{rdsTemplates.domainAdminUsername}}\AppData\Roaming\Microsoft\Windows\ServerManager",
+                                   "C:\Users\{{rdsTemplates.domainAdminUsername}}.{{shm.domain.netbiosName}}\AppData\Roaming\Microsoft\Windows\ServerManager")) {
         $null = New-Item -ItemType Directory -Path $targetDirectory -Force -ErrorAction Stop
-        Copy-Item -Path "<remoteUploadDir>\ServerList.xml" -Destination "$targetDirectory\ServerList.xml" -Force -ErrorAction Stop
+        Copy-Item -Path "{{sre.remoteDesktop.gateway.installationDirectory}}\ServerList.xml" -Destination "$targetDirectory\ServerList.xml" -Force -ErrorAction Stop
     }
     Start-Process -FilePath $env:SystemRoot\System32\ServerManager.exe -WindowStyle Maximized -ErrorAction Stop
     Write-Output " [o] Server configuration update succeeded"

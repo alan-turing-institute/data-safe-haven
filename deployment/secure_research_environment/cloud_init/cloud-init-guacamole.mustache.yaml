@@ -9,12 +9,12 @@ write_files:
   - path: "/opt/pg-ldap-sync/configuration.yaml"
     permissions: "0700"
     content: |
-      {{guacamole_pg_ldap_sync.yaml}}
+      {{guacamole_pg_ldap_sync.mustache.yaml}}
 
-  - path: "/opt/guacamole/docker-compose.yml"
+  - path: "/opt/guacamole/docker-compose.yaml"
     permissions: "0400"
     content: |
-      {{guacamole_docker_compose.yml}}
+      {{guacamole_docker_compose.mustache.yaml}}
 
   - path: "/opt/nginx/nginx.conf"
     permissions: "0400"
@@ -29,7 +29,7 @@ write_files:
   - path: "/opt/postgresql/scripts/db_update.sql"
     permissions: "0444"
     content: |
-      {{guacamole_db_update.sql}}
+      {{guacamole_db_update.mustache.sql}}
 
   - path: "/opt/postgresql/synchronise_database.sh"
     permissions: "0500"
@@ -38,17 +38,17 @@ write_files:
       echo "Running LDAP synchronisation..." | tee >(logger -t SafeHaven)
       pg_ldap_sync -c /opt/pg-ldap-sync/configuration.yaml -vv | logger -t SafeHaven
       echo "Updating database..." | tee >(logger -t SafeHaven)
-      docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /scripts/db_update.sql | logger -t SafeHaven
+      docker-compose -f /opt/guacamole/docker-compose.yaml exec -T postgres psql -U guacamole -f /scripts/db_update.sql | logger -t SafeHaven
       echo "Finished database synchronisation" | tee >(logger -t SafeHaven)
 
   - path: "/opt/postgresql/data/connections.csv"
     permissions: "0444"
     content: |
-      SRD Main;{{initial_srd_ip}}
+      SRD Main;{{guacamole.ipAddressFirstSRD}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: {{timezone}}
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -56,10 +56,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
@@ -111,10 +110,10 @@ runcmd:
 
   # Generate some self-signed certificates that will later be replaced by real ones
   - echo ">=== Creating self-signed SSL certificates... ===<"
-  - mkdir -p /opt/ssl/conf/live/{{sre_fqdn}}
+  - mkdir -p /opt/ssl/conf/live/{{sre.domain.fqdn}}
   - openssl rand -out ${HOME}/.rnd -hex 256
-  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
-  - ls -alh /opt/ssl/conf/live/{{sre_fqdn}}
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre.domain.fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre.domain.fqdn}}/fullchain.pem -subj '/CN=localhost'
+  - ls -alh /opt/ssl/conf/live/{{sre.domain.fqdn}}
 
   # Download the Let's Encrypt base certificate
   - LETS_ENCRYPT_CERTIFICATE_PATH=/opt/ssl/lets-encrypt-r3.pem
@@ -126,15 +125,15 @@ runcmd:
 
   # Setup Guacamole
   - echo ">=== Starting Docker compose services... ===<"
-  - docker-compose -f /opt/guacamole/docker-compose.yml up -d
+  - docker-compose -f /opt/guacamole/docker-compose.yaml up -d
 
   # Generate the necessary SQL config for the local PostgreSQL database and run it
   - echo ">=== Configuring local PostgreSQL database... ===<"
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/scripts/db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yaml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgres > /opt/postgresql/scripts/db_init.sql
   - echo "CREATE ROLE ldap_users;" >> /opt/postgresql/scripts/db_init.sql
   - echo "CREATE ROLE ldap_groups;" >> /opt/postgresql/scripts/db_init.sql
   - ls -alh /opt/postgresql/scripts/db_init.sql
-  - docker-compose -f /opt/guacamole/docker-compose.yml exec -T postgres psql -U guacamole -f /scripts/db_init.sql
+  - docker-compose -f /opt/guacamole/docker-compose.yaml exec -T postgres psql -U guacamole -f /scripts/db_init.sql
 
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"

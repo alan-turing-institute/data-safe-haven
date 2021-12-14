@@ -12,6 +12,7 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -188,7 +189,6 @@ function Resolve-CloudInit {
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
         $externalMirrorPublicKey = $result.Value[0].Message -Split "`n" | Select-String "^ssh"
-        $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
     }
 
     # Populate initial package allowlist file defined in cloud init YAML
@@ -202,15 +202,12 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
-    # Set the tier, NTP server and timezone
-    $cloudInitYaml = $cloudInitYaml.
-        Replace("{{ntp-server-0}}", ($config.time.ntp.serverAddresses)[0]).
-        Replace("{{ntp-server-1}}", ($config.time.ntp.serverAddresses)[1]).
-        Replace("{{ntp-server-2}}", ($config.time.ntp.serverAddresses)[2]).
-        Replace("{{ntp-server-3}}", ($config.time.ntp.serverAddresses)[3]).
-        Replace("<tier>", "$tier").
-        Replace("<timezone>", $config.time.timezone.linux)
-    return $cloudInitYaml
+    # Expand the template with tier, NTP server and timezone
+    $config["repositories"] = @{
+        externalMirrorPublicKey = $externalMirrorPublicKey
+        tier                    = $tier
+    }
+    return (Expand-MustacheTemplate -Template $cloudInitYaml -Parameters $config)
 }
 
 
@@ -226,7 +223,7 @@ function Deploy-PackageMirror {
     )
     # Load cloud-init file
     # --------------------
-    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.mustache.yaml".ToLower()
     $fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
     $allowlistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -AllowlistPath $allowlistPath

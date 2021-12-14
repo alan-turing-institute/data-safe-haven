@@ -63,7 +63,7 @@ write_files:
   - path: "/etc/domain-join.secret"
     permissions: "0400"
     content: |
-      {{srd.domainJoinPassword}}
+      {{{srd.domainJoinPassword}}}
 
   - path: "/etc/jaas.conf"
     permissions: "0444"
@@ -95,7 +95,7 @@ write_files:
   - path: "/etc/ldap.secret"
     permissions: "0400"
     content: |
-      {{srd.ldapSearchUserPassword}}
+      {{{srd.ldapSearchUserPassword}}}
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     permissions: "0500"
@@ -118,7 +118,7 @@ write_files:
   - path: "/etc/krb5.conf"
     permissions: "0444"
     content: |
-      {{krb5.conf}}
+      {{krb5.mustache.conf}}
 
   - path: "/etc/pip.conf"
     permissions: "0444"
@@ -132,7 +132,7 @@ write_files:
   - path: "/etc/realmd.conf"
     permissions: "0400"
     content: |
-      {{realmd.conf}}
+      {{realmd.mustache.conf}}
 
   - path: "/etc/R/Rprofile.site"
     permissions: "0444"

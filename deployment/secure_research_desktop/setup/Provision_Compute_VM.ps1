@@ -51,7 +51,7 @@ if ($sourceImage -eq "Ubuntu1804") {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
 $buildVmName = "ComputeVM-Ubuntu${shortVersion}"
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.yaml") -Raw
+$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.mustache.yaml") -Raw
 
 
 # Create resource groups if they do not exist

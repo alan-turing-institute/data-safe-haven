@@ -50,7 +50,7 @@ write_files:
       #! /usr/bin/env python3
       from collections import defaultdict
 
-      TIER=<tier>
+      TIER={{repositories.tier}}
       config_sections = defaultdict(list)
       section = "main"
 
@@ -116,7 +116,7 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER=<tier>
+      TIER={{repositories.tier}}
       echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
       if [ "$TIER" != "2" ]; then
@@ -197,7 +197,7 @@ users:
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: <timezone>
+timezone: {{time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -205,10 +205,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
 
 runcmd:
   # Suppress apt prompts and warning messages

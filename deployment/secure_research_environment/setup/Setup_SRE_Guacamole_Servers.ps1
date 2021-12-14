@@ -16,6 +16,7 @@ Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction St
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -94,36 +95,23 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 # Construct the cloud-init yaml file
 # ----------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
-$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init"
-$cloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
-$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cloudInitTemplate = (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.mustache.yaml") | Get-Item | Get-Content -Raw
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 # Expand mustache template variables
-$cloudInitYaml = $cloudInitTemplate.Replace("{{application_id}}", $application.AppId).
-                                    Replace("{{disable_copy}}", ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')).
-                                    Replace("{{disable_paste}}", ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')).
-                                    Replace("{{initial_srd_ip}}", (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160)).
-                                    Replace("{{ldap-group-base-dn}}", $config.shm.domain.securityOuPath).
-                                    Replace("{{ldap-group-filter}}", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
-                                    Replace("{{ldap-group-researchers}}", $config.sre.domain.securityGroups.researchUsers.name).
-                                    Replace("{{ldap-group-system-administrators}}", $config.sre.domain.securityGroups.systemAdministrators.name).
-                                    Replace("{{ldap-groups-base-dn}}", $config.shm.domain.ous.securityGroups.path).
-                                    Replace("{{ldap-hostname}}", "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
-                                    Replace("{{ldap-port}}", 389).
-                                    Replace("{{ldap-search-user-dn}}", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
-                                    Replace("{{ldap-search-user-password}}", $ldapSearchPassword).
-                                    Replace("{{ldap-user-base-dn}}", $config.shm.domain.ous.researchUsers.path).
-                                    Replace("{{ldap-user-filter}}", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-                                    Replace("{{ntp-server-0}}", ($config.shm.time.ntp.serverAddresses)[0]).
-                                    Replace("{{ntp-server-1}}", ($config.shm.time.ntp.serverAddresses)[1]).
-                                    Replace("{{ntp-server-2}}", ($config.shm.time.ntp.serverAddresses)[2]).
-                                    Replace("{{ntp-server-3}}", ($config.shm.time.ntp.serverAddresses)[3]).
-                                    Replace("{{postgres-password}}", $guacamoleDbPassword).
-                                    Replace("{{public_ip_address}}", $publicIp.IpAddress).
-                                    Replace("{{shm_dc_ip_address}}", $config.shm.dc.ip).
-                                    Replace("{{sre_fqdn}}", $config.sre.domain.fqdn).
-                                    Replace("{{ssl_ciphers}}", ((Get-SslCipherSuites)["openssl"] | Join-String -Separator ":")).
-                                    Replace("{{tenant_id}}", $tenantId).
-                                    Replace("{{timezone}}", $config.sre.time.timezone.linux)
+$config["guacamole"] = @{
+    applicationId          = $application.AppId
+    disableCopy            = ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')
+    disablePaste           = ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')
+    internalDbPassword     = $guacamoleDbPassword
+    ipAddressFirstSRD      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
+    ldapGroupFilter        = "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))"
+    ldapSearchUserDn       = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+    ldapSearchUserPassword = $ldapSearchPassword
+    ldapUserFilter         = "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))"
+    sslCiphers             = (Get-SslCipherSuites)["openssl"] | Join-String -Separator ":"
+    tenantId               = $tenantId
+}
+$cloudInitYaml = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
 
 # Deploy the VM

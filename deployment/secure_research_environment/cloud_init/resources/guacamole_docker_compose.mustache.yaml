@@ -25,7 +25,7 @@ services:
             PGDATA: /var/lib/postgresql/data/guacamole
             POSTGRES_DB: guacamole
             POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: {{postgres-password}}
+            POSTGRES_PASSWORD: {{{guacamole.internalDbPassword}}}
         restart: always
 
     guacd:
@@ -54,23 +54,16 @@ services:
         environment:
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: debug
-            # LDAP_HOSTNAME: {{ldap-hostname}}
-            # LDAP_PORT: {{ldap-port}}
-            # LDAP_USER_BASE_DN: {{ldap-user-base-dn}}
-            # LDAP_USERNAME_ATTRIBUTE: sAMAccountName
-            # LDAP_GROUP_BASE_DN: {{ldap-group-base-dn}}
-            # LDAP_SEARCH_BIND_DN: {{ldap-search-user-dn}}
-            # LDAP_SEARCH_BIND_PASSWORD: {{ldap-search-user-password}}
             POSTGRES_HOSTNAME: postgres
             POSTGRES_DATABASE: guacamole
             POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: {{postgres-password}}
-            OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize
-            OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{tenant_id}}/discovery/v2.0/keys
-            OPENID_ISSUER: https://login.microsoftonline.com/{{tenant_id}}/v2.0
+            POSTGRES_PASSWORD: {{{guacamole.internalDbPassword}}}
+            OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{guacamole.tenantId}}/oauth2/v2.0/authorize
+            OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{guacamole.tenantId}}/discovery/v2.0/keys
+            OPENID_ISSUER: https://login.microsoftonline.com/{{guacamole.tenantId}}/v2.0
             OPENID_USERNAME_CLAIM_TYPE: email
-            OPENID_CLIENT_ID: {{application_id}}
-            OPENID_REDIRECT_URI: https://{{sre_fqdn}}
+            OPENID_CLIENT_ID: {{guacamole.applicationId}}
+            OPENID_REDIRECT_URI: https://{{sre.domain.fqdn}}
         restart: always
 
     nginx:

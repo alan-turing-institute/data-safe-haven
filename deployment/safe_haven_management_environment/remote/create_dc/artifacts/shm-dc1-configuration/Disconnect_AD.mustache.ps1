@@ -8,7 +8,7 @@ if (-Not (Get-Module -ListAvailable -Name MSOnline)) {
 }
 
 if (Get-Module -ListAvailable -Name MSOnline) {
-    Write-Output "Please use the username and password for an Azure AD global admin. Don't forget the @<shm-fqdn> on the end of the username!"
+    Write-Output "Please use the username and password for an Azure AD global admin. Don't forget the @{{domain.fqdn}} on the end of the username!"
     Connect-MsolService
     # Print the current synchronisation status
     if ((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled) {
