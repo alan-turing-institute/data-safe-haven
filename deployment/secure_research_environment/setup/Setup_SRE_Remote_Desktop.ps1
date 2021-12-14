@@ -12,6 +12,7 @@ Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -49,7 +50,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Retrieve variables from SRE Key Vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
-$initialSrdIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
+$ipAddressFirstSRD = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
@@ -142,27 +143,19 @@ foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) 
 # -----------------------------------------------------------
 Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 
+# Expand mustache template variables
+$config["rdsTemplates"] = @{
+    domainAdminUsername = $domainAdminUsername
+    ipAddressFirstSRD   = $ipAddressFirstSRD
+}
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
-$template.Replace("<domainAdminUsername>", $domainAdminUsername).
-          Replace("<initialSrdIpAddress>", $initialSrdIpAddress).
-          Replace("<cocalcIpAddress>", $config.sre.webapps.cocalc.ip).
-          Replace("<codimdIpAddress>", $config.sre.webapps.codimd.ip).
-          Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).
-          Replace("<rdsGatewayVmFqdn>", $config.sre.remoteDesktop.gateway.fqdn).
-          Replace("<rdsGatewayVmName>", $config.sre.remoteDesktop.gateway.vmName).
-          Replace("<rdsAppSessionHostFqdn>", $config.sre.remoteDesktop.appSessionHost.fqdn).
-          Replace("<remoteUploadDir>", $config.sre.remoteDesktop.gateway.installationDirectory).
-          Replace("<researchUserSgName>", $config.sre.domain.securityGroups.researchUsers.name).
-          Replace("<shmNetbiosName>", $config.shm.domain.netbiosName).
-          Replace("<sreDomain>", $config.sre.domain.fqdn) | Out-File $deployScriptLocalFilePath
-
+Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $deployScriptLocalFilePath
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
-$template.Replace("<rdsGatewayVmFqdn>", $config.sre.remoteDesktop.gateway.fqdn).
-          Replace("<rdsAppSessionHostFqdn>", $config.sre.remoteDesktop.appSessionHost.fqdn) | Out-File $serverListLocalFilePath
+Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
 try {
