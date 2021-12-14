@@ -5,6 +5,8 @@ name: Build allow lists
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, 1079-mitigate-actions-timeouts]
+  schedule:
+    - cron: "* * */6 * *"  # run every six days in order to keep the cache fresh
 
 # checkout needs 'contents:read'
 permissions:
