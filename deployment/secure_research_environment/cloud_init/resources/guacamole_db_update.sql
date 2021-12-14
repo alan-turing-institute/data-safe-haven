@@ -25,10 +25,10 @@ INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, param
         (
             VALUES
                 ('hostname', null),
-                ('disable-copy', '{{disable_copy}}'),
-                ('disable-paste', '{{disable_paste}}'),
+                ('disable-copy', '{{guacamole.disableCopy}}'),
+                ('disable-paste', '{{guacamole.disablePaste}}'),
                 ('clipboard-encoding', 'UTF-8'),
-                ('timezone', '{{timezone}}'),
+                ('timezone', '{{sre.time.timezone.linux}}'),
                 ('server-layout', 'en-gb-qwerty')
         ) connection_settings (parameter_name, parameter_value)
         CROSS JOIN guacamole_connection
@@ -106,12 +106,12 @@ SELECT entity_id, permission :: guacamole_system_permission_type
 FROM
     (
         VALUES
-            ('{{ldap-group-system-administrators}}', 'CREATE_CONNECTION'),
-            ('{{ldap-group-system-administrators}}', 'CREATE_CONNECTION_GROUP'),
-            ('{{ldap-group-system-administrators}}', 'CREATE_SHARING_PROFILE'),
-            ('{{ldap-group-system-administrators}}', 'CREATE_USER'),
-            ('{{ldap-group-system-administrators}}', 'CREATE_USER_GROUP'),
-            ('{{ldap-group-system-administrators}}', 'ADMINISTER')
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'CREATE_CONNECTION'),
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'CREATE_CONNECTION_GROUP'),
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'CREATE_SHARING_PROFILE'),
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'CREATE_USER'),
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'CREATE_USER_GROUP'),
+            ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'ADMINISTER')
     ) group_permissions (username, permission)
     JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER_GROUP'
 ON CONFLICT DO NOTHING;
@@ -122,11 +122,11 @@ INSERT INTO guacamole_connection_permission (entity_id, connection_id, permissio
     FROM
         (
             VALUES
-                ('{{ldap-group-system-administrators}}', 'READ'),
-                ('{{ldap-group-system-administrators}}', 'UPDATE'),
-                ('{{ldap-group-system-administrators}}', 'DELETE'),
-                ('{{ldap-group-system-administrators}}', 'ADMINISTER'),
-                ('{{ldap-group-researchers}}', 'READ')
+                ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'READ'),
+                ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'UPDATE'),
+                ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'DELETE'),
+                ('{{sre.domain.securityGroups.systemAdministrators.name}}', 'ADMINISTER'),
+                ('{{sre.domain.securityGroups.researchUsers.name}}', 'READ')
         ) group_permissions (username, permission)
         CROSS JOIN guacamole_connection
         JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name

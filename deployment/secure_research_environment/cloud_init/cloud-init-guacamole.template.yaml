@@ -44,11 +44,11 @@ write_files:
   - path: "/opt/postgresql/data/connections.csv"
     permissions: "0444"
     content: |
-      SRD Main;{{initial_srd_ip}}
+      SRD Main;{{guacamole.ipAddressFirstSRD}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: {{timezone}}
+timezone: {{sre.time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -56,10 +56,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
 
 # Configure apt repositories
 apt:
@@ -111,10 +110,10 @@ runcmd:
 
   # Generate some self-signed certificates that will later be replaced by real ones
   - echo ">=== Creating self-signed SSL certificates... ===<"
-  - mkdir -p /opt/ssl/conf/live/{{sre_fqdn}}
+  - mkdir -p /opt/ssl/conf/live/{{sre.domain.fqdn}}
   - openssl rand -out ${HOME}/.rnd -hex 256
-  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre_fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre_fqdn}}/fullchain.pem -subj '/CN=localhost'
-  - ls -alh /opt/ssl/conf/live/{{sre_fqdn}}
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -days 1 -keyout /opt/ssl/conf/live/{{sre.domain.fqdn}}/privkey.pem -out /opt/ssl/conf/live/{{sre.domain.fqdn}}/fullchain.pem -subj '/CN=localhost'
+  - ls -alh /opt/ssl/conf/live/{{sre.domain.fqdn}}
 
   # Download the Let's Encrypt base certificate
   - LETS_ENCRYPT_CERTIFICATE_PATH=/opt/ssl/lets-encrypt-r3.pem

@@ -9,18 +9,18 @@
 # encryption:
 #   method: :simple_tls
 ldap_connection:
-  host: {{shm_dc_ip_address}}
+  host: {{shm.dc.ip}}
   port: 389
   auth:
     method: :simple
-    username: {{ldap-search-user-dn}}
-    password: {{ldap-search-user-password}}
+    username: {{guacamole.ldapSearchUserDn}}
+    password: {{{guacamole.ldapSearchUserPassword}}}
 
 # Search parameters for LDAP users which should be synchronized
 ldap_users:
-  base: {{ldap-user-base-dn}}
+  base: {{shm.domain.ous.researchUsers.path}}
   # LDAP filter defining which LDAP users should be synchronized
-  filter: {{ldap-user-filter}}
+  filter: {{{guacamole.ldapUserFilter}}}
   # this attribute is used as PG role name. It is 'sAMAccountName@domain'
   name_attribute: mail
   # lowercase name for use as PG role name
@@ -28,9 +28,9 @@ ldap_users:
 
 # Search parameters for LDAP groups which should be synchronized
 ldap_groups:
-  base: {{ldap-groups-base-dn}}
+  base: {{shm.domain.ous.securityGroups.path}}
   # LDAP filter defining which LDAP groups should be synchronized
-  filter: {{ldap-group-filter}}
+  filter: {{{guacamole.ldapGroupFilter}}}
   # this attribute is used as PG role name
   name_attribute: cn
   # lowercase name for use as PG role name
@@ -44,7 +44,7 @@ pg_connection:
   host: localhost
   dbname: guacamole
   user: guacamole
-  password: {{postgres-password}}
+  password: {{{guacamole.internalDbPassword}}}
 
 pg_users:
   # Filter for identifying LDAP generated users in the database.
