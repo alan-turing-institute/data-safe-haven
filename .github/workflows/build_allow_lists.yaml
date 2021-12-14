@@ -9,8 +9,10 @@ on:  # yamllint disable-line rule:truthy
     - cron: "* * */6 * *"  # run every six days in order to keep the cache fresh
 
 # checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   build_allow_lists:
@@ -45,3 +47,37 @@ jobs:
       - name: Check for changes
         shell: bash
         run: git diff -- . ':!environment_configs/package_lists/dependency-cache.json'
+
+      - name: Create pull request
+        id: pull-request
+        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a  # This commit corresponds to tag 3.12.0
+        with:
+          # token: ${{ secrets.PAT }}
+          commit-message: Update PyPI and CRAN allow lists
+          committer: GitHub Actions <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          # signoff: false
+          base: develop
+          branch: package-allowlist-updates
+          delete-branch: true
+          title: 'Update PyPI and CRAN allow lists'
+          body: |
+            ### :arrow_heading_up: Summary
+            - Apply package allowlist diff from $GITHUB_SHA (PR #1070) on 2021-12-10
+            - See [Actions log](https://github.com/alan-turing-institute/data-safe-haven/actions/runs/1563495534) for details
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Allow-list only
+          # labels: |
+          #   report
+          #   automated pr
+          # assignees: peter-evans
+          # reviewers: peter-evans
+          # team-reviewers: |
+          #   owners
+          #   maintainers
+          # milestone: 1
+          draft: false
