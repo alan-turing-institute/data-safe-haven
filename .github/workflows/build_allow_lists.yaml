@@ -26,6 +26,10 @@ jobs:
           key: dependencies-${{ github.sha }}  # request a cache that does not yet exist
           restore-keys: dependencies-          # use prefix matching to fallback to the most recently created SHA-specific cache
 
+      - name: View cache
+        shell: bash
+        run: cat environment_configs/package_lists/dependency-cache.json
+
       - name: Check PyPI allow list
         shell: pwsh
         env:
