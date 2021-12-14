@@ -101,6 +101,7 @@ jobs:
             --check-img-http \
             --enforce-https \
             --file-ignore "/_static/" \
+            --http-status-ignore "403,429" \
             --url-swap "^\/data-safe-haven:/.." \
             --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
       - name: Deploy documentation to GitHub Pages
