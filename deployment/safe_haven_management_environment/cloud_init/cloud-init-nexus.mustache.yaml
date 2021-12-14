@@ -28,11 +28,11 @@ write_files:
     owner: root:root
     permissions: "0500"
     content: |
-      <configure_nexus.py>
+      {{configure_nexus.py}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
-timezone: <timezone>
+timezone: {{time.timezone.linux}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -40,10 +40,9 @@ ntp:
   enabled: true
   ntp_client: systemd-timesyncd
   pools:
-    - {{ntp-server-0}}
-    - {{ntp-server-1}}
-    - {{ntp-server-2}}
-    - {{ntp-server-3}}
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
 
 runcmd:
   # Ensure that Docker will run on restart
@@ -63,7 +62,7 @@ runcmd:
   - sleep 3m
   # Configure Nexus
   - echo "Configuring Nexus"
-  - python3 /opt/configuration/configure-nexus.py --path /nexus-data --admin_password <nexus-admin-password> --tier <tier>
+  - python3 /opt/configuration/configure-nexus.py --path /nexus-data --admin_password {{{nexus.adminPassword}}} --tier {{nexus.tier}}
 
 power_state:
   mode: poweroff

@@ -99,17 +99,17 @@ $cloudInitTemplate = (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guac
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 # Expand mustache template variables
 $config["guacamole"] = @{
-    applicationId              = $application.AppId
-    disableCopy                = ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')
-    disablePaste               = ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')
-    internalDbPassword         = $guacamoleDbPassword
-    ipAddressFirstSRD          = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
-    ldapGroupFilter            = "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))"
-    ldapSearchUserDn           = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
-    ldapSearchUserPassword     = $ldapSearchPassword
-    ldapUserFilter             = "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))"
-    sslCiphers                 = (Get-SslCipherSuites)["openssl"] | Join-String -Separator ":"
-    tenantId                   = $tenantId
+    applicationId          = $application.AppId
+    disableCopy            = ($config.sre.remoteDesktop.networkRules.copyAllowed ? 'false' : 'true')
+    disablePaste           = ($config.sre.remoteDesktop.networkRules.pasteAllowed ? 'false' : 'true')
+    internalDbPassword     = $guacamoleDbPassword
+    ipAddressFirstSRD      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
+    ldapGroupFilter        = "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))"
+    ldapSearchUserDn       = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+    ldapSearchUserPassword = $ldapSearchPassword
+    ldapUserFilter         = "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))"
+    sslCiphers             = (Get-SslCipherSuites)["openssl"] | Join-String -Separator ":"
+    tenantId               = $tenantId
 }
 $cloudInitYaml = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
