@@ -23,7 +23,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: environment_configs/package_lists/dependency-cache.json
-          key: dependencies  # use the same cache for all jobs
+          key: dependencies-${{ github.sha }}  # request a cache that does not yet exist
+          restore-keys: dependencies-          # use prefix matching to fallback to the most recently created SHA-specific cache
 
       - name: Check PyPI allow list
         shell: pwsh
