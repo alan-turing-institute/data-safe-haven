@@ -10,6 +10,7 @@ Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -177,15 +178,6 @@ foreach ($user in $userAccounts.Keys) {
     $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
 }
 # Run remote script
-$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
-$script = $scriptTemplate.Replace("<ou-database-servers-name>", $config.domain.ous.databaseServers.name).
-                          Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
-                          Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
-                          Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
-                          Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
-                          Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
-                          Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
-                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 $params = @{
     domainAdminUsername    = $domainAdminUsername
     domainControllerVmName = $config.dc.vmName
@@ -196,7 +188,8 @@ $params = @{
     userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
     securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64
 }
-$null = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Active_Directory.mustache.ps1" | Get-Item | Get-Content -Raw
+$null = Invoke-RemoteScript -Shell "PowerShell" -Script (Expand-MustacheTemplate -Template $scriptTemplate -Parameters $config) -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure group policies
