@@ -56,7 +56,7 @@ $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($
 # -------------------------------
 Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
 # Load the cloud-init template then add resources and expand mustache placeholders
-$cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.template.yaml" | Get-Item | Get-Content -Raw
+$cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.mustache.yaml" | Get-Item | Get-Content -Raw
 $cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 $cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
 # Deploy CoCalc VM
@@ -91,10 +91,10 @@ Add-LogMessage -Level Info "Constructing CodiMD cloud-init from template..."
 $config["codimd"] = @{
     ldapSearchUserDn       = $ldapSearchUserDn
     ldapSearchUserPassword = $ldapSearchUserPassword
-    ldapUserFilter         = "(\&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
+    ldapUserFilter         = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(sAMAccountName={{username}}))"
     postgresPassword       = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.postgres.passwordSecretName -DefaultLength 20 -AsPlaintext)
 }
-$codimdCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-codimd.template.yaml" | Get-Item | Get-Content -Raw
+$codimdCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-codimd.mustache.yaml" | Get-Item | Get-Content -Raw
 $codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 $codimdCloudInitTemplate = Expand-MustacheTemplate -Template $codimdCloudInitTemplate -Parameters $config
 # Deploy CodiMD VM
@@ -132,7 +132,7 @@ $config["gitlab"] = @{
     ldapUserFilter         = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
     rootPassword           = $(Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20 -AsPlaintext)
 }
-$gitlabCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-gitlab.mustache.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
 $gitlabCloudInitTemplate = Expand-MustacheTemplate -Template $gitlabCloudInitTemplate -Parameters $config
 # Deploy GitLab VM

@@ -53,7 +53,7 @@ write_files:
     owner: root:root
     permissions: "0444"
     content: |
-      {{krb5.conf}}
+      {{krb5.mustache.conf}}
 
   - path: "/etc/ldap.secret"
     owner: root:root
@@ -163,7 +163,7 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      {{realmd.conf}}
+      {{realmd.mustache.conf}}
 
   - path: "/opt/configuration/check_dns.sh"
     permissions: "0500"

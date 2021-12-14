@@ -150,11 +150,11 @@ $config["rdsTemplates"] = @{
 }
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
+$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.mustache.ps1" | Get-Item | Get-Content -Raw
 Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $deployScriptLocalFilePath
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
+$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.mustache.xml" | Get-Item | Get-Content -Raw
 Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage

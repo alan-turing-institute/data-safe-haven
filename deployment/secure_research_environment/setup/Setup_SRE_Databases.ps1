@@ -170,7 +170,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Construct the cloud-init file
         Add-LogMessage -Level Info "Constructing cloud-init from template..."
-        $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
+        $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres.mustache.yaml" -Resolve) -Raw
 
         # Insert additional files into the cloud-init template
         $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
