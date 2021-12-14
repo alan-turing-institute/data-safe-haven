@@ -58,10 +58,10 @@ if ($success) {
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
 $success = $true
 foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
-    if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
+    if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.mustache.ps1") {
         # Expand the AD disconnection template before uploading
         $adScriptLocalFilePath = (New-TemporaryFile).FullName
-        (Get-Content $filePath -Raw).Replace("<shm-fqdn>", $config.domain.fqdn) | Out-File $adScriptLocalFilePath
+        Expand-MustacheTemplate -Template $(Get-Content $filePath -Raw) -Parameters $config | Out-File $adScriptLocalFilePath
         $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
         $null = Remove-Item $adScriptLocalFilePath
     } else {
