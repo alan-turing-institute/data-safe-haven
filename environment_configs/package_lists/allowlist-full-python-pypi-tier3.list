@@ -25,6 +25,7 @@ asn1crypto
 astor
 astroid
 astropy
+asttokens
 astunparse
 async_generator
 async-timeout
@@ -122,6 +123,7 @@ dtw
 eli5
 entrypoints
 enum34
+executing
 fastprogress
 filelock
 Fiona
@@ -342,6 +344,7 @@ protobuf
 psutil
 psycopg2
 ptyprocess
+pure-eval
 py
 py4j
 pyasn1
@@ -462,6 +465,7 @@ sputnik
 SQLAlchemy
 sqlitedict
 srsly
+stack-data
 statsmodels
 stumpy
 subprocess32
