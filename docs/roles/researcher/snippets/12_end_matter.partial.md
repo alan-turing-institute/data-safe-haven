@@ -126,7 +126,7 @@ If you want to override this with a different username or email address for spec
 ### Cloning projects
 
 In `git`, when you copy a project you say you "clone" it.
-To work on a git project on the Linux Data Science desktop, you will need to clone it.
+To work on a `git` project in the SRD, you will need to clone it.
 To do this, sign in to `GitLab`.
 
 When you are on your Dashboard, click on the project that you’d like to clone.

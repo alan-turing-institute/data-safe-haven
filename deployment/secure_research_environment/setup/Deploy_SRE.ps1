@@ -5,7 +5,7 @@ param(
     [string]$sreId,
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
     [string]$tenantId,
-    [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of DSVMs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
+    [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
     [switch]$Clean
@@ -107,16 +107,16 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_WebApp_Ser
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Databases.ps1')" -shmId $shmId -sreId $sreId }
 
 
-# Deploy data science VMs
-# -----------------------
+# Deploy SRD VMs
+# --------------
 $cpuIpOffset = 160
 $gpuIpOffset = 180
 foreach ($VmSize in $VmSizes) {
     if ($VmSize.Replace("Standard_", "").StartsWith("N")) {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
         $gpuIpOffset += 1
     } else {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
         $cpuIpOffset += 1
     }
 }

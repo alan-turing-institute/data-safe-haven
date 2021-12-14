@@ -300,19 +300,9 @@ If you get multiple MFA requests with no change in the `Opening ports` message, 
 :relative-images:
 ```
 
-## 9. {{computer}} Deploy data science VMs
+## 9. {{computer}} Deploy secure research desktops (SRDs)
 
-```{include} snippets/09_single_dsvm.partial.md
-:relative-images:
-```
-
-```{tip}
-If you want to deploy several DSVMs, simply repeat the above steps with a different IP address last octet.
-```
-
-### Deploy a single data science VM (DSVM)
-
-```{include} snippets/09_single_dsvm.partial.md
+```{include} snippets/09_single_srd.partial.md
 :relative-images:
 ```
 
@@ -320,10 +310,10 @@ If you want to deploy several DSVMs, simply repeat the above steps with a differ
 If desired, you can also provide a VM size by passing the optional `-vmSize` parameter.
 ```
 
-If you want to deploy several DSVMs, simply repeat the above steps with a different IP address last octet.
+If you want to deploy several SRDs, simply repeat the above steps with a different IP address last octet.
 
 ```{important}
-The initial shared `DSVM Main` shared VM should be deployed with the last octet `160` as the dashboard is hard-coded to expect this.
+The initial shared `SRD Main` shared VM should be deployed with the last octet `160` as the dashboard is hard-coded to expect this.
 ```
 
 ## 10. {{lock}} Apply network configuration
@@ -344,7 +334,7 @@ The initial shared `DSVM Main` shared VM should be deployed with the last octet 
 :relative-images:
 ```
 
-## 13. {{fire}} Run smoke tests on DSVM
+## 13. {{fire}} Run smoke tests on SRD
 
 ```{include} snippets/13_run_smoke_tests.partial.md
 :relative-images:

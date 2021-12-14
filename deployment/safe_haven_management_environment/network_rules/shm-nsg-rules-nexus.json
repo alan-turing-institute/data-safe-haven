@@ -2,7 +2,7 @@
     {
         "name": "AllowRepositoryAccessInbound",
         "access": "Allow",
-        "description": "Allow port 80 (nexus) so that DSVM users can get packages",
+        "description": "Allow port 80 (nexus) so that SRD users can get packages",
         "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
         "destinationPortRange": 80,
         "direction": "Inbound",

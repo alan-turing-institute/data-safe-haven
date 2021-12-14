@@ -1931,7 +1931,7 @@ function Update-VMLdapSecret {
         [Parameter(Mandatory = $true, HelpMessage = "Password for LDAP search account")]
         [string]$LdapSearchPassword
     )
-    Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '${Name}'"
+    Add-LogMessage -Level Info "[ ] Setting LDAP secret on SRD '${Name}'"
     $params = @{
         ldapSearchPasswordB64 = $LdapSearchPassword | ConvertTo-Base64
     }

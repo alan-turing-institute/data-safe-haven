@@ -37,8 +37,8 @@ In general, this image should cover most use cases, but it's possible that you m
 
 ### Adding a new apt package
 
-- Add the name of the package to `deployment/dsvm_images/packages/packages-apt.list`
-- If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+- Add the name of the package to `deployment/secure_research_desktop/packages/packages-apt.list`
+- If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu.yaml`
 
 ````{hint}
 For example, to check for `Azure Data Studio`, the following line was added:
@@ -51,18 +51,18 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 ### Adding a new Python package
 
 - Add the name of the package as it appears on `PyPI` to each of the package lists (supported Python versions only):
-  - `deployment/dsvm_images/packages/packages-python-pypi-36.list`
-  - `deployment/dsvm_images/packages/packages-python-pypi-37.list`
-  - `deployment/dsvm_images/packages/packages-python-pypi-38.list`
-- If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/dsvm_images/packages/python-requirements.json`
+  - `deployment/secure_research_desktop/packages/packages-python-pypi-36.list`
+  - `deployment/secure_research_desktop/packages/packages-python-pypi-37.list`
+  - `deployment/secure_research_desktop/packages/packages-python-pypi-38.list`
+- If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/secure_research_desktop/packages/python-requirements.json`
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
 ### Adding a new R package
 
 - Add the name of the package as it appears on `CRAN` or `Bioconductor` to the appropriate package list:
-  - `deployment/dsvm_images/packages/packages-r-bioconductor.list`
-  - `deployment/dsvm_images/packages/packages-r-cran.list`
-- If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind`) then also add it to `deployment/dsvm_images/packages/packages-apt.list`.
+  - `deployment/secure_research_desktop/packages/packages-r-bioconductor.list`
+  - `deployment/secure_research_desktop/packages/packages-r-cran.list`
+- If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind`) then also add it to `deployment/secure_research_desktop/packages/packages-apt.list`.
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-r-cran-tier3.list`
 
 #### Adding packages to the package allowlist
@@ -74,7 +74,7 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 ### Changing the version of a package
 
-If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+If you want to update the version of one of the packages we install from a `.deb` file (eg. `RStudio`), you will need to edit `deployment/secure_research_desktop/cloud_init/cloud-init-buildimage-ubuntu.yaml`
 
 - Find the appropriate `/installation/<package name>.debinfo` section under the `write_files:` key
 - Update the version number and the `sha256` hash for the file
@@ -84,7 +84,7 @@ If you want to update the version of one of the packages we install from a `.deb
 
 In order to provision a candidate VM you will need to do the following:
 
-![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at {{file_folder}} ``./deployment/dsvm_images/setup`
+![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
@@ -107,7 +107,7 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} ``./deployment/dsvm_images/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
@@ -127,7 +127,7 @@ Please **check** that everything has built correctly before proceeding.
 
 Once you have created an image, it can be registered in the image gallery for future use using the `Register_Image_In_Gallery.ps1` script.
 
-![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} ``./deployment/dsvm_images/setup`
+![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
@@ -136,5 +136,5 @@ PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image na
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 - where `<Image Name>` is the name of the VM image created during the conversion step
 
-This will register the image in the shared gallery as a new version of the Ubuntu-based compute machine images.
+This will register the image in the shared gallery as a new version of the relevant SRD image.
 This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.

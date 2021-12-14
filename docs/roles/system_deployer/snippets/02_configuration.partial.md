@@ -26,8 +26,8 @@ The following core SRE properties are required - look in the `environment_config
   "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See below for suggestion on how to set this.",
   "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
   "computeVmImage": {
-    "type": "The name of the Compute VM image (most commonly 'Ubuntu')",
-    "version": "The version of the Compute VM image (e.g. 0.1.2019082900)"
+    "type": "The name of the SRD image (most commonly 'Ubuntu')",
+    "version": "The version of the SRD image (e.g. 0.1.2019082900)"
   },
   "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended, tiers 0-3) or 'MicrosoftRDS' (tiers 2-3 only)",
   "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",

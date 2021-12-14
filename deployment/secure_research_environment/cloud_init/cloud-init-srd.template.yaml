@@ -63,7 +63,7 @@ write_files:
   - path: "/etc/domain-join.secret"
     permissions: "0400"
     content: |
-      {{dsvm.domainJoinPassword}}
+      {{srd.domainJoinPassword}}
 
   - path: "/etc/jaas.conf"
     permissions: "0444"
@@ -82,20 +82,20 @@ write_files:
       # The distinguished name of the search base.
       base {{shm.domain.ous.researchUsers.path}}
       # Restrict users to those in the security group of this SRE
-      filter {{{dsvm.ldapUserFilter}}}
+      filter {{{srd.ldapUserFilter}}}
       # Specify the LDAP server by URI
       uri ldap://{{shm.dc.hostnameUpper}}.{{shm.domain.fqdnLower}}:389
       # The LDAP version to use (defaults to 3 if supported by client library)
       ldap_version 3
       # The distinguished name used to bind to the server
-      rootbinddn {{dsvm.ldapSearchUserDn}}
+      rootbinddn {{srd.ldapSearchUserDn}}
       # Do not hash the password: rely on the server to do so (default)
       pam_password md5
 
   - path: "/etc/ldap.secret"
     permissions: "0400"
     content: |
-      {{dsvm.ldapSearchUserPassword}}
+      {{srd.ldapSearchUserPassword}}
 
   - path: "/etc/local/runonce.d/00-join-domain.sh"
     permissions: "0500"
@@ -104,8 +104,8 @@ write_files:
       echo ">=== Waiting for realm availability... ===<"
       while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
-      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.linuxServers.path}}' '{{shm.users.computerManagers.linuxServers.samAccountName}}' '{{dsvm.hostname}}'"
-      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.linuxServers.path}}" "{{shm.users.computerManagers.linuxServers.samAccountName}}" "{{dsvm.hostname}}"
+      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.linuxServers.path}}' '{{shm.users.computerManagers.linuxServers.samAccountName}}' '{{srd.hostname}}'"
+      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.linuxServers.path}}" "{{shm.users.computerManagers.linuxServers.samAccountName}}" "{{srd.hostname}}"
 
   - path: "/etc/local/runonce.d/01-remount-nfs.sh"
     permissions: "0500"
@@ -369,7 +369,7 @@ write_files:
     permissions: "0400"
     content: |
       accountName {{sre.storage.persistentdata.account.name}}
-      sasToken {{{dsvm.ingressContainerSasToken}}}
+      sasToken {{{srd.ingressContainerSasToken}}}
       authType SAS
       containerName ingress
 
@@ -377,7 +377,7 @@ write_files:
     permissions: "0400"
     content: |
       accountName {{sre.storage.persistentdata.account.name}}
-      sasToken {{{dsvm.egressContainerSasToken}}}
+      sasToken {{{srd.egressContainerSasToken}}}
       authType SAS
       containerName egress
 
@@ -422,7 +422,7 @@ write_files:
     encoding: gz+b64
     permissions: "0644"
     content: |
-      {{dsvm.xrdpCustomLogoEncoded}}
+      {{srd.xrdpCustomLogoEncoded}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8
@@ -440,13 +440,13 @@ ntp:
 
 # Set hostname
 # We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
-fqdn: "{{dsvm.hostname}}.{{shm.domain.fqdnLower}}"
-hostname: {{dsvm.hostname}}
+fqdn: "{{srd.hostname}}.{{shm.domain.fqdnLower}}"
+hostname: {{srd.hostname}}
 manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
 runcmd:
-  - echo ">=== Beginning DSVM configuration... ===<"
+  - echo ">=== Beginning SRD configuration... ===<"
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
   # Ensure that auditd is running and enabled at startup

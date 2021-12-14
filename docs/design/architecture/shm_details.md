@@ -44,5 +44,5 @@ It can call out to the internet to update itself from the official package serve
 The "internal" mirror is protected by an infrastructure level firewall that does not permit any **outbound** connections at all (not even to the "external" mirror).
 It can receive inbound rsync connections from the "external" mirror to receive package updates and inbound connections from its associated SREs to install packages.
 
-Between them this pair of servers operate as a one-way "airlock" to allow packages to be pulled from the official package server on the internet and made available to compute VMs in project SREs, while not permitting the mirrors to be used to connect to the internet from a SRE.
+Between them this pair of servers operate as a one-way "airlock" to allow packages to be pulled from the official package server on the internet and made available to Secure Research Desktops (SRDs) in project SREs, while not permitting the mirrors to be used to connect to the internet from a SRE.
 Even if the "internal" mirror was to be compromised, the infrastructure level firewall restricting outbound connections would prevent access to any other resources within the Safe Haven or outside of it.

@@ -73,20 +73,20 @@
 
   Welcome to the Data Safe Haven! {{wave}}
 
-### {{penguin}} Log into the Linux Data Science desktop
+### {{penguin}} Log into the Secure Research Desktop
 
-The primary method of performing data analysis in the SRE is using the Linux data science desktop.
+The primary method of performing data analysis in the SRE is using the Secure Research Desktop (SRD).
 
 This is a virtual machine (VM) with many different applications and programming languages pre-installed on it.
-Once connected to it, you can carry out data science research while remaining completely isolated from the internet.
+Once connected to it, you can analyse the sensitive data belonging to your project while remaining completely isolated from the internet.
 
 - Click on one of the `Desktop` connections (for example `Ubuntu0_CPU2_8GB (Desktop)` to connect to the desktop.
 
-```{include} snippets/03_02_dsvm_login.partial.md
+```{include} snippets/03_02_srd_login.partial.md
 :relative-images:
 ```
 
-```{include} snippets/04_using_dsvm.partial.md
+```{include} snippets/04_using_srd.partial.md
 :relative-images:
 ```
 
@@ -110,9 +110,9 @@ Once connected to it, you can carry out data science research while remaining co
 :relative-images:
 ```
 
-## {{unlock}} Access additional virtual machines
+## {{unlock}} Access additional SRDs
 
-Your project might make use of additional virtual machines other than the main shared desktop.
+Your project might make use of further SRDs in addition to the main shared desktop.
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.

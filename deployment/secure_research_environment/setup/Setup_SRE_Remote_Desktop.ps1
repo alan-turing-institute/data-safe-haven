@@ -49,7 +49,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Retrieve variables from SRE Key Vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
-$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
+$initialSrdIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.compute.cidr -Offset 160
 $rdsGatewayAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $rdsAppSessionHostAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower() -AsPlaintext
@@ -146,7 +146,7 @@ Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
 $template.Replace("<domainAdminUsername>", $domainAdminUsername).
-          Replace("<dsvmInitialIpAddress>", $dsvmInitialIpAddress).
+          Replace("<initialSrdIpAddress>", $initialSrdIpAddress).
           Replace("<cocalcIpAddress>", $config.sre.webapps.cocalc.ip).
           Replace("<codimdIpAddress>", $config.sre.webapps.codimd.ip).
           Replace("<gitlabIpAddress>", $config.sre.webapps.gitlab.ip).

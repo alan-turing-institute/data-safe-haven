@@ -13,7 +13,7 @@ We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here
 
 ### {{unlock}} Access CodiMD
 
-You can access `CodiMD` from an internet browser from the Linux Data Science Desktop using the desktop shortcut.
+You can access `CodiMD` from an internet browser from the SRD using the desktop shortcut.
 Login with your long-form username `firstname.lastname@<username domain>` and `password`.
 
 ````{note}
@@ -25,7 +25,7 @@ Our example user, Ada Lovelace would enter `ada.lovelace@projects.turingsafehave
 ```
 ````
 
-Accessing CodiMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
+Accessing CodiMD from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
 
 ### {{busts_in_silhouette}} Editing other people's documents
 

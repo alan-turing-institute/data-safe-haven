@@ -2,7 +2,7 @@
 
 ### {{open_file_folder}} Shared directories within the SRE
 
-There are several shared areas on the data science machine that all collaborators within a research project team can see and access:
+There are several shared areas on the SRD that all collaborators within a research project team can see and access:
 
 - [input data](#input-data-data): `/data/`
 - [shared space](#shared-space-shared): `/shared/`
@@ -20,7 +20,7 @@ You will not be able to change any of the files in `/data/` .
 If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared/` or `/output/` directories.
 ```
 
-The contents of `/data/` will be **identical** on all virtual machines in your SRE.
+The contents of `/data/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
 
 ```{tip}
@@ -32,7 +32,7 @@ If you are participating in a Turing Data Study Group you will find example slid
 The `/shared/` folder should be used for any work that you want to share with your group.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
-The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
+The contents of `/shared/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`
@@ -45,7 +45,7 @@ For example, if your group requests a GPU-enabled machine, this will have its ow
 
 #### Output resources: `/output/`
 
-Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the data science linux desktop.
+Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the SRD.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 

@@ -2,8 +2,8 @@
 
   ````{note}
   Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
-  ```{image} user_guide/dsvm_login_screen.png
-  :alt: DSVM login screen
+  ```{image} user_guide/srd_login_screen.png
+  :alt: SRD login screen
   :align: center
   ```
   ````
@@ -12,8 +12,8 @@
   If you enter your username and/or password incorrectly you will see a warning like the one below.
   If this happens, please try again, entering your username and password carefully.
 
-  ```{image} user_guide/dsvm_login_failure.png
-  :alt: DSVM login failure
+  ```{image} user_guide/srd_login_failure.png
+  :alt: SRD login failure
   :align: center
   ```
   ````
@@ -26,8 +26,8 @@
 
 - You should now be greeted by a Linux desktop.
 
-  ```{image} user_guide/dsvm_desktop_initial.png
-  :alt: DSVM initial desktop
+  ```{image} user_guide/srd_xfce_initial.png
+  :alt: SRD initial desktop
   :align: center
   ```
 

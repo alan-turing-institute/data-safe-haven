@@ -61,4 +61,4 @@ A list of the technical controls that are applied by default.
 : A list of the security policies that we recommend.
 
 [Software package approval policy](security/software_package_approval_policy.md)
-: Policy for approving software packages and the criteria for including them in the DSVM image.
+: Policy for approving software packages and the criteria for including them in the SRD image.

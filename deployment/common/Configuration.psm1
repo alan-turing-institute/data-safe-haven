@@ -100,8 +100,8 @@ function Get-ShmConfig {
         }
     }
 
-    # DSVM build images
-    # -----------------
+    # SRD build images
+    # ----------------
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
     # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
@@ -121,13 +121,13 @@ function Get-ShmConfig {
         Add-LogMessage -Level Warning "Skipping check for image building location as you are not logged in to Azure! Run Connect-AzAccount to log in."
     }
     # Construct build images config
-    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
-    $shm.dsvmImage = [ordered]@{
+    $srdImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
+    $shm.srdImage = [ordered]@{
         subscription    = $vmImagesSubscriptionName
         location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
             rg          = "$($shm.vmImagesRgPrefix)_BOOT_DIAGNOSTICS"
-            accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "buildimgbootdiags${srdImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build           = [ordered]@{
             rg     = "$($shm.vmImagesRgPrefix)_BUILD_CANDIDATES"
@@ -160,7 +160,7 @@ function Get-ShmConfig {
         }
         keyVault        = [ordered]@{
             rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
+            name = "kv-shm-$($shm.id)-srd-imgs".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_NETWORKING"
@@ -508,7 +508,7 @@ function Get-ShmResourceGroups {
         [System.Collections.IDictionary]$shmConfig
     )
     $originalContext = Get-AzContext
-    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.dsvmImage -Key "rg"
+    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.srdImage -Key "rg"
     $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig -Key "rg" | Where-Object { -not $excludedResourceGroups.Contains($_) }
     try {
         $null = Set-AzContext -SubscriptionId $shmConfig.subscriptionName -ErrorAction Stop
@@ -717,7 +717,7 @@ function Get-SreConfig {
                 storageKind        = "BlobStorage"
                 performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
-                allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
+                allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.srdImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
@@ -990,9 +990,9 @@ function Get-SreConfig {
         $ipOffset += 1
     }
 
-    # Compute VMs
-    # -----------
-    $config.sre.dsvm = [ordered]@{
+    # Secure Research Desktop VMs
+    # ---------------------------
+    $config.sre.srd = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{

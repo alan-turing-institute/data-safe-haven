@@ -24,12 +24,12 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 # ------------------------------------------------------------
 $config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription -ErrorAction Stop
+$null = Set-AzContext -SubscriptionId $config.srdImage.subscription -ErrorAction Stop
 
 
 # Select which VM size to use
 # ---------------------------
-if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vm.size }
+if ($vmSize -eq "default") { $vmSize = $config.srdImage.build.vm.size }
 # Standard_E2_v3  => 2 cores; 16GB RAM; £0.1163/hr; 2.3 GHz :: build 15h33m56s => £1.81
 # Standard_F4s_v2 => 4 cores;  8GB RAM; £0.1506/hr; 3.7 GHz :: build 12h22m17s => £1.86
 # Standard_D4_v3  => 4 cores; 16GB RAM; £0.1730/hr; 2.4 GHz :: build 16h41m13s => £2.88
@@ -56,35 +56,35 @@ $cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "clo
 
 # Create resource groups if they do not exist
 # -------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.dsvmImage.build.rg -Location $config.dsvmImage.location
-$null = Deploy-ResourceGroup -Name $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
-$null = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $config.dsvmImage.location
-$null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.srdImage.build.rg -Location $config.srdImage.location
+$null = Deploy-ResourceGroup -Name $config.srdImage.bootdiagnostics.rg -Location $config.srdImage.location
+$null = Deploy-ResourceGroup -Name $config.srdImage.network.rg -Location $config.srdImage.location
+$null = Deploy-ResourceGroup -Name $config.srdImage.keyVault.rg -Location $config.srdImage.location
 
 
 # Ensure the Key Vault exists and set its access policies
 # -------------------------------------------------------
-$null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
-Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.azureAdminGroupName
+$null = Deploy-KeyVault -Name $config.srdImage.keyVault.name -ResourceGroupName $config.srdImage.keyVault.rg -Location $config.srdImage.location
+Set-KeyVaultPermissions -Name $config.srdImage.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that VNET and subnet exist
 # ---------------------------------
-$vnet = Deploy-VirtualNetwork -Name $config.dsvmImage.build.vnet.name -ResourceGroupName $config.dsvmImage.network.rg -AddressPrefix $config.dsvmImage.build.vnet.cidr -Location $config.dsvmImage.location
-$subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwork $vnet -AddressPrefix $config.dsvmImage.build.subnet.cidr
+$vnet = Deploy-VirtualNetwork -Name $config.srdImage.build.vnet.name -ResourceGroupName $config.srdImage.network.rg -AddressPrefix $config.srdImage.build.vnet.cidr -Location $config.srdImage.location
+$subnet = Deploy-Subnet -Name $config.srdImage.build.subnet.name -VirtualNetwork $vnet -AddressPrefix $config.srdImage.build.subnet.cidr
 
 
 # Ensure that build NSG exists with correct rules and attach it to the build subnet
 # ---------------------------------------------------------------------------------
-Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
-$buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
+Add-LogMessage -Level Info "Ensure that build NSG '$($config.srdImage.build.nsg.name)' exists..."
+$buildNsg = Deploy-NetworkSecurityGroup -Name $config.srdImage.build.nsg.name -ResourceGroupName $config.srdImage.network.rg -Location $config.srdImage.location
 # Get list of IP addresses which are allowed to connect to the VM candidates
 $existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Name -eq "AllowBuildAdminSshInbound" }
-$allowedIpAddresses = @($config.dsvmImage.build.nsg.allowedIpAddresses)
+$allowedIpAddresses = @($config.srdImage.build.nsg.allowedIpAddresses)
 $allowedIpAddresses += $existingRule ? @($existingRule.SourceAddressPrefix) : @()
 $config["buildAdminIpAddresses"] = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique
 # Update the NSG and ensure it is connected to the correct subnet
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.dsvmImage.build.nsg.rules) -Parameters $config -AsHashtable
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.srdImage.build.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $buildNsg -Rules $rules
 $subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
@@ -116,10 +116,10 @@ $null = Remove-Item -Path $temporaryDir -Recurse -Force -ErrorAction SilentlyCon
 
 # Construct build VM parameters
 # -----------------------------
-$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "dsvmbuildadmin" -AsPlaintext
-$buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
+$buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "srdbuildadmin" -AsPlaintext
+$buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.srdImage.bootdiagnostics.accountName -ResourceGroupName $config.srdImage.bootdiagnostics.rg -Location $config.srdImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
-$buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
+$buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location
 $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${buildVmName}"
 
 
@@ -133,22 +133,22 @@ if ($CloudInitEncodedLength / 87380 -gt 0.9) {
 
 # Deploy the VM
 # -------------
-Add-LogMessage -Level Info "Provisioning a new VM image in $($config.dsvmImage.build.rg) '$($config.dsvmImage.subscription)'..."
+Add-LogMessage -Level Info "Provisioning a new VM image in $($config.srdImage.build.rg) '$($config.srdImage.subscription)'..."
 Add-LogMessage -Level Info "  VM name: $buildVmName"
 Add-LogMessage -Level Info "  VM size: $vmSize"
 Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
     Name                   = $buildVmName
     Size                   = $vmSize
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $adminPasswordName -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $adminPasswordName -DefaultLength 20)
     AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
-    Location               = $config.dsvmImage.location
+    Location               = $config.srdImage.location
     NicId                  = $buildVmNic.Id
-    OsDiskSizeGb           = $config.dsvmImage.build.vm.diskSizeGb
+    OsDiskSizeGb           = $config.srdImage.build.vm.diskSizeGb
     OsDiskType             = "Standard_LRS"
-    ResourceGroupName      = $config.dsvmImage.build.rg
+    ResourceGroupName      = $config.srdImage.build.rg
     ImageSku               = $baseImageSku
 }
 $vm = Deploy-UbuntuVirtualMachine @params -NoWait
@@ -161,11 +161,11 @@ $null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $(git rev-pars
 
 # Log connection details for monitoring this build
 # ------------------------------------------------
-$publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*${buildVmName}-NIC-PIP" }).IpAddress
+$publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.srdImage.build.rg | Where-Object { $_.Id -Like "*${buildVmName}-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account can be found in the '${adminPasswordName}' secret in the Azure Key Vault at:"
-Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.name)"
+Add-LogMessage -Level Info "  $($config.srdImage.subscription) > $($config.srdImage.keyVault.rg) > $($config.srdImage.keyVault.name)"
 Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /opt/monitoring/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 

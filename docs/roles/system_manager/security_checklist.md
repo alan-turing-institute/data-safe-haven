@@ -117,7 +117,7 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 ```
 </details>
 
-<details><summary>attempting to login to DSVM Main fails</summary>
+<details><summary>attempting to login to SRD Main fails</summary>
 
 ```{image} security_checklist/msrds_failed_to_connect.png
 :alt: Microsoft RDS failed to connect
@@ -170,7 +170,7 @@ Check that the **SRE standard user** can authenticate with MFA.
 </details>
 
 {{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you are prompted for MFA and can respond when attempting to log in to <i>DSVM Main (Desktop)</i></summary>
+<details><summary>you are prompted for MFA and can respond when attempting to log in to <i>SRD Main (Desktop)</i></summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
 :alt: AAD MFA approve sign-in request
@@ -179,9 +179,9 @@ Check that the **SRE standard user** can authenticate with MFA.
 </details>
 ````
 
-#### Authenticated user can access the DSVM desktop
+#### Authenticated user can access the Secure Research Desktop (SRD) desktop
 
-Check that the **SRE standard user** can access the DSVM desktop.
+Check that the **SRE standard user** can access the Secure Research Desktop (SRD) desktop.
 
 - Login to the remote desktop web client as the **SRE standard user**.
 
@@ -191,17 +191,17 @@ Check that the **SRE standard user** can access the DSVM desktop.
 {{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
-```{image} security_checklist/dsvm_desktop.png
-:alt: DSVM desktop
+```{image} security_checklist/srd_xfce.png
+:alt: SRD desktop
 :align: center
 ```
 </details>
 
 {{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you can connect to <i>DSVM Main (Desktop)</i></summary>
+<details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
 
-```{image} security_checklist/dsvm_desktop.png
-:alt: DSVM desktop
+```{image} security_checklist/srd_xfce.png
+:alt: SRD desktop
 :align: center
 ```
 </details>
@@ -238,9 +238,9 @@ Check that the **SRE standard user** can access the DSVM desktop.
 {{white_check_mark}} **Verify that:** connection fails
 ```
 
-#### Fail to connect to the internet from within a DSVM on the SRE network
+#### Fail to connect to the internet from within an SRD on the SRE network
 
-- Login as a user to a DSVM from within the SRE by using the web client.
+- Login as a user to an SRD from within the SRE by using the web client.
 - Choose your favourite three websites and attempt to access the internet using a browser
 
 ````{attention}
@@ -248,24 +248,24 @@ Check that the **SRE standard user** can access the DSVM desktop.
 
 <details><summary>browsing to the website fails</i></summary>
 
-```{image} security_checklist/dsvm_no_internet.png
-:alt: DSVM no internet
+```{image} security_checklist/srd_no_internet.png
+:alt: SRD no internet
 :align: center
 ```
 </details>
 
 <details><summary>you cannot access the website using curl</summary>
 
-```{image} security_checklist/dsvm_no_curl.png
-:alt: DSVM no curl
+```{image} security_checklist/srd_no_curl.png
+:alt: SRD no curl
 :align: center
 ```
 </details>
 
 <details><summary>you cannot look up the IP address for the website using nslookup</summary>
 
-```{image} security_checklist/dsvm_no_nslookup.png
-:alt: DSVM no curl
+```{image} security_checklist/srd_no_nslookup.png
+:alt: SRD no curl
 :align: center
 ```
 </details>
@@ -276,8 +276,8 @@ Check that the **SRE standard user** can access the DSVM desktop.
 Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
 
 - Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
-- Log in to a DSVM in **SRE A** as the **SRE standard user** using the web client.
-- Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for a DSVM in SRE B (you can find this in the Azure portal)
+- Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
+- Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for an SRD in SRE B (you can find this in the Azure portal)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -292,7 +292,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 ````
 
 - Check that users cannot copy files from one SRE to another one in the same SHM
-  - Log in to a DSVM in **SRE A** as the **SRE standard user** using the web client.
+  - Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
   - In a separate browser window, do the same for **SRE B**.
   - Attempt to copy and paste a file from one SRE desktop to another
 
@@ -457,8 +457,8 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by fully-qualified domain name fails</summary>
 
-```{image} security_checklist/dsvm_no_ssh_by_fqdn.png
-:alt: DSVM SSH connection by FQDN not possible
+```{image} security_checklist/srd_no_ssh_by_fqdn.png
+:alt: SRD SSH connection by FQDN not possible
 :align: center
 ```
 </details>
@@ -474,8 +474,8 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by public IP address fails</summary>
 
-```{image} security_checklist/dsvm_no_ssh_by_ip.png
-:alt: DSVM SSH connection by IP address not possible
+```{image} security_checklist/srd_no_ssh_by_ip.png
+:alt: SRD SSH connection by IP address not possible
 :align: center
 ```
 </details>
@@ -498,17 +498,17 @@ Connection from within the secure physical space is possible.
 
 ### Verify by:
 
-#### Users are unable to copy-and-paste between the DSVM and their local device
+#### Users are unable to copy-and-paste between the SRD and their local device
 
 - Copy some text from your deployment device
-- Login to a DSVM as the **SRE standard user** via the remote desktop web client
-- Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
+- Login to an SRD as the **SRE standard user** via the remote desktop web client
+- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
 
 ```{attention}
 {{white_check_mark}} **Verify that:** paste fails
 ```
 
-- Write some next in the note pad or terminal of the DSVM and copy it
+- Write some next in the note pad or terminal of the SRD and copy it
 - Attempt to copy the text externally to deployment device (e.g. into URL of browser)
 
 ```{attention}
@@ -517,9 +517,9 @@ Connection from within the secure physical space is possible.
 
 #### Users can copy between VMs inside the network
 
-- Login to a DSVM as the **SRE standard user** via the remote desktop web client
-- Open up a notepad or terminal on the DSVM and attempt to paste the text to it.
-- In another tab or browser connect to a different DSVM (or to the same VM via the SSH connection) using the remote desktop web client
+- Login to an SRD as the **SRE standard user** via the remote desktop web client
+- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
+- In another tab or browser connect to a different SRD (or to the same VM via the SSH connection) using the remote desktop web client
 - Attempt to paste the text to it.
 
 ```{attention}
@@ -617,7 +617,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Confirm that a non-privileged user is able to read the different storage volumes and write to Output
 
-- Login to a DSVM as the **SRE standard user** via the remote desktop web client
+- Login to an SRD as the **SRE standard user** via the remote desktop web client
 - Open up a file explorer and search for the various storage volumes
 
 ```{attention}
@@ -644,7 +644,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### We claim:
 
-- The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed, as well as package mirrors.
+- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
 - Additional software must be added separately via ingress.
 
 ### Which means:
@@ -653,9 +653,9 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - For {ref}`policy_tier_2` or higher environments we use the secure data transfer process.
 
 - Installation during deployment
-  - If known in advance, software can be installed during DSVM deployment whilst there is still internet access, but before project data is added. Once the software is installed, the DSVM undergoes ingress into the environment with a one way lock.
+  - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
 - Installation after deployment
-  - Once a DSVM has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
+  - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
   - Software is added via ingress in a similar manner to data:
     - Researchers are provided temporary write-only access to the software ingress volume.
     - The access is then revoked and the software is then reviewed.
@@ -666,15 +666,15 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Check that some software tools were installed as expected during deployment
 
-- Login to a DSVM as the **SRE standard user** via the remote desktop web client
+- Login to an SRD as the **SRE standard user** via the remote desktop web client
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>the following programmes can be opened without issue: <i>DBeaver</i>, <i>RStudio</i>, <i>PyCharm</i> and <i>Visual Studio Code</i></summary>
 
-```{image} security_checklist/dsvm_installed_software.png
-:alt: DSVM installed software
+```{image} security_checklist/srd_installed_software.png
+:alt: SRD installed software
 :align: center
 ```
 </details>
@@ -716,7 +716,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### {ref}`policy_tier_2`: Download a package that is **not** on the allow list
 
-- Login as the **SRE standard user** into a DSVM via remote desktop web client
+- Login as the **SRE standard user** into an SRD via remote desktop web client
 - Open up a terminal
 - Attempt to install any package that is not on the allowed list (for example, try `pip install botocore`)
 
@@ -725,8 +725,8 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/dsvm_pypi_tier2.png
-:alt: DSVM PyPI Tier 2
+```{image} security_checklist/srd_pypi_tier2.png
+:alt: SRD PyPI Tier 2
 :align: center
 ```
 </details>
@@ -734,7 +734,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### {ref}`policy_tier_3`: Download a package on the allow list and one **not** on the allow list
 
-- Login as the **SRE standard user** into a DSVM via remote desktop web client
+- Login as the **SRE standard user** into an SRD via remote desktop web client
 - Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
 - Then attempt to download a package that is not included in the allowed list (for example, try `pip install botocore`)
 
@@ -743,8 +743,8 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>the first download succeeds and the second fails</summary>
 
-```{image} security_checklist/dsvm_pypi_tier3.png
-:alt: DSVM PyPI Tier 3
+```{image} security_checklist/srd_pypi_tier3.png
+:alt: SRD PyPI Tier 3
 :align: center
 ```
 </details>

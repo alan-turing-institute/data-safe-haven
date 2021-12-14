@@ -120,16 +120,17 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId 
 </details>
 
 <details>
-<summary><strong>Deploy data science VMs</strong></summary>
+<summary><strong>Deploy Secure Research Desktops (SRDs)</strong></summary>
 
-The following script will be run **once for each VM** that you specified using the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
-
-```{include} snippets/09_single_dsvm.partial.md
-:relative-images:
-```
+The `-VmSizes` parameter that you provided to the `Deploy_SRE.ps1` script determines how many SRDs are created and how large each one will be.
 
 ```{note}
-The `<VM size>` used for each compute VM size will be the one provided in the `-VmSizes` parameter to the `Deploy_SRE.ps1` script
+The following script will be run once for each `<VM size>` that you specified.
+If you specify the same size more than once, you will create multiple SRDs of that size.
+```
+
+```{include} snippets/09_single_srd.partial.md
+:relative-images:
 ```
 
 </details>
@@ -182,9 +183,9 @@ The `<VM size>` used for each compute VM size will be the one provided in the `-
   :align: center
   ```
 
-- At this point you should double click on the {{computer}} `Ubuntu0` link under `All Connections` which should bring you to an Ubuntu login screen
+- At this point you should double click on the {{computer}} `Ubuntu0` link under `All Connections` which should bring you to the secure remote desktop (SRD) login screen
 - You will need the short-form of the user name (ie. without the `@<safe haven domain>` part) and the same password as before
-- This should bring you to an Ubuntu desktop that will look like the following
+- This should bring you to the SRD that will look like the following
 
   ```{image} deploy_sre/guacamole_desktop.png
   :alt: Guacamole dashboard
@@ -232,7 +233,7 @@ If you see an error like the following when attempting to log in, it is likely t
   - This should open a web browser inside the remote desktop
   - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 
-### {{fire}} Run smoke tests on DSVM
+### {{fire}} Run smoke tests on SRD
 
 ```{include} snippets/13_run_smoke_tests.partial.md
 :relative-images:

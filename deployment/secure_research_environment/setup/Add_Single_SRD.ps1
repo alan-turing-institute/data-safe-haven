@@ -34,15 +34,15 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Set VM name and size
 # We need to define a unique hostname of no more than 15 characters
 # -----------------------------------------------------------------
-if ($vmSize -eq "default") { $vmSize = $config.sre.dsvm.vmSizeDefault }
+if ($vmSize -eq "default") { $vmSize = $config.sre.srd.vmSizeDefault }
 $vmHostname = "SRE-$($config.sre.id)-${ipLastOctet}".ToUpper()
-$vmNamePrefix = "${vmHostname}-DSVM".ToUpper()
-$vmName = "$vmNamePrefix-$($config.sre.dsvm.vmImage.version)".Replace(".", "-")
+$vmNamePrefix = "${vmHostname}-SRD".ToUpper()
+$vmName = "$vmNamePrefix-$($config.sre.srd.vmImage.version)".Replace(".", "-")
 
 
-# Create DSVM resource group if it does not exist
+# Create SRD resource group if it does not exist
 # ----------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.srd.rg -Location $config.sre.location
 
 
 # Retrieve VNET and subnets
@@ -61,7 +61,7 @@ $finalIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vn
 
 # Check whether this IP address has been used.
 # --------------------------------------------
-$existingNic = Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
+$existingNic = Get-AzNetworkInterface -ResourceGroupName $config.sre.srd.rg | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $finalIpAddress }
 if (($existingNic.VirtualMachine.Id) -and -not $Upgrade) {
     Add-LogMessage -Level InfoSuccess "A VM already exists with IP address '$finalIpAddress'. Use -Upgrade if you want to overwrite this."
     $null = Set-AzContext -Context $originalContext -ErrorAction Stop
@@ -143,13 +143,13 @@ if ($orphanedDisks) {
 
 # Check that this is a valid image version and get its ID
 # -------------------------------------------------------
-$imageDefinition = Get-ImageDefinition -Type $config.sre.dsvm.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.dsvm.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.dsvmImage.gallery.sig -ResourceGroup $config.shm.dsvmImage.gallery.rg -Subscription $config.shm.dsvmImage.subscription
+$imageDefinition = Get-ImageDefinition -Type $config.sre.srd.vmImage.type
+$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.sig -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
 
 
 # Set the OS disk size for this image
 # -----------------------------------
-$osDiskSizeGB = $config.sre.dsvm.disks.os.sizeGb
+$osDiskSizeGB = $config.sre.srd.disks.os.sizeGb
 if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
 if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
     Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
@@ -170,10 +170,10 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
-if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-srd-shm-${shmId}-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
+if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-srd.template.yaml" }
 # Load the cloud-init template then add resources and expand mustache placeholders
-$config["dsvm"] = @{
+$config["srd"] = @{
     domainJoinPassword       = $domainJoinPassword
     ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))))"
     ldapSearchUserDn         = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
@@ -192,22 +192,22 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 # Deploy the VM
 # -------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.srd.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $dataDisks = @(
-    (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location)
+    (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.srd.disks.scratch.sizeGb -Type $config.sre.srd.disks.scratch.type -ResourceGroupName $config.sre.srd.rg -Location $config.sre.location)
 )
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20)
+    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.srd.adminPasswordSecretName -DefaultLength 20)
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.sre.location
     NicId                  = $networkCard.Id
     OsDiskSizeGb           = $osDiskSizeGB
-    OsDiskType             = $config.sre.dsvm.disks.os.type
-    ResourceGroupName      = $config.sre.dsvm.rg
+    OsDiskType             = $config.sre.srd.disks.os.type
+    ResourceGroupName      = $config.sre.srd.rg
     DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
@@ -217,38 +217,38 @@ $null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $image.Tags["B
 
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
-Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
+Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.srd.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
 Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vmHostname -VmIpAddress $finalIpAddress
 
 
 # Restart after the networking switch
 # -----------------------------------
-Start-VM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+Start-VM -Name $vmName -ResourceGroupName $config.sre.srd.rg
 Wait-For -Target "domain joining to complete" -Seconds 120
 
 
-# Upload smoke tests to DSVM
-# --------------------------
-Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
+# Upload smoke tests to SRD
+# -------------------------
+Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 # Arrange files in temporary directory
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item (Join-Path $PSScriptRoot ".." ".." "dsvm_images" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
-Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
+Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
-# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the DSVM)
+# Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
-Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/tests" -VMName $vmName -VMResourceGroupName $config.sre.dsvm.rg -BlobStorageAccount $artifactsStorageAccount
+Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/tests" -VMName $vmName -VMResourceGroupName $config.sre.srd.rg -BlobStorageAccount $artifactsStorageAccount
 Remove-Item -Path $localSmokeTestDir -Recurse -Force
 # Set smoke test permissions
 Add-LogMessage -Level Info "[ ] Set smoke test permissions on $vmName"
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "set_smoke_test_permissions.sh"
-$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "set_smoke_test_permissions.sh"
+$null = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.srd.rg
 
 
 # Run remote diagnostic scripts
 # -----------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Run_SRE_SRD_Remote_Diagnostics.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $ipLastOctet }
 
 
 # Update Guacamole dashboard to include this new VM

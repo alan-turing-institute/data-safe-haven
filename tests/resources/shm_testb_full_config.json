@@ -95,51 +95,6 @@
       }
     }
   },
-  "dsvmImage": {
-    "bootdiagnostics": {
-      "accountName": "buildimgbootdiagscmtvwne",
-      "rg": "RG_SH_BOOT_DIAGNOSTICS"
-    },
-    "build": {
-      "nsg": {
-        "allowedIpAddresses": [
-          "193.60.220.240",
-          "193.60.220.253"
-        ],
-        "name": "NSG_IMAGE_BUILD",
-        "rules": "vm-images-nsg-rules-build.json"
-      },
-      "rg": "RG_SH_BUILD_CANDIDATES",
-      "subnet": {
-        "cidr": "10.48.0.0/24",
-        "name": "ImageBuildSubnet"
-      },
-      "vm": {
-        "diskSizeGb": 128,
-        "size": "Standard_F4s_v2"
-      },
-      "vnet": {
-        "cidr": "10.48.0.0/16",
-        "name": "VNET_IMAGE_BUILD"
-      }
-    },
-    "gallery": {
-      "rg": "RG_SH_IMAGE_GALLERY",
-      "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
-    },
-    "images": {
-      "rg": "RG_SH_IMAGE_STORAGE"
-    },
-    "keyVault": {
-      "name": "kv-shm-testb-dsvm-imgs",
-      "rg": "RG_SH_SECRETS"
-    },
-    "location": "uksouth",
-    "network": {
-      "rg": "RG_SH_NETWORKING"
-    },
-    "subscription": "[Prod] Safe Haven VM Images"
-  },
   "firewall": {
     "name": "FIREWALL-SHM-TESTB",
     "routeTableName": "ROUTE-TABLE-SHM-TESTB"
@@ -352,6 +307,51 @@
     "vmSize": "Standard_B2ms"
   },
   "rgPrefix": "RG_SHM_TESTB",
+  "srdImage": {
+    "bootdiagnostics": {
+      "accountName": "buildimgbootdiagscmtvwne",
+      "rg": "RG_SH_BOOT_DIAGNOSTICS"
+    },
+    "build": {
+      "nsg": {
+        "allowedIpAddresses": [
+          "193.60.220.240",
+          "193.60.220.253"
+        ],
+        "name": "NSG_IMAGE_BUILD",
+        "rules": "vm-images-nsg-rules-build.json"
+      },
+      "rg": "RG_SH_BUILD_CANDIDATES",
+      "subnet": {
+        "cidr": "10.48.0.0/24",
+        "name": "ImageBuildSubnet"
+      },
+      "vm": {
+        "diskSizeGb": 128,
+        "size": "Standard_F4s_v2"
+      },
+      "vnet": {
+        "cidr": "10.48.0.0/16",
+        "name": "VNET_IMAGE_BUILD"
+      }
+    },
+    "gallery": {
+      "rg": "RG_SH_IMAGE_GALLERY",
+      "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
+    },
+    "images": {
+      "rg": "RG_SH_IMAGE_STORAGE"
+    },
+    "keyVault": {
+      "name": "kv-shm-testb-srd-imgs",
+      "rg": "RG_SH_SECRETS"
+    },
+    "location": "uksouth",
+    "network": {
+      "rg": "RG_SH_NETWORKING"
+    },
+    "subscription": "[Prod] Safe Haven VM Images"
+  },
   "storage": {
     "artifacts": {
       "accountName": "shmtestbartifactslubiehy",
