@@ -1,4 +1,5 @@
 abind
+acepack
 actuar
 anytime
 argon2
@@ -36,6 +37,7 @@ BiocManager
 bit
 bit64
 bitops
+blastula
 blob
 boot
 BradleyTerry2
@@ -43,6 +45,7 @@ brew
 brglm
 brio
 broom
+bslib
 ca
 cachem
 callr
@@ -125,10 +128,12 @@ feather
 fields
 filehash
 float
+fontawesome
 forcats
 foreach
 foreign
 formatR
+Formula
 fs
 fts
 furrr
@@ -175,17 +180,21 @@ gridBase
 gridExtra
 gridSVG
 gsubfn
+gt
 gtable
 gtools
 hardhat
 haven
+here
 hexbin
 hflights
 highlight
 highr
+Hmisc
 hms
 hrbrthemes
 HSAUR2
+htmlTable
 htmltools
 htmlwidgets
 httpcode
@@ -209,6 +218,7 @@ janeaustenr
 janitor
 jpeg
 jqr
+jquerylib
 jsonify
 jsonlite
 jsonvalidate
@@ -217,6 +227,7 @@ kernlab
 KernSmooth
 knitr
 labeling
+labelVector
 Lahman
 lambda.r
 later
@@ -224,6 +235,7 @@ lattice
 latticeExtra
 lava
 lazyeval
+lazyWeave
 leafem
 leaflet
 leaflet.providers
@@ -238,6 +250,7 @@ linprog
 listenv
 lme4
 lmtest
+log4r
 logitnorm
 loo
 lpSolve
@@ -246,6 +259,7 @@ lumberjack
 lwgeom
 magic
 magrittr
+mailR
 manipulateWidget
 mapdeck
 mapproj
@@ -261,6 +275,7 @@ matrixStats
 mcmc
 MCMCpack
 memoise
+messaging
 Metrics
 mgcv
 mime
@@ -275,7 +290,6 @@ mnormt
 modeldata
 ModelMetrics
 modelr
-mssqlR
 multcomp
 munsell
 MVA
@@ -301,12 +315,14 @@ packrat
 paradox
 parallelly
 parsnip
+patchwork
 pbdMPI
-pbdPROF
 pbdZMQ
 pbkrtest
 permute
+phosphoricons
 pillar
+pixiedust
 pkgbuild
 pkgconfig
 pkgload
@@ -317,6 +333,7 @@ pls
 plumber
 plyr
 png
+pointblank
 polyclip
 polycor
 praise
@@ -334,6 +351,7 @@ proto
 protolite
 proxy
 proxyC
+PRROC
 ps
 psych
 psychotools
@@ -400,10 +418,10 @@ RNetCDF
 rngtools
 robustbase
 ROCR
-RODBC
 roxygen2
 rpart
 RPostgres
+RPostgreSQL
 rprojroot
 rsample
 rsconnect
@@ -420,6 +438,7 @@ rversions
 rvest
 s2
 sandwich
+sass
 satellite
 scales
 selectr
