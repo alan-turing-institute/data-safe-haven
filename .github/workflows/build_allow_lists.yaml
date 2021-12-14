@@ -29,14 +29,14 @@ jobs:
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 10 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 5 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check CRAN allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 10 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 5 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check for changes
         shell: bash
-        run: git diff --exit-code -- . ':!environment_configs/package_lists/dependency-cache.json'
+        run: git diff -- . ':!environment_configs/package_lists/dependency-cache.json'
