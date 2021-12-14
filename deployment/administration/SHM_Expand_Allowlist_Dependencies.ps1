@@ -6,6 +6,8 @@ param(
     [string]$ApiKey,
     [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
     [int]$NVersions = -1,
+    [Parameter(Mandatory = $false, HelpMessage = "Timeout in minutes.")]
+    [int]$TimeoutMinutes = 600,
     [Parameter(Mandatory = $false, HelpMessage = "Do not use a cache file.")]
     [switch]$NoCache
 )
@@ -159,6 +161,7 @@ if ($Repository -eq "cran") {
 # -----------------------------------------------------
 $packageAllowlist = @()
 Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $Repository"
+$LatestTime = (Get-Date) + (New-TimeSpan -Minutes $TimeoutMinutes)
 while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
@@ -192,6 +195,11 @@ while ($queue.Count) {
     # Write to the dependency file after each package in case the script terminates early
     if (-not $NoCache) {
         $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    }
+    # If we have exceeded the timeout then break even if there are packages left in the queue
+    if ((Get-Date) -ge $LatestTime) {
+        Add-LogMessage -Level Error "Maximum runtime exceeded with $($queue.Count) packages left in the queue!"
+        break
     }
 }
 
