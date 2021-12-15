@@ -10,10 +10,10 @@ policies/index.md
 design/index.md
 ```
 
-The **Data Safe Haven** has its origins in the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
-Here you will find instructions to to deploy, administer and use your own instance of the Turing's **Data Safe Haven** using Microsoft's Azure cloud platform.
-
-## Overview
+```{image} static/scriberia_diagram.jpg
+:alt: Project summary
+:align: center
+```
 
 Many of the important questions we want to answer for society require the use of sensitive data.
 In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
