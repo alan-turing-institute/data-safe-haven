@@ -6,6 +6,8 @@ param(
     [string]$ApiKey,
     [Parameter(Mandatory = $false, HelpMessage = "Only consider the most recent NVersions.")]
     [int]$NVersions = -1,
+    [Parameter(Mandatory = $false, HelpMessage = "Timeout in minutes.")]
+    [int]$TimeoutMinutes = 600,
     [Parameter(Mandatory = $false, HelpMessage = "Do not use a cache file.")]
     [switch]$NoCache
 )
@@ -158,7 +160,8 @@ if ($Repository -eq "cran") {
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageAllowlist = @()
-Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) packages from $Repository"
+Add-LogMessage -Level Info "Preparing to expand dependencies for $($queue.Count) package(s) from $Repository"
+$LatestTime = (Get-Date) + (New-TimeSpan -Minutes $TimeoutMinutes)
 while ($queue.Count) {
     try {
         $unverifiedName = $queue.Dequeue()
@@ -187,11 +190,16 @@ while ($queue.Count) {
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"
         $dependencyCache["unavailable_packages"][$Repository] += @($unverifiedName) | Where-Object { $_ -notin $dependencyCache["unavailable_packages"][$Repository] }
     }
-    Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) packages on the expanded allowlist"
-    Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
+    Add-LogMessage -Level Info "... there are $($packageAllowlist.Count) package(s) on the allowlist"
+    Add-LogMessage -Level Info "... there are $($queue.Count) package(s) in the queue"
     # Write to the dependency file after each package in case the script terminates early
     if (-not $NoCache) {
         $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    }
+    # If we have exceeded the timeout then break even if there are packages left in the queue
+    if ((Get-Date) -ge $LatestTime) {
+        Add-LogMessage -Level Error "Maximum runtime exceeded with $($queue.Count) package(s) left in the queue!"
+        break
     }
 }
 
@@ -220,7 +228,7 @@ if (-not $NoCache) {
 # ----------------------------------------------
 $unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies } | Sort-Object -Unique
 if ($unneededCorePackages) {
-    Add-LogMessage -Level Info "... found $($unneededCorePackages.Count) explicitly requested packages that would have been allowed as dependencies of other packages: $unneededCorePackages"
+    Add-LogMessage -Level Info "... found $($unneededCorePackages.Count) explicitly requested package(s) that would have been allowed as dependencies of other packages: $unneededCorePackages"
 }
 $unavailablePackages = $sortedDependencies["unavailable_packages"][$Repository]
 if ($unavailablePackages) {
@@ -228,7 +236,7 @@ if ($unavailablePackages) {
 }
 
 
-# Write the full package list to the expanded allowlist
-# -----------------------------------------------------
-Add-LogMessage -Level Info "Writing $($packageAllowlist.Count) packages to the expanded allowlist..."
+# Write the full package list to the allowlist
+# --------------------------------------------
+Add-LogMessage -Level Info "Writing $($packageAllowlist.Count) package(s) to the allowlist..."
 $packageAllowlist | Sort-Object -Unique | Out-File $fullAllowlistPath

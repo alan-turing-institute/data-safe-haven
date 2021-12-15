@@ -5,10 +5,14 @@ name: Build allow lists
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop]
+  schedule:
+    - cron: "* * */6 * *"  # run every six days in order to keep the cache fresh
 
 # checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   build_allow_lists:
@@ -21,20 +25,51 @@ jobs:
         uses: actions/cache@v2
         with:
           path: environment_configs/package_lists/dependency-cache.json
-          key: dependencies  # use the same cache for all jobs
+          key: dependencies-${{ github.sha }}  # request a cache that does not yet exist
+          restore-keys: dependencies-          # use prefix matching to fallback to the most recently created SHA-specific cache
 
       - name: Check PyPI allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 60 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check CRAN allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 240 -ApiKey "$env:LIBRARIES_IO_API_KEY"
 
       - name: Check for changes
         shell: bash
-        run: git diff --exit-code -- . ':!environment_configs/package_lists/dependency-cache.json'
+        run: git diff -- . ':!environment_configs/package_lists/dependency-cache.json'
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Create pull request
+        id: pull-request
+        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a  # This commit corresponds to tag 3.12.0
+        with:
+          commit-message: Update PyPI and CRAN allow lists
+          committer: GitHub Actions <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          base: develop
+          branch: package-allowlist-updates
+          delete-branch: true
+          title: Update PyPI and CRAN allow lists
+          body: |
+            ### :arrow_heading_up: Summary
+            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Allow-list only
+          labels: |
+            affected: developers
+            severity: minor
+            type: enhancement
+          draft: false
