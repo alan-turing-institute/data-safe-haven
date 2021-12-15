@@ -19,6 +19,7 @@ Jump to the following sections:
   - [Project meetings](#project-meetings)
   - [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
 - [Contributing through GitHub](#contributing-through-github)
+  - [Discussions vs Issues](#discussions-vs-issues)
   - [Writing in markdown](#writing-in-markdown)
   - [Project management through issues](#project-management-through-issues)
   - [Issues as conversations](#issues-as-conversations)
@@ -63,8 +64,8 @@ Although we are not following an Agile workflow, we still think that the followi
 ### Project meetings
 
 The goal of the project meetings is to **reflect** on how ongoing work is proceeding and to **plan** the next section of work.
-During the project meetings we'll start by working through the [issues list][https://github.com/alan-turing-institute/data-safe-haven/issues] and discussing all the issues that are marked as [in progress](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20in%20progress).
-We will consider whether we should start work on any issues marked as [on hold](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20on%20hold).
+During the project meetings we'll start by working through the [issues list](https://github.com/alan-turing-institute/data-safe-haven/issues) and discussing any issues that are in progress.
+We will consider whether we should start work on any issues from the backlog.
 
 Note that the project meeting is very explicitly **not** where the work gets done.
 It is a review, reflection and an opportunity to set goals.
@@ -97,7 +98,29 @@ This means that:
   - the branch is then merged into `main` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
 - we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
-### Writing in markdown
+### Discussions vs Issues
+
+**Discussions** are the best place for informal talk about the project
+You should feel welcome to create a discussion on any relevant topic, without the formality of an issue.
+Good examples of discussions are:
+
+- Any questions
+- Possible bugs (does anyone else have this problem?)
+- Looking for collaborators
+- Community support
+
+**Issues** are best used for tracking development work.
+This is because issues integrate well with GitHub development tools like projects, pull requests, assignments and so on.
+Each issue should ideally represent a well-defined, self-contained piece of work suitable to become a single pull request.
+Good examples of issues are
+
+- Bug reports with technical detail
+- Feature requests
+- Specific ideas for changes
+
+When opening an issue, pick a suitable template (if possible) to make the process easier.
+
+### Writing in Markdown
 
 GitHub has a helpful page on [getting started with writing and formatting on GitHub](https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github).
 
@@ -123,11 +146,11 @@ At least one label from each category ( `type` , `affected` and `severity` ) sho
 Other labels which may or may not be relevant are meta labels (for collecting related issues) and the "good first issue" label for signalling issues that new contributors might like to tackle.
 If an issue is closed without being completed, one of the `closed` labels should be attached to it to explain why.
 
-| Category |                                                                                                           Labels                                                                                                           |
-| :------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|   meta   |               <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca">               |
-|  other   |                                                                           <img src="https://img.shields.io/badge/-good%20first%20issue-77dd77">                                                                            |
-|  closed  | <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
+| Category |                                                                                                                                                                   Labels                                                                                                                                                                   |
+| :------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|   meta   | <img src="https://img.shields.io/badge/-meta:%20costs-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20release%20candidate-ff96ca"> |
+|  other   |                                                                                                                                   <img src="https://img.shields.io/badge/-good%20first%20issue-77dd77">                                                                                                                                    |
+|  closed  |                                                   <img src="https://img.shields.io/badge/-closing:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-closing:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-closing:%20will%20not%20fix-a0a0a0">                                                   |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
 If you have been assigned an issue, please be ready to explain in the [project meeting](#project-meetings) what your progress has been.
@@ -240,4 +263,3 @@ The following people have made one or more commits to the project:
 You're awesome! :wave::smiley:
 
 _Based on contributing guidelines from the [BIDS Starter Kit](https://github.com/INCF/bids-starter-kit) project. Reused under the CC-BY license._
-

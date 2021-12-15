@@ -20,7 +20,7 @@ An increment to each of these corresponds to:
 
 ### Releases
 
-- When we have comprehensively evaluated a complete freshly deployed system against our stated security and functionality standard, we issue it as a full release, with no pre-release label in the version.
+When we have comprehensively evaluated a complete freshly deployed system against our stated security and functionality standard, we issue it as a full release, with no pre-release label in the version.
 
 ### Pre-releases
 
@@ -49,7 +49,7 @@ This is not guaranteed although we're happy to provide assistance to anyone tryi
 
 The following versions have been deployed for events held at the Turing or in conjunction with partners.
 The Turing runs multiple week-long Data Study Groups (DSGs) each year and a 3-month Data Science for Social Good (DSSG) programme over the summer.
-We usually deploy the latest version of the Safe Haven for each of these to take advantage of the latest functionality.
+We usually deploy the latest available version of the Data Safe Haven for each of these to take advantage of new functionality.
 
 | Event date       | Event name                    | Release used                                                                                     |
 | ---------------- | ----------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -61,7 +61,7 @@ We usually deploy the latest version of the Safe Haven for each of these to take
 | December 2019    | DSG 2019-12                   | [v1.1.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v1.1.0-beta) |
 | April 2020       | DSG 2020-04 (event cancelled) | [v2.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v2.0.0-beta) |
 | June 2020        | DSSG 2020                     | [v3.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.0.0-beta) |
-| December 2021    | DSSG 2021-12                  | [v3.3.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.0.0-beta) |
+| December 2021    | DSG 2021-12                   | [v3.3.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.1)           |
 
 ## Versions that have undergone formal security evaluation
 
@@ -74,4 +74,4 @@ The following versions have been evaluated by third party security consultants.
 
 ## Questions
 
-If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](https://github.com/alan-turing-institute/data-safe-haven/issues).
+If you have any questions or comments that are not dealt with here, please let us know by [starting a discussion](https://github.com/alan-turing-institute/data-safe-haven/discussions).

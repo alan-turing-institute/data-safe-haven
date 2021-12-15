@@ -10,21 +10,21 @@ policies/index.md
 design/index.md
 ```
 
-The **Data Safe Haven** has its origins in the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
-Here you will find instructions to to deploy, administer and use your own instance of the Turing's **Data Safe Haven** using Microsoft's Azure cloud platform.
-
-## Overview
+```{image} static/scriberia_diagram.jpg
+:alt: Project summary
+:align: center
+```
 
 Many of the important questions we want to answer for society require the use of sensitive data.
-In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
-
-In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to address some of the above challenges.
+In order to effectively answer these questions, we need productive, secure environments to analyse the data.
 
 We have developed:
 
 - A shared model for classifying data sets and projects into common sensitivity tiers, with recommended security measures for each tier and a web-based tool to support this process.
-- A cloud-based Data Safe Haven implementation using software defined infrastructure to support the reliable, efficient and safe deployment of project specific secure research environments tailored to the agreed sensitivity tier for the project.
-- A productive environment for curiosity-driven research, including access to a wide range of data science software packages and community provided code.
+- A proposal for how to design productive and secure research environments
+- A productive environment for curiosity-driven research, that includes many data science software packages out-of-the-box.
+
+If you are interested in contributing to the Data Safe Haven codebase take a look at our [GitHub repository](https://github.com/alan-turing-institute/data-safe-haven/)!
 
 ## Documentation structure
 
@@ -32,16 +32,31 @@ The documentation for this project covers into several different topics.
 You can read them through in order or simply jump to the section that you are most interested in.
 
 - [**Introduction**](introduction/index.md)
-  - if you want an overview of what the **Data Safe Haven** project is about.
+  - if you want an overview of what the Data Safe Haven project is about.
 
 - [**Roles**](roles/index.md)
-  - if you want to deploy your own **Data Safe Haven**
-  - if you need to work with one that someone else has deployed
-  - if you want to evaluate how **Data Safe Haven** works in practice
+  - if you want to [**deploy your own**](role_system_deployer) Data Safe Haven
+  - if you want to [**upload sensitive data**](role_data_provider_representative) to a Data Safe Haven
+  - if you need to [**analyse data**](role_researcher) in a Data Safe Haven that someone else has deployed
 
 - [**Policies**](policies/index.md)
   - if you want details about our data governance and user management recommendations
 
 - [**Design**](design/index.md)
-  - if you want details about the technical design of the **Data Safe Haven**
-  - if you are interested in contributing to the **Data Safe Haven** codebase
+  - if you want details about the technical design of the Data Safe Haven
+
+## Overview
+
+To get an overview of the Data Safe Haven, see the resources below.
+
+[One-page poster](https://doi.org/10.6084/m9.figshare.11815224)
+: Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
+
+[Overview presentation](https://doi.org/10.6084/m9.figshare.11923644)
+: Slides from our standard presentation about the Data Safe Haven giving a more in-depth overview.
+
+[Video demo](https://youtu.be/uAGhnAnxtvo)
+: An extended version of our overview presentation plus a demonstration of how to use the secure environment as a research and an example of data classification.
+
+[Design choices](https://arxiv.org/abs/1908.08737)
+: Our preprint "_Design choices for productive, secure, data-intensive research at scale in the cloud_", outlining our policies, processes and design decisions for the Safe Haven.
