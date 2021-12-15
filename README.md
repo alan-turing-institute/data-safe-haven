@@ -26,7 +26,7 @@ To get a good overview of the Safe Haven, see the resources below.
 
 ## Documentation
 
-For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](docs/index.md).
+For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](https://alan-turing-institute.github.io/data-safe-haven/).
 
 ## Releases
 
