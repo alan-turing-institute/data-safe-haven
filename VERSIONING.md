@@ -74,4 +74,4 @@ The following versions have been evaluated by third party security consultants.
 
 ## Questions
 
-If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](https://github.com/alan-turing-institute/data-safe-haven/issues).
+If you have any questions or comments that are not dealt with here, please let us know by [starting a discussion](https://github.com/alan-turing-institute/data-safe-haven/discussions).
