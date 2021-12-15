@@ -992,7 +992,7 @@ function Deploy-VirtualNetworkGateway {
                                                -Location $Location `
                                                -ResourceGroupName $ResourceGroupName `
                                                -VpnClientAddressPool $VpnClientAddressPool `
-                                               -VpnClientProtocol IkeV2,SSTP `
+                                               -VpnClientProtocol IkeV2, SSTP `
                                                -VpnClientRootCertificates $rootCertificate `
                                                -VpnType RouteBased
         if ($?) {
