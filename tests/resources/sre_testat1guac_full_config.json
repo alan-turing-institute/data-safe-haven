@@ -260,7 +260,8 @@
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTA_IDENTITY"
+              "name": "NSG_SHM_TESTA_IDENTITY",
+              "rules": "shm-nsg-rules-identity.json"
             }
           }
         }
