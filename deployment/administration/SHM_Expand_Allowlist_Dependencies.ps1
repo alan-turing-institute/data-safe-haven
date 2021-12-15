@@ -196,9 +196,10 @@ while ($queue.Count) {
     if (-not $NoCache) {
         $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
     }
-    # If we have exceeded the timeout then break even if there are packages left in the queue
+    # If we have exceeded the timeout then set the TIMEOUT_REACHED switch and break even if there are packages left in the queue
     if ((Get-Date) -ge $LatestTime) {
         Add-LogMessage -Level Error "Maximum runtime exceeded with $($queue.Count) package(s) left in the queue!"
+        Write-Output "TIMEOUT_REACHED=1" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
         break
     }
 }

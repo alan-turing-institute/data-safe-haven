@@ -14,6 +14,9 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  TIMEOUT_REACHED: 0
+
 jobs:
   build_allow_lists:
     runs-on: ubuntu-latest
@@ -32,13 +35,13 @@ jobs:
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 60 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository pypi -TimeoutMinutes 60 -ApiKey "$env:LIBRARIES_IO_API_KEY"  # this will set TIMEOUT_REACHED if the timeout is reached
 
       - name: Check CRAN allow list
         shell: pwsh
         env:
           LIBRARIES_IO_API_KEY: ${{ secrets.LIBRARIES_IO_API_KEY }}
-        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 240 -ApiKey "$env:LIBRARIES_IO_API_KEY"
+        run: ./deployment/administration/SHM_Expand_Allowlist_Dependencies.ps1 -Repository cran -TimeoutMinutes 240 -ApiKey "$env:LIBRARIES_IO_API_KEY"  # this will set TIMEOUT_REACHED if the timeout is reached
 
       - name: Check for changes
         shell: bash
@@ -49,6 +52,7 @@ jobs:
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
       - name: Create pull request
+        if: ${{ ! env.TIMEOUT_REACHED }}
         id: pull-request
         uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a  # This commit corresponds to tag 3.12.0
         with:
