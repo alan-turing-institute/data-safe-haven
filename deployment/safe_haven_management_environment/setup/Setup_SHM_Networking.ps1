@@ -4,11 +4,12 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -23,27 +24,27 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
-# Deploy VNet gateway from template
-# ---------------------------------
-Add-LogMessage -Level Info "Deploying VNet gateway from template..."
-$params = @{
-    IPAddresses_ExternalNTP = $config.time.ntp.serverAddresses
-    NSG_Identity_Name       = $config.network.vnet.subnets.identity.nsg.name
-    P2S_VPN_Certificate     = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
-    Shm_Id                  = ($config.id).ToLower()
-    Subnet_Firewall_CIDR    = $config.network.vnet.subnets.firewall.cidr
-    Subnet_Firewall_Name    = $config.network.vnet.subnets.firewall.name
-    Subnet_Gateway_CIDR     = $config.network.vnet.subnets.gateway.cidr
-    Subnet_Gateway_Name     = $config.network.vnet.subnets.gateway.name
-    Subnet_Identity_CIDR    = $config.network.vnet.subnets.identity.cidr
-    Subnet_Identity_Name    = $config.network.vnet.subnets.identity.name
-    Virtual_Network_Name    = $config.network.vnet.name
-    VNET_CIDR               = $config.network.vnet.cidr
-    VNET_DNS_DC1            = $config.dc.ip
-    VNET_DNS_DC2            = $config.dcb.ip
-    VPN_CIDR                = $config.network.vpn.cidr
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
+# Create VNet and subnets
+# -----------------------
+$vnet = Deploy-VirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $config.network.vnet.cidr -Location $config.location -DnsServer $config.dc.ip, $config.dcb.ip
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.firewall.cidr
+$gatewaySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.gateway.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.gateway.cidr
+$identitySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.identity.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.identity.cidr
+
+
+# Ensure that identity NSG exists with correct rules and attach it to the identity subnet
+# -------------------------------------------------------------------------------------
+$identityNsg = Deploy-NetworkSecurityGroup -Name $config.network.vnet.subnets.identity.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules"$config.network.vnet.subnets.identity.nsg.rules) -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $identityNsg -Rules $rules
+$identitySubnet = Set-SubnetNetworkSecurityGroup -Subnet $identitySubnet -NetworkSecurityGroup $identityNsg
+
+
+# Create the VPN gateway
+# ----------------------
+$publicIp = Deploy-PublicIpAddress -Name "$($config.network.vnet.name)_GW_PIP" -ResourceGroupName $config.network.vnet.rg -AllocationMethod Dynamic -Location $config.location
+$certificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
+$null = Deploy-VirtualNetworkGateway -Name "$($config.network.vnet.name)_GW" -ResourceGroupName $config.network.vnet.rg -Location $config.location -PublicIpAddressId $publicIp.Id -SubnetId $gatewaySubnet.Id -P2SCertificate $certificate -VpnClientAddressPool $config.network.vpn.cidr
 
 
 # Switch back to original subscription
