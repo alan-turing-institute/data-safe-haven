@@ -45,10 +45,8 @@ jobs:
         run: git diff -- . ':!environment_configs/package_lists/dependency-cache.json'
 
       - name: Get current date
-        uses: srfrnk/current-time@5a4163ad035ccd9a407ec9e519c3b6ba1b633d1e  # This commit correponds to tag 1.1.0
         id: date
-        with:
-          format: YYYY-MM-DD
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
       - name: Create pull request
         id: pull-request
@@ -63,7 +61,7 @@ jobs:
           title: Update PyPI and CRAN allow lists
           body: |
             ### :arrow_heading_up: Summary
-            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.time }}
+            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
 
             ### :closed_umbrella: Related issues
             None
