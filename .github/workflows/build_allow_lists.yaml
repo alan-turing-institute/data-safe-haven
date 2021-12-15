@@ -4,7 +4,7 @@ name: Build allow lists
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [develop, 1079-mitigate-actions-timeouts]
+    branches: [develop]
   schedule:
     - cron: "* * */6 * *"  # run every six days in order to keep the cache fresh
 
