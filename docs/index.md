@@ -44,3 +44,19 @@ You can read them through in order or simply jump to the section that you are mo
 
 - [**Design**](design/index.md)
   - if you want details about the technical design of the Data Safe Haven
+
+## Overview
+
+To get an overview of the Data Safe Haven, see the resources below.
+
+[One-page poster](https://doi.org/10.6084/m9.figshare.11815224)
+: Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
+
+[Overview presentation](https://doi.org/10.6084/m9.figshare.11923644)
+: Slides from our standard presentation about the Data Safe Haven giving a more in-depth overview.
+
+[Video demo](https://youtu.be/uAGhnAnxtvo)
+: An extended version of our overview presentation plus a demonstration of how to use the secure environment as a research and an example of data classification.
+
+[Design choices](https://arxiv.org/abs/1908.08737)
+: Our preprint "_Design choices for productive, secure, data-intensive research at scale in the cloud_", outlining our policies, processes and design decisions for the Safe Haven.
