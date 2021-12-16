@@ -1231,7 +1231,7 @@ function Invoke-RemoteScript {
             foreach ($whitespaceCharacter in @(" ", "`t")) {
                 if (($Shell -eq "UnixShell") -and ($kv.Value.Contains($whitespaceCharacter))) {
                     if (-not (($kv.Value[0] -eq "'") -or ($kv.Value[0] -eq '"'))) {
-                        Write-Information $kv.Value[0]
+                        Write-Information -InformationAction "Continue" $kv.Value[0]
                         Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$whitespaceCharacter' which will cause the shell script to fail. Consider wrapping this variable in single quotes."
                     }
                 }
@@ -1266,10 +1266,10 @@ function Invoke-RemoteScript {
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
-        if (-not $SuppressOutput) { Write-Information ($result.Value | Out-String) }
+        if (-not $SuppressOutput) { Write-Information -InformationAction "Continue" ($result.Value | Out-String) }
     } else {
         Add-LogMessage -Level Info "Script output:"
-        Write-Information ($result | Out-String)
+        Write-Information -InformationAction "Continue" ($result | Out-String)
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     return $result

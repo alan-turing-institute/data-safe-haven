@@ -21,7 +21,7 @@ function Write-InformationColoured {
 
     # Write to the information stream
     # See https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_output_streams?view=powershell-7.2
-    Write-Information $msg
+    Write-Information -InformationAction "Continue" $msg
 }
 
 
@@ -90,11 +90,11 @@ function Add-DeploymentLogMessages {
         $response = $operation.Properties.Response
         foreach ($status in $response.content.Properties.instanceView.statuses) {
             Add-LogMessage -Level Info "$($response.content.name): $($status.code)"
-            Write-Information $status.message
+            Write-Information -InformationAction "Continue" $status.message
         }
         foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
             Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
-            Write-Information $substatus.message
+            Write-Information -InformationAction "Continue" $substatus.message
         }
     }
     if ($ErrorDetails) {
