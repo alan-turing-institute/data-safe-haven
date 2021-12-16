@@ -33,11 +33,6 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```
   ````
 
-  ```{warning}
-  The version of the `AzureAD` module available from the standard Powershell Gallery only works on Windows.
-  We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
-  ```
-
 - `Microsoft Remote Desktop`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
@@ -243,10 +238,6 @@ If you get an error like `Could not load file or assembly 'Microsoft.IdentityMod
 Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain.
 If this occurs, run the script again.
 If it exhausts the number of retries a second time, wait an hour and try again.
-```
-
-```{error}
-![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
 ```
 
 (roles_deployer_shm_key_vault)=
