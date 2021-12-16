@@ -65,8 +65,8 @@ Describe "Test Limit-StringLength MaximumLength" {
 }
 Describe "Test Limit-StringLength FailureIsFatal" {
     It "Should throw an exception since the string is too long" {
-        Mock Write-Host -Module Logging {} # we mock Write-Host here as we expect output from the exception
+        Mock Write-Information -Module Logging {} # we mock Write-Information here as we expect output from the exception
         { "abcdefghijklm" | Limit-StringLength -FailureIsFatal -MaximumLength 6 } | Should -Throw "'abcdefghijklm' has length 13 but must not exceed 6!"
-        Assert-MockCalled -Module Logging Write-Host -Exactly 1 -Scope It
+        Assert-MockCalled -Module Logging Write-Information -Exactly 1 -Scope It
     }
 }

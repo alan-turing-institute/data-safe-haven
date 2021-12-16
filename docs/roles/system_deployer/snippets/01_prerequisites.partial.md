@@ -21,6 +21,22 @@
 - `OpenSSL`
   - Install using your package manager of choice
 
+````{hint}
+If you run:
+
+```powershell
+PS> Start-Transcript -Path <a log file>
+```
+
+before you start your deployment and
+
+```powershell
+PS> Stop-Transcript
+```
+
+afterwards, you will automatically get a full log of the Powershell commands you have run.
+````
+
 ### {{key}} VPN connection to the SHM VNet
 
 For some operations, you will need to log on to some of the VMs that you deploy and make manual changes.

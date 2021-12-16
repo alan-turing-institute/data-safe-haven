@@ -144,7 +144,7 @@ Connect-MsolService
 foreach ($user in $users) {
   $immutableId = [System.Convert]::ToBase64String($user.ObjectGUID.ToByteArray())
   Set-MsolUser -UserPrincipalName $($user.UserPrincipalName) -immutableID $immutableId
-  Write-Host "Set source anchor for $($user.UserPrincipalName) to $immutableId"
+  Write-Output "Set source anchor for $($user.UserPrincipalName) to $immutableId"
 }
 ```
 

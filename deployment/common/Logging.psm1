@@ -1,3 +1,30 @@
+# Write coloured messages using the Information stream
+# Adapted from https://blog.kieranties.com/2018/03/26/write-information-with-colours
+# ----------------------------------------------------------------------------------
+function Write-InformationColoured {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [Object]$MessageData,
+        [ConsoleColor]$ForegroundColour = $Host.UI.RawUI.ForegroundColor, # Make sure we use the current colours by default
+        [ConsoleColor]$BackgroundColour = $Host.UI.RawUI.BackgroundColor,
+        [Switch]$NoNewline
+    )
+
+    # Construct a coloured message
+    $msg = [System.Management.Automation.HostInformationMessage]@{
+        Message         = $MessageData
+        ForegroundColor = $ForegroundColour
+        BackgroundColor = $BackgroundColour
+        NoNewline       = $NoNewline.IsPresent
+    }
+
+    # Write to the information stream
+    # See https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_output_streams?view=powershell-7.2
+    Write-Information -InformationAction "Continue" $msg
+}
+
+
 # Add a message to the log
 # ------------------------
 function Add-LogMessage {
@@ -17,25 +44,25 @@ function Add-LogMessage {
     # Write message to error, warning, or info
     switch ($Level) {
         "Error" {
-            Write-Host -ForegroundColor DarkRed "$FormattedDate [  ERROR]: $Message"
+            Write-InformationColoured -ForegroundColour DarkRed "$FormattedDate [  ERROR]: $Message"
         }
         "Warning" {
-            Write-Host -ForegroundColor DarkYellow "$FormattedDate [WARNING]: $Message"
+            Write-InformationColoured -ForegroundColour DarkYellow "$FormattedDate [WARNING]: $Message"
         }
         "Info" {
-            Write-Host -ForegroundColor DarkCyan "$FormattedDate [   INFO]: $Message"
+            Write-InformationColoured -ForegroundColour DarkCyan "$FormattedDate [   INFO]: $Message"
         }
         "Success" {
-            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
+            Write-InformationColoured -ForegroundColour DarkGreen "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
         }
         "Failure" {
-            Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
+            Write-InformationColoured -ForegroundColour DarkRed "$FormattedDate [FAILURE]: [x] $Message"
         }
         "InfoSuccess" {
-            Write-Host -ForegroundColor DarkCyan "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
+            Write-InformationColoured -ForegroundColour DarkCyan "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
         }
         "Fatal" {
-            Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
+            Write-InformationColoured -ForegroundColour DarkRed "$FormattedDate [FAILURE]: [x] $Message"
             if ($Exception) {
                 throw $Exception
             } else {
@@ -63,11 +90,11 @@ function Add-DeploymentLogMessages {
         $response = $operation.Properties.Response
         foreach ($status in $response.content.Properties.instanceView.statuses) {
             Add-LogMessage -Level Info "$($response.content.name): $($status.code)"
-            Write-Host $status.message
+            Write-Information -InformationAction "Continue" $status.message
         }
         foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
             Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
-            Write-Host $substatus.message
+            Write-Information -InformationAction "Continue" $substatus.message
         }
     }
     if ($ErrorDetails) {

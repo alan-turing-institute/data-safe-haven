@@ -47,6 +47,22 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 
   - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
 
+````{hint}
+If you run:
+
+```powershell
+PS> Start-Transcript -Path <a log file>
+```
+
+before you start your deployment and
+
+```powershell
+PS> Stop-Transcript
+```
+
+afterwards, you will automatically get a full log of the Powershell commands you have run.
+````
+
 ## 2. {{clipboard}} Safe Haven Management configuration
 
 (roles_deployer_shm_id)=
