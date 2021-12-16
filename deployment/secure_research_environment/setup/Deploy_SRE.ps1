@@ -11,8 +11,8 @@ param(
     [switch]$Clean
 )
 
-Import-Module Az.Accounts
-if (-not (Get-Module -Name "Microsoft.Graph.Authentication")) { Import-Module Microsoft.Graph.Authentication -ErrorAction Stop }
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 

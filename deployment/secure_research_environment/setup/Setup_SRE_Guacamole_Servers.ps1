@@ -8,8 +8,8 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
-if (-not (Get-Module -Name "Microsoft.Graph.Authentication")) { Import-Module Microsoft.Graph.Authentication -ErrorAction Stop }
-if (-not (Get-Module -Name "Microsoft.Graph.Applications")) { Import-Module Microsoft.Graph.Applications -ErrorAction Stop }
+Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
+Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
