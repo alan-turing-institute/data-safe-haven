@@ -3,8 +3,7 @@ Import-Module $PSScriptRoot/common/Logging -ErrorAction Stop
 # Requirements
 $PowershellVersionRequired = "7.0.0"
 $ModuleVersionRequired = @{
-    "Az"                       = ("ge", "5.0.0");
-    "Az.Storage"               = ("eq", "2.5.2");
+    "Az"                       = ("ge", "6.0.0")
     "AzureAD.Standard.Preview" = ("ge", "0.1.599.7")
     "Microsoft.Graph"          = ("ge", "1.5.0")
     "Poshstache"               = ("ge", "0.1.10")
