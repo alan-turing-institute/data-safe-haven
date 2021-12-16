@@ -256,17 +256,11 @@ If it exhausts the number of retries a second time, wait an hour and try again.
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
+PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
-
-```{important}
-Note the bracketing `pwsh { ...
-}` which runs this command in a new Powershell environment.
-This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
-```
 
 ```{error}
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
