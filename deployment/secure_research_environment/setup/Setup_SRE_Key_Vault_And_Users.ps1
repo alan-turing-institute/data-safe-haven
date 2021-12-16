@@ -103,8 +103,8 @@ Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
 $params = @{
     shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
-    groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
-    serviceUsersB64              = $serviceUsers | ConvertTo-Json | ConvertTo-Base64
+    groupsB64                    = $groups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    serviceUsersB64              = $serviceUsers | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     securityOuPath               = $config.shm.domain.ous.securityGroups.path
     serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
 }

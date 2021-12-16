@@ -100,7 +100,7 @@ Add-LogMessage -Level Info "Importing NPS configuration '$($config.nps.vmName)'.
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    blobNameArrayB64     = $blobNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     installationDir      = $config.nps.installationDirectory
     sasTokenB64          = $artifactSasToken | ConvertTo-Base64
     storageAccountName   = $config.storage.artifacts.accountName

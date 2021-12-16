@@ -1114,6 +1114,6 @@ function Show-FullConfig {
     } else {
         $config = Get-SreConfig -shmId ${shmId} -sreId ${sreId}
     }
-    Write-Output ($config | ConvertTo-Json -Depth 10)
+    Write-Output ($config | ConvertTo-Json -Depth 99)
 }
 Export-ModuleMember -Function Show-FullConfig

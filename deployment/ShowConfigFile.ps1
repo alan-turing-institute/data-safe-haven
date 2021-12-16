@@ -14,4 +14,4 @@ if ($sreId) {
 } else {
     $config = Get-ShmConfig -shmId $shmId
 }
-Write-Output ($config | ConvertTo-Json -Depth 10)
+Write-Output ($config | ConvertTo-Json -Depth 99)
