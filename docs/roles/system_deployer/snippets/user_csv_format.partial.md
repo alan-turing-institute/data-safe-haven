@@ -13,11 +13,21 @@
     ```
 
     ```{warning}
-    Ensure that usernames have a maximum of **20 characters** from the 7-bit ASCII set (unnaccented letters, numbers and some punctuation) or synchronisation will fail.
+    Ensure that `SamAccountName` has a maximum of **20 characters** from the 7-bit ASCII set (unnaccented letters, numbers and some punctuation) or synchronisation will fail.
     ```
 
   - `GivenName`: User's first / given name
+
+    ```{warning}
+    Ensure that `GivenName` uses only characters from the 7-bit ASCII set (unnaccented letters, numbers and some punctuation) or synchronisation will fail.
+    ```
+
   - `Surname`: User's last name / surname
+
+    ```{warning}
+    Ensure that `Surname` uses only characters from the 7-bit ASCII set (unnaccented letters, numbers and some punctuation) or synchronisation will fail.
+    ```
+
   - `Mobile`: Phone number to use for initial password reset.
 
     ```{important}
