@@ -1129,7 +1129,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 
 ## 14. {{chart_with_upwards_trend}} Deploy logging
 
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
 PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
