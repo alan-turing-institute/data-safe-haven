@@ -373,7 +373,7 @@ If you see a message about buying licences, you may need to refresh the page for
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar
-- Click `Multi-Factor authentication` icon in the top bar of the users list.
+- Click the `Per-user MFA` icon in the top bar of the users list.
 - Click on `Service settings` at the top of the panel
 - Configure MFA as follows:
 
@@ -469,7 +469,7 @@ Before you do this, you **must** configure and log into the **native** admin acc
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-- Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+- Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
 - Enter the captcha text and press next
@@ -673,7 +673,7 @@ If you cannot see these resource groups:
 ```{danger}
 - These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
 - Do not use them except where specified and never write them down!
-- Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs).
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the secure research desktops).
 ```
 
 (roles_deployer_shm_aad_connect)=
@@ -697,7 +697,7 @@ If you cannot see these resource groups:
     - Click `Next`
   - On the `Connect to Azure AD` screen:
     - Provide credentials for the Azure Active Directory **global administrator** account you set up earlier (`aad.admin.<first name>.<last name>@<SHM domain>`) when prompted
-    - On the webpage pop-up, provide the password you chose for this account when prompted
+    - If you receive a pop-up prompt, provide the same credentials when prompted
     - Back on the `Connect to Azure AD` screen, click `Next`
     - Approve the login with MFA if required
   - On the `Connect your directories` screen:
@@ -861,14 +861,14 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Click `Assign` to complete the process
 - <details><summary><b>Activate your researcher account</b></summary>
 
-  - Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+  - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
   - Enter the researcher username (`firstname.lastname@<SHM domain>`)
   - Click the `Forgotten my password` link
   - Enter the captcha text and press next
   - Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
   - Enter the code that was texted to your phone
   - Enter a new password
-  - Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
+  - Click the `Sign in with new password` link on the following page, or go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) again
   - Enter the username (`firstname.lastname@<SHM domain>>`)and the new password
   - Click `Next` at the `Help us to protect your account` prompt
   - Follow the instructions to configure Microsoft Authenticator
