@@ -266,34 +266,12 @@ PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
 ```
 
-### Configure emergency admin account
-
-The user who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role.
-Users with this role have access to all administrative features in Azure Active Directory).
-You will use this account for almost all administration of the Safe Haven Azure AD.
-
-However, there are rare operations that require you to be logged in as a **native** Global Administrator.
-For example, purchasing non-trial MFA licences.
-
+Some (rare) operations that require you to be logged in as a **native** Global Administrator.
 To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script.
-You must now make this account into a **native** Global Administrator.
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
-
-- From the Azure portal, navigate to the AAD you have created.
-- Click `Users` in the left hand sidebar and click on the `AAD Admin - EMERGENCY ACCESS` user.
-- Add the `Global Administrator` role to the user.
-  - Click `Assigned roles` in the left hand menu
-  - Click `Add assignments` in the top menu above the (empty) list of roles
-  - Search for `Global Administrator`
-
-    ```{image} deploy_shm/aad_global_admin.png
-    :alt: AAD Global Admin
-    :align: center
-    ```
-
-  - Check `Global Administrator`
-  - Click the `Add` button
+```{warning}
+Do not use this account unless absolutely required!
+```
 
 ## 6. {{iphone}} Enable MFA and self-service password reset
 
