@@ -455,12 +455,11 @@ function Deploy-LogAnalyticsWorkspace {
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy into")]
         [string]$Location
     )
-    $null = Deploy-ResourceGroup -Name $ResourceGroupName -Location $Location
     Add-LogMessage -Level Info "Ensuring that log analytics workspace '$Name' exists..."
     $workspace = Get-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating log analytics workspace '$Name'"
-        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku Standard
+        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku pergb2018
         if ($?) {
             Add-LogMessage -Level Success "Created log analytics workspace '$Name'"
         } else {
