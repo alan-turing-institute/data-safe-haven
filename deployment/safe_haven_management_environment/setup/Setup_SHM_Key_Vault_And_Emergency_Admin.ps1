@@ -5,24 +5,8 @@ param(
     [string]$tenantId
 )
 
-# Connect to the Azure AD
-# Note that this must be done in a fresh Powershell session with nothing else imported
-# ------------------------------------------------------------------------------------
-if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
-    Write-Output "Installing Azure AD Powershell module..."
-    $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
-    $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
-}
-Import-Module AzureAD.Standard.Preview -ErrorAction Stop
-Write-Output "Connecting to Azure AD '$tenantId'..."
-try {
-    $null = Connect-AzureAD -TenantId $tenantId
-} catch {
-    Write-Output "Please run this script in a fresh Powershell session with no other modules imported!"
-    throw
-}
-
 Import-Module Az -ErrorAction Stop
+Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -34,6 +18,18 @@ Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 $config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
+
+
+# Connect to Microsoft Graph
+# --------------------------
+if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
+Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
+if (Get-MgContext) {
+    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+} else {
+    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+}
 
 
 # Create secrets resource group if it does not exist
@@ -135,19 +131,21 @@ $params = @{
     UsageLocation    = $config.organisation.countryCode
 }
 
-# Ensure user exists
+# Ensure emergency admin user exists
+# ----------------------------------
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists..."
-$user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
+$user = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $upn }
 if ($user) {
     # Update existing user
-    $user = Set-AzureADUser -ObjectId $upn @params # We must use object ID here. Passing the upn via -UserPrincipalName does not work
+    $user = Update-MgUser -UserId $user.Id @params
     if ($?) {
         Add-LogMessage -Level Success "Existing AAD emergency administrator account updated."
     } else {
         Add-LogMessage -Level Fatal "Failed to update existing AAD emergency administrator account!"
     }
 } else {
-    $user = New-AzureADUser -UserPrincipalName $upn @params
+    # Create new user
+    $user = New-MgUser -UserPrincipalName $upn @params
     if ($?) {
         Add-LogMessage -Level Success "AAD emergency administrator account created."
     } else {
@@ -155,47 +153,39 @@ if ($user) {
     }
 }
 
-<# Commented out while awaiting advice from AzureAD powershell module developers on the following error
-Line |
- 149 |      $null = Add-AzureADDirectoryRoleMember -ObjectId $role.ObjectId - …
-     |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     | Error occurred while executing AddDirectoryRoleMember  Code: Request_BadRequest Message: The URI
-     | 'https://graph.windows.net//e45911ba-db21-4782-8a2e-4dcdfda486a5/directoryObjects/c15e5037-8d93-4ed4-bd2b-17deb1e1e958'
-     |  is not valid since it is not based on 'https://graph.windows.net/e45911ba-db21-4782-8a2e-4dcdfda486a5/'.
-     |  RequestId: ed4a51b1-5561-4630-b5f1-a9c6a04184ac DateTimeStamp: Sat, 04 Jul 2020 17:24:44 GMT
-     | HttpStatusCode: BadRequest HttpStatusDescription: Bad Request HttpResponseStatus: Completed
 # Ensure emergency admin account has full administrator rights
-$roleName = "Company Administrator" # 'Company Administrator' is the role name for the AAD 'Global administrator' role
-Add-LogMessage -Level Info "Ensuring AAD emergency administrator has '$roleName' role..."
-$role = Get-AzureADDirectoryRole | Where-Object {$_.displayName -eq $roleName }
+# ------------------------------------------------------------
+$globalAdminRoleName = "Global Administrator"
+Add-LogMessage -Level Info "Ensuring AAD emergency administrator has '$globalAdminRoleName' role..."
+$globalAdminRole = Get-MgDirectoryRole | Where-Object { $_.DisplayName -eq $globalAdminRoleName }
 # If role instance does not exist, instantiate it based on the role template
-if ($null -eq $role) {
-    Add-LogMessage -Level Info "'$roleName' does not exist. Creating role from template."
+if ($null -eq $globalAdminRole) {
+    Add-LogMessage -Level Info "'$globalAdminRoleName' does not exist. Creating role from template..."
     # Instantiate an instance of the role template
-    $roleTemplate = Get-AzureADDirectoryRoleTemplate | Where-Object {$_.displayName -eq $roleName }
-    Enable-AzureADDirectoryRole -RoleTemplateId $roleTemplate.ObjectId
+    $globalAdminRoleTemplate = Get-MgDirectoryRoleTemplate | Where-Object { $_.DisplayName -eq $globalAdminRoleName }
+    New-MgDirectoryRole -RoleTemplateId $globalAdminRoleTemplate.Id
     if ($?) {
-        Add-LogMessage -Level Success "'$roleName' created from template."
+        Add-LogMessage -Level Success "'$globalAdminRoleName' created from template."
     } else {
-        Add-LogMessage -Level Fatal "Failed to create '$roleName' from template!"
+        Add-LogMessage -Level Fatal "Failed to create '$globalAdminRoleName' from template!"
     }
     # Fetch role instance again
-    $role = Get-AzureADDirectoryRole | Where-Object {$_.displayName -eq $roleName }
+    $globalAdminRole = Get-MgDirectoryRole | Where-Object { $_.DisplayName -eq $globalAdminRoleName }
 }
 # Ensure user is assigned to the role
-$user = Get-AzureADUser | Where-Object { $_.UserPrincipalName -eq $upn }
-$userHasRole = Get-AzureADDirectoryRoleMember -ObjectId $role.ObjectId | Where-Object { $_.ObjectId -eq $user.ObjectId }
+$user = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $upn }
+$userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $user.Id }
 if ($userHasRole) {
-    Add-LogMessage -Level Success "AAD emergency administrator already has '$roleName' role."
+    Add-LogMessage -Level Success "AAD emergency administrator already has '$globalAdminRoleName' role."
 } else {
-    $null = Add-AzureADDirectoryRoleMember -ObjectId $role.ObjectId -RefObjectId $user.ObjectId
-    $userHasRole = Get-AzureADDirectoryRoleMember -ObjectId $role.ObjectId | Where-Object { $_.ObjectId -eq $user.ObjectId }
-    if($userHasRole) {
-        Add-LogMessage -Level Success "Granted AAD emergency administrator '$roleName' role."
+    New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($user.Id)" }
+    $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id | Where-Object { $_.Id -eq $user.Id }
+    if ($userHasRole) {
+        Add-LogMessage -Level Success "Granted AAD emergency administrator '$globalAdminRoleName' role."
     } else {
-        Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$roleName' role!"
+        Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$globalAdminRoleName' role!"
     }
-} #>
+}
 
 
 # Ensure that certificates exist

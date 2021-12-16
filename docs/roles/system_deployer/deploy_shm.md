@@ -33,11 +33,6 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```
   ````
 
-  ```{warning}
-  The version of the `AzureAD` module available from the standard Powershell Gallery only works on Windows.
-  We therefore use a cross-platform module to ensure consistent functionality and behaviour on all platforms.
-  ```
-
 - `Microsoft Remote Desktop`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://apps.apple.com)
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
@@ -229,17 +224,11 @@ If you see a message `You need to add the following NS records to the parent DNS
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
+PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
-
-```{important}
-Note the bracketing `pwsh { ...
-}` which runs this command in a new Powershell environment.
-This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
-```
 
 ```{error}
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
@@ -251,10 +240,6 @@ If this occurs, run the script again.
 If it exhausts the number of retries a second time, wait an hour and try again.
 ```
 
-```{error}
-![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) If you get an error that the `Connect-AzureAD` command is unavailable, you may need to manually import the correct cross platform module by running `Import-Module AzureAD.Standard.Preview`.
-```
-
 (roles_deployer_shm_key_vault)=
 
 ## 5. {{key}} Deploy Key Vault for SHM secrets and create emergency admin account
@@ -262,50 +247,22 @@ If it exhausts the number of retries a second time, wait an hour and try again.
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> pwsh { ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }
+PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
 
-```{important}
-Note the bracketing `pwsh { ...
-}` which runs this command in a new Powershell environment.
-This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
-```
-
 ```{error}
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
 ```
 
-### Configure emergency admin account
-
-The user who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role.
-Users with this role have access to all administrative features in Azure Active Directory).
-You will use this account for almost all administration of the Safe Haven Azure AD.
-
-However, there are rare operations that require you to be logged in as a **native** Global Administrator.
-For example, purchasing non-trial MFA licences.
-
+Some (rare) operations that require you to be logged in as a **native** Global Administrator.
 To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script.
-You must now make this account into a **native** Global Administrator.
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
-
-- From the Azure portal, navigate to the AAD you have created.
-- Click `Users` in the left hand sidebar and click on the `AAD Admin - EMERGENCY ACCESS` user.
-- Add the `Global Administrator` role to the user.
-  - Click `Assigned roles` in the left hand menu
-  - Click `Add assignments` in the top menu above the (empty) list of roles
-  - Search for `Global Administrator`
-
-    ```{image} deploy_shm/aad_global_admin.png
-    :alt: AAD Global Admin
-    :align: center
-    ```
-
-  - Check `Global Administrator`
-  - Click the `Add` button
+```{warning}
+Do not use this account unless absolutely required!
+```
 
 ## 6. {{iphone}} Enable MFA and self-service password reset
 
