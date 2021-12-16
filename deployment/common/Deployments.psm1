@@ -410,14 +410,14 @@ function Deploy-KeyVault {
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
-    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     if ($null -eq $keyVault) {
         # Purge any existing soft-deleted key vault
         foreach ($existingLocation in (Get-AzLocation | ForEach-Object { $_.Location })) {
             try {
-                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop) {
+                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop -WarningAction SilentlyContinue) {
                     Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name' in $existingLocation"
-                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force | Out-Null
+                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force -WarningAction SilentlyContinue | Out-Null
                     if ($?) {
                         Add-LogMessage -Level Success "Purged key vault '$Name'"
                     } else {
@@ -430,7 +430,7 @@ function Deploy-KeyVault {
         }
         # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
-        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
+        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -WarningAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Created key vault '$Name'"
         } else {
