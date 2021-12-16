@@ -83,7 +83,7 @@ To automatically assign licences to all local `Active Directory` users that do n
 
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
-- Run the `./SHM_Add_AAD_Licences.ps1 -shmId <SHM ID>` script, where the SHM ID is the ID of the SHM you wish to add licences for.
+- Run the `./SHM_Add_AAD_Licences.ps1 -tenantId <Tenant ID>` script, where `<Tenant ID>` is the ID of the Azure tenant belonging to the SHM you want to add the licences to.
 
 ## {{running}} User activation
 
