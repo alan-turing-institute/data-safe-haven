@@ -937,7 +937,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 - On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
 ```powershell
-& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1
+& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
 ```
 
 - Enter `A` if prompted to install `Powershell` modules
@@ -1018,16 +1018,16 @@ Before completing this step, **make sure you have confirmed you are able to succ
 - Click the `+New Policy` icon in the tob bar above the (empty) policy list
 - Create a new policy as follows:
   - Set the name to `Require MFA`
-  - Set the `Users and groups` condition to:
-    - Include: Check `All users`
-    - Exclude:
+  - Under `Users or workload identities` set the `Users and groups` condition to:
+    - **Include**: Select `All users`
+    - **Exclude**:
       - Check `Users and groups`
       - Select the `Admin - EMERGENCY ACCESS` user
       - Select all `On-Premises Directory Synchronization Service Account` users
       - Click `Select`
-  - Set the `Cloud apps and policies` condition to:
-    - Include: Check `All cloud apps`
-    - Exclude: Leave unchanged as `None`
+  - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
+    - **Include**: Select `All cloud apps`
+    - **Exclude**: Leave unchanged as `None`
   - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
   - Set the `Grant` condition to:
     - Check `Grant access`
@@ -1053,27 +1053,26 @@ Therefore we will block access for all users other than Global Administrators.
 - Click on `New Policy` at the top of the panel
 - Configure the policy as follows
   - In the `Name` field enter `Prevent Azure portal access`
-  - Under the heading `Users and groups` click `0 users and groups selected`
-    - With the `Include` tab selected, select the `All users` radio button
-    - With the `Exclude` tab selected, select the `Select users and groups`
-    - Tick the `Directory roles` tickbox
-    - In the drop-down menu select `Global administrator`.
-      This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
-  - Under the `Cloud apps or actions` heading click `No cloud apps, actions, or authentication contexts selected`
-    - In the drop-down menu slect `Cloud apps`
-    - With the `Include` tab selected, select the `Select apps` radio button
-    - Under the `Select` heading click `None` and in the pop-up menu on the
-      right, slected `Microsoft Azure Management` and click `Select`
-  - Leave the Conditions condition unchanged (all showing as Not configured)
+  - Under `Users or workload identities` set the `Users and groups` condition to:
+    - **Include**: Select `All users`
+    - **Exclude**:
+      - Check `Directory roles`
+      - In the drop-down menu select `Global administrator`.
+    This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
+  - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
+    - **Include**:
+      - Select `Select apps`
+      - In the pop-up menu on the right, select `Microsoft Azure Management` and click `Select`
+    - **Exclude**: Leave unchanged as `None`
+  - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
   - Under the `Access controls` and `Grant` Headings click `0 controls selected`
-    - In the pop-up menu on the right select the `Block Access` radio button and
-      click `Select`
+    - In the pop-up menu on the right select the `Block Access` radio button and click `Select`
   - Under `Enable policy` select `On`
-  - Click `Create`
+  - Click the `Create` button
 
 ```{error}
 Security defaults must be disabled in order to create this policy.
-This should have been done in done when creating a policy to [require MFA for all users](#require-mfa-for-all-users).
+This should have been done in done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
 (roles_system_deployer_shm_deploy_mirrors)=
