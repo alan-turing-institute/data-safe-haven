@@ -22,14 +22,7 @@ jobs:
         - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
       script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
-    - name: Lint Ansible
-      addons:
-        apt:
-          packages:
-            ansible-lint
-      script: ansible-lint
-
-    - name: Lint JSON
+    - name: Lint JSON files
       language: node_js
       node_js: node
       before_script: npm install -g jsonlint mustache
@@ -37,32 +30,13 @@ jobs:
         echo "{}" > mustache_config.json
         find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
 
-    - name: Lint Markdown
+    - name: Lint Markdown files
       language: ruby
       rvm: ruby-head
       install: gem install mdl
       script: mdl --style .mdlstyle.rb .
 
-    - name: Lint PowerShell
-      before_script:
-        - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
-      script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
-
-    - name: Lint Python
-      language: python
-      python: 3.9
-      install: pip install flake8
-      script: flake8 . --statistics --count
-
-    - name: Lint shell
-      addons:
-        apt:
-          packages:
-            shellcheck
-      script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
-
-    - name: Lint YAML
+    - name: Lint YAML files
       language: node_js
       python: node
       before_script: |
@@ -78,7 +52,7 @@ jobs:
         done
         rm .mustache_config.json expanded.yaml
 
-    - name: Check HTML documentation building
+    - name: Lint HTML documentation
       language: ruby
       rvm: 3.0.3
       before_script: |
@@ -104,7 +78,33 @@ jobs:
           --url-swap "^\/data-safe-haven:/.." \
           --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
 
-    - name: Check for dead links in Markdown
+    - name: Lint Ansible scripts
+      addons:
+        apt:
+          packages:
+            ansible-lint
+      script: ansible-lint
+
+    - name: Lint PowerShell scripts
+      before_script:
+        - sudo snap install powershell --classic
+        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
+      script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
+
+    - name: Lint Python scripts
+      language: python
+      python: 3.9
+      install: pip install flake8
+      script: flake8 . --statistics --count
+
+    - name: Lint shell scripts
+      addons:
+        apt:
+          packages:
+            shellcheck
+      script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
+
+    - name: Check Markdown for dead links
       language: node_js
       node_js: node
       before_script: npm install -g markdown-link-check
