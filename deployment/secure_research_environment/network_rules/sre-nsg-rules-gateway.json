@@ -12,6 +12,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowSslLabsHttpsInbound",
+        "access": "Allow",
+        "description": "Allow inbound https connections from ssllabs.com for SSL quality reporting",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "443",
+        "direction": "Inbound",
+        "priority": 220,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "64.41.200.0/24",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowRadiusAuthenticationRdsToNpsOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to SHM RADIUS server",
