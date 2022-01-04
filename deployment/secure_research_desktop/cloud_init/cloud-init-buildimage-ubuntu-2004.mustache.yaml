@@ -195,6 +195,10 @@ runcmd:
   # Add snap to path
   - echo "Adding snap to path..."
   - PATH=$PATH:/snap/bin
+  # Add an entry for PATH to default bashrc
+  - echo '# Set path' >> /etc/bash.bashrc
+  - echo "export PATH=$PATH" >> /etc/bash.bashrc
+  - echo '' >> /etc/bash.bashrc
 
   - echo ">=== $(date +%s) Installing additional deb/source packages ===<"
   # Microsoft ODBC tools
@@ -320,34 +324,29 @@ runcmd:
       sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
       chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
       # Install python versions
-      /opt/build/install_python_version.sh py${python_version} || (echo "Failed to install Python ${python_version}" && exit 1)
+      /opt/build/install_python_version.sh $PYENV_ROOT py${python_version} || (echo "Failed to install Python ${python_version}" && exit 1)
     done
   - echo "Installed python versions"
-  - du --si -d 1 /opt/pyenv/versions
-  # Add pyenv to global settings
-  - echo "Configuring pyenv global settings"
+  - du --si -d 1 ${PYENV_ROOT}/versions
+  # Configure pyenv: use a local PYENV_ROOT with the global versions symlinked into it
+  - export PYENV_LOCAL_ROOT='${HOME}/.pyenv'
+  - echo "Configuring pyenv initialisation"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
-  - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
-  - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
+  - echo "export PYENV_ROOT=\"${PYENV_LOCAL_ROOT}\"" >> /etc/bash.bashrc
+  - echo "for version in $(ls ${PYENV_ROOT}/versions); do [ -d \"${PYENV_LOCAL_ROOT}/versions/${version}\" ] || (mkdir -p ${PYENV_LOCAL_ROOT}/versions/${version} && ln -s ${PYENV_ROOT}/versions/${version}/* ${PYENV_LOCAL_ROOT}/versions/${version}); done" >> /etc/bash.bashrc
+  # Setup pyenv executables
   - echo 'eval "$(pyenv init --path)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $(ls /opt/pyenv/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
-  # Make the global environment setting file live in each user's home directory
-  - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
-  - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
-  # To ensure site-packages can be used but not altered give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
-  # Finally, make the shims directory writeable so that users can create new shims
-  - echo "Updating ${PYENV_ROOT} permissions"
-  - chmod -R o=u,o-w ${PYENV_ROOT}
-  - chmod go+w /opt/pyenv/shims
+  - echo "pyenv rehash"
+  - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
   # Mark the system Python kernel as not to be used
   - |
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
   # Add the new Python kernels to Jupyter
   - |
     for python_version in $PYTHON_VERSIONS; do
-      jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || (echo "Could not install Python $python_version kernel!" && exit 1)
+      jupyter kernelspec install ${PYENV_ROOT}/versions/*/share/jupyter/kernels/py${python_version} || (echo "Could not install Python $python_version kernel!" && exit 1)
     done
 
   # Install any missing R packages - approximately 40 minutes
@@ -379,13 +378,12 @@ runcmd:
   - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
   # Set PATH to the current working version which contains all installed packages
-  # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  # Append ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
   # We do this at the end of the script so that
   # - we know this is the PATH that worked when we checked for each package
   # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
-  - if [ ! "$(grep ^PATH= /etc/bash.bashrc)" ]; then echo "PATH=" >> /etc/bash.bashrc; fi
   - sed -i "s|^PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || exit 1
