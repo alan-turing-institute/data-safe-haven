@@ -137,7 +137,7 @@ safety review --full-report -f "/opt/monitoring/python-safety-check-${PYTHON_VER
 # Set the Jupyter kernel name to the full Python version name
 # This ensures that different python3 versions show up separately
 # ---------------------------------------------------------------
-sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" ${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python[2,3]/kernel.json
+sed -i -e "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" -e "s|  \"python\",|  \"${PYENV_ROOT}/versions/${PYTHON_VERSION}/bin/python\",|g" ${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python[2,3]/kernel.json
 ln -s ${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python[2,3] ${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/${PYTHON_ENV_NAME}
 
 # Finish up

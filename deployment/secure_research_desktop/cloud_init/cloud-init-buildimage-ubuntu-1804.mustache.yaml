@@ -336,9 +336,11 @@ runcmd:
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv rehash"
   - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
-  # Mark the system Python kernel as not to be used
+  # Disable auto-display of the native Python kernel
   - |
-    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
+    for kernelspec in $(ls /usr/lib/python3/dist-packages/jupyter_client/kernelspec.py $(ls /opt/pyenv/versions/*/lib/python*/site-packages/jupyter_client/kernelspec.py)); do
+      sed -i "s|ensure_native_kernel = Bool(True|ensure_native_kernel = Bool(False|g" $kernelspec
+    done
   # Add the new Python kernels to Jupyter
   - |
     for python_version in $PYTHON_VERSIONS; do
