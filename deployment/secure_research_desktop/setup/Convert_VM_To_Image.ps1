@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Specify a machine name to turn into an image. Ensure that the build script has completely finished before running this")]
     [string]$vmName
@@ -71,6 +71,7 @@ ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | 
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
 }
+
 
 # Poll VM to see whether it has finished running
 # ----------------------------------------------

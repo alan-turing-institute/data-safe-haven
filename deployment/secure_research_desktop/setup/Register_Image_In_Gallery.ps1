@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Specify an existing VM image to add to the gallery.")]
     [string]$imageName,
@@ -23,7 +23,7 @@ $null = Set-AzContext -SubscriptionId $config.srdImage.subscription -ErrorAction
 
 # Useful constants
 # ----------------
-$supportedImages = @("ComputeVM-Ubuntu")
+$supportedImages = @("SecureResearchDesktop-Ubuntu")
 
 
 # Ensure that gallery resource group exists
@@ -121,8 +121,8 @@ $resource = Get-AzResource -ResourceGroupName $config.srdImage.gallery.rg | Wher
 $null = New-AzTag -ResourceId $resource.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
-# Create the image as a new version of the appropriate existing registered version
-# --------------------------------------------------------------------------------
+# List replication results
+# ------------------------
 Add-LogMessage -Level Info "Result of replication..."
 foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.srdImage.gallery.rg -GalleryName $config.srdImage.gallery.name -GalleryImageDefinitionName $imageDefinition -Name "$imageVersion") {
     Add-LogMessage -Level Info ($imageStatus | Out-String)

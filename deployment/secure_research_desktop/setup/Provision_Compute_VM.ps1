@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004")]
@@ -50,7 +50,7 @@ if ($sourceImage -eq "Ubuntu1804") {
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
-$buildVmName = "ComputeVM-Ubuntu${shortVersion}"
+$buildVmName = "SecureResearchDesktop-Ubuntu${shortVersion}"
 $cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-buildimage-ubuntu-${shortVersion}.mustache.yaml") -Raw
 
 
