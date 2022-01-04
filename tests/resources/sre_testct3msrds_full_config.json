@@ -311,8 +311,8 @@
     "rgPrefix": "RG_SHM_TESTC",
     "srdImage": {
       "bootdiagnostics": {
-        "accountName": "buildimgbootdiagscmtvwne",
-        "rg": "RG_SH_BOOT_DIAGNOSTICS"
+        "accountName": "vmimagesbootdiagcmtvwnes",
+        "rg": "RG_VMIMAGES_BOOT_DIAGNOSTICS"
       },
       "build": {
         "nsg": {
@@ -320,13 +320,13 @@
             "193.60.220.240",
             "193.60.220.253"
           ],
-          "name": "NSG_IMAGE_BUILD",
-          "rules": "vm-images-nsg-rules-build.json"
+          "name": "NSG_VMIMAGES_BUILD_CANDIDATES",
+          "rules": "vmimages-nsg-rules-build-candidates.json"
         },
-        "rg": "RG_SH_BUILD_CANDIDATES",
+        "rg": "RG_VMIMAGES_BUILD_CANDIDATES",
         "subnet": {
           "cidr": "10.48.0.0/24",
-          "name": "ImageBuildSubnet"
+          "name": "BuildCandidatesSubnet"
         },
         "vm": {
           "diskSizeGb": 128,
@@ -334,23 +334,23 @@
         },
         "vnet": {
           "cidr": "10.48.0.0/16",
-          "name": "VNET_IMAGE_BUILD"
+          "name": "VNET_VMIMAGES"
         }
       },
       "gallery": {
-        "rg": "RG_SH_IMAGE_GALLERY",
-        "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
+        "name": "DATA_SAFE_HAVEN_SHARED_IMAGES",
+        "rg": "RG_VMIMAGES_GALLERY"
       },
       "images": {
-        "rg": "RG_SH_IMAGE_STORAGE"
+        "rg": "RG_VMIMAGES_STORAGE"
       },
       "keyVault": {
-        "name": "kv-shm-testc-srd-imgs",
-        "rg": "RG_SH_SECRETS"
+        "name": "kv-shm-testc-images",
+        "rg": "RG_VMIMAGES_SECRETS"
       },
       "location": "uksouth",
       "network": {
-        "rg": "RG_SH_NETWORKING"
+        "rg": "RG_VMIMAGES_NETWORKING"
       },
       "subscription": "[Prod] Safe Haven VM Images"
     },
@@ -426,7 +426,7 @@
         }
       }
     },
-    "vmImagesRgPrefix": "RG_SH"
+    "vmImagesRgPrefix": "RG_VMIMAGES"
   },
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
