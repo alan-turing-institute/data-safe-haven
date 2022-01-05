@@ -222,8 +222,8 @@ runcmd:
   - mkdir -p ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/{{dbeaver.drivers.pgjdbc}}/pgjdbc-core-parent-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/{{dbeaver.drivers.pgjdbc}}/pgjdbc-versions-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresql}}/postgresql-{{dbeaver.drivers.postgresql}}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresql}}/postgresql-{{dbeaver.drivers.postgresql}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - mkdir -p ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
