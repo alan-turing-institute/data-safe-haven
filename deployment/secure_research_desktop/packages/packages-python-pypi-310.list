@@ -53,8 +53,6 @@ tables
 tensorboard
 tensorflow
 thinc
-torch
-torchvision
 tsfresh
 wordcloud
 xgboost

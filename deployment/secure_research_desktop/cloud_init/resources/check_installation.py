@@ -34,12 +34,15 @@ def run_tests(success, failure, *tests):
 
 
 # Run all tests
-print("Programming languages:")
+success, failure = 0, 0
 python_environments = [os.path.splitext(path)[0].split("-")[-1] for path in glob.glob("/opt/build/python-requirements-py*")]
 python_versions = [(name.replace("py3", "python 3."), name) for name in sorted(python_environments)]
+
+print("Programming languages:")
 (success, failure) = run_tests(
-    0,
-    0,
+    success,
+    failure,
+    ("cmake", "cmake --version 2>&1 | head -n 1 | awk '{print $3}'"),
     ("dotnet", "dotnet --version"),
     ("g++", "g++ --version | grep g++ | awk '{print $NF}'"),
     ("gcc", "gcc --version | grep gcc | awk '{print $NF}'"),
@@ -48,6 +51,7 @@ python_versions = [(name.replace("py3", "python 3."), name) for name in sorted(p
     ("julia", "julia --version | awk '{print $NF}'"),
     *python_versions,
     ("R", "R --version | grep 'R version' | awk '{print $3}'"),
+    ("rustc", "rustc --version 2>&1 | awk '{print $2}'"),
     ("scala", "scalac -version 2>&1 | awk '{print $4}'"),
     ("spark-shell", "spark-shell --version 2>&1 | grep version | grep -v Scala | awk '{print $NF}'"),
 )

@@ -105,8 +105,10 @@ if (grep -q ^nltk /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt); then
 fi
 if (grep -q ^gensim /opt/build/python-requirements-${PYTHON_ENV_NAME}.txt); then
     export GENSIM_DATA_DIR=/usr/share/gensim_data
-    python -m gensim.downloader --download "text8"
-    python -m gensim.downloader --download "fake-news"
+    for dataset in "text8" "fake-news"; do
+        python -m gensim.downloader --download $dataset
+        sleep 5
+    done
 fi
 
 # Check that all requested packages are installed

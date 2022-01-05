@@ -1,5 +1,6 @@
 - `C`
 - `C++`
+- `CMake` compiler
 - `Fortran`
 - `gcc` compilers
 - `Java`
@@ -7,5 +8,6 @@
 - `Microsoft .NET` framework
 - `Python` [three most recent versions] (plus common data science libraries)
 - `R` (plus common data science libraries)
+- `Rust` compiler
 - `scala`
 - `spark-shell`
