@@ -46,7 +46,7 @@ apt:
 
     qgis.list:
       source: "deb https://qgis.org/ubuntu focal main"
-      keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
+      keyid: 2445D6B254DAC452A498989E46B5721DBBD2996A  # QGIS Archive Automatic Signing Key (2021) <qgis-developer@lists.osgeo.org>
 
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/"
