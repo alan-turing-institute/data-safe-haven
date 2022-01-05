@@ -1475,7 +1475,7 @@ function Set-KeyVaultPermissions {
     )
     Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
-        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
+        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName).Id | Select-Object -First 1
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
