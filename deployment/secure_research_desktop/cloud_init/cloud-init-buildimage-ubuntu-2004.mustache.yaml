@@ -317,10 +317,10 @@ runcmd:
   - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || (echo "Could not install Julia kernel!" && exit 1)
 
   # Install python versions
-  - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//')"
+  - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//' | sort -n)"
   - |
     for python_version in $PYTHON_VERSIONS; do
-      # Create simple package list from requirements file
+      # Create simple list of required packages for checking installation
       sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
       chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
       # Install python versions
@@ -333,7 +333,7 @@ runcmd:
   - echo "Configuring pyenv initialisation"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
   - echo "export PYENV_ROOT=\"${PYENV_LOCAL_ROOT}\"" >> /etc/bash.bashrc
-  - echo "for version in $(ls ${PYENV_ROOT}/versions); do [ -d \"${PYENV_LOCAL_ROOT}/versions/${version}\" ] || (mkdir -p ${PYENV_LOCAL_ROOT}/versions/${version} && ln -s ${PYENV_ROOT}/versions/${version}/* ${PYENV_LOCAL_ROOT}/versions/${version}); done" >> /etc/bash.bashrc
+  - echo "for version in $(ls ${PYENV_ROOT}/versions | xargs); do [ -d \"${PYENV_LOCAL_ROOT}/versions/\${version}\" ] || (mkdir -p ${PYENV_LOCAL_ROOT}/versions/\${version} && ln -s ${PYENV_ROOT}/versions/\${version}/* ${PYENV_LOCAL_ROOT}/versions/\${version}); done" >> /etc/bash.bashrc
   # Setup pyenv executables
   - echo 'eval "$(pyenv init --path)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc

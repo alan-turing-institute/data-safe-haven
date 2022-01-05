@@ -36,7 +36,7 @@ if ! (python --version 2>&1 | grep -q "$PYTHON_VERSION"); then
 fi
 # Install and upgrade installation prerequisites
 echo "Installing and upgrading installation prerequisites for Python $PYTHON_VERSION..."
-pip install --upgrade pip setuptools > /dev/null 2>&1
+pip install --upgrade pip setuptools wheel > /dev/null 2>&1
 pip install poetry safety > /dev/null 2>&1
 # Log time taken
 SECTION_ELAPSED=$(date -u -d "0 $(date +%s) seconds - $SECTION_START_TIME seconds" +"%H:%M:%S")

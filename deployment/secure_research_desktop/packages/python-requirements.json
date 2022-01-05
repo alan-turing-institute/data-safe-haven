@@ -4,7 +4,8 @@
         "pystan": "<3.0"
     },
     "py39": {
-        "protobuf": ">3.17"
+        "protobuf": ">3.17",
+        "pystan": "<3.0"
     },
     "py310": {
         "protobuf": ">3.17"

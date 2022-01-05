@@ -4,7 +4,6 @@ black
 Cython
 dash
 dask
-flair
 flake8
 folium
 gensim
@@ -24,7 +23,6 @@ pathos
 pg8000
 Pillow
 plotly
-prophet
 protobuf
 psycopg2
 pydot
@@ -34,7 +32,6 @@ pymc3
 pyodbc
 pyproj
 pyshp
-pystan
 pytest
 PyYAML
 regex
@@ -52,7 +49,6 @@ sympy
 tables
 tensorboard
 tensorflow
-thinc
 tsfresh
 wordcloud
 xgboost
