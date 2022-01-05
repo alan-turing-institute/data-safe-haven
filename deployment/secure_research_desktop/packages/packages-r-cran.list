@@ -13,7 +13,7 @@ IRkernel
 janitor
 knitr
 mlr3
-mssqlR
+MSSQL
 odbc
 parsnip
 plotly
