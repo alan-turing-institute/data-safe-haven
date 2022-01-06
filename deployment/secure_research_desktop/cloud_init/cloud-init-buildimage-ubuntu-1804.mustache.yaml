@@ -255,10 +255,10 @@ runcmd:
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
-  - wget https://cocalc.com/img/cocalc-icon.svg -O /tmp/cocalc-icon.svg
-  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
-  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
-  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png  # this should give a 1024x1024 png
+  - wget https://raw.githubusercontent.com/sagemathinc/cocalc/master/src/packages/assets/cocalc-icon.svg -O /tmp/cocalc-icon.svg || (echo "Could not find CoCalc icon!" && exit 1)
+  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png || (echo "Could not convert CoCalc icon!" && exit 1) # this should give a 1024x1024 png
+  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png || (echo "Could not find CodiMD icon!" && exit 1)
+  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png || (echo "Could not find GitLab icon!" && exit 1)
 
   # Manually update ClamAV signature database
   - echo ">=== $(date +%s) Updating ClamAV database ===<"
