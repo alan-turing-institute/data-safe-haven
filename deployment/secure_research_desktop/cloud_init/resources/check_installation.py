@@ -96,7 +96,7 @@ print("Development tools:")
 )
 
 # Return appropriate code
-print(f"{success + failure} tests, {failure} failures")
+print(f"{success + failure} test(s), {failure} failure(s)")
 if failure > 0:
     sys.exit(os.EX_SOFTWARE)
 sys.exit(os.EX_OK)

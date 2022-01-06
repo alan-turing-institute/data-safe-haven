@@ -338,10 +338,11 @@ runcmd:
   - echo 'eval "$(pyenv init --path)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv rehash"
+  - echo "pyenv rehash" >> /etc/bash.bashrc
   - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
   # Disable auto-display of the native Python kernel
   - |
+    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
     for kernelspec in $(ls /usr/lib/python3/dist-packages/jupyter_client/kernelspec.py $(ls /opt/pyenv/versions/*/lib/python*/site-packages/jupyter_client/kernelspec.py)); do
       sed -i "s|ensure_native_kernel = Bool(True|ensure_native_kernel = Bool(False|g" $kernelspec
     done
@@ -386,7 +387,7 @@ runcmd:
   # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
-  - sed -i "s|^PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
+  - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || exit 1
 
