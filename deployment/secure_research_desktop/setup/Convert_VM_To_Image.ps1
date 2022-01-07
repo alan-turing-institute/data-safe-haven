@@ -53,7 +53,7 @@ Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 Add-LogMessage -Level Info "Obtaining build status for candidate: $($vm.Name)..."
 $null = Invoke-RemoteScript -VMName $vm.Name -ResourceGroupName $config.srdImage.build.rg -Shell "UnixShell" -Script "python3 /opt/monitoring/analyse_build.py"
 Add-LogMessage -Level Warning "Please check the output of the build analysis script (above) before continuing. All steps should have completed with a 'SUCCESS' message."
-$confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
+$confirmation = $null
 while ($confirmation -ne "y") {
     if ($confirmation -eq "n") { exit 0 }
     $confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
