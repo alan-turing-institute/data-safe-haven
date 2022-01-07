@@ -330,7 +330,7 @@
         },
         "vm": {
           "diskSizeGb": 128,
-          "size": "Standard_F4s_v2"
+          "size": "Standard_F8s_v2"
         },
         "vnet": {
           "cidr": "10.48.0.0/16",
