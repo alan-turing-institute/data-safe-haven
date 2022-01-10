@@ -645,7 +645,7 @@
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2021071100"
+        "version": "20.04.2022010700"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },

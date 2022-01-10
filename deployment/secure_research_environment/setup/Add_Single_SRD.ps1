@@ -144,13 +144,13 @@ if ($orphanedDisks) {
 # Check that this is a valid image version and get its ID
 # -------------------------------------------------------
 $imageDefinition = Get-ImageDefinition -Type $config.sre.srd.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.sig -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
+$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.name -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
 
 
 # Set the OS disk size for this image
 # -----------------------------------
 $osDiskSizeGB = $config.sre.srd.disks.os.sizeGb
-if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = 2 * [int]($image.StorageProfile.OsDiskImage.SizeInGB) }
 if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
     Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
