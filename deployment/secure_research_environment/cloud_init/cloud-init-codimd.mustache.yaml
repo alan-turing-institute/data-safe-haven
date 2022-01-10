@@ -140,13 +140,13 @@ runcmd:
   - ls -alh /data/
 
   # Ensure that Docker is running
-  - echo "Current Docker status..."
+  - echo ">=== Current Docker status... ===<"
   - systemctl start docker
   - systemctl enable docker
   - systemctl status docker
 
   # Set up the codimddaemon user
-  - echo "Configuring codimddaemon user..."
+  - echo ">=== Configuring codimddaemon user... ===<"
   - groupadd docker 2> /dev/null
   - usermod -aG docker codimddaemon
   - newgrp docker
@@ -154,7 +154,7 @@ runcmd:
   - ls -alh /opt/codimd
 
   # Deploy CodiMD using Docker
-  - echo "Deploying CodiMD with Docker..."
+  - echo ">=== Deploying CodiMD with Docker... ===<"
   - su codimddaemon -c "docker-compose -f /opt/codimd/docker-compose.yml up -d"
 
   # Wait for deployment to finish
