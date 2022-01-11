@@ -51,17 +51,6 @@ test_python_package_mirrors() {
 
 # Python
 # ------
-# Test Python 3.7
-@test "Python packages (3.7)" {
-    test_python_packages '3.7'
-}
-@test "Python functionality (3.7)" {
-    test_python_functionality '3.7'
-}
-@test "Python package mirrors (3.7)" {
-    test_python_package_mirrors '3.7'
-}
-
 # Test Python 3.8
 @test "Python packages (3.8)" {
     test_python_packages '3.8'
@@ -85,6 +74,16 @@ test_python_package_mirrors() {
     test_python_package_mirrors '3.9'
 }
 
+# Test Python 3.10
+@test "Python packages (3.10)" {
+    test_python_packages '3.10'
+}
+@test "Python functionality (3.10)" {
+    test_python_functionality '3.10'
+}
+@test "Python package mirrors (3.10)" {
+    test_python_package_mirrors '3.10'
+}
 
 # R
 # -
