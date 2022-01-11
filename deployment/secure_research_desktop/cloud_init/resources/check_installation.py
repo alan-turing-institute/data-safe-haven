@@ -21,6 +21,10 @@ def run_tests(success, failure, *tests):
             python_version = test[0].split(" ")[-1]
             exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/python")
             version = run(f"/opt/pyenv/versions/{python_version}*/bin/python --version")
+        elif "pip" in test[0]:
+            python_version = test[0].split(" ")[-1]
+            exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/pip")
+            version = run(f"/opt/pyenv/versions/{python_version}*/bin/pip -V | awk '{{print $2}}'")
         else:
             exists = run(f"which {test[0]}")
             version = run(test[1]) if exists else None
@@ -37,11 +41,13 @@ def run_tests(success, failure, *tests):
 success, failure = 0, 0
 python_environments = [os.path.splitext(path)[0].split("-")[-1] for path in glob.glob("/opt/build/python-requirements-py*")]
 python_versions = [(name.replace("py3", "python 3."), name) for name in sorted(python_environments)]
+pip_versions = [version.replace("python", "pip") for version in python_versions]
 
 print("Programming languages:")
 (success, failure) = run_tests(
     success,
     failure,
+    ("cargo", "cargo -V"),
     ("cmake", "cmake --version 2>&1 | head -n 1 | awk '{print $3}'"),
     ("dotnet", "dotnet --version"),
     ("g++", "g++ --version | grep g++ | awk '{print $NF}'"),
@@ -54,6 +60,14 @@ print("Programming languages:")
     ("rustc", "rustc --version 2>&1 | awk '{print $2}'"),
     ("scala", "scalac -version 2>&1 | awk '{print $4}'"),
     ("spark-shell", "spark-shell --version 2>&1 | grep version | grep -v Scala | awk '{print $NF}'"),
+)
+
+print("Package managers:")
+(success, failure) = run_tests(
+    success,
+    failure,
+    ("cargo", "cargo -V"),
+    *pip_versions,
 )
 
 print("Editors/IDEs:")

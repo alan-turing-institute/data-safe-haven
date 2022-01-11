@@ -8,6 +8,6 @@
 - `Microsoft .NET` framework
 - `Python` [three most recent versions] (plus common data science libraries)
 - `R` (plus common data science libraries)
-- `Rust` compiler
+- `Rust` compiler with `cargo` package manager
 - `scala`
 - `spark-shell`

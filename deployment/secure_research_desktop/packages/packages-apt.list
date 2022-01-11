@@ -8,6 +8,7 @@ autotools-dev
 bison
 blobfuse
 build-essential
+cargo
 clamav
 clamav-base
 clamav-daemon
