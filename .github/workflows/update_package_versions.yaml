@@ -28,90 +28,20 @@ jobs:
 
       - name: Install Python packages
         run: |
-          pip install --upgrade pip lxml natsort requests
+          pip install --upgrade pip
+          pip install -r .github/scripts/requirements.txt
 
       - name: Update Azure Data Studio version
-        uses: jannekem/run-python-script-action@088ec07b341540e5742f0426f5fdaf81950bac45  # This commit corresponds to tag 1.2
-        with:
-          script: |
-            from lxml import html
-            import hashlib
-            import requests
-
-            remote_page = requests.get("https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            short_link = root.xpath("//a[contains(text(), '.deb file')]/@href")[0]
-
-            remote_content = requests.get(short_link, allow_redirects=True)
-            sha256 = hashlib.sha256(remote_content.content).hexdigest()
-            version = remote_content.url.split("-")[-1].replace(".deb", "")
-            remote = "/".join(remote_content.url.split("/")[:-1] + ["|DEBFILE|"])
-
-            with open("deployment/secure_research_desktop/packages/deb-azuredatastudio.version", "w") as f_out:
-              f_out.write(f"hash: {sha256}\n")
-              f_out.write(f"version: {version}\n")
-              f_out.write("debfile: azuredatastudio-linux-|VERSION|.deb\n")
-              f_out.write(f"remote: {remote}\n")
+        run: |
+          python .github/scripts/update_azure_data_studio.py
 
       - name: Update RStudio version
-        uses: jannekem/run-python-script-action@088ec07b341540e5742f0426f5fdaf81950bac45  # This commit corresponds to tag 1.2
-        with:
-          script: |
-            from lxml import html
-            import hashlib
-            import requests
-
-            remote_page = requests.get("https://www.rstudio.com/products/rstudio/download/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            short_link = [link for link in root.xpath("//a[contains(text(), '.deb')]/@href") if "debian" not in link][0]
-
-            remote_content = requests.get(short_link, allow_redirects=True)
-            sha256 = hashlib.sha256(remote_content.content).hexdigest()
-            version = "-".join(remote_content.url.split("/")[-1].split("-")[1:-1])
-            remote = "/".join(remote_content.url.split("/")[:-1] + ["|DEBFILE|"])
-
-            with open("deployment/secure_research_desktop/packages/deb-rstudio.version", "w") as f_out:
-              f_out.write(f"hash: {sha256}\n")
-              f_out.write(f"version: {version}\n")
-              f_out.write("debfile: rstudio-|VERSION|-amd64.deb\n")
-              f_out.write(f"remote: {remote}\n")
+        run: |
+          python .github/scripts/update_rstudio.py
 
       - name: Update DBeaver driver versions
-        uses: jannekem/run-python-script-action@088ec07b341540e5742f0426f5fdaf81950bac45  # This commit corresponds to tag 1.2
-        with:
-          script: |
-            import json
-            from lxml import html
-            from natsort import natsorted
-            import requests
-
-            output = {}
-            remote_page = requests.get("https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            output["mssql_jdbc"] = natsorted([v for v in root.xpath("//a[contains(text(), 'jre8/')]/@href") if v != "../"])[-1].replace("/", "")
-
-            remote_page = requests.get("https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            output["pgjdbc"] = natsorted([v for v in root.xpath("//a[contains(text(), '/')]/@href") if v != "../"])[-1].replace("/", "")
-
-            remote_page = requests.get("https://repo1.maven.org/maven2/org/postgresql/postgresql/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            output["postgresql"] = natsorted([v for v in root.xpath("//a[contains(text(), '/')]/@href") if v != "../"])[-1].replace("/", "")
-
-            remote_page = requests.get("https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            postgis_jdbc_versions = natsorted([v for v in root.xpath("//a[contains(text(), '/')]/@href") if v != "../"])
-
-            remote_page = requests.get("https://repo1.maven.org/maven2/net/postgis/postgis-geometry/", allow_redirects=True)
-            root = html.fromstring(remote_page.content)
-            postgis_geometry_versions = natsorted([v for v in root.xpath("//a[contains(text(), '/')]/@href") if v != "../"])
-
-            postgis = natsorted(set(postgis_jdbc_versions).intersection(set(postgis_geometry_versions)))[-1].replace("/", "")
-            output["postgis_geometry"] = postgis
-            output["postgis_jdbc"] = postgis
-
-            with open("deployment/secure_research_desktop/packages/dbeaver-driver-versions.json", "w") as f_out:
-              f_out.writelines(json.dumps(output, indent=4, sort_keys=True))
+        run: |
+          python .github/scripts/update_rstudio.py
 
       - name: Check for changes
         shell: bash
