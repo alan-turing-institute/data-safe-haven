@@ -1300,7 +1300,7 @@ function Invoke-WindowsConfigureAndUpdate {
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json | ConvertTo-Base64) }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json -Depth 10 | ConvertTo-Base64) }
     }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting time/locale and installing updates on '$VMName'"
