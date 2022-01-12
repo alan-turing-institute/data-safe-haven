@@ -90,6 +90,7 @@ commonmark
 configparser
 confuse
 conllu
+cons
 constantly
 contextily
 contextlib2
@@ -123,6 +124,7 @@ dtw
 eli5
 entrypoints
 enum34
+etuples
 executing
 fastprogress
 filelock
@@ -235,6 +237,7 @@ lightgbm
 llvmlite
 locket
 lockfile
+logical-unification
 loguru
 lxml
 lz4
@@ -249,6 +252,7 @@ matrixprofile
 mccabe
 memory-profiler
 mercantile
+miniKanren
 missingno
 mistune
 mock
@@ -261,6 +265,7 @@ msgpack
 msgpack-python
 multidict
 multimethod
+multipledispatch
 multiprocess
 multiprocessing
 munch
