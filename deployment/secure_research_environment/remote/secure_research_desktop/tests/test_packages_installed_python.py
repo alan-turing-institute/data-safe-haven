@@ -37,7 +37,7 @@ IMPORTABLE_NAMES = {
     "Pillow": "PIL",
     "protobuf": "google.protobuf",
     "pyshp": "shapefile",
-    "pystan": ("stan" if int(versions["pystan"][0]) >= 3 else "pystan"),
+    "pystan": ("stan" if int(versions.get("pystan", "0")[0]) >= 3 else "pystan"),
     "python-dateutil": "dateutil",
     "PyWavelets": "pywt",
     "scikit-image": "skimage",
@@ -82,6 +82,7 @@ def get_missing_packages(packages):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warning, missing = [], []
     for package in packages:
+        print(f"Testing '{package}' ...")
         # Some packages are not importable so we test for the executable instead
         if package in NON_IMPORTABLE_PACKAGES.keys():
             if not shutil.which(NON_IMPORTABLE_PACKAGES[package]):
