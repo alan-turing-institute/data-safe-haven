@@ -27,10 +27,10 @@ test_python_functionality() {
     pyenv shell --unset
 }
 
-test_python_package_mirrors() {
+test_python_package_repository() {
     setup_python "$1"
-    run bash tests/test_mirrors_pypi.sh 2>&1
-    assert_output --partial 'PyPI working OK'
+    run bash tests/test_repository_python.sh 2>&1
+    assert_output --partial 'All packages installed successfully'
     pyenv shell --unset
 }
 
@@ -58,8 +58,8 @@ test_python_package_mirrors() {
 @test "Python functionality (3.8)" {
     test_python_functionality '3.8'
 }
-@test "Python package mirrors (3.8)" {
-    test_python_package_mirrors '3.8'
+@test "Python package repository (3.8)" {
+    test_python_package_repository '3.8'
 }
 
 # Test Python 3.9
@@ -70,8 +70,8 @@ test_python_package_mirrors() {
 @test "Python functionality (3.9)" {
     test_python_functionality '3.9'
 }
-@test "Python package mirrors (3.9)" {
-    test_python_package_mirrors '3.9'
+@test "Python package repository (3.9)" {
+    test_python_package_repository '3.9'
 }
 
 # Test Python 3.10
@@ -81,8 +81,8 @@ test_python_package_mirrors() {
 @test "Python functionality (3.10)" {
     test_python_functionality '3.10'
 }
-@test "Python package mirrors (3.10)" {
-    test_python_package_mirrors '3.10'
+@test "Python package repository (3.10)" {
+    test_python_package_repository '3.10'
 }
 
 # R
@@ -99,10 +99,10 @@ test_python_package_mirrors() {
     assert_output --partial 'All functionality tests passed'
 }
 
-# Test R package mirrors
-@test "R package mirrors" {
-    run bash tests/test_mirrors_cran.sh
-    assert_output --partial 'CRAN working OK'
+# Test R package repository
+@test "R package repository" {
+    run bash tests/test_repository_R.sh
+    assert_output --partial 'All packages installed successfully'
 }
 
 

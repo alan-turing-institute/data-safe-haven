@@ -28,7 +28,7 @@ for package in "${packages[@]}"; do
 done
 
 if [ $OUTCOME -eq 0 ]; then
-    echo "CRAN working OK"
+    echo "All packages installed successfully"
 else
-    echo "CRAN installation failed"
+    echo "One or more package installations failed!"
 fi
