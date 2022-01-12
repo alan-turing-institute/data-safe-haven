@@ -13,12 +13,13 @@ port = args[3]
 server_name = args[4]
 
 # Connect to the database
+print(paste("Attempting to connect to '", db_name, "' on '", server_name, "' via port '", port, sep=""))
 if (db_type == "mssql") {
     cnxn <- DBI::dbConnect(
         odbc::odbc(),
         Driver = "ODBC Driver 17 for SQL Server",
         Server = paste(server_name, port, sep=","),
-        Database = "master",
+        Database = db_name,
         Trusted_Connection = "yes"
     )
 } else if (db_type == "postgres") {
