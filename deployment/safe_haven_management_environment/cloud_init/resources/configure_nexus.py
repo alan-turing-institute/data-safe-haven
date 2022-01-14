@@ -9,12 +9,7 @@ __NEXUS_ADMIN_USERNAME = "admin"
 
 
 def change_initial_password(args):
-    if args.path:
-        nexus_data_dir = args.path
-    else:
-        nexus_data_dir = "./nexus-data"
-
-    password_file_path = Path(f"{nexus_data_dir}/admin.password")
+    password_file_path = Path(f"{args.path}/admin.password")
 
     try:
         with password_file_path.open() as password_file:
@@ -198,7 +193,8 @@ def main():
     )
     parser_password.add_argument(
         "--path",
-        type=str,
+        type=Path,
+        default=Path("./nexus-data"),
         help="Path of the nexus-data directory [./nexus-data]"
     )
     parser_password.set_defaults(func=change_initial_password)
