@@ -13,7 +13,11 @@ def main():
         required=True,
         help="Password for the Nexus 'admin' account",
     )
-    parser.add_argument("--path", type=str, help="Path of the nexus-data directory")
+    parser.add_argument(
+        "--path",
+        type=str,
+        help="Path of the nexus-data directory"
+    )
     parser.add_argument(
         "--tier",
         type=int,
