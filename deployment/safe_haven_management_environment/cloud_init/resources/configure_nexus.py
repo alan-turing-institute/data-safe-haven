@@ -436,34 +436,36 @@ def recreate_privileges(tier, nexus_api):
     # Create content selectors and privileges for packages according to the tier
     if tier == 2:
         # Allow all PyPI packages/versions
+        privilege_name = "pypi-all"
         nexus_api.create_content_selector(
-            name="pypi",
+            name=privilege_name,
             description="Allow access to all PyPI packages",
             expression='format == "pypi" and path=^"/packages/"',
         )
         nexus_api.create_content_selector_privilege(
-            name="pypi",
+            name=privilege_name,
             description="Allow access to all PyPI packages",
             repo_type="pypi",
             repo="pypi-proxy",
-            content_selector="pypi",
+            content_selector=privilege_name,
         )
-        pypi_privilege_names.append("pypi")
+        pypi_privilege_names.append(privilege_name)
 
         # Allow all CRAN packages/versions
+        privilege_name = "cran-all"
         nexus_api.create_content_selector(
-            name="cran",
+            name=privilege_name,
             description="Allow access to all CRAN packages",
             expression='format == "r" and path=^"/src/contrib"',
         )
         nexus_api.create_content_selector_privilege(
-            name="cran",
+            name=privilege_name,
             description="Allow access to all CRAN packages",
             repo_type="r",
             repo="cran-proxy",
-            content_selector="cran",
+            content_selector=privilege_name,
         )
-        cran_privilege_names.append("cran")
+        cran_privilege_names.append(privilege_name)
     elif tier == 3:
         # Collect allowed PyPI package names and versions
         allowed_pypi_packages = []
