@@ -3,9 +3,16 @@ from argparse import ArgumentParser
 from pathlib import Path
 import requests
 
-__NEXUS_PATH = "http://localhost"
-__NEXUS_PORT = 80
-__NEXUS_ADMIN_USERNAME = "admin"
+_NEXUS_PATH = "http://localhost"
+_NEXUS_PORT = 80
+_NEXUS_ADMIN_USERNAME = "admin"
+
+_NEXUS_REPOSITORIES = [
+    # PyPI proxy
+    ("pypi", "pypi-proxy", "https://pypi.org/"),
+    # CRAN proxy
+    ("r", "cran-proxy", "https://cran.r-project.org/")
+]
 
 
 class NexusAPI:
@@ -346,9 +353,9 @@ def change_initial_password(args):
         )
 
     nexus_api = NexusAPI(
-        nexus_path=__NEXUS_PATH,
-        nexus_port=__NEXUS_PORT,
-        username=__NEXUS_ADMIN_USERNAME,
+        nexus_path=_NEXUS_PATH,
+        nexus_port=_NEXUS_PORT,
+        username=_NEXUS_ADMIN_USERNAME,
         password=initial_password,
     )
 
@@ -360,9 +367,9 @@ def initial_configuration(args):
         raise NotImplementedError("Currently only tier 2 is supported")
 
     nexus_api = NexusAPI(
-        nexus_path=__NEXUS_PATH,
-        nexus_port=__NEXUS_PORT,
-        username=__NEXUS_ADMIN_USERNAME,
+        nexus_path=_NEXUS_PATH,
+        nexus_port=_NEXUS_PORT,
+        username=_NEXUS_ADMIN_USERNAME,
         password=args.admin_password,
     )
 
@@ -498,10 +505,8 @@ def recreate_repositories(nexus_api):
     # Delete all existing repositories
     nexus_api.delete_all_repositories()
 
-    # Add PyPI proxy
-    nexus_api.create_proxy_repository("pypi", "pypi-proxy", "https://pypi.org/")
-    # Add CRAN proxy
-    nexus_api.create_proxy_repository("r", "cran-proxy", "https://cran.r-project.org/")
+    for repository in _NEXUS_REPOSITORIES:
+        nexus_api.create_proxy_repository(*repository)
 
 
 if __name__ == "__main__":
