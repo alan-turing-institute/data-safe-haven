@@ -381,27 +381,19 @@ def initial_configuration(args):
     # Delete non-default roles
     nexus_api.delete_all_custom_roles()
 
-    # Create a role with the PyPI privileges
-    pypi_role_name = f"tier {args.tier} pypi"
+    # Create a role for safe haven users
+    role_name = "safe haven user"
     nexus_api.create_role(
-        name=pypi_role_name,
-        description=f"Allow access to tier {args.tier} PyPI packages",
-        privileges=privileges["pypi"],
-    )
-
-    # Create a role with the CRAN privileges
-    cran_role_name = f"tier {args.tier} cran"
-    nexus_api.create_role(
-        name=cran_role_name,
-        description=f"Allow access to tier {args.tier} CRAN packages",
-        privileges=privileges["cran"],
+        name=role_name,
+        description="allows access to selected packages",
+        privileges=privileges
     )
 
     # Enable anonymous access
     nexus_api.enable_anonymous_access()
 
     # Update anonymous users roles
-    nexus_api.update_anonymous_user_roles([pypi_role_name, cran_role_name])
+    nexus_api.update_anonymous_user_roles([role_name])
 
 
 def recreate_repositories(nexus_api):
@@ -512,7 +504,7 @@ def recreate_privileges(tier, nexus_api):
             )
             cran_privilege_names.append(name)
 
-    return {"pypi": pypi_privilege_names, "cran": cran_privilege_names}
+    return (pypi_privilege_names + cran_privilege_names)
 
 
 if __name__ == "__main__":
