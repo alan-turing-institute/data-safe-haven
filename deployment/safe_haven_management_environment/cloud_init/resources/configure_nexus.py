@@ -4,32 +4,12 @@ from pathlib import Path
 import time
 import requests
 
+__NEXUS_PATH = "http://localhost"
+__NEXUS_PORT = 80
+__NEXUS_ADMIN_USERNAME = "admin"
 
-def main():
-    parser = ArgumentParser(description="Configure Nexus3")
-    parser.add_argument(
-        "--admin-password",
-        type=str,
-        required=True,
-        help="Password for the Nexus 'admin' account",
-    )
-    parser.add_argument(
-        "--path",
-        type=str,
-        help="Path of the nexus-data directory"
-    )
-    parser.add_argument(
-        "--tier",
-        type=int,
-        required=True,
-        choices=[2, 3],
-        help="Data security tier of the repository",
-    )
-    args = parser.parse_args()
 
-    if args.tier == 3:
-        raise NotImplementedError("Currently only tier 2 is supported")
-
+def change_initial_password(args):
     if args.path:
         nexus_data_dir = args.path
     else:
@@ -42,12 +22,25 @@ def main():
         initial_password = password_file.read()
 
     nexus_api = NexusAPI(
-        nexus_path="http://localhost",
-        nexus_port=80,
-        username="admin",
+        nexus_path=__NEXUS_PATH,
+        nexus_port=__NEXUS_PORT,
+        username=__NEXUS_ADMIN_USERNAME,
         password=initial_password,
     )
+
     nexus_api.change_admin_password(args.admin_password)
+
+
+def configure(args):
+    if args.tier == 3:
+        raise NotImplementedError("Currently only tier 2 is supported")
+
+    nexus_api = NexusAPI(
+        nexus_path=__NEXUS_PATH,
+        nexus_port=__NEXUS_PORT,
+        username=__NEXUS_ADMIN_USERNAME,
+        password=args.admin_password,
+    )
 
     # Delete all existing repositories
     nexus_api.delete_all_repositories()
@@ -180,6 +173,56 @@ def main():
 
     # Update anonymous users roles
     nexus_api.update_anonymous_user_roles([pypi_role_name, cran_role_name])
+
+
+def main():
+    parser = ArgumentParser(description="Configure Nexus3")
+    subparsers = parser.add_subparsers(
+        title="subcommands",
+        required=True
+    )
+
+    # sub-command for changing initial password
+    parser_password = subparsers.add_parser(
+        "change-initial-password",
+        help="Change the initial admin password"
+    )
+    parser_password.add_argument(
+        "--admin-password",
+        type=str,
+        required=True,
+        help="New password for the Nexus 'admin' account",
+    )
+    parser_password.add_argument(
+        "--path",
+        type=str,
+        help="Path of the nexus-data directory [./nexus-data]"
+    )
+    parser_password.set_defaults(func=change_initial_password)
+
+    # sub-command to configure Nexus
+    parser_configure = subparsers.add_parser(
+        "configure",
+        help="Configure the Nexus repository"
+    )
+    parser_configure.add_argument(
+        "--admin-password",
+        type=str,
+        required=True,
+        help="Password for the Nexus 'admin' account",
+    )
+    parser_configure.add_argument(
+        "--tier",
+        type=int,
+        required=True,
+        choices=[2, 3],
+        help="Data security tier of the repository",
+    )
+    parser_configure.set_defaults(func=configure)
+
+    args = parser.parse_args()
+
+    args.func(args)
 
 
 class NexusAPI:
