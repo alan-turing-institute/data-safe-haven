@@ -8,7 +8,7 @@ import requests
 def main():
     parser = ArgumentParser(description="Configure Nexus3")
     parser.add_argument(
-        "--admin_password",
+        "--admin-password",
         type=str,
         required=True,
         help="Password for the Nexus 'admin' account",
