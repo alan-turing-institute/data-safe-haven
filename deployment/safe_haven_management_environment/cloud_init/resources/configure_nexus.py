@@ -29,7 +29,7 @@ def change_initial_password(args):
     nexus_api.change_admin_password(args.admin_password)
 
 
-def configure(args):
+def initial_configuration(args):
     if args.tier == 3:
         raise NotImplementedError("Currently only tier 2 is supported")
 
@@ -199,9 +199,9 @@ def main():
     )
     parser_password.set_defaults(func=change_initial_password)
 
-    # sub-command to configure Nexus
+    # sub-command for initial configuration
     parser_configure = subparsers.add_parser(
-        "configure",
+        "initial_configuration",
         help="Configure the Nexus repository"
     )
     parser_configure.add_argument(
@@ -217,7 +217,7 @@ def main():
         choices=[2, 3],
         help="Data security tier of the repository",
     )
-    parser_configure.set_defaults(func=configure)
+    parser_configure.set_defaults(func=initial_configuration)
 
     args = parser.parse_args()
 
