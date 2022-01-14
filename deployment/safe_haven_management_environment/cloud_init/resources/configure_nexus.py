@@ -7,12 +7,18 @@ _NEXUS_PATH = "http://localhost"
 _NEXUS_PORT = 80
 _NEXUS_ADMIN_USERNAME = "admin"
 
-_NEXUS_REPOSITORIES = [
-    # PyPI proxy
-    ("pypi", "pypi-proxy", "https://pypi.org/"),
-    # CRAN proxy
-    ("r", "cran-proxy", "https://cran.r-project.org/")
-]
+_NEXUS_REPOSITORIES = {
+    "pypi_proxy": dict(
+        repo_type="pypi",
+        name="pypi-proxy",
+        remote_url="https://pypi.org/"
+    ),
+    "cran_proxy": dict(
+        repo_type="r",
+        name="cran-proxy",
+        remote_url="https://cran.r-project.org/"
+    )
+}
 
 
 class NexusAPI:
@@ -400,8 +406,8 @@ def recreate_repositories(nexus_api):
     # Delete all existing repositories
     nexus_api.delete_all_repositories()
 
-    for repository in _NEXUS_REPOSITORIES:
-        nexus_api.create_proxy_repository(*repository)
+    for repository in _NEXUS_REPOSITORIES.values():
+        nexus_api.create_proxy_repository(**repository)
 
 
 def recreate_privileges(tier, nexus_api):
@@ -427,8 +433,8 @@ def recreate_privileges(tier, nexus_api):
     nexus_api.create_content_selector_privilege(
         name="simple",
         description="Allow access to the pypi simple directory",
-        repo_type="pypi",
-        repo="pypi-proxy",
+        repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
         content_selector="simple",
     )
     pypi_privilege_names.append("simple")
@@ -445,8 +451,8 @@ def recreate_privileges(tier, nexus_api):
         nexus_api.create_content_selector_privilege(
             name=privilege_name,
             description="Allow access to all PyPI packages",
-            repo_type="pypi",
-            repo="pypi-proxy",
+            repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
             content_selector=privilege_name,
         )
         pypi_privilege_names.append(privilege_name)
@@ -461,8 +467,8 @@ def recreate_privileges(tier, nexus_api):
         nexus_api.create_content_selector_privilege(
             name=privilege_name,
             description="Allow access to all CRAN packages",
-            repo_type="r",
-            repo="cran-proxy",
+            repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
             content_selector=privilege_name,
         )
         cran_privilege_names.append(privilege_name)
@@ -479,8 +485,8 @@ def recreate_privileges(tier, nexus_api):
             nexus_api.create_content_selector_privilege(
                 name=name,
                 description=f"Allow access to {package} version {version}",
-                repo_type="pypi",
-                repo="pypi-proxy",
+                repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
                 content_selector=name,
             )
             pypi_privilege_names.append(name)
@@ -500,8 +506,8 @@ def recreate_privileges(tier, nexus_api):
             nexus_api.create_content_selector_privilege(
                 name=name,
                 description="Allow access to all CRAN packages",
-                repo_type="r",
-                repo="cran-proxy",
+                repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
                 content_selector=name,
             )
             cran_privilege_names.append(name)
