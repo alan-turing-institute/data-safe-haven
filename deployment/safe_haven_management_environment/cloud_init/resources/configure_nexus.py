@@ -376,6 +376,43 @@ def initial_configuration(args):
     # Ensure only desired repositories exist
     recreate_repositories(nexus_api)
 
+    privileges = recreate_privileges(args.tier, nexus_api)
+
+    # Delete non-default roles
+    nexus_api.delete_all_custom_roles()
+
+    # Create a role with the PyPI privileges
+    pypi_role_name = f"tier {args.tier} pypi"
+    nexus_api.create_role(
+        name=pypi_role_name,
+        description=f"Allow access to tier {args.tier} PyPI packages",
+        privileges=privileges["pypi"],
+    )
+
+    # Create a role with the CRAN privileges
+    cran_role_name = f"tier {args.tier} cran"
+    nexus_api.create_role(
+        name=cran_role_name,
+        description=f"Allow access to tier {args.tier} CRAN packages",
+        privileges=privileges["cran"],
+    )
+
+    # Enable anonymous access
+    nexus_api.enable_anonymous_access()
+
+    # Update anonymous users roles
+    nexus_api.update_anonymous_user_roles([pypi_role_name, cran_role_name])
+
+
+def recreate_repositories(nexus_api):
+    # Delete all existing repositories
+    nexus_api.delete_all_repositories()
+
+    for repository in _NEXUS_REPOSITORIES:
+        nexus_api.create_proxy_repository(*repository)
+
+
+def recreate_privileges(tier, nexus_api):
     # Delete all existing content selector privileges
     # These must be deleted before the content selectors as the content selectors
     # as the privileges depend on the content selectors
@@ -405,7 +442,7 @@ def initial_configuration(args):
     pypi_privilege_names.append("simple")
 
     # Create content selectors and privileges for packages according to the tier
-    if args.tier == 2:
+    if tier == 2:
         # Allow all PyPI packages/versions
         nexus_api.create_content_selector(
             name="pypi",
@@ -435,7 +472,7 @@ def initial_configuration(args):
             content_selector="cran",
         )
         cran_privilege_names.append("cran")
-    elif args.tier == 3:
+    elif tier == 3:
         # Collect allowed PyPI package names and versions
         allowed_pypi_packages = []
 
@@ -475,38 +512,7 @@ def initial_configuration(args):
             )
             cran_privilege_names.append(name)
 
-    # Delete non-default roles
-    nexus_api.delete_all_custom_roles()
-
-    # Create a role with the PyPI privileges
-    pypi_role_name = f"tier {args.tier} pypi"
-    nexus_api.create_role(
-        name=pypi_role_name,
-        description=f"Allow access to tier {args.tier} PyPI packages",
-        privileges=pypi_privilege_names,
-    )
-
-    # Create a role with the CRAN privileges
-    cran_role_name = f"tier {args.tier} cran"
-    nexus_api.create_role(
-        name=cran_role_name,
-        description=f"Allow access to tier {args.tier} CRAN packages",
-        privileges=cran_privilege_names,
-    )
-
-    # Enable anonymous access
-    nexus_api.enable_anonymous_access()
-
-    # Update anonymous users roles
-    nexus_api.update_anonymous_user_roles([pypi_role_name, cran_role_name])
-
-
-def recreate_repositories(nexus_api):
-    # Delete all existing repositories
-    nexus_api.delete_all_repositories()
-
-    for repository in _NEXUS_REPOSITORIES:
-        nexus_api.create_proxy_repository(*repository)
+    return {"pypi": pypi_privilege_names, "cran": cran_privilege_names}
 
 
 if __name__ == "__main__":
