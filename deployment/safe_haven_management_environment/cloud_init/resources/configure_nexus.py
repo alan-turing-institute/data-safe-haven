@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
-import time
 import requests
 
 __NEXUS_PATH = "http://localhost"
@@ -16,10 +15,14 @@ def change_initial_password(args):
         nexus_data_dir = "./nexus-data"
 
     password_file_path = Path(f"{nexus_data_dir}/admin.password")
-    while not password_file_path.is_file():
-        time.sleep(5)
-    with password_file_path.open() as password_file:
-        initial_password = password_file.read()
+
+    try:
+        with password_file_path.open() as password_file:
+            initial_password = password_file.read()
+    except FileNotFoundError:
+        raise Exception(
+            "Initial password appears to have been already changed"
+        )
 
     nexus_api = NexusAPI(
         nexus_path=__NEXUS_PATH,
@@ -239,24 +242,20 @@ class NexusAPI:
 
     def change_admin_password(self, new_password):
         # Change admin password
-        try:
-            print(f"Old password: {self.password}")
-            print(f"New password: {new_password}")
-            response = requests.put(
-                f"{self.nexus_api_root}/beta/security/users/admin/change-password",
-                auth=self.auth,
-                headers={"content-type": "text/plain"},
-                data=new_password,
-            )
-            if response.status_code == 204:
-                print("Changed admin password")
-                self.password = new_password
-            else:
-                print("Changing password failed")
-                print(response.content)
-        except FileNotFoundError:
-            print("Password already changed")
-            print("Attempting to use provided password")
+        print(f"Old password: {self.password}")
+        print(f"New password: {new_password}")
+        response = requests.put(
+            f"{self.nexus_api_root}/beta/security/users/admin/change-password",
+            auth=self.auth,
+            headers={"content-type": "text/plain"},
+            data=new_password,
+        )
+        if response.status_code == 204:
+            print("Changed admin password")
+            self.password = new_password
+        else:
+            print("Changing password failed")
+            print(response.content)
 
     def delete_all_repositories(self):
         response = requests.get(
