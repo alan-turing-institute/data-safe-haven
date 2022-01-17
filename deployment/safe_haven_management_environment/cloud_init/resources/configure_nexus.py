@@ -426,7 +426,6 @@ def initial_configuration(args):
     # Ensure only desired repositories exist
     recreate_repositories(nexus_api)
 
-    privileges = recreate_privileges(args.tier, nexus_api)
     if args.tier == 3:
         pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
                                                         args.cran_package_file)
