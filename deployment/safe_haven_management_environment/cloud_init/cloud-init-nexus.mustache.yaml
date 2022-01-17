@@ -62,8 +62,8 @@ runcmd:
   - sleep 3m
   # Configure Nexus
   - echo "Configuring Nexus"
-  - python3 /opt/configuration/configure-nexus.py change-initial-password --path /nexus-data --admin-password {{{nexus.adminPassword}}}
-  - python3 /opt/configuration/configure-nexus.py initial_configuration --admin-password {{{nexus.adminPassword}}} --tier 2
+  - python3 /opt/configuration/configure-nexus.py --admin-password {{{nexus.adminPassword}}} change-initial-password --path /nexus-data
+  - python3 /opt/configuration/configure-nexus.py --admin-password {{{nexus.adminPassword}}} initial-configuration --tier 2
 
 power_state:
   mode: poweroff

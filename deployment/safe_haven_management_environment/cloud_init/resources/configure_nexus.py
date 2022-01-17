@@ -298,6 +298,13 @@ class NexusAPI:
 
 def main():
     parser = ArgumentParser(description="Configure Nexus3")
+    parser.add_argument(
+        "--admin-password",
+        type=str,
+        required=True,
+        help="Password for the Nexus 'admin' account",
+    )
+
     subparsers = parser.add_subparsers(
         title="subcommands",
         required=True
@@ -309,12 +316,6 @@ def main():
         help="Change the initial admin password"
     )
     parser_password.add_argument(
-        "--admin-password",
-        type=str,
-        required=True,
-        help="New password for the Nexus 'admin' account",
-    )
-    parser_password.add_argument(
         "--path",
         type=Path,
         default=Path("./nexus-data"),
@@ -324,14 +325,8 @@ def main():
 
     # sub-command for initial configuration
     parser_configure = subparsers.add_parser(
-        "initial_configuration",
+        "initial-configuration",
         help="Configure the Nexus repository"
-    )
-    parser_configure.add_argument(
-        "--admin-password",
-        type=str,
-        required=True,
-        help="Password for the Nexus 'admin' account",
     )
     parser_configure.add_argument(
         "--tier",
@@ -342,7 +337,24 @@ def main():
     )
     parser_configure.set_defaults(func=initial_configuration)
 
+    # sub-command for updating package allow lists
+    parser_update = subparsers.add_parser(
+        "update-allowlists",
+        help="Update the Nexus package allowlists"
+    )
+    parser_update.add_argument(
+        "--tier",
+        type=int,
+        required=True,
+        choices=[2, 3],
+        help="Data security tier of the repository",
+    )
+    parser_update.set_defaults(func=update_allow_lists)
+
     args = parser.parse_args()
+
+    if args.tier == 3:
+        raise NotImplementedError("Currently only tier 2 is supported")
 
     args.func(args)
 
@@ -369,9 +381,6 @@ def change_initial_password(args):
 
 
 def initial_configuration(args):
-    if args.tier == 3:
-        raise NotImplementedError("Currently only tier 2 is supported")
-
     nexus_api = NexusAPI(
         nexus_path=_NEXUS_PATH,
         nexus_port=_NEXUS_PORT,
@@ -400,6 +409,17 @@ def initial_configuration(args):
 
     # Update anonymous users roles
     nexus_api.update_anonymous_user_roles([role_name])
+
+
+def update_allow_lists(args):
+    nexus_api = NexusAPI(
+        nexus_path=_NEXUS_PATH,
+        nexus_port=_NEXUS_PORT,
+        username=_NEXUS_ADMIN_USERNAME,
+        password=args.admin_password,
+    )
+
+    recreate_privileges(args.tier, nexus_api)
 
 
 def recreate_repositories(nexus_api):
