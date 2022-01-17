@@ -382,9 +382,6 @@ def main():
 
     args = parser.parse_args()
 
-    # if args.tier == 3:
-    #     raise NotImplementedError("Currently only tier 2 is supported")
-
     for package_file in [args.pypi_package_file, args.cran_package_file]:
         if package_file and not package_file.is_file():
             raise Exception(
