@@ -457,7 +457,7 @@ def recreate_privileges(tier, nexus_api):
 
     # Create content selectors and privileges for packages according to the tier
     if tier == 2:
-        # Allow all PyPI packages/versions
+        # Allow all PyPI packages
         privilege_name = create_content_selector_privilege(
             nexus_api,
             name="pypi-all",
@@ -468,7 +468,7 @@ def recreate_privileges(tier, nexus_api):
         )
         pypi_privilege_names.append(privilege_name)
 
-        # Allow all CRAN packages/versions
+        # Allow all CRAN packages
         privilege_name = create_content_selector_privilege(
             nexus_api,
             name="cran-all",
@@ -479,27 +479,27 @@ def recreate_privileges(tier, nexus_api):
         )
         cran_privilege_names.append(privilege_name)
     elif tier == 3:
-        # Collect allowed PyPI package names and versions
+        # Allowed selected PyPI packages
         allowed_pypi_packages = []
-        for package, version in allowed_pypi_packages:
+        for package in allowed_pypi_packages:
             privilege_name = create_content_selector_privilege(
                 nexus_api,
-                name=f"pypi-{package}-{version}",
-                description=f"Allow access to {package} version {version} on PyPI",
-                expression=f'format == "pypi" and path=^"/packages/{package}/{version}/"',
+                name=f"pypi-{package}",
+                description=f"Allow access to {package} on PyPI",
+                expression=f'format == "pypi" and path=^"/packages/{package}/"',
                 repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
                 repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
             )
             pypi_privilege_names.append(privilege_name)
 
-        # Collect allowed PyPI package names and versions
+        # Allow selected CRAN packages
         allowed_cran_packages = []
-        for package, version in allowed_cran_packages:
+        for package in allowed_cran_packages:
             privilege_name = create_content_selector_privilege(
                 nexus_api,
-                name=f"cran-{package}-{version}",
-                description=f"allow access {package} version {version} on CRAN",
-                expression='format == "r"' ' and path=^"/src/contrib/{package}_{version}"',
+                name=f"cran-{package}",
+                description=f"allow access to {package} on CRAN",
+                expression='format == "r" and path=^"/src/contrib/{package}"',
                 repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
                 repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
             )
