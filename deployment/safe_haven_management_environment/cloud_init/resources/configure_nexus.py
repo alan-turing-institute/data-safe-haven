@@ -445,92 +445,86 @@ def recreate_privileges(tier, nexus_api):
 
     # Content selector and privilege for PyPI 'simple' path, used to search for
     # packages
-    nexus_api.create_content_selector(
+    privilege_name = create_content_selector_privilege(
+        nexus_api,
         name="simple",
         description="Allow access to 'simple' directory in PyPI repository",
         expression='format == "pypi" and path=^"/simple"',
-    )
-    nexus_api.create_content_selector_privilege(
-        name="simple",
-        description="Allow access to the pypi simple directory",
         repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
-        content_selector="simple",
+        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
     )
-    pypi_privilege_names.append("simple")
+    pypi_privilege_names.append(privilege_name)
 
     # Create content selectors and privileges for packages according to the tier
     if tier == 2:
         # Allow all PyPI packages/versions
-        privilege_name = "pypi-all"
-        nexus_api.create_content_selector(
-            name=privilege_name,
+        privilege_name = create_content_selector_privilege(
+            nexus_api,
+            name="pypi-all",
             description="Allow access to all PyPI packages",
             expression='format == "pypi" and path=^"/packages/"',
-        )
-        nexus_api.create_content_selector_privilege(
-            name=privilege_name,
-            description="Allow access to all PyPI packages",
             repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
-            content_selector=privilege_name,
+            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
         )
         pypi_privilege_names.append(privilege_name)
 
         # Allow all CRAN packages/versions
-        privilege_name = "cran-all"
-        nexus_api.create_content_selector(
-            name=privilege_name,
+        privilege_name = create_content_selector_privilege(
+            nexus_api,
+            name="cran-all",
             description="Allow access to all CRAN packages",
             expression='format == "r" and path=^"/src/contrib"',
-        )
-        nexus_api.create_content_selector_privilege(
-            name=privilege_name,
-            description="Allow access to all CRAN packages",
             repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
-            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
-            content_selector=privilege_name,
+            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
         )
         cran_privilege_names.append(privilege_name)
     elif tier == 3:
         # Collect allowed PyPI package names and versions
         allowed_pypi_packages = []
-
         for package, version in allowed_pypi_packages:
-            name = f"pypi-{package}-{version}"
-            expression = f'format == "pypi" and path=^"/packages/{package}/{version}/"'
-            description = f"Allow access to {package} version {version} on PyPI"
-            nexus_api.create_content_selector(name, description, expression)
-
-            nexus_api.create_content_selector_privilege(
-                name=name,
-                description=description,
+            privilege_name = create_content_selector_privilege(
+                nexus_api,
+                name=f"pypi-{package}-{version}",
+                description=f"Allow access to {package} version {version} on PyPI",
+                expression=f'format == "pypi" and path=^"/packages/{package}/{version}/"',
                 repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
-                content_selector=name,
+                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
             )
-            pypi_privilege_names.append(name)
+            pypi_privilege_names.append(privilege_name)
 
         # Collect allowed PyPI package names and versions
         allowed_cran_packages = []
-
         for package, version in allowed_cran_packages:
-            nexus_api.create_content_selector(
+            privilege_name = create_content_selector_privilege(
+                nexus_api,
                 name=f"cran-{package}-{version}",
-                description=f"Allow access {package} version {version} on CRAN",
-                expression='format == "r"' ' and path=^"/src/contrib/{package}_{version}"'
-            )
-
-            nexus_api.create_content_selector_privilege(
-                name=name,
-                description=description,
+                description=f"allow access {package} version {version} on CRAN",
+                expression='format == "r"' ' and path=^"/src/contrib/{package}_{version}"',
                 repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
-                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
-                content_selector=name,
+                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
             )
-            cran_privilege_names.append(name)
+            cran_privilege_names.append(privilege_name)
 
     return (pypi_privilege_names + cran_privilege_names)
+
+
+def create_content_selector_privilege(nexus_api, name, description, expression,
+                                      repo_type, repo):
+    nexus_api.create_content_selector(
+        name=name,
+        description=description,
+        expression=expression
+    )
+
+    nexus_api.create_content_selector_privilege(
+        name=name,
+        description=description,
+        repo_type=repo_type,
+        repo=repo,
+        content_selector=name,
+    )
+
+    return name
 
 
 if __name__ == "__main__":
