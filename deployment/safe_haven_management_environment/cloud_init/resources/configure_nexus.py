@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
+from os.path import isfile
 from pathlib import Path
 import requests
 
@@ -305,6 +306,26 @@ def main():
         help="Password for the Nexus 'admin' account",
     )
 
+    # Group of arguments for tiers and package files
+    tier_parser = ArgumentParser(add_help=False)
+    tier_parser.add_argument(
+        "--tier",
+        type=int,
+        required=True,
+        choices=[2, 3],
+        help="Data security tier of the repository",
+    )
+    tier_parser.add_argument(
+        "--pypi-package-file",
+        type=Path,
+        help="Path of the file of allowed PyPI packages, only when TIER=3"
+    )
+    tier_parser.add_argument(
+        "--cran-package-file",
+        type=Path,
+        help="Path of the file of allowed CRAN packages, only when TIER=3"
+    )
+
     subparsers = parser.add_subparsers(
         title="subcommands",
         required=True
@@ -326,35 +347,29 @@ def main():
     # sub-command for initial configuration
     parser_configure = subparsers.add_parser(
         "initial-configuration",
-        help="Configure the Nexus repository"
-    )
-    parser_configure.add_argument(
-        "--tier",
-        type=int,
-        required=True,
-        choices=[2, 3],
-        help="Data security tier of the repository",
+        help="Configure the Nexus repository",
+        parents=[tier_parser]
     )
     parser_configure.set_defaults(func=initial_configuration)
 
     # sub-command for updating package allow lists
     parser_update = subparsers.add_parser(
         "update-allowlists",
-        help="Update the Nexus package allowlists"
-    )
-    parser_update.add_argument(
-        "--tier",
-        type=int,
-        required=True,
-        choices=[2, 3],
-        help="Data security tier of the repository",
+        help="Update the Nexus package allowlists",
+        parents=[tier_parser]
     )
     parser_update.set_defaults(func=update_allow_lists)
 
     args = parser.parse_args()
 
-    if args.tier == 3:
-        raise NotImplementedError("Currently only tier 2 is supported")
+    # if args.tier == 3:
+    #     raise NotImplementedError("Currently only tier 2 is supported")
+
+    for package_file in [args.pypi_package_file, args.cran_package_file]:
+        if package_file and not isfile(package_file):
+            raise Exception(
+                f"Package allowlist file {package_file} does not exist"
+            )
 
     args.func(args)
 
@@ -479,8 +494,9 @@ def recreate_privileges(tier, nexus_api):
         )
         cran_privilege_names.append(privilege_name)
     elif tier == 3:
-        # Allowed selected PyPI packages
+        # Allow selected PyPI packages
         allowed_pypi_packages = []
+
         for package in allowed_pypi_packages:
             privilege_name = create_content_selector_privilege(
                 nexus_api,
