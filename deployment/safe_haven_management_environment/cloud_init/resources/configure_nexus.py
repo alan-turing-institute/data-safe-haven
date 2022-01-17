@@ -445,7 +445,8 @@ def recreate_repositories(nexus_api):
         nexus_api.create_proxy_repository(**repository)
 
 
-def recreate_privileges(tier, nexus_api):
+def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
+                        cran_allowlist=[]):
     # Delete all existing content selector privileges
     # These must be deleted before the content selectors as the content selectors
     # as the privileges depend on the content selectors
@@ -495,9 +496,7 @@ def recreate_privileges(tier, nexus_api):
         cran_privilege_names.append(privilege_name)
     elif tier == 3:
         # Allow selected PyPI packages
-        allowed_pypi_packages = []
-
-        for package in allowed_pypi_packages:
+        for package in pypi_allowlist:
             privilege_name = create_content_selector_privilege(
                 nexus_api,
                 name=f"pypi-{package}",
@@ -509,8 +508,7 @@ def recreate_privileges(tier, nexus_api):
             pypi_privilege_names.append(privilege_name)
 
         # Allow selected CRAN packages
-        allowed_cran_packages = []
-        for package in allowed_cran_packages:
+        for package in cran_allowlist:
             privilege_name = create_content_selector_privilege(
                 nexus_api,
                 name=f"cran-{package}",
