@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
-from os.path import isfile
 from pathlib import Path
 import requests
 
@@ -20,6 +19,8 @@ _NEXUS_REPOSITORIES = {
         remote_url="https://cran.r-project.org/"
     )
 }
+
+_ROLE_NAME = "safe haven user"
 
 
 class NexusAPI:
@@ -224,10 +225,7 @@ class NexusAPI:
                 print(f"Role deletion failed.\nStatus code:{code}")
                 print(response.content)
 
-    def create_role(self, name, description, privileges, roles=None):
-        if roles is None:
-            roles = []
-
+    def create_role(self, name, description, privileges, roles=[]):
         payload = {
             "id": f"{name}",
             "name": f"{name}",
@@ -247,6 +245,28 @@ class NexusAPI:
             print(f"role {name} already exists")
         else:
             print(f"role {name} creation failed.\nStatus code: {code}")
+            print(response.content)
+
+    def update_role(self, name, description, privileges, roles=[]):
+        payload = {
+            "id": f"{name}",
+            "name": f"{name}",
+            "description": f"{description}",
+            "privileges": privileges,
+            "roles": roles,
+        }
+
+        print(f"updating role: {name}")
+        response = requests.put(
+            (f"{self.nexus_api_root}/v1/security/roles/{name}"), auth=self.auth, json=payload
+        )
+        code = response.status_code
+        if code == 204:
+            print(f"role {name} successfully created")
+        elif code == 404:
+            print(f"role {name} does not exist")
+        else:
+            print(f"role {name} update failed.\nStatus code: {code}")
             print(response.content)
 
     def enable_anonymous_access(self):
@@ -366,7 +386,7 @@ def main():
     #     raise NotImplementedError("Currently only tier 2 is supported")
 
     for package_file in [args.pypi_package_file, args.cran_package_file]:
-        if package_file and not isfile(package_file):
+        if package_file and not package_file.is_file():
             raise Exception(
                 f"Package allowlist file {package_file} does not exist"
             )
@@ -407,14 +427,19 @@ def initial_configuration(args):
     recreate_repositories(nexus_api)
 
     privileges = recreate_privileges(args.tier, nexus_api)
+    if args.tier == 3:
+        pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
+                                                        args.cran_package_file)
+        privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist, cran_allowlist)
+    else:
+        privileges = recreate_privileges(args.tier, nexus_api)
 
     # Delete non-default roles
     nexus_api.delete_all_custom_roles()
 
     # Create a role for safe haven users
-    role_name = "safe haven user"
     nexus_api.create_role(
-        name=role_name,
+        name=_ROLE_NAME,
         description="allows access to selected packages",
         privileges=privileges
     )
@@ -423,7 +448,7 @@ def initial_configuration(args):
     nexus_api.enable_anonymous_access()
 
     # Update anonymous users roles
-    nexus_api.update_anonymous_user_roles([role_name])
+    nexus_api.update_anonymous_user_roles([_ROLE_NAME])
 
 
 def update_allow_lists(args):
@@ -434,7 +459,41 @@ def update_allow_lists(args):
         password=args.admin_password,
     )
 
-    recreate_privileges(args.tier, nexus_api)
+    if args.tier == 3:
+        pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
+                                                        args.cran_package_file)
+        privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist, cran_allowlist)
+    else:
+        privileges = recreate_privileges(args.tier, nexus_api)
+
+    # Update role for safe haven users
+    nexus_api.update_role(
+        name=_ROLE_NAME,
+        description="allows access to selected packages",
+        privileges=privileges
+    )
+
+
+def get_allowlists(pypi_package_file, cran_package_file):
+    pypi_allowlist = []
+    cran_allowlist = []
+
+    if pypi_package_file:
+        pypi_allowlist = get_allowlist(pypi_package_file)
+
+    if cran_package_file:
+        cran_allowlist = get_allowlist(cran_package_file)
+
+    return (pypi_allowlist, cran_allowlist)
+
+
+def get_allowlist(allowlist_path):
+    with open(allowlist_path, "r") as allowlist_file:
+        allowlist = allowlist_file.read().splitlines()
+
+    allowlist = [i.lower() for i in allowlist]
+
+    return allowlist
 
 
 def recreate_repositories(nexus_api):
