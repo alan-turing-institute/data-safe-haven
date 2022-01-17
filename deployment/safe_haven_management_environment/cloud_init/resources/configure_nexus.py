@@ -40,7 +40,7 @@ class NexusAPI:
         print(f"Old password: {self.password}")
         print(f"New password: {new_password}")
         response = requests.put(
-            f"{self.nexus_api_root}/beta/security/users/admin/change-password",
+            f"{self.nexus_api_root}/v1/security/users/admin/change-password",
             auth=self.auth,
             headers={"content-type": "text/plain"},
             data=new_password,
@@ -54,7 +54,7 @@ class NexusAPI:
 
     def delete_all_repositories(self):
         response = requests.get(
-            f"{self.nexus_api_root}/beta/repositories", auth=self.auth
+            f"{self.nexus_api_root}/v1/repositories", auth=self.auth
         )
         repositories = response.json()
 
@@ -62,7 +62,7 @@ class NexusAPI:
             name = repo["name"]
             print(f"Deleting repository: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/repositories/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/repositories/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -93,7 +93,7 @@ class NexusAPI:
 
         print(f"Creating {repo_type} repository: {name}")
         response = requests.post(
-            f"{self.nexus_api_root}/beta/repositories/{repo_type}/proxy",
+            f"{self.nexus_api_root}/v1/repositories/{repo_type}/proxy",
             auth=self.auth,
             json=payload,
         )
@@ -106,7 +106,7 @@ class NexusAPI:
 
     def delete_all_content_selectors(self):
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/content-selectors", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/content-selectors", auth=self.auth
         )
         content_selectors = response.json()
 
@@ -114,7 +114,7 @@ class NexusAPI:
             name = content_selector["name"]
             print(f"Deleting content selector: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/content-selectors/{name}",
+                f"{self.nexus_api_root}/v1/security/content-selectors/{name}",
                 auth=self.auth,
             )
             code = response.status_code
@@ -133,7 +133,7 @@ class NexusAPI:
 
         print(f"Creating content selector: {name}")
         response = requests.post(
-            f"{self.nexus_api_root}/beta/security/content-selectors",
+            f"{self.nexus_api_root}/v1/security/content-selectors",
             auth=self.auth,
             json=payload,
         )
@@ -148,7 +148,7 @@ class NexusAPI:
 
     def delete_all_content_selector_privileges(self):
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/privileges", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/privileges", auth=self.auth
         )
         privileges = response.json()
 
@@ -159,7 +159,7 @@ class NexusAPI:
             name = privilege["name"]
             print(f"Deleting content selector privilege: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/privileges/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/security/privileges/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -185,7 +185,7 @@ class NexusAPI:
         print(f"Creating content selector privilege: {name}")
         response = requests.post(
             (
-                f"{self.nexus_api_root}/beta/security/privileges"
+                f"{self.nexus_api_root}/v1/security/privileges"
                 "/repository-content-selector"
             ),
             auth=self.auth,
@@ -205,7 +205,7 @@ class NexusAPI:
 
     def delete_all_custom_roles(self):
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/roles", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/roles", auth=self.auth
         )
         roles = response.json()
 
@@ -216,7 +216,7 @@ class NexusAPI:
 
             print(f"Deleting role: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/roles/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/security/roles/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -236,7 +236,7 @@ class NexusAPI:
 
         print(f"Creating role: {name}")
         response = requests.post(
-            (f"{self.nexus_api_root}/beta/security/roles"), auth=self.auth, json=payload
+            (f"{self.nexus_api_root}/v1/security/roles"), auth=self.auth, json=payload
         )
         code = response.status_code
         if code == 200:
@@ -271,7 +271,7 @@ class NexusAPI:
 
     def enable_anonymous_access(self):
         response = requests.put(
-            f"{self.nexus_api_root}/beta/security/anonymous",
+            f"{self.nexus_api_root}/v1/security/anonymous",
             auth=self.auth,
             json={
                 "enabled": True,
@@ -289,7 +289,7 @@ class NexusAPI:
     def update_anonymous_user_roles(self, roles):
         # Get existing user data JSON
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/users", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/users", auth=self.auth
         )
         users = response.json()
         for user in users:
@@ -302,7 +302,7 @@ class NexusAPI:
 
         # Push changes to Nexus
         response = requests.put(
-            f"{self.nexus_api_root}/beta/security/users/{anonymous_user['userId']}",
+            f"{self.nexus_api_root}/v1/security/users/{anonymous_user['userId']}",
             auth=self.auth,
             json=anonymous_user,
         )
