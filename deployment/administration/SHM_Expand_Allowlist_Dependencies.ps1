@@ -110,21 +110,13 @@ function Get-Dependencies {
 }
 
 
-# Load appropriate allowlists
-# ---------------------------
+# Load list of core packages
+# --------------------------
 $languageName = @{cran = "r"; pypi = "python" }[$Repository]
 $coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
 $fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
-
-
-# Combine base image package lists with the core allowlist to construct a single list of core packages
-# ----------------------------------------------------------------------------------------------------
-$corePackageList = Get-Content $coreAllowlistPath
-foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "secure_research_desktop" "packages" "packages-${languageName}-${Repository}*.list"))) {
-    $corePackageList += $buildtimePackageList
-}
-$corePackageList = $corePackageList | Sort-Object -Unique
+$corePackageList = Get-Content $coreAllowlistPath | Sort-Object -Unique
 
 
 # Initialise the package queue
