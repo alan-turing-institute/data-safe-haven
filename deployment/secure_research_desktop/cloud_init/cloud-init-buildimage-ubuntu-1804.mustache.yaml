@@ -307,7 +307,7 @@ runcmd:
   - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || (echo "Could not install Julia kernel!" && exit 1)
 
   # Install python versions
-  - /opt/build/install_python_versions.py /opt/build/packages-python.yaml
+  - /opt/build/install_python_versions.py /opt/build/packages-python.yaml || (echo "Could not install Python versions!" && exit 1)
   - echo "Installed python versions:"
   - du --si -d 1 ${PYENV_ROOT}/versions
   # Configure pyenv: use a local PYENV_ROOT with the global versions symlinked into it

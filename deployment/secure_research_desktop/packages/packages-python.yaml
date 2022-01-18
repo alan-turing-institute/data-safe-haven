@@ -40,6 +40,7 @@ packages:
     pg8000:
     Pillow:
     plotly:
+    poetry:  # also used by installation scripts
     prophet:
         "3.10": ["uninstallable"]  # requires pystan
     psycopg2:
@@ -56,7 +57,8 @@ packages:
     pytest:
     PyYAML:
     regex:
-    safety:
+    requests:
+    safety:  # also used by installation scripts
     scikit-image:
     scikit-learn:
     scipy:
