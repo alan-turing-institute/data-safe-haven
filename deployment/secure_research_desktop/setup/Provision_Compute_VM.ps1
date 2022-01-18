@@ -83,19 +83,6 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $buildNsg -Rules $ru
 $subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
-# Convert PyPI package lists into requirements files
-# --------------------------------------------------
-$temporaryDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString()))
-$packageVersions = Get-Content (Join-Path $PSScriptRoot ".." "packages" "python-requirements.json") | ConvertFrom-Json -AsHashtable
-foreach ($packageList in Get-ChildItem (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-*.list")) {
-    $pythonVersion = ($packageList.BaseName -split "-")[-1]
-    Get-Content $packageList | `
-        ForEach-Object {
-            if ($packageVersions["py${pythonVersion}"].Contains($_)) { "$_$($packageVersions["py${pythonVersion}"][$_])" } else { "$_" }
-        } | Out-File (Join-Path $temporaryDir.FullName "python-requirements-py${pythonVersion}.txt")
-}
-
-
 # Load the cloud-init template then add resources and expand mustache placeholders
 # --------------------------------------------------------------------------------
 $config["dbeaver"] = @{
@@ -103,9 +90,7 @@ $config["dbeaver"] = @{
 }
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
-$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath $temporaryDir.FullName
 $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
-$null = Remove-Item -Path $temporaryDir -Recurse -Force -ErrorAction SilentlyContinue
 
 
 # Construct build VM parameters
