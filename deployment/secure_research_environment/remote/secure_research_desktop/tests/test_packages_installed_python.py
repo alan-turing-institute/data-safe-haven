@@ -59,7 +59,6 @@ def get_python_version():
     v_info = sys.version_info
     return {
         "full": "{}.{}.{}".format(v_info.major, v_info.minor, v_info.micro),
-        "short": "{}{}".format(v_info.major, v_info.minor),
     }
 
 
@@ -120,11 +119,11 @@ def test_packages():
             os.path.dirname(os.path.abspath(__file__)),
             "..",
             "package_lists",
-            "packages-python-pypi*",
+            "packages-python-*",
         )
     )
     matching_package_lists = [
-        _list for _list in pypi_package_lists if version["short"] in _list
+        _list for _list in pypi_package_lists if version["full"] in _list
     ]
     if matching_package_lists:
         with open(matching_package_lists[0], "r") as f_packages:
