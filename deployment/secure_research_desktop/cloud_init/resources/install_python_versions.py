@@ -118,13 +118,14 @@ def install_python_version(python_version, package_list):
             subprocess.run([f"{exe_path}/python3", "-m", "gensim.downloader", "--download", dataset], env=env)
     # Set the Jupyter kernel name to the full Python version name
     # This ensures that different python3 versions show up separately
-    kernel_path = f"{pyenv_root}/versions/{python_version}/share/jupyter/kernels/python3/kernel.json"
-    with open(kernel_path, "r") as f_kernel:
+    kernel_base = f"{pyenv_root}/versions/{python_version}/share/jupyter/kernels/python3"
+    with open(f"{kernel_base}/kernel.json", "r") as f_kernel:
         kernel = json.load(f_kernel)
     kernel["argv"][0] = f"{pyenv_root}/versions/${python_version}/bin/python"
     kernel["display_name"] = f"Python {python_version}"
-    with open(kernel_path, "w") as f_kernel:
+    with open(f"{kernel_base}/kernel.json", "w") as f_kernel:
         json.dump(kernel, f_kernel, indent=1)
+    shutil.move(kernel_base, kernel_base.replace("python3", f"python{python_version.major}{python_version.minor}"))
     print(f"\nPost-install setup took {humanize.naturaldelta(datetime.datetime.now() - section_start_time)}")
 
     # Check that all requested packages are installed without issues
