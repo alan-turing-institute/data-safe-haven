@@ -17,37 +17,38 @@ def run(command):
 
 def run_tests(success, failure, *tests):
     for test in tests:
-        if "python" in test[0]:
-            python_version = test[0].split(" ")[-1]
+        executable = test[0]
+        if executable == "python":
+            python_version = test[1]
             exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/python")
-            version = run(f"/opt/pyenv/versions/{python_version}*/bin/python --version")
-        elif "pip" in test[0]:
-            python_version = test[0].split(" ")[-1]
+            version = run(f"/opt/pyenv/versions/{python_version}*/bin/python --version | awk '{{print $2}}'")
+            executable = f"Python {'.'.join(python_version.split('.')[:2])}"
+        elif executable == "pip":
+            python_version = test[1]
             exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/pip")
             version = run(f"/opt/pyenv/versions/{python_version}*/bin/pip -V | awk '{{print $2}}'")
+            executable = f"pip (Python {'.'.join(python_version.split('.')[:2])})"
         else:
-            exists = run(f"which {test[0]}")
+            exists = run(f"which {executable}")
             version = run(test[1]) if exists else None
         if version:
-            print(f"... {test[0]} [{exists}] {version}")
+            print(f"... {executable} [{exists}] {version}")
             success += 1
         else:
-            print(f"... ERROR {test[0]} not found!")
+            print(f"... ERROR {executable} not found!")
             failure += 1
     return (success, failure)
 
 
 # Run all tests
 success, failure = 0, 0
-python_environments = [os.path.splitext(path)[0].split("-")[-1] for path in glob.glob("/opt/build/python-requirements-py*")]
-python_versions = [(name.replace("py3", "python 3."), name) for name in sorted(python_environments)]
-pip_versions = [version.replace("python", "pip") for version in python_versions]
+python_versions = [("python", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")]
+pip_versions = [("pip", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")]
 
 print("Programming languages:")
 (success, failure) = run_tests(
     success,
     failure,
-    ("cargo", "cargo -V"),
     ("cmake", "cmake --version 2>&1 | head -n 1 | awk '{print $3}'"),
     ("dotnet", "dotnet --version"),
     ("g++", "g++ --version | grep g++ | awk '{print $NF}'"),
