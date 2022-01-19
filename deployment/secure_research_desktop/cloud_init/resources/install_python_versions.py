@@ -37,6 +37,12 @@ def remove_all(patterns):
                 except IsADirectoryError:
                     shutil.rmtree(fsobject)
 
+def run_to_stdout(args, env):
+    subprocess.run(args, env=env, stdout=sys.stdout, stderr=subprocess.STDOUT, encoding="utf8")
+
+def run_to_variable(args, env):
+    return subprocess.run(args, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf8").stdout.strip()
+
 def install_python_version(python_version, package_list):
     start_time = datetime.datetime.now()
     print(f">=== {int(start_time.timestamp())} Installing Python {python_version} with {len(package_list)} packages ===<")
@@ -50,19 +56,19 @@ def install_python_version(python_version, package_list):
 
     # Install the appropriate Python version
     section_start_time = datetime.datetime.now()
-    subprocess.run(["pyenv", "install", "--skip-existing", str(python_version)], env=env)
-    pyenv_root = subprocess.run(["pyenv", "root"], env=env, stdout=subprocess.PIPE).stdout.decode().strip()
+    run_to_stdout(["pyenv", "install", "--skip-existing", str(python_version)], env)
+    pyenv_root = run_to_variable(["pyenv", "root"], env)
     exe_path = f"{pyenv_root}/versions/{python_version}/bin"
 
     # Ensure that we're using the correct version
     env["PYENV_VERSION"] = str(python_version)
-    current_version = subprocess.run([f"{exe_path}/python3", "--version"], env=env, stdout=subprocess.PIPE).stdout.decode().split()[-1].strip()
+    current_version = run_to_variable([f"{exe_path}/python3", "--version"], env).split()[-1].strip()
     if current_version != str(python_version):
         raise ValueError(f"Failed to initialise Python version {python_version}")
 
     # Install and upgrade installation prerequisites
     print(f"Installing and upgrading installation prerequisites for Python {python_version}...")
-    subprocess.run([f"{exe_path}/pip3", "install", "--upgrade", "pip", "poetry"], env=env, stderr=subprocess.DEVNULL)
+    run_to_stdout([f"{exe_path}/pip3", "install", "--upgrade", "pip", "poetry"], env)
     print(f"Preparing installation took {humanize.naturaldelta(datetime.datetime.now() - section_start_time)}")
 
     # Get range of available versions for each package using pip
@@ -72,7 +78,7 @@ def install_python_version(python_version, package_list):
     for (package_name, package_suffix) in package_list:
         if not package_suffix:
             try:
-                versions = subprocess.run([f"{exe_path}/pip3", "index", "versions", package_name], env=env, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode().split(":")[1].split(",")
+                versions = run_to_variable([f"{exe_path}/pip3", "index", "versions", package_name], env).split(":")[1].split(",")
                 versions = sorted([v for v in map(to_version, versions) if v])
                 package_suffix = f">={versions[0]},<={versions[-1]}"
             except IndexError:
@@ -90,11 +96,11 @@ def install_python_version(python_version, package_list):
     with open("pyproject.toml", "w") as f_toml:
         f_toml.writelines(pyproject_toml)
     # Add packages to poetry
-    subprocess.run([f"{exe_path}/poetry", "config", "virtualenvs.create", "false"], env=env)
-    subprocess.run([f"{exe_path}/poetry", "config", "virtualenvs.in-project", "true"], env=env)
-    subprocess.run([f"{exe_path}/poetry", "add"] + requirements, env=env)
+    run_to_stdout([f"{exe_path}/poetry", "config", "virtualenvs.create", "false"], env)
+    run_to_stdout([f"{exe_path}/poetry", "config", "virtualenvs.in-project", "true"], env)
+    run_to_stdout([f"{exe_path}/poetry", "add"] + requirements, env)
     # Rehash any CLI programs (eg. safety)
-    subprocess.run(["pyenv", "rehash"], env=env)
+    run_to_stdout(["pyenv", "rehash"], env=env)
     # Write package versions to monitoring log
     with open(f"/opt/monitoring/python-{python_version}-package-versions.log", "w") as f_log:
         subprocess.run([f"{exe_path}/poetry", "show"], env=env, stdout=f_log)
@@ -104,18 +110,18 @@ def install_python_version(python_version, package_list):
     # Install any post-install package requirements
     section_start_time = datetime.datetime.now()
     print("Running post-install commands...")
-    installed_package_details = json.loads(subprocess.run([f"{exe_path}/pip3", "list", "--format=json"], env=env, stdout=subprocess.PIPE).stdout.decode())
+    installed_package_details = json.loads(run_to_variable([f"{exe_path}/pip3", "list", "--format=json"], env))
     installed_packages = [p["name"] for p in installed_package_details]
     if "spacy" in installed_packages:
         for dataset in ["en-core-web-sm", "en-core-web-md", "en-core-web-lg"]:
             if dataset not in installed_packages:
-                subprocess.run([f"{exe_path}/python3", "-m", "spacy", "download", dataset.replace("-", "_")], env=env)
+                run_to_stdout([f"{exe_path}/python3", "-m", "spacy", "download", dataset.replace("-", "_")], env)
     if "nltk" in installed_packages:
-        subprocess.run([f"{exe_path}/python3", "-m", "nltk.downloader", "all", "-d", "/usr/share/nltk_data"], env=env)
+        run_to_stdout([f"{exe_path}/python3", "-m", "nltk.downloader", "all", "-d", "/usr/share/nltk_data"], env)
     if "gensim" in installed_packages:
         env["GENSIM_DATA_DIR"] = "/usr/share/gensim_data"
         for dataset in ["text8", "fake-news"]:
-            subprocess.run([f"{exe_path}/python3", "-m", "gensim.downloader", "--download", dataset], env=env)
+            run_to_stdout([f"{exe_path}/python3", "-m", "gensim.downloader", "--download", dataset], env)
     # Set the Jupyter kernel name to the full Python version name
     # This ensures that different python3 versions show up separately
     kernel_base = f"{pyenv_root}/versions/{python_version}/share/jupyter/kernels/python3"
@@ -125,8 +131,8 @@ def install_python_version(python_version, package_list):
     kernel["display_name"] = f"Python {python_version}"
     with open(f"{kernel_base}/kernel.json", "w") as f_kernel:
         json.dump(kernel, f_kernel, indent=1)
-    shutil.move(kernel_base, kernel_base.replace("python3", f"python{python_version.major}{python_version.minor}"))
-    print(f"\nPost-install setup took {humanize.naturaldelta(datetime.datetime.now() - section_start_time)}")
+    shutil.move(kernel_base, kernel_base.replace("python3", f"python-{python_version.major}.{python_version.minor}"))
+    print(f"Post-install setup took {humanize.naturaldelta(datetime.datetime.now() - section_start_time)}")
 
     # Check that all requested packages are installed without issues
     section_start_time = datetime.datetime.now()
@@ -140,8 +146,8 @@ def install_python_version(python_version, package_list):
     print(f"All {len(requested_packages)} requested Python {python_version} packages are installed")
     print(f"Running safety check on Python {python_version} installation...")
     safety_output = f"/opt/monitoring/python-{python_version}-safety-check.json"
-    subprocess.run([f"{exe_path}/safety", "check", "--json", "--output", safety_output], env=env)
-    subprocess.run([f"{exe_path}/safety", "review", "--full-report", "-f", safety_output], env=env)
+    run_to_stdout([f"{exe_path}/safety", "check", "--json", "--output", safety_output], env)
+    run_to_stdout([f"{exe_path}/safety", "review", "--full-report", "-f", safety_output], env)
     print(f"Checking installed packages took {humanize.naturaldelta(datetime.datetime.now() - section_start_time)}")
 
     # Clean up
@@ -161,7 +167,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Get list of available Python versions
-    available_versions = subprocess.run(["pyenv", "install", "--list"], stdout=subprocess.PIPE).stdout.decode().split("\n")
+    available_versions = run_to_variable(["pyenv", "install", "--list"], os.environ.copy()).split("\n")
     available_versions = [v for v in map(to_version, available_versions) if v and not v.is_prerelease]
 
     with contextlib.suppress(FileExistsError):
