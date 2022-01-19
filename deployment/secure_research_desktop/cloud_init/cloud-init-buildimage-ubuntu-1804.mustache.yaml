@@ -85,18 +85,10 @@ write_files:
     permissions: "0500"
     content: |
       {{download_and_install_deb.sh}}
-  - path: "/opt/build/install_python_versions.py"
-    permissions: "0500"
-    content: |
-      {{install_python_versions.py}}
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
       {{packages-julia.list}}
-  - path: "/opt/build/packages-python.yaml"
-    permissions: "0444"
-    content: |
-      {{packages-python.yaml}}
   - path: "/opt/build/packages/packages-r-bioconductor.list"
     permissions: "0444"
     content: |
@@ -105,14 +97,26 @@ write_files:
     permissions: "0444"
     content: |
       {{packages-r-cran.list}}
-  - path: "/opt/build/python-pyproject-template.toml"
-    permissions: "0400"
-    content: |
-      {{python_pyproject_template.toml}}
   - path: "/opt/build/packages/packages-python-system.txt"
     permissions: "0444"
     content: |
       {{packages-python-system.txt}}
+  - path: "/opt/build/pyenv/build_requirements.py"
+    permissions: "0500"
+    content: |
+      {{pyenv_build_requirements.py}}
+  - path: "/opt/build/pyenv/install.sh"
+    permissions: "0500"
+    content: |
+      {{pyenv_install.sh}}
+  - path: "/opt/build/pyenv/packages-python.yaml"
+    permissions: "0400"
+    content: |
+      {{packages-python.yaml}}
+  - path: "/opt/build/pyenv/pyproject_template.toml"
+    permissions: "0400"
+    content: |
+      {{pyenv_pyproject_template.toml}}
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
@@ -173,7 +177,7 @@ runcmd:
   - echo ">=== $(date +%s) Preparing system for installation ===<"
   # Install python packages used in the rest of the build
   - echo "Installing python packages..."
-  - pip3 install -r /opt/build/packages/packages-python-system.txt
+  - pip3 install --upgrade -r /opt/build/packages/packages-python-system.txt
   - pip3 list --format columns
   # Log system performance during the installation and record it each minute
   - echo "Setting up glances..."
@@ -182,6 +186,7 @@ runcmd:
   - echo "Suppressing apt prompts..."
   - export DEBIAN_FRONTEND=noninteractive
   # Add an entry for PATH to default bashrc
+  - echo "Adding PATH setting to default bashrc"
   - echo '# Set path' >> /etc/bash.bashrc
   - echo "export PATH=$PATH" >> /etc/bash.bashrc
   - echo '' >> /etc/bash.bashrc
@@ -192,6 +197,7 @@ runcmd:
   - PATH=$PATH:/snap/bin
   # Microsoft ODBC tools
   - echo "Installing Microsoft ODBC tools..."
+  - sleep 10  # wait for possible dpkg locks
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
   - echo "export DOTNET_CLI_TELEMETRY_OPTOUT=1" >> /etc/bash.bashrc
@@ -244,7 +250,7 @@ runcmd:
   - pyenv doctor || (echo "Could not configure pyenv!" && exit 1)
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
   # Install VSCode extensions
-  - echo ">=== Install VSCode extensions... ===<"
+  - echo "Install VSCode extensions..."
   - code --install-extension ms-python.python
   # Get icons for webapps
   - echo "Downloading icons..."
@@ -307,10 +313,16 @@ runcmd:
   - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || (echo "Could not install Julia kernel!" && exit 1)
 
   # Install python versions
-  - /opt/build/install_python_versions.py /opt/build/packages-python.yaml || (echo "Could not install Python versions!" && exit 1)
+  - /opt/build/pyenv/build_requirements.py /opt/build/pyenv/packages-python.yaml
+  - |
+    for PYTHON_VERSION in $(ls /opt/build/python-*-requirements.txt | cut -d '-' -f 2 | sort -V); do
+      /opt/build/pyenv/install.sh $PYTHON_VERSION || (echo "Could not install Python ${PYTHON_VERSION}!" && exit 1)
+    done
+
+  # Configure pyenv: use a local PYENV_ROOT with the global versions symlinked into it
+  - echo ">=== $(date +%s) Configuring pyenv ===<"
   - echo "Installed python versions:"
   - du --si -d 1 ${PYENV_ROOT}/versions
-  # Configure pyenv: use a local PYENV_ROOT with the global versions symlinked into it
   - export PYENV_LOCAL_ROOT='${HOME}/.pyenv'
   - echo "Configuring pyenv initialisation"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
@@ -321,7 +333,7 @@ runcmd:
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv rehash" >> /etc/bash.bashrc
-  - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
+  - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 2 | head -n 1)" >> /etc/bash.bashrc
   # Disable auto-display of the native Python kernel
   - |
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json

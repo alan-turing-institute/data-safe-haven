@@ -20,13 +20,13 @@ def run_tests(success, failure, *tests):
         executable = test[0]
         if executable == "python":
             python_version = test[1]
-            exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/python")
-            version = run(f"/opt/pyenv/versions/{python_version}*/bin/python --version | awk '{{print $2}}'")
+            exists = run(f"ls /opt/pyenv/versions/{python_version}/bin/python")
+            version = run(f"/opt/pyenv/versions/{python_version}/bin/python --version | cut -d ' ' -f 2")
             executable = f"Python {'.'.join(python_version.split('.')[:2])}"
         elif executable == "pip":
             python_version = test[1]
-            exists = run(f"ls /opt/pyenv/versions/{python_version}*/bin/pip")
-            version = run(f"/opt/pyenv/versions/{python_version}*/bin/pip -V | awk '{{print $2}}'")
+            exists = run(f"ls /opt/pyenv/versions/{python_version}/bin/pip")
+            version = run(f"/opt/pyenv/versions/{python_version}/bin/pip -V | cut -d ' ' -f 2")
             executable = f"pip (Python {'.'.join(python_version.split('.')[:2])})"
         else:
             exists = run(f"which {executable}")
