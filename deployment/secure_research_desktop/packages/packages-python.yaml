@@ -27,6 +27,7 @@ packages:
     html5lib:
     ipykernel:
     keras:
+        "3.10": ["uninstallable"]  # requires tensorflow
     lightgbm:
     lxml:
     matplotlib:
@@ -68,7 +69,9 @@ packages:
     sympy:
     tables:
     tensorboard:
+        "3.10": ["uninstallable"]  # requires tensorflow
     tensorflow:
+        "3.10": ["uninstallable"]  # not working in Python 3.10
     thinc:
         "3.10": ["uninstallable"]  # requires torch
     torch:
