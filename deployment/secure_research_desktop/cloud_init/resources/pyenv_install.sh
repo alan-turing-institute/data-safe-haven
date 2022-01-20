@@ -72,12 +72,11 @@ done
 
 # Set the Jupyter kernel name to the Python version name
 # ------------------------------------------------------
-KERNEL_BASE="${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python3/"
-if [ -e "${KERNEL_BASE}/kernel.json" ]; then
-    KERNEL_NAME="python-$(echo ${PYTHON_VERSION} | cut -d '.' -f1-2)"
-    KERNEL_BASE_NEW=${KERNEL_BASE/python3/|${KERNEL_NAME}}
-    sed -i -e "s|\"python\"|\"${EXE_PATH}/python\"|g" -e "s|display_name.*|display_name\": \"Python ${PYTHON_VERSION}\"|g" -e 's|language.*|language": "python"|g' "${KERNEL_BASE}/kernel.json"
-    mv ${KERNEL_BASE} ${KERNEL_BASE_NEW}
+KERNEL_BASE="${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python3"
+KERNEL_PATH="${KERNEL_BASE}/kernel.json"
+if [ -e "${KERNEL_PATH}" ]; then
+    ${EXE_PATH}/python -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '${EXE_PATH}/python'; kernel['display_name'] = 'Python $PYTHON_VERSION'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
+    mv ${KERNEL_BASE} ${KERNEL_BASE/python3/python-$(echo $PYTHON_VERSION | cut -d '.' -f1-2)}
 fi
 
 
