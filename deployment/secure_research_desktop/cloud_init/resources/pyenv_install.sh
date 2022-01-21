@@ -70,16 +70,6 @@ for INSTALLED_PACKAGE in $INSTALLED_PACKAGES; do
 done
 
 
-# Set the Jupyter kernel name to the Python version name
-# ------------------------------------------------------
-KERNEL_BASE="${PYENV_ROOT}/versions/${PYTHON_VERSION}/share/jupyter/kernels/python3"
-KERNEL_PATH="${KERNEL_BASE}/kernel.json"
-if [ -e "${KERNEL_PATH}" ]; then
-    ${EXE_PATH}/python -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '${EXE_PATH}/python'; kernel['display_name'] = 'Python $PYTHON_VERSION'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
-    mv ${KERNEL_BASE} ${KERNEL_BASE/python3/python-$(echo $PYTHON_VERSION | cut -d '.' -f1-2)}
-fi
-
-
 # Check that all requested packages are installed
 # -----------------------------------------------
 MISSING_PACKAGES=""

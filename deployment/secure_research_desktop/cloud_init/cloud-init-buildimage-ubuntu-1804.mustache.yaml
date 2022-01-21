@@ -340,21 +340,22 @@ runcmd:
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
   - echo "pyenv rehash" >> /etc/bash.bashrc
   - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 2 | head -n 1)" >> /etc/bash.bashrc
-  # Disable auto-display of the native Python kernel
+  # Create a centralised Python shim for use by Jupyter
+  - echo '#!/usr/bin/env bash' > /opt/pyenv/bin/python-for-jupyter
+  - echo 'exec "$(which python)" "$@"' >> /opt/pyenv/bin/python-for-jupyter
+  - chmod ugo+x /opt/pyenv/bin/python-for-jupyter
+  # Add a Jupyter kernel called 'python3' which will overwrite the native kernel
+  - python3 -m ipykernel install --name "python3" --display-name "Python 3 (active version)"
   - |
-    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
-    for kernelspec in $(ls /usr/lib/python3/dist-packages/jupyter_client/kernelspec.py $(ls /opt/pyenv/versions/*/lib/python*/site-packages/jupyter_client/kernelspec.py)); do
-      sed -i "s|ensure_native_kernel = Bool(True|ensure_native_kernel = Bool(False|g" $kernelspec
-    done
-  # Add the new Python kernels to Jupyter
-  - |
-    for KERNELPATH in $(dirname $(ls ${PYENV_ROOT}/versions/*/share/jupyter/kernels/python*/kernel.json)); do
-      /usr/bin/jupyter kernelspec install $KERNELPATH  || die "Could not install Python ${python_version} kernel!";
-    done
+    KERNEL_PATH="/usr/local/share/jupyter/kernels/python3/kernel.json"
+    if [ -e "${KERNEL_PATH}" ]; then
+      python3 -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '/opt/pyenv/bin/python-for-jupyter'; kernel['display_name'] = 'Python 3 (active version)'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
+    fi
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
+  - echo '# Set up RStudio' >> /etc/bash.bashrc
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
