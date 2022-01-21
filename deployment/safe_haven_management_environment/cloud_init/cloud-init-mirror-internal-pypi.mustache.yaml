@@ -166,13 +166,17 @@ runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
+  # Show authorised SSH keys
+  - echo ">=== Authorised SSH keys... ===<"
+  - cat ~mirrordaemon/.ssh/authorized_keys
+
   # Upgrade installation and clean up
-  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - echo ">=== Upgrade and clean up apt-get packages... ===<"
   - apt-get -y upgrade
   - apt-get clean
 
   # Set up disk
-  - echo "*** Setting up local disk... ***"
+  - echo ">=== Setting up local disk... ===<"
   - mkdir -p /datadrive/mirrordaemon/pypi/web/packages
   - ls -alh /datadrive
 
@@ -180,17 +184,17 @@ runcmd:
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
 
   # Install pypiserver with pip
-  - echo "*** Installing pypiserver... ***"
+  - echo ">=== Installing pypiserver... ===<"
   - pip3 install pypiserver==1.2.7
   # Patch pypiserver so that it uses the static simple index files
-  - echo "*** Patching pypiserver to use static index files ***"
+  - echo ">=== Patching pypiserver to use static index files ===<"
   - cd /usr/local/lib/python3*/dist-packages/pypiserver
   - patch < /var/local/pypiserver.app.py.patch
   - cd /
   - echo "Using pypi-server from '$(which pypi-server)'"
 
   # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
-  - echo "*** Setting up pypiserver pointing to local disk... ***"
+  - echo ">=== Setting up pypiserver pointing to local disk... ===<"
   - systemctl enable pypiserver
   - systemctl start pypiserver
   - systemctl status pypiserver
