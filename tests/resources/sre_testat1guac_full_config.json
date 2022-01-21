@@ -623,7 +623,7 @@
       "rg": "RG_SHM_TESTA_SRE_T1GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2022010700"
+        "version": "20.04.2022012400"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
