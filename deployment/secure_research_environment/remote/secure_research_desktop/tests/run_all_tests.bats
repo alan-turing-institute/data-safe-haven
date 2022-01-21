@@ -6,7 +6,11 @@ load "../bats/bats-support/load"
 
 # Helper functions
 # ----------------
-setup_python () {
+get_full_python_version() {
+    pyenv versions | grep "${1}." | sed -E 's|[^0-9\.]*([0-9\.]+).*|\1|'
+}
+
+setup_python() {
     eval "$(pyenv init - --no-rehash)"
     pyenv shell $(pyenv versions | grep "${1}." | sed -E 's|[^0-9\.]*([0-9\.]+).*|\1|')
     run python --version
@@ -34,6 +38,12 @@ test_python_package_repository() {
     pyenv shell --unset
 }
 
+test_python_virtual_environments() {
+    PYTHON_VERSION="$(get_full_python_version $1)"
+    run bash tests/test_virtual_environments_python.sh $PYTHON_VERSION 2>&1
+    assert_output --partial 'All tests passed for Python $PYTHON_VERSION'
+}
+
 # Julia
 # -----
 # Test Julia packages
@@ -58,6 +68,9 @@ test_python_package_repository() {
 @test "Python functionality (3.8)" {
     test_python_functionality '3.8'
 }
+@test "Python virtual environments (3.8)" {
+    test_python_virtual_environments '3.8'
+}
 @test "Python package repository (3.8)" {
     test_python_package_repository '3.8'
 }
@@ -70,6 +83,9 @@ test_python_package_repository() {
 @test "Python functionality (3.9)" {
     test_python_functionality '3.9'
 }
+@test "Python virtual environments (3.9)" {
+    test_python_virtual_environments '3.9'
+}
 @test "Python package repository (3.9)" {
     test_python_package_repository '3.9'
 }
@@ -81,9 +97,13 @@ test_python_package_repository() {
 @test "Python functionality (3.10)" {
     test_python_functionality '3.10'
 }
+@test "Python virtual environments (3.10)" {
+    test_python_virtual_environments '3.10'
+}
 @test "Python package repository (3.10)" {
     test_python_package_repository '3.10'
 }
+
 
 # R
 # -
