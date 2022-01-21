@@ -235,6 +235,7 @@ $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.P
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
 Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.mustache.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Remove-Item -Path (Join-Path $localSmokeTestDir "tests" "test_databases.mustache.sh")
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
 # Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop

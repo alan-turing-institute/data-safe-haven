@@ -1,10 +1,10 @@
-#! /bin/bash -i
-# This script must run in interactive mode to ensure that pyenv setup commands are run
+#! /bin/bash
 
 # Common variables
 N_FAILED_TESTS=0
 PYTHON_VERSION=$1
 VENV_NAME="${PYTHON_VERSION}-test"
+echo "Preparing to test Python $PYTHON_VERSION with virtual environment $VENV_NAME"
 
 # Test pyenv
 echo "Testing that pyenv exists"
@@ -21,7 +21,7 @@ pyenv virtualenvs || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
 # Test virtualenv creation
 echo "Testing virtualenv creation"
 pyenv virtualenv-delete -f "$VENV_NAME" 2> /dev/null
-pyenv virtualenv "$PYTHON_VERSION" "$VENV_NAME" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+pyenv virtualenv -f "$PYTHON_VERSION" "$VENV_NAME" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
 pyenv virtualenvs
 
 # Test virtualenv activation

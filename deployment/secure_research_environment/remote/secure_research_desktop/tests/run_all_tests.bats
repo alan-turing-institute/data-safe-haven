@@ -12,16 +12,9 @@ get_full_python_version() {
 
 setup_python() {
     eval "$(pyenv init - --no-rehash)"
-    pyenv shell $(pyenv versions | grep "${1}." | sed -E 's|[^0-9\.]*([0-9\.]+).*|\1|')
+    pyenv shell "$(get_full_python_version $1)"
     run python --version
     assert_output --partial "${1}."
-}
-
-test_python_packages() {
-    setup_python "$1"
-    run python tests/test_packages_installed_python.py 2> /dev/null
-    assert_output --regexp 'All [0-9]+ packages are installed'
-    pyenv shell --unset
 }
 
 test_python_functionality() {
@@ -31,7 +24,14 @@ test_python_functionality() {
     pyenv shell --unset
 }
 
-test_python_package_repository() {
+test_python_packages() {
+    setup_python "$1"
+    run python tests/test_packages_installed_python.py 2> /dev/null
+    assert_output --regexp 'All [0-9]+ packages are installed'
+    pyenv shell --unset
+}
+
+test_python_repository() {
     setup_python "$1"
     run bash tests/test_repository_python.sh 2>&1
     assert_output --partial 'All packages installed successfully'
@@ -40,8 +40,9 @@ test_python_package_repository() {
 
 test_python_virtual_environments() {
     PYTHON_VERSION="$(get_full_python_version $1)"
-    run bash tests/test_virtual_environments_python.sh $PYTHON_VERSION 2>&1
-    assert_output --partial 'All tests passed for Python $PYTHON_VERSION'
+    # This script must run in interactive mode to ensure that pyenv setup commands are run
+    run bash -i tests/test_virtual_environments_python.sh $PYTHON_VERSION 2>&1
+    assert_output --partial "All tests passed for Python $PYTHON_VERSION"
 }
 
 # Julia
@@ -72,7 +73,7 @@ test_python_virtual_environments() {
     test_python_virtual_environments '3.8'
 }
 @test "Python package repository (3.8)" {
-    test_python_package_repository '3.8'
+    test_python_repository '3.8'
 }
 
 # Test Python 3.9
@@ -87,7 +88,7 @@ test_python_virtual_environments() {
     test_python_virtual_environments '3.9'
 }
 @test "Python package repository (3.9)" {
-    test_python_package_repository '3.9'
+    test_python_repository '3.9'
 }
 
 # Test Python 3.10
@@ -101,7 +102,7 @@ test_python_virtual_environments() {
     test_python_virtual_environments '3.10'
 }
 @test "Python package repository (3.10)" {
-    test_python_package_repository '3.10'
+    test_python_repository '3.10'
 }
 
 
