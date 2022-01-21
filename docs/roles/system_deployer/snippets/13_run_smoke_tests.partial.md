@@ -7,4 +7,7 @@ They are automatically uploaded to the SRD during the deployment step.
 - Open a terminal session
 - Enter the test directory using `cd /opt/tests`
 - Run `bats run_all_tests.bats` .
-- If all test results are expected you are done! Otherwise check the `README.md` in this folder for help diagnosing test failures.
+    - if any of the tests fail, check the `README.md` in this folder for help in diagnosing the issues
+- Copy `tests/test_jupyter.ipynb` to your home directory
+    - activate each of the available Python versions in turn
+    - run `jupyter notebook` in each case and check that you can run the notebook and that all versions and paths match throughout

@@ -12,13 +12,13 @@ TEST_INSTALL_PATH="${HOME}/test-repository-python"
 rm -rf "$TEST_INSTALL_PATH"
 python -m venv "$TEST_INSTALL_PATH"
 source "${TEST_INSTALL_PATH}/bin/activate"
-pip install --upgrade pip
+pip install --upgrade pip --quiet
 
 # Install sample packages to local user library
 OUTCOME=0
 for package in "${packages[@]}"; do
     echo "Attempting to install ${package}..."
-    if (pip install "$package"); then
+    if (pip install "$package" --quiet); then
         echo "... $package installation succeeded"
     else
         echo "... $package installation failed"

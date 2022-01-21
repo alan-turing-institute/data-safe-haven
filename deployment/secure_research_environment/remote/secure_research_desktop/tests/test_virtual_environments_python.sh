@@ -7,45 +7,63 @@ VENV_NAME="${PYTHON_VERSION}-test"
 echo "Preparing to test Python $PYTHON_VERSION with virtual environment $VENV_NAME"
 
 # Test pyenv
-echo "Testing that pyenv exists"
-which pyenv || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing that pyenv exists"
+echo -ne "[ ] ${body}\r"
+which pyenv > /dev/null 2>&1
+# if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
+if test $?; then echo -e "[x] ${body}"; else echo -e "[\xE2\x9C\x94] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test pyenv versions
-echo "Testing pyenv versions"
-pyenv versions || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing pyenv versions"
+echo -ne "[ ] ${body}\r"
+pyenv versions > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test pyenv virtualenvs
-echo "Testing pyenv virtualenvs"
-pyenv virtualenvs || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing pyenv virtualenvs"
+echo -ne "[ ] ${body}\r"
+pyenv virtualenvs > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test virtualenv creation
-echo "Testing virtualenv creation"
+body="Testing virtualenv creation"
+echo -ne "[ ] ${body}\r"
 pyenv virtualenv-delete -f "$VENV_NAME" 2> /dev/null
-pyenv virtualenv -f "$PYTHON_VERSION" "$VENV_NAME" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
-pyenv virtualenvs
+pyenv virtualenv -f "$PYTHON_VERSION" "$VENV_NAME" > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test virtualenv activation
-echo "Testing virtualenv activation"
-pyenv activate "$VENV_NAME" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing virtualenv activation"
+echo -ne "[ ] ${body}\r"
+pyenv activate "$VENV_NAME" > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test Python version
-echo "Testing Python version"
-test "$(python --version)" == "Python ${PYTHON_VERSION}" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing Python version"
+echo -ne "[ ] ${body}\r"
+test "$(python --version)" == "Python ${PYTHON_VERSION}" > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test virtualenv packages
-echo "Testing virtualenv packages"
+body="Testing virtualenv packages"
+echo -ne "[ ] ${body}\r"
 INSTALLED_PACKAGES=$(pip list --format=freeze | cut -d'=' -f1)
-test "$(echo "$INSTALLED_PACKAGES" | wc -w)" -eq 3 || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+test "$(echo "$INSTALLED_PACKAGES" | wc -w)" -eq 3 > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Test virtualenv package installation
-echo "Testing virtualenv package installation"
-pip install matplotlib
+body="Testing virtualenv package installation"
+echo -ne "[ ] ${body}\r"
+pip install matplotlib --quiet
 INSTALLED_PACKAGES=$(pip list --format=freeze | cut -d'=' -f1)
-test "$(echo "$INSTALLED_PACKAGES" | tr ' ' '\n' | grep "matplotlib")" == "matplotlib" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+test "$(echo "$INSTALLED_PACKAGES" | tr ' ' '\n' | grep "matplotlib")" == "matplotlib" > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Tear down a new virtual environment
-echo "Testing virtualenv deletion"
-pyenv virtualenv-delete -f "$VENV_NAME" || N_FAILED_TESTS=$((N_FAILED_TESTS + 1))
+body="Testing virtualenv deletion"
+echo -ne "[ ] ${body}\r"
+pyenv virtualenv-delete -f "$VENV_NAME" > /dev/null 2>&1
+if test $?; then echo -e "[\xE2\x9C\x94] ${body}"; else echo -e "[x] ${body}"; N_FAILED_TESTS=$((N_FAILED_TESTS + 1)); fi
 
 # Cleanup and print output
 if [ $N_FAILED_TESTS = 0 ]; then
