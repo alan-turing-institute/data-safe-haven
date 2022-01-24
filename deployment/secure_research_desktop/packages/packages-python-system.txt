@@ -1,4 +1,7 @@
 glances    # for system monitoring
 jill       # for installing Julia
 matplotlib # for PyPlot Julia package
+packaging  # for pyenv installation
+PyYAML     # for pyenv installation
+requests   # for pyenv installation
 shui       # for installing Spark/Hadoop

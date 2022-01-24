@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Specify a machine name to turn into an image. Ensure that the build script has completely finished before running this")]
     [string]$vmName
@@ -53,7 +53,7 @@ Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 Add-LogMessage -Level Info "Obtaining build status for candidate: $($vm.Name)..."
 $null = Invoke-RemoteScript -VMName $vm.Name -ResourceGroupName $config.srdImage.build.rg -Shell "UnixShell" -Script "python3 /opt/monitoring/analyse_build.py"
 Add-LogMessage -Level Warning "Please check the output of the build analysis script (above) before continuing. All steps should have completed with a 'SUCCESS' message."
-$confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
+$confirmation = $null
 while ($confirmation -ne "y") {
     if ($confirmation -eq "n") { exit 0 }
     $confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
@@ -71,6 +71,7 @@ ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /opt/build/deprovision_vm.sh | 
 if (-not $?) {
     Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
 }
+
 
 # Poll VM to see whether it has finished running
 # ----------------------------------------------

@@ -16,6 +16,7 @@ false_positive_list <- c("BiocManager", "clusterProfiler", "flowUtils", "GOSemSi
 
 # Test package with non-standard evaluation and append to the proper list
 test_package <- function(p) {
+    print(paste("Testing '", p, "' ...", sep=""))
     tryCatch(
         eval(parse(text = paste0("library(", p, ")"))),
         error = function(m) {

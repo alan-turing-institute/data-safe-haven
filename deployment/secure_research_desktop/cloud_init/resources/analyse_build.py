@@ -29,6 +29,10 @@ def log(timestamp, level, message):
     print(f"[{timestamp.strftime(r'%Y-%m-%d %H:%M:%S')}: {level:<7}] {message}")
 
 
+def mean(list_):
+    return sum(list_) / len(list_)
+
+
 def main():
     """Process log files"""
     # Load events from cloud init dump
@@ -110,7 +114,7 @@ def main():
     # Check system performance
     # ------------------------
     n_cores = multiprocessing.cpu_count()
-    mem_usage, cpu_usage = [], []
+    mem_usage, cpu_usage, mem_gb = [], [], 0
     with suppress(FileNotFoundError):
         with open("/opt/monitoring/performance_log.csv", "r") as system_log:
             for row in csv.DictReader(system_log):
@@ -120,23 +124,19 @@ def main():
                         break
                 mem_usage.append(100 * float(row["mem.used"]) / float(row["mem.total"]))
                 cpu_usage.append(100 - float(row["cpu.idle"]))
-    # Calculate total memory using the last row
-    try:
-        mem_gb = float(row["mem.total"]) / (1000 * 1000 * 1000)
-    except UnboundLocalError:
-        mem_gb = 0
+                mem_gb = max(mem_gb, float(row["mem.total"]) / (1000 * 1000 * 1000))
 
     timestamp = build_end_status[0] if build_end_status else datetime.now()
     with suppress(ZeroDivisionError):
         # Memory
         log(timestamp, "INFO", f"Memory available: {int(round(mem_gb)):d} GB")
-        mem_mean, mem_min, mem_max = sum(mem_usage) / len(mem_usage), min(mem_usage), max(mem_usage)
+        mem_mean, mem_min, mem_max = mean(mem_usage), min(mem_usage), max(mem_usage)
         log(timestamp, "INFO", f"..... mean usage: {mem_mean:>6.2f}% => {(mem_gb * mem_mean / 100):>4.1f} GB")
         log(timestamp, "INFO", f"...... min usage: {mem_min:>6.2f}% => {mem_gb * mem_min / 100:>4.1f} GB")
         log(timestamp, "INFO", f"...... max usage: {mem_max:>6.2f}% => {mem_gb * mem_max / 100:>4.1f} GB")
         # CPU
         log(timestamp, "INFO", f"CPU available: {int(n_cores):d} cores")
-        cpu_mean, cpu_min, cpu_max = sum(cpu_usage) / len(cpu_usage), min(cpu_usage), max(cpu_usage)
+        cpu_mean, cpu_min, cpu_max = mean(cpu_usage), min(cpu_usage), max(cpu_usage)
         log(timestamp, "INFO", f"..... mean usage: {cpu_mean:>6.2f}% => {(n_cores * cpu_mean / 100):>4.1f} cores")
         log(timestamp, "INFO", f"...... min usage: {cpu_min:>6.2f}% => {(n_cores * cpu_min / 100):>4.1f} cores")
         log(timestamp, "INFO", f"...... max usage: {cpu_max:>6.2f}% => {(n_cores * cpu_max / 100):>4.1f} cores")
@@ -144,11 +144,11 @@ def main():
     # Check python installations
     # --------------------------
     with suppress(FileNotFoundError):
-        for fname in glob.glob("/opt/monitoring/python-safety-check*.json"):
+        for fname in glob.glob("/opt/monitoring/python-*-safety-check.json"):
             with open(fname, "r") as f_safety_check:
                 packages = json.load(f_safety_check)
             if packages:
-                python_version = fname.split("-")[3].replace(".json", "")
+                python_version = fname.split("-")[1]
                 log(timestamp, "WARNING", f"Safety check found problems with Python {python_version}")
             for package in packages:
                 print(f"    {package[0]} [{package[2]}] is affected by issue {package[4]} (for versions {package[1]})")

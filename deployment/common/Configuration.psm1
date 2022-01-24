@@ -78,7 +78,7 @@ function Get-ShmConfig {
         rgPrefix            = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
-        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_SH"
+        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
     }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
@@ -127,40 +127,47 @@ function Get-ShmConfig {
         location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
             rg          = "$($shm.vmImagesRgPrefix)_BOOT_DIAGNOSTICS"
-            accountName = "buildimgbootdiags${srdImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "vmimagesbootdiag${srdImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build           = [ordered]@{
             rg     = "$($shm.vmImagesRgPrefix)_BUILD_CANDIDATES"
             nsg    = [ordered]@{
-                name               = "NSG_IMAGE_BUILD"
+                name               = "NSG_VMIMAGES_BUILD_CANDIDATES"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
-                rules              = "vm-images-nsg-rules-build.json"
+                rules              = "vmimages-nsg-rules-build-candidates.json"
             }
             vnet   = [ordered]@{
-                name = "VNET_IMAGE_BUILD"
+                name = "VNET_VMIMAGES"
                 cidr = "10.48.0.0/16"
             }
             subnet = [ordered]@{
-                name = "ImageBuildSubnet"
+                name = "BuildCandidatesSubnet"
                 cidr = "10.48.0.0/24"
             }
-            # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
+            # Installation of R packages (and some Python builds) is parallelisable
             # We want a compute-optimised VM, since per-core performance is the bottleneck
+            # Standard_E2_v3  => 2 cores; 16GB RAM; 2.3 GHz; £0.1163/hr
+            # Standard_F4s_v2 => 4 cores;  8GB RAM; 3.7 GHz; £0.1506/hr
+            # Standard_D4_v3  => 4 cores; 16GB RAM; 2.4 GHz; £0.1730/hr
+            # Standard_E4_v3  => 4 cores; 32GB RAM; 2.3 GHz; £0.2326/hr
+            # Standard_F8s_v2 => 8 cores; 16GB RAM; 3.7 GHz; £0.3012/hr
+            # Standard_H8     => 8 cores; 56GB RAM; 3.6 GHz; £0.4271/hr
+            # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
                 diskSizeGb = 128
-                size       = "Standard_F4s_v2"
+                size       = "Standard_F8s_v2"
             }
         }
         gallery         = [ordered]@{
-            rg  = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
-            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
+            rg   = "$($shm.vmImagesRgPrefix)_GALLERY"
+            name = "DATA_SAFE_HAVEN_SHARED_IMAGES"
         }
         images          = [ordered]@{
-            rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
+            rg = "$($shm.vmImagesRgPrefix)_STORAGE"
         }
         keyVault        = [ordered]@{
             rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
-            name = "kv-shm-$($shm.id)-srd-imgs".ToLower() | Limit-StringLength -MaximumLength 24
+            name = "kv-shm-$($shm.id)-images".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_NETWORKING"

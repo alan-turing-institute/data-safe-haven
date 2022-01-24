@@ -84,7 +84,7 @@
         "direction": "Outbound",
         "priority": 2500,
         "protocol": "*",
-        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {

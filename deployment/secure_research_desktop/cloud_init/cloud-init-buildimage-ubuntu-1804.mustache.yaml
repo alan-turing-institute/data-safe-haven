@@ -42,7 +42,7 @@ apt:
 
     qgis.list:
       source: "deb https://qgis.org/ubuntu bionic main"
-      keyid: 39877635093F2656019711FAF7E06F06199EF2F2  # QGIS Archive Automatic Signing Key (2020) <qgis-developer@lists.osgeo.org>
+      keyid: 2445D6B254DAC452A498989E46B5721DBBD2996A  # QGIS Archive Automatic Signing Key (2021) <qgis-developer@lists.osgeo.org>
 
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
@@ -85,10 +85,6 @@ write_files:
     permissions: "0500"
     content: |
       {{download_and_install_deb.sh}}
-  - path: "/opt/build/install_python_version.sh"
-    permissions: "0500"
-    content: |
-      {{install_python_version.sh}}
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
@@ -101,26 +97,26 @@ write_files:
     permissions: "0444"
     content: |
       {{packages-r-cran.list}}
-  - path: "/opt/build/python-requirements-py37.txt"
+  - path: "/opt/build/packages/packages-python-system.txt"
     permissions: "0444"
     content: |
-      {{python-requirements-py37.txt}}
-  - path: "/opt/build/python-requirements-py38.txt"
-    permissions: "0444"
+      {{packages-python-system.txt}}
+  - path: "/opt/build/pyenv/build_requirements.py"
+    permissions: "0500"
     content: |
-      {{python-requirements-py38.txt}}
-  - path: "/opt/build/python-requirements-py39.txt"
-    permissions: "0444"
+      {{pyenv_build_requirements.py}}
+  - path: "/opt/build/pyenv/install.sh"
+    permissions: "0500"
     content: |
-      {{python-requirements-py39.txt}}
-  - path: "/opt/build/python-pyproject-template.toml"
+      {{pyenv_install.sh}}
+  - path: "/opt/build/pyenv/packages-python.yaml"
     permissions: "0400"
     content: |
-      {{python_pyproject_template.toml}}
-  - path: "/opt/build/python-system-packages.txt"
-    permissions: "0444"
+      {{packages-python.yaml}}
+  - path: "/opt/build/pyenv/pyproject_template.toml"
+    permissions: "0400"
     content: |
-      {{python-system-packages.txt}}
+      {{pyenv_pyproject_template.toml}}
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
@@ -167,35 +163,47 @@ snap:
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
-    {{#shm.time.ntp.serverAddresses}}
+    {{#time.ntp.serverAddresses}}
     - {{.}}
-    {{/shm.time.ntp.serverAddresses}}
+    {{/time.ntp.serverAddresses}}
 
 # List of commands to run using `/bin/sh`
 # When changing these lines try to ensure that everything is checked as close as possible to the point when it is installed/configured.
 # If any of the installation/configuration checks fail then end the cloud-init process immediately by calling `exit 1`.
 # This allows us to (i) not waste time completing a build once a step has failed and (ii) easily tell when and why a build failed using the analyse_build.py script.
 runcmd:
+  - |
+    # Utility function to send a message to stderr then return an error code
+    die() {
+      echo "$1" >&2
+      exit "${2-1}"
+    }
   - sleep 10  # ensure that run commands are cleanly time-separated from other cloud-init commands
-  - echo ">=== $(date +%s) Installing monitoring tools ===<"
+  - echo ">=== $(date +%s) Preparing system for installation ===<"
   # Install python packages used in the rest of the build
   - echo "Installing python packages..."
-  - pip3 install -r /opt/build/python-system-packages.txt
+  - pip3 install --upgrade -r /opt/build/packages/packages-python-system.txt
+  - pip3 list --format columns
   # Log system performance during the installation and record it each minute
   - echo "Setting up glances..."
   - nohup glances --stdout-csv now,mem.used,mem.total,cpu.idle --time 30 > /opt/monitoring/performance_log.csv &
   # Suppress apt prompts and warning messages
   - echo "Suppressing apt prompts..."
   - export DEBIAN_FRONTEND=noninteractive
+  # Add an entry for PATH to default bashrc
+  - echo "Adding PATH setting to default bashrc"
+  - echo '# Set path' >> /etc/bash.bashrc
+  - echo "export PATH=$PATH" >> /etc/bash.bashrc
+  - echo '' >> /etc/bash.bashrc
+
+  - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
   # Add snap to path
   - echo "Adding snap to path..."
   - PATH=$PATH:/snap/bin
-
-  - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
   # Microsoft ODBC tools
   - echo "Installing Microsoft ODBC tools..."
+  - sleep 10  # wait for possible dpkg locks
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
   - echo "export DOTNET_CLI_TELEMETRY_OPTOUT=1" >> /etc/bash.bashrc
@@ -245,17 +253,18 @@ runcmd:
   - rm -rf $PYENV_ROOT 2> /dev/null
   - PATH="$PYENV_ROOT/bin:$PATH"  # NB. pyenv needs to be at the beginning of the path so that it can override other python versions
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+  - pyenv doctor || die "Could not configure pyenv!"
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
   # Install VSCode extensions
-  - echo ">=== Install VSCode extensions... ===<"
+  - echo "Install VSCode extensions..."
   - code --install-extension ms-python.python
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
-  - wget https://cocalc.com/img/cocalc-icon.svg -O /tmp/cocalc-icon.svg
-  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png
-  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png
-  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png  # this should give a 1024x1024 png
+  - wget https://raw.githubusercontent.com/sagemathinc/cocalc/master/src/packages/assets/cocalc-icon.svg -O /tmp/cocalc-icon.svg || die "Could not find CoCalc icon!"
+  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png || die "Could not convert CoCalc icon!" # this should give a 1024x1024 png
+  - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png || die "Could not find CodiMD icon!"
+  - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png || die "Could not find GitLab icon!"
 
   # Manually update ClamAV signature database
   - echo ">=== $(date +%s) Updating ClamAV database ===<"
@@ -307,49 +316,46 @@ runcmd:
   - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; else echo "... successfully installed Julia"; fi
   # Add the Julia kernel to Jupyter
   - mv /root/.local/share/jupyter ${JULIA_BASE_DIR}/share
-  - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || (echo "Could not install Julia kernel!" && exit 1)
+  - jupyter kernelspec install ${JULIA_BASE_DIR}/share/jupyter/kernels/julia-* || die "Could not install Julia kernel!"
 
   # Install python versions
-  - export PYTHON_VERSIONS="$(ls /opt/build/python-requirements-py*txt | rev | cut -d '-' -f 1 | rev | sed 's/py//; s/\.txt//')"
+  - /opt/build/pyenv/build_requirements.py /opt/build/pyenv/packages-python.yaml
   - |
-    for python_version in $PYTHON_VERSIONS; do
-      # Create simple package list from requirements file
-      sed 's/<.*//; s/=.*//; s/>.*//' /opt/build/python-requirements-py${python_version}.txt > /opt/build/packages/packages-python-pypi-${python_version}.list
-      chmod 0444 /opt/build/packages/packages-python-pypi-${python_version}.list
-      # Install python versions
-      /opt/build/install_python_version.sh py${python_version} || (echo "Failed to install Python ${python_version}" && exit 1)
+    for PYTHON_VERSION in $(ls /opt/build/python-*-requirements.txt | cut -d '-' -f 2 | sort -V); do
+      /opt/build/pyenv/install.sh $PYTHON_VERSION || die "Could not install Python ${PYTHON_VERSION}!";
     done
-  - echo "Installed python versions"
-  - du --si -d 1 /opt/pyenv/versions
-  # Add pyenv to global settings
-  - echo "Configuring pyenv global settings"
+
+  # Configure pyenv: use a local PYENV_ROOT with the global versions symlinked into it
+  - echo ">=== $(date +%s) Configuring pyenv ===<"
+  - echo "Installed python versions:"
+  - du --si -d 1 ${PYENV_ROOT}/versions
+  - export PYENV_LOCAL_ROOT='${HOME}/.pyenv'
+  - echo "Configuring pyenv initialisation"
   - echo '# Set up pyenv' >> /etc/bash.bashrc
-  - echo "export PYENV_ROOT=\"$PYENV_ROOT\"" >> /etc/bash.bashrc
-  - echo "PATH=\"$PYENV_ROOT/bin:$PATH\"" >> /etc/bash.bashrc
+  - echo "export PYENV_ROOT=\"${PYENV_LOCAL_ROOT}\"" >> /etc/bash.bashrc
+  - echo "for version in $(ls ${PYENV_ROOT}/versions | xargs); do [ -d \"${PYENV_LOCAL_ROOT}/versions/\${version}\" ] || (mkdir -p ${PYENV_LOCAL_ROOT}/versions/\${version} && ln -s ${PYENV_ROOT}/versions/\${version}/* ${PYENV_LOCAL_ROOT}/versions/\${version}); done" >> /etc/bash.bashrc
+  # Setup pyenv executables
   - echo 'eval "$(pyenv init --path)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv init - --no-rehash)"' >> /etc/bash.bashrc
   - echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/bash.bashrc
-  - echo "pyenv global $(ls /opt/pyenv/versions/ | sort -V | tail -n 1)" >> /etc/bash.bashrc
-  # Make the global environment setting file live in each user's home directory
-  - sed -i 's|PYENV_VERSION_FILE=.*|PYENV_VERSION_FILE=${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-global
-  - sed -i 's|${PYENV_ROOT}/version|${HOME}/.pyenv_version|' /opt/pyenv/libexec/pyenv-version-file
-  # To ensure site-packages can be used but not altered give 'other' the same permissions as 'owner' on the pyenv directory but remove write access
-  # Finally, make the shims directory writeable so that users can create new shims
-  - echo "Updating ${PYENV_ROOT} permissions"
-  - chmod -R o=u,o-w ${PYENV_ROOT}
-  - chmod go+w /opt/pyenv/shims
-  # Mark the system Python kernel as not to be used
+  - echo "pyenv rehash" >> /etc/bash.bashrc
+  - echo "pyenv global $(ls ${PYENV_ROOT}/versions/ | sort -V | tail -n 2 | head -n 1)" >> /etc/bash.bashrc
+  # Create a centralised Python shim for use by Jupyter
+  - echo '#!/usr/bin/env bash' > /opt/pyenv/bin/python-for-jupyter
+  - echo 'exec "$(which python)" "$@"' >> /opt/pyenv/bin/python-for-jupyter
+  - chmod ugo+x /opt/pyenv/bin/python-for-jupyter
+  # Add a Jupyter kernel called 'python3' which will overwrite the native kernel
+  - python3 -m ipykernel install --name "python3" --display-name "Python 3 (active version)"
   - |
-    sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
-  # Add the new Python kernels to Jupyter
-  - |
-    for python_version in $PYTHON_VERSIONS; do
-      jupyter kernelspec install /opt/pyenv/versions/*/share/jupyter/kernels/py${python_version} || (echo "Could not install Python $python_version kernel!" && exit 1)
-    done
+    KERNEL_PATH="/usr/local/share/jupyter/kernels/python3/kernel.json"
+    if [ -e "${KERNEL_PATH}" ]; then
+      python3 -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '/opt/pyenv/bin/python-for-jupyter'; kernel['display_name'] = 'Python 3 (active version)'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
+    fi
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Installing R packages ===<"
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
+  - echo '# Set up RStudio' >> /etc/bash.bashrc
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
@@ -368,7 +374,7 @@ runcmd:
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
-  - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || (echo "Could not install R kernel!" && exit 1)
+  - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || die "Could not install R kernel!";
 
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"
@@ -376,16 +382,15 @@ runcmd:
   - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
   # Set PATH to the current working version which contains all installed packages
-  # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  # Append ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
   # We do this at the end of the script so that
   # - we know this is the PATH that worked when we checked for each package
   # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
-  - if [ ! "$(grep ^PATH= /etc/bash.bashrc)" ]; then echo "PATH=" >> /etc/bash.bashrc; fi
-  - sed -i "s|^PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
+  - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
-  - python3 /opt/build/check_installation.py || exit 1
+  - python3 /opt/build/check_installation.py || die "Installation check failed!";
 
   # Clean up any build artifacts
   - echo ">=== $(date +%s) Cleaning up the build environment ===<"

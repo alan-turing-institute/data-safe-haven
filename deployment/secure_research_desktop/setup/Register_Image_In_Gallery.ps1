@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Specify an existing VM image to add to the gallery.")]
     [string]$imageName,
@@ -23,7 +23,7 @@ $null = Set-AzContext -SubscriptionId $config.srdImage.subscription -ErrorAction
 
 # Useful constants
 # ----------------
-$supportedImages = @("ComputeVM-Ubuntu")
+$supportedImages = @("SecureResearchDesktop-Ubuntu")
 
 
 # Ensure that gallery resource group exists
@@ -33,22 +33,22 @@ $null = Deploy-ResourceGroup -Name $config.srdImage.gallery.rg -Location $config
 
 # Ensure that image gallery exists
 # --------------------------------
-$null = Get-AzGallery -Name $config.srdImage.gallery.sig -ResourceGroupName $config.srdImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+$null = Get-AzGallery -Name $config.srdImage.gallery.name -ResourceGroupName $config.srdImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
-    Add-LogMessage -Level Info "Creating image gallery $($config.srdImage.gallery.sig)..."
-    $null = New-AzGallery -GalleryName $config.srdImage.gallery.sig -ResourceGroupName $config.srdImage.gallery.rg -Location $config.srdImage.location
+    Add-LogMessage -Level Info "Creating image gallery $($config.srdImage.gallery.name)..."
+    $null = New-AzGallery -GalleryName $config.srdImage.gallery.name -ResourceGroupName $config.srdImage.gallery.rg -Location $config.srdImage.location
 }
 
 
 # Set up list of image definitions we want to support
 # ---------------------------------------------------
 foreach ($supportedImage in $supportedImages) {
-    $null = Get-AzGalleryImageDefinition -GalleryName $config.srdImage.gallery.sig -ResourceGroupName $config.srdImage.gallery.rg -Name $supportedImage -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzGalleryImageDefinition -GalleryName $config.srdImage.gallery.name -ResourceGroupName $config.srdImage.gallery.rg -Name $supportedImage -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "Creating image definition $supportedImage..."
         $offer = ($supportedImage -Split "-")[0]
         $sku = ($supportedImage -Split "-")[1]
-        $null = New-AzGalleryImageDefinition -GalleryName $config.srdImage.gallery.sig -ResourceGroupName $config.srdImage.gallery.rg -Name $supportedImage -Publisher Turing -Offer $offer -Sku $sku -Location $config.srdImage.location -OsState generalized -OsType Linux
+        $null = New-AzGalleryImageDefinition -GalleryName $config.srdImage.gallery.name -ResourceGroupName $config.srdImage.gallery.rg -Name $supportedImage -Publisher Turing -Offer $offer -Sku $sku -Location $config.srdImage.location -OsState generalized -OsType Linux
     }
 }
 
@@ -82,7 +82,7 @@ if (-not ($imageDefinition -and $majorVersion -and $minorVersion)) {
 Add-LogMessage -Level Info "[ ] Determining appropriate image version..."
 if (-not $imageVersion) {
     $baseImageVersion = "${majorVersion}.${minorVersion}.$(Get-Date -Format "yyyyMMdd")"
-    $mostRecentImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $config.srdImage.gallery.rg -GalleryName $config.srdImage.gallery.sig -GalleryImageDefinitionName $imageDefinition | Where-Object { $_.Name -Like "${baseImageVersion}*" } | ForEach-Object { $_.Name } | Sort-Object -Descending | Select-Object -First 1
+    $mostRecentImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $config.srdImage.gallery.rg -GalleryName $config.srdImage.gallery.name -GalleryImageDefinitionName $imageDefinition | Where-Object { $_.Name -Like "${baseImageVersion}*" } | ForEach-Object { $_.Name } | Sort-Object -Descending | Select-Object -First 1
     if ($mostRecentImageVersion) {
         $imageVersion = "${majorVersion}.${minorVersion}.$([int]($mostRecentImageVersion.Split('.')[2]) + 1)"
     } else {
@@ -105,7 +105,7 @@ Add-LogMessage -Level Warning "Please note, this may take around one hour to com
 $null = New-AzGalleryImageVersion `
     -GalleryImageDefinitionName $imageDefinition `
     -GalleryImageVersionName "$imageVersion" `
-    -GalleryName $config.srdImage.gallery.sig `
+    -GalleryName $config.srdImage.gallery.name `
     -ResourceGroupName $config.srdImage.gallery.rg `
     -Location $config.srdImage.location `
     -TargetRegion $targetRegions  `
@@ -121,10 +121,10 @@ $resource = Get-AzResource -ResourceGroupName $config.srdImage.gallery.rg | Wher
 $null = New-AzTag -ResourceId $resource.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
-# Create the image as a new version of the appropriate existing registered version
-# --------------------------------------------------------------------------------
+# List replication results
+# ------------------------
 Add-LogMessage -Level Info "Result of replication..."
-foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.srdImage.gallery.rg -GalleryName $config.srdImage.gallery.sig -GalleryImageDefinitionName $imageDefinition -Name "$imageVersion") {
+foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.srdImage.gallery.rg -GalleryName $config.srdImage.gallery.name -GalleryImageDefinitionName $imageDefinition -Name "$imageVersion") {
     Add-LogMessage -Level Info ($imageStatus | Out-String)
 }
 

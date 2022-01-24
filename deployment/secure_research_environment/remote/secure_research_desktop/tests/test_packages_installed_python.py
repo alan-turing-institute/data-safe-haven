@@ -37,7 +37,7 @@ IMPORTABLE_NAMES = {
     "Pillow": "PIL",
     "protobuf": "google.protobuf",
     "pyshp": "shapefile",
-    "pystan": ("stan" if int(versions["pystan"][0]) >= 3 else "pystan"),
+    "pystan": ("stan" if int(versions.get("pystan", "0")[0]) >= 3 else "pystan"),
     "python-dateutil": "dateutil",
     "PyWavelets": "pywt",
     "scikit-image": "skimage",
@@ -59,7 +59,6 @@ def get_python_version():
     v_info = sys.version_info
     return {
         "full": "{}.{}.{}".format(v_info.major, v_info.minor, v_info.micro),
-        "short": "{}{}".format(v_info.major, v_info.minor),
     }
 
 
@@ -82,6 +81,7 @@ def get_missing_packages(packages):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warning, missing = [], []
     for package in packages:
+        print(f"Testing '{package}' ...")
         # Some packages are not importable so we test for the executable instead
         if package in NON_IMPORTABLE_PACKAGES.keys():
             if not shutil.which(NON_IMPORTABLE_PACKAGES[package]):
@@ -119,11 +119,11 @@ def test_packages():
             os.path.dirname(os.path.abspath(__file__)),
             "..",
             "package_lists",
-            "packages-python-pypi*",
+            "packages-python-*",
         )
     )
     matching_package_lists = [
-        _list for _list in pypi_package_lists if version["short"] in _list
+        _list for _list in pypi_package_lists if version["full"] in _list
     ]
     if matching_package_lists:
         with open(matching_package_lists[0], "r") as f_packages:
