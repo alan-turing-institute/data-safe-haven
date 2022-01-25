@@ -3,7 +3,7 @@
     "tier": "3",
     "shmId": "testc",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-    "ipPrefix": "10.151.0",
+    "ipPrefix": "10.163.0",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
     "computeVmImage": {
