@@ -24,7 +24,7 @@ write_files:
   - path: "/opt/nginx/guacamole.conf"
     permissions: "0400"
     content: |
-      {{guacamole_nginx_guacamole.conf}}
+      {{guacamole_nginx_guacamole.mustache.conf}}
 
   - path: "/opt/postgresql/scripts/db_update.sql"
     permissions: "0444"
