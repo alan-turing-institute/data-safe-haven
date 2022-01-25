@@ -57,13 +57,8 @@ write_files:
   - path: "/etc/jaas.conf"
     permissions: "0444"
     content: |
-      pgjdbc {
-      com.sun.security.auth.module.Krb5LoginModule required
-          useTicketCache=true
-          debug=true
-          renewTGT=true
-          doNotPrompt=true;
-      };
+      {{jaas.conf}}
+
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
@@ -147,23 +142,12 @@ write_files:
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     permissions: "0644"
     content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=Jupyter Notebook
-      Exec=jupyter notebook
-      Icon=/usr/lib/python3/dist-packages/notebook/static/base/images/favicon.ico
-      Categories=Utility;TextEditor;Development;IDE;
+      {{jupyter_notebook.desktop}}
+
   - path: "/usr/share/applications/pycharm.desktop"
     permissions: "0644"
     content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=PyCharm
-      Exec=/snap/bin/pycharm-community
-      Icon=/snap/pycharm-community/current/meta/gui/icon.png
-      Categories=Utility;TextEditor;Development;IDE;
+      {{pycharm.desktop}}
 
 # List of packages to install with apt-get
 packages:
