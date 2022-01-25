@@ -165,7 +165,7 @@ All packages installed successfully
 
 To test database connectivity you will need to know the connection details and can then run something like:
 
-```
+```none
 > python tests/test_databases_python.py --db-type mssql --db-name master --port 1433 --server-name MSSQL-T3MSRDS.testc.dsgroupdev.co.uk
 ```
 
@@ -270,7 +270,7 @@ All packages installed successfully
 
 To test database connectivity you will need to know the connection details and can then run something like:
 
-```
+```none
 > Rscript tests/test_databases_R.R mssql master 1433 MSSQL-T3MSRDS.testc.dsgroupdev.co.uk
 ```
 
