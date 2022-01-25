@@ -624,7 +624,7 @@ function Get-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
                     nsg  = [ordered]@{
                         name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
-                        rules = "sre-nsg-rules-compute-deployment.json"
+                        rules = "sre-nsg-rules-deployment.json"
                     }
                 }
                 remoteDesktop = [ordered]@{ # note that further details are added below
