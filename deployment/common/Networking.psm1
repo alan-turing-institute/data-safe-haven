@@ -4,6 +4,78 @@ Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Create network security group rule if it does not exist
+# -------------------------------------------------------
+function Add-NetworkSecurityGroupRule {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
+        $NetworkSecurityGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
+        [string]$Description,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
+        $Priority,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
+        $Direction,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
+        [string]$Access,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
+        [string]$Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        $SourceAddressPrefix,
+        [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
+        $SourcePortRange,
+        [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        $DestinationAddressPrefix,
+        [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
+        $DestinationPortRange,
+        [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
+        [switch]$VerboseLogging = $false
+    )
+    try {
+        if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
+        $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if ($notExists) {
+            if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
+            $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                    -Access "$Access" `
+                                                    -Description "$Description" `
+                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                    -DestinationPortRange $DestinationPortRange `
+                                                    -Direction "$Direction" `
+                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                    -Priority $Priority `
+                                                    -Protocol "$Protocol" `
+                                                    -SourceAddressPrefix $SourceAddressPrefix `
+                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+            if ($?) {
+                if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
+            } else {
+                if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
+            }
+        } else {
+            if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
+            $null = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
+                                                    -Access "$Access" `
+                                                    -Description "$Description" `
+                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                    -DestinationPortRange $DestinationPortRange `
+                                                    -Direction "$Direction" `
+                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                    -Priority $Priority `
+                                                    -Protocol "$Protocol" `
+                                                    -SourceAddressPrefix $SourceAddressPrefix `
+                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
+        }
+    } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
+        Add-LogMessage -Level Fatal $_.Exception.Message.Split("`n")[0]
+    }
+
+}
+Export-ModuleMember -Function Add-NetworkSecurityGroupRule
+
+
 # Add a VM to a domain
 # --------------------
 function Add-WindowsVMtoDomain {
