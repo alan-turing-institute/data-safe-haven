@@ -33,15 +33,14 @@ packages:
 # NB. Since write_files runs before user creation, only pre-existing users can be assigned as file owners
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
-    owner: root:root
     permissions: "0600"
+
   - path: "/home/mirrordaemon/package_allowlist.txt"
-    owner: root:root
     permissions: "0600"
     content: |
       # PACKAGE_ALLOWLIST
+
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
-    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -61,8 +60,8 @@ write_files:
           ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
           echo "[PushToInternal] Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee >(logger -t SafeHaven)
       done
+
   - path: "/home/mirrordaemon/pull_from_internet.sh"
-    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -104,8 +103,8 @@ write_files:
       fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "[PullFromInternet] Finished pulling from the internet after $ELAPSED" | tee >(logger -t SafeHaven)
+
   - path: "/home/mirrordaemon/pull_then_push.sh"
-    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -138,25 +137,25 @@ runcmd:
   - export DEBIAN_FRONTEND=noninteractive
 
   # Upgrade installation then clean up
-  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - echo ">=== Upgrade and clean up apt-get packages... ===<"
   - apt-get -y upgrade
   - apt-get clean
 
   # Set up and partition data disk
-  - echo "*** Setting up local disk... ***"
+  - echo ">=== Setting up local disk... ===<"
   - mkdir -p /datadrive/mirrordaemon/www/cran
   - ls -alh /datadrive
 
   # Schedule regular mirroring jobs
-  - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
+  - echo ">=== Adding internal update (rsync) job to crontab (2am each day)... ===<"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
-  - echo "*** Adding external update (rsync from CRAN) job to crontab (every 6 hours)... ***"
+  - echo ">=== Adding external update (rsync from CRAN) job to crontab (every 6 hours)... ===<"
   - echo "0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
   # Schedule update job on each boot
-  - echo "*** Schedule both mirror update jobs for each boot... ***"
+  - echo ">=== Schedule both mirror update jobs for each boot... ===<"
   - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
@@ -167,13 +166,13 @@ runcmd:
   - ls -alh ~mirrordaemon
 
   # Generate SSH keys for connecting to the internal mirror
-  - echo "*** Generating SSH keys for connecting to the internal mirror"
+  - echo ">=== Generating SSH keys for connecting to the internal mirror... ===<"
   - cd /home/mirrordaemon/.ssh
   - sudo -u mirrordaemon ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
   - ls -alh ~mirrordaemon/.ssh
 
   # Print out some diagnostic information
-  - echo "*** This server is currently aware of internal mirrors at the following locations ***"
+  - echo ">=== This server is currently aware of internal mirrors at the following locations... ===<"
   - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
 
 

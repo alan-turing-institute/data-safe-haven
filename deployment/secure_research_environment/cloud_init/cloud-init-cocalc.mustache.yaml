@@ -166,16 +166,17 @@ runcmd:
   - mkdir -p /data/cocalc
   - ls -alh /data/
 
-  # Ensure that Docker is running
-  - echo ">=== Current Docker status... ===<"
-  - systemctl start docker
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker
+  - systemctl start docker
+  - sleep 1m
   - systemctl status docker
   - docker --version
   - docker-compose --version
 
   # Set up the cocalcdaemon user
-  - echo ">=== Configuring cocalcdaemon user ... ===<"
+  - echo ">=== Configuring cocalcdaemon user... ===<"
   - groupadd docker 2> /dev/null
   - usermod -aG docker cocalcdaemon
   - newgrp docker
@@ -183,7 +184,7 @@ runcmd:
   - ls -alh /opt/cocalc
 
   # Schedule mounting of data volume, allowing non-root users to specify 'allow_other'
-  - echo ">=== Configure ingress mount ... ===<"
+  - echo ">=== Configure ingress mount... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
   - echo "user_allow_other" >> /etc/fuse.conf.tmp
   - mv /etc/fuse.conf.tmp /etc/fuse.conf

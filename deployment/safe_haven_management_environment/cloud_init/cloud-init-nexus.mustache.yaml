@@ -10,7 +10,6 @@ packages:
 
 write_files:
   - path: "/opt/configuration/docker-compose.yaml"
-    owner: root:root
     permissions: "0400"
     content: |
       ---
@@ -25,7 +24,6 @@ write_files:
             - /nexus-data:/nexus-data
           restart: always
   - path: "/opt/configuration/configure-nexus.py"
-    owner: root:root
     permissions: "0500"
     content: |
       {{configure_nexus.py}}
@@ -44,23 +42,30 @@ ntp:
     {{/time.ntp.serverAddresses}}
 
 runcmd:
-  # Ensure that Docker will run on restart
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker
   - systemctl start docker
   - sleep 1m
   - systemctl status docker
+  - docker --version
+  - docker-compose --version
+
   # Create directory for Nexus data that is owned by the correct user inside the Docker container
-  - echo "Creating Nexus data directory"
+  - echo ">=== Creating Nexus data directory... ===<"
   - mkdir /nexus-data
   - chown -R 200:200 /nexus-data
+
   # Set up the Nexus container
-  - echo "Creating Nexus container"
+  - echo ">=== Creating Nexus container... ===<"
   - docker-compose -f /opt/configuration/docker-compose.yaml up -d
+
   # Give Nexus some time to initialise
-  - echo "Waiting for Nexus to initialise (3 minutes)"
+  - echo ">=== Waiting for Nexus to initialise (3 minutes)... ===<"
   - sleep 3m
+
   # Configure Nexus
-  - echo "Configuring Nexus"
+  - echo ">=== Configuring Nexus... ===<"
   - python3 /opt/configuration/configure-nexus.py --path /nexus-data --admin_password {{{nexus.adminPassword}}} --tier {{nexus.tier}}
 
 power_state:

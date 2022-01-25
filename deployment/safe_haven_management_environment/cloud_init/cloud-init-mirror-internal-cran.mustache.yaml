@@ -30,7 +30,6 @@ packages:
 
 write_files:
   - path: /var/local/cran-mirror-apache.conf
-    owner: root:root
     permissions: 0644
     content: |
       <VirtualHost *:80>

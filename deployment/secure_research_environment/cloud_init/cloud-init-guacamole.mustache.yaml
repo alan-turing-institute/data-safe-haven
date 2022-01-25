@@ -94,10 +94,11 @@ runcmd:
   - systemctl start auditd
   - systemctl enable auditd
 
-  # Ensure that Docker is running
-  - echo ">=== Current Docker status... ===<"
-  - systemctl start docker
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker
+  - systemctl start docker
+  - sleep 1m
   - systemctl status docker
   - docker --version
   - docker-compose --version
@@ -129,10 +130,12 @@ runcmd:
   - ls -alh /opt/postgresql/scripts/db_init.sql
   - docker-compose -f /opt/guacamole/docker-compose.yaml exec -T postgres psql -U guacamole -f /scripts/db_init.sql
 
-  # Add LDAP users with pg-ldap-sync and schedule a cronjob
+  # Add initial set of LDAP users with pg-ldap-sync
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   # Run the initial update and schedule a sync every 5 minutes
   - /opt/postgresql/synchronise_database.sh
+
+  # Schedule a sync every 5 minutes
   - echo ">=== Scheduling database sync every 5 minutes... ===<"
   - echo "*/5 * * * * root /opt/postgresql/synchronise_database.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
