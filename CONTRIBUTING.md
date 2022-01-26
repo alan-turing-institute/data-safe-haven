@@ -91,11 +91,11 @@ We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-
 
 This means that:
 
-- checking out the `main` branch, which is the default branch of the repository will give you the latest tagged release
-- the `develop` branch will contain the latest cutting-edge code that has not yet made it into a release
+- checking out the `stable` branch, will give you the latest tagged release
+- the `develop` branch, which is the default branch of the repository, contains the latest cutting-edge code that has not yet made it into a release
 - releases are made by branching from `develop` into a branch called `release-<version name>`
   - deployment is tested from this release and any necessary integration changes are made on this branch
-  - the branch is then merged into `main` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
+  - the branch is then merged into `stable` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
 - we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
 ### Discussions vs Issues
@@ -189,7 +189,7 @@ So if you see a 404 page and you're confident you have the correct url, go back 
 
 To contribute to the codebase you'll need to submit a **pull request**.
 
-If you're updating the code or other documents in the main repository, the following steps are a guide to help you contribute in a way that will be easy for everyone to review and accept with ease :sunglasses:.
+If you're updating the code or other documents in the repository, the following steps are a guide to help you contribute in a way that will be easy for everyone to review and accept with ease :sunglasses:.
 
 #### 1. Make sure there is an issue for this that is clear about what work you're going to do
 
@@ -209,7 +209,7 @@ If you feel tempted to "branch out" then please make a [new branch](https://help
 
 #### 4. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request)
 
-A member of the Safe Haven project team will review your changes to confirm that they can be merged into the main codebase.
+A member of the Safe Haven project team will review your changes to confirm that they can be merged into the codebase.
 
 A [review](https://help.github.com/articles/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
