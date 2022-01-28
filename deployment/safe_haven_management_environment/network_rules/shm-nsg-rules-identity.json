@@ -24,6 +24,30 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowDomainJoinedClientsUdpInbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "389"],
+        "direction": "Inbound",
+        "priority": 1000,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainJoinedClientsTcpInbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over TCP: (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "135", "139", "389", "445", "464", "636", "3268", "3269", "49152-65535"],
+        "direction": "Inbound",
+        "priority": 1100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
@@ -55,6 +79,30 @@
         "destinationPortRange": ["139", "445", "9389", "49152-65535"],
         "direction": "Outbound",
         "priority": 200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainJoinedClientsUdpOutbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "389"],
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainJoinedClientsTcpOutbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over TCP: (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "135", "139", "389", "445", "464", "636", "3268", "3269", "49152-65535"],
+        "direction": "Outbound",
+        "priority": 1100,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
         "sourcePortRange": "*"

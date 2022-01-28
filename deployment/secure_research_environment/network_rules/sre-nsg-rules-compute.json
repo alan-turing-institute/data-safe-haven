@@ -12,6 +12,30 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowDomainJoinedClientsUdpOutbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "389"],
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainJoinedClientsTcpOutbound",
+        "access": "Allow",
+        "description": "Allow domain-joined client requests over TCP: (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["88", "135", "139", "389", "445", "464", "636", "3268", "3269", "49152-65535"],
+        "direction": "Outbound",
+        "priority": 1100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
