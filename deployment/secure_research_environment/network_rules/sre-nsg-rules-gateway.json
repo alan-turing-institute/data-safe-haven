@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowAdminVPNInbound",
+        "access": "Allow",
+        "description": "Allow RDP connection to servers from admin P2S VPN",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "destinationPortRange": "3389",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",

@@ -1,5 +1,17 @@
 [
     {
+        "name": "DenyAdminVPNInbound",
+        "access": "Deny",
+        "description": "Deny connections from admin P2S VPN",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
