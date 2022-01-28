@@ -1,5 +1,29 @@
 [
     {
+        "name": "AllowDomainControllerInternalUdpInbound",
+        "access": "Allow",
+        "description": "Allow domain controller internal services over UDP (see https://bit.ly/3ggW9fm for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["137", "138"],
+        "direction": "Inbound",
+        "priority": 100,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainControllerInternalTcpInbound",
+        "access": "Allow",
+        "description": "Allow domain controller internal services over TCP (see https://bit.ly/3ggW9fm for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["139", "445", "9389", "49152-65535"],
+        "direction": "Inbound",
+        "priority": 200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
@@ -9,6 +33,30 @@
         "priority": 4096,
         "protocol": "*",
         "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainControllerInternalUdpOutbound",
+        "access": "Allow",
+        "description": "Allow domain controller internal services over UDP: (see https://bit.ly/3ggW9fm for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["137", "138"],
+        "direction": "Outbound",
+        "priority": 100,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDomainControllerInternalTcpOutbound",
+        "access": "Allow",
+        "description": "Allow domain controller internal services over TCP: (see https://bit.ly/3ggW9fm for details).",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["139", "445", "9389", "49152-65535"],
+        "direction": "Outbound",
+        "priority": 200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
         "sourcePortRange": "*"
     },
     {
