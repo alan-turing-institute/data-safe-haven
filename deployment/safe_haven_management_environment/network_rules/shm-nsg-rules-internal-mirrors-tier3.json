@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowRepositoryAccessInbound",
+        "access": "Allow",
+        "description": "Allow package requests over ports 80 (http), 443 (pip) and 3218 (pip).",
+        "destinationAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "destinationPortRange": ["80", "443", "3128"],
+        "direction": "Inbound",
+        "priority": 1400,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",

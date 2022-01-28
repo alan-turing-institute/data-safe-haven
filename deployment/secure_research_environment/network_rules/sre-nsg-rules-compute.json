@@ -59,6 +59,20 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
+    {{#sre.repositories.network.cidr}}
+        {
+            "name": "AllowPackageRepositoriesOutbound",
+            "access": "Allow",
+            "description": "Allow package requests over http/https",
+            "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
+            "destinationPortRange": "*",
+            "direction": "Outbound",
+            "priority": 1400,
+            "protocol": "*",
+            "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+            "sourcePortRange": "*"
+        },
+    {{/sre.repositories.network.cidr}}
     {
         "name": "AllowExternalNTPOutbound",
         "access": "Allow",
