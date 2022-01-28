@@ -542,7 +542,7 @@
             "name": "DeploymentSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DEPLOYMENT",
-              "rules": "sre-nsg-rules-compute-deployment.json"
+              "rules": "sre-nsg-rules-deployment.json"
             }
           },
           "remoteDesktop": {

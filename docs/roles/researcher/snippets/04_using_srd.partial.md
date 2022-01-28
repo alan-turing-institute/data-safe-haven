@@ -123,6 +123,7 @@ or if you want to automatically switch to it whenever you are in the current dir
 ```none
 > pyenv local myvirtualenv
 ```
+
 ### {{gift}} Install R and python packages
 
 There are local copies of the `PyPI` and `CRAN` package repositories available within the SRE.
