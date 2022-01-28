@@ -274,14 +274,16 @@ function Get-ShmConfig {
                     name = "ExternalPackageMirrorsTier${tier}Subnet"
                     cidr = "${shmMirrorPrefix}.0/28"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        name  = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-external-mirrors-tier${tier}.json"
                     }
                 }
                 internal = [ordered]@{
                     name = "InternalPackageMirrorsTier${tier}Subnet"
                     cidr = "${shmMirrorPrefix}.16/28"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        name  = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-internal-mirrors-tier${tier}.json"
                     }
                 }
             }
