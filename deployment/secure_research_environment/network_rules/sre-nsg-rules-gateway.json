@@ -48,6 +48,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowRADIUSAuthenticationOutbound",
+        "access": "Allow",
+        "description": "Allows RDS servers to connect to NPS server for MFA",
+        "destinationAddressPrefix": "{{shm.nps.ip}}",
+        "destinationPortRange": ["1645", "1646", "1812", "1813"],
+        "direction": "Outbound",
+        "priority": 1300,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.gateway.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",

@@ -60,6 +60,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowRADIUSAuthenticationInbound",
+        "access": "Allow",
+        "description": "Allows RDS servers to connect to NPS server for MFA",
+        "destinationAddressPrefix": "{{nps.ip}}",
+        "destinationPortRange": ["1645", "1646", "1812", "1813"],
+        "direction": "Inbound",
+        "priority": 1300,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
