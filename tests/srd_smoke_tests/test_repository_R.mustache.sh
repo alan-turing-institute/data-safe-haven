@@ -4,6 +4,7 @@
 # - on the tier-3 list (so we can test all tiers)
 # - alphabetically early and late (so we can test the progress of the mirror synchronisation)
 packages=("argon2" "zeallot")
+uninstallable_packages=("aws.s3")
 
 # Create a temporary library directory
 TEST_INSTALL_PATH="${HOME}/test-repository-R"
@@ -22,10 +23,24 @@ for package in "${packages[@]}"; do
         OUTCOME=1
     fi
 done
+# If requested, demonstrate that installation fails for packages *not* on the approved list
+TEST_FAILURE={{SmokeTests.TestFailures}}
+if [ $TEST_FAILURE -eq 1 ]; then
+    for package in "${uninstallable_packages[@]}"; do
+        echo "Attempting to install ${package}..."
+        Rscript -e "options(warn=-1); install.packages('${package}', lib='${TEST_INSTALL_PATH}', quiet=TRUE)"
+        if (Rscript -e "library('${package}', lib.loc='${TEST_INSTALL_PATH}')"); then
+            echo "... $package installation unexpectedly succeeded!"
+            OUTCOME=1
+        else
+            echo "... $package installation failed as expected"
+        fi
+    done
+fi
 rm -rf "$TEST_INSTALL_PATH"
 
 if [ $OUTCOME -eq 0 ]; then
-    echo "All packages installed successfully"
+    echo "All package installations behaved as expected"
 else
-    echo "One or more package installations failed!"
+    echo "One or more package installations did not behave as expected!"
 fi

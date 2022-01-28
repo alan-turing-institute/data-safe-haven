@@ -34,7 +34,7 @@ test_python_packages() {
 test_python_repository() {
     setup_python "$1"
     run bash tests/test_repository_python.sh 2>&1
-    assert_output --partial 'All packages installed successfully'
+    assert_output --partial 'All package installations behaved as expected'
     pyenv shell --unset
 }
 
@@ -62,47 +62,47 @@ test_python_virtual_environments() {
 
 # Python
 # ------
-# Test Python {{python_version_0}}
-@test "Python packages ({{python_version_0}})" {
-    test_python_packages '{{python_version_0}}'
+# Test Python {{SmokeTests.Python_v0}}
+@test "Python packages ({{SmokeTests.Python_v0}})" {
+    test_python_packages '{{SmokeTests.Python_v0}}'
 }
-@test "Python functionality ({{python_version_0}})" {
-    test_python_functionality '{{python_version_0}}'
+@test "Python functionality ({{SmokeTests.Python_v0}})" {
+    test_python_functionality '{{SmokeTests.Python_v0}}'
 }
-@test "Python virtual environments ({{python_version_0}})" {
-    test_python_virtual_environments '{{python_version_0}}'
+@test "Python virtual environments ({{SmokeTests.Python_v0}})" {
+    test_python_virtual_environments '{{SmokeTests.Python_v0}}'
 }
-@test "Python package repository ({{python_version_0}})" {
-    test_python_repository '{{python_version_0}}'
+@test "Python package repository ({{SmokeTests.Python_v0}})" {
+    test_python_repository '{{SmokeTests.Python_v0}}'
 }
 
-# Test Python {{python_version_1}}
-@test "Python packages ({{python_version_1}})" {
-    test_python_packages '{{python_version_1}}'
+# Test Python {{SmokeTests.Python_v1}}
+@test "Python packages ({{SmokeTests.Python_v1}})" {
+    test_python_packages '{{SmokeTests.Python_v1}}'
 }
 # Test Python functionality
-@test "Python functionality ({{python_version_1}})" {
-    test_python_functionality '{{python_version_1}}'
+@test "Python functionality ({{SmokeTests.Python_v1}})" {
+    test_python_functionality '{{SmokeTests.Python_v1}}'
 }
-@test "Python virtual environments ({{python_version_1}})" {
-    test_python_virtual_environments '{{python_version_1}}'
+@test "Python virtual environments ({{SmokeTests.Python_v1}})" {
+    test_python_virtual_environments '{{SmokeTests.Python_v1}}'
 }
-@test "Python package repository ({{python_version_1}})" {
-    test_python_repository '{{python_version_1}}'
+@test "Python package repository ({{SmokeTests.Python_v1}})" {
+    test_python_repository '{{SmokeTests.Python_v1}}'
 }
 
-# Test Python {{python_version_2}}
-@test "Python packages ({{python_version_2}})" {
-    test_python_packages '{{python_version_2}}'
+# Test Python {{SmokeTests.Python_v2}}
+@test "Python packages ({{SmokeTests.Python_v2}})" {
+    test_python_packages '{{SmokeTests.Python_v2}}'
 }
-@test "Python functionality ({{python_version_2}})" {
-    test_python_functionality '{{python_version_2}}'
+@test "Python functionality ({{SmokeTests.Python_v2}})" {
+    test_python_functionality '{{SmokeTests.Python_v2}}'
 }
-@test "Python virtual environments ({{python_version_2}})" {
-    test_python_virtual_environments '{{python_version_2}}'
+@test "Python virtual environments ({{SmokeTests.Python_v2}})" {
+    test_python_virtual_environments '{{SmokeTests.Python_v2}}'
 }
-@test "Python package repository ({{python_version_2}})" {
-    test_python_repository '{{python_version_2}}'
+@test "Python package repository ({{SmokeTests.Python_v2}})" {
+    test_python_repository '{{SmokeTests.Python_v2}}'
 }
 
 
@@ -123,7 +123,7 @@ test_python_virtual_environments() {
 # Test R package repository
 @test "R package repository" {
     run bash tests/test_repository_R.sh
-    assert_output --partial 'All packages installed successfully'
+    assert_output --partial 'All package installations behaved as expected'
 }
 
 

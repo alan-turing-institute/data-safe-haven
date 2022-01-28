@@ -5,7 +5,8 @@
 # - *not* pre-installed
 # - on the tier-3 list (so we can test all tiers)
 # - alphabetically early and late (so we can test the progress of the mirror synchronisation)
-packages=("absl-py" "zope.interface")
+installable_packages=("{{SmokeTests.PyPIPackage0}}" "{{SmokeTests.PyPIPackage1}}")
+uninstallable_packages=("awscli")
 
 # Set up a virtual environment for testing
 TEST_INSTALL_PATH="${HOME}/test-repository-python"
@@ -16,7 +17,7 @@ pip install --upgrade pip --quiet
 
 # Install sample packages to local user library
 OUTCOME=0
-for package in "${packages[@]}"; do
+for package in "${installable_packages[@]}"; do
     echo "Attempting to install ${package}..."
     if (pip install "$package" --quiet); then
         echo "... $package installation succeeded"
@@ -25,10 +26,23 @@ for package in "${packages[@]}"; do
         OUTCOME=1
     fi
 done
+# If requested, demonstrate that installation fails for packages *not* on the approved list
+TEST_FAILURE={{SmokeTests.TestFailures}}
+if [ $TEST_FAILURE -eq 1 ]; then
+    for package in "${uninstallable_packages[@]}"; do
+        echo "Attempting to install ${package}..."
+        if (pip install "$package" --quiet); then
+            echo "... $package installation unexpectedly succeeded!"
+            OUTCOME=1
+        else
+            echo "... $package installation failed as expected"
+        fi
+    done
+fi
 rm -rf "$TEST_INSTALL_PATH"
 
 if [ $OUTCOME -eq 0 ]; then
-    echo "All packages installed successfully"
+    echo "All package installations behaved as expected"
 else
-    echo "One or more package installations failed!"
+    echo "One or more package installations did not behave as expected!"
 fi

@@ -237,9 +237,14 @@ Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages
 Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "tests" "srd_smoke_tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir "tests") -Recurse
 # Expand mustache templates
 $PythonYaml = (ConvertFrom-Yaml (Get-Content -Raw (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages" "packages-python.yaml")))
-$config["python_version_0"] = $PythonYaml["versions"][0]
-$config["python_version_1"] = $PythonYaml["versions"][1]
-$config["python_version_2"] = $PythonYaml["versions"][2]
+$config["SmokeTests"] = [ordered]@{
+    PyPIPackage0 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Head 1
+    PyPIPackage1 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Tail 1
+    Python_v0    = $PythonYaml["versions"][0]
+    Python_v1    = $PythonYaml["versions"][1]
+    Python_v2    = $PythonYaml["versions"][2]
+    TestFailures = $config.sre.tier -ge 3 ? 1 : 0
+}
 foreach ($MustacheFilePath in (Get-ChildItem -Path $localSmokeTestDir -Include *.mustache.* -File -Recurse)) {
     $ExpandedFilePath = $MustacheFilePath -replace ".mustache.", "."
     Expand-MustacheTemplate -TemplatePath $MustacheFilePath -Parameters $config | Set-Content -Path $ExpandedFilePath
