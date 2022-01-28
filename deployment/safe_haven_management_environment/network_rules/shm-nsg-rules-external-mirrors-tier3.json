@@ -52,6 +52,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalPackageFetchingOutbound",
+        "access": "Allow",
+        "description": "Allow ports 443 (https) and 873 (unencrypted rsync) for fetching packages",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": ["443", "873"],
+        "direction": "Outbound",
+        "priority": 3200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",

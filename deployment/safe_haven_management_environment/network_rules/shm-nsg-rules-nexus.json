@@ -52,6 +52,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalPackageFetchingOutbound",
+        "access": "Allow",
+        "description": "Allow ports 80 (http) and 443 (https) for fetching packages",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
