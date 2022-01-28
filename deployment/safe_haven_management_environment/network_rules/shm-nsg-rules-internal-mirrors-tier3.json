@@ -12,6 +12,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "DenyDNSOutbound",
+        "access": "Deny",
+        "description": "Deny DNS requests to SHM",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "53",
+        "direction": "Outbound",
+        "priority": 1200,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
