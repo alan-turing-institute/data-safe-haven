@@ -62,47 +62,47 @@ test_python_virtual_environments() {
 
 # Python
 # ------
-# Test Python 3.8
-@test "Python packages (3.8)" {
-    test_python_packages '3.8'
+# Test Python {{python_version_0}}
+@test "Python packages ({{python_version_0}})" {
+    test_python_packages '{{python_version_0}}'
 }
-@test "Python functionality (3.8)" {
-    test_python_functionality '3.8'
+@test "Python functionality ({{python_version_0}})" {
+    test_python_functionality '{{python_version_0}}'
 }
-@test "Python virtual environments (3.8)" {
-    test_python_virtual_environments '3.8'
+@test "Python virtual environments ({{python_version_0}})" {
+    test_python_virtual_environments '{{python_version_0}}'
 }
-@test "Python package repository (3.8)" {
-    test_python_repository '3.8'
+@test "Python package repository ({{python_version_0}})" {
+    test_python_repository '{{python_version_0}}'
 }
 
-# Test Python 3.9
-@test "Python packages (3.9)" {
-    test_python_packages '3.9'
+# Test Python {{python_version_1}}
+@test "Python packages ({{python_version_1}})" {
+    test_python_packages '{{python_version_1}}'
 }
 # Test Python functionality
-@test "Python functionality (3.9)" {
-    test_python_functionality '3.9'
+@test "Python functionality ({{python_version_1}})" {
+    test_python_functionality '{{python_version_1}}'
 }
-@test "Python virtual environments (3.9)" {
-    test_python_virtual_environments '3.9'
+@test "Python virtual environments ({{python_version_1}})" {
+    test_python_virtual_environments '{{python_version_1}}'
 }
-@test "Python package repository (3.9)" {
-    test_python_repository '3.9'
+@test "Python package repository ({{python_version_1}})" {
+    test_python_repository '{{python_version_1}}'
 }
 
-# Test Python 3.10
-@test "Python packages (3.10)" {
-    test_python_packages '3.10'
+# Test Python {{python_version_2}}
+@test "Python packages ({{python_version_2}})" {
+    test_python_packages '{{python_version_2}}'
 }
-@test "Python functionality (3.10)" {
-    test_python_functionality '3.10'
+@test "Python functionality ({{python_version_2}})" {
+    test_python_functionality '{{python_version_2}}'
 }
-@test "Python virtual environments (3.10)" {
-    test_python_virtual_environments '3.10'
+@test "Python virtual environments ({{python_version_2}})" {
+    test_python_virtual_environments '{{python_version_2}}'
 }
-@test "Python package repository (3.10)" {
-    test_python_repository '3.10'
+@test "Python package repository ({{python_version_2}})" {
+    test_python_repository '{{python_version_2}}'
 }
 
 

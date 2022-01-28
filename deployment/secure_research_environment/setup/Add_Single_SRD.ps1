@@ -14,6 +14,7 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module Powershell-Yaml -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -235,6 +236,10 @@ $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.P
 Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir "package_lists") -Recurse
 Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "tests" "srd_smoke_tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir "tests") -Recurse
 # Expand mustache templates
+$PythonYaml = (ConvertFrom-Yaml (Get-Content -Raw (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages" "packages-python.yaml")))
+$config["python_version_0"] = $PythonYaml["versions"][0]
+$config["python_version_1"] = $PythonYaml["versions"][1]
+$config["python_version_2"] = $PythonYaml["versions"][2]
 foreach ($MustacheFilePath in (Get-ChildItem -Path $localSmokeTestDir -Include *.mustache.* -File -Recurse)) {
     $ExpandedFilePath = $MustacheFilePath -replace ".mustache.", "."
     Expand-MustacheTemplate -TemplatePath $MustacheFilePath -Parameters $config | Set-Content -Path $ExpandedFilePath
