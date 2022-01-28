@@ -1,30 +1,26 @@
 [
     {
-        "name": "AllowNTPOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": [
-            {{#shm.time.ntp.serverAddresses}}
-                "{{.}}",
-            {{/shm.time.ntp.serverAddresses}}
-        ],
-        "destinationPortRange": 123,
-        "direction": "Outbound",
-        "priority": 2200,
+        "name": "DenyAllOtherInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     },
     {
-        "name": "DenyInternetOutbound",
+        "name": "DenyAllOtherOutbound",
         "access": "Deny",
-        "description": "Deny outbound connections to the internet",
-        "destinationAddressPrefix": "Internet",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
         "destinationPortRange": "*",
         "direction": "Outbound",
-        "priority": 4000,
+        "priority": 4096,
         "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefix": "*",
         "sourcePortRange": "*"
     }
 ]

@@ -1,118 +1,14 @@
 [
     {
-        "name": "AllowAdminVpnInbound",
-        "access": "Allow",
-        "description": "Allow inbound connections from admin VPN",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Inbound",
-        "priority": 1000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {{#sre.remoteDesktop.appSessionHost.ip}}
-        {
-            "name": "AllowRdsApplicationHostInbound",
-            "access": "Allow",
-            "description": "Allow inbound http(s) connections from application session host",
-            "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-            "destinationPortRange": ["80", "443"],
-            "direction": "Inbound",
-            "priority": 2000,
-            "protocol": "TCP",
-            "sourceAddressPrefix": "{{sre.remoteDesktop.appSessionHost.ip}}",
-            "sourcePortRange": "*"
-        },
-    {{/sre.remoteDesktop.appSessionHost.ip}}
-    {
-        "name": "AllowComputeVMsInbound",
-        "access": "Allow",
-        "description": "Allow inbound http(s) connections from compute subnet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "destinationPortRange": ["80", "443"],
-        "direction": "Inbound",
-        "priority": 3000,
-        "protocol": "Tcp",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "DenyAllInbound",
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
-        "description": "Deny inbound connections from anywhere",
+        "description": "Deny all other inbound traffic.",
         "destinationAddressPrefix": "*",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 4096,
         "protocol": "*",
         "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowNTPOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to external NTP servers",
-        "destinationAddressPrefix": [
-            {{#shm.time.ntp.serverAddresses}}
-                "{{.}}",
-            {{/shm.time.ntp.serverAddresses}}
-        ],
-        "destinationPortRange": 123,
-        "direction": "Outbound",
-        "priority": 1000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowIdentityOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to the SHM DC",
-        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 2000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {{#sre.repositories.network.cidr}}
-        {
-            "name": "AllowPackageRepositoriesOutbound",
-            "access": "Allow",
-            "description": "Allow outbound connections to the SHM package repositories",
-            "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
-            "destinationPortRange": "*",
-            "direction": "Outbound",
-            "priority": 2500,
-            "protocol": "*",
-            "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
-            "sourcePortRange": "*"
-        },
-    {{/sre.repositories.network.cidr}}
-    {
-        "name": "AllowPrivateDataEndpointsOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to private endpoints in the VNet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 3000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}InternetOutbound",
-        "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
-        "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
-        "destinationAddressPrefix": "Internet",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 4000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },
     {

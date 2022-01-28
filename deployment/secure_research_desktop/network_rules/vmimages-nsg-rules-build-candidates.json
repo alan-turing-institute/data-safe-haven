@@ -1,22 +1,6 @@
 [
     {
-        "name": "AllowBuildAdminSshInbound",
-        "access": "Allow",
-        "description": "Allow inbound SSH connections from authorised IP addresses",
-        "destinationAddressPrefix": "*",
-        "destinationPortRange": "22",
-        "direction": "Inbound",
-        "priority": 1000,
-        "protocol": "TCP",
-        "sourceAddressPrefix": [
-            {{#buildAdminIpAddresses}}
-                "{{.}}",
-            {{/buildAdminIpAddresses}}
-        ],
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "IgnoreRulesBelowHereInbound",
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
         "destinationAddressPrefix": "*",
@@ -25,18 +9,6 @@
         "priority": 4096,
         "protocol": "*",
         "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowInternetOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to internet",
-        "destinationAddressPrefix": "Internet",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 1000,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{srdImage.build.subnet.cidr}}",
         "sourcePortRange": "*"
     },
     {

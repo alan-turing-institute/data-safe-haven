@@ -1,18 +1,6 @@
 [
     {
-        "name": "AllowRepositoryAccessInbound",
-        "access": "Allow",
-        "description": "Allow port 80 (nexus) so that SRD users can get packages",
-        "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
-        "destinationPortRange": 80,
-        "direction": "Inbound",
-        "priority": 300,
-        "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "IgnoreRulesBelowHereInbound",
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
         "destinationAddressPrefix": "*",
@@ -24,19 +12,7 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowPackageFetchingFromInternetOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections on ports 443 (https) and 80 (http) for fetching packages",
-        "destinationAddressPrefix": "Internet",
-        "destinationPortRange": [80, 443],
-        "direction": "Outbound",
-        "priority": 300,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "IgnoreRulesBelowHereOutbound",
+        "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
         "destinationAddressPrefix": "*",
