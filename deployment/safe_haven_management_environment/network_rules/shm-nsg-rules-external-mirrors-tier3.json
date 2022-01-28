@@ -24,6 +24,22 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": [
+            {{#time.ntp.serverAddresses}}
+                "{{.}}",
+            {{/time.ntp.serverAddresses}}
+        ],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 3000,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
