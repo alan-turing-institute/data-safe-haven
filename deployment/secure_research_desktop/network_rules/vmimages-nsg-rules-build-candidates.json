@@ -12,6 +12,22 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowAdminApprovedSshInbound",
+        "access": "Allow",
+        "description": "Allow inbound SSH connections from authorised image building IP addresses",
+        "destinationAddressPrefix": "{{srdImage.build.subnet.cidr}}",
+        "destinationPortRange": "22",
+        "direction": "Inbound",
+        "priority": 2100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": [
+            {{#buildAdminIpAddresses}}
+                "{{.}}",
+            {{/buildAdminIpAddresses}}
+        ],
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
