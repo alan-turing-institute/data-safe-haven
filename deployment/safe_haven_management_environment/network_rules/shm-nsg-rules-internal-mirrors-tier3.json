@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowMirrorSynchronisationInbound",
+        "access": "Allow",
+        "description": "Allow rsync over ports 22 and 873.",
+        "destinationAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "destinationPortRange": ["22", "873"],
+        "direction": "Inbound",
+        "priority": 300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowRepositoryAccessInbound",
         "access": "Allow",
         "description": "Allow package requests over ports 80 (http), 443 (pip) and 3218 (pip).",

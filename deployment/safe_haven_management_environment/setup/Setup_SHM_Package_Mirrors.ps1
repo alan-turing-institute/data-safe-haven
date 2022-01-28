@@ -44,7 +44,7 @@ $nsgExternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.external.
 $config["mirrorNsgs"] = [ordered]@{
     internalMirrorIps = @($subnetInternal.AddressPrefix)
 }
-$rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
+$rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "AllowMirrorSynchronisationOutbound" }
 if ($rule) {
     $config["mirrorNsgs"]["internalMirrorIps"] = ($rule.DestinationAddressPrefix + $config["mirrorNsgs"]["internalMirrorIps"]) | Sort | Get-Unique
 }
