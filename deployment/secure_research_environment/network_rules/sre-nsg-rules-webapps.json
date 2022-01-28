@@ -66,6 +66,17 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}ExternalInternetOutbound",
+        "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+        "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3900,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
     {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",

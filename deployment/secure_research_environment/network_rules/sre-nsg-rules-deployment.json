@@ -24,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3900,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",
