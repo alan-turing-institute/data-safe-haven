@@ -91,11 +91,11 @@ We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-
 
 This means that:
 
-- checking out the `stable` branch, will give you the latest tagged release
+- checking out the `latest` branch, will give you the latest tagged release
 - the `develop` branch, which is the default branch of the repository, contains the latest cutting-edge code that has not yet made it into a release
 - releases are made by branching from `develop` into a branch called `release-<version name>`
   - deployment is tested from this release and any necessary integration changes are made on this branch
-  - the branch is then merged into `stable` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
+  - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
 - we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
 ### Discussions vs Issues
