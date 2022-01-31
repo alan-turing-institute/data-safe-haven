@@ -126,6 +126,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalClamAVOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external ClamAV servers",
+        "destinationAddressPrefix": "104.16.219.84",
+        "destinationPortRange": ["53", "443"],
+        "direction": "Outbound",
+        "priority": 3300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}ExternalInternetOutbound",
         "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
         "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to internet",
