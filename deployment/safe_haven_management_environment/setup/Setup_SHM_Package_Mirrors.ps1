@@ -181,6 +181,7 @@ function Resolve-CloudInit {
     }
 
     # Add public SSH key from the external mirror as an allowed key on the internal
+    $externalMirrorPublicKey = ""
     if ($MirrorDirection -eq "Internal") {
         $script = "
         #! /bin/bash
@@ -189,7 +190,7 @@ function Resolve-CloudInit {
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
-        $externalMirrorPublicKey = $result.Value[0].Message -Split "`n" | Select-String "^ssh"
+        $externalMirrorPublicKey = [string]($result.Value[0].Message -Split "`n" | Select-String "^ssh")
     }
 
     # Populate initial package allowlist file defined in cloud init YAML
