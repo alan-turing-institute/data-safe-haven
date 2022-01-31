@@ -24,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowWebappsSubnetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound http(s) connections to the webapps subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 600,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDomainJoinedClientsUdpOutbound",
         "access": "Allow",
         "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",

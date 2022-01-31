@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowSRESubnetsInbound",
+        "access": "Allow",
+        "description": "Allow inbound http(s) connections from SRE subnets",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "inbound",
+        "priority": 600,
+        "protocol": "TCP",
+        "sourceAddressPrefix": ["{{sre.network.vnet.subnets.compute.cidr}}", "{{sre.network.vnet.subnets.remoteDesktop.cidr}}"],
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
