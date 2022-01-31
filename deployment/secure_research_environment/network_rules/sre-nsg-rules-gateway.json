@@ -12,6 +12,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowUsersApprovedHttpsInbound",
+        "access": "Allow",
+        "description": "Allow inbound https connections from clients to RDS server",
+        "destinationAddressPrefix": "{{sre.remoteDesktop.gateway.ip}}",
+        "destinationPortRange": "443",
+        "direction": "Inbound",
+        "priority": 2200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": ["{{sre.remoteDesktop.networkRules.allowedSources}}"],
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",

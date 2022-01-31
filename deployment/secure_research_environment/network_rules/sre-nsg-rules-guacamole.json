@@ -12,6 +12,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowUsersApprovedHttpsInbound",
+        "access": "Allow",
+        "description": "Allow inbound http(s) connections from clients to RDS server. Note that http requests will be upgraded.",
+        "destinationAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Inbound",
+        "priority": 2200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": ["{{sre.remoteDesktop.networkRules.allowedSources}}"],
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
