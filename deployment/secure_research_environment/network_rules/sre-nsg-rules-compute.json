@@ -36,6 +36,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowDatabasesSubnetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to the databases subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
+        "destinationPortRange": ["{{sre.databases.dbmssql.port}}", "{{sre.databases.dbpostgresql.port}}"],
+        "direction": "Outbound",
+        "priority": 500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDomainJoinedClientsUdpOutbound",
         "access": "Allow",
         "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",

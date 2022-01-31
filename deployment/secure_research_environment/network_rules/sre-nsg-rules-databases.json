@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowComputeSubnetInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from the compute subnet",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
+        "destinationPortRange": ["{{sre.databases.dbmssql.port}}", "{{sre.databases.dbpostgresql.port}}"],
+        "direction": "Inbound",
+        "priority": 500,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
