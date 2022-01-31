@@ -125,6 +125,20 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
+    {{#sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule}}
+        {
+            "name": "{{sre.remoteDesktop.networkRules.outboundInternet}}ExternalAzurePlatformDnsOutbound",
+            "access": "{{sre.remoteDesktop.networkRules.outboundInternet}}",
+            "description": "{{sre.remoteDesktop.networkRules.outboundInternet}} outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+            "destinationAddressPrefix": "AzurePlatformDNS",
+            "destinationPortRange": "*",
+            "direction": "Outbound",
+            "priority": 3100,
+            "protocol": "*",
+            "sourceAddressPrefix": "*",
+            "sourcePortRange": "*"
+        },
+    {{/sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule}}
     {
         "name": "AllowExternalClamAVOutbound",
         "access": "Allow",
