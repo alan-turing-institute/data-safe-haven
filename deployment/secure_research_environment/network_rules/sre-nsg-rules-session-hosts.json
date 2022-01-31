@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowRDSGatewayInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from RDS gateway",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "destinationPortRange": ["135", "137-139", "443", "445", "3389", "3391", "5504", "5985", "49152-65535"],
+        "direction": "Inbound",
+        "priority": 700,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.gateway.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
@@ -32,6 +44,18 @@
         "direction": "Outbound",
         "priority": 600,
         "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowRDSGatewayOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to RDS gateway",
+        "destinationAddressPrefix": "{{sre.remoteDesktop.gateway.ip}}",
+        "destinationPortRange": ["135", "137-139", "443", "445", "3389", "3391", "5504", "5985", "49152-65535"],
+        "direction": "Outbound",
+        "priority": 700,
+        "protocol": "*",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
         "sourcePortRange": "*"
     },
