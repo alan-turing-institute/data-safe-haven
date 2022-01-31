@@ -24,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalSslLabsHttpsInbound",
+        "access": "Allow",
+        "description": "Allow inbound https connections from ssllabs.com for SSL quality reporting",
+        "destinationAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
+        "destinationPortRange": "443",
+        "direction": "Inbound",
+        "priority": 3400,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "64.41.200.0/24",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
