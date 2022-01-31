@@ -66,10 +66,10 @@ if ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") {
 # Attach all remaining subnets to the route table
 foreach ($subnet in $VirtualNetwork.Subnets) {
     if ($excludedSubnetNames.Contains($subnet.Name)) {
-        Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is NOT attached to any route table..."
+        Add-LogMessage -Level Info "Ensuring that $($subnet.Name) is NOT attached to any route table..."
         $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
     } else {
-        Add-LogMessage -Level Info "[ ] Ensuring that $($subnet.Name) is attached to $($routeTable.Name)..."
+        Add-LogMessage -Level Info "Ensuring that $($subnet.Name) is attached to $($routeTable.Name)..."
         $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
     }
 }

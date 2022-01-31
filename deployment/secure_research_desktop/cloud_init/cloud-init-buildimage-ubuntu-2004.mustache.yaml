@@ -59,100 +59,99 @@ apt:
 
 write_files:
   - path: "/etc/jaas.conf"
-    owner: root:root
     permissions: "0444"
     content: |
-      pgjdbc {
-      com.sun.security.auth.module.Krb5LoginModule required
-          useTicketCache=true
-          debug=true
-          renewTGT=true
-          doNotPrompt=true;
-      };
+      {{jaas.conf}}
+
   - path: "/opt/build/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
       {{deb-azuredatastudio.version}}
+
   - path: "/opt/build/check_installation.py"
     permissions: "0400"
     content: |
       {{check_installation.py}}
+
   - path: "/opt/build/dbeaver_drivers_config.xml"
     permissions: "0444"
     content: |
       {{dbeaver_drivers_config.mustache.xml}}
+
   - path: "/opt/build/deprovision_vm.sh"
     permissions: "0500"
     content: |
       {{deprovision_vm.sh}}
+
   - path: "/opt/build/download_and_install_deb.sh"
     permissions: "0500"
     content: |
       {{download_and_install_deb.sh}}
+
   - path: "/opt/build/packages/packages-julia.list"
     permissions: "0444"
     content: |
       {{packages-julia.list}}
+
   - path: "/opt/build/packages/packages-r-bioconductor.list"
     permissions: "0444"
     content: |
       {{packages-r-bioconductor.list}}
+
   - path: "/opt/build/packages/packages-r-cran.list"
     permissions: "0444"
     content: |
       {{packages-r-cran.list}}
+
   - path: "/opt/build/packages/packages-python-system.txt"
     permissions: "0444"
     content: |
       {{packages-python-system.txt}}
+
   - path: "/opt/build/pyenv/build_requirements.py"
     permissions: "0500"
     content: |
       {{pyenv_build_requirements.py}}
+
   - path: "/opt/build/pyenv/install.sh"
     permissions: "0500"
     content: |
       {{pyenv_install.sh}}
+
   - path: "/opt/build/pyenv/packages-python.yaml"
     permissions: "0400"
     content: |
       {{packages-python.yaml}}
+
   - path: "/opt/build/pyenv/pyproject_template.toml"
     permissions: "0400"
     content: |
       {{pyenv_pyproject_template.toml}}
+
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
       {{deb-rstudio.version}}
+
   - path: "/opt/monitoring/analyse_build.py"
     permissions: "0755"
     content: |
       {{analyse_build.py}}
+
   - path: "/opt/monitoring/deprovision.log"
     permissions: "0600"
     content: |
       # Deprovisioning log
+
   - path: "/usr/share/applications/jupyter-notebook.desktop"
     permissions: "0644"
     content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=Jupyter Notebook
-      Exec=jupyter notebook
-      Icon=/usr/lib/python3/dist-packages/notebook/static/base/images/favicon.ico
-      Categories=Utility;TextEditor;Development;IDE;
+      {{jupyter_notebook.desktop}}
+
   - path: "/usr/share/applications/pycharm.desktop"
     permissions: "0644"
     content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Application
-      Name=PyCharm
-      Exec=/snap/bin/pycharm-community
-      Icon=/snap/pycharm-community/current/meta/gui/icon.png
-      Categories=Utility;TextEditor;Development;IDE;
+      {{pycharm.desktop}}
 
 # List of packages to install with apt-get
 packages:

@@ -542,7 +542,7 @@
             "name": "DeploymentSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTA_SRE_T1GUAC_DEPLOYMENT",
-              "rules": "sre-nsg-rules-compute-deployment.json"
+              "rules": "sre-nsg-rules-deployment.json"
             }
           },
           "remoteDesktop": {
@@ -623,7 +623,7 @@
       "rg": "RG_SHM_TESTA_SRE_T1GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2021071100"
+        "version": "20.04.2022012400"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },

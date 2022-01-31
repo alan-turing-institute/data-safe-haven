@@ -40,7 +40,7 @@ function Expand-MustacheTemplate {
     }
 
     # Use Poshstache to expand the template
-    return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json -Depth 10 $PoshstacheParameters)
+    return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json -Depth 99 $PoshstacheParameters)
 }
 Export-ModuleMember -Function Expand-MustacheTemplate
 

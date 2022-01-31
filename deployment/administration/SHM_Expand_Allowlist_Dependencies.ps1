@@ -186,7 +186,7 @@ while ($queue.Count) {
     Add-LogMessage -Level Info "... there are $($queue.Count) package(s) in the queue"
     # Write to the dependency file after each package in case the script terminates early
     if (-not $NoCache) {
-        $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+        $dependencyCache | ConvertTo-Json -Depth 99 | Out-File $dependencyCachePath
     }
     # If we have exceeded the timeout then set the TIMEOUT_REACHED switch and break even if there are packages left in the queue
     if ((Get-Date) -ge $LatestTime) {
@@ -213,7 +213,7 @@ foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Obj
     $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object -Unique
 }
 if (-not $NoCache) {
-    $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    $sortedDependencies | ConvertTo-Json -Depth 99 | Out-File $dependencyCachePath
 }
 
 

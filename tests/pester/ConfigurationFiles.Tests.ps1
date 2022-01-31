@@ -23,7 +23,7 @@ Describe "SHM configuration file check" {
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are
-        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 10).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 10).Split("`n")
+        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 99).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 99).Split("`n")
         $Diff | Out-String | Should -BeNullOrEmpty
     }
 }
@@ -46,7 +46,7 @@ Describe "SRE configuration file check" {
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are
-        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 10).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 10).Split("`n")
+        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 99).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 99).Split("`n")
         $Diff | Out-String | Should -BeNullOrEmpty
     }
 }

@@ -14,6 +14,7 @@ param(
 )
 
 Import-Module Az -ErrorAction Stop
+Import-Module Powershell-Yaml -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -144,13 +145,13 @@ if ($orphanedDisks) {
 # Check that this is a valid image version and get its ID
 # -------------------------------------------------------
 $imageDefinition = Get-ImageDefinition -Type $config.sre.srd.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.sig -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
+$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.name -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
 
 
 # Set the OS disk size for this image
 # -----------------------------------
 $osDiskSizeGB = $config.sre.srd.disks.os.sizeGb
-if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = $image.StorageProfile.OsDiskImage.SizeInGB }
+if ($osDiskSizeGB -eq "default") { $osDiskSizeGB = 2 * [int]($image.StorageProfile.OsDiskImage.SizeInGB) }
 if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
     Add-LogMessage -Level Fatal "Image $($image.Name) needs an OS disk of at least $($image.StorageProfile.OsDiskImage.SizeInGB) GB!"
 }
@@ -232,10 +233,25 @@ Wait-For -Target "domain joining to complete" -Seconds 120
 Add-LogMessage -Level Info "Creating smoke test package for the SRD..."
 # Arrange files in temporary directory
 $localSmokeTestDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir tests) -Recurse
-Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "tests" "test_databases.mustache.sh") -Parameters $config | Set-Content -Path (Join-Path $localSmokeTestDir "tests" "test_databases.sh")
+Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages") -Filter *.* -Destination (Join-Path $localSmokeTestDir "package_lists") -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "tests" "srd_smoke_tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir "tests") -Recurse
+# Expand mustache templates
+$PythonYaml = (ConvertFrom-Yaml (Get-Content -Raw (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages" "packages-python.yaml")))
+$config["SmokeTests"] = [ordered]@{
+    PyPIPackage0 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Head 1
+    PyPIPackage1 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Tail 1
+    Python_v0    = $PythonYaml["versions"][0]
+    Python_v1    = $PythonYaml["versions"][1]
+    Python_v2    = $PythonYaml["versions"][2]
+    TestFailures = $config.sre.tier -ge 3 ? 1 : 0
+}
+foreach ($MustacheFilePath in (Get-ChildItem -Path $localSmokeTestDir -Include *.mustache.* -File -Recurse)) {
+    $ExpandedFilePath = $MustacheFilePath -replace ".mustache.", "."
+    Expand-MustacheTemplate -TemplatePath $MustacheFilePath -Parameters $config | Set-Content -Path $ExpandedFilePath
+    Remove-Item -Path $MustacheFilePath
+}
 Move-Item -Path (Join-Path $localSmokeTestDir "tests" "run_all_tests.bats") -Destination $localSmokeTestDir
+Move-Item -Path (Join-Path $localSmokeTestDir "tests" "README.md") -Destination $localSmokeTestDir
 # Upload files to VM via the SRE artifacts storage account (note that this requires access to be allowed from both the deployment machine and the SRD)
 $artifactsStorageAccount = Get-StorageAccount -Name $config.sre.storage.artifacts.account.name -ResourceGroupName $config.sre.storage.artifacts.rg -SubscriptionName $config.sre.subscriptionName -ErrorAction Stop
 Send-FilesToLinuxVM -LocalDirectory $localSmokeTestDir -RemoteDirectory "/opt/tests" -VMName $vmName -VMResourceGroupName $config.sre.srd.rg -BlobStorageAccount $artifactsStorageAccount

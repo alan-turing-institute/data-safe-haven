@@ -97,29 +97,19 @@ foreach ($user in $serviceUsers.Keys) {
     $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
 }
 
+
 # Add SRE users and groups to SHM
 # -------------------------------
 Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
 $params = @{
     shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
-    groupsB64                    = $groups | ConvertTo-Json | ConvertTo-Base64
-    serviceUsersB64              = $serviceUsers | ConvertTo-Json | ConvertTo-Base64
+    groupsB64                    = $groups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    serviceUsersB64              = $serviceUsers | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     securityOuPath               = $config.shm.domain.ous.securityGroups.path
     serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
-# Add SRE DNS zone to SHM
-# -----------------------
-Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to SHM..."
-$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
-$params = @{
-    SreFqdn = $config.sre.domain.fqdn
-}
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 

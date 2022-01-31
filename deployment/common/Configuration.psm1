@@ -624,7 +624,7 @@ function Get-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
                     nsg  = [ordered]@{
                         name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
-                        rules = "sre-nsg-rules-compute-deployment.json"
+                        rules = "sre-nsg-rules-deployment.json"
                     }
                 }
                 remoteDesktop = [ordered]@{ # note that further details are added below
@@ -1114,6 +1114,6 @@ function Show-FullConfig {
     } else {
         $config = Get-SreConfig -shmId ${shmId} -sreId ${sreId}
     }
-    Write-Output ($config | ConvertTo-Json -Depth 10)
+    Write-Output ($config | ConvertTo-Json -Depth 99)
 }
 Export-ModuleMember -Function Show-FullConfig

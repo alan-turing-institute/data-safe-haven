@@ -51,6 +51,12 @@ IMPORTABLE_NAMES = {
     "XlsxWriter": "xlsxwriter",
 }
 
+# Tensorflow is a special case
+TENSORFLOW_PACKAGES = [
+    "tensorflow",
+    "tensorflow-gpu",
+]
+
 
 def get_python_version():
     """
@@ -87,6 +93,11 @@ def get_missing_packages(packages):
             if not shutil.which(NON_IMPORTABLE_PACKAGES[package]):
                 missing.append(package)
                 continue
+        # Tensorflow is a special case
+        elif package in TENSORFLOW_PACKAGES:
+            if not import_tensorflow():
+                missing.append(package)
+                continue
         # Test whether we can import
         else:
             importable_name = (
@@ -103,10 +114,6 @@ def get_missing_packages(packages):
                 pkg_resources.get_distribution(package)
             except pkg_resources.DistributionNotFound:
                 warning.append(package)
-
-    # Check tensorflow explicitly
-    if not import_tensorflow():
-        missing.append("tensorflow")
 
     return (warning, missing)
 

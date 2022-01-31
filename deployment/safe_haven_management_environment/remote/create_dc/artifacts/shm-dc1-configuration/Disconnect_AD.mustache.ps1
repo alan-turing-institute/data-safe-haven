@@ -13,6 +13,8 @@ if (Get-Module -ListAvailable -Name MSOnline) {
     # Print the current synchronisation status
     if ((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled) {
         Write-Output "[ ] Directory synchronisation is ENABLED"
+        Write-Output "Removing synchronised users..."
+        Get-MsolUser -Synchronized | Remove-MsolUser -Force
         Write-Output "Disabling directory synchronisation..."
         Set-MsolDirSyncEnabled -EnableDirSync $False -Force
         # Print the current synchronisation status

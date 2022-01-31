@@ -251,7 +251,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $sasToken = New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
     Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
     $params = @{
-        blobNameArrayB64     = $fileNames | ConvertTo-Json | ConvertTo-Base64
+        blobNameArrayB64     = $fileNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
         downloadDir          = $config.sre.remoteDesktop.gateway.installationDirectory
         sasTokenB64          = $sasToken | ConvertTo-Base64
         shareOrContainerName = $containerName
