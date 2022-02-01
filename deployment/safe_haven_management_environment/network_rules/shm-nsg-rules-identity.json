@@ -172,6 +172,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalAzureStorageOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure storage",
+        "destinationAddressPrefix": "Storage",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",
