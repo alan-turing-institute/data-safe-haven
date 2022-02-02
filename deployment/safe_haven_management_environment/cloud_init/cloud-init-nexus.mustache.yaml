@@ -43,7 +43,7 @@ write_files:
     owner: root:root
     permissions: "0700"
     content: |
-      /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
+      /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
 
 # Set locale and timezone
 locale: en_GB.UTF-8
