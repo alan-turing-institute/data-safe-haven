@@ -584,7 +584,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
                 nexus_api,
                 name=f"cran-{package}",
                 description=f"allow access to {package} on CRAN",
-                expression='format == "r" and path=^"/src/contrib/{package}"',
+                expression=f'format == "r" and path=^"/src/contrib/{package}"',
                 repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
                 repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
             )
