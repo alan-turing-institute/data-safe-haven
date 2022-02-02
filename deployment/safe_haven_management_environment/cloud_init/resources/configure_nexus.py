@@ -532,6 +532,16 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
     )
     pypi_privilege_names.append(privilege_name)
 
+    privilege_name = create_content_selector_privilege(
+        nexus_api,
+        name="packages",
+        description="Allow access to 'PACKAGES' file in CRAN repository",
+        expression='format == "r" and path=="/src/contrib/PACKAGES"',
+        repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+        repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+    )
+    cran_privilege_names.append(privilege_name)
+
     # Create content selectors and privileges for packages according to the tier
     if tier == 2:
         # Allow all PyPI packages
