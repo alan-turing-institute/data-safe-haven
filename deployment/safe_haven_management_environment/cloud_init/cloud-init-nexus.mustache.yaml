@@ -24,9 +24,9 @@ write_files:
           volumes:
             - /nexus-data:/nexus-data
           restart: always
-  - path: "/opt/configuration/configure-nexus.py"
+  - path: "/usr/local/bin/configure-nexus"
     owner: root:root
-    permissions: "0500"
+    permissions: "0755"
     content: |
       {{configure_nexus.py}}
 
@@ -62,8 +62,8 @@ runcmd:
   - sleep 3m
   # Configure Nexus
   - echo "Configuring Nexus"
-  - python3 /opt/configuration/configure-nexus.py --admin-password {{{nexus.adminPassword}}} change-initial-password --path /nexus-data
-  - python3 /opt/configuration/configure-nexus.py --admin-password {{{nexus.adminPassword}}} initial-configuration --tier {{{nexus.tier}}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
+  - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
+  - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
 
 power_state:
   mode: poweroff
