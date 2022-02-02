@@ -382,12 +382,6 @@ def main():
 
     args = parser.parse_args()
 
-    for package_file in [args.pypi_package_file, args.cran_package_file]:
-        if package_file and not package_file.is_file():
-            raise Exception(
-                f"Package allowlist file {package_file} does not exist"
-            )
-
     args.func(args)
 
 
@@ -412,7 +406,17 @@ def change_initial_password(args):
     nexus_api.change_admin_password(args.admin_password)
 
 
+def check_package_files(args):
+    for package_file in [args.pypi_package_file, args.cran_package_file]:
+        if package_file and not package_file.is_file():
+            raise Exception(
+                f"Package allowlist file {package_file} does not exist"
+            )
+
+
 def initial_configuration(args):
+    check_package_files(args)
+
     nexus_api = NexusAPI(
         nexus_path=_NEXUS_PATH,
         nexus_port=_NEXUS_PORT,
@@ -448,6 +452,8 @@ def initial_configuration(args):
 
 
 def update_allow_lists(args):
+    check_package_files(args)
+
     nexus_api = NexusAPI(
         nexus_path=_NEXUS_PATH,
         nexus_port=_NEXUS_PORT,
