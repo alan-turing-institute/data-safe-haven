@@ -1082,15 +1082,16 @@ This should have been done in done when creating a policy to [require MFA for al
 
 We currently support two different types of package repositories:
 
-- Nexus proxy ({ref}`policy_tier_2` only)
-- Local mirror ({ref}`policy_tier_2` and/or {ref}`policy_tier_3`)
+- Nexus proxy ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
+- Local mirror ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
 
 ### How to deploy a Nexus package repository
 
 ```{hint}
-We **recommend** deploying this for use with {ref}`policy_tier_2` SREs.
+We **recommend** using a Nexus proxy to avoid the time taken to sync local
+mirrors.
 ```
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -1107,11 +1108,26 @@ You should never attempt to manage Nexus through the web interface.
 Doing so from outside the Nexus subnet could expose the admin credentials.
 ```
 
-### How to deploy a local package mirror
+#### Updating package allowlists
 
-```{hint}
-We **recommend** deploying this for use with {ref}`policy_tier_3` SREs.
+The `Setup_SHM_Nexus.ps1` script will deploy the full allowlists present in
+`environment_configs/package_lists/` when it is run. For a {ref}`policy_tier_2`
+proxy these will be ignored and all packages on PyPI and CRAN may be
+installed on linked SREs. For a {ref}`policy_tier_3` proxy only the packages
+named in these lists may be installed.
+
+These lists will be stored on the Nexus VM at `/etc/nexus/allowlist-pypi` and
+`/etc/nexus/allowlist-cran` for PyPI and CRAN respectively. Once a day Nexus
+will automatically be reconfigured based on these lists.
+
+To change the allowed packages you may edit the allowlist files. To update Nexus
+immediately you may manually trigger the update script
+
+```bash
+# /etc/cron.daily/update-nexus-allowlists
 ```
+
+### How to deploy a local package mirror
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
