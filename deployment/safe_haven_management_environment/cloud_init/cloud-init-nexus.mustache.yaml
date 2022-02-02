@@ -24,6 +24,16 @@ write_files:
           volumes:
             - /nexus-data:/nexus-data
           restart: always
+  - path: "/etc/nexus/allowlist-pypi"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{allowlist-full-python-pypi-tier3.list}}
+  - path: "/etc/nexus/allowlist-cran"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{allowlist-full-r-cran-tier3.list}}
   - path: "/usr/local/bin/configure-nexus"
     owner: root:root
     permissions: "0755"

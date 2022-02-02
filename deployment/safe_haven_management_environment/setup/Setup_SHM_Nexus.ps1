@@ -84,6 +84,7 @@ $repositorySubnet = Set-SubnetNetworkSecurityGroup -Subnet $repositorySubnet -Ne
 # Construct cloud-init YAML file
 # ------------------------------
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
+$BasePath = Join-Path $PSScriptRoot ".." ".." ".." -Resolve
 $config["nexus"] = @{
     adminPassword = $nexusAppAdminPassword
     tier          = $tier
@@ -91,6 +92,7 @@ $config["nexus"] = @{
 # Load the cloud-init template then add resources and expand mustache placeholders
 $cloudInitTemplate = Get-Content (Join-Path $cloudInitBasePath "cloud-init-nexus.mustache.yaml") -Raw
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $BasePath "environment_configs" "package_lists")
 $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
 
