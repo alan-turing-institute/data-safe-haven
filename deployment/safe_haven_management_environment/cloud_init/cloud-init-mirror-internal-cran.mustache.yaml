@@ -30,7 +30,6 @@ packages:
 
 write_files:
   - path: /var/local/cran-mirror-apache.conf
-    owner: root:root
     permissions: 0644
     content: |
       <VirtualHost *:80>
@@ -62,7 +61,6 @@ timezone: {{time.timezone.linux}}
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
     {{#time.ntp.serverAddresses}}
     - {{.}}
@@ -72,13 +70,17 @@ runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
+  # Show authorised SSH keys
+  - echo ">=== Authorised SSH keys... ===<"
+  - cat ~mirrordaemon/.ssh/authorized_keys
+
   # Upgrade installation and clean up
-  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - echo ">=== Upgrade and clean up apt-get packages... ===<"
   - apt-get -y upgrade
   - apt-get clean
 
   # Set up disk
-  - echo "*** Setting up local disk... ***"
+  - echo ">=== Setting up local disk... ===<"
   - mkdir -p /datadrive/mirrordaemon/www/cran
   - ls -alh /datadrive
 
@@ -86,7 +88,7 @@ runcmd:
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
 
   # Set up apache: 'restart' runs it now; 'enable' adds it to the list of services run on boot
-  - echo "*** Setting up apache server pointing to local disk... ***"
+  - echo ">=== Setting up apache server pointing to local disk... ===<"
   - mv /var/local/cran-mirror-apache.conf /etc/apache2/sites-enabled/000-default.conf
   - a2enmod rewrite
   - systemctl enable apache2

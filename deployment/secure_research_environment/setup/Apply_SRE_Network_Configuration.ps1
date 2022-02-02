@@ -85,7 +85,6 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
 Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
 $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
 $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
-}
 
 
 # List all NICs associated with each NSG

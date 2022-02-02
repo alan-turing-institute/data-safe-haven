@@ -6,6 +6,7 @@ $ModuleVersionRequired = @{
     "Az"              = ("ge", "6.0.0")
     "Microsoft.Graph" = ("ge", "1.5.0")
     "Poshstache"      = ("ge", "0.1.10")
+    "Powershell-Yaml" = ("ge", "0.4.2")
 }
 
 # Powershell version

@@ -32,7 +32,7 @@ if ($config.sre.remoteDesktop.provider -ne "MicrosoftRDS") {
 Add-LogMessage -Level Info "[ ] Disabling legacy SSL/TLS protocols on RDS Gateway"
 $ScriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Disable_Legacy_TLS_Remote.ps1"
 $params = @{
-    allowedCiphersB64 = (Get-SslCipherSuites)["tls"] | ConvertTo-Json | ConvertTo-Base64
+    allowedCiphersB64 = (Get-SslCipherSuites)["tls"] | ConvertTo-Json -Depth 99 | ConvertTo-Base64
 }
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $ScriptPath -VMName $config.sre.remoteDesktop.gateway.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Parameter $params
 

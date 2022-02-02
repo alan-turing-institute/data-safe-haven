@@ -247,7 +247,7 @@ if ($BenchmarkSubscription) {
         }
     }
     $OutputFile = New-TemporaryFile
-    Out-File -FilePath $OutputFile -Encoding "UTF8" -InputObject ($JsonConfig | ConvertTo-Json -Depth 10)
+    Out-File -FilePath $OutputFile -Encoding "UTF8" -InputObject ($JsonConfig | ConvertTo-Json -Depth 99)
     Add-LogMessage -Level Info "Configuration file generated at '$($OutputFile.FullName)'"
     $BenchmarkJsonPath = $OutputFile.FullName
 } elseif ($BenchmarkConfig) {

@@ -17,8 +17,24 @@ $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 
 
-# Set to Domains subscription
-# ---------------------------
+# Switch to SHM subscription
+# --------------------------
+$null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
+
+
+# Add SRE DNS zone to SHM
+# -----------------------
+Add-LogMessage -Level Info "[ ] Adding SRE DNS zone to internal SHM DNS server..."
+
+$params = @{
+    SreFqdn = $config.sre.domain.fqdn
+}
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_DNS_Zone_Remote.ps1"
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+
+
+# Switch to domains subscription
+# ------------------------------
 $null = Set-AzContext -Subscription $config.shm.dns.subscriptionName -ErrorAction Stop
 
 

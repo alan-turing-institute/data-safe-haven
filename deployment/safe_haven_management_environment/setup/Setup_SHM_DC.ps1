@@ -159,7 +159,7 @@ $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storag
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script
 $params = @{
-    blobNameArrayB64     = $blobNames | ConvertTo-Json | ConvertTo-Base64
+    blobNameArrayB64     = $blobNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     downloadDir          = $config.dc.installationDirectory
     sasTokenB64          = $artifactSasToken | ConvertTo-Base64
     storageAccountName   = $config.storage.artifacts.accountName
@@ -185,8 +185,8 @@ $params = @{
     gpoBackupPath          = "$($config.dc.installationDirectory)\GPOs"
     netbiosName            = $config.domain.netbiosName
     shmFdqn                = $config.domain.fqdn
-    userAccountsB64        = $userAccounts | ConvertTo-Json | ConvertTo-Base64
-    securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json | ConvertTo-Base64
+    userAccountsB64        = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
 }
 $scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Active_Directory.mustache.ps1" | Get-Item | Get-Content -Raw
 $null = Invoke-RemoteScript -Shell "PowerShell" -Script (Expand-MustacheTemplate -Template $scriptTemplate -Parameters $config) -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params

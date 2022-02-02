@@ -53,6 +53,7 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
   - path: "/var/local/pypiserver.app.py.patch"
     content: |
       --- _app.py 2019-04-03 19:51:21.000000000 +0100
@@ -157,7 +158,6 @@ timezone: {{time.timezone.linux}}
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
     {{#time.ntp.serverAddresses}}
     - {{.}}
@@ -167,31 +167,34 @@ runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
+  # Show authorised SSH keys
+  - echo ">=== Authorised SSH keys... ===<"
+  - cat ~mirrordaemon/.ssh/authorized_keys
+
   # Upgrade installation and clean up
-  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - echo ">=== Upgrade and clean up apt-get packages... ===<"
   - apt-get -y upgrade
   - apt-get clean
 
-  # Set up disk
-  - echo "*** Setting up local disk... ***"
+  # Set up disk, fixing permissions so that mirrordaemon owns its files
+  - echo ">=== Setting up local disk... ===<"
   - mkdir -p /datadrive/mirrordaemon/pypi/web/packages
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
   - ls -alh /datadrive
 
-  # Fix permissions so that mirrordaemon owns its files
-  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
-
   # Install pypiserver with pip
-  - echo "*** Installing pypiserver... ***"
+  - echo ">=== Installing pypiserver... ===<"
   - pip3 install pypiserver==1.2.7
+
   # Patch pypiserver so that it uses the static simple index files
-  - echo "*** Patching pypiserver to use static index files ***"
+  - echo ">=== Patching pypiserver to use static index files ===<"
   - cd /usr/local/lib/python3*/dist-packages/pypiserver
   - patch < /var/local/pypiserver.app.py.patch
   - cd /
   - echo "Using pypi-server from '$(which pypi-server)'"
 
   # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
-  - echo "*** Setting up pypiserver pointing to local disk... ***"
+  - echo ">=== Setting up pypiserver pointing to local disk... ===<"
   - systemctl enable pypiserver
   - systemctl start pypiserver
   - systemctl status pypiserver

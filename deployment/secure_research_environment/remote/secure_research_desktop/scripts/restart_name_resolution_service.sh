@@ -14,7 +14,8 @@ RESOLVE_CONF_TARGET="/run/systemd/resolve/resolv.conf"
 
 # Test nslookup
 test_dnslookup () {
-    local NS_RESULT=$(nslookup $DOMAIN_CONTROLLER)
+    local NS_RESULT
+    NS_RESULT="$(nslookup "$DOMAIN_CONTROLLER")"
     local NS_EXIT=$?
 
     echo "NS LOOKUP RESULT:"
@@ -24,14 +25,15 @@ test_dnslookup () {
         echo -e "${BLUE}Name resolution working.${END}"
     else
         echo -e "${RED}Name resolution not working. Testing with systemd${END}"
-        systemd-resolve $DOMAIN_CONTROLLER
+        systemd-resolve "$DOMAIN_CONTROLLER"
     fi
     return $NS_EXIT
 }
 
 # Test the /etc/resolv.conf file
 test_resolve_conf() {
-    local RESOLVE_CONF_LOCATION=$(sudo ls -al /etc/resolv.conf | cut -d'>' -f2 | sed -e 's/ //g')
+    local RESOLVE_CONF_LOCATION
+    RESOLVE_CONF_LOCATION=$(realpath /etc/resolv.conf)
     cat /etc/resolv.conf
     if [ "${RESOLVE_CONF_LOCATION}" != "${RESOLVE_CONF_TARGET}" ]; then
         echo -e "${RED}/etc/resolv.conf is currently pointing to ${RESOLVE_CONF_LOCATION}${END}"
@@ -44,23 +46,23 @@ test_resolve_conf() {
 
 # Update /etc/systemd/resolved.conf
 update_systemd_resolved_conf () {
-    sed -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=${DOMAIN_LOWER}/" /etc/systemd/resolved.conf > resolved.conf.new
-    if [ "$(cmp resolved.conf.new /etc/systemd/resolved.conf)" != "" ]; then
-        cat /etc/systemd/resolved.conf
-        echo "Updating /etc/systemd/resolved.conf"
-        sudo mv resolved.conf.new /etc/systemd/resolved.conf
-        sudo chown root:root /etc/systemd/resolved.conf
-        sudo chmod 0644 /etc/systemd/resolved.conf
-        cat /etc/systemd/resolved.conf
-        restart_resolved
-    else
+    cp /etc/systemd/resolved.conf /tmp/resolved.conf
+    sed -i -e "s/^[#]DNS=.*/DNS=/" -e "s/^[#]FallbackDNS=.*/FallbackDNS=/" -e "s/^[#]Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
+    if (cmp /etc/systemd/resolved.conf /tmp/resolved.conf); then
         echo "No updates needed"
+    else
+        echo "Previous /etc/systemd/resolved.conf:"
+        grep -v -e '^[[:space:]]*$' /tmp/resolved.conf | grep -v "^#"
+        echo "Updated /etc/systemd/resolved.conf:"
+        grep -v -e '^[[:space:]]*$' /etc/systemd/resolved.conf | grep -v "^#"
+        restart_resolved
     fi
 }
 
 # Restart the systemd-resolved service
 restart_resolved () {
     echo "Restarting systemd-resolved name service"
+    ln -rsf /run/systemd/resolve/resolv.conf /etc/resolv.conf
     sudo systemctl restart systemd-resolved
     cat /etc/resolv.conf
 }

@@ -69,9 +69,9 @@ if ($sreResources -or $sreResourceGroups) {
     $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
     # Remove SRE users and groups from SHM DC
     $params = @{
-        groupNamesB64           = $groupNames | ConvertTo-Json | ConvertTo-Base64
-        userNamesB64            = $userNames | ConvertTo-Json | ConvertTo-Base64
-        computerNamePatternsB64 = $computerNamePatterns | ConvertTo-Json | ConvertTo-Base64
+        groupNamesB64           = $groupNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+        userNamesB64            = $userNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+        computerNamePatternsB64 = $computerNamePatterns | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -88,7 +88,7 @@ if ($sreResources -or $sreResourceGroups) {
         ShmFqdn                     = $config.shm.domain.fqdn
         SreFqdn                     = $config.sre.domain.fqdn
         SreId                       = $config.sre.id
-        PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json | ConvertTo-Base64
+        PrivateEndpointFragmentsB64 = $privateEndpointNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

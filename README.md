@@ -22,7 +22,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 
 ## :open_hands: Contributing
 
-We are keen to transition our implementation from being a Turing project to being a community owned platform.
+We are keen to transition our implementation from being a [Turing](https://www.turing.ac.uk/) project to being a community owned platform.
 We have worked together with the community to develop the policy, processes and design decisions for the Data Safe Haven.
 
 We welcome contributions from anyone who is interested in the project.

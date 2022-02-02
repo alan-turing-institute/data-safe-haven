@@ -27,7 +27,10 @@ Additionally, if you think this would be a good issue for newcomers to tackle th
 
 - Operating System: <!-- Which operating system are you using: Windows, Linux, macOS etc. -->
 - Data Safe Haven version: <!-- Which version of the Data Safe Haven are you using: 3.0.0, 3.1.1 etc. -->
-
+- Powershell version: <!-- Which version of Powershell are you using: use CheckRequirements.ps1 if unsure -->
+- `Az` Powershell module version: <!-- Which version of the Az Powershell module are you using: use CheckRequirements.ps1  if unsure -->
+- `Microsoft.Graph` Powershell module version: <!-- Which version of the Microsoft.Graph Powershell module are you using: use CheckRequirements.ps1 if unsure -->
+- `Poshstache` module version: <!-- Which version of the Microsoft.Graph Powershell module are you using: use CheckRequirements.ps1 if unsure -->
 ## :strawberry: Desired behaviour
 
 <!--

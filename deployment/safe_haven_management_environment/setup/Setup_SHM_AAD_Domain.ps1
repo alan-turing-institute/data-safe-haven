@@ -22,7 +22,7 @@ $null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction St
 # Connect to Microsoft Graph
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
+Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
 Connect-MgGraph -TenantId $tenantId -Scopes "Domain.ReadWrite.All" -ErrorAction Stop
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
@@ -41,7 +41,6 @@ if ($aadDomain) {
     $aadDomain = New-MgDomain -Id $config.domain.fqdn
     Add-LogMessage -Level Success "'$($config.domain.fqdn)' added as custom domain on SHM AAD."
 }
-
 
 
 # Verify the SHM domain record for the Azure AD
@@ -110,6 +109,11 @@ if ($aadDomain.IsDefault) {
         Add-LogMessage -Level Fatal "Unable to set '$($config.domain.fqdn)' as primary domain on SHM AAD!"
     }
 }
+
+
+# Sign out of Microsoft Graph
+# ---------------------------
+Disconnect-MgGraph
 
 
 # Switch back to original subscription

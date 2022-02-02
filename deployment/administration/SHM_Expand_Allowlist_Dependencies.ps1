@@ -110,21 +110,13 @@ function Get-Dependencies {
 }
 
 
-# Load appropriate allowlists
-# ---------------------------
+# Load list of core packages
+# --------------------------
 $languageName = @{cran = "r"; pypi = "python" }[$Repository]
 $coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
 $fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
-
-
-# Combine base image package lists with the core allowlist to construct a single list of core packages
-# ----------------------------------------------------------------------------------------------------
-$corePackageList = Get-Content $coreAllowlistPath
-foreach ($buildtimePackageList in (Get-Content (Join-Path $PSScriptRoot ".." "secure_research_desktop" "packages" "packages-${languageName}-${Repository}*.list"))) {
-    $corePackageList += $buildtimePackageList
-}
-$corePackageList = $corePackageList | Sort-Object -Unique
+$corePackageList = Get-Content $coreAllowlistPath | Sort-Object -Unique
 
 
 # Initialise the package queue
@@ -194,7 +186,7 @@ while ($queue.Count) {
     Add-LogMessage -Level Info "... there are $($queue.Count) package(s) in the queue"
     # Write to the dependency file after each package in case the script terminates early
     if (-not $NoCache) {
-        $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+        $dependencyCache | ConvertTo-Json -Depth 99 | Out-File $dependencyCachePath
     }
     # If we have exceeded the timeout then set the TIMEOUT_REACHED switch and break even if there are packages left in the queue
     if ((Get-Date) -ge $LatestTime) {
@@ -221,7 +213,7 @@ foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Obj
     $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object -Unique
 }
 if (-not $NoCache) {
-    $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
+    $sortedDependencies | ConvertTo-Json -Depth 99 | Out-File $dependencyCachePath
 }
 
 

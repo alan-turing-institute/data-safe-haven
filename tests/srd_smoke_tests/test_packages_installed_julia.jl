@@ -11,6 +11,7 @@ original_stdout = stdout
 
 # Check for packages in two ways
 for packageName in readlines(joinpath(@__DIR__, "..", "package_lists", "packages-julia.list"))
+    println("Testing '", packageName, "' ...")
     # Check that the package exists
     try
         Pkg.status(packageName)

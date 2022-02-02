@@ -10,78 +10,6 @@ Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
-# Create network security group rule if it does not exist
-# -------------------------------------------------------
-function Add-NetworkSecurityGroupRule {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
-        $NetworkSecurityGroup,
-        [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
-        [string]$Description,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
-        $Priority,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
-        $Direction,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
-        [string]$Access,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $SourceAddressPrefix,
-        [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $SourcePortRange,
-        [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $DestinationAddressPrefix,
-        [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $DestinationPortRange,
-        [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
-        [switch]$VerboseLogging = $false
-    )
-    try {
-        if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
-        $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if ($notExists) {
-            if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-            $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                    -Access "$Access" `
-                                                    -Description "$Description" `
-                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                    -DestinationPortRange $DestinationPortRange `
-                                                    -Direction "$Direction" `
-                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                    -Priority $Priority `
-                                                    -Protocol "$Protocol" `
-                                                    -SourceAddressPrefix $SourceAddressPrefix `
-                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
-            if ($?) {
-                if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
-            } else {
-                if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
-            }
-        } else {
-            if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
-            $null = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                    -Access "$Access" `
-                                                    -Description "$Description" `
-                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                    -DestinationPortRange $DestinationPortRange `
-                                                    -Direction "$Direction" `
-                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                    -Priority $Priority `
-                                                    -Protocol "$Protocol" `
-                                                    -SourceAddressPrefix $SourceAddressPrefix `
-                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
-        }
-    } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
-        Add-LogMessage -Level Fatal $_.Exception.Message.Split("`n")[0]
-    }
-
-}
-Export-ModuleMember -Function Add-NetworkSecurityGroupRule
-
-
 # Associate a VM to an NSG
 # ------------------------
 function Add-VmToNSG {
@@ -410,14 +338,14 @@ function Deploy-KeyVault {
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
-    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     if ($null -eq $keyVault) {
         # Purge any existing soft-deleted key vault
         foreach ($existingLocation in (Get-AzLocation | ForEach-Object { $_.Location })) {
             try {
-                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop) {
+                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop -WarningAction SilentlyContinue) {
                     Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name' in $existingLocation"
-                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force | Out-Null
+                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force -WarningAction SilentlyContinue | Out-Null
                     if ($?) {
                         Add-LogMessage -Level Success "Purged key vault '$Name'"
                     } else {
@@ -430,7 +358,7 @@ function Deploy-KeyVault {
         }
         # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
-        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
+        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -WarningAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Created key vault '$Name'"
         } else {
@@ -455,12 +383,11 @@ function Deploy-LogAnalyticsWorkspace {
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy into")]
         [string]$Location
     )
-    $null = Deploy-ResourceGroup -Name $ResourceGroupName -Location $Location
     Add-LogMessage -Level Info "Ensuring that log analytics workspace '$Name' exists..."
     $workspace = Get-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating log analytics workspace '$Name'"
-        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku Standard
+        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku pergb2018
         if ($?) {
             Add-LogMessage -Level Success "Created log analytics workspace '$Name'"
         } else {
@@ -1104,9 +1031,7 @@ function Get-ImageDefinition {
     )
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
     if ($Type -eq "Ubuntu") {
-        $imageDefinition = "ComputeVM-Ubuntu"
-    } elseif ($Type -eq "Ubuntu18") {
-        $imageDefinition = "ComputeVM-Ubuntu1804Base"
+        $imageDefinition = "SecureResearchDesktop-Ubuntu"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }
@@ -1300,7 +1225,7 @@ function Invoke-WindowsConfigureAndUpdate {
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json | ConvertTo-Base64) }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json -Depth 99 | ConvertTo-Base64) }
     }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting time/locale and installing updates on '$VMName'"
@@ -1475,7 +1400,7 @@ function Set-KeyVaultPermissions {
     )
     Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
-        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
+        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName).Id | Select-Object -First 1
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
@@ -1483,10 +1408,11 @@ function Set-KeyVaultPermissions {
                                -ObjectId $securityGroupId `
                                -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover, Purge `
                                -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore, Purge `
-                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge `
+                               -WarningAction SilentlyContinue
     $success = $?
-    foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
-        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
+    foreach ($accessPolicy in (Get-AzKeyVault $Name -WarningAction SilentlyContinue).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
+        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId -WarningAction SilentlyContinue
         $success = $success -and $?
     }
     if ($success) {

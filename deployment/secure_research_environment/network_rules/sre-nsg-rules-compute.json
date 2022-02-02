@@ -75,18 +75,20 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
-    {
-        "name": "AllowPackageRepositoriesOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to the SHM package repositories",
-        "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 2500,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
-        "sourcePortRange": "*"
-    },
+    {{#sre.repositories.network.cidr}}
+        {
+            "name": "AllowPackageRepositoriesOutbound",
+            "access": "Allow",
+            "description": "Allow outbound connections to the SHM package repositories",
+            "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
+            "destinationPortRange": "*",
+            "direction": "Outbound",
+            "priority": 2500,
+            "protocol": "*",
+            "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+            "sourcePortRange": "*"
+        },
+    {{/sre.repositories.network.cidr}}
     {
         "name": "AllowPrivateDataEndpointsOutbound",
         "access": "Allow",

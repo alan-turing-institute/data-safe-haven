@@ -8,11 +8,13 @@ autotools-dev
 bison
 blobfuse
 build-essential
+cargo
 clamav
 clamav-base
 clamav-daemon
 clamav-freshclam
 clamav-unofficial-sigs
+cmake
 cuda
 curl
 default-jdk
@@ -91,6 +93,7 @@ r-base-core
 r-base-dev
 realmd
 ristretto
+rustc
 sbt
 scala
 sssd

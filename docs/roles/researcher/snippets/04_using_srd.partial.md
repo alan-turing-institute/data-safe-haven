@@ -62,14 +62,16 @@ You can access applications from the desktop in two ways: the terminal or via a 
 Applications can be accessed from the dropdown menu.
 For example:
 
-- `Applications > Development > RStudio`
 - `Applications > Development > Atom`
+- `Applications > Development > Jupyter Notebook`
+- `Applications > Development > PyCharm`
+- `Applications > Development > RStudio`
+- `Applications > Education > QGIS Desktop`
 
 Applications can be accessed from a terminal.
 For example:
 
-- Open `Terminal` and run `jupyter notebook &` if you want to use python within a jupyter notebook.
-- Open `Terminal` and run `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
+- Open `Terminal` and run `jupyter notebook &` if you want to use `Python` within a jupyter notebook.
 
 ```{image} user_guide/access_desktop_applications.png
 :alt: How to access applications from the desktop
@@ -83,23 +85,44 @@ Typing `R` at the command line will give you the system version of `R` with many
 There are several versions of `Python` installed, which are managed through [pyenv](https://github.com/pyenv/pyenv).
 You can see the default version (indicated by a '\*') and all other installed versions using the following command:
 
-```bash
+```none
 > pyenv versions
 ```
 
 This will give output like:
 
-```bash
+```none
   system
-  3.6.11
-  3.7.8
-* 3.8.3 (set by /home/ada.lovelace/.pyenv_version)
+  3.8.12
+* 3.9.10 (set by /home/ada.lovelace/.pyenv_version)
+  3.10.2
 ```
 
 You can change your preferred Python version globally or on a folder-by-folder basis using
 
 - `pyenv global <version number>` (to change the version globally)
 - `pyenv local <version number>` (to change the version for the folder you are currently in)
+
+#### Creating virtual environments
+
+We recommend that you use a dedicated [virtual environment](https://docs.python.org/3/tutorial/venv.html) for developing your code in `Python`.
+You can easily create a new virtual environment based on any of the available `Python` versions
+
+```none
+> pyenv virtualenv 3.8.12 myvirtualenv
+```
+
+You can then activate it with:
+
+```none
+> pyenv shell myvirtualenv
+```
+
+or if you want to automatically switch to it whenever you are in the current directory
+
+```none
+> pyenv local myvirtualenv
+```
 
 ### {{gift}} Install R and python packages
 
@@ -150,7 +173,7 @@ pip install --user <package-name>
 ```
 
 ```{tip}
-Don't forget the `--user` flag as you do not have permission to install packages for all users.
+If you are using a virtual environment as recommended above, you will not need the `--user` flag.
 ```
 
 #### Package availability

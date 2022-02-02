@@ -43,7 +43,6 @@ timezone: {{sre.time.timezone.linux}}
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
     {{#shm.time.ntp.serverAddresses}}
     - {{.}}
@@ -115,7 +114,7 @@ runcmd:
   - timedatectl
 
   # Enable custom GitLab settings and run an initial configuration
-  - echo "Running initial configuration"
+  - echo ">=== Configuring GitLab... ===<"
   - gitlab-ctl reconfigure
 
   # Set root password and don't prompt for it to be reset when web app first loaded
@@ -129,7 +128,9 @@ runcmd:
   # Restrict login to SHM domain (must be done AFTER GitLab update)
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_allowlist: ['{{shm.domain.fqdn}}'])"
+
   # Reload GitLab configuration and restart GitLab
+  - echo ">=== Restarting GitLab with updated configuration... ===<"
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
 

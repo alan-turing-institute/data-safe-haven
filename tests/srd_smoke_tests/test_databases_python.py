@@ -6,15 +6,10 @@ import pandas as pd
 
 
 def test_database(server_name, port, db_type, db_name):
+    print(f"Attempting to connect to '{db_name}' on '{server_name}' via port {port}")
     if db_type == "mssql":
         cnxn = pyodbc.connect(
-            "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
-            + str(server_name)
-            + ","
-            + str(port)
-            + ";DATABASE="
-            + str(db_name)
-            + ";Trusted_Connection=yes;"
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server_name},{port};DATABASE={db_name};Trusted_Connection=yes;"
         )
     elif db_type == "postgres":
         cnxn = psycopg2.connect(host=server_name, port=port, database=db_name)

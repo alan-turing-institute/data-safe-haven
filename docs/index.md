@@ -24,7 +24,7 @@ We have developed:
 - A proposal for how to design productive and secure research environments
 - A productive environment for curiosity-driven research, that includes many data science software packages out-of-the-box.
 
-If you are interested in contributing to the Data Safe Haven codebase take a look at our [GitHub repository](https://github.com/alan-turing-institute/data-safe-haven/)!
+If this sounds interesting to you, take a look at our GitHub releases: [![Data Safe Haven releases](https://img.shields.io/static/v1?label=Data%20Safe%20Haven&message=Releases&style=flat&logo=github)](https://github.com/alan-turing-institute/data-safe-haven/releases).
 
 ## Documentation structure
 

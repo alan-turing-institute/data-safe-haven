@@ -23,8 +23,8 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 # Connect to Microsoft Graph
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
-Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
+Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
+Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
 } else {
@@ -112,32 +112,32 @@ try {
 }
 
 
-# Ensure that Emergency Admin user exists
-# ---------------------------------------
-# Set user properties
+# Set Emergency Admin user properties
+# -----------------------------------
 $username = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminUsername -AsPlaintext
-$upn = "$username@$($config.domain.fqdn)"
-$passwordProfile = New-Object -TypeName Microsoft.Open.AzureAD.Model.PasswordProfile
-$passwordProfile.Password = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -AsPlaintext
-$passwordProfile.EnforceChangePasswordPolicy = $false
-$passwordProfile.ForceChangePasswordNextLogin = $false
+$userPrincipalName = "$username@$($config.domain.fqdn)"
 $params = @{
     MailNickName     = $username
     DisplayName      = "AAD Admin - EMERGENCY ACCESS"
-    PasswordProfile  = $passwordProfile
+    PasswordProfile  = @{
+        Password                             = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadEmergencyAdminPassword -AsPlaintext
+        ForceChangePasswordNextSignInWithMfa = $false
+        ForceChangePasswordNextSignIn        = $false
+    }
     UserType         = "Member"
     AccountEnabled   = $true
     PasswordPolicies = "DisablePasswordExpiration"
     UsageLocation    = $config.organisation.countryCode
 }
 
+
 # Ensure emergency admin user exists
 # ----------------------------------
 Add-LogMessage -Level Info "Ensuring AAD emergency administrator account exists..."
-$user = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $upn }
-if ($user) {
+$globalAdminUser = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $userPrincipalName }
+if ($globalAdminUser) {
     # Update existing user
-    $user = Update-MgUser -UserId $user.Id @params
+    $globalAdminUser = Update-MgUser -UserId $globalAdminUser.Id @params
     if ($?) {
         Add-LogMessage -Level Success "Existing AAD emergency administrator account updated."
     } else {
@@ -145,7 +145,7 @@ if ($user) {
     }
 } else {
     # Create new user
-    $user = New-MgUser -UserPrincipalName $upn @params
+    $globalAdminUser = New-MgUser -UserPrincipalName $userPrincipalName @params
     if ($?) {
         Add-LogMessage -Level Success "AAD emergency administrator account created."
     } else {
@@ -173,19 +173,24 @@ if ($null -eq $globalAdminRole) {
     $globalAdminRole = Get-MgDirectoryRole | Where-Object { $_.DisplayName -eq $globalAdminRoleName }
 }
 # Ensure user is assigned to the role
-$user = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $upn }
-$userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $user.Id }
+$globalAdminUser = Get-MgUser | Where-Object { $_.UserPrincipalName -eq $userPrincipalName }
+$userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $globalAdminUser.Id }
 if ($userHasRole) {
     Add-LogMessage -Level Success "AAD emergency administrator already has '$globalAdminRoleName' role."
 } else {
-    New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($user.Id)" }
-    $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id | Where-Object { $_.Id -eq $user.Id }
+    New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($globalAdminUser.Id)" }
+    $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $globalAdminUser.Id }
     if ($userHasRole) {
         Add-LogMessage -Level Success "Granted AAD emergency administrator '$globalAdminRoleName' role."
     } else {
         Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$globalAdminRoleName' role!"
     }
 }
+
+
+# Sign out of Microsoft Graph
+# ---------------------------
+Disconnect-MgGraph
 
 
 # Ensure that certificates exist

@@ -53,30 +53,36 @@ timezone: {{time.timezone.linux}}
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
     {{#time.ntp.serverAddresses}}
     - {{.}}
     {{/time.ntp.serverAddresses}}
 
 runcmd:
-  # Ensure that Docker will run on restart
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker
   - systemctl start docker
   - sleep 1m
   - systemctl status docker
+  - docker --version
+  - docker-compose --version
+
   # Create directory for Nexus data that is owned by the correct user inside the Docker container
-  - echo "Creating Nexus data directory"
+  - echo ">=== Creating Nexus data directory... ===<"
   - mkdir /nexus-data
   - chown -R 200:200 /nexus-data
+
   # Set up the Nexus container
-  - echo "Creating Nexus container"
+  - echo ">=== Creating Nexus container... ===<"
   - docker-compose -f /root/docker-compose.yaml up -d
+
   # Give Nexus some time to initialise
-  - echo "Waiting for Nexus to initialise (3 minutes)"
+  - echo ">=== Waiting for Nexus to initialise (3 minutes)... ===<"
   - sleep 3m
+
   # Configure Nexus
-  - echo "Configuring Nexus"
+  - echo ">=== Configuring Nexus... ===<"
   - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
   - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
 

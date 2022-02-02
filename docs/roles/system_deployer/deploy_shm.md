@@ -373,7 +373,7 @@ If you see a message about buying licences, you may need to refresh the page for
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar
-- Click `Multi-Factor authentication` icon in the top bar of the users list.
+- Click the `Per-user MFA` icon in the top bar of the users list.
 - Click on `Service settings` at the top of the panel
 - Configure MFA as follows:
 
@@ -469,7 +469,7 @@ Before you do this, you **must** configure and log into the **native** admin acc
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-- Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+- Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
 - Enter the captcha text and press next
@@ -673,7 +673,7 @@ If you cannot see these resource groups:
 ```{danger}
 - These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
 - Do not use them except where specified and never write them down!
-- Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs).
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the secure research desktops).
 ```
 
 (roles_deployer_shm_aad_connect)=
@@ -697,7 +697,7 @@ If you cannot see these resource groups:
     - Click `Next`
   - On the `Connect to Azure AD` screen:
     - Provide credentials for the Azure Active Directory **global administrator** account you set up earlier (`aad.admin.<first name>.<last name>@<SHM domain>`) when prompted
-    - On the webpage pop-up, provide the password you chose for this account when prompted
+    - If you receive a pop-up prompt, provide the same credentials when prompted
     - Back on the `Connect to Azure AD` screen, click `Next`
     - Approve the login with MFA if required
   - On the `Connect your directories` screen:
@@ -861,14 +861,14 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Click `Assign` to complete the process
 - <details><summary><b>Activate your researcher account</b></summary>
 
-  - Go to https://aka.ms/mfasetup in an **incognito / private browsing** tab
+  - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
   - Enter the researcher username (`firstname.lastname@<SHM domain>`)
   - Click the `Forgotten my password` link
   - Enter the captcha text and press next
   - Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
   - Enter the code that was texted to your phone
   - Enter a new password
-  - Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
+  - Click the `Sign in with new password` link on the following page, or go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) again
   - Enter the username (`firstname.lastname@<SHM domain>>`)and the new password
   - Click `Next` at the `Help us to protect your account` prompt
   - Follow the instructions to configure Microsoft Authenticator
@@ -937,7 +937,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 - On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
 
 ```powershell
-& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1
+& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
 ```
 
 - Enter `A` if prompted to install `Powershell` modules
@@ -1018,16 +1018,16 @@ Before completing this step, **make sure you have confirmed you are able to succ
 - Click the `+New Policy` icon in the tob bar above the (empty) policy list
 - Create a new policy as follows:
   - Set the name to `Require MFA`
-  - Set the `Users and groups` condition to:
-    - Include: Check `All users`
-    - Exclude:
+  - Under `Users or workload identities` set the `Users and groups` condition to:
+    - **Include**: Select `All users`
+    - **Exclude**:
       - Check `Users and groups`
       - Select the `Admin - EMERGENCY ACCESS` user
       - Select all `On-Premises Directory Synchronization Service Account` users
       - Click `Select`
-  - Set the `Cloud apps and policies` condition to:
-    - Include: Check `All cloud apps`
-    - Exclude: Leave unchanged as `None`
+  - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
+    - **Include**: Select `All cloud apps`
+    - **Exclude**: Leave unchanged as `None`
   - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
   - Set the `Grant` condition to:
     - Check `Grant access`
@@ -1053,27 +1053,26 @@ Therefore we will block access for all users other than Global Administrators.
 - Click on `New Policy` at the top of the panel
 - Configure the policy as follows
   - In the `Name` field enter `Prevent Azure portal access`
-  - Under the heading `Users and groups` click `0 users and groups selected`
-    - With the `Include` tab selected, select the `All users` radio button
-    - With the `Exclude` tab selected, select the `Select users and groups`
-    - Tick the `Directory roles` tickbox
-    - In the drop-down menu select `Global administrator`.
-      This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
-  - Under the `Cloud apps or actions` heading click `No cloud apps, actions, or authentication contexts selected`
-    - In the drop-down menu slect `Cloud apps`
-    - With the `Include` tab selected, select the `Select apps` radio button
-    - Under the `Select` heading click `None` and in the pop-up menu on the
-      right, slected `Microsoft Azure Management` and click `Select`
-  - Leave the Conditions condition unchanged (all showing as Not configured)
+  - Under `Users or workload identities` set the `Users and groups` condition to:
+    - **Include**: Select `All users`
+    - **Exclude**:
+      - Check `Directory roles`
+      - In the drop-down menu select `Global administrator`.
+    This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
+  - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
+    - **Include**:
+      - Select `Select apps`
+      - In the pop-up menu on the right, select `Microsoft Azure Management` and click `Select`
+    - **Exclude**: Leave unchanged as `None`
+  - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
   - Under the `Access controls` and `Grant` Headings click `0 controls selected`
-    - In the pop-up menu on the right select the `Block Access` radio button and
-      click `Select`
+    - In the pop-up menu on the right select the `Block Access` radio button and click `Select`
   - Under `Enable policy` select `On`
-  - Click `Create`
+  - Click the `Create` button
 
 ```{error}
 Security defaults must be disabled in order to create this policy.
-This should have been done in done when creating a policy to [require MFA for all users](#require-mfa-for-all-users).
+This should have been done in done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
 (roles_system_deployer_shm_deploy_mirrors)=
@@ -1146,7 +1145,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 
 ## 14. {{chart_with_upwards_trend}} Deploy logging
 
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
 PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>

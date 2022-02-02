@@ -1,8 +1,0 @@
-[tool.poetry]
-name = "PYTHON_ENV_NAME"
-version = "1.0.0"
-description = "PYTHON_ENV_NAME"
-authors = ["ROOT <root@localhost>"]
-
-[tool.poetry.dependencies]
-python = "PYTHON_VERSION"

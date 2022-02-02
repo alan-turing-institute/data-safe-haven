@@ -16,6 +16,22 @@ These instructions will walk you through creating a new VM image for use in the 
 - SHM configuration file
   - The core properties for the environment must be present in the `environment_configs` folder as described in the {ref}`Safe Haven Management deployment instructions <deploy_shm>`.
 
+````{hint}
+If you run:
+
+```powershell
+PS> Start-Transcript -Path <a log file>
+```
+
+before you start your deployment and
+
+```powershell
+PS> Stop-Transcript
+```
+
+afterwards, you will automatically get a full log of the Powershell commands you have run.
+````
+
 ### (Optional) Verify code version
 
 If you have cloned/forked the code from our `GitHub` repository, you can confirm which version of the Data Safe Haven you are currently using by running the following commands:
@@ -84,7 +100,7 @@ If you want to update the version of one of the packages we install from a `.deb
 
 In order to provision a candidate VM you will need to do the following:
 
-![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
+![Powershell: two to three hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=two%20to%20three%20hours) at {{file_folder}} `./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
@@ -100,14 +116,14 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 
 ```{error}
 - If you are unable to access the VM over `ssh` please check whether you are trying to connect from one of the approved IP addresses that you defined under `vmImages > buildIpAddresses` in the SHM config file.
-- You can check which IP addresses are currently allowed by looking at the `AllowBuildAdminSSH` inbound connection rule in the `RG_SH_NETWORKING > NSG_IMAGE_BUILD` network security group in the subscription where you are building the candidate VM
+- You can check which IP addresses are currently allowed by looking at the `AllowBuildAdminSSH` inbound connection rule in the `RG_VMIMAGES_NETWORKING > NSG_VMIMAGES_BUILD_CANDIDATES` network security group in the subscription where you are building the candidate VM
 ```
 
 ## 4. {{camera}} Convert candidate VM to an image
 
 Once you are happy with a particular candidate, you can convert it into an image as follows:
 
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
@@ -116,7 +132,7 @@ PS> ./Convert_VM_To_Image.ps1 -shmId <SHM ID> -vmName <VM name>
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
 - where `<VM name>` is the name of the virtual machine created during the provisioning step
 
-This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
+This will build a new image in `RG_VMIMAGES_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
 
 ```{note}
 The first step of this script will run the remote build analysis script.
@@ -127,7 +143,7 @@ Please **check** that everything has built correctly before proceeding.
 
 Once you have created an image, it can be registered in the image gallery for future use using the `Register_Image_In_Gallery.ps1` script.
 
-![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} ``./deployment/secure_research_desktop/setup`
+![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/secure_research_desktop/setup`
 
 ```powershell
 PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>

@@ -89,7 +89,6 @@ timezone: {{sre.time.timezone.linux}}
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
 ntp:
   enabled: true
-  ntp_client: systemd-timesyncd
   pools:
     {{#shm.time.ntp.serverAddresses}}
     - {{.}}
@@ -167,39 +166,41 @@ runcmd:
   - mkdir -p /data/cocalc
   - ls -alh /data/
 
-  # Ensure that Docker is running
-  - echo ">=== Current Docker status... ===<"
-  - systemctl start docker
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker
+  - systemctl start docker
+  - sleep 1m
   - systemctl status docker
   - docker --version
   - docker-compose --version
 
   # Set up the cocalcdaemon user
-  - echo "Configuring cocalcdaemon user..."
+  - echo ">=== Configuring cocalcdaemon user... ===<"
   - groupadd docker 2> /dev/null
   - usermod -aG docker cocalcdaemon
   - newgrp docker
   - chown -R cocalcdaemon:cocalcdaemon /opt/cocalc
   - ls -alh /opt/cocalc
 
-  # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
-  - echo ">=== Configure ingress and egress mounts ... ===<"
+  # Schedule mounting of data volume, allowing non-root users to specify 'allow_other'
+  - echo ">=== Configure ingress mount... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
   - echo "user_allow_other" >> /etc/fuse.conf.tmp
   - mv /etc/fuse.conf.tmp /etc/fuse.conf
   - systemctl enable ingress.mount
   - systemctl enable ingress.automount
+  - systemctl start ingress.mount
+  - systemctl status ingress.mount
   - ls -alh /ingress
 
   # Deploy CoCalc using Docker
-  - echo "Deploying CoCalc with Docker..."
+  - echo ">=== Deploying CoCalc with Docker...  ===<"
   - su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yaml up -d"
   # Wait for deployment to finish
   - |
     while true; do
-      STATUS=$(su cocalcdaemon -c "docker-compose -f /opt/cocalc/docker-compose.yaml logs cocalc" | grep "finished exec of psql")
-      if [ "$STATUS" != "" ]; then
+      if (curl --silent --insecure https://localhost | grep -q "<title>Open CoCalc.*</title>"); then
         break
       fi
       sleep 5

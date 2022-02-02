@@ -59,7 +59,7 @@ case "$directory" in
 esac
 
 # Cleanup and print output
-rm -rf ${directory_path}/${testfile} 2> /dev/null
+rm -rf "${directory_path}/${testfile}" 2> /dev/null
 if [ $nfailed = 0 ]; then
     echo "All tests passed for '${directory_path}'"
 else
