@@ -9,7 +9,7 @@ packages:
   - python3-requests
 
 write_files:
-  - path: "/opt/configuration/docker-compose.yaml"
+  - path: "/root/docker-compose.yaml"
     owner: root:root
     permissions: "0400"
     content: |
@@ -71,7 +71,7 @@ runcmd:
   - chown -R 200:200 /nexus-data
   # Set up the Nexus container
   - echo "Creating Nexus container"
-  - docker-compose -f /opt/configuration/docker-compose.yaml up -d
+  - docker-compose -f /root/docker-compose.yaml up -d
   # Give Nexus some time to initialise
   - echo "Waiting for Nexus to initialise (3 minutes)"
   - sleep 3m
