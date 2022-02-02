@@ -17,13 +17,6 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
-# Check requested tier
-# --------------------
-if ($tier -ne "2") {
-    Add-LogMessage -Level Fatal "Currently Nexus only supports tier-2 repositories!"
-}
-
-
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-ShmConfig -shmId $shmId
