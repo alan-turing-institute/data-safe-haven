@@ -464,7 +464,7 @@ function Get-ShmConfig {
             adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus".ToLower()
             nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password".ToLower()
             ipAddress                       = "10.30.1.10"
-            vmName                          = "NEXUS-REPOSITORY-TIER-2"
+            vmNamePrefix                    = "NEXUS-REPOSITORY"
         }
     }
 
