@@ -83,8 +83,8 @@ runcmd:
 
   # Configure Nexus
   - echo ">=== Configuring Nexus... ===<"
-  - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
-  - /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
+  - configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
+  - configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
 
 power_state:
   mode: poweroff
