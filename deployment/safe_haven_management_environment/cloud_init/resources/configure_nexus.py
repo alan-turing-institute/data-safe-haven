@@ -3,10 +3,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 import requests
 
-_NEXUS_PATH = "http://localhost"
-_NEXUS_PORT = 80
-_NEXUS_ADMIN_USERNAME = "admin"
-
 _NEXUS_REPOSITORIES = {
     "pypi_proxy": dict(
         repo_type="pypi",
@@ -26,7 +22,8 @@ _ROLE_NAME = "safe haven user"
 class NexusAPI:
     """Interface to the Nexus REST API"""
 
-    def __init__(self, nexus_path, nexus_port, username, password):
+    def __init__(self, *, password, username="admin",
+                 nexus_path="http://localhost", nexus_port="80"):
         self.nexus_api_root = f"{nexus_path}:{nexus_port}/service/rest"
         self.username = username
         self.password = password
@@ -396,12 +393,7 @@ def change_initial_password(args):
             "Initial password appears to have been already changed"
         )
 
-    nexus_api = NexusAPI(
-        nexus_path=_NEXUS_PATH,
-        nexus_port=_NEXUS_PORT,
-        username=_NEXUS_ADMIN_USERNAME,
-        password=initial_password,
-    )
+    nexus_api = NexusAPI(password=initial_password)
 
     nexus_api.change_admin_password(args.admin_password)
 
@@ -417,12 +409,7 @@ def check_package_files(args):
 def initial_configuration(args):
     check_package_files(args)
 
-    nexus_api = NexusAPI(
-        nexus_path=_NEXUS_PATH,
-        nexus_port=_NEXUS_PORT,
-        username=_NEXUS_ADMIN_USERNAME,
-        password=args.admin_password,
-    )
+    nexus_api = NexusAPI(password=args.admin_password)
 
     # Ensure only desired repositories exist
     recreate_repositories(nexus_api)
@@ -454,12 +441,7 @@ def initial_configuration(args):
 def update_allow_lists(args):
     check_package_files(args)
 
-    nexus_api = NexusAPI(
-        nexus_path=_NEXUS_PATH,
-        nexus_port=_NEXUS_PORT,
-        username=_NEXUS_ADMIN_USERNAME,
-        password=args.admin_password,
-    )
+    nexus_api = NexusAPI(password=args.admin_password)
 
     if args.tier == 3:
         pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
