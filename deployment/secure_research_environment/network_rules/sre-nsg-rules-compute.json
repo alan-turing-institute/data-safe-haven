@@ -60,6 +60,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowRemoteDesktopGatewayInbound",
+        "access": "Allow",
+        "description": "Allow connections to SRDs from remote desktop gateway",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationPortRange": ["22", "3389"],
+        "direction": "Inbound",
+        "priority": 800,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDomainJoinedClientsUdpOutbound",
         "access": "Allow",
         "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",

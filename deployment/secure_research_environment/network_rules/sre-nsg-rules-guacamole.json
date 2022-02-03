@@ -48,6 +48,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowSRDOutbound",
+        "access": "Allow",
+        "description": "Allow RDP connection to SRDs from Guacamole",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationPortRange": ["22", "3389"],
+        "direction": "Outbound",
+        "priority": 800,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
