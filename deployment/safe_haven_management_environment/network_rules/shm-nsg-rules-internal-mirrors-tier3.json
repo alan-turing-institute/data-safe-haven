@@ -14,7 +14,7 @@
     {
         "name": "AllowRepositoryAccessInbound",
         "access": "Allow",
-        "description": "Allow package requests over ports 80 (http), 443 (pip) and 3218 (pip).",
+        "description": "Allow package requests over ports 80 (http), 443 (pip) and 3128 (pip).",
         "destinationAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
         "destinationPortRange": ["80", "443", "3128"],
         "direction": "Inbound",

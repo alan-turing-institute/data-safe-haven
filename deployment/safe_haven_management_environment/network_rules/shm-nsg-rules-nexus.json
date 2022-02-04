@@ -4,7 +4,7 @@
         "access": "Allow",
         "description": "Allow package requests over http",
         "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
-        "destinationPortRange": 80,
+        "destinationPortRange": "80",
         "direction": "Inbound",
         "priority": 1400,
         "protocol": "*",
