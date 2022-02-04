@@ -608,7 +608,9 @@ def get_allowlist(allowlist_path):
     with open(allowlist_path, "r") as allowlist_file:
         allowlist = allowlist_file.read().splitlines()
 
-    allowlist = [i.lower() for i in allowlist]
+    allowlist = [i.lower().strip() for i in allowlist]
+    # Remove blank lines, which could result in a path of all packages
+    allowlist = [i for i in allowlist if i]
 
     return allowlist
 
