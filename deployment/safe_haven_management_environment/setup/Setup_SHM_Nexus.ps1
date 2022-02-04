@@ -35,7 +35,7 @@ $nexusAppAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 $vmName = "$($config.repository.nexus.vmNamePrefix)-TIER-$tier"
-$privateIpAddress = $config.repository.nexus.ipAddress
+$privateIpAddress = $config.repository.nexus.ipAddress[$tier]
 
 
 # Ensure that package mirror and networking resource groups exist
