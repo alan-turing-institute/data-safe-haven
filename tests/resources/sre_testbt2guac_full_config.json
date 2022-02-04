@@ -229,16 +229,32 @@
           }
         }
       },
-      "repositoryVnet": {
-        "cidr": "10.30.1.0/24",
-        "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
-        "subnets": {
-          "repository": {
-            "cidr": "10.30.1.0/24",
-            "name": "RepositorySubnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
-              "rules": "shm-nsg-rules-nexus.json"
+      "repositoryVnets": {
+        "tier2": {
+          "cidr": "10.30.1.0/24",
+          "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
+          "subnets": {
+            "repository": {
+              "cidr": "10.30.1.0/24",
+              "name": "RepositorySubnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
+                "rules": "shm-nsg-rules-nexus.json"
+              }
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.30.2.0/24",
+          "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_3",
+          "subnets": {
+            "repository": {
+              "cidr": "10.30.2.0/24",
+              "name": "RepositorySubnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_3",
+                "rules": "shm-nsg-rules-nexus.json"
+              }
             }
           }
         }
@@ -298,15 +314,28 @@
       "townCity": "London"
     },
     "repository": {
-      "diskType": "Standard_LRS",
-      "nexus": {
-        "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus",
-        "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password",
-        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      "tier2": {
+        "diskType": "Standard_LRS",
+        "nexus": {
+          "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus-tier2",
+          "ipAddress": "10.30.1.10",
+          "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password-tier2",
+          "vmName": "NEXUS-REPOSITORY-TIER-2"
+        },
+        "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
+        "vmSize": "Standard_B2ms"
       },
-      "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
-      "vmSize": "Standard_B2ms"
+      "tier3": {
+        "diskType": "Standard_LRS",
+        "nexus": {
+          "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus-tier3",
+          "ipAddress": "10.30.2.10",
+          "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password-tier3",
+          "vmName": "NEXUS-REPOSITORY-TIER-3"
+        },
+        "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
+        "vmSize": "Standard_B2ms"
+      }
     },
     "rgPrefix": "RG_SHM_TESTB",
     "srdImage": {
