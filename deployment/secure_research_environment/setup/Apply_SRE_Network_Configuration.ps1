@@ -21,7 +21,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Get common parameters
 # ---------------------
 $allowedSources = ($config.sre.remoteDesktop.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)ExternalInternetOutbound"
+$inboundApprovedUsersRuleName = "AllowUsersApprovedHttpsInbound"
 $nsgs = @{}
 
 
@@ -73,10 +74,10 @@ $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkS
 # Update remote desktop server NSG rules
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     Add-LogMessage -Level Info "Setting inbound connection rules on Guacamole NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "AllowHttpsInbound" -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
+    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
 } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
     Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "AllowHttpsInbound" -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
+    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }

@@ -191,6 +191,7 @@ runcmd:
   - systemctl enable ingress.mount
   - systemctl enable ingress.automount
   - systemctl start ingress.mount
+  - sleep 20
   - systemctl status ingress.mount
   - ls -alh /ingress
 

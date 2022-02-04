@@ -1,6 +1,18 @@
 [
     {
-        "name": "IgnoreRulesBelowHereInbound",
+        "name": "DenyAdminVPNInbound",
+        "access": "Deny",
+        "description": "Deny connections from admin P2S VPN",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
         "destinationAddressPrefix": "*",
@@ -12,27 +24,15 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowInternetOutbound",
+        "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",
-        "priority": 1000,
+        "priority": 3900,
         "protocol": "*",
-        "sourceAddressPrefix": "*",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "DenyVirtualNetworkOutbound",
-        "access": "Deny",
-        "description": "Deny all other outbound traffic to the virtual network.",
-        "destinationAddressPrefix": "VirtualNetwork",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 3000,
-        "protocol": "*",
-        "sourceAddressPrefix": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
         "sourcePortRange": "*"
     },
     {

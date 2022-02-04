@@ -453,18 +453,27 @@ runcmd:
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
 
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
   - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
+  - grep -v -e '^[[:space:]]*$' /etc/realmd.conf | grep -v "^#" | sed 's|^|  /etc/realmd.conf  |'
+
   - echo ">=== Checking DNS... ===<"
   - /opt/configuration/check_dns.sh
+
   - echo ">=== Checking hostname... ===<"
   - /opt/configuration/check_hostname.sh
+
   - echo ">=== Updating PAM configuration... ===<"
   - /opt/configuration/configure_pam.sh
+  - systemctl start sssd
   - systemctl enable sssd
+  - sleep 20
+  - systemctl status sssd
 
   # Check Kerberos settings
   - echo ">=== Checking LDAP config... ===<"
