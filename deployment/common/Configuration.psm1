@@ -219,7 +219,7 @@ function Get-ShmConfig {
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{
-        vnet           = [ordered]@{
+        vnet            = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -244,7 +244,7 @@ function Get-ShmConfig {
                 }
             }
         }
-        vpn            = [ordered]@{
+        vpn             = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         repositoryVnets = [ordered]@{}
