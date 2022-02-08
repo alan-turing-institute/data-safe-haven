@@ -1,12 +1,24 @@
 [
     {
-        "name": "AllowBuildAdminSshInbound",
+        "name": "DenyAdminVPNInbound",
+        "access": "Deny",
+        "description": "Deny connections from admin P2S VPN",
+        "destinationAddressPrefix": "{{srdImage.build.subnet.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowAdminApprovedSshInbound",
         "access": "Allow",
-        "description": "Allow inbound SSH connections from authorised IP addresses",
-        "destinationAddressPrefix": "*",
+        "description": "Allow inbound SSH connections from authorised image building IP addresses",
+        "destinationAddressPrefix": "{{srdImage.build.subnet.cidr}}",
         "destinationPortRange": "22",
         "direction": "Inbound",
-        "priority": 1000,
+        "priority": 2100,
         "protocol": "TCP",
         "sourceAddressPrefix": [
             {{#buildAdminIpAddresses}}
@@ -16,7 +28,7 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "IgnoreRulesBelowHereInbound",
+        "name": "DenyAllOtherInbound",
         "access": "Deny",
         "description": "Deny all other inbound traffic.",
         "destinationAddressPrefix": "*",
@@ -28,13 +40,13 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowInternetOutbound",
+        "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",
         "destinationAddressPrefix": "Internet",
         "destinationPortRange": "*",
         "direction": "Outbound",
-        "priority": 1000,
+        "priority": 3900,
         "protocol": "*",
         "sourceAddressPrefix": "{{srdImage.build.subnet.cidr}}",
         "sourcePortRange": "*"

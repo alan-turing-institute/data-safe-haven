@@ -1,6 +1,7 @@
 #! /bin/bash
-while getopts d:l: flag
-do
+db_type=""
+language=""
+while getopts d:l: flag; do
     case "${flag}" in
         d) db_type=${OPTARG};;
         l) language=${OPTARG};;

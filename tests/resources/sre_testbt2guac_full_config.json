@@ -196,14 +196,16 @@
               "cidr": "10.20.2.0/28",
               "name": "ExternalPackageMirrorsTier2Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2",
+                "rules": "shm-nsg-rules-external-mirrors-tier2.json"
               }
             },
             "internal": {
               "cidr": "10.20.2.16/28",
               "name": "InternalPackageMirrorsTier2Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2"
+                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2",
+                "rules": "shm-nsg-rules-internal-mirrors-tier2.json"
               }
             }
           }
@@ -216,14 +218,16 @@
               "cidr": "10.20.3.0/28",
               "name": "ExternalPackageMirrorsTier3Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+                "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3",
+                "rules": "shm-nsg-rules-external-mirrors-tier3.json"
               }
             },
             "internal": {
               "cidr": "10.20.3.16/28",
               "name": "InternalPackageMirrorsTier3Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3"
+                "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3",
+                "rules": "shm-nsg-rules-internal-mirrors-tier3.json"
               }
             }
           }

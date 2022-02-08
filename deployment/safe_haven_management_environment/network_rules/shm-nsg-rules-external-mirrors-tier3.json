@@ -1,21 +1,9 @@
 [
     {
-        "name": "AllowRepositoryAccessInbound",
-        "access": "Allow",
-        "description": "Allow package requests over http",
-        "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
-        "destinationPortRange": "80",
-        "direction": "Inbound",
-        "priority": 1400,
-        "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
@@ -36,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMirrorSynchronisationOutbound",
+        "access": "Allow",
+        "description": "Allow rsync over ports 22 and 873.",
+        "destinationAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "destinationPortRange": ["22", "873"],
+        "direction": "Outbound",
+        "priority": 300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
@@ -44,7 +44,7 @@
         "direction": "Outbound",
         "priority": 1200,
         "protocol": "*",
-        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -60,19 +60,19 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
         "sourcePortRange": "*"
     },
     {
         "name": "AllowExternalPackageFetchingOutbound",
         "access": "Allow",
-        "description": "Allow ports 80 (http) and 443 (https) for fetching packages",
+        "description": "Allow ports 443 (https) and 873 (unencrypted rsync) for fetching packages",
         "destinationAddressPrefix": "Internet",
-        "destinationPortRange": ["80", "443"],
+        "destinationPortRange": ["443", "873"],
         "direction": "Outbound",
         "priority": 3200,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnet.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
         "sourcePortRange": "*"
     },
     {
