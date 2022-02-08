@@ -242,7 +242,7 @@
             "name": "RepositorySubnet",
             "nsg": {
               "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_2",
-              "rules": "shm-nsg-rules-nexus.json"
+              "rules": "shm-nsg-rules-nexus-tier2.json"
             }
           }
         }
@@ -256,7 +256,7 @@
             "name": "RepositorySubnet",
             "nsg": {
               "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_3",
-              "rules": "shm-nsg-rules-nexus.json"
+              "rules": "shm-nsg-rules-nexus-tier3.json"
             }
           }
         }

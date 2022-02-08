@@ -262,7 +262,7 @@ function Get-ShmConfig {
                     cidr = "${shmRepositoryPrefix}.0/24"
                     nsg  = [ordered]@{
                         name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
-                        rules = "shm-nsg-rules-nexus.json"
+                        rules = "shm-nsg-rules-nexus-tier${tier}.json"
                     }
                 }
             }
