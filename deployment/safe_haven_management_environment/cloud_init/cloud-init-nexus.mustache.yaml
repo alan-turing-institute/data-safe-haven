@@ -39,7 +39,7 @@ write_files:
     permissions: "0755"
     content: |
       {{configure_nexus.py}}
-  - path: "/etc/cron.daily/update-nexus-allowlists"
+  - path: "/usr/local/update-nexus-allowlists"
     owner: root:root
     permissions: "0700"
     content: |

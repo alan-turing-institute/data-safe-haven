@@ -1115,16 +1115,18 @@ proxy these will be ignored and all packages on PyPI and CRAN may be
 installed on linked SREs. For a {ref}`policy_tier_3` proxy only the packages
 named in these lists may be installed.
 
-These lists will be stored on the Nexus VM at `/etc/nexus/allowlist-pypi` and
-`/etc/nexus/allowlist-cran` for PyPI and CRAN respectively. Once a day Nexus
-will automatically be reconfigured based on these lists.
+To update the allowlists and Nexus configuration on an SHM, you may use the
+`/deployment/administration/SHM_Update_Nexus_Allowlists.ps1` script.
 
-To change the allowed packages you may edit the allowlist files. To update Nexus
-immediately you may manually trigger the update script
-
-```bash
-# /etc/cron.daily/update-nexus-allowlists
+```powershell
+PS> /deployment/administration/SHM_Update_Nexus_Allowlists.ps1 -shmId <SHM ID>
 ```
+
+By default, this script will use the allowlists present in
+`environment_configs/package_lists/` but you may use the `-allowlistDirectory`
+option to specify another directory containing the allowlists. It is assumed
+that the allowlists will have the same names as those in in
+`environment_configs/package_lists/`.
 
 ### How to deploy a local package mirror
 
