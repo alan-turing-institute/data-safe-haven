@@ -31,7 +31,7 @@ if (-Not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".
 # 3. Run nexus update job
 $script = "#! /bin/sh`n"
 
-foreach ($proxy in @("pypyi", "cran"))
+foreach ($proxy in @("pypi", "cran"))
     # Read proxy allowlist
     $allowlistPath = Join-Path $allowlistDirectory "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
     Add-LogMessage -Level Info "Using allowlist from '$allowlistPath'"
