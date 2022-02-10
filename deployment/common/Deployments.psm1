@@ -1186,7 +1186,7 @@ function Invoke-RemoteScript {
             $success = $success -and ([string]($outputStream.Message) -NotLike '* `[x`] *')
         }
     }
-    # Clean up any temporary scripts
+    # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
     # Check for success or failure
     if ($success) {

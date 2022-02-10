@@ -53,8 +53,17 @@ foreach ($proxy in @("pypi", "cran"))
 # Run nexus update script
 $script += "/usr/local/update-nexus-allowlists"
 
-# Run the script on the Nexus VM
+# Ensure Nexus VM is running
 $vmName = $config.repository.["tier${tier}"].nexus.vmName
+$vmStatus = Get-AzVM -ResourceGroupName $config.repository.rg -Name $vmName -Status
+if (-not $vmStatus) {
+    Add-LogMessage -Level Failure "VM '${vmName}' does not exist. Have you deployed a Nexus VM?"
+}
+if ($vmStatus.PopwerState -ne "VM running") {
+    Add-LogMessage -Level Failure "VM '${vmName}' is not running."
+}
+
+# Run the script on the Nexus VM
 Add-LogMessage -Level Info "Updating allowlists on $vmName"
 $null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.repository.rg -Shell "UnixShell" -Script $script
 
