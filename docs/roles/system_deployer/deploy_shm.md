@@ -1107,27 +1107,6 @@ You should never attempt to manage Nexus through the web interface.
 Doing so from outside the Nexus subnet could expose the admin credentials.
 ```
 
-#### Updating package allowlists
-
-The `Setup_SHM_Nexus.ps1` script will deploy the full allowlists present in
-`environment_configs/package_lists/` when it is run. For a {ref}`policy_tier_2`
-proxy these will be ignored and all packages on PyPI and CRAN may be
-installed on linked SREs. For a {ref}`policy_tier_3` proxy only the packages
-named in these lists may be installed.
-
-To update the allowlists and Nexus configuration on an SHM, you may use the
-`/deployment/administration/SHM_Update_Nexus_Allowlists.ps1` script.
-
-```powershell
-PS> /deployment/administration/SHM_Update_Nexus_Allowlists.ps1 -shmId <SHM ID>
-```
-
-By default, this script will use the allowlists present in
-`environment_configs/package_lists/` but you may use the `-allowlistDirectory`
-option to specify another directory containing the allowlists. It is assumed
-that the allowlists will have the same names as those in in
-`environment_configs/package_lists/`.
-
 ### How to deploy a local package mirror
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
