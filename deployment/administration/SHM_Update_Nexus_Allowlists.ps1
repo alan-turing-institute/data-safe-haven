@@ -20,7 +20,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Common variable names
 # ---------------------
-$tier = "3"  # currently only Tier-3 mirrors have allowlists
+$tier = "3"  # currently only Tier-3 enforces allowlists
 if (-Not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
 
 
@@ -56,7 +56,7 @@ $script += "/usr/local/update-nexus-allowlists"
 # Run the script on the Nexus VM
 $vmName = $config.repository.["tier${tier}"].nexus.vmName
 Add-LogMessage -Level Info "Updating allowlists on $vmName"
-$null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+$null = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.repository.rg -Shell "UnixShell" -Script $script
 
 
 # Switch back to original subscription
