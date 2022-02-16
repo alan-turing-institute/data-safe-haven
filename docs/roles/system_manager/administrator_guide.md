@@ -285,6 +285,27 @@ On your **deployment machine**.
 If the Azure subscription that you have deployed into runs out of credit, the SHM and/or SRE will be shutdown automatically.
 ```
 
+## {{package}} Updating proxy package allowlists
+
+When the Nexus repository is deployed the full allowlists present in
+`environment_configs/package_lists/` will be used for configuration. For a
+{ref}`policy_tier_2` proxy these will be ignored and all packages on PyPI and
+CRAN may be installed on linked SREs. For a {ref}`policy_tier_3` proxy only the
+packages named in these lists may be installed.
+
+To update the allowlists and Nexus configuration on an SHM, you may use the
+`/deployment/administration/SHM_Update_Nexus_Allowlists.ps1` script.
+
+```powershell
+PS> /deployment/administration/SHM_Update_Nexus_Allowlists.ps1 -shmId <SHM ID>
+```
+
+By default, this script will use the allowlists present in
+`environment_configs/package_lists/` but you may use the `-allowlistDirectory`
+option to specify another directory containing the allowlists. It is assumed
+that the allowlists will have the same names as those in in
+`environment_configs/package_lists/`.
+
 ## {{anger}} Tear down SHM package mirrors
 
 During normal usage of the SHM, you should not need to tear down the package mirrors.

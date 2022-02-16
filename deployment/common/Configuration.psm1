@@ -219,7 +219,7 @@ function Get-ShmConfig {
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{
-        vnet           = [ordered]@{
+        vnet            = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -244,24 +244,29 @@ function Get-ShmConfig {
                 }
             }
         }
-        vpn            = [ordered]@{
+        vpn             = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
-        repositoryVnet = [ordered]@{
-            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            cidr    = "10.30.1.0/24"
+        repositoryVnets = [ordered]@{}
+        mirrorVnets     = [ordered]@{}
+    }
+    foreach ($tier in @(2, 3)) {
+        $shmRepositoryPrefix = "10.30.$($tier-1)"
+        # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
+        $shm.network.repositoryVnets["tier${tier}"] = [ordered]@{
+            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
+            cidr    = "${shmRepositoryPrefix}.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
                     name = "RepositorySubnet"
-                    cidr = "10.30.1.0/24"
+                    cidr = "${shmRepositoryPrefix}.0/24"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-                        rules = "shm-nsg-rules-nexus.json"
+                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-nexus-tier${tier}.json"
                     }
                 }
             }
         }
-        mirrorVnets    = [ordered]@{}
     }
     # Set package mirror networking information
     foreach ($tier in @(2, 3)) {
@@ -457,16 +462,20 @@ function Get-ShmConfig {
     }
 
     # Nexus repository VM config
+    $shm.repository = [ordered]@{}
     # --------------------------
-    $shm.repository = [ordered]@{
-        rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
-        vmSize   = "Standard_B2ms"
-        diskType = "Standard_LRS"
-        nexus    = [ordered]@{
-            adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus".ToLower()
-            nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password".ToLower()
-            ipAddress                       = "10.30.1.10"
-            vmName                          = "NEXUS-REPOSITORY-TIER-2"
+    foreach ($tier in @(2, 3)) {
+        $shm.repository["tier${tier}"] = [ordered]@{
+            rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
+            vmSize   = "Standard_B2ms"
+            diskType = "Standard_LRS"
+            nexus    = [ordered]@{
+                adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus-tier${tier}".ToLower()
+                nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password-tier${tier}".ToLower()
+                ipAddress                       = "10.30.$($tier-1).10"
+                # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
+                vmName                          = "NEXUS-REPOSITORY-TIER-${tier}"
+            }
         }
     }
 
@@ -1034,13 +1043,13 @@ function Get-SreConfig {
         # All Nexus repositories are accessed over the same port (currently 80)
         if ($config.sre.nexus) {
             $nexus_port = 80
-            if ([int]$config.sre.tier -ne 2) {
+            if ([int]$config.sre.tier -gt 3) {
                 Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
             }
-            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
-            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
-            $repositoryVNetName = $config.shm.network.repositoryVnet.name
-            $repositoryVNetCidr = $config.shm.network.repositoryVnet.cidr
+            $cranUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $repositoryVNetName = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } else {
             $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)

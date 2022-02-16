@@ -9,7 +9,8 @@ packages:
   - python3-requests
 
 write_files:
-  - path: "/opt/configuration/docker-compose.yaml"
+  - path: "/root/docker-compose.yaml"
+    owner: root:root
     permissions: "0400"
     content: |
       ---
@@ -23,10 +24,26 @@ write_files:
           volumes:
             - /nexus-data:/nexus-data
           restart: always
-  - path: "/opt/configuration/configure-nexus.py"
-    permissions: "0500"
+  - path: "/etc/nexus/allowlist-pypi"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{allowlist-full-python-pypi-tier3.list}}
+  - path: "/etc/nexus/allowlist-cran"
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{allowlist-full-r-cran-tier3.list}}
+  - path: "/usr/local/bin/configure-nexus"
+    owner: root:root
+    permissions: "0755"
     content: |
       {{configure_nexus.py}}
+  - path: "/usr/local/update-nexus-allowlists"
+    owner: root:root
+    permissions: "0700"
+    content: |
+      /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
 
 # Set locale and timezone
 locale: en_GB.UTF-8
@@ -58,7 +75,7 @@ runcmd:
 
   # Set up the Nexus container
   - echo ">=== Creating Nexus container... ===<"
-  - docker-compose -f /opt/configuration/docker-compose.yaml up -d
+  - docker-compose -f /root/docker-compose.yaml up -d
 
   # Give Nexus some time to initialise
   - echo ">=== Waiting for Nexus to initialise (3 minutes)... ===<"
@@ -66,7 +83,8 @@ runcmd:
 
   # Configure Nexus
   - echo ">=== Configuring Nexus... ===<"
-  - python3 /opt/configuration/configure-nexus.py --path /nexus-data --admin_password {{{nexus.adminPassword}}} --tier {{nexus.tier}}
+  - configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
+  - configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
 
 power_state:
   mode: poweroff

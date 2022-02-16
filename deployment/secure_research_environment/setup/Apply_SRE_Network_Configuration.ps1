@@ -100,8 +100,8 @@ foreach ($nsgName in $nsgs.Keys) {
 }
 
 
-# Ensure SRE is peered to correct mirror set
-# ------------------------------------------
+# Ensure SRE is peered to correct mirror/proxy set
+# ------------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
 Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_SRE_Package_Repositories.ps1) -shmId $shmId -sreId $sreId"
 # Peer this SRE to the repository network

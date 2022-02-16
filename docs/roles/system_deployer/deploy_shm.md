@@ -1081,15 +1081,16 @@ This should have been done in done when creating a policy to {ref}`require MFA f
 
 We currently support two different types of package repositories:
 
-- Nexus proxy ({ref}`policy_tier_2` only)
-- Local mirror ({ref}`policy_tier_2` and/or {ref}`policy_tier_3`)
+- Nexus proxy ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
+- Local mirror ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
 
 Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
 
 ### How to deploy a Nexus package repository
 
 ```{hint}
-We **recommend** deploying this for use with {ref}`policy_tier_2` SREs.
+We **recommend** using a Nexus proxy to avoid the time taken to sync local
+mirrors.
 ```
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
@@ -1107,10 +1108,6 @@ Doing so from outside the Nexus subnet could expose the admin credentials.
 ```
 
 ### How to deploy a local package mirror
-
-```{hint}
-We **recommend** deploying this for use with {ref}`policy_tier_3` SREs.
-```
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 

@@ -1,187 +1,29 @@
 #! /usr/bin/env python3
 from argparse import ArgumentParser
 from pathlib import Path
-import time
 import requests
 
-
-def main():
-    parser = ArgumentParser(description="Configure Nexus3")
-    parser.add_argument(
-        "--admin_password",
-        type=str,
-        required=True,
-        help="Password for the Nexus 'admin' account",
-    )
-    parser.add_argument("--path", type=str, help="Path of the nexus-data directory")
-    parser.add_argument(
-        "--tier",
-        type=int,
-        required=True,
-        choices=[2, 3],
-        help="Data security tier of the repository",
-    )
-    args = parser.parse_args()
-
-    if args.tier == 3:
-        raise NotImplementedError("Currently only tier 2 is supported")
-
-    if args.path:
-        nexus_data_dir = args.path
-    else:
-        nexus_data_dir = "./nexus-data"
-
-    password_file_path = Path(f"{nexus_data_dir}/admin.password")
-    while not password_file_path.is_file():
-        time.sleep(5)
-    with password_file_path.open() as password_file:
-        initial_password = password_file.read()
-
-    nexus_api = NexusAPI(
-        nexus_path="http://localhost",
-        nexus_port=80,
-        username="admin",
-        password=initial_password,
-    )
-    nexus_api.change_admin_password(args.admin_password)
-
-    # Delete all existing repositories
-    nexus_api.delete_all_repositories()
-
-    # Add PyPI proxy
-    nexus_api.create_proxy_repository("pypi", "pypi-proxy", "https://pypi.org/")
-    # Add CRAN proxy
-    nexus_api.create_proxy_repository("r", "cran-proxy", "https://cran.r-project.org/")
-
-    # Delete all existing content selector privileges
-    # These must be deleted before the content selectors as the content selectors
-    # as the privileges depend on the content selectors
-    nexus_api.delete_all_content_selector_privileges()
-
-    # Delete all existing content selectors
-    nexus_api.delete_all_content_selectors()
-
-    # Create content selectors and corresponding privileges
-    pypi_privilege_names = []
-    cran_privilege_names = []
-
-    # Content selector and privilege for PyPI 'simple' path, used to search for
-    # packages
-    nexus_api.create_content_selector(
-        name="simple",
-        description="Allow access to 'simple' directory in PyPI repository",
-        expression='format == "pypi" and path=^"/simple"',
-    )
-    nexus_api.create_content_selector_privilege(
-        name="simple",
-        description="Allow access to the pypi simple directory",
+_NEXUS_REPOSITORIES = {
+    "pypi_proxy": dict(
         repo_type="pypi",
-        repo="pypi-proxy",
-        content_selector="simple",
+        name="pypi-proxy",
+        remote_url="https://pypi.org/"
+    ),
+    "cran_proxy": dict(
+        repo_type="r",
+        name="cran-proxy",
+        remote_url="https://cran.r-project.org/"
     )
-    pypi_privilege_names.append("simple")
+}
 
-    # Create content selectors and privileges for packages according to the tier
-    if args.tier == 2:
-        # Allow all PyPI packages/versions
-        nexus_api.create_content_selector(
-            name="pypi",
-            description="Allow access to all PyPI packages",
-            expression='format == "pypi" and path=^"/packages/"',
-        )
-        nexus_api.create_content_selector_privilege(
-            name="pypi",
-            description="Allow access to all PyPI packages",
-            repo_type="pypi",
-            repo="pypi-proxy",
-            content_selector="pypi",
-        )
-        pypi_privilege_names.append("pypi")
-
-        # Allow all CRAN packages/versions
-        nexus_api.create_content_selector(
-            name="cran",
-            description="Allow access to all CRAN packages",
-            expression='format == "r" and path=^"/src/contrib"',
-        )
-        nexus_api.create_content_selector_privilege(
-            name="cran",
-            description="Allow access to all CRAN packages",
-            repo_type="r",
-            repo="cran-proxy",
-            content_selector="cran",
-        )
-        cran_privilege_names.append("cran")
-    elif args.tier == 3:
-        # Collect allowed PyPI package names and versions
-        allowed_pypi_packages = []
-
-        for package, version in allowed_pypi_packages:
-            name = f"pypi-{package}-{version}"
-            expression = f'format == "pypi" and path=^"/packages/{package}/{version}/"'
-            description = f"Allow access to {package} version {version}"
-            nexus_api.create_content_selector(name, description, expression)
-
-            nexus_api.create_content_selector_privilege(
-                name=name,
-                description=f"Allow access to {package} version {version}",
-                repo_type="pypi",
-                repo="pypi-proxy",
-                content_selector=name,
-            )
-            pypi_privilege_names.append(name)
-
-        # Collect allowed PyPI package names and versions
-        allowed_cran_packages = []
-
-        for package, version in allowed_cran_packages:
-            nexus_api.create_content_selector(
-                name=f"cran-{package}-{version}",
-                description="Allow access to all CRAN packages",
-                expression=(
-                    'format == "r"' ' and path=^"/src/contrib/{package}_{version}"'
-                ),
-            )
-
-            nexus_api.create_content_selector_privilege(
-                name=name,
-                description="Allow access to all CRAN packages",
-                repo_type="r",
-                repo="cran-proxy",
-                content_selector=name,
-            )
-            cran_privilege_names.append(name)
-
-    # Delete non-default roles
-    nexus_api.delete_all_custom_roles()
-
-    # Create a role with the PyPI privileges
-    pypi_role_name = f"tier {args.tier} pypi"
-    nexus_api.create_role(
-        name=pypi_role_name,
-        description=f"Allow access to tier {args.tier} PyPI packages",
-        privileges=pypi_privilege_names,
-    )
-
-    # Create a role with the CRAN privileges
-    cran_role_name = f"tier {args.tier} cran"
-    nexus_api.create_role(
-        name=cran_role_name,
-        description=f"Allow access to tier {args.tier} CRAN packages",
-        privileges=cran_privilege_names,
-    )
-
-    # Enable anonymous access
-    nexus_api.enable_anonymous_access()
-
-    # Update anonymous users roles
-    nexus_api.update_anonymous_user_roles([pypi_role_name, cran_role_name])
+_ROLE_NAME = "safe haven user"
 
 
 class NexusAPI:
     """Interface to the Nexus REST API"""
 
-    def __init__(self, nexus_path, nexus_port, username, password):
+    def __init__(self, *, password, username="admin",
+                 nexus_path="http://localhost", nexus_port="80"):
         self.nexus_api_root = f"{nexus_path}:{nexus_port}/service/rest"
         self.username = username
         self.password = password
@@ -191,29 +33,31 @@ class NexusAPI:
         return requests.auth.HTTPBasicAuth(self.username, self.password)
 
     def change_admin_password(self, new_password):
-        # Change admin password
-        try:
-            print(f"Old password: {self.password}")
-            print(f"New password: {new_password}")
-            response = requests.put(
-                f"{self.nexus_api_root}/beta/security/users/admin/change-password",
-                auth=self.auth,
-                headers={"content-type": "text/plain"},
-                data=new_password,
-            )
-            if response.status_code == 204:
-                print("Changed admin password")
-                self.password = new_password
-            else:
-                print("Changing password failed")
-                print(response.content)
-        except FileNotFoundError:
-            print("Password already changed")
-            print("Attempting to use provided password")
+        """
+        Change the password of the 'admin' account
+
+        Args:
+            new_password: New password to be set
+        """
+        print(f"Old password: {self.password}")
+        print(f"New password: {new_password}")
+        response = requests.put(
+            f"{self.nexus_api_root}/v1/security/users/admin/change-password",
+            auth=self.auth,
+            headers={"content-type": "text/plain"},
+            data=new_password,
+        )
+        if response.status_code == 204:
+            print("Changed admin password")
+            self.password = new_password
+        else:
+            print("Changing password failed")
+            print(response.content)
 
     def delete_all_repositories(self):
+        """Delete all existing repositories"""
         response = requests.get(
-            f"{self.nexus_api_root}/beta/repositories", auth=self.auth
+            f"{self.nexus_api_root}/v1/repositories", auth=self.auth
         )
         repositories = response.json()
 
@@ -221,7 +65,7 @@ class NexusAPI:
             name = repo["name"]
             print(f"Deleting repository: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/repositories/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/repositories/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -231,6 +75,14 @@ class NexusAPI:
                 print(response.content)
 
     def create_proxy_repository(self, repo_type, name, remote_url):
+        """
+        Create a proxy repository. Currently supports PyPI and R formats
+
+        Args:
+            repo_type: Type of repository, one of 'pypi' or 'r'
+            name: Name of the repository
+            remote_url: Path of the repository to proxy
+        """
         assert repo_type in ["pypi", "r"]
 
         payload = {
@@ -252,7 +104,7 @@ class NexusAPI:
 
         print(f"Creating {repo_type} repository: {name}")
         response = requests.post(
-            f"{self.nexus_api_root}/beta/repositories/{repo_type}/proxy",
+            f"{self.nexus_api_root}/v1/repositories/{repo_type}/proxy",
             auth=self.auth,
             json=payload,
         )
@@ -264,8 +116,9 @@ class NexusAPI:
             print(response.content)
 
     def delete_all_content_selectors(self):
+        """Delete all existing content selectors"""
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/content-selectors", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/content-selectors", auth=self.auth
         )
         content_selectors = response.json()
 
@@ -273,7 +126,7 @@ class NexusAPI:
             name = content_selector["name"]
             print(f"Deleting content selector: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/content-selectors/{name}",
+                f"{self.nexus_api_root}/v1/security/content-selectors/{name}",
                 auth=self.auth,
             )
             code = response.status_code
@@ -284,6 +137,15 @@ class NexusAPI:
                 print(response.content)
 
     def create_content_selector(self, name, description, expression):
+        """
+        Create a new content selector
+
+        Args:
+            name: Name of the content selector
+            description: Description of the content selector
+            expression: CSEL query (https://help.sonatype.com/repomanager3/nexus-repository-administration/access-control/content-selectors)
+                to identify content
+        """
         payload = {
             "name": f"{name}",
             "description": f"{description}",
@@ -292,7 +154,7 @@ class NexusAPI:
 
         print(f"Creating content selector: {name}")
         response = requests.post(
-            f"{self.nexus_api_root}/beta/security/content-selectors",
+            f"{self.nexus_api_root}/v1/security/content-selectors",
             auth=self.auth,
             json=payload,
         )
@@ -306,8 +168,9 @@ class NexusAPI:
             print(response.content)
 
     def delete_all_content_selector_privileges(self):
+        """Delete all existing content selector privileges"""
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/privileges", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/privileges", auth=self.auth
         )
         privileges = response.json()
 
@@ -318,7 +181,7 @@ class NexusAPI:
             name = privilege["name"]
             print(f"Deleting content selector privilege: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/privileges/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/security/privileges/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -329,9 +192,19 @@ class NexusAPI:
                 )
                 print(response.content)
 
-    def create_content_selector_privilege(
-        self, name, description, repo_type, repo, content_selector
-    ):
+    def create_content_selector_privilege(self, name, description, repo_type,
+                                          repo, content_selector):
+        """
+        Create a new content selector privilege
+
+        Args:
+            name: Name of the content selector privilege
+            description: Description of the content selector privilege
+            repo_type: Type of repository this privilege applies to
+            repo: Name of the repository this privilege applies to
+            content_selector: Name of the content selector applied to this
+                privilege
+        """
         payload = {
             "name": f"{name}",
             "description": f"{description}",
@@ -344,7 +217,7 @@ class NexusAPI:
         print(f"Creating content selector privilege: {name}")
         response = requests.post(
             (
-                f"{self.nexus_api_root}/beta/security/privileges"
+                f"{self.nexus_api_root}/v1/security/privileges"
                 "/repository-content-selector"
             ),
             auth=self.auth,
@@ -363,8 +236,9 @@ class NexusAPI:
             print(response.content)
 
     def delete_all_custom_roles(self):
+        """Delete all roles except for the default 'nx-admin' and 'nxanonymous'"""
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/roles", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/roles", auth=self.auth
         )
         roles = response.json()
 
@@ -375,7 +249,7 @@ class NexusAPI:
 
             print(f"Deleting role: {name}")
             response = requests.delete(
-                f"{self.nexus_api_root}/beta/security/roles/{name}", auth=self.auth
+                f"{self.nexus_api_root}/v1/security/roles/{name}", auth=self.auth
             )
             code = response.status_code
             if code == 204:
@@ -384,10 +258,16 @@ class NexusAPI:
                 print(f"Role deletion failed.\nStatus code:{code}")
                 print(response.content)
 
-    def create_role(self, name, description, privileges, roles=None):
-        if roles is None:
-            roles = []
+    def create_role(self, name, description, privileges, roles=[]):
+        """
+        Create a new role
 
+        Args:
+            name: Name of the role (also becomes the role id)
+            description: Description of the role
+            privileges: Privileges to be granted to the role
+            roles: Roles to be granted to the role
+        """
         payload = {
             "id": f"{name}",
             "name": f"{name}",
@@ -398,7 +278,7 @@ class NexusAPI:
 
         print(f"Creating role: {name}")
         response = requests.post(
-            (f"{self.nexus_api_root}/beta/security/roles"), auth=self.auth, json=payload
+            (f"{self.nexus_api_root}/v1/security/roles"), auth=self.auth, json=payload
         )
         code = response.status_code
         if code == 200:
@@ -409,9 +289,43 @@ class NexusAPI:
             print(f"role {name} creation failed.\nStatus code: {code}")
             print(response.content)
 
-    def enable_anonymous_access(self):
+    def update_role(self, name, description, privileges, roles=[]):
+        """
+        Update an existing role
+
+        Args:
+            name: Name of the role (also assumed to be the role id)
+            description: Description of the role
+            privileges: Privileges to be granted to the role (overwrites all
+                existing privileges)
+            roles: Roles to be granted to the role (overwrites all existing
+                roles)
+        """
+        payload = {
+            "id": f"{name}",
+            "name": f"{name}",
+            "description": f"{description}",
+            "privileges": privileges,
+            "roles": roles,
+        }
+
+        print(f"updating role: {name}")
         response = requests.put(
-            f"{self.nexus_api_root}/beta/security/anonymous",
+            (f"{self.nexus_api_root}/v1/security/roles/{name}"), auth=self.auth, json=payload
+        )
+        code = response.status_code
+        if code == 204:
+            print(f"role {name} successfully created")
+        elif code == 404:
+            print(f"role {name} does not exist")
+        else:
+            print(f"role {name} update failed.\nStatus code: {code}")
+            print(response.content)
+
+    def enable_anonymous_access(self):
+        """Enable access from anonymous users (where no credentials are supplied)"""
+        response = requests.put(
+            f"{self.nexus_api_root}/v1/security/anonymous",
             auth=self.auth,
             json={
                 "enabled": True,
@@ -427,9 +341,16 @@ class NexusAPI:
             print(response.content)
 
     def update_anonymous_user_roles(self, roles):
+        """
+        Update the roles assigned to the 'anonymous' user
+
+        Args:
+            roles: Roles to be assigned to the anonymous user, overwrites all
+                existing roles
+        """
         # Get existing user data JSON
         response = requests.get(
-            f"{self.nexus_api_root}/beta/security/users", auth=self.auth
+            f"{self.nexus_api_root}/v1/security/users", auth=self.auth
         )
         users = response.json()
         for user in users:
@@ -442,7 +363,7 @@ class NexusAPI:
 
         # Push changes to Nexus
         response = requests.put(
-            f"{self.nexus_api_root}/beta/security/users/{anonymous_user['userId']}",
+            f"{self.nexus_api_root}/v1/security/users/{anonymous_user['userId']}",
             auth=self.auth,
             json=anonymous_user,
         )
@@ -455,6 +376,389 @@ class NexusAPI:
                 f"Status code: {code}"
             )
             print(response.content)
+
+
+def main():
+    parser = ArgumentParser(description="Configure Nexus3")
+    parser.add_argument(
+        "--admin-password",
+        type=str,
+        required=True,
+        help="Password for the Nexus 'admin' account",
+    )
+
+    # Group of arguments for tiers and package files
+    tier_parser = ArgumentParser(add_help=False)
+    tier_parser.add_argument(
+        "--tier",
+        type=int,
+        required=True,
+        choices=[2, 3],
+        help="Data security tier of the repository",
+    )
+    tier_parser.add_argument(
+        "--pypi-package-file",
+        type=Path,
+        help="Path of the file of allowed PyPI packages, ignored when TIER!=3"
+    )
+    tier_parser.add_argument(
+        "--cran-package-file",
+        type=Path,
+        help="Path of the file of allowed CRAN packages, ignored when TIER!=3"
+    )
+
+    subparsers = parser.add_subparsers(
+        title="subcommands",
+        required=True
+    )
+
+    # sub-command for changing initial password
+    parser_password = subparsers.add_parser(
+        "change-initial-password",
+        help="Change the initial admin password"
+    )
+    parser_password.add_argument(
+        "--path",
+        type=Path,
+        default=Path("./nexus-data"),
+        help="Path of the nexus-data directory [./nexus-data]"
+    )
+    parser_password.set_defaults(func=change_initial_password)
+
+    # sub-command for initial configuration
+    parser_configure = subparsers.add_parser(
+        "initial-configuration",
+        help="Configure the Nexus repository",
+        parents=[tier_parser]
+    )
+    parser_configure.set_defaults(func=initial_configuration)
+
+    # sub-command for updating package allow lists
+    parser_update = subparsers.add_parser(
+        "update-allowlists",
+        help="Update the Nexus package allowlists",
+        parents=[tier_parser]
+    )
+    parser_update.set_defaults(func=update_allow_lists)
+
+    args = parser.parse_args()
+
+    args.func(args)
+
+
+def change_initial_password(args):
+    """
+    Change the initial password created during Nexus deployment
+
+    The initial password is stored in a file called 'admin.password' which is
+    automatically removed when the password is first changed.
+
+    Args:
+        args: Command line arguments
+
+    raises:
+        Exception: If 'admin.password' is not found
+    """
+    password_file_path = Path(f"{args.path}/admin.password")
+
+    try:
+        with password_file_path.open() as password_file:
+            initial_password = password_file.read()
+    except FileNotFoundError:
+        raise Exception(
+            "Initial password appears to have been already changed"
+        )
+
+    nexus_api = NexusAPI(password=initial_password)
+
+    nexus_api.change_admin_password(args.admin_password)
+
+
+def initial_configuration(args):
+    """
+    Fully configure Nexus in an idempotent manner.
+
+    This includes:
+        - Deleting all respositories
+        - Creating CRAN and PyPI proxies
+        - Deleting all content selectors and content selector privileges
+        - Creating content selectors and content selector privileges according
+          to the tier and allowlists
+        - Deleting all non-default roles
+        - Creating a role with the previously defined content selector
+          privileges
+        - Giving anonymous users ONLY the previously defined role
+        - Enabling anonymous access
+
+    Args:
+        args: Command line arguments
+    """
+    check_package_files(args)
+
+    nexus_api = NexusAPI(password=args.admin_password)
+
+    # Ensure only desired repositories exist
+    recreate_repositories(nexus_api)
+
+    pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
+                                                    args.cran_package_file)
+    privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist,
+                                     cran_allowlist)
+
+    # Delete non-default roles
+    nexus_api.delete_all_custom_roles()
+
+    # Create a role for safe haven users
+    nexus_api.create_role(
+        name=_ROLE_NAME,
+        description="allows access to selected packages",
+        privileges=privileges
+    )
+
+    # Update anonymous users roles
+    nexus_api.update_anonymous_user_roles([_ROLE_NAME])
+
+    # Enable anonymous access
+    nexus_api.enable_anonymous_access()
+
+
+def update_allow_lists(args):
+    """
+    Update which packages anonymous users may access AFTER the initial, full
+    configuration of the Nexus server.
+
+    The following steps will occur:
+        - Deleting all content selectors and content selector privileges
+        - Creating content selectors and content selector privileges according
+          to the tier and allowlists
+        - Updating the anonymous accounds only role role with the previously
+        defined content selector privileges
+
+    Args:
+        args: Command line arguments
+    """
+    check_package_files(args)
+
+    nexus_api = NexusAPI(password=args.admin_password)
+
+    pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
+                                                    args.cran_package_file)
+    privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist,
+                                     cran_allowlist)
+
+    # Update role for safe haven users
+    nexus_api.update_role(
+        name=_ROLE_NAME,
+        description="allows access to selected packages",
+        privileges=privileges
+    )
+
+
+def check_package_files(args):
+    """
+    Ensure that the allowlist files exist
+
+    Args:
+        args: Command line arguments
+
+    raise:
+        Exception: if any declared allowlist file does not exist
+    """
+    for package_file in [args.pypi_package_file, args.cran_package_file]:
+        if package_file and not package_file.is_file():
+            raise Exception(
+                f"Package allowlist file {package_file} does not exist"
+            )
+
+
+def get_allowlists(pypi_package_file, cran_package_file):
+    """
+    Create allowlists for PyPI and CRAN packages
+
+    Args:
+        pypi_package_file: Path to the PyPI allowlist file or None
+        cran_package_file: Path to the CRAN allowlist file or None
+
+    Returns:
+        A tuple of the PyPI and CRAN allowlists (in that order). The lists are
+        [] if the corresponding package file argument was None
+    """
+    pypi_allowlist = []
+    cran_allowlist = []
+
+    if pypi_package_file:
+        pypi_allowlist = get_allowlist(pypi_package_file)
+
+    if cran_package_file:
+        cran_allowlist = get_allowlist(cran_package_file)
+
+    return (pypi_allowlist, cran_allowlist)
+
+
+def get_allowlist(allowlist_path):
+    """
+    Read list of allowed packages from a file
+
+    Args:
+        allowlist_path: Path to the allowlist file
+
+    Returns:
+        List of the package names specified in the file
+    """
+    with open(allowlist_path, "r") as allowlist_file:
+        allowlist = allowlist_file.read().splitlines()
+
+    allowlist = [i.lower().strip() for i in allowlist]
+    # Remove blank lines, which could result in a path of all packages
+    allowlist = [i for i in allowlist if i]
+
+    return allowlist
+
+
+def recreate_repositories(nexus_api):
+    """
+    Create PyPI and CRAN proxy repositories in an idempotent manner
+
+    Args:
+        nexus_api: NexusAPI object
+    """
+    # Delete all existing repositories
+    nexus_api.delete_all_repositories()
+
+    for repository in _NEXUS_REPOSITORIES.values():
+        nexus_api.create_proxy_repository(**repository)
+
+
+def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
+                        cran_allowlist=[]):
+    """
+    Create content selectors and content selector privileges based on tier and
+    allowlists in an idempotent manner
+
+    Args:
+        nexus_api: NexusAPI object
+        pypi_allowlist: List of allowed PyPI packages
+        cran_allowlist: List of allowed CRAN packages
+
+    Returns:
+        List of the names of all content selector privileges
+    """
+    # Delete all existing content selector privileges
+    # These must be deleted before the content selectors as the content selectors
+    # as the privileges depend on the content selectors
+    nexus_api.delete_all_content_selector_privileges()
+
+    # Delete all existing content selectors
+    nexus_api.delete_all_content_selectors()
+
+    pypi_privilege_names = []
+    cran_privilege_names = []
+
+    # Content selector and privilege for PyPI 'simple' path, used to search for
+    # packages
+    privilege_name = create_content_selector_and_privilege(
+        nexus_api,
+        name="simple",
+        description="Allow access to 'simple' directory in PyPI repository",
+        expression='format == "pypi" and path=^"/simple"',
+        repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+    )
+    pypi_privilege_names.append(privilege_name)
+
+    # Content selector and privilege for CRAN 'PACKAGES' file which contains an
+    # index of all packages
+    privilege_name = create_content_selector_and_privilege(
+        nexus_api,
+        name="packages",
+        description="Allow access to 'PACKAGES' file in CRAN repository",
+        expression='format == "r" and path=="/src/contrib/PACKAGES"',
+        repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+        repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+    )
+    cran_privilege_names.append(privilege_name)
+
+    # Create content selectors and privileges for packages according to the tier
+    if tier == 2:
+        # Allow all PyPI packages
+        privilege_name = create_content_selector_and_privilege(
+            nexus_api,
+            name="pypi-all",
+            description="Allow access to all PyPI packages",
+            expression='format == "pypi" and path=^"/packages/"',
+            repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+        )
+        pypi_privilege_names.append(privilege_name)
+
+        # Allow all CRAN packages
+        privilege_name = create_content_selector_and_privilege(
+            nexus_api,
+            name="cran-all",
+            description="Allow access to all CRAN packages",
+            expression='format == "r" and path=^"/src/contrib"',
+            repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+        )
+        cran_privilege_names.append(privilege_name)
+    elif tier == 3:
+        # Allow selected PyPI packages
+        for package in pypi_allowlist:
+            privilege_name = create_content_selector_and_privilege(
+                nexus_api,
+                name=f"pypi-{package}",
+                description=f"Allow access to {package} on PyPI",
+                expression=f'format == "pypi" and path=^"/packages/{package}/"',
+                repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
+                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+            )
+            pypi_privilege_names.append(privilege_name)
+
+        # Allow selected CRAN packages
+        for package in cran_allowlist:
+            privilege_name = create_content_selector_and_privilege(
+                nexus_api,
+                name=f"cran-{package}",
+                description=f"allow access to {package} on CRAN",
+                expression=f'format == "r" and path=^"/src/contrib/{package}"',
+                repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
+                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+            )
+            cran_privilege_names.append(privilege_name)
+
+    return (pypi_privilege_names + cran_privilege_names)
+
+
+def create_content_selector_and_privilege(nexus_api, name, description,
+                                          expression, repo_type, repo):
+    """
+    Create a content selector and corresponding content selector privilege
+
+    Args:
+        nexus_api: NexusAPI object
+        name: Name shared by the content selector and content selector
+            privilege
+        description: Description shared by the content selector and content
+            selector privilege
+        expression: CSEL expression defining the content selector
+        repo_type: Type of repository the content selector privilege applies to
+        repo: Name of the repository the content selector privilege applies to
+    """
+    nexus_api.create_content_selector(
+        name=name,
+        description=description,
+        expression=expression
+    )
+
+    nexus_api.create_content_selector_privilege(
+        name=name,
+        description=description,
+        repo_type=repo_type,
+        repo=repo,
+        content_selector=name,
+    )
+
+    return name
 
 
 if __name__ == "__main__":
