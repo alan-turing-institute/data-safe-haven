@@ -115,7 +115,8 @@
                         "sourceAddresses": [
                             "{{network.mirrorVnets.tier2.cidr}}",
                             "{{network.mirrorVnets.tier3.cidr}}",
-                            "{{network.repositoryVnet.subnets.repository.cidr}}"
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -129,7 +130,8 @@
                             "*.docker.io"
                         ],
                         "sourceAddresses": [
-                            "{{network.repositoryVnet.subnets.repository.cidr}}"
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -190,7 +192,8 @@
                             "pypi.org"
                         ],
                         "sourceAddresses": [
-                            "{{network.repositoryVnet.subnets.repository.cidr}}"
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -203,7 +206,8 @@
                             "cran.r-project.org"
                         ],
                         "sourceAddresses": [
-                            "{{network.repositoryVnet.subnets.repository.cidr}}"
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
                     },
                     {
