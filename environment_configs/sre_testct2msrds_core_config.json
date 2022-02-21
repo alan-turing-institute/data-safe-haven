@@ -1,6 +1,7 @@
 {
     "sreId": "t2msrds",
     "tier": "2",
+    "nexus": true,
     "shmId": "testc",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
     "ipPrefix": "10.162.0",

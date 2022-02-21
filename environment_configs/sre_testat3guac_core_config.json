@@ -1,6 +1,7 @@
 {
     "sreId": "t3guac",
     "tier": "3",
+    "nexus": true,
     "shmId": "testa",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "ipPrefix": "10.153.0",
