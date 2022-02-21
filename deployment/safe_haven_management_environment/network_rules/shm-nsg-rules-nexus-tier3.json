@@ -3,7 +3,7 @@
         "name": "AllowRepositoryAccessInbound",
         "access": "Allow",
         "description": "Allow package requests over http",
-        "destinationAddressPrefix": "{{network.repositoryVnet.tier3.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.repositoryVnets.tier3.subnets.repository.cidr}}",
         "destinationPortRange": "80",
         "direction": "Inbound",
         "priority": 1400,
@@ -15,7 +15,7 @@
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{network.repositoryVnet.tier3.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.repositoryVnets.tier3.subnets.repository.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
@@ -44,7 +44,7 @@
         "direction": "Outbound",
         "priority": 1200,
         "protocol": "*",
-        "sourceAddressPrefix": "{{network.repositoryVnet.tier3.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier3.subnets.repository.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -60,7 +60,7 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{network.repositoryVnet.tier3.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier3.subnets.repository.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -72,7 +72,7 @@
         "direction": "Outbound",
         "priority": 3200,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnet.tier3.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier3.subnets.repository.cidr}}",
         "sourcePortRange": "*"
     },
     {
