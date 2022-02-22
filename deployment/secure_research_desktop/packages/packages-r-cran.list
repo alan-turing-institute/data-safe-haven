@@ -5,6 +5,7 @@ data.table
 dataCompareR
 DataExplorer
 DBI
+devtools
 esquisse
 ggforce
 ggvis
