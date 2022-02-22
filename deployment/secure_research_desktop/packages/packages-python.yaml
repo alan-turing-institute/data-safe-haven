@@ -29,6 +29,8 @@ packages:
     keras:
         "3.10": ["uninstallable"]  # requires tensorflow
     lightgbm:
+    llvmlite:
+        "all": [">0.35.0"]  # specify llvmlite to increase chance of getting a pre-compiled version
     lxml:
     matplotlib:
     nltk:
