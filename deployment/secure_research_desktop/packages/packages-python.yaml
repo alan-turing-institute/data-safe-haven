@@ -33,7 +33,7 @@ packages:
     matplotlib:
     nltk:
     numpy:
-        "all": ["<1.22.0"]  # 1.22 breaks PyMC
+        "all": ["<1.22.0"]  # 1.22 causes runtime errors with pymc3 3.11.4
     pandas:
     pandasql:
     pathos:
