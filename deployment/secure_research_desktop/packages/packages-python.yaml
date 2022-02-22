@@ -27,7 +27,6 @@ packages:
     html5lib:
     ipykernel:
     keras:
-        "3.10": ["uninstallable"]  # requires tensorflow
     lightgbm:
     llvmlite:
         "all": [">0.35.0"]  # specify llvmlite to increase chance of getting a pre-compiled version
@@ -74,11 +73,8 @@ packages:
     sympy:
     tables:
     tensorboard:
-        "3.10": ["uninstallable"]  # requires tensorflow
     tensorflow:
-        "3.10": ["uninstallable"]  # not working in Python 3.10
     thinc:
-        "3.10": ["uninstallable"]  # requires torch
     torch:
         "3.10": ["uninstallable"]  # no version supports Python 3.10
     torchvision:
