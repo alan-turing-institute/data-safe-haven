@@ -356,6 +356,8 @@ runcmd:
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
   - echo '# Set up RStudio' >> /etc/bash.bashrc
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
+  # Fix for GDAL issue in sf: https://github.com/r-spatial/sf/issues/1899
+  - Rscript -e "install.packages('devtools', quiet = TRUE); devtools::install_github('r-spatial/sf', quiet = TRUE)"
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - echo "Preparing to install $(echo $CRAN_PACKAGES | wc -w) CRAN packages\n${CRAN_PACKAGES}"
