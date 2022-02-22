@@ -6,7 +6,7 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop]
   schedule:
-    - cron: "* * */7 * *"  # run once per week
+    - cron: "0 0 */7 * *"  # run once per week
 
 # checkout needs 'contents:read'
 # pull request needs 'pull-requests:write' and 'contents:write'
