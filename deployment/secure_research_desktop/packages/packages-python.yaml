@@ -68,6 +68,7 @@ packages:
     Sphinx:
     SQLAlchemy:
     statsmodels:
+        "all": ["<0.13.2"]  # 0.13.2 requires a version of 'packaging' that is incompatible with poetry
     sympy:
     tables:
     tensorboard:
