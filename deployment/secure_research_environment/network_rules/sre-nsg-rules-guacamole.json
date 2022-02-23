@@ -60,6 +60,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLDAPOutbound",
+        "access": "Allow",
+        "description": "Allow LDAP queries to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["389", "636"],
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
