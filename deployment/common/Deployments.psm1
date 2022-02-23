@@ -818,19 +818,27 @@ function Deploy-VirtualMachineMonitoringExtension {
         if ($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
         } else {
-            try {
-                Set-AzVMExtension -ExtensionName $type `
-                                  -ExtensionType $type `
-                                  -Location $VM.location `
-                                  -ProtectedSettings $ProtectedSettings `
-                                  -Publisher $publisher `
-                                  -ResourceGroupName $VM.ResourceGroupName `
-                                  -Settings $PublicSettings `
-                                  -TypeHandlerVersion $version `
-                                  -VMName $VM.Name `
-                                  -ErrorAction Stop
+            foreach($i in 1..5) {
+                try {
+                    Set-AzVMExtension -ExtensionName $type `
+                                    -ExtensionType $type `
+                                    -Location $VM.location `
+                                    -ProtectedSettings $ProtectedSettings `
+                                    -Publisher $publisher `
+                                    -ResourceGroupName $VM.ResourceGroupName `
+                                    -Settings $PublicSettings `
+                                    -TypeHandlerVersion $version `
+                                    -VMName $VM.Name `
+                                    -ErrorAction Stop
+                    break
+                } catch {
+                    Start-Sleep 10
+                }
+            }
+            $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
+            if ($installed) {
                 Add-LogMessage -Level Success "Installed extension '$type' on VM '$($VM.Name)'."
-            } catch {
+            } else {
                 Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($VM.Name)'!"
             }
         }
