@@ -656,7 +656,7 @@
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2022012400"
+        "version": "20.04.2022022200"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
