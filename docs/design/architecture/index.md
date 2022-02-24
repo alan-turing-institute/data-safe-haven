@@ -1,4 +1,5 @@
 (design_architecture)=
+
 # Architecture
 
 ```{toctree}

@@ -818,7 +818,7 @@ function Deploy-VirtualMachineMonitoringExtension {
         if ($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
         } else {
-            foreach($i in 1..5) {
+            foreach ($i in 1..5) {
                 try {
                     Set-AzVMExtension -ExtensionName $type `
                                     -ExtensionType $type `
