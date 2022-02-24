@@ -1,18 +1,8 @@
+(role_system_manager_security_checklist)=
 # Security evaluation checklist
 
-In this check list we aim to do the following things:
-
-- Establish our current claims about the Data Safe Haven
-- Establish what these security claims mean in terms of implementation
-- How we can verify that we actually do what we say
-
-This diagram shows the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
-The security checklist currently focuses on checks that can verify these security requirements for {ref}`policy_tier_2` (or greater) <policy_classification_sensitivity_tiers>` SREs (with some steps noted as specific to a tier):
-
-```{image} security_checklist/recommended_controls.png
-:alt: Recommended security controls
-:align: center
-```
+In this check list we aim to **verify** the {ref}`security claims made here <design_security_claims>`.
+The security checklist currently focuses on checks that can verify these security requirements for {ref}`policy_tier_2` (or greater) SREs (with some steps noted as specific to a tier):
 
 ## How to use this checklist
 
@@ -322,7 +312,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 - At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
 - At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
 
-### This means
+### Which means:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
 - Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
@@ -442,7 +432,7 @@ Connection from within the secure physical space is possible.
 
 - Connections can only be made via remote desktop ({ref}`policy_tier_2` and above)
 
-### This means
+### Which means:
 
 - User can connect via remote desktop but cannot connect through other means such as `SSH`
 
@@ -533,7 +523,7 @@ Connection from within the secure physical space is possible.
 - All data transfer to the Data Safe Haven should be via our secure data transfer process, which gives the {ref}`role_data_provider_representative` time-limited, write-only access to a dedicated data ingress volume from a specific location.
 - Data is stored securely until approved for user access.
 
-### This means
+### Which means:
 
 - Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
 - Once these details have been received, the data ingress volume should be opened for data upload.
@@ -608,7 +598,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - SREs contain an `/output` volume, in which SRE users can store data designated for egress.
 
-### This means:
+### Which means::
 
 - Users can write to the `/output` volume
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
@@ -707,7 +697,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
 - {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
 
-### This means:
+### Which means::
 
 - {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.

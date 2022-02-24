@@ -1,5 +1,4 @@
 (role_data_provider_representative)=
-
 # Dataset Provider Representative
 
 ```{toctree}
@@ -15,6 +14,12 @@ They must be authorised to act on behalf of the Dataset Provider, especially whe
 
 There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the **Dataset Provider Representative** to manage this set of stakeholders at the Dataset Provider.
+
+{ref}`Implementation details <design_architecture>`
+: An overview of the design and implementation of the Data Safe Haven.
+
+{ref}`Security claims <design_security_claims>`
+: Claims that we make about the security of the Data Safe Haven.
 
 {ref}`Data classification guide <policy_data_classification_process>`
 : Step-by-step instructions on how to classify a work package into one of our security tiers.

@@ -18,5 +18,8 @@ We also detail the security stance of the different default tiered environments.
 [Data transfer](data_transfer.md)
 : How sensitive data is transfered into and out of the Data Safe Haven.
 
+[Security claims](security_claims.md)
+: Claims that we make about the security of the Data Safe Haven.
+
 [Security defaults](security_defaults.md)
 : Default security controls for each secure research environment tier.
