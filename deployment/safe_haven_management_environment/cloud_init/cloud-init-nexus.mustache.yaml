@@ -1,7 +1,7 @@
 #cloud-config
 
 write_files:
-  - path: "/root/docker-compose.yaml"
+  - path: "/etc/nexus/docker-compose.yaml"
     permissions: "0400"
     content: |
       {{nexus_docker_compose.mustache.yaml}}
@@ -55,6 +55,13 @@ packages:
 package_update: true
 package_upgrade: true
 
+# Add the SHM admin (default) and nexusdaemon users
+users:
+  - default
+  - name: nexusdaemon
+    lock_passwd: true  # Lock the password to disable password login
+    sudo: false        # This user will not have sudo privileges
+
 runcmd:
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"
@@ -70,9 +77,17 @@ runcmd:
   - mkdir /nexus-data
   - chown -R 200:200 /nexus-data
 
+  # Set up the guacamoledaemon user
+  - echo ">=== Configuring nexusdaemon user... ===<"
+  - groupadd docker 2> /dev/null
+  - usermod -aG docker nexusdaemon
+  - newgrp docker
+  - chown -R nexusdaemon:nexusdaemon /etc/nexus
+  - ls -alh /etc/nexus
+
   # Set up the Nexus container
   - echo ">=== Creating Nexus container... ===<"
-  - docker-compose -f /root/docker-compose.yaml up -d
+  - su nexusdaemon -c "docker-compose -f /etc/nexus/docker-compose.yaml up -d"
 
   # Give Nexus some time to initialise
   - echo ">=== Waiting for Nexus to initialise (5 minutes)... ===<"
