@@ -21,7 +21,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 # Common variable names
 # ---------------------
 $tier = "3"  # currently only Tier-3 enforces allowlists
-if (-Not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
+if (-not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
 
 
 # Construct script to
@@ -31,7 +31,7 @@ if (-Not $allowlistDirectory) { $allowlistDirectory = Join-Path $PSScriptRoot ".
 # 3. Run nexus update job
 $script = "#! /bin/sh`n"
 
-foreach ($proxy in @("pypi", "cran"))
+foreach ($proxy in @("pypi", "cran")) {
     # Read proxy allowlist
     $allowlistPath = Join-Path $allowlistDirectory "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
     Add-LogMessage -Level Info "Using allowlist from '$allowlistPath'"
@@ -48,13 +48,15 @@ foreach ($proxy in @("pypi", "cran"))
     $script += "cat << EOF > /etc/nexus/allowlist-${proxy}`n"
     foreach ($package in $allowList -split "`n") {
         $script += "${package}`n"
+    }
     $script += "EOF`n"
+}
 
 # Run nexus update script
 $script += "/usr/local/update-nexus-allowlists"
 
 # Ensure Nexus VM is running
-$vmName = $config.repository.["tier${tier}"].nexus.vmName
+$vmName = $config.repository["tier${tier}"].nexus.vmName
 $vmStatus = Get-AzVM -ResourceGroupName $config.repository.rg -Name $vmName -Status
 if (-not $vmStatus) {
     Add-LogMessage -Level Failure "VM '${vmName}' does not exist. Have you deployed a Nexus VM?"
