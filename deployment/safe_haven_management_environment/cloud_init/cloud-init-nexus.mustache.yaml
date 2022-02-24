@@ -13,17 +13,7 @@ write_files:
     owner: root:root
     permissions: "0400"
     content: |
-      ---
-      version: "3"
-
-      services:
-        nexus:
-          image: sonatype/nexus3
-          ports:
-            - 80:8081
-          volumes:
-            - /nexus-data:/nexus-data
-          restart: always
+      {{nexus_docker_compose.mustache.yaml}}
   - path: "/etc/nexus/allowlist-pypi"
     owner: root:root
     permissions: "0644"
@@ -34,6 +24,10 @@ write_files:
     permissions: "0644"
     content: |
       {{allowlist-full-r-cran-tier3.list}}
+  - path: "/etc/nexus/nginx.conf"
+    permissions: "0400"
+    content: |
+      {{nexus_nginx.mustache.conf}}
   - path: "/usr/local/bin/configure-nexus"
     owner: root:root
     permissions: "0755"
@@ -78,8 +72,8 @@ runcmd:
   - docker-compose -f /root/docker-compose.yaml up -d
 
   # Give Nexus some time to initialise
-  - echo ">=== Waiting for Nexus to initialise (3 minutes)... ===<"
-  - sleep 3m
+  - echo ">=== Waiting for Nexus to initialise (5 minutes)... ===<"
+  - sleep 5m
 
   # Configure Nexus
   - echo ">=== Configuring Nexus... ===<"
