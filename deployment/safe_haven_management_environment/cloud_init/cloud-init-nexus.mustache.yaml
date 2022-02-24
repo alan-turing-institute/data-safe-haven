@@ -1,26 +1,15 @@
 #cloud-config
 
-apt:
-  update: true
-
-packages:
-  - docker.io
-  - docker-compose
-  - python3-requests
-
 write_files:
   - path: "/root/docker-compose.yaml"
-    owner: root:root
     permissions: "0400"
     content: |
       {{nexus_docker_compose.mustache.yaml}}
   - path: "/etc/nexus/allowlist-pypi"
-    owner: root:root
     permissions: "0644"
     content: |
       {{allowlist-full-python-pypi-tier3.list}}
   - path: "/etc/nexus/allowlist-cran"
-    owner: root:root
     permissions: "0644"
     content: |
       {{allowlist-full-r-cran-tier3.list}}
@@ -29,12 +18,10 @@ write_files:
     content: |
       {{nexus_nginx.mustache.conf}}
   - path: "/usr/local/bin/configure-nexus"
-    owner: root:root
     permissions: "0755"
     content: |
       {{configure_nexus.py}}
   - path: "/usr/local/update-nexus-allowlists"
-    owner: root:root
     permissions: "0700"
     content: |
       /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
@@ -51,6 +38,22 @@ ntp:
     {{#time.ntp.serverAddresses}}
     - {{.}}
     {{/time.ntp.serverAddresses}}
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    docker.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
+
+# Install necessary apt packages
+packages:
+  - docker.io
+  - docker-compose
+  - python3-requests
+package_update: true
+package_upgrade: true
 
 runcmd:
   # Ensure that Docker is running and enabled at startup

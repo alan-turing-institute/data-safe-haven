@@ -75,7 +75,7 @@ packages:
 package_update: true
 package_upgrade: true
 
-# Add the SRE admin (default) and cocalcdaemon users
+# Add the SRE admin (default) and guacamoledaemon users
 users:
   - default
   - name: guacamoledaemon
