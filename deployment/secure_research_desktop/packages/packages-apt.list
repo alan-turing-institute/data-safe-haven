@@ -15,6 +15,7 @@ clamav-daemon
 clamav-freshclam
 clamav-unofficial-sigs
 cmake
+code
 cuda
 curl
 dbeaver-ce

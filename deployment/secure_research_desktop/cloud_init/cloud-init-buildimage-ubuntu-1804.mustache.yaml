@@ -28,6 +28,10 @@ apt:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
+    microsoft-vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
     mono-project.list:
       source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF  # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
@@ -258,9 +262,6 @@ runcmd:
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
   - pyenv doctor || die "Could not configure pyenv!"
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
-  # Install VSCode extensions
-  - echo "Install VSCode extensions..."
-  - code --install-extension ms-python.python
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
