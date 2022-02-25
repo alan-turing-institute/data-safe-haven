@@ -25,7 +25,7 @@
                 },
                 "rules": [
                     {
-                        "name": "AllowNTP",
+                        "name": "AllowExternalNTP",
                         "protocols": [
                             "UDP:123"
                         ],
@@ -49,6 +49,19 @@
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalCRANPackageRSync",
+                        "protocols": [
+                            "TCP:873"
+                        ],
+                        "targetFqdns": [
+                            "cran.r-project.org"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}"
                         ]
                     }
                 ]

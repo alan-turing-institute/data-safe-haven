@@ -119,6 +119,7 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
             $params["DestinationPort"] = @($rule.protocols | ForEach-Object { $_.Split(":")[1] })
         }
         if ($rule.targetAddresses) { $params["DestinationAddress"] = $rule.targetAddresses }
+        if ($rule.targetFqdns) { $params["DestinationFqdn"] = $rule.targetFqdns }
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }
