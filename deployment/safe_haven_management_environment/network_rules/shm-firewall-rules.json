@@ -251,12 +251,26 @@
                         "targetFqdns": [
                             "adminwebservice.microsoftonline.com",
                             "passwordreset.microsoftonline.com",
-                            "adnotifications.windowsazure.com",
                             "*.blob.core.windows.net",
                             "*.servicebus.windows.net",
                             "*.events.data.microsoft.com",
                             "*.aadconnecthealth.azure.com",
                             "*.adhybridhealth.azure.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowNPSConnectionsToAzureMFA",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "adnotifications.windowsazure.com",
+                            "credentials.azure.com",
+                            "strongauthenticationservice.auth.microsoft.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
