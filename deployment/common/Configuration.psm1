@@ -487,7 +487,7 @@ function Get-ShmConfig {
         diskType = "Standard_LRS"
         pypi     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8192 }
-            tier3 = [ordered]@{ diskSize = 512 }
+            tier3 = [ordered]@{ diskSize = 1024 }
         }
         cran     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 128 }
