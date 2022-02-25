@@ -42,9 +42,9 @@ if ($?) {
 }
 
 
-# Create a routing table ensuring that BGP propagation is disabled
-# Without this, VMs might be able to jump directly to the target without going through the firewall
-# -------------------------------------------------------------------------------------------------
+# Create or retrieve the route table.
+# Note that we need to disable BGP propagation or VMs might be able to jump directly to the target without going through the firewall
+# -----------------------------------------------------------------------------------------------------------------------------------
 $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 
 

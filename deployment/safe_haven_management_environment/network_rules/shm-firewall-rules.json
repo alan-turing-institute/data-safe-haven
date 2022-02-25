@@ -192,6 +192,8 @@
                             "pypi.org"
                         ],
                         "sourceAddresses": [
+                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
                             "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
                             "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
@@ -206,6 +208,8 @@
                             "cran.r-project.org"
                         ],
                         "sourceAddresses": [
+                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
                             "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
                             "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]

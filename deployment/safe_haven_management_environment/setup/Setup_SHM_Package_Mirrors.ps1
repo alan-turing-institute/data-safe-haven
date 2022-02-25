@@ -37,6 +37,29 @@ $subnetExternal = Deploy-Subnet -Name $mirrorConfig.subnets.external.name -Virtu
 $subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.internal.cidr
 
 
+# Peer mirror VNet to SHM VNet in order to allow it to route via the SHM firewall
+# -------------------------------------------------------------------------------
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
+Set-VnetPeering -Vnet1Name $vnetPkgMirrors.Name `
+                -Vnet1ResourceGroup $vnetPkgMirrors.ResourceGroupName `
+                -Vnet1SubscriptionName $config.subscriptionName `
+                -Vnet2Name $config.network.vnet.name `
+                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2SubscriptionName $config.subscriptionName
+
+
+# Attach external subnet to SHM route table
+# -----------------------------------------
+Add-LogMessage -Level Info "[ ] Attaching external subnet to SHM route table"
+$routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors -Name $subnetExternal.Name -AddressPrefix $subnetExternal.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Attached subnet '$($subnetExternal.Name)' to SHM route table."
+} else {
+    Add-LogMessage -Level Fatal "Failed to attach subnet '$($subnetExternal.Name)' to SHM route table!"
+}
+
+
 # Ensure that external package mirrors NSG exists with correct rules and attach it to the correct subnet
 # ------------------------------------------------------------------------------------------------------
 $nsgExternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.external.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
