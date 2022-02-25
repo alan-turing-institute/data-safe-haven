@@ -157,14 +157,14 @@ write_files:
     content: |
       {{pycharm.desktop}}
 
-# List of packages to install with apt-get
-packages:
-  - {{packages-apt.list}}
-
 # Packages to install with snap
 snap:
   commands:
     - snap install {{packages-snap.list}}
+
+# List of packages to install with apt-get
+packages:
+  - {{packages-apt.list}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing

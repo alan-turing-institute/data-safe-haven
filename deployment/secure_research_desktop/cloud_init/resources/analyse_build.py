@@ -151,10 +151,7 @@ def main():
                 python_version = fname.split("-")[1]
                 log(timestamp, "WARNING", f"Safety check found problems with Python {python_version}")
             for package in packages:
-                print(f"    {package[0]} [{package[2]}] is affected by issue {package[4]} (for versions {package[1]})")
-                lines = package[3].replace(". ", ".\n")
-                for sentence in lines.split("\n"):
-                    print(f"       {sentence}")
+                log(timestamp, "WARNING", f"... {package[0]} [{package[2]}] is affected by issue {package[4]} (for versions {package[1]})")
 
 
 if __name__ == "__main__":
