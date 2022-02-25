@@ -68,7 +68,7 @@ services:
 
     nginx:
         container_name: nginx_guacamole_compose
-        image: nginx
+        image: nginx:1.21.6
         links:
             - guacamole
         networks:
