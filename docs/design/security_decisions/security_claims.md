@@ -4,8 +4,8 @@
 
 In this document we:
 
-- Establish our current claims about the Data Safe Haven
-- Establish what these security claims mean in terms of implementation
+- Establish our current claims about the Data Safe Haven.
+- Establish what these security claims mean in terms of implementation.
 
 We have also prepared a {ref}`set of instructions <role_system_manager_security_checklist>` that will allow {ref}`System Managers <role_system_manager>` to **verify** these claims.
 
@@ -21,7 +21,7 @@ The diagram below shows an overview of the security standards we're trying to me
 ### We claim:
 
 - Users are required to authenticate with Multi-factor Authentication (MFA) in order to access the secure analysis environment.
-- Passwords are strong
+- Passwords are strong.
 
 ### Which means:
 
@@ -33,7 +33,7 @@ The diagram below shows an overview of the security standards we're trying to me
 
 ### We claim:
 
-- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`)
+- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`).
 
 ### Which means:
 
@@ -58,7 +58,7 @@ The diagram below shows an overview of the security standards we're trying to me
 
 ### We claim:
 
-- At {ref}`policy_tier_3` access is limited to certain secure physical spaces
+- At {ref}`policy_tier_3` access is limited to certain secure physical spaces.
 
 ### Which means:
 
@@ -71,17 +71,17 @@ The diagram below shows an overview of the security standards we're trying to me
 
 ### We claim:
 
-- Connections can only be made via remote desktop ({ref}`policy_tier_2` and above)
+- Connections can only be made via remote desktop ({ref}`policy_tier_2` and above).
 
 ### Which means:
 
-- User can connect via remote desktop but cannot connect through other means such as `SSH`
+- User can connect via remote desktop but cannot connect through other means such as `SSH`.
 
 ## 6. Copy-and-paste
 
 ### We claim:
 
-- Copy and paste is disabled on the remote desktop
+- Copy and paste is disabled on the remote desktop.
 
 ### Which means:
 
@@ -117,7 +117,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Which means::
 
-- Users can write to the `/output` volume
+- Users can write to the `/output` volume.
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
 
 ## 9. Software ingress
@@ -146,8 +146,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### We claim:
 
-- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
-- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
+- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN.
+- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`.
 
 ### Which means::
 
