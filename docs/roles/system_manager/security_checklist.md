@@ -36,13 +36,13 @@ The following users will be needed for this checklist
 
 - **SRE standard user** who is a member of the **SRE A** research users group
   - Create a new user **without** MFA
-    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
+    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
     - Visit https://aka.ms/sspr in an incognito browser
     - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 - {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
 - **Data provider** who has no accounts on the Safe Haven system
 
-## 1. Multifactor Authentication and Password strength
+## 1. Multifactor authentication and password strength
 
 ### We claim:
 
@@ -364,7 +364,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 
 #### Network rules ({ref}`policy_tier_2` and above):
 
-There are are network rules permitting access only from allow-listed IP addresses
+There are are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
   - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
@@ -606,7 +606,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Verify by:
 
-#### Confirm that a non-privileged user is able to read the different storage volumes and write to Output
+#### Confirm that a non-privileged user is able to read the different storage volumes and write to output
 
 - Login to an SRD as the **SRE standard user** via the remote desktop web client
 - Open up a file explorer and search for the various storage volumes
@@ -624,14 +624,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - As the {ref}`role_system_manager`, follow the instructions in the {ref}`administrator document <roles_system_manager_data_egress>` on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you can see the files written to the Output storage volume (including any you created as a non-privileged user in step 1)
+{{white_check_mark}} **Verify that:** you can see the files written to the `/output` storage volume (including any you created as a non-privileged user in step 1)
 ```
 
 ```{attention}
 {{white_check_mark}} **Verify that:** a written file can be taken out of the environment via download
 ```
 
-## 9. Software Ingress
+## 9. Software ingress
 
 ### We claim:
 
@@ -691,7 +691,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 {{white_check_mark}} **Verify that:** the **SRE standard user** cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
 ```
 
-## 10. Package mirrors
+## 10. Software package repositories
 
 ### We claim:
 
@@ -741,7 +741,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 </details>
 ````
 
-## 11. Azure Firewalls
+## 11. Firewall controls
 
 ### We claim:
 

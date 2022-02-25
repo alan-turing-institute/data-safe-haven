@@ -1,6 +1,7 @@
 (design_security_claims)=
 
 # Security claims
+
 In this document we:
 
 - Establish our current claims about the Data Safe Haven
@@ -15,7 +16,7 @@ The diagram below shows an overview of the security standards we're trying to me
 :align: center
 ```
 
-## 1. Multifactor Authentication and Password strength
+## 1. Multifactor authentication and password strength
 
 ### We claim:
 
@@ -119,7 +120,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - Users can write to the `/output` volume
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
 
-## 9. Software Ingress
+## 9. Software ingress
 
 ### We claim:
 
@@ -141,7 +142,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
     - If it passes review, the software is moved into the environment.
   - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
 
-## 10. Package mirrors
+## 10. Software package repositories
 
 ### We claim:
 
@@ -153,7 +154,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
 
-## 11. Azure Firewalls
+## 11. Firewall controls
 
 ### We claim:
 
