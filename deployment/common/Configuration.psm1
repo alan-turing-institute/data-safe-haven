@@ -258,7 +258,7 @@ function Get-ShmConfig {
             cidr    = "${shmRepositoryPrefix}.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
-                    name = "RepositorySubnet"
+                    name = "RepositoryTier${tier}Subnet"
                     cidr = "${shmRepositoryPrefix}.0/24"
                     nsg  = [ordered]@{
                         name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()

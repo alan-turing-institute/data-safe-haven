@@ -62,7 +62,7 @@ if ($?) {
 }
 
 
-# Peer repository vnet to SHM vnet
+# Peer repository VNet to SHM VNet
 # --------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $config.network.repositoryVnets["tier${tier}"].name `
