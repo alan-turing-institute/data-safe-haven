@@ -20,6 +20,10 @@ apt:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
+    dbeaver.list:
+      source: "deb https://dbeaver.io/debs/dbeaver-ce /"
+      keyid: 98F5A7CC1ABE72AC3852A007D33A1BD725ED047D  # DBeaver Co. (DBeaver Co. GPG key) <support@dbeaver.com>
+
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
