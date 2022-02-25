@@ -606,19 +606,17 @@ def get_allowlist(allowlist_path):
     Returns:
         List of the package names specified in the file
     """
-    with open(allowlist_path, "r") as allowlist_file:
-        allowlist_raw = allowlist_file.read().splitlines()
-
-    # Sanitise package names
-    # - convert to lower case
-    # - convert special characters to '-'
-    # - remove any blank entries, which act as a wildcard that would allow any package
     allowlist = []
-    special_characters = re.compile(r"[^0-9a-zA-Z]+")
-    for package_name in allowlist_raw:
-        package_name = special_characters.sub("-", package_name.lower().strip())
-        if package_name:
-            allowlist.append(package_name)
+    with open(allowlist_path, "r") as allowlist_file:
+        # Sanitise package names
+        # - convert to lower case
+        # - convert special characters to '-'
+        # - remove any blank entries, which act as a wildcard that would allow any package
+        special_characters = re.compile(r"[^0-9a-zA-Z]+")
+        for package_name in allowlist_file.readlines():
+            package_name = special_characters.sub("-", package_name.lower().strip())
+            if package_name:
+                allowlist.append(package_name)
     return allowlist
 
 
