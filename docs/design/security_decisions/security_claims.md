@@ -72,6 +72,7 @@ The diagram below shows an overview of the security standards we're trying to me
 ### We claim:
 
 - Connections can only be made via remote desktop ({ref}`policy_tier_2` and above).
+- This remote desktop connection is only available through a browser at a URL which can only be accessed from approved IP addresses.
 
 ### Which means:
 
@@ -81,7 +82,7 @@ The diagram below shows an overview of the security standards we're trying to me
 
 ### We claim:
 
-- Copy and paste is disabled on the remote desktop.
+- Copy and paste is disabled on the remote desktop for tiers 2 and above.
 
 ### Which means:
 

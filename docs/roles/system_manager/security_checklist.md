@@ -182,7 +182,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 {{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
-```{image} security_checklist/srd_xfce.png
+```{image} security_checklist/guacamole_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
@@ -191,7 +191,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 {{bento_box}} **Microsoft Remote Desktop**:
 <details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
 
-```{image} security_checklist/srd_xfce.png
+```{image} security_checklist/msrds_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
@@ -709,14 +709,28 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - Login as the **SRE standard user** into an SRD via remote desktop web client
 - Open up a terminal
-- Attempt to install any package that is not on the allowed list (for example, try `pip install botocore`)
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2.png
+```{image} security_checklist/srd_pypi_tier2_allowed.png
+:alt: SRD PyPI Tier 2
+:align: center
+```
+</details>
+````
+
+- Attempt to install any package that is not on the allowed list (for example, try `pip install awscli`)
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>you can install the package</summary>
+
+```{image} security_checklist/srd_pypi_tier2_denied.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -727,14 +741,27 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - Login as the **SRE standard user** into an SRD via remote desktop web client
 - Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
-- Then attempt to download a package that is not included in the allowed list (for example, try `pip install botocore`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>the first download succeeds and the second fails</summary>
+<details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3.png
+```{image} security_checklist/srd_pypi_tier3_allowed.png
+:alt: SRD PyPI Tier 3
+:align: center
+```
+</details>
+````
+
+- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`)
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>you cannot install the package</summary>
+
+```{image} security_checklist/srd_pypi_tier3_denied.png
 :alt: SRD PyPI Tier 3
 :align: center
 ```
