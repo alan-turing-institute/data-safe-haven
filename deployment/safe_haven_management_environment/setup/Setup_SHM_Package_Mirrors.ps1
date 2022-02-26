@@ -11,7 +11,9 @@ Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -35,120 +37,52 @@ $subnetExternal = Deploy-Subnet -Name $mirrorConfig.subnets.external.name -Virtu
 $subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $mirrorConfig.subnets.internal.cidr
 
 
-# Set up the NSG for external package mirrors
-# -------------------------------------------
+# Peer mirror VNet to SHM VNet in order to allow it to route via the SHM firewall
+# -------------------------------------------------------------------------------
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
+Set-VnetPeering -Vnet1Name $vnetPkgMirrors.Name `
+                -Vnet1ResourceGroup $vnetPkgMirrors.ResourceGroupName `
+                -Vnet1SubscriptionName $config.subscriptionName `
+                -Vnet2Name $config.network.vnet.name `
+                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2SubscriptionName $config.subscriptionName
+
+
+# Attach external subnet to SHM route table
+# -----------------------------------------
+Add-LogMessage -Level Info "[ ] Attaching external subnet to SHM route table"
+$routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors -Name $subnetExternal.Name -AddressPrefix $subnetExternal.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Attached subnet '$($subnetExternal.Name)' to SHM route table."
+} else {
+    Add-LogMessage -Level Fatal "Failed to attach subnet '$($subnetExternal.Name)' to SHM route table!"
+}
+
+
+# Ensure that external package mirrors NSG exists with correct rules and attach it to the correct subnet
+# ------------------------------------------------------------------------------------------------------
 $nsgExternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.external.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
-                             -Name "IgnoreInboundRulesBelowHere" `
-                             -Description "Deny all other inbound" `
-                             -Priority 3000 `
-                             -Direction Inbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
-                             -Name "UpdateFromInternet" `
-                             -Description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" `
-                             -Priority 300 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix Internet `
-                             -DestinationPortRange 443, 873
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
-                             -Name "IgnoreOutboundRulesBelowHere" `
-                             -Description "Deny all other outbound" `
-                             -Priority 3000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-# Create or update external mirror rule
-$destinationAddressPrefix = @($subnetInternal.AddressPrefix)
-$rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
+# Get list of internal mirrors
+$config["mirrorNsgs"] = [ordered]@{
+    internalMirrorIps = @($subnetInternal.AddressPrefix)
+}
+$rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "AllowMirrorSynchronisationOutbound" }
 if ($rule) {
-    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Get-Unique
+    $config["mirrorNsgs"]["internalMirrorIps"] = ($rule.DestinationAddressPrefix + $config["mirrorNsgs"]["internalMirrorIps"]) | Sort | Get-Unique
 }
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging `
-                             -Name "RsyncToInternal" `
-                             -Description "Allow ports 22 and 873 for rsync" `
-                             -Priority 400 `
-                             -Direction Outbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix $destinationAddressPrefix `
-                             -DestinationPortRange 22, 873
-$subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
-if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.external.nsg.name)' failed!"
-}
+# Expand rules and apply to external subnet
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $mirrorConfig.subnets.external.nsg.rules) -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $nsgExternal -Rules $rules
+$subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal
 
 
-# Set up the NSG for internal package mirrors
-# -------------------------------------------
+# Ensure that internal package mirrors NSG exists with correct rules and attach it to the correct subnet
+# ------------------------------------------------------------------------------------------------------
 $nsgInternal = Deploy-NetworkSecurityGroup -Name $mirrorConfig.subnets.internal.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
-                             -Name "RsyncFromExternal" `
-                             -Description "Allow ports 22 and 873 for rsync" `
-                             -Priority 200 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 22, 873
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
-                             -Name "MirrorRequestsFromVMs" `
-                             -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" `
-                             -Priority 300 `
-                             -Direction Inbound `
-                             -Access Allow `
-                             -Protocol TCP `
-                             -SourceAddressPrefix VirtualNetwork `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 80, 443, 3128
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
-                             -Name "IgnoreInboundRulesBelowHere" `
-                             -Description "Deny all other inbound" `
-                             -Priority 3000 `
-                             -Direction Inbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
-                             -Name "IgnoreOutboundRulesBelowHere" `
-                             -Description "Deny all other outbound" `
-                             -Priority 3000 `
-                             -Direction Outbound `
-                             -Access Deny `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange * `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange *
-$subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
-if ($?) {
-    Add-LogMessage -Level Success "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Configuring NSG '$($mirrorConfig.subnets.internal.nsg.name)' failed!"
-}
+$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $mirrorConfig.subnets.internal.nsg.rules) -Parameters $config -AsHashtable
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $nsgInternal -Rules $rules
+$subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal
 
 
 # Get common objects
@@ -179,6 +113,7 @@ function Resolve-CloudInit {
     }
 
     # Add public SSH key from the external mirror as an allowed key on the internal
+    $externalMirrorPublicKey = ""
     if ($MirrorDirection -eq "Internal") {
         $script = "
         #! /bin/bash
@@ -187,8 +122,7 @@ function Resolve-CloudInit {
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
         $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script -SuppressOutput
         Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
-        $externalMirrorPublicKey = $result.Value[0].Message -Split "`n" | Select-String "^ssh"
-        $cloudInitYaml = $cloudInitYaml.Replace("<external-mirror-public-key>", $externalMirrorPublicKey)
+        $externalMirrorPublicKey = [string]($result.Value[0].Message -Split "`n" | Select-String "^ssh")
     }
 
     # Populate initial package allowlist file defined in cloud init YAML
@@ -202,12 +136,12 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
-    # Set the tier, NTP server and timezone
-    $cloudInitYaml = $cloudInitYaml.
-        Replace("<ntp-server>", $config.time.ntp.poolFqdn).
-        Replace("<tier>", "$tier").
-        Replace("<timezone>", $config.time.timezone.linux)
-    return $cloudInitYaml
+    # Expand the template with tier, NTP server and timezone
+    $config["repositories"] = @{
+        externalMirrorPublicKey = $externalMirrorPublicKey
+        tier                    = $tier
+    }
+    return (Expand-MustacheTemplate -Template $cloudInitYaml -Parameters $config)
 }
 
 
@@ -223,7 +157,7 @@ function Deploy-PackageMirror {
     )
     # Load cloud-init file
     # --------------------
-    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.mustache.yaml".ToLower()
     $fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
     $allowlistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -AllowlistPath $allowlistPath
@@ -288,7 +222,7 @@ function Deploy-PackageMirror {
                 NicId                  = $vmNic.Id
                 OsDiskType             = $config.mirrors.diskType
                 ResourceGroupName      = $config.mirrors.rg
-                ImageSku               = "18.04-LTS"
+                ImageSku               = "20.04-LTS"
                 DataDiskIds            = @($dataDisk.Id)
             }
             $null = Deploy-UbuntuVirtualMachine @params

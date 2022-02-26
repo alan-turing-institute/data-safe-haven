@@ -18,12 +18,12 @@ Describe "SHM configuration file check" {
         $referenceConfig = Get-Content -Path $FilePath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable | ConvertTo-SortedHashtable
 
         # Load test config
-        Mock Write-Host {} # we mock Write-Host here as we expect output from the `Get-SreConfig` call
+        Mock Write-Information {} # we mock Write-Information here as we expect output from the `Get-SreConfig` call
         $testConfig = Get-ShmConfig -shmId $ConfigId
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are
-        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 10).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 10).Split("`n")
+        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 99).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 99).Split("`n")
         $Diff | Out-String | Should -BeNullOrEmpty
     }
 }
@@ -41,12 +41,12 @@ Describe "SRE configuration file check" {
         $shmId = $ShmIds | Where-Object { $ConfigId.Split($_)[0] -ne $ConfigId } | Select-Object -First 1
         $sreId = $ConfigId.Split($shmId)[1]
         # Load test config
-        Mock Write-Host {} # we mock Write-Host here as we expect output from the `Get-SreConfig` call
+        Mock Write-Information {} # we mock Write-Information here as we expect output from the `Get-SreConfig` call
         $testConfig = Get-SreConfig -shmId $shmId -sreId $sreId
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are
-        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 10).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 10).Split("`n")
+        $Diff = Compare-Object -ReferenceObject $($referenceConfig | ConvertTo-Json -Depth 99).Split("`n") -DifferenceObject $($testConfig | ConvertTo-Json -Depth 99).Split("`n")
         $Diff | Out-String | Should -BeNullOrEmpty
     }
 }

@@ -15,6 +15,7 @@ Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -106,7 +107,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Set locale, install updates and reboot
         Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."
-        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer $config.shm.time.ntp.poolFqdn -AdditionalPowershellModules @("SqlServer")
+        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
 
         # Change subnets and IP address while the VM is off
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
@@ -169,41 +170,24 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Construct the cloud-init file
         Add-LogMessage -Level Info "Constructing cloud-init from template..."
-        $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
+        $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres.mustache.yaml" -Resolve) -Raw
 
         # Insert additional files into the cloud-init template
-        foreach ($resource in (Get-ChildItem (Join-Path $PSScriptRoot ".." "cloud_init" "resources"))) {
-            $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<$($resource.Name)>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
-            $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-            $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resource.Name)>", $indentedContent)
-        }
+        $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 
         # Expand placeholders in the cloud-init file
-        $cloudInitTemplate = $cloudInitTemplate.
-            Replace("<client-cidr>", $config.sre.network.vnet.subnets.compute.cidr).
-            Replace("<db-admin-password>", $dbAdminPassword).
-            Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
-            Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
-            Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
-            Replace("<domain-join-username>", $config.shm.users.computerManagers.databaseServers.samAccountName).
-            Replace("<domain-join-password>", $domainJoinPassword).
-            Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
-            Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
-            Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
-            Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
-            Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
-            Replace("<ldap-search-user-password>", $ldapSearchPassword).
-            Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-            Replace("<ldap-user-base-dn>", $config.shm.domain.ous.researchUsers.path).
-            Replace("<ntp-server>", $config.shm.time.ntp.poolFqdn).
-            Replace("<ou-database-servers-path>", $config.shm.domain.ous.databaseServers.path).
-            Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
-            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-            Replace("<timezone>", $config.sre.time.timezone.linux).
-            Replace("<vm-hostname>", $databaseCfg.vmName).
-            Replace("<vm-ipaddress>", $databaseCfg.ip)
+        $config["postgres"] = @{
+            dbAdminPassword              = $dbAdminPassword
+            dbServiceAccountPassword     = $dbServiceAccountPassword
+            domainJoinPassword           = $domainJoinPassword
+            ldapGroupFilter              = "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))"  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
+            ldapPostgresServiceAccountDn = "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)"
+            ldapSearchUserDn             = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+            ldapSearchUserPassword       = $ldapSearchPassword
+            ldapUserFilter               = "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))"
+            vmName                       = $databaseCfg.vmName
+        }
+        $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
         # Deploy the VM
         $params = @{

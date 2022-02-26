@@ -1,38 +1,39 @@
 param(
-  [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId,
   [Parameter(Mandatory = $false, HelpMessage = "SKU for the licence you want to assign")]
-  [string]$licenceSku = "AAD_PREMIUM"
+  [string]$licenceSku = "AAD_PREMIUM",
+  [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
+  [string]$tenantId
 )
 
-Import-Module AzureAD.Standard.Preview -ErrorAction Stop
-Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
+Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
-$config = Get-ShmConfig -shmId $shmId
-$shmDomain = $config.domain.fqdn
 
-# Connect to the Azure AD
-# We connect within the script to ensure we are connected to the right Azure AD for the SHM
-Add-LogMessage -Level Info "Connecting to Azure AD for '$shmDomain'..."
-$null = Connect-AzureAD -TenantId $shmDomain
-
+# Connect to Microsoft Graph
+# --------------------------
+if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
+Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
+Connect-MgGraph -TenantId $tenantId -Scopes "Directory.ReadWrite.All" -ErrorAction Stop
+if (Get-MgContext) {
+    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+} else {
+    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+}
 
 # Get the appropriate licence
-$Licence = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicense
-$Licence.SkuId = (Get-AzureADSubscribedSku | Where-Object -Property SkuPartNumber -Value $licenceSku -EQ).SkuID
-$LicencesToAssign = New-Object -TypeName Microsoft.Open.AzureAD.Model.AssignedLicenses
-$LicencesToAssign.AddLicenses = $Licence
+# ---------------------------
+$LicenceSkuId = (Get-MgSubscribedSku | Where-Object -Property SkuPartNumber -Value $licenceSku -EQ).SkuId
 Add-LogMessage -Level Info "Preparing to add licence '$licenceSku' ($($Licence.SkuId)) to unlicenced users"
 
-# Find all users without assigned licences who have an OnPremisesSecurityIdentifier (indicating that they were synched from a local AD)
-$unlicensedUsers = Get-AzureADUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }
-Add-LogMessage -Level Info "Assigning licences to $($unlicensedUsers.Count) unlicenced users"
-$unlicensedUsers | Set-AzureADUserLicense -AssignedLicenses $LicencesToAssign
 
-# Disconnect from AzureAD
-# We disconnect from the SHM Azure AD to ensure the user does not assume they are still
-# connected to a different Azure AD they may have been connected to prior to running this
-# script and therefore perform subsequent operations against the wrong Azure AD
-Add-LogMessage -Level Info "Disconnecting from AzureAD for '$shmDomain"
-$null = Disconnect-AzureAD
+# Find all users without assigned licences who have an OnPremisesSecurityIdentifier.
+# This indicates that they originated from a local AD.
+# ----------------------------------------------------------------------------------
+$unlicensedUsers = Get-MgUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }
+Add-LogMessage -Level Info "Assigning licences to $($unlicensedUsers.Count) unlicenced users"
+$unlicensedUsers | ForEach-Object { Set-MgUserLicense -UserId $_.Id -AddLicenses @{SkuId = $LicenceSkuId } -RemoveLicenses @() }
+
+
+# Sign out of Microsoft Graph
+# ---------------------------
+Disconnect-MgGraph

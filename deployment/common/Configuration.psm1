@@ -78,7 +78,7 @@ function Get-ShmConfig {
         rgPrefix            = $shmConfigBase.overrides.rgPrefix ? $shmConfigBase.overrides.rgPrefix : "RG_SHM_$($shmConfigBase.shmId)".ToUpper()
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
-        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_SH"
+        vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
     }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
@@ -95,14 +95,13 @@ function Get-ShmConfig {
             windows = [TimeZoneConverter.TZConvert]::IanaToWindows($timezoneLinux)
         }
         ntp      = [ordered]@{
-            poolFqdn        = "time.google.com"
             serverAddresses = @("216.239.35.0", "216.239.35.4", "216.239.35.8", "216.239.35.12")
             serverFqdns     = @("time.google.com", "time1.google.com", "time2.google.com", "time3.google.com", "time4.google.com")
         }
     }
 
-    # DSVM build images
-    # -----------------
+    # SRD build images
+    # ----------------
     $vmImagesSubscriptionName = $shmConfigBase.vmImages.subscriptionName ? $shmConfigBase.vmImages.subscriptionName : $shm.subscriptionName
     $vmImagesLocation = $shmConfigBase.vmImages.location ? $shmConfigBase.vmImages.location : $shm.location
     # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
@@ -122,47 +121,53 @@ function Get-ShmConfig {
         Add-LogMessage -Level Warning "Skipping check for image building location as you are not logged in to Azure! Run Connect-AzAccount to log in."
     }
     # Construct build images config
-    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
-    $shm.dsvmImage = [ordered]@{
+    $srdImageStorageSuffix = New-RandomLetters -SeedPhrase $vmImagesSubscriptionName
+    $shm.srdImage = [ordered]@{
         subscription    = $vmImagesSubscriptionName
         location        = $vmImagesLocation
         bootdiagnostics = [ordered]@{
             rg          = "$($shm.vmImagesRgPrefix)_BOOT_DIAGNOSTICS"
-            accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            accountName = "vmimagesbootdiag${srdImageStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
         }
         build           = [ordered]@{
             rg     = "$($shm.vmImagesRgPrefix)_BUILD_CANDIDATES"
             nsg    = [ordered]@{
-                name               = "NSG_IMAGE_BUILD"
+                name               = "NSG_VMIMAGES_BUILD_CANDIDATES"
                 allowedIpAddresses = $shmConfigbase.vmImages.buildIpAddresses ? @($shmConfigbase.vmImages.buildIpAddresses) : @("193.60.220.240", "193.60.220.253")
+                rules              = "vmimages-nsg-rules-build-candidates.json"
             }
             vnet   = [ordered]@{
-                name = "VNET_IMAGE_BUILD"
+                name = "VNET_VMIMAGES"
                 cidr = "10.48.0.0/16"
             }
             subnet = [ordered]@{
-                name = "ImageBuildSubnet"
+                name = "BuildCandidatesSubnet"
                 cidr = "10.48.0.0/24"
             }
-            # Only the R-package installation is parallelisable and 8 GB of RAM is sufficient
+            # Installation of R packages (and some Python builds) is parallelisable
             # We want a compute-optimised VM, since per-core performance is the bottleneck
+            # Standard_E2_v3  => 2 cores; 16GB RAM; 2.3 GHz; £0.1163/hr
+            # Standard_F4s_v2 => 4 cores;  8GB RAM; 3.7 GHz; £0.1506/hr
+            # Standard_D4_v3  => 4 cores; 16GB RAM; 2.4 GHz; £0.1730/hr
+            # Standard_E4_v3  => 4 cores; 32GB RAM; 2.3 GHz; £0.2326/hr
+            # Standard_F8s_v2 => 8 cores; 16GB RAM; 3.7 GHz; £0.3012/hr
+            # Standard_H8     => 8 cores; 56GB RAM; 3.6 GHz; £0.4271/hr
+            # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
-                diskSizeGb = 64
-                size       = "Standard_F4s_v2"
+                diskSizeGb = 128
+                size       = "Standard_F8s_v2"
             }
         }
         gallery         = [ordered]@{
-            rg                = "$($shm.vmImagesRgPrefix)_IMAGE_GALLERY"
-            sig               = "SAFE_HAVEN_COMPUTE_IMAGES"
-            imageMajorVersion = 0
-            imageMinorVersion = 3
+            rg   = "$($shm.vmImagesRgPrefix)_GALLERY"
+            name = "DATA_SAFE_HAVEN_SHARED_IMAGES"
         }
         images          = [ordered]@{
-            rg = "$($shm.vmImagesRgPrefix)_IMAGE_STORAGE"
+            rg = "$($shm.vmImagesRgPrefix)_STORAGE"
         }
         keyVault        = [ordered]@{
             rg   = "$($shm.vmImagesRgPrefix)_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength -MaximumLength 24
+            name = "kv-shm-$($shm.id)-images".ToLower() | Limit-StringLength -MaximumLength 24
         }
         network         = [ordered]@{
             rg = "$($shm.vmImagesRgPrefix)_NETWORKING"
@@ -186,6 +191,8 @@ function Get-ShmConfig {
             identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
+    $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
+    $shm.domain.fqdnUpper = ($shm.domain.fqdn).ToUpper()
     foreach ($ouName in $shm.domain.ous.Keys) {
         $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
     }
@@ -212,7 +219,7 @@ function Get-ShmConfig {
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{
-        vnet           = [ordered]@{
+        vnet            = [ordered]@{
             rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
@@ -221,7 +228,8 @@ function Get-ShmConfig {
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
+                        name  = "$($shm.nsgPrefix)_IDENTITY".ToUpper()
+                        rules = "shm-nsg-rules-identity.json"
                     }
                 }
                 firewall = [ordered]@{
@@ -236,24 +244,29 @@ function Get-ShmConfig {
                 }
             }
         }
-        vpn            = [ordered]@{
+        vpn             = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
-        repositoryVnet = [ordered]@{
-            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-            cidr    = "10.30.1.0/24"
+        repositoryVnets = [ordered]@{}
+        mirrorVnets     = [ordered]@{}
+    }
+    foreach ($tier in @(2, 3)) {
+        $shmRepositoryPrefix = "10.30.$($tier-1)"
+        # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
+        $shm.network.repositoryVnets["tier${tier}"] = [ordered]@{
+            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
+            cidr    = "${shmRepositoryPrefix}.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
-                    name = "RepositorySubnet"
-                    cidr = "10.30.1.0/24"
+                    name = "RepositoryTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.0/24"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_2".ToUpper()
-                        rules = "shm-nsg-rules-nexus.json"
+                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-nexus-tier${tier}.json"
                     }
                 }
             }
         }
-        mirrorVnets    = [ordered]@{}
     }
     # Set package mirror networking information
     foreach ($tier in @(2, 3)) {
@@ -266,14 +279,16 @@ function Get-ShmConfig {
                     name = "ExternalPackageMirrorsTier${tier}Subnet"
                     cidr = "${shmMirrorPrefix}.0/28"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        name  = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-external-mirrors-tier${tier}.json"
                     }
                 }
                 internal = [ordered]@{
                     name = "InternalPackageMirrorsTier${tier}Subnet"
                     cidr = "${shmMirrorPrefix}.16/28"
                     nsg  = [ordered]@{
-                        name = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        name  = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-internal-mirrors-tier${tier}.json"
                     }
                 }
             }
@@ -357,6 +372,8 @@ function Get-ShmConfig {
         vmName                     = $hostname
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
+        hostnameLower              = $hostname.ToLower()
+        hostnameUpper              = $hostname.ToUpper()
         fqdn                       = "${hostname}.$($shm.domain.fqdn)"
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -445,16 +462,20 @@ function Get-ShmConfig {
     }
 
     # Nexus repository VM config
+    $shm.repository = [ordered]@{}
     # --------------------------
-    $shm.repository = [ordered]@{
-        rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
-        vmSize   = "Standard_B2ms"
-        diskType = "Standard_LRS"
-        nexus    = [ordered]@{
-            adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus".ToLower()
-            nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password".ToLower()
-            ipAddress                       = "10.30.1.10"
-            vmName                          = "NEXUS-REPOSITORY-TIER-2"
+    foreach ($tier in @(2, 3)) {
+        $shm.repository["tier${tier}"] = [ordered]@{
+            rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
+            vmSize   = "Standard_B2ms"
+            diskType = "Standard_LRS"
+            nexus    = [ordered]@{
+                adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus-tier${tier}".ToLower()
+                nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password-tier${tier}".ToLower()
+                ipAddress                       = "10.30.$($tier-1).10"
+                # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
+                vmName                          = "NEXUS-REPOSITORY-TIER-${tier}"
+            }
         }
     }
 
@@ -466,7 +487,7 @@ function Get-ShmConfig {
         diskType = "Standard_LRS"
         pypi     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8192 }
-            tier3 = [ordered]@{ diskSize = 512 }
+            tier3 = [ordered]@{ diskSize = 1024 }
         }
         cran     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 128 }
@@ -506,7 +527,7 @@ function Get-ShmResourceGroups {
         [System.Collections.IDictionary]$shmConfig
     )
     $originalContext = Get-AzContext
-    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.dsvmImage -Key "rg"
+    $excludedResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig.srdImage -Key "rg"
     $potentialResourceGroups = Find-AllMatchingKeys -Hashtable $shmConfig -Key "rg" | Where-Object { -not $excludedResourceGroups.Contains($_) }
     try {
         $null = Set-AzContext -SubscriptionId $shmConfig.subscriptionName -ErrorAction Stop
@@ -534,7 +555,7 @@ function Get-SreConfig {
     # Secure research environment config
     # ----------------------------------
     # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "CoCalc", "MicrosoftRDS")
+    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
     if (-not $sreConfigBase.remoteDesktopProvider) {
         Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
         $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
@@ -543,7 +564,6 @@ function Get-SreConfig {
         Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
     }
     if (
-        ($sreConfigBase.remoteDesktopProvider -eq "CoCalc") -and (-not @(0, 1).Contains([int]$sreConfigBase.tier)) -or
         ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
     ) {
         Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
@@ -615,7 +635,7 @@ function Get-SreConfig {
                     cidr = "${sreBasePrefix}.$([int]$sreThirdOctet).0/24"
                     nsg  = [ordered]@{
                         name  = "$($config.sre.nsgPrefix)_DEPLOYMENT".ToUpper()
-                        rules = "sre-nsg-rules-compute-deployment.json"
+                        rules = "sre-nsg-rules-deployment.json"
                     }
                 }
                 remoteDesktop = [ordered]@{ # note that further details are added below
@@ -713,19 +733,19 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "FileStorage" : "BlobStorage"
-                performance        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "Premium_LRS" : "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                storageKind        = "BlobStorage"
+                performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
-                allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.dsvmImage.build.nsg.allowedIpAddresses
+                allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.srdImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
                 egress  = [ordered]@{
                     accessPolicyName = "readWrite"
-                    mountType        = ($config.sre.remoteDesktop.provider -eq "CoCalc") ? "ShareSMB" : "BlobSMB"
+                    mountType        = "BlobSMB"
                 }
             }
         }
@@ -823,7 +843,7 @@ function Get-SreConfig {
                 }
             }
         }
-    } elseif ($config.sre.remoteDesktop.provider -ne "CoCalc") {
+    } else {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Construct the hostname and FQDN for each VM
@@ -905,11 +925,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "20.04-LTS"
             codimd                  = [ordered]@{
-                dockerVersion = "2.3.2"
+                dockerVersion = "2.4.1-cjk"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.1"
+                dockerVersion      = "13.4-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{
@@ -956,7 +976,7 @@ function Get-SreConfig {
     }
     $dbConfig = @{
         MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev" }
-        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "18.04-LTS" }
+        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
     }
     $ipOffset = 4
     foreach ($databaseType in $sreConfigBase.databases) {
@@ -989,9 +1009,9 @@ function Get-SreConfig {
         $ipOffset += 1
     }
 
-    # Compute VMs
-    # -----------
-    $config.sre.dsvm = [ordered]@{
+    # Secure Research Desktop VMs
+    # ---------------------------
+    $config.sre.srd = [ordered]@{
         adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-compute"
         rg                      = "$($config.sre.rgPrefix)_COMPUTE".ToUpper()
         vmImage                 = [ordered]@{
@@ -1023,13 +1043,13 @@ function Get-SreConfig {
         # All Nexus repositories are accessed over the same port (currently 80)
         if ($config.sre.nexus) {
             $nexus_port = 80
-            if ([int]$config.sre.tier -ne 2) {
+            if ([int]$config.sre.tier -gt 3) {
                 Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
             }
-            $cranUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/cran-proxy"
-            $pypiUrl = "http://$($config.shm.repository.nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
-            $repositoryVNetName = $config.shm.network.repositoryVnet.name
-            $repositoryVNetCidr = $config.shm.network.repositoryVnet.cidr
+            $cranUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/cran-proxy"
+            $pypiUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
+            $repositoryVNetName = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } else {
             $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
@@ -1105,6 +1125,6 @@ function Show-FullConfig {
     } else {
         $config = Get-SreConfig -shmId ${shmId} -sreId ${sreId}
     }
-    Write-Output ($config | ConvertTo-Json -Depth 10)
+    Write-Output ($config | ConvertTo-Json -Depth 99)
 }
 Export-ModuleMember -Function Show-FullConfig

@@ -5,25 +5,25 @@ param(
     [string]$sreId,
     [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
     [string]$tenantId,
-    [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of DSVMs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
+    [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
     [switch]$Clean
 )
 
-Import-Module Az.Accounts
-if (-not (Get-Module -Name "Microsoft.Graph.Authentication")) { Import-Module Microsoft.Graph.Authentication -ErrorAction Stop }
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Connect to Azure
 # ----------------
-if (Get-AzContext) { Disconnect-AzAccount } # force a refresh of the Azure token before starting
-Add-LogMessage -Level Info "Attempting to authenticate with Azure"
-Connect-AzAccount -ErrorAction Stop
+if (Get-AzContext) { Disconnect-AzAccount | Out-Null } # force a refresh of the Azure token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Azure. Please sign in with an account with admin rights over the subscriptions you plan to use."
+Connect-AzAccount -ErrorAction Stop | Out-Null
 if (Get-AzContext) {
-    Add-LogMessage -Level Success "Authenticated with Azure"
+    Add-LogMessage -Level Success "Authenticated with Azure as $((Get-AzContext).Account.Id)"
 } else {
     Add-LogMessage -Level Fatal "Failed to authenticate with Azure"
 }
@@ -31,11 +31,11 @@ if (Get-AzContext) {
 
 # Connect to Microsoft Graph
 # --------------------------
-if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph"
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
+Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop | Out-Null
 if (Get-MgContext) {
-    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+    Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {
     Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
 }
@@ -107,16 +107,16 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_WebApp_Ser
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Databases.ps1')" -shmId $shmId -sreId $sreId }
 
 
-# Deploy data science VMs
-# -----------------------
+# Deploy SRD VMs
+# --------------
 $cpuIpOffset = 160
 $gpuIpOffset = 180
 foreach ($VmSize in $VmSizes) {
     if ($VmSize.Replace("Standard_", "").StartsWith("N")) {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $gpuIpOffset -vmSize $VmSize }
         $gpuIpOffset += 1
     } else {
-        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_DSVM.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
+        Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Add_Single_SRD.ps1')" -shmId $shmId -sreId $sreId -ipLastOctet $cpuIpOffset -vmSize $VmSize }
         $cpuIpOffset += 1
     }
 }

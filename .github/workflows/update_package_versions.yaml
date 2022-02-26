@@ -1,0 +1,79 @@
+---
+name: Update package versions
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop]
+  schedule:
+    - cron: "0 0 */7 * *"  # run once per week
+
+# checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_package_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install Python packages
+        run: |
+          pip install --upgrade pip
+          pip install -r .github/scripts/requirements.txt
+
+      - name: Update Azure Data Studio version
+        run: |
+          python .github/scripts/update_azure_data_studio.py
+
+      - name: Update RStudio version
+        run: |
+          python .github/scripts/update_rstudio.py
+
+      - name: Update DBeaver driver versions
+        run: |
+          python .github/scripts/update_rstudio.py
+
+      - name: Check for changes
+        shell: bash
+        run: git --no-pager diff -- .
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Create pull request
+        if: ${{ ! env.ACT }}
+        id: pull-request
+        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a  # This commit corresponds to tag 3.12.0
+        with:
+          commit-message: Update SRD package versions
+          committer: GitHub Actions <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          base: develop
+          branch: srd-package-versions
+          delete-branch: true
+          title: Update SRD package versions
+          body: |
+            ### :arrow_heading_up: Summary
+            - Apply package version diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Package versions only
+          labels: |
+            affected: developers
+            severity: minor
+            type: enhancement
+          draft: false

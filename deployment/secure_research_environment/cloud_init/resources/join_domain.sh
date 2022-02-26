@@ -9,16 +9,28 @@ DOMAIN_JOIN_OU=$2
 DOMAIN_JOIN_USER=$3
 VM_HOSTNAME=$4
 
+# Ensure that  /etc/resolv.conf has the correct settings
+echo "Ensuring that /etc/resolv.conf has the correct settings..."
+cp /etc/systemd/resolved.conf /tmp/resolved.conf
+sed -i -e "s/^[#]DNS=.*/DNS=/" -e "s/^[#]FallbackDNS=.*/FallbackDNS=/" -e "s/^[#]Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
+ln -rsf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+cmp /etc/systemd/resolved.conf /tmp/resolved.conf || systemctl restart systemd-resolved
+rm /tmp/resolved.conf
+
 # Check that hostname is correct
 echo "Ensuring that hostname is correct..."
-if [ "$(hostnamectl --static)" != "${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}" ] | [ ! "$(grep $VM_HOSTNAME /etc/hosts)" ]; then
+if [ "$(hostnamectl --static)" != "${VM_HOSTNAME}.${DOMAIN_FQDN_LOWER}" ] || (! grep -q "$VM_HOSTNAME" /etc/hosts); then
     /opt/configuration/configure-hostname.sh > /dev/null
 fi
 
 # Check the NTP service
 echo "Ensuring that NTP service is running..."
-if [ "$(systemctl is-active systemd-timesyncd)" != "active" ]; then
+if [ "$(systemctl is-active systemd-timesyncd)" != "active" ] && [ "$(systemctl is-enabled systemd-timesyncd)" = "enabled" ]; then
     systemctl restart systemd-timesyncd
+    sleep 10
+fi
+if [ "$(systemctl is-active chronyd)" != "active" ] && [ "$(systemctl is-enabled chronyd)" = "enabled" ]; then
+    systemctl restart chronyd
     sleep 10
 fi
 
@@ -39,6 +51,7 @@ fi
 
 # Join realm - creating the SSSD config if it does not exist
 echo "Joining realm '${DOMAIN_FQDN_LOWER}'..."
+realm leave 2> /dev/null
 cat /etc/domain-join.secret | realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/ 2>&1
 
 # Update SSSD settings

@@ -8,23 +8,24 @@ It can truly only succeed with a interdisciplinary team working together.
 The point of these contributing guidelines are to help you participate as easily as possible.
 If you have any questions that aren't discussed below, please let us know by [opening an issue](#project-management-through-issues).
 
-## Table of contents
+## Contents
 
 Been here before?
 Already know what you're looking for in this guide?
 Jump to the following sections:
 
-+ [A DevOps development philosophy](#a-devops-development-philosophy)
-  + [Project workflow](#project-workflow)
-  + [Project meetings](#project-meetings)
-  + [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
-+ [Contributing through GitHub](#contributing-through-github)
-  + [Writing in markdown](#writing-in-markdown)
-  + [Project management through issues](#project-management-through-issues)
-  + [Issues as conversations](#issues-as-conversations)
-  + [Working in a private repository](#working-in-a-private-repository)
-  + [Who's involved in the project](#Whos-involved-in-the-project)
-  + [Make a change with a pull request](#making-a-change-with-a-pull-request)
+- [A DevOps development philosophy](#a-devops-development-philosophy)
+  - [Project workflow](#project-workflow)
+  - [Project meetings](#project-meetings)
+  - [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
+- [Contributing through GitHub](#contributing-through-github)
+  - [Discussions vs Issues](#discussions-vs-issues)
+  - [Writing in markdown](#writing-in-markdown)
+  - [Project management through issues](#project-management-through-issues)
+  - [Issues as conversations](#issues-as-conversations)
+  - [Working in a private repository](#working-in-a-private-repository)
+  - [Who's involved in the project](#Whos-involved-in-the-project)
+  - [Make a change with a pull request](#making-a-change-with-a-pull-request)
 
 ## A DevOps development philosophy
 
@@ -32,38 +33,39 @@ For the Data Safe Haven project, we follow a DevOps development philosophy.
 This means different things to different people, but the definition that we're using is [best summed up here](https://www.guru99.com/agile-vs-devops.html).
 
 <p align="center">
-   <img src="docs/images/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
+   <img src="docs/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
 </p>
 
 This is a software development method which focuses on:
 
-+ communication
-+ integration
-+ collaboration
+- communication
+- integration
+- collaboration
 
-between the development team and the operations team to enable rapid deployment of products. The most pertinent features of the DevOps methodology for this project are:
+between the development team and the operations team to enable rapid deployment of products.
+The most pertinent features of the DevOps methodology for this project are:
 
-+ **focus**: operational readiness
-+ **structure**: separate development and operations teams
-+ **duration**: benchmarks around stable releases
-+ **emphasis**: taking software which is ready for release and deploying it in a reliable and secure manner
-+ **documentation**: documenting processes is a key part of the development cycle
-+ **automation**: maximal automation is the primary goal
-+ **quality**: full integration testing each time features are added
+- **focus**: operational readiness
+- **structure**: separate development and operations teams
+- **duration**: benchmarks around stable releases
+- **emphasis**: taking software which is ready for release and deploying it in a reliable and secure manner
+- **documentation**: documenting processes is a key part of the development cycle
+- **automation**: maximal automation is the primary goal
+- **quality**: full integration testing each time features are added
 
 ### Project workflow
 
 Although we are not following an Agile workflow, we still think that the following features are important:
 
-+ No work that is not **documented in an issue** on GitHub
-+ All policy documents, guidelines, tutorials, code and its documentation to be **stored and maintained in this GitHub repository**
-+ Issues to be triaged at regular **project meetings** with the next milestone release in mind
+- No work that is not **documented in an issue** on GitHub
+- All policy documents, guidelines, tutorials, code and its documentation to be **stored and maintained in this GitHub repository**
+- Issues to be triaged at regular **project meetings** with the next milestone release in mind
 
 ### Project meetings
 
 The goal of the project meetings is to **reflect** on how ongoing work is proceeding and to **plan** the next section of work.
-During the project meetings we'll start by working through the [issues list][safehaven-issues] and discussing all the issues that are marked as [in progress](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20in%20progress).
-We will consider whether we should start work on any issues marked as [on hold](https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20on%20hold).
+During the project meetings we'll start by working through the [issues list](https://github.com/alan-turing-institute/data-safe-haven/issues) and discussing any issues that are in progress.
+We will consider whether we should start work on any issues from the backlog.
 
 Note that the project meeting is very explicitly **not** where the work gets done.
 It is a review, reflection and an opportunity to set goals.
@@ -78,27 +80,47 @@ Please see the section on [project management through issues](#project-managemen
 ## Contributing through GitHub
 
 [git](https://git-scm.com) is a really useful tool for version control. [GitHub](https://github.com) sits on top of git and supports collaborative and distributed working.
-
-We know that it can be daunting to start using `git` and `GitHub` if you haven't worked with them in the past, but the Turing Research Engineering Team are happy to help you figure out any of the jargon or confusing instructions you encounter! :heart:
-
+We know that it can be daunting to start using `git` and `GitHub` if you haven't worked with them in the past, but the team are happy to help you figure out any of the jargon or confusing instructions you encounter! :heart:
 In order to contribute via GitHub you'll need to set up a free account and sign in. Here are some [instructions](https://help.github.com/articles/signing-up-for-a-new-github-account/) to help you get going.
 
 We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
 <p align="center">
-   <img src="docs/images/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
+   <img src="docs/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
 </p>
 
 This means that:
 
-+ checking out the `main` branch, which is the default branch of the repository will give you the latest tagged release
-+ the `develop` branch will contain the latest cutting-edge code that has not yet made it into a release
-+ releases are made by branching from `develop` into a branch called `release-<version name>`
-  + deployment is tested from this release and any necessary integration changes are made on this branch
-  + the branch is then merged into `main` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
-+ we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
+- checking out the `latest` branch, will give you the latest tagged release
+- the `develop` branch, which is the default branch of the repository, contains the latest cutting-edge code that has not yet made it into a release
+- releases are made by branching from `develop` into a branch called `release-<version name>`
+  - deployment is tested from this release and any necessary integration changes are made on this branch
+  - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
+- we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
-### Writing in markdown
+### Discussions vs Issues
+
+**Discussions** are the best place for informal talk about the project
+You should feel welcome to create a discussion on any relevant topic, without the formality of an issue.
+Good examples of discussions are:
+
+- Any questions
+- Possible bugs (does anyone else have this problem?)
+- Looking for collaborators
+- Community support
+
+**Issues** are best used for tracking development work.
+This is because issues integrate well with GitHub development tools like projects, pull requests, assignments and so on.
+Each issue should ideally represent a well-defined, self-contained piece of work suitable to become a single pull request.
+Good examples of issues are
+
+- Bug reports with technical detail
+- Feature requests
+- Specific ideas for changes
+
+When opening an issue, pick a suitable template (if possible) to make the process easier.
+
+### Writing in Markdown
 
 GitHub has a helpful page on [getting started with writing and formatting on GitHub](https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github).
 
@@ -111,24 +133,24 @@ The goal is to allow you to focus on the content rather than worry too much abou
 
 ### Project management through issues
 
-Please regularly check out the agreed upon tasks at the [issues list][safehaven-issues].
+Please regularly check out the agreed upon tasks at the [issues list][https://github.com/alan-turing-institute/data-safe-haven/issues].
 Every issue should have labels assigned to it from the following scheme.
 At least one label from each category ( `type` , `affected` and `severity` ) should be assigned to each issue - don't worry if you need to change these over time, they should reflect the current status of the issue.
 
-| Category         | Labels |
-|:----------------:|:------:|
-| type             | <img src="https://img.shields.io/badge/-type:%20bug%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20documentation%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20question%20-fbca04"> |
-| affected         | <img src="https://img.shields.io/badge/-affected:%20developers-b9d6f3"> <img src="https://img.shields.io/badge/-affected:%20end users-b9d6f3"> |
-| severity         | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
+| Category |                                                                                                                                               Labels                                                                                                                                                |
+| :------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|   type   |       <img src="https://img.shields.io/badge/-type:%20bug%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20enhancement%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20documentation%20-fbca04"> <img src="https://img.shields.io/badge/-type:%20question%20-fbca04">        |
+| affected |                                                                           <img src="https://img.shields.io/badge/-affected:%20developers-b9d6f3"> <img src="https://img.shields.io/badge/-affected:%20end users-b9d6f3">                                                                            |
+| severity | <img src="https://img.shields.io/badge/-severity:%20broken%20/%20unusable-8a0000"> <img src="https://img.shields.io/badge/-severity:%20embarrassing-c23b22"> <img src="https://img.shields.io/badge/-severity:%20medium-fb6d4c"> <img src="https://img.shields.io/badge/-severity:%20minor-ff9e79"> |
 
 Other labels which may or may not be relevant are meta labels (for collecting related issues) and the "good first issue" label for signalling issues that new contributors might like to tackle.
 If an issue is closed without being completed, one of the `closed` labels should be attached to it to explain why.
 
-| Category         | Labels |
-|:----------------:|:------:|
-| meta             | <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca"> |
-| other            | <img src="https://img.shields.io/badge/-good%20first%20issue-77dd77"> |
-| closed           | <img src="https://img.shields.io/badge/-status:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-status:%20wontfix-a0a0a0"> |
+| Category |                                                                                                                                                                   Labels                                                                                                                                                                   |
+| :------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|   meta   | <img src="https://img.shields.io/badge/-meta:%20costs-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20monitoring-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20ncsc-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20nhs-ff96ca"> <img src="https://img.shields.io/badge/-meta:%20release%20candidate-ff96ca"> |
+|  other   |                                                                                                                                   <img src="https://img.shields.io/badge/-good%20first%20issue-77dd77">                                                                                                                                    |
+|  closed  |                                                   <img src="https://img.shields.io/badge/-closing:%20could%20not%20reproduce-a0a0a0"> <img src="https://img.shields.io/badge/-closing:%20duplicate-a0a0a0"> <img src="https://img.shields.io/badge/-closing:%20will%20not%20fix-a0a0a0">                                                   |
 
 If you have an idea for a piece of work to complete, please **open an issue**.
 If you have been assigned an issue, please be ready to explain in the [project meeting](#project-meetings) what your progress has been.
@@ -141,22 +163,24 @@ They should be concrete enough to be done in a week or so.
 If an issue is growing to encompass more than one task, consider breaking it into multiple issues.
 
 You can think of the issues as **conversations** about a particular topic.
-GitHub's tagline is **social coding** and the issues are inspired by social media conversations.
+`GitHub`'s tagline is **social coding** and the issues are inspired by social media conversations.
 
 You can [mention a user](https://help.github.com/articles/basic-writing-and-formatting-syntax/#mentioning-people-and-teams) by putting `@` infront of their github id.
-For example, `@KirstieJane` will send a notification to Kirstie Whitaker so she knows to visit the issue and (for example) reply to your question.
+For example, `@KirstieJane` will send a notification to `Kirstie Whitaker` so she knows to visit the issue and (for example) reply to your question.
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
 <p align="center">
-   <img src="docs/images/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
+   <img src="docs/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
 </p>
 
 ### Working in a private repository
 
-As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities! Therefore we're keeping the repository private until we're confident that our work is secure.
+As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities!
+Therefore we're keeping the repository private until we're confident that our work is secure.
 
-Please note that the plan is to make the contents of this repository openly available sometime in 2020. Please be considerate of the content you add and use professional and inclusive language at all times.
+Please note that the plan is to make the contents of this repository openly available.
+Please be considerate of the content you add and use professional and inclusive language at all times.
 
 As we're working in a private repository you may not be able to see the repository if you aren't signed in.
 So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
@@ -165,7 +189,7 @@ So if you see a 404 page and you're confident you have the correct url, go back 
 
 To contribute to the codebase you'll need to submit a **pull request**.
 
-If you're updating the code or other documents in the main repository, the following steps are a guide to help you contribute in a way that will be easy for everyone to review and accept with ease  :sunglasses:.
+If you're updating the code or other documents in the repository, the following steps are a guide to help you contribute in a way that will be easy for everyone to review and accept with ease :sunglasses:.
 
 #### 1. Make sure there is an issue for this that is clear about what work you're going to do
 
@@ -181,11 +205,11 @@ Make sure to [keep your fork up to date](https://help.github.com/articles/syncin
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository) and a [new issue][safehaven-issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
 
 #### 4. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request)
 
-A member of the Safe Haven project team will review your changes to confirm that they can be merged into the main codebase.
+A member of the Safe Haven project team will review your changes to confirm that they can be merged into the codebase.
 
 A [review](https://help.github.com/articles/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
@@ -195,50 +219,47 @@ GitHub has a [nice introduction](https://guides.github.com/introduction/flow) to
 
 ### Who's involved in the project
 
-The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do.
-As some users have GitHub IDs that make it a little difficult to know who they are in real life and it's sometimes nice to know **who** you're working with on the project, hopefully this table will help you put names to faces and IDs :sparkles:
+As some users have `GitHub` IDs that make it a little difficult to know who they are in real life and it's sometimes nice to know **who** you're working with on the project, hopefully this table will help you put names to faces and IDs :sparkles:
 
 The following people have made one or more commits to the project:
 
-| Name                 | GitHub ID | Email |
-| -------------------- | --- | --- |
-| Daniel Allen         | [@sysdan](https://github.com/sysdan) | <dallen@turing.ac.uk> |
-| Diego Arenas         | [@darenasc](https://github.com/darenasc) | <darenasc@gmail.com> |
-| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan) | <dbeavan@turing.ac.uk> |
-| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas) | <acabrejasegea@turing.ac.uk> |
-| Ian Carter           | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
-| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1) | <echalstrey@turing.ac.uk> |
-| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
-| James Cunningham     | [@james-c](https://github.com/james-c) | <james.a.cunningham@manchester.ac.uk> |
-| Tom Doel             | [@tomdoel](https://github.com/tomdoel)| <tom.doel@codechoreography.co.uk> |
-| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall)| <chris.edsall@bristol.ac.uk> |
-| Oliver Forrest       | [@oforrest](https://github.com/oforrest) | <oforrest@turing.ac.uk> |
-| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles) | <ogiles@turing.ac.uk> |
-| James Hetherington   | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
-| Tim Hobson           | [@thobson88](https://github.com/thobson88) | <thobson@turing.ac.uk> |
-| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) | <George.Holmes@Ensono.com> |
-| Catherine Lawrence   | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
-| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz) | <tlazauskas@turing.ac.uk> |
-| Jim Madge            | [@JimMadge](https://github.com/JimMadge) | <jmadge@turing.ac.uk> |
-| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)| <jmanser@turing.ac.uk> |
-| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)| <mmorin@turing.ac.uk> |
-| Federico Nanni       | [@fedenanni](https://github.com/fedenanni) | <fnanni@turing.ac.uk> |
-| Guillaume Noell      | [@gn5](https://github.com/gn5) | <gn5@sanger.ac.uk> |
-| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
-| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts) | <jroberts@turing.ac.uk> |
-| James Robinson       | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
-| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd) | <Brett.Todd@Ensono.com> |
-| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj) | <svollmer@turing.ac.uk> |
-| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream) | <bwalden@turing.ac.uk> |
-| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
-| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1) | <rwinstanley@turing.ac.uk> |
-| Warwick Wood         | [@warwick26](https://github.com/warwick26) | <wwood@turing.ac.uk> |
-| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs) | <kxu@turing.ac.uk> |
+| Name                 | GitHub ID                                                  | Email                                 |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------- |
+| Daniel Allen         | [@sysdan](https://github.com/sysdan)                       | <dallen@turing.ac.uk>                 |
+| Diego Arenas         | [@darenasc](https://github.com/darenasc)                   | <darenasc@gmail.com>                  |
+| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan)             | <dbeavan@turing.ac.uk>                |
+| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas)                 | <acabrejasegea@turing.ac.uk>          |
+| Ian Carter           | [@getcarter21](https://github.com/getcarter21)             | <icarter@turing.ac.uk>                |
+| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1)   | <echalstrey@turing.ac.uk>             |
+| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)                   | <rob.clarke@coriniumtech.com>         |
+| James Cunningham     | [@james-c](https://github.com/james-c)                     | <james.a.cunningham@manchester.ac.uk> |
+| Tom Doel             | [@tomdoel](https://github.com/tomdoel)                     | <tom.doel@codechoreography.co.uk>     |
+| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall) | <chris.edsall@bristol.ac.uk>          |
+| Oliver Forrest       | [@oforrest](https://github.com/oforrest)                   | <oforrest@turing.ac.uk>               |
+| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles)             | <ogiles@turing.ac.uk>                 |
+| James Hetherington   | [@jamespjh](https://github.com/jamespjh)                   | <jhetherington@turing.ac.uk>          |
+| Tim Hobson           | [@thobson88](https://github.com/thobson88)                 | <thobson@turing.ac.uk>                |
+| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) | <George.Holmes@Ensono.com>            |
+| Catherine Lawrence   | [@cathiest](https://github.com/cathiest)                   | <clawrence@turing.ac.uk>              |
+| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz)                   | <tlazauskas@turing.ac.uk>             |
+| Jim Madge            | [@JimMadge](https://github.com/JimMadge)                   | <jmadge@turing.ac.uk>                 |
+| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)                 | <jmanser@turing.ac.uk>                |
+| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)             | <mmorin@turing.ac.uk>                 |
+| Federico Nanni       | [@fedenanni](https://github.com/fedenanni)                 | <fnanni@turing.ac.uk>                 |
+| Guillaume Noell      | [@gn5](https://github.com/gn5)                             | <gn5@sanger.ac.uk>                    |
+| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)       | <moreilly@turing.ac.uk>               |
+| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts)         | <jroberts@turing.ac.uk>               |
+| James Robinson       | [@jemrobinson](https://github.com/jemrobinson)             | <jrobinson@turing.ac.uk>              |
+| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd)       | <Brett.Todd@Ensono.com>               |
+| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj)                 | <svollmer@turing.ac.uk>               |
+| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream)         | <bwalden@turing.ac.uk>                |
+| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)             | <kwhitaker@turing.ac.uk>              |
+| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           | <rwinstanley@turing.ac.uk>            |
+| Warwick Wood         | [@warwick26](https://github.com/warwick26)                 | <wwood@turing.ac.uk>                  |
+| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 | <kxu@turing.ac.uk>                    |
 
 ## Thank you!
 
 You're awesome! :wave::smiley:
 
-*&mdash; Based on contributing guidelines from the [BIDS Starter Kit](https://github.com/INCF/bids-starter-kit) project. Reused under the CC-BY license.*
-
-[safehaven-issues]: https://github.com/alan-turing-institute/data-safe-haven/issues
+_Based on contributing guidelines from the [BIDS Starter Kit](https://github.com/INCF/bids-starter-kit) project. Reused under the CC-BY license._

@@ -1,0 +1,5 @@
+[TEMPLATE_CONFIGURATION]
+name = Emoji Support
+template = article
+
+stylesheet = emoji_support.rts

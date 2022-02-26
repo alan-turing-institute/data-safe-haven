@@ -1,78 +1,13 @@
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Dns -ErrorAction Stop
+Import-Module Az.KeyVault -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.OperationalInsights -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
-
-
-# Create network security group rule if it does not exist
-# -------------------------------------------------------
-function Add-NetworkSecurityGroupRule {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
-        $NetworkSecurityGroup,
-        [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
-        [string]$Description,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
-        $Priority,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
-        $Direction,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
-        [string]$Access,
-        [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $SourceAddressPrefix,
-        [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $SourcePortRange,
-        [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $DestinationAddressPrefix,
-        [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $DestinationPortRange,
-        [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
-        [switch]$VerboseLogging = $false
-    )
-    try {
-        if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
-        $null = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if ($notExists) {
-            if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-            $null = Add-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                    -Access "$Access" `
-                                                    -Description "$Description" `
-                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                    -DestinationPortRange $DestinationPortRange `
-                                                    -Direction "$Direction" `
-                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                    -Priority $Priority `
-                                                    -Protocol "$Protocol" `
-                                                    -SourceAddressPrefix $SourceAddressPrefix `
-                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
-            if ($?) {
-                if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
-            } else {
-                if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
-            }
-        } else {
-            if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
-            $null = Set-AzNetworkSecurityRuleConfig -Name "$Name" `
-                                                    -Access "$Access" `
-                                                    -Description "$Description" `
-                                                    -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                    -DestinationPortRange $DestinationPortRange `
-                                                    -Direction "$Direction" `
-                                                    -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                    -Priority $Priority `
-                                                    -Protocol "$Protocol" `
-                                                    -SourceAddressPrefix $SourceAddressPrefix `
-                                                    -SourcePortRange $SourcePortRange | Set-AzNetworkSecurityGroup -ErrorAction Stop
-        }
-    } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
-        Add-LogMessage -Level Fatal $_.Exception.Message.Split("`n")[0]
-    }
-
-}
-Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
 
 # Associate a VM to an NSG
@@ -257,7 +192,7 @@ function Deploy-Firewall {
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
-        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
+        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name -EnableDnsProxy
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
@@ -344,8 +279,10 @@ function Deploy-FirewallNetworkRule {
         $Firewall,
         [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
         $SourceAddress,
-        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of destination")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
         $DestinationAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
+        $DestinationFqdn,
         [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
         $DestinationPort,
         [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
@@ -358,8 +295,11 @@ function Deploy-FirewallNetworkRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
-    $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
-    Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
+    Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$($DestinationAddress ? $DestinationAddress : $DestinationFqdn)' on ports '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
+    $params = @{}
+    if ($DestinationAddress) { $params["DestinationAddress"] = $DestinationAddress }
+    if ($DestinationFqdn) { $params["DestinationFqdn"] = $DestinationFqdn }
+    $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationPort $DestinationPort -Protocol $Protocol @params
     try {
         $ruleCollection = $Firewall.GetNetworkRuleCollectionByName($CollectionName)
         Add-LogMessage -Level InfoSuccess "Network rule collection '$CollectionName' already exists"
@@ -403,14 +343,14 @@ function Deploy-KeyVault {
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
-    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     if ($null -eq $keyVault) {
         # Purge any existing soft-deleted key vault
         foreach ($existingLocation in (Get-AzLocation | ForEach-Object { $_.Location })) {
             try {
-                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop) {
+                if (Get-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -ErrorAction Stop -WarningAction SilentlyContinue) {
                     Add-LogMessage -Level Info "Purging a soft-deleted key vault '$Name' in $existingLocation"
-                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force | Out-Null
+                    Remove-AzKeyVault -VaultName $Name -Location $existingLocation -InRemovedState -Force -WarningAction SilentlyContinue | Out-Null
                     if ($?) {
                         Add-LogMessage -Level Success "Purged key vault '$Name'"
                     } else {
@@ -423,7 +363,7 @@ function Deploy-KeyVault {
         }
         # Create a new key vault
         Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
-        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
+        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -WarningAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Created key vault '$Name'"
         } else {
@@ -448,12 +388,11 @@ function Deploy-LogAnalyticsWorkspace {
         [Parameter(Mandatory = $true, HelpMessage = "Location to deploy into")]
         [string]$Location
     )
-    $null = Deploy-ResourceGroup -Name $ResourceGroupName -Location $Location
     Add-LogMessage -Level Info "Ensuring that log analytics workspace '$Name' exists..."
     $workspace = Get-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating log analytics workspace '$Name'"
-        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku Standard
+        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku pergb2018
         if ($?) {
             Add-LogMessage -Level Success "Created log analytics workspace '$Name'"
         } else {
@@ -884,19 +823,27 @@ function Deploy-VirtualMachineMonitoringExtension {
         if ($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
         } else {
-            try {
-                Set-AzVMExtension -ExtensionName $type `
-                                  -ExtensionType $type `
-                                  -Location $VM.location `
-                                  -ProtectedSettings $ProtectedSettings `
-                                  -Publisher $publisher `
-                                  -ResourceGroupName $VM.ResourceGroupName `
-                                  -Settings $PublicSettings `
-                                  -TypeHandlerVersion $version `
-                                  -VMName $VM.Name `
-                                  -ErrorAction Stop
+            foreach ($i in 1..5) {
+                try {
+                    Set-AzVMExtension -ExtensionName $type `
+                                    -ExtensionType $type `
+                                    -Location $VM.location `
+                                    -ProtectedSettings $ProtectedSettings `
+                                    -Publisher $publisher `
+                                    -ResourceGroupName $VM.ResourceGroupName `
+                                    -Settings $PublicSettings `
+                                    -TypeHandlerVersion $version `
+                                    -VMName $VM.Name `
+                                    -ErrorAction Stop
+                    break
+                } catch {
+                    Start-Sleep 10
+                }
+            }
+            $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
+            if ($installed) {
                 Add-LogMessage -Level Success "Installed extension '$type' on VM '$($VM.Name)'."
-            } catch {
+            } else {
                 Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($VM.Name)'!"
             }
         }
@@ -951,6 +898,54 @@ function Deploy-VirtualNetwork {
     return $vnet
 }
 Export-ModuleMember -Function Deploy-VirtualNetwork
+
+
+# Create virtual network gateway if it does not exist
+# ---------------------------------------------------
+function Deploy-VirtualNetworkGateway {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network gateway to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [string]$Location,
+        [Parameter(Mandatory = $true, HelpMessage = "ID of the public IP address to use")]
+        [string]$PublicIpAddressId,
+        [Parameter(Mandatory = $true, HelpMessage = "ID of the subnet to deploy into")]
+        [string]$SubnetId,
+        [Parameter(Mandatory = $true, HelpMessage = "Point-to-site certificate used by the gateway")]
+        [string]$P2SCertificate,
+        [Parameter(Mandatory = $true, HelpMessage = "Range of IP addresses used by the point-to-site VpnClient")]
+        [string]$VpnClientAddressPool
+    )
+    Add-LogMessage -Level Info "Ensuring that virtual network gateway '$Name' exists..."
+    $gateway = Get-AzVirtualNetworkGateway -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating virtual network gateway '$Name'..."
+        $ipconfig = New-AzVirtualNetworkGatewayIpConfig -Name "shmgwipconf" -SubnetId $SubnetId -PublicIpAddressId $PublicIpAddressId
+        $rootCertificate = New-AzVpnClientRootCertificate -Name "SafeHavenManagementP2SRootCert" -PublicCertData $P2SCertificate
+        $gateway = New-AzVirtualNetworkGateway -Name $Name `
+                                               -GatewaySku VpnGw1 `
+                                               -GatewayType Vpn `
+                                               -IpConfigurations $ipconfig `
+                                               -Location $Location `
+                                               -ResourceGroupName $ResourceGroupName `
+                                               -VpnClientAddressPool $VpnClientAddressPool `
+                                               -VpnClientProtocol IkeV2, SSTP `
+                                               -VpnClientRootCertificates $rootCertificate `
+                                               -VpnType RouteBased
+        if ($?) {
+            Add-LogMessage -Level Success "Created virtual network gateway '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create virtual network gateway '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Virtual network gateway '$Name' already exists"
+    }
+    return $gateway
+}
+Export-ModuleMember -Function Deploy-VirtualNetworkGateway
 
 
 # Ensure that an Azure VM is turned on
@@ -1020,7 +1015,12 @@ function Get-ImageFromGallery {
             $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
         }
         if ($image) {
-            Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            $commitHash = $image.Tags["Build commit hash"]
+            if ($commitHash) {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery created from commit $commitHash"
+            } else {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            }
         } else {
             Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
         }
@@ -1044,13 +1044,7 @@ function Get-ImageDefinition {
     )
     Add-LogMessage -Level Info "[ ] Getting image type from gallery..."
     if ($Type -eq "Ubuntu") {
-        $imageDefinition = "ComputeVM-Ubuntu1804Base"
-    } elseif ($Type -eq "UbuntuTorch") {
-        $imageDefinition = "ComputeVM-UbuntuTorch1804Base"
-    } elseif ($Type -eq "DataScience") {
-        $imageDefinition = "ComputeVM-DataScienceBase"
-    } elseif ($Type -eq "DSG") {
-        $imageDefinition = "ComputeVM-DsgBase"
+        $imageDefinition = "SecureResearchDesktop-Ubuntu"
     } else {
         Add-LogMessage -Level Fatal "Failed to interpret $Type as an image type!"
     }
@@ -1175,7 +1169,7 @@ function Invoke-RemoteScript {
             foreach ($whitespaceCharacter in @(" ", "`t")) {
                 if (($Shell -eq "UnixShell") -and ($kv.Value.Contains($whitespaceCharacter))) {
                     if (-not (($kv.Value[0] -eq "'") -or ($kv.Value[0] -eq '"'))) {
-                        Write-Host $kv.Value[0]
+                        Write-Information -InformationAction "Continue" $kv.Value[0]
                         Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$whitespaceCharacter' which will cause the shell script to fail. Consider wrapping this variable in single quotes."
                     }
                 }
@@ -1205,15 +1199,15 @@ function Invoke-RemoteScript {
             $success = $success -and ([string]($outputStream.Message) -NotLike '* `[x`] *')
         }
     }
-    # Clean up any temporary scripts
+    # Clean up any temporary scripts
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
     # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
-        if (-not $SuppressOutput) { Write-Host ($result.Value | Out-String) }
+        if (-not $SuppressOutput) { Write-Information -InformationAction "Continue" ($result.Value | Out-String) }
     } else {
         Add-LogMessage -Level Info "Script output:"
-        Write-Host ($result | Out-String)
+        Write-Information -InformationAction "Continue" ($result | Out-String)
         Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     return $result
@@ -1244,7 +1238,7 @@ function Invoke-WindowsConfigureAndUpdate {
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
         $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json | ConvertTo-Base64) }
+        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"ModuleNamesB64" = ($AdditionalPowershellModules | ConvertTo-Json -Depth 99 | ConvertTo-Base64) }
     }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting time/locale and installing updates on '$VMName'"
@@ -1419,7 +1413,7 @@ function Set-KeyVaultPermissions {
     )
     Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
-        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
+        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName).Id | Select-Object -First 1
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
@@ -1427,10 +1421,11 @@ function Set-KeyVaultPermissions {
                                -ObjectId $securityGroupId `
                                -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover, Purge `
                                -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore, Purge `
-                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge `
+                               -WarningAction SilentlyContinue
     $success = $?
-    foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
-        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
+    foreach ($accessPolicy in (Get-AzKeyVault $Name -WarningAction SilentlyContinue).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
+        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId -WarningAction SilentlyContinue
         $success = $success -and $?
     }
     if ($success) {
@@ -1923,7 +1918,7 @@ function Update-VMLdapSecret {
         [Parameter(Mandatory = $true, HelpMessage = "Password for LDAP search account")]
         [string]$LdapSearchPassword
     )
-    Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '${Name}'"
+    Add-LogMessage -Level Info "[ ] Setting LDAP secret on SRD '${Name}'"
     $params = @{
         ldapSearchPasswordB64 = $LdapSearchPassword | ConvertTo-Base64
     }

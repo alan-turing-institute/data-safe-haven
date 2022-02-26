@@ -9,17 +9,20 @@ jobs:
     - name: Test Powershell
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name Pester -Force; Install-Module -Name PSScriptAnalyzer -Force; Install-Module Az -Force"
-      script: pwsh -c './tests/Run_Pester_Tests.ps1'
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Accounts"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Compute"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Dns"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.KeyVault"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Network"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.OperationalInsights"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.RecoveryServices"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Resources"
+        - pwsh -c "Install-Module -Force -Verbose -Name Az.Storage"
+        - pwsh -c "Install-Module -Force -Verbose -Name Pester"
+        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
+      script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
-    - name: Lint Ansible
-      addons:
-        apt:
-          packages:
-            ansible-lint
-      script: ansible-lint
-
-    - name: Lint JSON
+    - name: Lint JSON files
       language: node_js
       node_js: node
       before_script: npm install -g jsonlint mustache
@@ -27,35 +30,81 @@ jobs:
         echo "{}" > mustache_config.json
         find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
 
-    - name: Lint Markdown
+    - name: Lint Markdown files
       language: ruby
       rvm: ruby-head
       install: gem install mdl
-      script: mdl --style .mdlstyle.rb *.md docs/
+      script: mdl --style .mdlstyle.rb .
 
-    - name: Lint PowerShell
+    - name: Lint YAML files
+      language: node_js
+      python: node
+      before_script: |
+        npm install -g mustache
+        pip install yamllint
+      script: |
+        echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
+        for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
+          sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.yaml  # replace mustache arrays
+          sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.yaml           # replace mustache variables
+          mustache .mustache_config.json expanded.yaml | yamllint -s -       # perform mustache expansion and lint from stdin
+          test $? -eq 0 && echo "✅ YAML linting succeeded for $yamlfile" || echo "❌ YAML linting failed for $yamlfile"
+        done
+        rm .mustache_config.json expanded.yaml
+
+    - name: Lint HTML documentation
+      language: ruby
+      rvm: 3.0.3
+      before_script: |
+        gem install html-proofer
+        pip install -r docs/build/requirements.txt
+        ./docs/build/patches/patch_rinohtype.sh
+      script: |
+        DOCS_DIR=$(mktemp -d)
+        ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
+        for tag in $(git tag); do
+          mkdir -p ${DOCS_DIR}/${tag}
+          echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
+        done
+        export LC_CTYPE="C.UTF-8"
+        htmlproofer ${DOCS_DIR}/develop \
+          --allow-hash-href \
+          --check-favicon \
+          --check-html \
+          --check-img-http \
+          --enforce-https \
+          --file-ignore "/_static/" \
+          --http-status-ignore "403,429" \
+          --url-swap "^\/data-safe-haven:/.." \
+          --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
+
+    - name: Lint Ansible scripts
+      addons:
+        apt:
+          packages:
+            ansible-lint
+      script: ansible-lint
+
+    - name: Lint PowerShell scripts
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
+        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
       script: pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
 
-    - name: Lint Python
+    - name: Lint Python scripts
       language: python
       python: 3.9
-      before_script: pip install flake8
+      install: pip install flake8
       script: flake8 . --statistics --count
 
-    - name: Lint shell
-      before_script: sudo apt-get install -y shellcheck
+    - name: Lint shell scripts
+      addons:
+        apt:
+          packages:
+            shellcheck
       script: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
 
-    - name: Lint YAML
-      language: python
-      python: 3.9
-      before_script: pip install yamllint
-      script: yamllint .
-
-    - name: Check for dead links in Markdown
+    - name: Check Markdown for dead links
       language: node_js
       node_js: node
       before_script: npm install -g markdown-link-check

@@ -14,6 +14,8 @@
     "external_dns_resolver": "168.63.129.16",
     "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
     "hostname": "DC1-SHM-TESTB",
+    "hostnameLower": "dc1-shm-testb",
+    "hostnameUpper": "DC1-SHM-TESTB",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTB_DC",
@@ -45,6 +47,8 @@
   "domain": {
     "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
     "fqdn": "testb.dsgroupdev.co.uk",
+    "fqdnLower": "testb.dsgroupdev.co.uk",
+    "fqdnUpper": "TESTB.DSGROUPDEV.CO.UK",
     "netbiosName": "TESTB",
     "ous": {
       "databaseServers": {
@@ -90,52 +94,6 @@
         "name": "SG Safe Haven Server Administrators"
       }
     }
-  },
-  "dsvmImage": {
-    "bootdiagnostics": {
-      "accountName": "buildimgbootdiagscmtvwne",
-      "rg": "RG_SH_BOOT_DIAGNOSTICS"
-    },
-    "build": {
-      "nsg": {
-        "allowedIpAddresses": [
-          "193.60.220.240",
-          "193.60.220.253"
-        ],
-        "name": "NSG_IMAGE_BUILD"
-      },
-      "rg": "RG_SH_BUILD_CANDIDATES",
-      "subnet": {
-        "cidr": "10.48.0.0/24",
-        "name": "ImageBuildSubnet"
-      },
-      "vm": {
-        "diskSizeGb": 64,
-        "size": "Standard_F4s_v2"
-      },
-      "vnet": {
-        "cidr": "10.48.0.0/16",
-        "name": "VNET_IMAGE_BUILD"
-      }
-    },
-    "gallery": {
-      "imageMajorVersion": 0,
-      "imageMinorVersion": 3,
-      "rg": "RG_SH_IMAGE_GALLERY",
-      "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
-    },
-    "images": {
-      "rg": "RG_SH_IMAGE_STORAGE"
-    },
-    "keyVault": {
-      "name": "kv-shm-testb-dsvm-imgs",
-      "rg": "RG_SH_SECRETS"
-    },
-    "location": "uksouth",
-    "network": {
-      "rg": "RG_SH_NETWORKING"
-    },
-    "subscription": "[Prod] Safe Haven VM Images"
   },
   "firewall": {
     "name": "FIREWALL-SHM-TESTB",
@@ -210,7 +168,7 @@
         }
       },
       "tier3": {
-        "diskSize": 512,
+        "diskSize": 1024,
         "external": {
           "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-external-mirror-tier-3",
           "ipAddress": "10.20.3.4",
@@ -237,14 +195,16 @@
             "cidr": "10.20.2.0/28",
             "name": "ExternalPackageMirrorsTier2Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+              "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER2",
+              "rules": "shm-nsg-rules-external-mirrors-tier2.json"
             }
           },
           "internal": {
             "cidr": "10.20.2.16/28",
             "name": "InternalPackageMirrorsTier2Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2"
+              "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER2",
+              "rules": "shm-nsg-rules-internal-mirrors-tier2.json"
             }
           }
         }
@@ -257,29 +217,47 @@
             "cidr": "10.20.3.0/28",
             "name": "ExternalPackageMirrorsTier3Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+              "name": "NSG_SHM_TESTB_EXTERNAL_PACKAGE_MIRRORS_TIER3",
+              "rules": "shm-nsg-rules-external-mirrors-tier3.json"
             }
           },
           "internal": {
             "cidr": "10.20.3.16/28",
             "name": "InternalPackageMirrorsTier3Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3"
+              "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3",
+              "rules": "shm-nsg-rules-internal-mirrors-tier3.json"
             }
           }
         }
       }
     },
-    "repositoryVnet": {
-      "cidr": "10.30.1.0/24",
-      "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
-      "subnets": {
-        "repository": {
-          "cidr": "10.30.1.0/24",
-          "name": "RepositorySubnet",
-          "nsg": {
-            "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
-            "rules": "shm-nsg-rules-nexus.json"
+    "repositoryVnets": {
+      "tier2": {
+        "cidr": "10.30.1.0/24",
+        "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.1.0/24",
+            "name": "RepositoryTier2Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_2",
+              "rules": "shm-nsg-rules-nexus-tier2.json"
+            }
+          }
+        }
+      },
+      "tier3": {
+        "cidr": "10.30.2.0/24",
+        "name": "VNET_SHM_TESTB_NEXUS_REPOSITORY_TIER_3",
+        "subnets": {
+          "repository": {
+            "cidr": "10.30.2.0/24",
+            "name": "RepositoryTier3Subnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_NEXUS_REPOSITORY_TIER_3",
+              "rules": "shm-nsg-rules-nexus-tier3.json"
+            }
           }
         }
       }
@@ -301,7 +279,8 @@
           "cidr": "10.0.0.0/24",
           "name": "IdentitySubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_IDENTITY"
+            "name": "NSG_SHM_TESTB_IDENTITY",
+            "rules": "shm-nsg-rules-identity.json"
           }
         }
       }
@@ -338,17 +317,75 @@
     "townCity": "London"
   },
   "repository": {
-    "diskType": "Standard_LRS",
-    "nexus": {
-      "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus",
-      "ipAddress": "10.30.1.10",
-      "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password",
-      "vmName": "NEXUS-REPOSITORY-TIER-2"
+    "tier2": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus-tier2",
+        "ipAddress": "10.30.1.10",
+        "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password-tier2",
+        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      },
+      "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
     },
-    "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
-    "vmSize": "Standard_B2ms"
+    "tier3": {
+      "diskType": "Standard_LRS",
+      "nexus": {
+        "adminPasswordSecretName": "shm-testb-vm-admin-password-nexus-tier3",
+        "ipAddress": "10.30.2.10",
+        "nexusAppAdminPasswordSecretName": "shm-testb-nexus-repository-admin-password-tier3",
+        "vmName": "NEXUS-REPOSITORY-TIER-3"
+      },
+      "rg": "RG_SHM_TESTB_NEXUS_REPOSITORIES",
+      "vmSize": "Standard_B2ms"
+    }
   },
   "rgPrefix": "RG_SHM_TESTB",
+  "srdImage": {
+    "bootdiagnostics": {
+      "accountName": "vmimagesbootdiagcmtvwnes",
+      "rg": "RG_VMIMAGES_BOOT_DIAGNOSTICS"
+    },
+    "build": {
+      "nsg": {
+        "allowedIpAddresses": [
+          "193.60.220.240",
+          "193.60.220.253"
+        ],
+        "name": "NSG_VMIMAGES_BUILD_CANDIDATES",
+        "rules": "vmimages-nsg-rules-build-candidates.json"
+      },
+      "rg": "RG_VMIMAGES_BUILD_CANDIDATES",
+      "subnet": {
+        "cidr": "10.48.0.0/24",
+        "name": "BuildCandidatesSubnet"
+      },
+      "vm": {
+        "diskSizeGb": 128,
+        "size": "Standard_F8s_v2"
+      },
+      "vnet": {
+        "cidr": "10.48.0.0/16",
+        "name": "VNET_VMIMAGES"
+      }
+    },
+    "gallery": {
+      "name": "DATA_SAFE_HAVEN_SHARED_IMAGES",
+      "rg": "RG_VMIMAGES_GALLERY"
+    },
+    "images": {
+      "rg": "RG_VMIMAGES_STORAGE"
+    },
+    "keyVault": {
+      "name": "kv-shm-testb-images",
+      "rg": "RG_VMIMAGES_SECRETS"
+    },
+    "location": "uksouth",
+    "network": {
+      "rg": "RG_VMIMAGES_NETWORKING"
+    },
+    "subscription": "[Prod] Safe Haven VM Images"
+  },
   "storage": {
     "artifacts": {
       "accountName": "shmtestbartifactslubiehy",
@@ -365,7 +402,6 @@
   "subscriptionName": "Safe Haven Management Test B",
   "time": {
     "ntp": {
-      "poolFqdn": "time.google.com",
       "serverAddresses": [
         "216.239.35.0",
         "216.239.35.4",
@@ -422,5 +458,5 @@
       }
     }
   },
-  "vmImagesRgPrefix": "RG_SH"
+  "vmImagesRgPrefix": "RG_VMIMAGES"
 }

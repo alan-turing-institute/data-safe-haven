@@ -1,0 +1,90 @@
+[
+    {
+        "name": "AllowRepositoryAccessInbound",
+        "access": "Allow",
+        "description": "Allow package requests over http",
+        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "destinationPortRange": "80",
+        "direction": "Inbound",
+        "priority": 1400,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAdminVPNInbound",
+        "access": "Deny",
+        "description": "Deny connections from admin P2S VPN",
+        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowDNSOutbound",
+        "access": "Allow",
+        "description": "Allow DNS requests to SHM",
+        "destinationAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": "53",
+        "direction": "Outbound",
+        "priority": 1200,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowExternalNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
+        "destinationAddressPrefix": [
+            {{#time.ntp.serverAddresses}}
+                "{{.}}",
+            {{/time.ntp.serverAddresses}}
+        ],
+        "destinationPortRange": 123,
+        "direction": "Outbound",
+        "priority": 3000,
+        "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowExternalPackageFetchingOutbound",
+        "access": "Allow",
+        "description": "Allow ports 80 (http) and 443 (https) for fetching packages",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3200,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

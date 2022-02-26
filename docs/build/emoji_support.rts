@@ -1,0 +1,7 @@
+[STYLESHEET]
+name=Emoji Support
+description=Small tweaks made to the Sphinx style sheet
+base=sphinx
+
+[VARIABLES]
+fallback_typeface=Symbola

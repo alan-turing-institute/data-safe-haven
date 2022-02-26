@@ -1,0 +1,268 @@
+#cloud-config
+
+# Update package database on first boot (ie. run `apt-get update`)
+package_update: true
+
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
+package_upgrade: true
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    postgresql.list:
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
+      keyid: 7FCC7D46ACCC4CF8
+
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+
+write_files:
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+
+  - path: "/etc/domain-join.secret"
+    permissions: "0400"
+    content: |
+      {{{postgres.domainJoinPassword}}}
+
+  - path: "/etc/krb5.conf"
+    permissions: "0444"
+    content: |
+      {{krb5.mustache.conf}}
+
+  - path: "/etc/ldap.secret"
+    permissions: "0400"
+    content: |
+      {{{postgres.ldapSearchUserPassword}}}
+
+  - path: "/etc/local/runonce.d/00-join-domain.sh"
+    permissions: "0500"
+    content: |
+      #! /bin/bash
+      echo ">=== Waiting for realm availability... ===<"
+      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
+      echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.databaseServers.path}}' '{{shm.users.computerManagers.databaseServers.samAccountName}}' '{{postgres.vmName}}'"
+      /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.databaseServers.path}}" "{{shm.users.computerManagers.databaseServers.samAccountName}}" "{{postgres.vmName}}"
+
+  - path: "/etc/local/runonce.d/01-generate-keytab.sh"
+    permissions: "0500"
+    content: |
+      {{postgres_generate_keytab.mustache.sh}}
+
+  - path: "/etc/local/runonce.d/02-initial-ldap-sync.sh"
+    permissions: "0500"
+    content: |
+      {{postgres_initial_ldap_sync.sh}}
+
+  - path: "/etc/local/runonce.d/03-set-public-schema-permissions.sh"
+    permissions: "0500"
+    content: |
+      {{postgres_set_public_schema_permissions.sh}}
+
+  - path: "/etc/local/runonce.d/04-list-postgres-users.sh"
+    permissions: "0500"
+    content: |
+      {{postgres_list_postgres_users.sh}}
+
+  - path: "/etc/postgres-user.secret"
+    permissions: "0600"
+    content: |
+      {{{postgres.dbAdminPassword}}}
+
+  - path: "/etc/postgres-service-account.secret"
+    permissions: "0600"
+    content: |
+      {{{postgres.dbServiceAccountPassword}}}
+
+  - path: "/etc/realmd.conf"
+    permissions: "0400"
+    content: |
+      {{realmd.mustache.conf}}
+
+  - path: "/opt/configuration/check_dns.sh"
+    permissions: "0500"
+    content: |
+      {{check_dns.sh}}
+
+  - path: "/opt/configuration/check_hostname.sh"
+    permissions: "0500"
+    content: |
+      {{check_hostname.sh}}
+
+  - path: "/opt/configuration/check_ntp.sh"
+    permissions: "0500"
+    content: |
+      {{check_ntp.sh}}
+
+  - path: "/opt/configuration/create-postgres-triggers.sql"
+    permissions: "0444"
+    content: |
+      {{{postgres_create_postgres_triggers.mustache.sql}}}
+
+  - path: "/opt/configuration/install-postgres-extensions.sql"
+    permissions: "0444"
+    content: |
+      {{postgres_install_postgres_extensions.sql}}
+
+  - path: "/opt/configuration/join_domain.sh"
+    permissions: "0500"
+    content: |
+      {{join_domain.sh}}
+
+  - path: "/opt/configuration/pg-ldap-sync.yaml"
+    permissions: "0700"
+    content: |
+      {{postgres_pg_ldap_sync.mustache.yaml}}
+
+  - path: "/usr/local/bin/runonce"
+    permissions: "0500"
+    content: |
+      {{runonce.sh}}
+
+# List of packages to install with apt-get
+packages:
+  - adcli
+  - auditd
+  - gcc
+  - krb5-user
+  - ldap-utils
+  - libpq-dev
+  - make
+  - postgresql-12
+  - postgresql-12-pgrouting
+  - postgresql-12-postgis-3-scripts
+  - postgresql-contrib-12
+  - realmd
+  - ruby
+  - ruby-dev
+  - sssd
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: {{sre.time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  enabled: true
+  pools:
+    {{#shm.time.ntp.serverAddresses}}
+    - {{.}}
+    {{/shm.time.ntp.serverAddresses}}
+
+
+# Set hostname
+# We need the FQDN in the hostname as without it we cannot set service principals when joining the Windows domain
+fqdn: "{{postgres.vmName}}.{{shm.domain.fqdnLower}}"
+hostname: {{postgres.vmName}}
+manage_etc_hosts: true
+prefer_fqdn_over_hostname: true
+
+runcmd:
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+
+  # Configure services for realm joining
+  - echo ">=== Configuring domain joining settings... ===<"
+  - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
+  - sed -i -E "s|(os-version = ).*|\1$OSVERSION|" /etc/realmd.conf
+  # Check DNS
+  - echo "Checking DNS..."
+  - /opt/configuration/check_dns.sh
+  # Check hostname
+  - echo "Checking hostname..."
+  - /opt/configuration/check_hostname.sh
+  - systemctl enable sssd
+  # Check Kerberos settings
+  - echo "Checking Kerberos config"
+  - grep -v -e '^[[:space:]]*$' /etc/krb5.conf | sed 's|^| /etc/krb5.conf |'
+  # Check timezone and NTP server
+  - echo "Current time synchronisation status..."
+  - /opt/configuration/check_ntp.sh
+
+  # Configure the postgres database
+  - echo ">=== Configure postgres database... ===<"
+  # Change the password for the postgres user
+  - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '$(cat /etc/postgres-user.secret)';"
+  # Use external disk for storing data
+  - systemctl stop postgresql@12-main
+  - mkdir -p /data/postgresql
+  - chmod 0700 /data/postgresql
+  - chown -R postgres:postgres /data/
+  - mv /var/lib/postgresql/12/main/* /data/postgresql
+  - sed -i "s|data_directory = .*|data_directory = '/data/postgresql'|g" /etc/postgresql/12/main/postgresql.conf
+  - grep data_directory /etc/postgresql/12/main/postgresql.conf
+  # Allow login to this database from other VMs
+  - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
+  - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
+  # Restart the server with all the above changes
+  - systemctl start postgresql@12-main
+  - systemctl status postgresql@12-main
+
+  # Create the required LDAP groups on the postgres server
+  - echo ">=== Creating necessary LDAP roles... ===<"
+  - |
+    for ROLE in "ldap_users" "ldap_groups"; do
+        ROLE_EXISTS=$(sudo -i -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${ROLE}'" | grep 1)
+        if [ "$ROLE_EXISTS" = "" ]; then
+            echo "Creating ${ROLE} role"
+            sudo -i -u postgres psql -q -c "CREATE ROLE ${ROLE};"
+        else
+            echo "${ROLE} role already exists"
+        fi
+    done
+
+  # Install postgres extensions
+  - echo ">=== Installing postgis schema and extensions... ===<"
+  - sudo -i -u postgres psql -f /opt/configuration/install-postgres-extensions.sql
+
+  # Install pg-ldap-sync for adding LDAP users
+  - echo ">=== Configuring pg-ldap-sync... ===<"
+  # Add users
+  - echo "Adding LDAP users with pg-ldap-sync..."
+  - gem install pg-ldap-sync
+  - mv /opt/configuration/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
+  # Add cronjob
+  - echo "Checking that LDAP user sync is scheduled every 10 minutes..."
+  - grep pg_ldap_sync /etc/crontab
+
+  # Allow Kerberos login - disable all other login types except the dbadmin on localhost
+  - echo ">=== Restricting login types... ===<"
+  - echo "local all postgres peer\nhost all all {{sre.network.vnet.subnets.compute.cidr}} gss include_realm=0 krb_realm={{shm.domain.fqdnUpper}}" > /etc/postgresql/12/main/pg_hba.conf
+  - cat /etc/postgresql/12/main/pg_hba.conf
+
+final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

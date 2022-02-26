@@ -24,11 +24,11 @@ if ($config.sre.remoteDesktop.provider -ne "ApacheGuacamole") {
 }
 
 
-# Get list of DSVMs
-# -----------------
-Add-LogMessage -Level Info "Retrieving list of compute VMs..."
-$VMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | `
-    Where-Object { $_.Name -like "*DSVM*" } | `
+# Get list of SRDs
+# ----------------
+Add-LogMessage -Level Info "Retrieving list of SRD VMs..."
+$VMs = Get-AzVM -ResourceGroupName $config.sre.srd.rg | `
+    Where-Object { $_.Name -like "*SRD*" } | `
     ForEach-Object {
         $VM = $_;
         $VMSize = Get-AzVMSize -Location $config.sre.location | Where-Object { $_.Name -eq $VM.HardwareProfile.VmSize };
@@ -40,6 +40,7 @@ $VMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | `
             "os"        = $VM.OSProfile.WindowsConfiguration ? "Windows" : "Ubuntu"
         }
     } | Sort-Object -Property ipAddress
+
 
 # Add an index to each Ubuntu and Windows VM
 # The number increases with IP address
@@ -54,8 +55,8 @@ $VMs | ForEach-Object { $idxUbuntu = 0; $idxWindows = 0 } {
 # ---------------------------
 Add-LogMessage -Level Info "Updating Guacamole with $(@($VMs).Count) VMs..."
 $lines = @("#! /bin/bash", "truncate -s 0 /opt/postgresql/data/connections.csv")
-$lines += $VMs | ForEach-Object { "echo '$($_.os)$($_.index) [$($_.cores)$($_.type)s $($_.memory)GB];$($_.ipAddress)' >> /opt/postgresql/data/connections.csv" }
-$lines += @("/opt/postgresql/synchronise_database.sh")
+$lines += $VMs | ForEach-Object { "echo '$($_.os)-$($_.index) [$($_.cores)$($_.type)s $($_.memory)GB] ($($_.ipAddress));$($_.ipAddress)' >> /opt/postgresql/data/connections.csv" }
+$lines += @("/opt/pg-ldap-sync/synchronise_database.sh")
 $null = Invoke-RemoteScript -VMName $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Shell "UnixShell" -Script ($lines | Join-String -Separator "`n")
 
 

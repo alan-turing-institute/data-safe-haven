@@ -1,0 +1,85 @@
+# Structure of this file is as follows:
+# versions
+# - list of Python versions to install
+# packages:
+# - list of package to install in each Python version
+# [Optional] arguments to each package
+#   <Python version or 'all' for all versions>: <list of constraints that may include 'uninstallable' if appropriate>
+versions:
+    - "3.8"
+    - "3.9"
+    - "3.10"
+packages:
+    arviz:
+    beautifulsoup4:
+    black:
+        "all": [">18.3a0"]  # no full releases are available
+    Cython:
+    dash:
+    dask:
+    flair:
+        "3.10": ["uninstallable"]  # requires torch
+    flake8:
+    folium:
+    gensim:
+    geopandas:
+    gym:
+    html5lib:
+    ipykernel:
+    keras:
+    lightgbm:
+    llvmlite:
+        "all": [">0.35.0"]  # specify llvmlite to increase chance of getting a pre-compiled version
+    lxml:
+    matplotlib:
+    nltk:
+    numpy:
+        "all": ["<1.22.0"]  # 1.22 causes runtime errors with pymc3 3.11.4
+    pandas:
+    pandasql:
+    pathos:
+    pg8000:
+    Pillow:
+    plotly:
+    poetry:  # also used by installation scripts
+    prophet:
+        "3.10": ["uninstallable"]  # requires pystan<3.0 which is not possible for Python 3.10
+    psycopg2:
+    pydot:
+    pygrib:
+    pylint:
+    pymc3:
+    pyodbc:
+    pyproj:
+    pyshp:
+    pystan:
+        "all": ["<3.0"]  # prophet does not yet support PyStan 3.0
+        "3.10": ["uninstallable"]  # no version supports Python 3.10
+    pytest:
+    PyYAML:
+    regex:
+    requests:
+    safety:  # also used by installation scripts
+    scikit-image:
+    scikit-learn:
+    scipy:
+    seaborn:
+    spacy-langdetect:
+    spacy:
+    Sphinx:
+    SQLAlchemy:
+    statsmodels:
+        "all": ["<0.13.2"]  # 0.13.2 requires a version of 'packaging' that is incompatible with poetry
+    sympy:
+    tables:
+    tensorboard:
+    tensorflow:
+    thinc:
+    torch:
+        "3.10": ["uninstallable"]  # no version supports Python 3.10
+    torchvision:
+        "3.10": ["uninstallable"]  # requires torch
+    tsfresh:
+    wordcloud:
+    xgboost:
+    xlrd:

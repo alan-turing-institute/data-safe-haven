@@ -1,0 +1,54 @@
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+/* Sidebar pop-up default */
+.rst-versions {
+  z-index: 400;
+}
+/* Sidebar pop-up open */
+.rst-versions.shift-up {
+  height: auto;
+  max-height: 100%;
+}
+/* Add space to the right of the book icon */
+.fa-book,.fa-file-pdf {
+  padding-right: 5px;
+}
+/* Sidebar pop-up: on hover change the cursor to a pointer */
+.rst-current-version {
+  cursor: pointer;
+  display: block;
+  padding: 12px;
+}
+/* Set all text spans to have the same height as the FontAwesome icons*/
+.rst-current-version > span {
+  line-height: 1;
+}
+/* Toggleable tables when default */
+.rst-versions .rst-other-versions {
+  display: none;
+  padding: 12px;
+}
+/* Toggleable tables when open */
+.rst-versions.shift-up .rst-other-versions {
+  display: block;
+}
+/* Display version items as single block rather than one per line */
+.rst-versions .rst-other-versions dd {
+  display: inline-block;
+  margin: 0;
+  padding: 5px;
+}
+/* MyST admonition colour */
+:root {
+  --pst-color-admonition-default: 100,100,100;
+}
+
+/* Move <details> boxes upwards */
+details summary {
+  margin-top: -15px;
+  margin-bottom: 15px;
+}

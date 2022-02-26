@@ -1,0 +1,105 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/nexus/docker-compose.yaml"
+    permissions: "0400"
+    content: |
+      {{nexus_docker_compose.mustache.yaml}}
+  - path: "/etc/nexus/allowlist-pypi"
+    permissions: "0644"
+    content: |
+      {{allowlist-full-python-pypi-tier3.list}}
+  - path: "/etc/nexus/allowlist-cran"
+    permissions: "0644"
+    content: |
+      {{allowlist-full-r-cran-tier3.list}}
+  - path: "/etc/nexus/nginx.conf"
+    permissions: "0400"
+    content: |
+      {{nexus_nginx.mustache.conf}}
+  - path: "/usr/local/bin/configure-nexus"
+    permissions: "0755"
+    content: |
+      {{configure_nexus.py}}
+  - path: "/usr/local/update-nexus-allowlists"
+    permissions: "0700"
+    content: |
+      /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: {{time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  enabled: true
+  pools:
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+  sources:
+    docker.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
+
+# Install necessary apt packages
+packages:
+  - docker.io
+  - docker-compose
+  - python3-requests
+package_update: true
+package_upgrade: true
+
+# Add the SHM admin (default) and nexusdaemon users
+users:
+  - default
+  - name: nexusdaemon
+    lock_passwd: true  # Lock the password to disable password login
+    sudo: false        # This user will not have sudo privileges
+
+runcmd:
+  # Ensure that Docker is running and enabled at startup
+  - echo ">=== Configuring Docker... ===<"
+  - systemctl enable docker
+  - systemctl start docker
+  - sleep 1m
+  - systemctl status docker
+  - docker --version
+  - docker-compose --version
+
+  # Create directory for Nexus data that is owned by the correct user inside the Docker container
+  - echo ">=== Creating Nexus data directory... ===<"
+  - mkdir /nexus-data
+  - chown -R 200:200 /nexus-data
+
+  # Set up the guacamoledaemon user
+  - echo ">=== Configuring nexusdaemon user... ===<"
+  - groupadd docker 2> /dev/null
+  - usermod -aG docker nexusdaemon
+  - newgrp docker
+  - chown -R nexusdaemon:nexusdaemon /etc/nexus
+  - ls -alh /etc/nexus
+
+  # Set up the Nexus container
+  - echo ">=== Creating Nexus container... ===<"
+  - su nexusdaemon -c "docker-compose -f /etc/nexus/docker-compose.yaml up -d"
+
+  # Give Nexus some time to initialise
+  - echo ">=== Waiting for Nexus to initialise (5 minutes)... ===<"
+  - sleep 5m
+
+  # Configure Nexus
+  - echo ">=== Configuring Nexus... ===<"
+  - configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
+  - configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
+
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

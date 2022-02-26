@@ -1,0 +1,66 @@
+[
+    {
+        "name": "DenyAdminVPNInbound",
+        "access": "Deny",
+        "description": "Deny connections from admin P2S VPN",
+        "destinationAddressPrefix": "{{srdImage.build.subnet.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 2000,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{network.vpn.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowAdminApprovedSshInbound",
+        "access": "Allow",
+        "description": "Allow inbound SSH connections from authorised image building IP addresses",
+        "destinationAddressPrefix": "{{srdImage.build.subnet.cidr}}",
+        "destinationPortRange": "22",
+        "direction": "Inbound",
+        "priority": 2100,
+        "protocol": "TCP",
+        "sourceAddressPrefix": [
+            {{#buildAdminIpAddresses}}
+                "{{.}}",
+            {{/buildAdminIpAddresses}}
+        ],
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherInbound",
+        "access": "Deny",
+        "description": "Deny all other inbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowExternalInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3900,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{srdImage.build.subnet.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "DenyAllOtherOutbound",
+        "access": "Deny",
+        "description": "Deny all other outbound traffic.",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 4096,
+        "protocol": "*",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*"
+    }
+]

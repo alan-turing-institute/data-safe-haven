@@ -7,10 +7,6 @@
         # Ignore error when a function has both 'Username' and 'Password'
         # arguments
         "PSAvoidUsingUsernameAndPasswordParams",
-        # Ignore error around Write-Host. This is done to ensure that messages
-        # are actually logged to the console rather than forming part of the
-        # output of a function
-        "PSAvoidUsingWriteHost",
         # Ignore DSC errors as we want to phase out opaque DSC calls
         "PSDSCDscTestsPresent",
         "PSDSCDscExamplesPresent",

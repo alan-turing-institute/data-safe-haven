@@ -21,7 +21,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Get common parameters
 # ---------------------
 $allowedSources = ($config.sre.remoteDesktop.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)InternetOutbound"
+$outboundInternetAccessRuleName = "$($config.sre.remoteDesktop.networkRules.outboundInternet)ExternalInternetOutbound"
+$inboundApprovedUsersRuleName = "AllowUsersApprovedHttpsInbound"
 $nsgs = @{}
 
 
@@ -30,75 +31,61 @@ $nsgs = @{}
 Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
 
 
-# CoCalc has a single NSG
-# -----------------------
-if ($config.sre.remoteDesktop.provider -eq "CoCalc") {
-    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg
-
-    Add-LogMessage -Level Info "Setting inbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name "InboundSSHAccess" -NetworkSecurityGroup $nsgs["compute"] -SourceAddressPrefix $allowedSources
-
-    Add-LogMessage -Level Info "Setting outbound connection rules on user-facing NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
-
-
 # ApacheGuacamole and MicrosoftRDS have several NSGs
 # --------------------------------------------------
+# Remote desktop
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    # RDS gateway
+    Add-LogMessage -Level Info "Ensure Guacamole server is bound to correct NSG..."
+    $remoteDesktopSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["remoteDesktop"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.remoteDesktop.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $nsgs["remoteDesktop"] -ErrorAction Stop
+} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+    # RDS gateway
+    Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
+    Add-VmToNSG -VMName $config.sre.remoteDesktop.gateway.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+    # RDS sesssion hosts
+    Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
+    Add-VmToNSG -VMName $config.sre.remoteDesktop.appSessionHost.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
+    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 } else {
-    # Remote desktop
-    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
-        # RDS gateway
-        Add-LogMessage -Level Info "Ensure Guacamole server is bound to correct NSG..."
-        $remoteDesktopSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-        $nsgs["remoteDesktop"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.remoteDesktop.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-        $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $nsgs["remoteDesktop"] -ErrorAction Stop
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        # RDS gateway
-        Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
-        Add-VmToNSG -VMName $config.sre.remoteDesktop.gateway.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-        $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-        # RDS sesssion hosts
-        Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
-        Add-VmToNSG -VMName $config.sre.remoteDesktop.appSessionHost.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-        $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    } else {
-        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
-    }
-
-    # Database servers
-    Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
-    $databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    $databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"] -ErrorAction Stop
-
-    # Webapp servers
-    Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
-    $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    $webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
-
-    # Compute VMs
-    Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
-    $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
-
-    # Update remote desktop server NSG rules
-    if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
-        Add-LogMessage -Level Info "Setting inbound connection rules on Guacamole NSG..."
-        $null = Update-NetworkSecurityGroupRule -Name "AllowHttpsInbound" -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
-        $null = Update-NetworkSecurityGroupRule -Name "AllowHttpsInbound" -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
-    } else {
-        Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
-    }
-
-    # Update user-facing NSG rules
-    Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
-    $null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
+    Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
+
+# Database servers
+Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
+$databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+$nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"] -ErrorAction Stop
+
+# Webapp servers
+Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
+$webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+$nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
+
+# SRDs
+Add-LogMessage -Level Info "Ensure SRDs are bound to correct NSG..."
+$computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+$nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
+$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
+
+# Update remote desktop server NSG rules
+if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
+    Add-LogMessage -Level Info "Setting inbound connection rules on Guacamole NSG..."
+    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
+} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+    Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
+    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
+} else {
+    Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
+}
+
+# Update user-facing NSG rules
+Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
+$null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["compute"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
+$null = Update-NetworkSecurityGroupRule -Name $outboundInternetAccessRuleName -NetworkSecurityGroup $nsgs["webapps"] -Access $config.sre.remoteDesktop.networkRules.outboundInternet
 
 
 # List all NICs associated with each NSG
@@ -113,10 +100,10 @@ foreach ($nsgName in $nsgs.Keys) {
 }
 
 
-# Ensure SRE is peered to correct mirror set
-# ------------------------------------------
+# Ensure SRE is peered to correct mirror/proxy set
+# ------------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -shmId $shmId -sreId $sreId"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_SRE_Package_Repositories.ps1) -shmId $shmId -sreId $sreId"
 # Peer this SRE to the repository network
 Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository..."
 if (-not $config.sre.repositories.network.name) {
@@ -128,10 +115,10 @@ if (-not $config.sre.repositories.network.name) {
 
 # Update SRE package repository details
 # -------------------------------------
-# Set PyPI and CRAN locations on the compute VM
+# Set PyPI and CRAN locations on the SRD
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.dsvm.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
+$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
 foreach ($VM in $repositoryFacingVms) {
     Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{

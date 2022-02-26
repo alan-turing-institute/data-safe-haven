@@ -237,32 +237,24 @@ function Deploy-StorageNfsShare {
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage share to deploy")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
-        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
+        [Parameter(Mandatory = $false, HelpMessage = "Size of NFS quota in GB")]
+        [int]$QuotaGiB
     )
     Add-LogMessage -Level Info "Ensuring that NFS storage share '$Name' exists..."
     $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
-        # As this step needs Az.Storage == 2.5.2-preview we run it in a subjob
-        $success = Start-Job -ArgumentList @($StorageAccount.ResourceGroupName, $StorageAccount.StorageAccountName, $Name) -ScriptBlock {
-            param(
-                [string]$ResourceGroupName,
-                [string]$StorageAccountName,
-                [string]$ShareName
-            )
-            if (-not (Get-Module -ListAvailable -Name Az.Storage | Where-Object { $_.Version -eq "2.5.2" })) {
-                Install-Module -Name Az.Storage -RequiredVersion 2.5.2-preview -AllowPrerelease -Repository PSGallery
-            }
-            Import-Module Az.Storage -RequiredVersion 2.5.2 -Force -ErrorAction Stop
-            New-AzRmStorageShare -ResourceGroupName $ResourceGroupName `
-                                 -StorageAccountName $StorageAccountName `
-                                 -Name $ShareName `
-                                 -EnabledProtocol NFS `
-                                 -RootSquash "NoRootSquash"
-            return $?
-        } | Receive-Job -Wait -AutoRemoveJob
-        if ($success) {
-            $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+        $params = @{}
+        if ($QuotaGiB) { $params["QuotaGiB"] = $QuotaGiB }
+        New-AzRmStorageShare -Name $Name `
+                             -ResourceGroupName $StorageAccount.ResourceGroupName `
+                             -StorageAccountName $StorageAccount.StorageAccountName `
+                             -EnabledProtocol "NFS" `
+                             -RootSquash "NoRootSquash" `
+                             @params
+        $storageShare = Get-AzStorageShare -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if ($storageShare) {
             Add-LogMessage -Level Success "Created NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create NFS storage share '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"

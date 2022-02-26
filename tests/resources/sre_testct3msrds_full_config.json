@@ -15,6 +15,8 @@
       "external_dns_resolver": "168.63.129.16",
       "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
       "hostname": "DC1-SHM-TESTC",
+      "hostnameLower": "dc1-shm-testc",
+      "hostnameUpper": "DC1-SHM-TESTC",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.4",
       "rg": "RG_SHM_TESTC_DC",
@@ -46,6 +48,8 @@
     "domain": {
       "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "testc.dsgroupdev.co.uk",
+      "fqdnLower": "testc.dsgroupdev.co.uk",
+      "fqdnUpper": "TESTC.DSGROUPDEV.CO.UK",
       "netbiosName": "TESTC",
       "ous": {
         "databaseServers": {
@@ -91,52 +95,6 @@
           "name": "SG Safe Haven Server Administrators"
         }
       }
-    },
-    "dsvmImage": {
-      "bootdiagnostics": {
-        "accountName": "buildimgbootdiagscmtvwne",
-        "rg": "RG_SH_BOOT_DIAGNOSTICS"
-      },
-      "build": {
-        "nsg": {
-          "allowedIpAddresses": [
-            "193.60.220.240",
-            "193.60.220.253"
-          ],
-          "name": "NSG_IMAGE_BUILD"
-        },
-        "rg": "RG_SH_BUILD_CANDIDATES",
-        "subnet": {
-          "cidr": "10.48.0.0/24",
-          "name": "ImageBuildSubnet"
-        },
-        "vm": {
-          "diskSizeGb": 64,
-          "size": "Standard_F4s_v2"
-        },
-        "vnet": {
-          "cidr": "10.48.0.0/16",
-          "name": "VNET_IMAGE_BUILD"
-        }
-      },
-      "gallery": {
-        "imageMajorVersion": 0,
-        "imageMinorVersion": 3,
-        "rg": "RG_SH_IMAGE_GALLERY",
-        "sig": "SAFE_HAVEN_COMPUTE_IMAGES"
-      },
-      "images": {
-        "rg": "RG_SH_IMAGE_STORAGE"
-      },
-      "keyVault": {
-        "name": "kv-shm-testc-dsvm-imgs",
-        "rg": "RG_SH_SECRETS"
-      },
-      "location": "uksouth",
-      "network": {
-        "rg": "RG_SH_NETWORKING"
-      },
-      "subscription": "[Prod] Safe Haven VM Images"
     },
     "firewall": {
       "name": "FIREWALL-SHM-TESTC",
@@ -211,7 +169,7 @@
           }
         },
         "tier3": {
-          "diskSize": 512,
+          "diskSize": 1024,
           "external": {
             "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
             "ipAddress": "10.20.3.4",
@@ -238,14 +196,16 @@
               "cidr": "10.20.2.0/28",
               "name": "ExternalPackageMirrorsTier2Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER2",
+                "rules": "shm-nsg-rules-external-mirrors-tier2.json"
               }
             },
             "internal": {
               "cidr": "10.20.2.16/28",
               "name": "InternalPackageMirrorsTier2Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER2"
+                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER2",
+                "rules": "shm-nsg-rules-internal-mirrors-tier2.json"
               }
             }
           }
@@ -258,29 +218,47 @@
               "cidr": "10.20.3.0/28",
               "name": "ExternalPackageMirrorsTier3Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+                "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER3",
+                "rules": "shm-nsg-rules-external-mirrors-tier3.json"
               }
             },
             "internal": {
               "cidr": "10.20.3.16/28",
               "name": "InternalPackageMirrorsTier3Subnet",
               "nsg": {
-                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3"
+                "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3",
+                "rules": "shm-nsg-rules-internal-mirrors-tier3.json"
               }
             }
           }
         }
       },
-      "repositoryVnet": {
-        "cidr": "10.30.1.0/24",
-        "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
-        "subnets": {
-          "repository": {
-            "cidr": "10.30.1.0/24",
-            "name": "RepositorySubnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
-              "rules": "shm-nsg-rules-nexus.json"
+      "repositoryVnets": {
+        "tier2": {
+          "cidr": "10.30.1.0/24",
+          "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+          "subnets": {
+            "repository": {
+              "cidr": "10.30.1.0/24",
+              "name": "RepositoryTier2Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
+                "rules": "shm-nsg-rules-nexus-tier2.json"
+              }
+            }
+          }
+        },
+        "tier3": {
+          "cidr": "10.30.2.0/24",
+          "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_3",
+          "subnets": {
+            "repository": {
+              "cidr": "10.30.2.0/24",
+              "name": "RepositoryTier3Subnet",
+              "nsg": {
+                "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_3",
+                "rules": "shm-nsg-rules-nexus-tier3.json"
+              }
             }
           }
         }
@@ -302,7 +280,8 @@
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTC_IDENTITY"
+              "name": "NSG_SHM_TESTC_IDENTITY",
+              "rules": "shm-nsg-rules-identity.json"
             }
           }
         }
@@ -339,17 +318,75 @@
       "townCity": "London"
     },
     "repository": {
-      "diskType": "Standard_LRS",
-      "nexus": {
-        "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus",
-        "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password",
-        "vmName": "NEXUS-REPOSITORY-TIER-2"
+      "tier2": {
+        "diskType": "Standard_LRS",
+        "nexus": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus-tier2",
+          "ipAddress": "10.30.1.10",
+          "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password-tier2",
+          "vmName": "NEXUS-REPOSITORY-TIER-2"
+        },
+        "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
+        "vmSize": "Standard_B2ms"
       },
-      "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
-      "vmSize": "Standard_B2ms"
+      "tier3": {
+        "diskType": "Standard_LRS",
+        "nexus": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus-tier3",
+          "ipAddress": "10.30.2.10",
+          "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password-tier3",
+          "vmName": "NEXUS-REPOSITORY-TIER-3"
+        },
+        "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
+        "vmSize": "Standard_B2ms"
+      }
     },
     "rgPrefix": "RG_SHM_TESTC",
+    "srdImage": {
+      "bootdiagnostics": {
+        "accountName": "vmimagesbootdiagcmtvwnes",
+        "rg": "RG_VMIMAGES_BOOT_DIAGNOSTICS"
+      },
+      "build": {
+        "nsg": {
+          "allowedIpAddresses": [
+            "193.60.220.240",
+            "193.60.220.253"
+          ],
+          "name": "NSG_VMIMAGES_BUILD_CANDIDATES",
+          "rules": "vmimages-nsg-rules-build-candidates.json"
+        },
+        "rg": "RG_VMIMAGES_BUILD_CANDIDATES",
+        "subnet": {
+          "cidr": "10.48.0.0/24",
+          "name": "BuildCandidatesSubnet"
+        },
+        "vm": {
+          "diskSizeGb": 128,
+          "size": "Standard_F8s_v2"
+        },
+        "vnet": {
+          "cidr": "10.48.0.0/16",
+          "name": "VNET_VMIMAGES"
+        }
+      },
+      "gallery": {
+        "name": "DATA_SAFE_HAVEN_SHARED_IMAGES",
+        "rg": "RG_VMIMAGES_GALLERY"
+      },
+      "images": {
+        "rg": "RG_VMIMAGES_STORAGE"
+      },
+      "keyVault": {
+        "name": "kv-shm-testc-images",
+        "rg": "RG_VMIMAGES_SECRETS"
+      },
+      "location": "uksouth",
+      "network": {
+        "rg": "RG_VMIMAGES_NETWORKING"
+      },
+      "subscription": "[Prod] Safe Haven VM Images"
+    },
     "storage": {
       "artifacts": {
         "accountName": "shmtestcartifactslubiehy",
@@ -366,7 +403,6 @@
     "subscriptionName": "Safe Haven Management Test C",
     "time": {
       "ntp": {
-        "poolFqdn": "time.google.com",
         "serverAddresses": [
           "216.239.35.0",
           "216.239.35.4",
@@ -423,7 +459,7 @@
         }
       }
     },
-    "vmImagesRgPrefix": "RG_SH"
+    "vmImagesRgPrefix": "RG_VMIMAGES"
   },
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
@@ -443,7 +479,7 @@
           }
         },
         "enableSSIS": true,
-        "ip": "10.151.3.4",
+        "ip": "10.163.3.4",
         "port": "1433",
         "sku": "sqldev",
         "subnet": "databases",
@@ -465,9 +501,9 @@
             "type": "Standard_LRS"
           }
         },
-        "ip": "10.151.3.5",
+        "ip": "10.163.3.5",
         "port": "5432",
-        "sku": "18.04-LTS",
+        "sku": "20.04-LTS",
         "subnet": "databases",
         "type": "PostgreSQL",
         "vmName": "PSTGRS-T3MSRDS",
@@ -494,25 +530,6 @@
         }
       }
     },
-    "dsvm": {
-      "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-compute",
-      "disks": {
-        "os": {
-          "sizeGb": "default",
-          "type": "Standard_LRS"
-        },
-        "scratch": {
-          "sizeGb": "1024",
-          "type": "Standard_LRS"
-        }
-      },
-      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
-      "vmImage": {
-        "type": "Ubuntu",
-        "version": "0.3.2021032200"
-      },
-      "vmSizeDefault": "Standard_D2s_v3"
-    },
     "firewall": {
       "routeTableName": "ROUTE-TABLE-SRE-T3MSRDS"
     },
@@ -529,12 +546,12 @@
     "location": "uksouth",
     "network": {
       "vnet": {
-        "cidr": "10.151.0.0/21",
+        "cidr": "10.163.0.0/21",
         "name": "VNET_SHM_TESTC_SRE_T3MSRDS",
         "rg": "RG_SHM_TESTC_SRE_T3MSRDS_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.151.4.0/24",
+            "cidr": "10.163.4.0/24",
             "name": "ComputeSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
@@ -542,11 +559,11 @@
             }
           },
           "data": {
-            "cidr": "10.151.2.0/24",
+            "cidr": "10.163.2.0/24",
             "name": "PrivateDataSubnet"
           },
           "databases": {
-            "cidr": "10.151.3.0/24",
+            "cidr": "10.163.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DATABASES",
@@ -554,19 +571,19 @@
             }
           },
           "deployment": {
-            "cidr": "10.151.0.0/24",
+            "cidr": "10.163.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTC_SRE_T3MSRDS_DEPLOYMENT",
-              "rules": "sre-nsg-rules-compute-deployment.json"
+              "rules": "sre-nsg-rules-deployment.json"
             }
           },
           "remoteDesktop": {
-            "cidr": "10.151.1.0/24",
+            "cidr": "10.163.1.0/24",
             "name": "RemoteDesktopSubnet"
           },
           "webapps": {
-            "cidr": "10.151.5.0/24",
+            "cidr": "10.163.5.0/24",
             "name": "WebappsSubnet",
             "nsg": {
               "name": "NSG_SHM_TESTC_SRE_T3MSRDS_WEBAPPS",
@@ -589,7 +606,7 @@
         },
         "fqdn": "APP-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
         "hostname": "APP-SRE-T3MSRDS",
-        "ip": "10.151.1.5",
+        "ip": "10.163.1.5",
         "nsg": {
           "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SESSION_HOSTS",
           "rules": "sre-nsg-rules-session-hosts.json"
@@ -612,7 +629,7 @@
         "fqdn": "RDG-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-T3MSRDS",
         "installationDirectory": "C:\\Installation",
-        "ip": "10.151.1.4",
+        "ip": "10.163.1.4",
         "nsg": {
           "name": "NSG_SHM_TESTC_SRE_T3MSRDS_RDS_SERVER",
           "rules": "sre-nsg-rules-gateway.json"
@@ -646,6 +663,25 @@
     },
     "rgPrefix": "RG_SHM_TESTC_SRE_T3MSRDS",
     "shortName": "sre-t3msrds",
+    "srd": {
+      "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-compute",
+      "disks": {
+        "os": {
+          "sizeGb": "default",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "1024",
+          "type": "Standard_LRS"
+        }
+      },
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
+      "vmImage": {
+        "type": "Ubuntu",
+        "version": "20.04.2022022500"
+      },
+      "vmSizeDefault": "Standard_D2s_v3"
+    },
     "storage": {
       "accessPolicies": {
         "readOnly": {
@@ -750,7 +786,7 @@
         "dockerVersion": "latest",
         "fqdn": "COCALC.t3msrds.testc.dsgroupdev.co.uk",
         "hostname": "COCALC",
-        "ip": "10.151.5.7",
+        "ip": "10.163.5.7",
         "osVersion": "20.04-LTS",
         "vmName": "COCALC-SRE-T3MSRDS",
         "vmSize": "Standard_D2s_v3"
@@ -758,7 +794,7 @@
       "codimd": {
         "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.3.2"
+          "dockerVersion": "2.4.1-cjk"
         },
         "disks": {
           "data": {
@@ -772,10 +808,10 @@
         },
         "fqdn": "CODIMD.t3msrds.testc.dsgroupdev.co.uk",
         "hostname": "CODIMD",
-        "ip": "10.151.5.6",
+        "ip": "10.163.5.6",
         "osVersion": "20.04-LTS",
         "postgres": {
-          "dockerVersion": "13.1",
+          "dockerVersion": "13.4-alpine",
           "passwordSecretName": "sre-t3msrds-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-T3MSRDS",
@@ -795,7 +831,7 @@
         },
         "fqdn": "GITLAB.t3msrds.testc.dsgroupdev.co.uk",
         "hostname": "GITLAB",
-        "ip": "10.151.5.5",
+        "ip": "10.163.5.5",
         "osVersion": "20.04-LTS",
         "rootPasswordSecretName": "sre-t3msrds-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-T3MSRDS",

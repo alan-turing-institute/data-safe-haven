@@ -3,11 +3,10 @@ Import-Module $PSScriptRoot/common/Logging -ErrorAction Stop
 # Requirements
 $PowershellVersionRequired = "7.0.0"
 $ModuleVersionRequired = @{
-    "Az"                       = ("ge", "5.0.0");
-    "Az.Storage"               = ("eq", "2.5.2");
-    "AzureAD.Standard.Preview" = ("ge", "0.1.599.7")
-    "Microsoft.Graph"          = ("ge", "1.5.0")
-    "Poshstache"               = ("ge", "0.1.10")
+    "Az"              = ("ge", "6.0.0")
+    "Microsoft.Graph" = ("ge", "1.5.0")
+    "Poshstache"      = ("ge", "0.1.10")
+    "Powershell-Yaml" = ("ge", "0.4.2")
 }
 
 # Powershell version
@@ -32,10 +31,6 @@ foreach ($ModuleName in $ModuleVersionRequired.Keys) {
         Add-LogMessage -Level Success "$ModuleName module version: $CurrentVersion"
     } else {
         $RepositoryName = "PSGallery"
-        if ($ModuleName -eq "AzureAD.Standard.Preview") {
-            $RepositoryName = "'Posh Test Gallery'"
-            Add-LogMessage -Level Info "Please ensure the $RepositoryName package source is registered using: Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name '$RepositoryName -Location https://www.poshtestgallery.com/api/v2/"
-        }
         Add-LogMessage -Level Info "Please update the $ModuleName module using: Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName"
         Add-LogMessage -Level Fatal "$ModuleName module version ($CurrentVersion) does not meet the minimum requirement: $RequiredVersion!"
     }

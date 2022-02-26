@@ -40,7 +40,7 @@ function Expand-MustacheTemplate {
     }
 
     # Use Poshstache to expand the template
-    return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json $PoshstacheParameters)
+    return ConvertTo-PoshstacheTemplate -InputString $Template -ParametersObject (ConvertTo-Json -Depth 99 $PoshstacheParameters)
 }
 Export-ModuleMember -Function Expand-MustacheTemplate
 
@@ -60,9 +60,9 @@ function Expand-CloudInitResources {
     if ($TemplatePath) { $Template = Get-Content $TemplatePath -Raw }
 
     # Insert resources into the cloud-init template
-    foreach ($resource in (Get-ChildItem $ResourcePath)) {
-        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{")[0] } | Select-Object -First 1
-        $indentedContent = (Get-Content $resource.FullName -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    foreach ($resource in (Get-ChildItem $ResourcePath -Attributes !Directory)) {
+        $indent = $Template -split "`n" | Where-Object { $_ -match "{{$($resource.Name)}}" } | ForEach-Object { $_.Split("{{")[0] } | Select-Object -First 1
+        $indentedContent = (Get-Content $resource.FullName -Raw -ErrorAction Stop) -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
         $Template = $Template.Replace("${indent}{{$($resource.Name)}}", $indentedContent)
     }
     return $Template
