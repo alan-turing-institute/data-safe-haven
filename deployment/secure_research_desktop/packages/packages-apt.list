@@ -15,10 +15,11 @@ clamav-daemon
 clamav-freshclam
 clamav-unofficial-sigs
 cmake
+code
 cuda
 curl
+dbeaver-ce
 default-jdk
-docker.io
 dotnet-sdk-3.1
 emacs
 firefox

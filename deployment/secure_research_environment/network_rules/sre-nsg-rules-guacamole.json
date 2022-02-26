@@ -60,6 +60,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLDAPOutbound",
+        "access": "Allow",
+        "description": "Allow LDAP queries to the SHM DC",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
+        "destinationPortRange": ["389", "636"],
+        "direction": "Outbound",
+        "priority": 1000,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
@@ -85,6 +97,18 @@
         "priority": 3000,
         "protocol": "UDP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowExternalInternetOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to internet",
+        "destinationAddressPrefix": "Internet",
+        "destinationPortRange": "*",
+        "direction": "Outbound",
+        "priority": 3900,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.guacamole.ip}}",
         "sourcePortRange": "*"
     },
     {

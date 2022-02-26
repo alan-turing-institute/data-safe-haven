@@ -1052,7 +1052,7 @@ Therefore we will block access for all users other than Global Administrators.
 - Click `Conditional Access` in the left hand sidebar
 - Click on `New Policy` at the top of the panel
 - Configure the policy as follows
-  - In the `Name` field enter `Prevent Azure portal access`
+  - In the `Name` field enter `Restrict Azure Active Directory access`
   - Under `Users or workload identities` set the `Users and groups` condition to:
     - **Include**: Select `All users`
     - **Exclude**:
@@ -1062,7 +1062,10 @@ Therefore we will block access for all users other than Global Administrators.
   - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
     - **Include**:
       - Select `Select apps`
-      - In the pop-up menu on the right, select `Microsoft Azure Management` and click `Select`
+      - In the pop-up menu on the right, select
+        - `Microsoft Azure Management` and
+        - `Microsoft Graph PowerShell` then
+      - Click `Select`
     - **Exclude**: Leave unchanged as `None`
   - Leave the `Conditions` condition unchanged (all showing as `Not configured`)
   - Under the `Access controls` and `Grant` Headings click `0 controls selected`

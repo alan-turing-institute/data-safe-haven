@@ -3,7 +3,7 @@ networks:
     network_default:
 services:
     cocalc:
-        container_name: cocalc
+        container_name: cocalc_cocalc_compose
         image: sagemathinc/cocalc:{{sre.webapps.cocalc.dockerVersion}}
         networks:
             - network_default

@@ -19,7 +19,7 @@ Hosting each secure project environment in its own subscription supports a clean
 
 ## Architecture
 
-```{image} shm_architecture.png
+```{image} sre_architecture.png
 :alt: Secure Research Environment (SRE) component
 :align: center
 ```

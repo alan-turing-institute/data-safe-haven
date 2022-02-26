@@ -131,7 +131,7 @@ To do this, sign in to `GitLab`.
 
 When you are on your Dashboard, click on the project that you’d like to clone.
 To work in the project, you can copy a link to the `git` repository through a SSH or a HTTPS protocol.
-SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html).
+SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/ssh/).
 While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
 ```{image} user_guide/gitlab_clone_url.png

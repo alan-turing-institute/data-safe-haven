@@ -168,7 +168,7 @@
         }
       },
       "tier3": {
-        "diskSize": 512,
+        "diskSize": 1024,
         "external": {
           "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-external-mirror-tier-3",
           "ipAddress": "10.20.3.4",
@@ -239,7 +239,7 @@
         "subnets": {
           "repository": {
             "cidr": "10.30.1.0/24",
-            "name": "RepositorySubnet",
+            "name": "RepositoryTier2Subnet",
             "nsg": {
               "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_2",
               "rules": "shm-nsg-rules-nexus-tier2.json"
@@ -253,7 +253,7 @@
         "subnets": {
           "repository": {
             "cidr": "10.30.2.0/24",
-            "name": "RepositorySubnet",
+            "name": "RepositoryTier3Subnet",
             "nsg": {
               "name": "NSG_SHM_TESTA_NEXUS_REPOSITORY_TIER_3",
               "rules": "shm-nsg-rules-nexus-tier3.json"

@@ -6,6 +6,7 @@ param(
 Import-Module Az -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
@@ -54,6 +55,13 @@ if ($success) {
 } else {
     Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
 }
+Add-LogMessage -Level Info "[ ] Uploading MFA NPS troubleshooting script to blob storage"
+Start-AzStorageBlobCopy -AbsoluteUri https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1 -DestContainer $storageContainerName -DestBlob "MFA_NPS_Troubleshooter.ps1" -DestContext $storageAccount.Context -Force
+if ($?) {
+    Add-LogMessage -Level Success "Uploaded MFA NPS troubleshooting script"
+} else {
+    Add-LogMessage -Level Fatal "Failed to upload MFA NPS troubleshooting script!"
+}
 
 
 # Deploy NPS from template
@@ -96,7 +104,7 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 
 # Import conditional-access-policy settings
 # -----------------------------------------
-Add-LogMessage -Level Info "Importing NPS configuration '$($config.nps.vmName)'..."
+Add-LogMessage -Level Info "Copying NPS artifacts to '$($config.nps.vmName)'..."
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
@@ -113,7 +121,7 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverAddresses)[0]
+Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverAddresses)[0] -AdditionalPowershellModules "MSOnline"
 
 
 # Switch back to original subscription

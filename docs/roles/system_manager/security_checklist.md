@@ -1,18 +1,9 @@
+(role_system_manager_security_checklist)=
+
 # Security evaluation checklist
 
-In this check list we aim to do the following things:
-
-- Establish our current claims about the Data Safe Haven
-- Establish what these security claims mean in terms of implementation
-- How we can verify that we actually do what we say
-
-This diagram shows the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
-The security checklist currently focuses on checks that can verify these security requirements for {ref}`policy_tier_2` (or greater) <policy_classification_sensitivity_tiers>` SREs (with some steps noted as specific to a tier):
-
-```{image} security_checklist/recommended_controls.png
-:alt: Recommended security controls
-:align: center
-```
+In this check list we aim to **verify** the {ref}`security claims made here <design_security_claims>`.
+The security checklist currently focuses on checks that can verify these security requirements for {ref}`policy_tier_2` (or greater) SREs (with some steps noted as specific to a tier):
 
 ## How to use this checklist
 
@@ -45,13 +36,13 @@ The following users will be needed for this checklist
 
 - **SRE standard user** who is a member of the **SRE A** research users group
   - Create a new user **without** MFA
-    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account, then check the following before (and after (adding them to the `SG <SRE ID> Research Users` group.
+    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
     - Visit https://aka.ms/sspr in an incognito browser
     - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 - {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
 - **Data provider** who has no accounts on the Safe Haven system
 
-## 1. Multifactor Authentication and Password strength
+## 1. Multifactor authentication and password strength
 
 ### We claim:
 
@@ -191,7 +182,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 {{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
-```{image} security_checklist/srd_xfce.png
+```{image} security_checklist/guacamole_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
@@ -200,7 +191,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 {{bento_box}} **Microsoft Remote Desktop**:
 <details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
 
-```{image} security_checklist/srd_xfce.png
+```{image} security_checklist/msrds_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
@@ -322,7 +313,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 - At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
 - At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
 
-### This means
+### Which means:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
 - Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
@@ -373,7 +364,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 
 #### Network rules ({ref}`policy_tier_2` and above):
 
-There are are network rules permitting access only from allow-listed IP addresses
+There are are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
   - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
@@ -442,7 +433,7 @@ Connection from within the secure physical space is possible.
 
 - Connections can only be made via remote desktop ({ref}`policy_tier_2` and above)
 
-### This means
+### Which means:
 
 - User can connect via remote desktop but cannot connect through other means such as `SSH`
 
@@ -533,7 +524,7 @@ Connection from within the secure physical space is possible.
 - All data transfer to the Data Safe Haven should be via our secure data transfer process, which gives the {ref}`role_data_provider_representative` time-limited, write-only access to a dedicated data ingress volume from a specific location.
 - Data is stored securely until approved for user access.
 
-### This means
+### Which means:
 
 - Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
 - Once these details have been received, the data ingress volume should be opened for data upload.
@@ -608,14 +599,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - SREs contain an `/output` volume, in which SRE users can store data designated for egress.
 
-### This means:
+### Which means::
 
 - Users can write to the `/output` volume
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
 
 ### Verify by:
 
-#### Confirm that a non-privileged user is able to read the different storage volumes and write to Output
+#### Confirm that a non-privileged user is able to read the different storage volumes and write to output
 
 - Login to an SRD as the **SRE standard user** via the remote desktop web client
 - Open up a file explorer and search for the various storage volumes
@@ -633,14 +624,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - As the {ref}`role_system_manager`, follow the instructions in the {ref}`administrator document <roles_system_manager_data_egress>` on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you can see the files written to the Output storage volume (including any you created as a non-privileged user in step 1)
+{{white_check_mark}} **Verify that:** you can see the files written to the `/output` storage volume (including any you created as a non-privileged user in step 1)
 ```
 
 ```{attention}
 {{white_check_mark}} **Verify that:** a written file can be taken out of the environment via download
 ```
 
-## 9. Software Ingress
+## 9. Software ingress
 
 ### We claim:
 
@@ -700,14 +691,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 {{white_check_mark}} **Verify that:** the **SRE standard user** cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
 ```
 
-## 10. Package mirrors
+## 10. Software package repositories
 
 ### We claim:
 
 - {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
 - {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
 
-### This means:
+### Which means::
 
 - {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
@@ -718,14 +709,28 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - Login as the **SRE standard user** into an SRD via remote desktop web client
 - Open up a terminal
-- Attempt to install any package that is not on the allowed list (for example, try `pip install botocore`)
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2.png
+```{image} security_checklist/srd_pypi_tier2_allowed.png
+:alt: SRD PyPI Tier 2
+:align: center
+```
+</details>
+````
+
+- Attempt to install any package that is not on the allowed list (for example, try `pip install awscli`)
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>you can install the package</summary>
+
+```{image} security_checklist/srd_pypi_tier2_denied.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -736,21 +741,34 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - Login as the **SRE standard user** into an SRD via remote desktop web client
 - Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
-- Then attempt to download a package that is not included in the allowed list (for example, try `pip install botocore`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>the first download succeeds and the second fails</summary>
+<details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3.png
+```{image} security_checklist/srd_pypi_tier3_allowed.png
 :alt: SRD PyPI Tier 3
 :align: center
 ```
 </details>
 ````
 
-## 11. Azure Firewalls
+- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`)
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>you cannot install the package</summary>
+
+```{image} security_checklist/srd_pypi_tier3_denied.png
+:alt: SRD PyPI Tier 3
+:align: center
+```
+</details>
+````
+
+## 11. Firewall controls
 
 ### We claim:
 

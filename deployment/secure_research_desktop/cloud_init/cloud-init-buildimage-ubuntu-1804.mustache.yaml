@@ -20,8 +20,16 @@ apt:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
       keyid: 0A0FAB860D48560332EFB581B75442BBDE9E3B09  # https://packagecloud.io/AtomEditor/atom (https://packagecloud.io/docs#gpg_signing) <support@packagecloud.io>
 
+    dbeaver.list:
+      source: "deb https://dbeaver.io/debs/dbeaver-ce /"
+      keyid: 98F5A7CC1ABE72AC3852A007D33A1BD725ED047D  # DBeaver Co. (DBeaver Co. GPG key) <support@dbeaver.com>
+
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
+    microsoft-vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     mono-project.list:
@@ -149,14 +157,14 @@ write_files:
     content: |
       {{pycharm.desktop}}
 
-# List of packages to install with apt-get
-packages:
-  - {{packages-apt.list}}
-
 # Packages to install with snap
 snap:
   commands:
     - snap install {{packages-snap.list}}
+
+# List of packages to install with apt-get
+packages:
+  - {{packages-apt.list}}
 
 # Set the NTP server
 # By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
@@ -254,9 +262,6 @@ runcmd:
   - curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
   - pyenv doctor || die "Could not configure pyenv!"
   - if [ "$(which pyenv)" = "" ]; then echo "Could not install pyenv!"; exit 1; else echo "... successfully installed pyenv"; fi
-  # Install VSCode extensions
-  - echo "Install VSCode extensions..."
-  - code --install-extension ms-python.python
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
@@ -356,6 +361,8 @@ runcmd:
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
   - echo '# Set up RStudio' >> /etc/bash.bashrc
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
+  # Fix for GDAL issue in sf: https://github.com/r-spatial/sf/issues/1899
+  - Rscript -e "install.packages('devtools', quiet = TRUE); devtools::install_github('r-spatial/sf', quiet = TRUE)"
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - echo "Preparing to install $(echo $CRAN_PACKAGES | wc -w) CRAN packages\n${CRAN_PACKAGES}"

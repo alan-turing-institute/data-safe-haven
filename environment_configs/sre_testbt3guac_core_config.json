@@ -1,6 +1,7 @@
 {
     "sreId": "t3guac",
     "tier": "3",
+    "nexus": true,
     "shmId": "testb",
     "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
     "ipPrefix": "10.153.0",
@@ -8,7 +9,7 @@
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2022012400"
+        "version": "20.04.2022022500"
     },
     "databases": ["MSSQL", "PostgreSQL"],
     "dataAdminIpAddresses": ["193.60.220.253"],

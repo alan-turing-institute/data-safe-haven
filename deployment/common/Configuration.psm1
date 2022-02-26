@@ -258,7 +258,7 @@ function Get-ShmConfig {
             cidr    = "${shmRepositoryPrefix}.0/24"
             subnets = [ordered]@{
                 repository = [ordered]@{
-                    name = "RepositorySubnet"
+                    name = "RepositoryTier${tier}Subnet"
                     cidr = "${shmRepositoryPrefix}.0/24"
                     nsg  = [ordered]@{
                         name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
@@ -487,7 +487,7 @@ function Get-ShmConfig {
         diskType = "Standard_LRS"
         pypi     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 8192 }
-            tier3 = [ordered]@{ diskSize = 512 }
+            tier3 = [ordered]@{ diskSize = 1024 }
         }
         cran     = [ordered]@{
             tier2 = [ordered]@{ diskSize = 128 }

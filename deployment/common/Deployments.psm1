@@ -192,7 +192,7 @@ function Deploy-Firewall {
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
-        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
+        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name -EnableDnsProxy
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
@@ -279,8 +279,10 @@ function Deploy-FirewallNetworkRule {
         $Firewall,
         [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
         $SourceAddress,
-        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of destination")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
         $DestinationAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
+        $DestinationFqdn,
         [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
         $DestinationPort,
         [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
@@ -293,8 +295,11 @@ function Deploy-FirewallNetworkRule {
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
         [switch]$LocalChangeOnly
     )
-    $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
-    Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
+    Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$($DestinationAddress ? $DestinationAddress : $DestinationFqdn)' on ports '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
+    $params = @{}
+    if ($DestinationAddress) { $params["DestinationAddress"] = $DestinationAddress }
+    if ($DestinationFqdn) { $params["DestinationFqdn"] = $DestinationFqdn }
+    $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationPort $DestinationPort -Protocol $Protocol @params
     try {
         $ruleCollection = $Firewall.GetNetworkRuleCollectionByName($CollectionName)
         Add-LogMessage -Level InfoSuccess "Network rule collection '$CollectionName' already exists"
@@ -818,19 +823,27 @@ function Deploy-VirtualMachineMonitoringExtension {
         if ($installed) {
             Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
         } else {
-            try {
-                Set-AzVMExtension -ExtensionName $type `
-                                  -ExtensionType $type `
-                                  -Location $VM.location `
-                                  -ProtectedSettings $ProtectedSettings `
-                                  -Publisher $publisher `
-                                  -ResourceGroupName $VM.ResourceGroupName `
-                                  -Settings $PublicSettings `
-                                  -TypeHandlerVersion $version `
-                                  -VMName $VM.Name `
-                                  -ErrorAction Stop
+            foreach ($i in 1..5) {
+                try {
+                    Set-AzVMExtension -ExtensionName $type `
+                                    -ExtensionType $type `
+                                    -Location $VM.location `
+                                    -ProtectedSettings $ProtectedSettings `
+                                    -Publisher $publisher `
+                                    -ResourceGroupName $VM.ResourceGroupName `
+                                    -Settings $PublicSettings `
+                                    -TypeHandlerVersion $version `
+                                    -VMName $VM.Name `
+                                    -ErrorAction Stop
+                    break
+                } catch {
+                    Start-Sleep 10
+                }
+            }
+            $installed = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq $publisher -and $_.ExtensionType -eq $type }
+            if ($installed) {
                 Add-LogMessage -Level Success "Installed extension '$type' on VM '$($VM.Name)'."
-            } catch {
+            } else {
                 Add-LogMessage -Level Failure "Failed to install extension '$type' on VM '$($VM.Name)'!"
             }
         }

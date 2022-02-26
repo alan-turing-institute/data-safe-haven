@@ -42,9 +42,9 @@ if ($?) {
 }
 
 
-# Create a routing table ensuring that BGP propagation is disabled
-# Without this, VMs might be able to jump directly to the target without going through the firewall
-# -------------------------------------------------------------------------------------------------
+# Create or retrieve the route table.
+# Note that we need to disable BGP propagation or VMs might be able to jump directly to the target without going through the firewall
+# -----------------------------------------------------------------------------------------------------------------------------------
 $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 
 
@@ -119,6 +119,7 @@ foreach ($ruleCollection in $rules.networkRuleCollections) {
             $params["DestinationPort"] = @($rule.protocols | ForEach-Object { $_.Split(":")[1] })
         }
         if ($rule.targetAddresses) { $params["DestinationAddress"] = $rule.targetAddresses }
+        if ($rule.targetFqdns) { $params["DestinationFqdn"] = $rule.targetFqdns }
         $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params -LocalChangeOnly
     }
 }

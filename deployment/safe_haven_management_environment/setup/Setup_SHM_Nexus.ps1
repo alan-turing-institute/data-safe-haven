@@ -50,27 +50,27 @@ $vnetRepository = Deploy-VirtualNetwork -Name $config.network.repositoryVnets["t
 $repositorySubnet = Deploy-Subnet -Name $config.network.repositoryVnets["tier${tier}"].subnets.repository.name -VirtualNetwork $vnetRepository -AddressPrefix $config.network.repositoryVnets["tier${tier}"].subnets.repository.cidr
 
 
+# Peer repository VNet to SHM VNet in order to allow it to route via the SHM firewall
+# -----------------------------------------------------------------------------------
+Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
+Set-VnetPeering -Vnet1Name $vnetRepository.Name `
+                -Vnet1ResourceGroup $vnetRepository.ResourceGroupName `
+                -Vnet1SubscriptionName $config.subscriptionName `
+                -Vnet2Name $config.network.vnet.name `
+                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2SubscriptionName $config.subscriptionName
+
+
 # Attach repository subnet to SHM route table
 # -------------------------------------------
 Add-LogMessage -Level Info "[ ] Attaching repository subnet to SHM route table"
-$routeTable = Get-AzRouteTable | Where-Object { $_.Name -eq $config.firewall.routeTableName }
-$vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $config.network.repositoryVnets["tier${tier}"].subnets.repository.name -AddressPrefix $config.network.repositoryVnets["tier${tier}"].subnets.repository.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
+$routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$vnetRepository = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetRepository -Name $repositorySubnet.Name -AddressPrefix $repositorySubnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
 if ($?) {
     Add-LogMessage -Level Success "Attached subnet '$($repositorySubnet.Name)' to SHM route table."
 } else {
     Add-LogMessage -Level Fatal "Failed to attach subnet '$($repositorySubnet.Name)' to SHM route table!"
 }
-
-
-# Peer repository vnet to SHM vnet
-# --------------------------------
-Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
-Set-VnetPeering -Vnet1Name $config.network.repositoryVnets["tier${tier}"].name `
-                -Vnet1ResourceGroup $config.network.vnet.rg `
-                -Vnet1SubscriptionName $config.subscriptionName `
-                -Vnet2Name $config.network.vnet.name `
-                -Vnet2ResourceGroup $config.network.vnet.rg `
-                -Vnet2SubscriptionName $config.subscriptionName
 
 
 # Ensure that Nexus NSG exists with correct rules and attach it to the Nexus subnet

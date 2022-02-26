@@ -269,10 +269,18 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 ```{error}
 If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
 
+In order to diagnose whether this is an issue with the NPS settings or the MFA connection, run the diagnostic script at `C:\Installation\MFA_NPS_Troubleshooter.ps1` and follow the instructions there.
+```
+
+```{error}
+If running the previous script did not help to diagnose the issue then try the following:
+
 - Ensure that both the SHM NPS server and the RDS Gateway are running
 - Follow the instructions to {ref}`configure RDS CAP and RAP settings <deploy_sre_microsoft_rds_configure_cap_rap>` to reset the configuration of the RDS gateway and NPS VMs.
-- Ensure that the default UDP ports `1812` , `1813` , `1645` and `1646` are all open on the SHM NPS network security group ( `NSG_SHM_SUBNET_IDENTITY` ). [This documentation](<https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)>) gives further details.
+- Ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`). [This documentation](<https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)>) gives further details.
+```
 
+```{error}
 If this does not resolve the issue, trying checking the Windows event logs
 
 - Use `Event Viewer` on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests

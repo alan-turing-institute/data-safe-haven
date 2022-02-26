@@ -1,4 +1,4 @@
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
 ```powershell
 PS> ./Setup_SRE_Logging.ps1 -shmId <SHM ID> -sreId <SRE ID>

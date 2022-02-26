@@ -28,7 +28,7 @@ Install-WindowsFeature NPAS -IncludeManagementTools
 if ($?) {
     Write-Output " [o] Successfully installed NPAS"
 } else {
-    Write-Output " [x] Failed to install NPAS"
+    Write-Output " [x] Failed to install NPAS!"
 }
 
 
@@ -39,13 +39,13 @@ $null = New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -Action Allow 
 if ($?) {
     Write-Output " [o] Set inbound rule"
 } else {
-    Write-Output " [x] Failed to set inbound rule"
+    Write-Output " [x] Failed to set inbound rule!"
 }
 $null = New-NetFirewallRule -DisplayName "SQL" -Direction Outbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 if ($?) {
     Write-Output " [o] Set outbound rule"
 } else {
-    Write-Output " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to set outbound rule!"
 }
 
 
@@ -61,9 +61,9 @@ foreach ($RawDisk in $CandidateRawDisks) {
 }
 Start-Service ShellHWDetection
 if ($?) {
-    Write-Output " [o] Completed"
+    Write-Output " [o] Successfully formatted data drive"
 } else {
-    Write-Output " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to format data drive!"
 }
 
 
@@ -75,12 +75,12 @@ Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C
 if ($?) {
     Write-Output " [o] Successfully downloaded NPS extension"
 } else {
-    Write-Output " [x] Failed to download NPS extension"
+    Write-Output " [x] Failed to download NPS extension!"
 }
 Write-Output "Installing NPS extension..."
 Start-Process $npsExtnPath -ArgumentList '/install', '/quiet'
 if ($?) {
     Write-Output " [o] Successfully installed NPS extension"
 } else {
-    Write-Output " [x] Failed to install NPS extension"
+    Write-Output " [x] Failed to install NPS extension!"
 }
