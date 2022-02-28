@@ -1,0 +1,3 @@
+name: {{name}}
+runtime: python
+description: Data Safe Haven Azure-native Pulumi project

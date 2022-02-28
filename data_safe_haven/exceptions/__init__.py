@@ -8,3 +8,10 @@ class DataSafeHavenCloudException(DataSafeHavenException):
 
 class DataSafeHavenInputException(DataSafeHavenException):
     pass
+
+
+class DataSafeHavenAzureException(DataSafeHavenCloudException):
+    pass
+
+class DataSafeHavenPulumiException(DataSafeHavenCloudException):
+    pass

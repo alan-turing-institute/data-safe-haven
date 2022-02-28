@@ -4,9 +4,9 @@ from clikit.api.io.flags import NORMAL, DEBUG, VERBOSE
 
 
 class LoggingMixin:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.fallback_io = ConsoleIO()
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
     @property
     def prefix(self):
