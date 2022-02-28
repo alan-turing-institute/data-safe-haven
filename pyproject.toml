@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "data-safe-haven"
+version = "4.0.0"
+description = "An open-source framework for creating secure environments to analyse sensitive data."
+authors = ["Data Safe Haven development team <safehavendevs@turing.ac.uk>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+azure-core = "^1.22.1"
+azure-identity = "^1.7.1"
+azure-keyvault-keys = "^4.4.0"
+azure-mgmt-keyvault = "^9.3.0"
+azure-mgmt-resource = "^20.1.0"
+azure-mgmt-storage = "^19.1.0"
+cleo = "^0.8.1"
+dotmap = "^1.3.26"
+PyYAML = "^6.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+dsh = "data_safe_haven.cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

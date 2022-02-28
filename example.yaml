@@ -1,0 +1,6 @@
+deployment:
+  name: v4-example
+azure:
+  subscription_name: Turing SRE - Sandbox (SHM Test C)
+  admin_group_id: 347c68cb-261f-4a3e-ac3e-6af860b5fec9
+  location: uksouth
