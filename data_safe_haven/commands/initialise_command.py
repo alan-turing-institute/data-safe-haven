@@ -36,9 +36,9 @@ class InitialiseCommand(LoggingMixin, Command):
             project_path.mkdir()
 
         # Initialise the Pulumi project
-        stack = PulumiStack(config, project_path, template_path)
-        stack.initialise()
+        pulumi = PulumiStack(config, project_path=project_path, template_path=template_path)
+        pulumi.initialise()
 
         # Upload config to blob storage
-        self.info("Uploading config to blob storage")
+        self.info(f"Uploading config <fg=green>{config.name}</> to blob storage")
         config.upload()

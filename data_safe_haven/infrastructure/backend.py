@@ -17,23 +17,20 @@ class Backend(AzureMixin, LoggingMixin):
         self.resource_group_name = None
         self.storage_account_name = None
         self.key_vault_name = None
-        self.cfg.add_property("metadata",  {
-            "resource_group_name": f"rg-{self.cfg.deployment_name}-metadata",
-            "storage_account_name": f"st{self.cfg.deployment_name}metadata",
-            "key_vault_name": f"kv-{self.cfg.deployment_name}-metadata",
-        })
-        self.cfg.add_property("pulumi", {
-            "encryption_key_name": f"encryption-{self.cfg.deployment_name}-pulumi",
-            "storage_container_name": f"pulumi-state",
-        })
         super().__init__(subscription_name=self.cfg.azure.subscription_name)
+        self.cfg.add_property("pulumi", {
+            "key_vault_name": f"kv-{self.cfg.deployment_name}-metadata",
+            "encryption_key_name": f"encryption-{self.cfg.deployment_name}-pulumi",
+            "storage_container_name": "pulumi",
+        })
+        self.cfg.azure.subscription_id = self.subscription_id
 
     def create(self):
         self.set_resource_group(self.cfg.metadata.resource_group_name)
         self.set_storage_account(self.cfg.metadata.storage_account_name)
+        self.ensure_storage_container(self.cfg.storage_container_name)
         self.ensure_storage_container(self.cfg.pulumi.storage_container_name)
-        self.ensure_storage_container(self.cfg.config.storage_container_name)
-        self.set_key_vault(self.cfg.metadata.key_vault_name)
+        self.set_key_vault(self.cfg.pulumi.key_vault_name)
         self.ensure_key(self.cfg.pulumi.encryption_key_name)
 
     def set_resource_group(self, resource_group_name):
@@ -179,59 +176,7 @@ class Backend(AzureMixin, LoggingMixin):
         try:
             if not key:
                 key = key_client.get_key(key_name)
-            self.info(f"Found key {key.name}.")
+            self.info(f"Found key <fg=green>{key.name}</>.")
             self.cfg.pulumi["encryption_key"] = key.id.replace("https:", "azurekeyvault:")
         except (HttpResponseError, ResourceNotFoundError):
             raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")
-
-
-
-    # def storage_credentials(self):
-    #     # Connect to Azure clients
-    #     storage_client = StorageManagementClient(self.credential, self.subscription_id)
-    #     key_client = KeyClient(
-    #         f"https://{self.cfg.metadata.key_vault_name}.vault.azure.net", self.credential
-    #     )
-
-    #     # Load account details
-    #     storage_accounts = [
-    #         sa
-    #         for sa in storage_client.storage_accounts.list()
-    #         if sa.name == self.cfg.metadata.storage_account_name
-    #     ]
-    #     storage_keys = storage_client.storage_accounts.list_keys(
-    #         self.cfg.metadata.resource_group_name, self.cfg.metadata.storage_account_name
-    #     )
-    #     key = key_client.get_key(self.cfg.pulumi.encryption_key_name)
-
-    #     try:
-    #         return {
-    #             "AZURE_STORAGE_ACCOUNT": storage_accounts[0].name,
-    #             "AZURE_STORAGE_KEY": storage_keys.keys[0].value,
-    #             "AZURE_KEY_ID": key.id,
-    #         }
-    #     except Exception as exc:
-    #         raise DataSafeHavenAzureException(
-    #             f"Failed to load storage account credentials."
-    #         ) from exc
-
-    # def storage_key(self):
-    #     try:
-    #         storage_client = StorageManagementClient(self.credential, self.subscription_id)
-    #         storage_keys = storage_client.storage_accounts.list_keys(self.resource_group_name, self.storage_account_name)
-    #         return storage_keys.keys[0].value
-    #     except:
-    #         raise DataSafeHavenAzureException("Storage key could not be loaded.")
-
-    # def key(self, key_name):
-    #     try:
-    #         key_client = KeyClient(f"https://{self.key_vault_name}.vault.azure.net", self.credential)
-    #         key = key_client.get_key(key_name)
-    #         return key.id
-    #     except:
-    #         raise DataSafeHavenAzureException("Encryption key could not be loaded.")
-
-
-            # storage_client = StorageManagementClient(self.credential, self.subscription_id)
-            # key_client = KeyClient(f"https://{self.cfg.metadata.key_vault_name}.vault.azure.net", self.credential)
-            # key = key_client.get_key(self.cfg.pulumi.encryption_key_name)

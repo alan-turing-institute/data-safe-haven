@@ -12,6 +12,7 @@ from azure.core.exceptions import ResourceNotFoundError
 
 class Config(AzureMixin):
     alphanumeric = re.compile(r"[^0-9a-zA-Z]+")
+    storage_container_name = "config"
 
     def __init__(self, path, *args, **kwargs):
         try:
@@ -29,20 +30,25 @@ class Config(AzureMixin):
             self.data = self.download()
         # ... otherwise add some basic properties
         except (DataSafeHavenAzureException, ResourceNotFoundError):
-            self.add_property("config", {
-                "storage_container_name": f"config",
-            })
             self.add_property("tags", {
                 "deployed_by": "Python",
                 "project": "Data Safe Haven",
                 "version": __version__,
             })
 
+    @property
+    def name(self):
+        return f"config-{self.deployment_name}.yaml"
+
     def read_base_yaml(self, path):
         with open(pathlib.Path(path), "r") as f_config:
             yaml_ = yaml.safe_load(f_config)
         self.deployment_name = self.alphanumeric.sub("", yaml_["deployment"]["name"]).lower()
         self.data = dotmap.DotMap(yaml_)
+        self.add_property("metadata",  {
+            "resource_group_name": f"rg-{self.deployment_name}-metadata",
+            "storage_account_name": f"st{self.deployment_name}metadata",
+        })
 
     def add_property(self, key, value):
         self.data[key] = value
@@ -65,7 +71,7 @@ class Config(AzureMixin):
         blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.data.metadata.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(blob_connection_string)
         # Upload the created file
-        blob_client = blob_service_client.get_blob_client(container=self.data.config.storage_container_name, blob=f"config-{self.deployment_name}.yaml")
+        blob_client = blob_service_client.get_blob_client(container=self.storage_container_name, blob=f"config-{self.deployment_name}.yaml")
         blob_client.upload_blob(yaml.dump(self.data.toDict()), overwrite=True)
 
     def download(self):
@@ -74,5 +80,5 @@ class Config(AzureMixin):
         blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.data.metadata.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(blob_connection_string)
         # Download the created file
-        blob_client = blob_service_client.get_blob_client(container=self.data.config.storage_container_name, blob=f"config-{self.deployment_name}.yaml")
+        blob_client = blob_service_client.get_blob_client(container=self.storage_container_name, blob=self.name)
         return dotmap.DotMap(yaml.safe_load(blob_client.download_blob().readall()))
