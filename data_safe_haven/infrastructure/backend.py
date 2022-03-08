@@ -1,29 +1,43 @@
-"""Command-line application for initialising a Data Safe Haven deployment"""
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+"""Backend for a Data Safe Haven deployment"""
+# Third party imports
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.keys import KeyClient
-from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.keyvault import KeyVaultManagementClient
+from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
+
+# Local imports
+from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.exceptions import DataSafeHavenAzureException
 
 
 class Backend(AzureMixin, LoggingMixin):
     """Ensure that storage backend exists"""
 
     def __init__(self, config):
+        super().__init__(subscription_name=config.azure.subscription_name)
         self.cfg = config
-        self.tags = {"component": "backend"} | self.cfg.tags if self.cfg.tags else {"component": "backend"}
+        self.tags = (
+            {"component": "backend"} | self.cfg.tags
+            if self.cfg.tags
+            else {"component": "backend"}
+        )
         self.resource_group_name = None
         self.storage_account_name = None
         self.key_vault_name = None
-        super().__init__(subscription_name=self.cfg.azure.subscription_name)
-        self.cfg.add_property("pulumi", {
-            "key_vault_name": f"kv-{self.cfg.deployment_name}-metadata",
-            "encryption_key_name": f"encryption-{self.cfg.deployment_name}-pulumi",
-            "storage_container_name": "pulumi",
-        })
+        self.update_config()
+
+    def update_config(self):
+        self.cfg.add_property(
+            "pulumi",
+            {
+                "key_vault_name": f"kv-{self.cfg.deployment_name}-metadata",
+                "encryption_key_name": f"encryption-{self.cfg.deployment_name}-pulumi",
+                "storage_container_name": "pulumi",
+            },
+        )
         self.cfg.azure.subscription_id = self.subscription_id
+        self.cfg.azure.tenant_id = self.tenant_id
 
     def create(self):
         self.set_resource_group(self.cfg.metadata.resource_group_name)
@@ -56,7 +70,7 @@ class Backend(AzureMixin, LoggingMixin):
         ]
         if resource_groups:
             self.info(
-                f"Found resource group <fg=green>{resource_groups[0].name}</> in {resource_groups[0].location}"
+                f"Found resource group <fg=green>{resource_groups[0].name}</> in {resource_groups[0].location}."
             )
         else:
             raise DataSafeHavenAzureException(
@@ -84,9 +98,7 @@ class Backend(AzureMixin, LoggingMixin):
                 },
             )
             storage_account = poller.result()
-            self.info(
-                f"Found storage account <fg=green>{storage_account.name}</>."
-            )
+            self.info(f"Storage account <fg=green>{storage_account.name}</> exists.")
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create storage account {storage_account_name}."
@@ -107,10 +119,10 @@ class Backend(AzureMixin, LoggingMixin):
                 container_name,
                 {"public_access": "none"},
             )
-            self.info(f"Found storage container {container.name}.")
+            self.info(f"Storage container <fg=green>{container.name}</> exists.")
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
-                f"Failed to create storage container {container_name}!"
+                f"Failed to create storage container <fg=green>{container_name}."
             ) from exc
 
     def set_key_vault(self, key_vault_name):
@@ -148,14 +160,10 @@ class Backend(AzureMixin, LoggingMixin):
             },
         )
         key_vaults = [
-            kv
-            for kv in key_vault_client.vaults.list()
-            if kv.name == key_vault_name
+            kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
         ]
         if key_vaults:
-            self.info(
-                f"Found key vault <fg=green>{key_vaults[0].name}</>."
-            )
+            self.info(f"Key vault <fg=green>{key_vaults[0].name}</> exists.")
         else:
             raise DataSafeHavenAzureException(
                 f"Failed to create key vault {key_vault_name}."
@@ -164,7 +172,9 @@ class Backend(AzureMixin, LoggingMixin):
     def ensure_key(self, key_name):
         """Ensure that backend encryption key exists"""
         # Connect to Azure clients
-        key_client = KeyClient(f"https://{self.key_vault_name}.vault.azure.net", self.credential)
+        key_client = KeyClient(
+            f"https://{self.key_vault_name}.vault.azure.net", self.credential
+        )
 
         # Ensure that key exists
         self.info(f"Ensuring that key <fg=green>{key_name}</> exists...")
@@ -176,7 +186,9 @@ class Backend(AzureMixin, LoggingMixin):
         try:
             if not key:
                 key = key_client.get_key(key_name)
-            self.info(f"Found key <fg=green>{key.name}</>.")
-            self.cfg.pulumi["encryption_key"] = key.id.replace("https:", "azurekeyvault:")
+            self.info(f"Key <fg=green>{key.name}</> exists.")
+            self.cfg.pulumi["encryption_key"] = key.id.replace(
+                "https:", "azurekeyvault:"
+            )
         except (HttpResponseError, ResourceNotFoundError):
             raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")

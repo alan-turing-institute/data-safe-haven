@@ -1,11 +1,14 @@
 """Mixin class for anything Azure-aware"""
+# Third party imports
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resource import SubscriptionClient
+
+# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
-from azure.mgmt.resource import SubscriptionClient
 
 
 class AzureMixin:
@@ -21,7 +24,10 @@ class AzureMixin:
     @property
     def credential(self):
         if not self.credential_:
-            self.credential_ = DefaultAzureCredential()
+            self.credential_ = DefaultAzureCredential(
+                exclude_interactive_browser_credential=False,
+                exclude_visual_studio_code_credential=True,
+            )
         return self.credential_
 
     @property

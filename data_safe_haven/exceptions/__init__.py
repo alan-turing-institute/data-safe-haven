@@ -13,5 +13,6 @@ class DataSafeHavenInputException(DataSafeHavenException):
 class DataSafeHavenAzureException(DataSafeHavenCloudException):
     pass
 
+
 class DataSafeHavenPulumiException(DataSafeHavenCloudException):
     pass

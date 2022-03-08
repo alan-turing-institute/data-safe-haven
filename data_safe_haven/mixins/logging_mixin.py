@@ -1,9 +1,15 @@
+"""Mixin class for anything needing logging"""
+# Standard library imports
 import datetime
+
+# Third party imports
 from cleo.io import ConsoleIO
 from clikit.api.io.flags import NORMAL, DEBUG, VERBOSE
 
 
 class LoggingMixin:
+    """Mixin class for anything needing logging"""
+
     def __init__(self, *args, **kwargs):
         self.fallback_io = ConsoleIO()
         super().__init__(*args, **kwargs)
