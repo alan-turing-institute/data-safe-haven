@@ -9,7 +9,7 @@ Install the following requirements before starting
 Create a config file with the following structure:
 
 ```yaml
-deployment:
+environment:
   name: <my project name>
 azure:
   subscription_name: <my subscription name>

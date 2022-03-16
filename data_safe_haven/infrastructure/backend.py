@@ -1,4 +1,4 @@
-"""Backend for a Data Safe Haven deployment"""
+"""Backend for a Data Safe Haven environment"""
 # Third party imports
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy
@@ -31,34 +31,29 @@ class Backend(AzureMixin, LoggingMixin):
         self.update_config()
 
     def update_config(self):
-        self.cfg.add_property(
-            "pulumi",
-            {
-                "key_vault_name": f"kv-{self.cfg.deployment_name}-metadata",
-                "encryption_key_name": f"encryption-{self.cfg.deployment_name}-pulumi",
-                "certificate_name": f"certificate-{self.cfg.deployment_name}",
-                "storage_container_name": "pulumi",
-            },
-        )
-        self.cfg.metadata.identity_name = "KeyVaultReaderIdentity"
         self.cfg.azure.subscription_id = self.subscription_id
         self.cfg.azure.tenant_id = self.tenant_id
+        self.cfg.backend.identity_name = "KeyVaultReaderIdentity"
+        self.cfg.backend.key_vault_name = f"kv-{self.cfg.environment_name}-backend"
+        self.cfg.deployment.certificate_name = f"certificate-{self.cfg.environment_name}"
+        self.cfg.pulumi.encryption_key_name = (
+            f"encryption-{self.cfg.environment_name}-pulumi"
+        )
+        self.cfg.pulumi.storage_container_name = "pulumi"
 
     def create(self):
-        self.set_resource_group(self.cfg.metadata.resource_group_name)
-        self.ensure_managed_identity(self.cfg.metadata.identity_name)
-        self.set_storage_account(self.cfg.metadata.storage_account_name)
+        self.ensure_resource_group(self.cfg.backend.resource_group_name)
+        self.ensure_managed_identity(self.cfg.backend.identity_name)
+        self.ensure_storage_account(self.cfg.backend.storage_account_name)
         self.ensure_storage_container(self.cfg.storage_container_name)
         self.ensure_storage_container(self.cfg.pulumi.storage_container_name)
-        self.set_key_vault(self.cfg.pulumi.key_vault_name)
+        self.ensure_key_vault(self.cfg.backend.key_vault_name)
         self.ensure_key(self.cfg.pulumi.encryption_key_name)
-        self.ensure_certificate(
-            self.cfg.pulumi.certificate_name, self.cfg.deployment.url
-        )
+        self.ensure_cert(self.cfg.deployment.certificate_name, self.cfg.environment.url)
 
-    def set_resource_group(self, resource_group_name):
+    def ensure_resource_group(self, resource_group_name):
         """Ensure that backend resource group exists"""
-        self.resource_group_name = self.cfg.metadata.resource_group_name
+        self.resource_group_name = self.cfg.backend.resource_group_name
         # Connect to Azure clients
         resource_client = ResourceManagementClient(
             self.credential, self.subscription_id
@@ -94,7 +89,7 @@ class Backend(AzureMixin, LoggingMixin):
             )
             self.managed_identity = (
                 msi_client.user_assigned_identities.create_or_update(
-                    self.cfg.metadata.resource_group_name,
+                    self.cfg.backend.resource_group_name,
                     identity_name,
                     {"location": self.cfg.azure.location},
                 )
@@ -104,7 +99,7 @@ class Backend(AzureMixin, LoggingMixin):
                 f"Failed to create managed identity {identity_name}."
             ) from exc
 
-    def set_storage_account(self, storage_account_name):
+    def ensure_storage_account(self, storage_account_name):
         """Ensure that backend storage account exists"""
         self.storage_account_name = storage_account_name
         # Connect to Azure clients
@@ -152,7 +147,7 @@ class Backend(AzureMixin, LoggingMixin):
                 f"Failed to create storage container <fg=green>{container_name}."
             ) from exc
 
-    def set_key_vault(self, key_vault_name):
+    def ensure_key_vault(self, key_vault_name):
         """Ensure that backend key vault exists"""
         self.key_vault_name = key_vault_name
         # Connect to Azure clients
@@ -180,6 +175,7 @@ class Backend(AzureMixin, LoggingMixin):
                             "object_id": self.cfg.azure.admin_group_id,
                             "permissions": {
                                 "keys": ["GET", "LIST", "CREATE", "DECRYPT", "ENCRYPT"],
+                                "secrets": ["GET", "LIST"],
                                 "certificates": ["GET", "LIST", "CREATE"],
                             },
                         },
@@ -187,7 +183,6 @@ class Backend(AzureMixin, LoggingMixin):
                             "tenant_id": self.tenant_id,
                             "object_id": self.managed_identity.principal_id,
                             "permissions": {
-                                "keys": ["GET", "LIST"],
                                 "secrets": ["GET", "LIST"],
                                 "certificates": ["GET", "LIST"],
                             },
@@ -224,13 +219,13 @@ class Backend(AzureMixin, LoggingMixin):
             if not key:
                 key = key_client.get_key(key_name)
             self.info(f"Key <fg=green>{key.name}</> exists.")
-            self.cfg.pulumi["encryption_key"] = key.id.replace(
+            self.cfg.pulumi.encryption_key = key.id.replace(
                 "https:", "azurekeyvault:"
             )
         except (HttpResponseError, ResourceNotFoundError):
             raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")
 
-    def ensure_certificate(self, certificate_name, certificate_url):
+    def ensure_cert(self, certificate_name, certificate_url):
         """Ensure that self-signed certificate exists"""
         try:
             # Connect to Azure clients
@@ -256,7 +251,8 @@ class Backend(AzureMixin, LoggingMixin):
             poller = certificate_client.begin_create_certificate(
                 certificate_name=certificate_name, policy=policy
             )
-            poller.result()
+            certificate = poller.result()
+            self.cfg.deployment.certificate_id = certificate.secret_id
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create certificate {certificate_name}."

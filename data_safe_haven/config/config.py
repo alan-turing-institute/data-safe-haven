@@ -24,65 +24,83 @@ class Config(AzureMixin):
 
     def __init__(self, path, *args, **kwargs):
         try:
-            self.read_base_yaml(path)
+            with open(pathlib.Path(path), "r") as f_config:
+                base_yaml = yaml.safe_load(f_config)
         except Exception as exc:
             raise DataSafeHavenInputException(
                 f"Could not load config YAML file '{path}'"
             ) from exc
 
+        # Set common properties
+        self.environment_name = self.alphanumeric.sub(
+            "", base_yaml["environment"]["name"]
+        ).lower()
+        self.resource_group_name = f"rg-{self.environment_name}-backend"
+        self.storage_account_name = f"st{self.environment_name}backend"
+
         # Load the Azure mixin
         super().__init__(
-            *args, subscription_name=self.data.azure.subscription_name, **kwargs
+            *args, subscription_name=base_yaml["azure"]["subscription_name"], **kwargs
         )
 
         # Try to load the full config from blob storage
         try:
-            self.data = self.download()
-        # ... otherwise add some basic properties
+            self._map = self.download()
+        # ... otherwise create a new DotMap
         except (DataSafeHavenAzureException, ResourceNotFoundError):
-            self.add_property(
-                "tags",
-                {
-                    "deployed_by": "Python",
-                    "project": "Data Safe Haven",
-                    "version": __version__,
-                },
-            )
+            self._map = dotmap.DotMap()
+
+        # Update the map with local config variables
+        self.merge_dicts(self._map, base_yaml)
+        self.tags.deployed_by = "Python"
+        self.tags.project = "Data Safe Haven"
+        self.tags.version = __version__
+        self.backend.resource_group_name = self.resource_group_name
+        self.backend.storage_account_name = self.storage_account_name
+
+    def __repr__(self):
+        return f"{self.__class__} containing: {self._map}"
+
+    def __str__(self):
+        return yaml.dump(self._map.toDict(), indent=2)
+
+    def __getattr__(self, name):
+        return self._map[name]
 
     @property
     def name(self):
-        return f"config-{self.deployment_name}.yaml"
+        return f"config-{self.environment_name}.yaml"
 
-    def read_base_yaml(self, path):
-        with open(pathlib.Path(path), "r") as f_config:
-            yaml_ = yaml.safe_load(f_config)
-        self.deployment_name = self.alphanumeric.sub(
-            "", yaml_["deployment"]["name"]
-        ).lower()
-        self.data = dotmap.DotMap(yaml_)
-        self.add_property(
-            "metadata",
-            {
-                "resource_group_name": f"rg-{self.deployment_name}-metadata",
-                "storage_account_name": f"st{self.deployment_name}metadata",
-            },
+    def download(self):
+        """Load the config file from Azure storage"""
+        # Connect to blob storage
+        blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
+        blob_service_client = BlobServiceClient.from_connection_string(
+            blob_connection_string
         )
+        # Download the created file
+        blob_client = blob_service_client.get_blob_client(
+            container=self.storage_container_name, blob=self.name
+        )
+        return dotmap.DotMap(yaml.safe_load(blob_client.download_blob().readall()))
 
-    def add_property(self, key, value):
-        self.data[key] = value
-        self.data = dotmap.DotMap(self.data)
-
-    def __getattr__(self, name):
-        return self.data[name]
+    def merge_dicts(self, d_old, d_new):
+        for key, value in d_new.items():
+            if key in d_old and isinstance(value, dict):
+                d_old[key] = self.merge_dicts(d_old[key], value)
+            else:
+                d_old[key] = value
+        return d_old
 
     def storage_account_key(self):
+        """Load the key for the backend storage account"""
         try:
             storage_client = StorageManagementClient(
                 self.credential, self.subscription_id
             )
             storage_keys = storage_client.storage_accounts.list_keys(
-                self.data.metadata.resource_group_name,
-                self.data.metadata.storage_account_name,
+                self.resource_group_name,
+                self.storage_account_name,
             )
             return storage_keys.keys[0].value
         except Exception as exc:
@@ -93,26 +111,13 @@ class Config(AzureMixin):
     def upload(self):
         """Dump the config file to Azure storage"""
         # Connect to blob storage
-        blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.data.metadata.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
+        blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(
             blob_connection_string
         )
         # Upload the created file
         blob_client = blob_service_client.get_blob_client(
             container=self.storage_container_name,
-            blob=f"config-{self.deployment_name}.yaml",
+            blob=f"config-{self.environment_name}.yaml",
         )
-        blob_client.upload_blob(yaml.dump(self.data.toDict()), overwrite=True)
-
-    def download(self):
-        """Load the config file from Azure storage"""
-        # Connect to blob storage
-        blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.data.metadata.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
-        blob_service_client = BlobServiceClient.from_connection_string(
-            blob_connection_string
-        )
-        # Download the created file
-        blob_client = blob_service_client.get_blob_client(
-            container=self.storage_container_name, blob=self.name
-        )
-        return dotmap.DotMap(yaml.safe_load(blob_client.download_blob().readall()))
+        blob_client.upload_blob(self.__str__(), overwrite=True)

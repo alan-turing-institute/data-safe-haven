@@ -15,10 +15,10 @@ from data_safe_haven.mixins import LoggingMixin
 class PulumiCreate(LoggingMixin):
     """Deploy infrastructure with Pulumi"""
 
-    def __init__(self, config, *args, **kwargs):
+    def __init__(self, config, project_path, *args, **kwargs):
         self.cfg = config
         self.stack = None
-        self.work_dir = pathlib.Path(self.cfg.project_directory.pulumi).resolve()
+        self.work_dir = pathlib.Path(project_path / "pulumi").resolve()
         self.program = PulumiProgram(self.cfg)
         self.env = {
             "AZURE_STORAGE_ACCOUNT": config.metadata.storage_account_name,
@@ -109,6 +109,8 @@ class PulumiCreate(LoggingMixin):
             output_path.mkdir()
 
         # Write output to the kubeconfig file
-        with open(output_path / f"kubeconfig-{self.cfg.deployment.name}.yaml", "w") as f_kubeconfig:
+        with open(
+            output_path / f"kubeconfig-{self.cfg.deployment.name}.yaml", "w"
+        ) as f_kubeconfig:
             kubeconfig = self.stack.outputs()["kubeconfig"].value
             f_kubeconfig.writelines(kubeconfig.split("\\n"))
