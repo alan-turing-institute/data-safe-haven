@@ -5,6 +5,7 @@ import sys
 
 # Third party imports
 from cleo import Command
+import yaml
 
 # Local imports
 from data_safe_haven.config import Config
@@ -29,7 +30,7 @@ class DeployCommand(LoggingMixin, Command):
         if self.option("project"):
             project_path = pathlib.Path(self.option("project"))
         else:
-            project_path = pathlib.Path(config_path).parent
+            project_path = pathlib.Path(config_path).parent.resolve()
             self.warning(f"No --project option was provided. Using '{project_path}'.")
         if not project_path.exists():
             if not self.confirm(
@@ -42,6 +43,15 @@ class DeployCommand(LoggingMixin, Command):
         # Deploy infrastructure with Pulumi
         pulumi = PulumiCreate(config, project_path)
         pulumi.apply()
+
+        # Add stack information config
+        with open(pulumi.local_stack_path, "r") as f_stack:
+            stack_yaml = yaml.safe_load(f_stack)
+        config.pulumi.stack = stack_yaml
+
+        # Upload config to blob storage
+        self.info(f"Uploading config <fg=green>{config.name}</> to blob storage")
+        config.upload()
 
         # Write kubeconfig to the project directory
         self.info(

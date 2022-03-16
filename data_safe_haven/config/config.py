@@ -1,13 +1,13 @@
 # Standard library imports
 import pathlib
 import re
-import yaml
 
 # Third party imports
-import dotmap
 from azure.storage.blob import BlobServiceClient
 from azure.mgmt.storage import StorageManagementClient
 from azure.core.exceptions import ResourceNotFoundError
+import dotmap
+import yaml
 
 # Local imports
 from data_safe_haven import __version__

@@ -31,7 +31,7 @@ class LoggingMixin:
         self.log(f"{self.prefix} {message}", VERBOSE)
 
     def warning(self, message):
-        self.log(f"{self.prefix} <warning>{message}</warning>", NORMAL)
+        self.log(f"{self.prefix} <fg=red>{message}</>", NORMAL)
 
     def log(self, message, verbosity):
         if hasattr(self, "line"):
