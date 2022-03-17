@@ -1,7 +1,6 @@
 # Requirements
 Install the following requirements before starting
 
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
 
@@ -11,6 +10,7 @@ Create a config file with the following structure:
 ```yaml
 environment:
   name: <my project name>
+  url: <url where the SRE will be hosted>
 azure:
   subscription_name: <my subscription name>
   admin_group_id: <the ID of an Azure security group that contains all administrators>

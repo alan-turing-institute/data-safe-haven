@@ -1,23 +1,17 @@
 """Pulumi declarative program"""
-# Standard library imports
-import base64
-
 # Third party imports
-import ipaddress
 import pulumi
-from pulumi_azure_native import resources, containerservice, network
+from pulumi_azure_native import resources
 
-
-def get_ip_range(ip_address_first, ip_address_last):
-    networks = list(
-        ipaddress.summarize_address_range(
-            ipaddress.ip_address(ip_address_first),
-            ipaddress.ip_address(ip_address_last),
-        )
-    )
-    if len(networks) != 1:
-        raise ValueError(f"Found {len(networks)} networks when expecting one.")
-    return networks[0]
+# Local imports
+from .components.application_gateway import (
+    ApplicationGatewayComponent,
+    ApplicationGatewayProps,
+)
+from .components.dns import DnsComponent, DnsProps
+from .components.guacamole import GuacamoleComponent, GuacamoleProps
+from .components.network import NetworkComponent, NetworkProps
+from .components.state_storage import StateStorageComponent, StateStorageProps
 
 
 class PulumiProgram:
@@ -26,117 +20,83 @@ class PulumiProgram:
     def __init__(self, config):
         self.cfg = config
 
-        # Define IP addresses and ranges
-        self.ip4 = {
-            "vnet": get_ip_range("10.0.0.0", "10.3.255.255"),
-            "kubernetes_nodes": get_ip_range("10.0.0.0", "10.0.255.255"),
-            "kubernetes_service": get_ip_range("10.4.0.0", "10.4.255.255"),
-            "docker_bridge": get_ip_range("172.17.0.0", "172.17.255.255"),
-        }
-        self.ip4["dns_service_ip"] = self.ip4["kubernetes_service"][10]
-
     def run(self):
+        # Load pulumi configuration secrets
+        self.secrets = pulumi.Config()
+
         # Define resource groups
-        rg_kubernetes_cluster = resources.ResourceGroup(
-            "rg_kubernetes_cluster",
-            resource_group_name=f"rg-{self.cfg.deployment_name}-kubernetes-cluster",
+        rg_state = resources.ResourceGroup(
+            "rg_state",
+            resource_group_name=f"rg-{self.cfg.environment_name}-state",
+        )
+        rg_guacamole = resources.ResourceGroup(
+            "rg_guacamole",
+            resource_group_name=f"rg-{self.cfg.environment_name}-guacamole",
         )
         rg_networking = resources.ResourceGroup(
             "rg_networking",
-            resource_group_name=f"rg-{self.cfg.deployment_name}-networking",
-        )
-        # Kubernetes infrastructure cannot be a pre-existing resource group: https://github.com/Azure/azure-cli-extensions/issues/2072
-        rg_kubernetes_infrastructure_name = (
-            f"rg-{self.cfg.deployment_name}-kubernetes-infrastructure"
+            resource_group_name=f"rg-{self.cfg.environment_name}-networking",
         )
 
         # Define networking
-        nsg_kubernetes_nodes = network.NetworkSecurityGroup(
-            "nsg-kubernetes-nodes",
-            network_security_group_name=f"nsg-{self.cfg.deployment_name}-kubernetes-nodes",
-            resource_group_name=rg_networking.name,
-        )
-        vnet = network.VirtualNetwork(
-            "vnet",
-            address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(self.ip4["vnet"])],
-            ),
-            resource_group_name=rg_networking.name,
-            subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
-                network.SubnetArgs(
-                    address_prefix=str(self.ip4["kubernetes_nodes"]),
-                    name="KubernetesNodesSubnet",
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_kubernetes_nodes.id
-                    ),
-                    private_endpoint_network_policies="Disabled",  # needed by Kubernetes cluster
-                )
-            ],
-            virtual_network_name=f"vnet-{self.cfg.deployment_name}",
-        )
-        # private_link_service_network_policies="Enabled",
-        snet_kubernetes_nodes = network.get_subnet(
-            subnet_name="KubernetesNodesSubnet",
-            resource_group_name=rg_networking.name,
-            virtual_network_name=vnet.name,
-        )
-
-        # Define Kubernetes cluster
-        aks_cluster = containerservice.ManagedCluster(
-            "aks_cluster",
-            aad_profile=containerservice.ManagedClusterAADProfileArgs(
-                admin_group_object_ids=[self.cfg.azure.admin_group_id],
-                enable_azure_rbac=False,
-                managed=True,
-                tenant_id=self.cfg.azure.tenant_id,
-            ),
-            agent_pool_profiles=[
-                containerservice.ManagedClusterAgentPoolProfileArgs(
-                    count=3,
-                    enable_node_public_ip=False,
-                    mode="System",
-                    name="nodepool",
-                    os_type="Linux",
-                    type="VirtualMachineScaleSets",
-                    vm_size="Standard_D2s_v4",
-                    vnet_subnet_id=snet_kubernetes_nodes.id,
-                )
-            ],
-            api_server_access_profile=containerservice.ManagedClusterAPIServerAccessProfileArgs(
-                enable_private_cluster=False
-            ),
-            dns_prefix=self.cfg.deployment_name,
-            enable_rbac=True,
-            identity=containerservice.ManagedClusterIdentityArgs(
-                type=containerservice.ResourceIdentityType.SYSTEM_ASSIGNED
-            ),
-            kubernetes_version="1.22.6",  # "1.21.9",
-            network_profile=containerservice.ContainerServiceNetworkProfileArgs(
-                dns_service_ip=str(self.ip4["dns_service_ip"]),
-                docker_bridge_cidr=str(self.ip4["docker_bridge"]),
-                load_balancer_sku="standard",
-                network_plugin="azure",
-                outbound_type="loadBalancer",
-                # pod_cidr=str(self.ip4["kubernetes_nodes"]), # IP range from which to assign pod IPs when kubenet is used
-                service_cidr=str(self.ip4["kubernetes_service"]),
-            ),
-            node_resource_group=rg_kubernetes_infrastructure_name,
-            resource_group_name=rg_kubernetes_cluster.name,
-            resource_name_=f"aks-{self.cfg.deployment_name}-kubernetes",
-            sku=containerservice.ManagedClusterSKUArgs(
-                name="Basic",
-                tier="Free",
+        networking = NetworkComponent(
+            self.cfg.environment_name,
+            NetworkProps(
+                address_range_vnet=("10.0.0.0", "10.0.255.255"),
+                address_range_application_gateway=("10.0.0.0", "10.0.0.255"),
+                address_range_authentication=("10.0.1.0", "10.0.1.255"),
+                address_range_guacamole_db=("10.0.2.0", "10.0.2.127"),
+                address_range_guacamole_containers=("10.0.2.128", "10.0.2.255"),
+                resource_group_name=rg_networking.name,
             ),
         )
 
-        # Save Kubernetes credentials
-        credentials = containerservice.list_managed_cluster_user_credentials_output(
-            resource_group_name=rg_kubernetes_cluster.name,
-            resource_name=aks_cluster.name,
-        )
-        pulumi.export(
-            "kubeconfig",
-            credentials.kubeconfigs[0].value.apply(
-                lambda enc: base64.b64decode(enc).decode()
+        # Define storage accounts
+        state_storage = StateStorageComponent(
+            self.cfg.environment_name,
+            StateStorageProps(
+                resource_group_name=rg_state.name,
             ),
         )
+
+        # Define containerised remote desktop gateway
+        guacamole = GuacamoleComponent(
+            self.cfg.environment_name,
+            GuacamoleProps(
+                ip_address_container=networking.ip4["guacamole_container"],
+                ip_address_postgresql=networking.ip4["guacamole_postgresql"],
+                postgresql_password=self.secrets.get("guacamole-postgresql-password"),
+                resource_group_name=rg_guacamole.name,
+                storage_account_name=state_storage.account_name,
+                storage_account_resource_group=state_storage.resource_group_name,
+                virtual_network_name=networking.vnet.name,
+                virtual_network_resource_group=rg_networking.name,
+            ),
+        )
+
+        # Define frontend application gateway
+        application_gateway = ApplicationGatewayComponent(
+            self.cfg.environment_name,
+            ApplicationGatewayProps(
+                key_vault_certificate_id=self.cfg.deployment.certificate_id,
+                key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
+                resource_group_name=rg_networking.name,
+                target_ip_address=guacamole.container_group.ip_address.ip,
+                vnet_name=networking.vnet.name,
+            ),
+        )
+
+        # Define DNS
+        dns = DnsComponent(
+            self.cfg.environment_name,
+            DnsProps(
+                dns_name=self.cfg.environment.url,
+                public_ip=application_gateway.public_ip.ip_address,
+                resource_group_name=rg_networking.name,
+            ),
+        )
+
+        # Export values for later use
+        pulumi.export("storage_account_name", state_storage.account_name)
+        pulumi.export("storage_account_key", state_storage.access_key)
+        pulumi.export("share_guacamole_caddy", guacamole.file_share_caddy.name)

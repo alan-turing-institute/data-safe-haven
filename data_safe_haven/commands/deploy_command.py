@@ -9,7 +9,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.deployment import PulumiCreate
+from data_safe_haven.deployment import FileHandler, PulumiCreate
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -53,8 +53,17 @@ class DeployCommand(LoggingMixin, Command):
         self.info(f"Uploading config <fg=green>{config.name}</> to blob storage")
         config.upload()
 
-        # Write kubeconfig to the project directory
-        self.info(
-            f"Writing kubeconfig to <fg=green>{config.project_directory.kubernetes}</>."
+        # Upload container configuration files to Azure file storage
+        storage_account_name = pulumi.stack.outputs()["storage_account_name"].value
+        storage_account_key = pulumi.stack.outputs()["storage_account_key"].value
+        handler = FileHandler(
+            storage_account_name=storage_account_name,
+            storage_account_key=storage_account_key,
         )
-        pulumi.write_kubeconfig(config.project_directory.kubernetes)
+        resources_path = pathlib.Path(__file__).parent.parent / "resources"
+
+        # Guacamole configuration files
+        share_guacamole_caddy = pulumi.stack.outputs()["share_guacamole_caddy"].value
+        handler.upload(
+            share_guacamole_caddy, resources_path / "guacamole" / "caddy" / "Caddyfile"
+        )

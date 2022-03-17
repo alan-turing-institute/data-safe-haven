@@ -28,14 +28,13 @@ class Backend(AzureMixin, LoggingMixin):
         self.managed_identity = None
         self.storage_account_name = None
         self.key_vault_name = None
-        self.update_config()
-
-    def update_config(self):
         self.cfg.azure.subscription_id = self.subscription_id
         self.cfg.azure.tenant_id = self.tenant_id
         self.cfg.backend.identity_name = "KeyVaultReaderIdentity"
         self.cfg.backend.key_vault_name = f"kv-{self.cfg.environment_name}-backend"
-        self.cfg.deployment.certificate_name = f"certificate-{self.cfg.environment_name}"
+        self.cfg.deployment.certificate_name = (
+            f"certificate-{self.cfg.environment_name}"
+        )
         self.cfg.pulumi.encryption_key_name = (
             f"encryption-{self.cfg.environment_name}-pulumi"
         )
@@ -50,6 +49,133 @@ class Backend(AzureMixin, LoggingMixin):
         self.ensure_key_vault(self.cfg.backend.key_vault_name)
         self.ensure_key(self.cfg.pulumi.encryption_key_name)
         self.ensure_cert(self.cfg.deployment.certificate_name, self.cfg.environment.url)
+
+    def ensure_cert(self, certificate_name, certificate_url):
+        """Ensure that self-signed certificate exists"""
+        try:
+            # Connect to Azure clients
+            certificate_client = CertificateClient(
+                vault_url=f"https://{self.key_vault_name}.vault.azure.net",
+                credential=self.credential,
+            )
+
+            # Ensure that certificate exists
+            self.info(
+                f"Ensuring that certificate for <fg=green>{certificate_url}</> exists..."
+            )
+            policy = CertificatePolicy(
+                issuer_name="Self",
+                subject=f"CN={certificate_url}",
+                exportable=True,
+                key_type="RSA",
+                key_size=2048,
+                reuse_key=False,
+                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
+                validity_in_months=12,
+            )
+            poller = certificate_client.begin_create_certificate(
+                certificate_name=certificate_name, policy=policy
+            )
+            certificate = poller.result()
+            self.cfg.deployment.certificate_id = certificate.secret_id
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to create certificate {certificate_name}."
+            ) from exc
+
+    def ensure_key(self, key_name):
+        """Ensure that a key exists in the keyvault"""
+        # Connect to Azure clients
+        key_client = KeyClient(
+            f"https://{self.key_vault_name}.vault.azure.net", self.credential
+        )
+
+        # Ensure that key exists
+        self.info(f"Ensuring that key <fg=green>{key_name}</> exists...")
+        key = None
+        try:
+            key = key_client.get_key(key_name)
+        except (HttpResponseError, ResourceNotFoundError):
+            key_client.create_rsa_key(key_name, size=2048)
+        try:
+            if not key:
+                key = key_client.get_key(key_name)
+            self.info(f"Key <fg=green>{key.name}</> exists.")
+            self.cfg.pulumi.encryption_key = key.id.replace("https:", "azurekeyvault:")
+        except (HttpResponseError, ResourceNotFoundError):
+            raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")
+
+    def ensure_key_vault(self, key_vault_name):
+        """Ensure that backend key vault exists"""
+        self.key_vault_name = key_vault_name
+        # Connect to Azure clients
+        key_vault_client = KeyVaultManagementClient(
+            self.credential, self.subscription_id
+        )
+
+        # Ensure that key vault exists
+        self.info(f"Ensuring that key vault <fg=green>{key_vault_name}</> exists...")
+        key_vault_client.vaults.begin_create_or_update(
+            self.resource_group_name,
+            key_vault_name,
+            {
+                "location": self.cfg.azure.location,
+                "tags": self.tags,
+                "properties": {
+                    "sku": {
+                        "name": "standard",
+                        "family": "A",
+                    },
+                    "tenant_id": self.tenant_id,
+                    "access_policies": [
+                        {
+                            "tenant_id": self.tenant_id,
+                            "object_id": self.cfg.azure.admin_group_id,
+                            "permissions": {
+                                "keys": ["GET", "LIST", "CREATE", "DECRYPT", "ENCRYPT"],
+                                "secrets": ["GET", "LIST", "SET"],
+                                "certificates": ["GET", "LIST", "CREATE"],
+                            },
+                        },
+                        {
+                            "tenant_id": self.tenant_id,
+                            "object_id": self.managed_identity.principal_id,
+                            "permissions": {
+                                "secrets": ["GET", "LIST"],
+                                "certificates": ["GET", "LIST"],
+                            },
+                        },
+                    ],
+                },
+            },
+        )
+        key_vaults = [
+            kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
+        ]
+        if key_vaults:
+            self.info(f"Key vault <fg=green>{key_vaults[0].name}</> exists.")
+        else:
+            raise DataSafeHavenAzureException(
+                f"Failed to create key vault {key_vault_name}."
+            )
+
+    def ensure_managed_identity(self, identity_name):
+        """Ensure that managed identity exists"""
+        try:
+            msi_client = ManagedServiceIdentityClient(
+                self.credential, self.subscription_id
+            )
+            self.managed_identity = (
+                msi_client.user_assigned_identities.create_or_update(
+                    self.cfg.backend.resource_group_name,
+                    identity_name,
+                    {"location": self.cfg.azure.location},
+                )
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to create managed identity {identity_name}."
+            ) from exc
 
     def ensure_resource_group(self, resource_group_name):
         """Ensure that backend resource group exists"""
@@ -80,24 +206,6 @@ class Backend(AzureMixin, LoggingMixin):
             raise DataSafeHavenAzureException(
                 f"Failed to create resource group {resource_group_name}."
             )
-
-    def ensure_managed_identity(self, identity_name):
-        """Ensure that managed identity exists"""
-        try:
-            msi_client = ManagedServiceIdentityClient(
-                self.credential, self.subscription_id
-            )
-            self.managed_identity = (
-                msi_client.user_assigned_identities.create_or_update(
-                    self.cfg.backend.resource_group_name,
-                    identity_name,
-                    {"location": self.cfg.azure.location},
-                )
-            )
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to create managed identity {identity_name}."
-            ) from exc
 
     def ensure_storage_account(self, storage_account_name):
         """Ensure that backend storage account exists"""
@@ -145,115 +253,4 @@ class Backend(AzureMixin, LoggingMixin):
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create storage container <fg=green>{container_name}."
-            ) from exc
-
-    def ensure_key_vault(self, key_vault_name):
-        """Ensure that backend key vault exists"""
-        self.key_vault_name = key_vault_name
-        # Connect to Azure clients
-        key_vault_client = KeyVaultManagementClient(
-            self.credential, self.subscription_id
-        )
-
-        # Ensure that key vault exists
-        self.info(f"Ensuring that key vault <fg=green>{key_vault_name}</> exists...")
-        key_vault_client.vaults.begin_create_or_update(
-            self.resource_group_name,
-            key_vault_name,
-            {
-                "location": self.cfg.azure.location,
-                "tags": self.tags,
-                "properties": {
-                    "sku": {
-                        "name": "standard",
-                        "family": "A",
-                    },
-                    "tenant_id": self.tenant_id,
-                    "access_policies": [
-                        {
-                            "tenant_id": self.tenant_id,
-                            "object_id": self.cfg.azure.admin_group_id,
-                            "permissions": {
-                                "keys": ["GET", "LIST", "CREATE", "DECRYPT", "ENCRYPT"],
-                                "secrets": ["GET", "LIST"],
-                                "certificates": ["GET", "LIST", "CREATE"],
-                            },
-                        },
-                        {
-                            "tenant_id": self.tenant_id,
-                            "object_id": self.managed_identity.principal_id,
-                            "permissions": {
-                                "secrets": ["GET", "LIST"],
-                                "certificates": ["GET", "LIST"],
-                            },
-                        },
-                    ],
-                },
-            },
-        )
-        key_vaults = [
-            kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
-        ]
-        if key_vaults:
-            self.info(f"Key vault <fg=green>{key_vaults[0].name}</> exists.")
-        else:
-            raise DataSafeHavenAzureException(
-                f"Failed to create key vault {key_vault_name}."
-            )
-
-    def ensure_key(self, key_name):
-        """Ensure that backend encryption key exists"""
-        # Connect to Azure clients
-        key_client = KeyClient(
-            f"https://{self.key_vault_name}.vault.azure.net", self.credential
-        )
-
-        # Ensure that key exists
-        self.info(f"Ensuring that key <fg=green>{key_name}</> exists...")
-        key = None
-        try:
-            key = key_client.get_key(key_name)
-        except (HttpResponseError, ResourceNotFoundError):
-            key_client.create_rsa_key(key_name, size=2048)
-        try:
-            if not key:
-                key = key_client.get_key(key_name)
-            self.info(f"Key <fg=green>{key.name}</> exists.")
-            self.cfg.pulumi.encryption_key = key.id.replace(
-                "https:", "azurekeyvault:"
-            )
-        except (HttpResponseError, ResourceNotFoundError):
-            raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")
-
-    def ensure_cert(self, certificate_name, certificate_url):
-        """Ensure that self-signed certificate exists"""
-        try:
-            # Connect to Azure clients
-            certificate_client = CertificateClient(
-                vault_url=f"https://{self.key_vault_name}.vault.azure.net",
-                credential=self.credential,
-            )
-
-            # Ensure that certificate exists
-            self.info(
-                f"Ensuring that certificate for <fg=green>{certificate_url}</> exists..."
-            )
-            policy = CertificatePolicy(
-                issuer_name="Self",
-                subject=f"CN={certificate_url}",
-                exportable=True,
-                key_type="RSA",
-                key_size=2048,
-                reuse_key=False,
-                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
-                validity_in_months=12,
-            )
-            poller = certificate_client.begin_create_certificate(
-                certificate_name=certificate_name, policy=policy
-            )
-            certificate = poller.result()
-            self.cfg.deployment.certificate_id = certificate.secret_id
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to create certificate {certificate_name}."
             ) from exc
