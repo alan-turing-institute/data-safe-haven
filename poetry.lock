@@ -97,6 +97,19 @@ msrest = ">=0.6.21"
 six = ">=1.12.0"
 
 [[package]]
+name = "azure-mgmt-containerinstance"
+version = "9.1.0"
+description = "Microsoft Azure Container Instance Client Library for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+azure-common = ">=1.1,<2.0"
+azure-mgmt-core = ">=1.2.0,<2.0.0"
+msrest = ">=0.6.21"
+
+[[package]]
 name = "azure-mgmt-core"
 version = "1.3.0"
 description = "Microsoft Azure Management Core Library for Python"
@@ -131,6 +144,19 @@ python-versions = "*"
 [package.dependencies]
 azure-common = ">=1.1,<2.0"
 azure-mgmt-core = ">=1.2.0,<2.0.0"
+msrest = ">=0.6.21"
+
+[[package]]
+name = "azure-mgmt-rdbms"
+version = "10.1.0"
+description = "Microsoft Azure RDBMS Management Client Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+azure-common = ">=1.1,<2.0"
+azure-mgmt-core = ">=1.3.0,<2.0.0"
 msrest = ">=0.6.21"
 
 [[package]]
@@ -533,6 +559,14 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "psycopg2"
+version = "2.9.3"
+description = "psycopg2 - Python-PostgreSQL Database Adapter"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "pulumi"
 version = "3.26.1"
 description = "Pulumi's Python SDK"
@@ -740,7 +774,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4b06b367b919fe90a3465fb953f57b718742157ae75175610bf37ae4227e1b5c"
+content-hash = "2c0606a6ca50047a0a80c29b011ac5a6a947743508cb635745fac976066881b1"
 
 [metadata.files]
 arpeggio = [
@@ -775,6 +809,10 @@ azure-keyvault-keys = [
     {file = "azure-keyvault-keys-4.4.0.zip", hash = "sha256:7792ad0d5e63ad9eafa68bdce5de91b3ffcc7ca7a6afdc576785e6a2793caed0"},
     {file = "azure_keyvault_keys-4.4.0-py2.py3-none-any.whl", hash = "sha256:e12c5554f7f0d5547e52cc2e725e94825fb40db1dbde7c39ec8a7f1fd150c46d"},
 ]
+azure-mgmt-containerinstance = [
+    {file = "azure-mgmt-containerinstance-9.1.0.zip", hash = "sha256:22164b0c59138b37bc48ba6d476bf635152bc428dcb420b521a14b8c25c797ad"},
+    {file = "azure_mgmt_containerinstance-9.1.0-py2.py3-none-any.whl", hash = "sha256:219763b6d831ecc4352ce1f079e4d12f454d8dcfc3ed4901a78d27952a2d3c0b"},
+]
 azure-mgmt-core = [
     {file = "azure-mgmt-core-1.3.0.zip", hash = "sha256:3ffb7352b39e5495dccc2d2b47254f4d82747aff4735e8bf3267c335b0c9bb40"},
     {file = "azure_mgmt_core-1.3.0-py2.py3-none-any.whl", hash = "sha256:7b7fa952aeb9d3eaa13eff905880f3d3b62200f7be7a8ba5a50c8b2e7295322a"},
@@ -786,6 +824,10 @@ azure-mgmt-keyvault = [
 azure-mgmt-msi = [
     {file = "azure-mgmt-msi-6.0.0b1.zip", hash = "sha256:be505f63218e0801c710a4f5743025b801fc2afab9e09cb07e446dc7ed16fcb6"},
     {file = "azure_mgmt_msi-6.0.0b1-py2.py3-none-any.whl", hash = "sha256:e5b10b7aa4edd424f71009f85e6f3f713a70d2860e9aaf3bc4239503cf5e99ef"},
+]
+azure-mgmt-rdbms = [
+    {file = "azure-mgmt-rdbms-10.1.0.zip", hash = "sha256:a87d401c876c84734cdd4888af551e4a1461b4b328d9816af60cb8ac5979f035"},
+    {file = "azure_mgmt_rdbms-10.1.0-py3-none-any.whl", hash = "sha256:8eac17d1341a91d7ed914435941ba917b5ef1568acabc3e65653603966a7cc88"},
 ]
 azure-mgmt-resource = [
     {file = "azure-mgmt-resource-20.1.0.zip", hash = "sha256:4fbb2158320e0bdd367882642f266a6dfb3b4b8610792b3afbbca39089f212d7"},
@@ -1075,6 +1117,19 @@ protobuf = [
     {file = "protobuf-3.19.4-cp39-cp39-win_amd64.whl", hash = "sha256:3112b58aac3bac9c8be2b60a9daf6b558ca3f7681c130dcdd788ade7c9ffbdca"},
     {file = "protobuf-3.19.4-py2.py3-none-any.whl", hash = "sha256:8961c3a78ebfcd000920c9060a262f082f29838682b1f7201889300c1fbe0616"},
     {file = "protobuf-3.19.4.tar.gz", hash = "sha256:9df0c10adf3e83015ced42a9a7bd64e13d06c4cf45c340d2c63020ea04499d0a"},
+]
+psycopg2 = [
+    {file = "psycopg2-2.9.3-cp310-cp310-win32.whl", hash = "sha256:083707a696e5e1c330af2508d8fab36f9700b26621ccbcb538abe22e15485362"},
+    {file = "psycopg2-2.9.3-cp310-cp310-win_amd64.whl", hash = "sha256:d3ca6421b942f60c008f81a3541e8faf6865a28d5a9b48544b0ee4f40cac7fca"},
+    {file = "psycopg2-2.9.3-cp36-cp36m-win32.whl", hash = "sha256:9572e08b50aed176ef6d66f15a21d823bb6f6d23152d35e8451d7d2d18fdac56"},
+    {file = "psycopg2-2.9.3-cp36-cp36m-win_amd64.whl", hash = "sha256:a81e3866f99382dfe8c15a151f1ca5fde5815fde879348fe5a9884a7c092a305"},
+    {file = "psycopg2-2.9.3-cp37-cp37m-win32.whl", hash = "sha256:cb10d44e6694d763fa1078a26f7f6137d69f555a78ec85dc2ef716c37447e4b2"},
+    {file = "psycopg2-2.9.3-cp37-cp37m-win_amd64.whl", hash = "sha256:4295093a6ae3434d33ec6baab4ca5512a5082cc43c0505293087b8a46d108461"},
+    {file = "psycopg2-2.9.3-cp38-cp38-win32.whl", hash = "sha256:34b33e0162cfcaad151f249c2649fd1030010c16f4bbc40a604c1cb77173dcf7"},
+    {file = "psycopg2-2.9.3-cp38-cp38-win_amd64.whl", hash = "sha256:0762c27d018edbcb2d34d51596e4346c983bd27c330218c56c4dc25ef7e819bf"},
+    {file = "psycopg2-2.9.3-cp39-cp39-win32.whl", hash = "sha256:8cf3878353cc04b053822896bc4922b194792df9df2f1ad8da01fb3043602126"},
+    {file = "psycopg2-2.9.3-cp39-cp39-win_amd64.whl", hash = "sha256:06f32425949bd5fe8f625c49f17ebb9784e1e4fe928b7cce72edc36fb68e4c0c"},
+    {file = "psycopg2-2.9.3.tar.gz", hash = "sha256:8e841d1bf3434da985cc5ef13e6f75c8981ced601fd70cc6bf33351b91562981"},
 ]
 pulumi = [
     {file = "pulumi-3.26.1-py2.py3-none-any.whl", hash = "sha256:c94d4f3c6e843d4e3a425b0df859d43374a621d8a13c35b4308ce8b582a63ec0"},

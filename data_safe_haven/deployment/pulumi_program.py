@@ -63,13 +63,13 @@ class PulumiProgram:
         guacamole = GuacamoleComponent(
             self.cfg.environment_name,
             GuacamoleProps(
-                ip_address_container=networking.ip4["guacamole_container"],
-                ip_address_postgresql=networking.ip4["guacamole_postgresql"],
+                ip_address_container=networking.ip4_guacamole_container,
+                ip_address_postgresql=networking.ip4_guacamole_postgresql,
                 postgresql_password=self.secrets.get("guacamole-postgresql-password"),
                 resource_group_name=rg_guacamole.name,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
-                virtual_network_name=networking.vnet.name,
+                virtual_network_name=networking.vnet_name,
                 virtual_network_resource_group=rg_networking.name,
             ),
         )
@@ -81,8 +81,8 @@ class PulumiProgram:
                 key_vault_certificate_id=self.cfg.deployment.certificate_id,
                 key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
                 resource_group_name=rg_networking.name,
-                target_ip_address=guacamole.container_group.ip_address.ip,
-                vnet_name=networking.vnet.name,
+                target_ip_address=guacamole.private_ip_address,
+                vnet_name=networking.vnet_name,
             ),
         )
 
@@ -91,12 +91,16 @@ class PulumiProgram:
             self.cfg.environment_name,
             DnsProps(
                 dns_name=self.cfg.environment.url,
-                public_ip=application_gateway.public_ip.ip_address,
+                public_ip=application_gateway.public_ip_address,
                 resource_group_name=rg_networking.name,
             ),
         )
 
         # Export values for later use
-        pulumi.export("storage_account_name", state_storage.account_name)
+        pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
+        pulumi.export("guacamole_postgresql_password", self.secrets.get("guacamole-postgresql-password"))
+        pulumi.export("guacamole_postgresql_server_name", guacamole.postgresql_server_name)
+        pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
+        pulumi.export("share_guacamole_caddy", guacamole.file_share_caddy_name)
         pulumi.export("storage_account_key", state_storage.access_key)
-        pulumi.export("share_guacamole_caddy", guacamole.file_share_caddy.name)
+        pulumi.export("storage_account_name", state_storage.account_name)

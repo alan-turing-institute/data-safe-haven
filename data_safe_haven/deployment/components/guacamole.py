@@ -2,7 +2,7 @@
 from typing import Optional
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 
@@ -19,11 +19,13 @@ class GuacamoleProps:
         storage_account_resource_group: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group: Input[str],
+        postgresql_username: Optional[Input[str]] = "guacamole",
         subnet_container_name: Optional[Input[str]] = "GuacamoleContainersSubnet",
         subnet_database_name: Optional[Input[str]] = "GuacamoleDatabaseSubnet",
     ):
         self.ip_address_container = ip_address_container
         self.ip_address_postgresql = ip_address_postgresql
+        self.postgresql_username = postgresql_username
         self.postgresql_password = postgresql_password
         self.resource_group_name = resource_group_name
         self.storage_account_name = storage_account_name
@@ -38,7 +40,8 @@ class GuacamoleComponent(ComponentResource):
     """Deploy Guacamole with Pulumi"""
 
     def __init__(self, name: str, props: GuacamoleProps, opts: ResourceOptions = None):
-        super().__init__("dsh:Guacamole", name, {}, opts)
+        super().__init__("dsh:guacamole:GuacamoleComponent", name, {}, opts)
+        child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resources
         snet_guacamole_containers = network.get_subnet(
@@ -57,21 +60,22 @@ class GuacamoleComponent(ComponentResource):
         )
 
         # Define configuration file shares
-        self.file_share_caddy = storage.FileShare(
+        file_share_caddy = storage.FileShare(
             "file_share_guacamole_caddy",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
             share_name="guacamole-caddy",
             share_quota=5120,
+            opts=child_opts,
         )
 
         # Define a PostgreSQL server
+        postgresql_server_name = f"postgresql-{self._name}-guacamole"
         postgresql_server = dbforpostgresql.Server(
             "postgresql_server",
-            location="uksouth",
             properties={
-                "administratorLogin": "guacamole",
+                "administratorLogin": props.postgresql_username,
                 "administratorLoginPassword": props.postgresql_password,
                 "infrastructureEncryption": "Disabled",
                 "minimalTlsVersion": "TLSEnforcementDisabled",
@@ -86,13 +90,14 @@ class GuacamoleComponent(ComponentResource):
                 "version": "11",
             },
             resource_group_name="rg-v4example-guacamole",
-            server_name=f"postgresql-{self._name}-guacamole",
+            server_name=postgresql_server_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
                 family="Gen5",
                 name="GP_Gen5_2",
                 tier="GeneralPurpose",  # required to use private link
             ),
+            opts=child_opts,
         )
         postgresql_private_endpoint = network.PrivateEndpoint(
             "postgresql_private_endpoint",
@@ -116,14 +121,15 @@ class GuacamoleComponent(ComponentResource):
             ],
             resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=snet_guacamole_db.id),
+            opts=child_opts,
         )
         postgresql_database = dbforpostgresql.Database(
             "database",
             charset="UTF8",
-            collation="en_GB.utf8",
             database_name="guacamole",
             resource_group_name=props.resource_group_name,
             server_name=postgresql_server.name,
+            opts=child_opts,
         )
 
         # Define a network profile
@@ -144,10 +150,11 @@ class GuacamoleComponent(ComponentResource):
             ],
             network_profile_name=f"np-{self._name}-guacamole",
             resource_group_name=props.virtual_network_resource_group,
+            opts=child_opts,
         )
 
         # Define the container group with guacd and guacamole
-        self.container_group = containerinstance.ContainerGroup(
+        container_group = containerinstance.ContainerGroup(
             "container_group_guacamole",
             container_group_name=f"container-{self._name}-guacamole",
             containers=[
@@ -179,23 +186,26 @@ class GuacamoleComponent(ComponentResource):
                     name=f"container-{self._name}-guacamole-guacamole",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
-                            name="GUACD_HOSTNAME", value="guacd"
+                            name="GUACD_HOSTNAME", value="localhost"
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LOGBACK_LEVEL", value="debug"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_HOSTNAME", value="postgres"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_DATABASE", value="guacamole"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_USER", value="guacamole"
+                            name="POSTGRES_HOSTNAME", value=props.ip_address_postgresql
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
                             secure_value=props.postgresql_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRESQL_SSL_MODE", value="require"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRES_USER", value=f"{props.postgresql_username}@{postgresql_server_name}"
                         ),
                     ],
                     ports=[
@@ -248,11 +258,19 @@ class GuacamoleComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=self.file_share_caddy.name,
+                        share_name=file_share_caddy.name,
                         storage_account_key=storage_account_keys.keys[0].value,
                         storage_account_name=props.storage_account_name,
                     ),
                     name="guacamole-caddy-config",
                 ),
             ],
+            opts=child_opts,
         )
+
+        # Register outputs
+        self.container_group_name = container_group.name
+        self.file_share_caddy_name = file_share_caddy.name
+        self.postgresql_server_name = postgresql_server.name
+        self.private_ip_address = Output.from_input(props.ip_address_container)
+        self.resource_group_name = Output.from_input(props.resource_group_name)

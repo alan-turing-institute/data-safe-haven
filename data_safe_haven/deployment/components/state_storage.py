@@ -1,5 +1,5 @@
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import storage
 
 
@@ -19,22 +19,25 @@ class StateStorageComponent(ComponentResource):
     def __init__(
         self, name: str, props: StateStorageProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:StateStorage", name, {}, opts)
+        super().__init__("dsh:state_storage:StateStorageComponent", name, {}, opts)
+        child_opts = ResourceOptions(parent=self)
 
-        self.resource_group_name = props.resource_group_name
-
-        self.storage_account = storage.StorageAccount(
+        storage_account = storage.StorageAccount(
             "storage_account_state",
-            account_name=f"stv{self._name}state",
+            account_name=f"st{self._name}state",
             kind="StorageV2",
-            resource_group_name=self.resource_group_name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name="Standard_LRS"),
+            opts=child_opts,
         )
-        self.account_name = self.storage_account.name
 
         storage_account_keys = storage.list_storage_account_keys(
-            account_name=self.account_name,
-            resource_group_name=self.resource_group_name,
+            account_name=storage_account.name,
+            resource_group_name=props.resource_group_name,
+            opts=child_opts,
         )
 
-        self.access_key = storage_account_keys.keys[0].value
+        # Register outputs
+        self.access_key = Output.secret(storage_account_keys.keys[0].value)
+        self.account_name = Output.from_input(storage_account.name)
+        self.resource_group_name = Output.from_input(props.resource_group_name)

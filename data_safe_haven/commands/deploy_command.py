@@ -9,8 +9,9 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.deployment import FileHandler, PulumiCreate
+from data_safe_haven.deployment import FileHandler, PulumiCreator
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
 
 class DeployCommand(LoggingMixin, Command):
@@ -41,11 +42,11 @@ class DeployCommand(LoggingMixin, Command):
             project_path.mkdir()
 
         # Deploy infrastructure with Pulumi
-        pulumi = PulumiCreate(config, project_path)
-        pulumi.apply()
+        creator = PulumiCreator(config, project_path)
+        creator.apply()
 
         # Add stack information config
-        with open(pulumi.local_stack_path, "r") as f_stack:
+        with open(creator.local_stack_path, "r") as f_stack:
             stack_yaml = yaml.safe_load(f_stack)
         config.pulumi.stack = stack_yaml
 
@@ -54,8 +55,8 @@ class DeployCommand(LoggingMixin, Command):
         config.upload()
 
         # Upload container configuration files to Azure file storage
-        storage_account_name = pulumi.stack.outputs()["storage_account_name"].value
-        storage_account_key = pulumi.stack.outputs()["storage_account_key"].value
+        storage_account_name = creator.output("storage_account_name")
+        storage_account_key = creator.output("storage_account_key")
         handler = FileHandler(
             storage_account_name=storage_account_name,
             storage_account_key=storage_account_key,
@@ -63,7 +64,26 @@ class DeployCommand(LoggingMixin, Command):
         resources_path = pathlib.Path(__file__).parent.parent / "resources"
 
         # Guacamole configuration files
-        share_guacamole_caddy = pulumi.stack.outputs()["share_guacamole_caddy"].value
+        share_guacamole_caddy = creator.output("share_guacamole_caddy")
         handler.upload(
             share_guacamole_caddy, resources_path / "guacamole" / "caddy" / "Caddyfile"
         )
+
+        # Provision the Guacamole PostgreSQL server
+        # provisioner = PostgreSQLProvisioner(config, resources_path, "rg-v4example-guacamole", "postgresql-v4example-guacamole", "dJ7J4L6D8FWiMNsUowWL")
+        postgres_provisioner = PostgreSQLProvisioner(
+            config,
+            resources_path,
+            creator.output("guacamole_resource_group_name"),
+            creator.output("guacamole_postgresql_server_name"),
+            creator.output("guacamole_postgresql_password"),
+        )
+        postgres_provisioner.update()
+
+        # Restart the Guacamole container
+        guacamole_provisioner = ContainerProvisioner(
+            config,
+            creator.output("guacamole_resource_group_name"),
+            creator.output("guacamole_container_group_name"),
+        )
+        guacamole_provisioner.restart()

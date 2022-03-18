@@ -3,7 +3,7 @@ import ipaddress
 from typing import Optional, Sequence
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import network
 
 
@@ -58,26 +58,19 @@ class NetworkComponent(ComponentResource):
     """Deploy networking with Pulumi"""
 
     def __init__(self, name: str, props: NetworkProps, opts: ResourceOptions = None):
-        super().__init__("dsh:Network", name, {}, opts)
+        super().__init__("dsh:network:NetworkComponent", name, {}, opts)
+        child_opts = ResourceOptions(parent=self)
 
         # Set address prefixes from ranges
-        self.ip_network_vnet = str(props.get_ip_range(*props.address_range_vnet))
-        self.ip_network_application_gateway = str(
-            props.get_ip_range(*props.address_range_application_gateway)
-        )
-        self.ip_network_authentication = str(
-            props.get_ip_range(*props.address_range_authentication)
-        )
-        self.ip_network_guacamole_db = str(
-            props.get_ip_range(*props.address_range_guacamole_db)
-        )
-        self.ip_network_guacamole_containers = str(
-            props.get_ip_range(*props.address_range_guacamole_containers)
-        )
-        self.ip4 = {
-            "authelia": self.ip_network_authentication[4],
-            "guacamole_container": self.ip_network_guacamole_containers[4],
-            "guacamole_postgresql": self.ip_network_guacamole_db[4],
+        ip_network_vnet = props.get_ip_range(*props.address_range_vnet)
+        ip_network_application_gateway = props.get_ip_range(*props.address_range_application_gateway)
+        ip_network_authentication = props.get_ip_range(*props.address_range_authentication)
+        ip_network_guacamole_db = props.get_ip_range(*props.address_range_guacamole_db)
+        ip_network_guacamole_containers = props.get_ip_range(*props.address_range_guacamole_containers)
+        ip4 = {
+            "authelia": ip_network_authentication[4],
+            "guacamole_container": ip_network_guacamole_containers[4],
+            "guacamole_postgresql": ip_network_guacamole_db[4],
         }
 
         # Define NSGs
@@ -101,7 +94,7 @@ class NetworkComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow gateway management traffic over the internet.",
-                    destination_address_prefix=str(self.ip_network_application_gateway),
+                    destination_address_prefix=str(ip_network_application_gateway),
                     destination_port_range="65200-65535",
                     direction="Inbound",
                     name="AllowGatewayManagerInternetInbound",
@@ -113,7 +106,7 @@ class NetworkComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow inbound internet to Application Gateway.",
-                    destination_address_prefix=str(self.ip_network_application_gateway),
+                    destination_address_prefix=str(ip_network_application_gateway),
                     destination_port_ranges=["80", "443"],
                     direction="Inbound",
                     name="AllowInternetInbound",
@@ -123,35 +116,38 @@ class NetworkComponent(ComponentResource):
                     source_port_range="*",
                 ),
             ],
+            opts=child_opts,
         )
         nsg_authentication = network.NetworkSecurityGroup(
             "nsg_authentication",
             network_security_group_name=f"nsg-{self._name}-authentication",
             resource_group_name=props.resource_group_name,
+            opts=child_opts,
         )
         nsg_guacamole = network.NetworkSecurityGroup(
             "nsg_guacamole",
             network_security_group_name=f"nsg-{self._name}-guacamole",
             resource_group_name=props.resource_group_name,
+            opts=child_opts,
         )
 
         # Define the virtual network with inline subnets
-        self.vnet = network.VirtualNetwork(
+        vnet = network.VirtualNetwork(
             "vnet",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(self.ip_network_vnet)],
+                address_prefixes=[str(ip_network_vnet)],
             ),
             resource_group_name=props.resource_group_name,
             subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
                 network.SubnetArgs(
-                    address_prefix=str(self.ip_network_application_gateway),
+                    address_prefix=str(ip_network_application_gateway),
                     name="ApplicationGatewaySubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(self.ip_network_authentication),
+                    address_prefix=str(ip_network_authentication),
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -165,7 +161,7 @@ class NetworkComponent(ComponentResource):
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(self.ip_network_guacamole_db),
+                    address_prefix=str(ip_network_guacamole_db),
                     name="GuacamoleDatabaseSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole.id
@@ -173,7 +169,7 @@ class NetworkComponent(ComponentResource):
                     private_endpoint_network_policies="Disabled",
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(self.ip_network_guacamole_containers),
+                    address_prefix=str(ip_network_guacamole_containers),
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -188,4 +184,11 @@ class NetworkComponent(ComponentResource):
                 ),
             ],
             virtual_network_name=f"vnet-{self._name}",
+            opts=child_opts,
         )
+
+        # Register outputs
+        self.ip4_guacamole_container = Output.from_input(str(ip4["guacamole_container"]))
+        self.ip4_guacamole_postgresql = Output.from_input(str(ip4["guacamole_postgresql"]))
+        self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.vnet_name = vnet.name

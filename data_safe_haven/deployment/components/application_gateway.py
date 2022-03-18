@@ -16,12 +16,12 @@ class ApplicationGatewayProps:
         resource_group_name: Input[str],
         target_ip_address: Input[str],
         vnet_name: Input[str],
-        subnet_name: Optional[Input[str]] = None,
+        subnet_name: Optional[Input[str]] = "ApplicationGatewaySubnet",
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
         self.key_vault_identity = key_vault_identity
         self.resource_group_name = resource_group_name
-        self.subnet_name = subnet_name if subnet_name else "ApplicationGatewaySubnet"
+        self.subnet_name = subnet_name
         self.target_ip_address = target_ip_address
         self.vnet_name = vnet_name
 
@@ -32,10 +32,11 @@ class ApplicationGatewayComponent(ComponentResource):
     def __init__(
         self, name: str, props: ApplicationGatewayProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:ApplicationGateway", name, {}, opts)
+        super().__init__("dsh:application_gateway:ApplicationGatewayComponent", name, {}, opts)
+        child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resource group and subnet
-        self.rg = resources.get_resource_group(props.resource_group_name)
+        resource_group = resources.get_resource_group(props.resource_group_name)
         snet_application_gateway = network.get_subnet(
             subnet_name="ApplicationGatewaySubnet",
             resource_group_name=props.resource_group_name,
@@ -43,12 +44,13 @@ class ApplicationGatewayComponent(ComponentResource):
         )
 
         # Define public IP address
-        self.public_ip = network.PublicIPAddress(
+        public_ip = network.PublicIPAddress(
             "ag_public_ip",
             public_ip_address_name=f"ag-{self._name}-public-ip",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),
+            opts=child_opts,
         )
 
         # Define application gateway
@@ -84,7 +86,7 @@ class ApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayFrontendIPConfigurationArgs(
                     name="appGatewayFrontendIP",
                     private_ip_allocation_method="Dynamic",
-                    public_ip_address=network.SubResourceArgs(id=self.public_ip.id),
+                    public_ip_address=network.SubResourceArgs(id=public_ip.id),
                 )
             ],
             frontend_ports=[
@@ -107,13 +109,13 @@ class ApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
                         )
                     ),
                     frontend_port=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttp",
                         )
                     ),
@@ -123,13 +125,13 @@ class ApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
                         )
                     ),
                     frontend_port=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttps",
                         )
                     ),
@@ -137,13 +139,13 @@ class ApplicationGatewayComponent(ComponentResource):
                     protocol="Https",
                     ssl_certificate=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/sslcert",
                         ),
                     ),
                     ssl_profile=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslProfiles/sslProfile",
                         ),
                     ),
@@ -159,19 +161,19 @@ class ApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     backend_address_pool=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendAddressPools/appGatewayBackendPool",
                         )
                     ),
                     backend_http_settings=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendHttpSettingsCollection/appGatewayBackendHttpSettings",
                         )
                     ),
                     http_listener=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/appGatewayHttpListener",
                         )
                     ),
@@ -181,19 +183,19 @@ class ApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     backend_address_pool=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendAddressPools/appGatewayBackendPool",
                         )
                     ),
                     backend_http_settings=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendHttpSettingsCollection/appGatewayBackendHttpSettings",
                         )
                     ),
                     http_listener=network.SubResourceArgs(
                         id=Output.concat(
-                            self.rg.id,
+                            resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/appGatewayHttpsListener",
                         )
                     ),
@@ -244,4 +246,9 @@ class ApplicationGatewayComponent(ComponentResource):
                     ),
                 )
             ],
+            opts=child_opts,
         )
+
+        # Register outputs
+        self.public_ip_address = public_ip.ip_address
+        self.resource_group_name = Output.from_input(props.resource_group_name)

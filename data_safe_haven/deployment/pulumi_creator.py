@@ -16,7 +16,7 @@ from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.mixins import LoggingMixin
 
 
-class PulumiCreate(LoggingMixin):
+class PulumiCreator(LoggingMixin):
     """Deploy infrastructure with Pulumi"""
 
     def __init__(self, config, project_path, *args, **kwargs):
@@ -124,6 +124,9 @@ class PulumiCreate(LoggingMixin):
             encoding="UTF-8",
         ) as process:
             self.info(process.stdout.readline().strip())
+
+    def output(self, name):
+        return self.stack.outputs()[name].value
 
     def preview(self):
         """Preview the Pulumi stack."""

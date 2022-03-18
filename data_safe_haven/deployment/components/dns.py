@@ -1,5 +1,5 @@
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 
@@ -21,7 +21,8 @@ class DnsComponent(ComponentResource):
     """Deploy DNS zones and records with Pulumi"""
 
     def __init__(self, name: str, props: DnsProps, opts: ResourceOptions = None):
-        super().__init__("dsh:Dns", name, {}, opts)
+        super().__init__("dsh:dns:DnsComponent", name, {}, opts)
+        child_opts = ResourceOptions(parent=self)
 
         dns_zone = network.Zone(
             "dns_zone",
@@ -29,6 +30,7 @@ class DnsComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             zone_name=props.dns_name,
             zone_type="Public",
+            opts=child_opts,
         )
         dns_a_record = network.RecordSet(
             "dns_a_record",
@@ -42,6 +44,7 @@ class DnsComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             ttl=30,
             zone_name=dns_zone.name,
+            opts=child_opts,
         )
         dns_caa_record = network.RecordSet(
             "dns_caa_record",
@@ -57,6 +60,7 @@ class DnsComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             ttl=30,
             zone_name=dns_zone.name,
+            opts=child_opts,
         )
         for cname in ["traefik", "auth", "public", "secure"]:
             network.RecordSet(
@@ -69,4 +73,8 @@ class DnsComponent(ComponentResource):
                 resource_group_name=props.resource_group_name,
                 ttl=30,
                 zone_name=dns_zone.name,
+                opts=child_opts,
             )
+
+        # Register outputs
+        self.resource_group_name = Output.from_input(props.resource_group_name)
