@@ -157,27 +157,40 @@ class ApplicationGatewayComponent(ComponentResource):
                     props.key_vault_identity: {},
                 },
             ),
+            redirect_configurations=[
+                network.ApplicationGatewayRedirectConfigurationArgs(
+                    include_path=True,
+                    include_query_string=True,
+                    name="HttpToHttpsRedirection",
+                    redirect_type="Permanent",
+                    request_routing_rules=[
+                        network.SubResourceArgs(
+                            id=Output.concat(resource_group.id,  f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection"),
+                        )
+                    ],
+                    target_listener=network.SubResourceArgs(
+                        id=Output.concat(
+                            resource_group.id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/appGatewayHttpsListener",
+                        )
+                    ),
+                )
+            ],
             request_routing_rules=[
                 network.ApplicationGatewayRequestRoutingRuleArgs(
-                    backend_address_pool=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendAddressPools/appGatewayBackendPool",
-                        )
-                    ),
-                    backend_http_settings=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendHttpSettingsCollection/appGatewayBackendHttpSettings",
-                        )
-                    ),
                     http_listener=network.SubResourceArgs(
                         id=Output.concat(
                             resource_group.id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/appGatewayHttpListener",
                         )
                     ),
-                    name="HttpRouting",
+                    redirect_configuration=network.SubResourceArgs(
+                        id=Output.concat(
+                            resource_group.id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/redirectConfigurations/HttpToHttpsRedirection",
+                        )
+                    ),
+                    name="HttpToHttpsRedirection",
                     rule_type="Basic",
                 ),
                 network.ApplicationGatewayRequestRoutingRuleArgs(
