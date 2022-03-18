@@ -19,7 +19,7 @@ class GuacamoleProps:
         storage_account_resource_group: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group: Input[str],
-        postgresql_username: Optional[Input[str]] = "guacamole",
+        postgresql_username: Optional[Input[str]] = "postgresadmin",
         subnet_container_name: Optional[Input[str]] = "GuacamoleContainersSubnet",
         subnet_database_name: Optional[Input[str]] = "GuacamoleDatabaseSubnet",
     ):
@@ -182,7 +182,7 @@ class GuacamoleComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacamole:1.3.0",
+                    image="guacamole/guacamole:1.4.0",
                     name=f"container-{self._name}-guacamole-guacamole",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -222,7 +222,7 @@ class GuacamoleComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacd:1.3.0",
+                    image="guacamole/guacd:1.4.0",
                     name=f"container-{self._name}-guacamole-guacd",
                     ports=[
                         containerinstance.ContainerPortArgs(
