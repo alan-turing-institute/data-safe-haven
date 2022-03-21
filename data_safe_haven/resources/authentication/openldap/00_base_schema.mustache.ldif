@@ -1,0 +1,67 @@
+# Organisation
+dn: {{ldap_root_dn}}
+dc: {{environment_name}}
+objectClass: dcObject
+objectClass: organization
+objectClass: top
+o: Data Safe Haven {{environment_name}}
+
+# OU: groups
+dn: ou=groups,{{ldap_root_dn}}
+ou: groups
+objectClass: organizationalUnit
+objectClass: top
+
+# OU: users
+dn: ou=users,{{ldap_root_dn}}
+ou: users
+objectClass: organizationalUnit
+objectClass: top
+
+# Group: all users
+dn: cn=allusers,ou=groups,{{ldap_root_dn}}
+cn: allusers
+gidNumber: 10000
+objectClass: posixGroup
+objectClass: top
+
+# Group: service accounts
+dn: cn=serviceaccounts,ou=groups,{{ldap_root_dn}}
+cn: serviceaccounts
+gidNumber: 10001
+objectClass: posixGroup
+objectClass: top
+
+# Group: sysadmins
+dn: cn=sysadmins,ou=groups,{{ldap_root_dn}}
+cn: sysadmins
+gidNumber: 10002
+objectClass: posixGroup
+objectClass: top
+
+# Group: dataadmins
+dn: cn=dataadmins,ou=groups,{{ldap_root_dn}}
+cn: dataadmins
+gidNumber: 10003
+objectClass: posixGroup
+objectClass: top
+
+# Group: researchers
+dn: cn=researchers,ou=groups,{{ldap_root_dn}}
+cn: researchers
+gidNumber: 10004
+objectClass: posixGroup
+objectClass: top
+
+# User: ldapsearchuser
+dn: uid=ldapsearchuser,ou=users,{{ldap_root_dn}}
+sn: ServiceAccount
+cn: LDAP search user
+uid: ldapsearchuser
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+userPassword: ldapsearchpassword
+uidNumber: 20000
+gidNumber: 10000
+homeDirectory: /home/ldapsearchuser

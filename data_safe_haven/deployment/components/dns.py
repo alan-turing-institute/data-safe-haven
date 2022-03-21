@@ -1,3 +1,6 @@
+# Standard library imports
+from typing import Sequence
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
@@ -11,10 +14,12 @@ class DnsProps:
         dns_name: Input[str],
         public_ip: Input[str],
         resource_group_name: Input[str],
+        subdomains: Input[Sequence[str]],
     ):
         self.dns_name = dns_name
         self.public_ip = public_ip
         self.resource_group_name = resource_group_name
+        self.subdomains = subdomains
 
 
 class DnsComponent(ComponentResource):
@@ -62,7 +67,7 @@ class DnsComponent(ComponentResource):
             zone_name=dns_zone.name,
             opts=child_opts,
         )
-        for cname in ["traefik", "auth", "public", "secure"]:
+        for cname in props.subdomains:
             network.RecordSet(
                 f"dns_cname_record_{cname}",
                 cname_record=network.CnameRecordArgs(

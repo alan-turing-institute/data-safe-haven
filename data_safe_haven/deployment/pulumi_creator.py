@@ -53,6 +53,9 @@ class PulumiCreator(LoggingMixin):
             "azure-native:subscriptionId", self.cfg.azure.subscription_id
         )
         self.ensure_config(
+            "authentication-openldap-password", self.generate_password(20), secret=True
+        )
+        self.ensure_config(
             "guacamole-postgresql-password", self.generate_password(20), secret=True
         )
 

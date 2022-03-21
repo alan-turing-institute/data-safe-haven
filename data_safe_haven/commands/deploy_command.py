@@ -63,14 +63,41 @@ class DeployCommand(LoggingMixin, Command):
         )
         resources_path = pathlib.Path(__file__).parent.parent / "resources"
 
-        # Guacamole configuration files
-        share_guacamole_caddy = creator.output("share_guacamole_caddy")
+        # Provision authentication
+        # ------------------------
+
+        # Upload configuration files
+        for filepath in [
+            resources_path / "authentication" / "openldap" / "00_base_schema.mustache.ldif",
+            resources_path / "authentication" / "openldap" / "01_group_members.mustache.ldif",
+        ]:
+            handler.upload(
+                creator.output("auth_share_openldap"),
+                filepath,
+                mustache_values={
+                    "environment_name": config.environment_name,
+                    "ldap_root_dn": config.root_dn,
+                },
+            )
+
+        # Restart the authentication container group
+        authentication_provisioner = ContainerProvisioner(
+            config,
+            creator.output("auth_resource_group_name"),
+            creator.output("auth_container_group_name"),
+        )
+        authentication_provisioner.restart()
+
+        # Provision Guacamole
+        # -------------------
+
+        # Upload configuration files
+        guacamole_share_caddy = creator.output("guacamole_share_caddy")
         handler.upload(
-            share_guacamole_caddy, resources_path / "guacamole" / "caddy" / "Caddyfile"
+            guacamole_share_caddy, resources_path / "guacamole" / "caddy" / "Caddyfile"
         )
 
         # Provision the Guacamole PostgreSQL server
-        # provisioner = PostgreSQLProvisioner(config, resources_path, "rg-v4example-guacamole", "postgresql-v4example-guacamole", "dJ7J4L6D8FWiMNsUowWL")
         postgres_provisioner = PostgreSQLProvisioner(
             config,
             resources_path,
@@ -80,7 +107,7 @@ class DeployCommand(LoggingMixin, Command):
         )
         postgres_provisioner.update()
 
-        # Restart the Guacamole container
+        # Restart the Guacamole container group
         guacamole_provisioner = ContainerProvisioner(
             config,
             creator.output("guacamole_resource_group_name"),

@@ -21,8 +21,12 @@ class NetworkProps:
             "10.0.0.0",
             "10.0.0.255",
         ],
-        address_range_authentication: Optional[Input[Sequence[str]]] = [
+        address_range_authelia: Optional[Input[Sequence[str]]] = [
             "10.0.1.0",
+            "10.0.1.127",
+        ],
+        address_range_openldap: Optional[Input[Sequence[str]]] = [
+            "10.0.1.128",
             "10.0.1.255",
         ],
         address_range_guacamole_db: Optional[Input[Sequence[str]]] = [
@@ -36,7 +40,8 @@ class NetworkProps:
     ):
         self.address_range_vnet = address_range_vnet
         self.address_range_application_gateway = address_range_application_gateway
-        self.address_range_authentication = address_range_authentication
+        self.address_range_authelia = address_range_authelia
+        self.address_range_openldap = address_range_openldap
         self.address_range_guacamole_db = address_range_guacamole_db
         self.address_range_guacamole_containers = address_range_guacamole_containers
         self.resource_group_name = resource_group_name
@@ -64,11 +69,12 @@ class NetworkComponent(ComponentResource):
         # Set address prefixes from ranges
         ip_network_vnet = props.get_ip_range(*props.address_range_vnet)
         ip_network_application_gateway = props.get_ip_range(*props.address_range_application_gateway)
-        ip_network_authentication = props.get_ip_range(*props.address_range_authentication)
+        ip_network_authelia = props.get_ip_range(*props.address_range_authelia)
+        ip_network_openldap = props.get_ip_range(*props.address_range_openldap)
         ip_network_guacamole_db = props.get_ip_range(*props.address_range_guacamole_db)
         ip_network_guacamole_containers = props.get_ip_range(*props.address_range_guacamole_containers)
         ip4 = {
-            "authelia": ip_network_authentication[4],
+            "openldap": ip_network_openldap[4],
             "guacamole_container": ip_network_guacamole_containers[4],
             "guacamole_postgresql": ip_network_guacamole_db[4],
         }
@@ -118,9 +124,15 @@ class NetworkComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_authentication = network.NetworkSecurityGroup(
-            "nsg_authentication",
-            network_security_group_name=f"nsg-{self._name}-authentication",
+        nsg_authelia = network.NetworkSecurityGroup(
+            "nsg_authelia",
+            network_security_group_name=f"nsg-{self._name}-authelia",
+            resource_group_name=props.resource_group_name,
+            opts=child_opts,
+        )
+        nsg_openldap = network.NetworkSecurityGroup(
+            "nsg_openldap",
+            network_security_group_name=f"nsg-{self._name}-openldap",
             resource_group_name=props.resource_group_name,
             opts=child_opts,
         )
@@ -147,7 +159,7 @@ class NetworkComponent(ComponentResource):
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_authentication),
+                    address_prefix=str(ip_network_authelia),
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -155,9 +167,23 @@ class NetworkComponent(ComponentResource):
                             type="Microsoft.Network/virtualNetworks/subnets/delegations",
                         ),
                     ],
-                    name="AuthenticationSubnet",
+                    name="AutheliaSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_authentication.id
+                        id=nsg_authelia.id
+                    ),
+                ),
+                network.SubnetArgs(
+                    address_prefix=str(ip_network_openldap),
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name="OpenLDAPSubnet",
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_openldap.id
                     ),
                 ),
                 network.SubnetArgs(
@@ -188,6 +214,7 @@ class NetworkComponent(ComponentResource):
         )
 
         # Register outputs
+        self.ip4_openldap = Output.from_input(str(ip4["openldap"]))
         self.ip4_guacamole_container = Output.from_input(str(ip4["guacamole_container"]))
         self.ip4_guacamole_postgresql = Output.from_input(str(ip4["guacamole_postgresql"]))
         self.resource_group_name = Output.from_input(props.resource_group_name)

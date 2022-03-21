@@ -11,6 +11,7 @@ from .components.application_gateway import (
 from .components.dns import DnsComponent, DnsProps
 from .components.guacamole import GuacamoleComponent, GuacamoleProps
 from .components.network import NetworkComponent, NetworkProps
+from .components.authentication import AuthenticationComponent, AuthenticationProps
 from .components.state_storage import StateStorageComponent, StateStorageProps
 
 
@@ -25,10 +26,6 @@ class PulumiProgram:
         self.secrets = pulumi.Config()
 
         # Define resource groups
-        rg_state = resources.ResourceGroup(
-            "rg_state",
-            resource_group_name=f"rg-{self.cfg.environment_name}-state",
-        )
         rg_guacamole = resources.ResourceGroup(
             "rg_guacamole",
             resource_group_name=f"rg-{self.cfg.environment_name}-guacamole",
@@ -37,6 +34,14 @@ class PulumiProgram:
             "rg_networking",
             resource_group_name=f"rg-{self.cfg.environment_name}-networking",
         )
+        rg_authentication = resources.ResourceGroup(
+            "rg_authentication",
+            resource_group_name=f"rg-{self.cfg.environment_name}-authentication",
+        )
+        rg_state = resources.ResourceGroup(
+            "rg_state",
+            resource_group_name=f"rg-{self.cfg.environment_name}-state",
+        )
 
         # Define networking
         networking = NetworkComponent(
@@ -44,7 +49,8 @@ class PulumiProgram:
             NetworkProps(
                 address_range_vnet=("10.0.0.0", "10.0.255.255"),
                 address_range_application_gateway=("10.0.0.0", "10.0.0.255"),
-                address_range_authentication=("10.0.1.0", "10.0.1.255"),
+                address_range_authelia=("10.0.1.0", "10.0.1.127"),
+                address_range_openldap=("10.0.1.128", "10.0.1.255"),
                 address_range_guacamole_db=("10.0.2.0", "10.0.2.127"),
                 address_range_guacamole_containers=("10.0.2.128", "10.0.2.255"),
                 resource_group_name=rg_networking.name,
@@ -56,6 +62,21 @@ class PulumiProgram:
             self.cfg.environment_name,
             StateStorageProps(
                 resource_group_name=rg_state.name,
+            ),
+        )
+
+        # Define containerised authentication servers
+        authentication = AuthenticationComponent(
+            self.cfg.environment_name,
+            AuthenticationProps(
+                ip_address_container=networking.ip4_openldap,
+                openldap_password=self.secrets.get("authentication-openldap-password"),
+                resource_group_name=rg_authentication.name,
+                root_dn=self.cfg.root_dn,
+                storage_account_name=state_storage.account_name,
+                storage_account_resource_group=state_storage.resource_group_name,
+                virtual_network_name=networking.vnet_name,
+                virtual_network_resource_group=rg_networking.name,
             ),
         )
 
@@ -78,10 +99,13 @@ class PulumiProgram:
         application_gateway = ApplicationGatewayComponent(
             self.cfg.environment_name,
             ApplicationGatewayProps(
+                hostname_authentication=f"{authentication.subdomain}.{self.cfg.environment.url}",
+                hostname_guacamole=self.cfg.environment.url,
+                ip_address_authentication=authentication.private_ip_address,
+                ip_address_guacamole=guacamole.private_ip_address,
                 key_vault_certificate_id=self.cfg.deployment.certificate_id,
                 key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
                 resource_group_name=rg_networking.name,
-                target_ip_address=guacamole.private_ip_address,
                 vnet_name=networking.vnet_name,
             ),
         )
@@ -93,14 +117,18 @@ class PulumiProgram:
                 dns_name=self.cfg.environment.url,
                 public_ip=application_gateway.public_ip_address,
                 resource_group_name=rg_networking.name,
+                subdomains=[authentication.subdomain]
             ),
         )
 
         # Export values for later use
+        pulumi.export("auth_container_group_name", authentication.container_group_name)
+        pulumi.export("auth_resource_group_name", authentication.resource_group_name)
+        pulumi.export("auth_share_openldap", authentication.file_share_openldap_name)
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
         pulumi.export("guacamole_postgresql_password", self.secrets.get("guacamole-postgresql-password"))
         pulumi.export("guacamole_postgresql_server_name", guacamole.postgresql_server_name)
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
-        pulumi.export("share_guacamole_caddy", guacamole.file_share_caddy_name)
+        pulumi.export("guacamole_share_caddy", guacamole.file_share_caddy_name)
         pulumi.export("storage_account_key", state_storage.access_key)
         pulumi.export("storage_account_name", state_storage.account_name)

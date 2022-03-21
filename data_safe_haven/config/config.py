@@ -71,6 +71,10 @@ class Config(AzureMixin):
     def name(self):
         return f"config-{self.environment_name}.yaml"
 
+    @property
+    def root_dn(self):
+        return ",".join([f"dc={elem}" for elem in self.environment.url.split(".")])
+
     def download(self):
         """Load the config file from Azure storage"""
         # Connect to blob storage
