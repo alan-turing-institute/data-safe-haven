@@ -39,7 +39,6 @@ class FileHandler(LoggingMixin):
 
     def get_file_contents(self, file_path, mustache_values=None):
         """Read a local file into a bytearray for upload, expanding template values"""
-        self.info(f"Reading file contents from <fg=green>{file_path}</>...")
         with open(file_path, "r") as source_file:
             if mustache_values:
                 contents = chevron.render(source_file, mustache_values).encode("utf-8")
@@ -61,13 +60,13 @@ class FileHandler(LoggingMixin):
             if not destination_path:
                 destination_path = source_path.parts[-1].replace(".mustache", "")
             self.info(
-                f"Uploading file as <fg=green>{destination_path}</> in <fg=green>{share_name}</>..."
+                f"Uploading <fg=green>{destination_path}</> to <fg=green>{share_name}</>..."
             )
             file_client = self.get_file_client(share_name, destination_path, directory)
             file_contents = self.get_file_contents(source_path, mustache_values)
             file_client.upload_file(file_contents)
             self.info(
-                f"Uploaded file as <fg=green>{destination_path}</> in <fg=green>{share_name}</>."
+                f"Uploaded <fg=green>{destination_path}</> to <fg=green>{share_name}</>."
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(

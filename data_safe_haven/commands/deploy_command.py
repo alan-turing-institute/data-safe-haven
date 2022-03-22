@@ -67,18 +67,16 @@ class DeployCommand(LoggingMixin, Command):
         # ------------------------
 
         # Upload configuration files
-        for filepath in [
-            resources_path / "authentication" / "openldap" / "00_base_schema.mustache.ldif",
-            resources_path / "authentication" / "openldap" / "01_group_members.mustache.ldif",
-        ]:
-            handler.upload(
-                creator.output("auth_share_openldap"),
-                filepath,
-                mustache_values={
-                    "environment_name": config.environment_name,
-                    "ldap_root_dn": config.root_dn,
-                },
-            )
+        for filepath in (resources_path / "authentication" / "openldap").glob("**/*"):
+            if filepath.is_file():
+                handler.upload(
+                    creator.output(f"auth_share_openldap_{filepath.parent.name}"),
+                    filepath,
+                    mustache_values={
+                        "environment_name": config.environment_name,
+                        "ldap_root_dn": config.root_dn,
+                    },
+                )
 
         # Restart the authentication container group
         authentication_provisioner = ContainerProvisioner(

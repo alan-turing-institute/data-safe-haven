@@ -1,0 +1,13 @@
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to attrs=userPassword
+  by self write
+  by group.exact="cn=sysadmins,{{ldap_root_dn}}" write
+  by anonymous auth
+  by * none
+olcAccess: {1}to *
+  by self write
+  by group.exact="cn=sysadmins,ou=groups,{{ldap_root_dn}}" write
+  by dn.exact="uid=ldapsearchuser,ou=users,{{ldap_root_dn}}" read
+  by * none

@@ -26,6 +26,10 @@ class PulumiProgram:
         self.secrets = pulumi.Config()
 
         # Define resource groups
+        rg_authentication = resources.ResourceGroup(
+            "rg_authentication",
+            resource_group_name=f"rg-{self.cfg.environment_name}-authentication",
+        )
         rg_guacamole = resources.ResourceGroup(
             "rg_guacamole",
             resource_group_name=f"rg-{self.cfg.environment_name}-guacamole",
@@ -33,10 +37,6 @@ class PulumiProgram:
         rg_networking = resources.ResourceGroup(
             "rg_networking",
             resource_group_name=f"rg-{self.cfg.environment_name}-networking",
-        )
-        rg_authentication = resources.ResourceGroup(
-            "rg_authentication",
-            resource_group_name=f"rg-{self.cfg.environment_name}-authentication",
         )
         rg_state = resources.ResourceGroup(
             "rg_state",
@@ -124,7 +124,8 @@ class PulumiProgram:
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
-        pulumi.export("auth_share_openldap", authentication.file_share_openldap_name)
+        pulumi.export("auth_share_openldap_ldifs", authentication.file_share_openldap_ldifs_name)
+        pulumi.export("auth_share_openldap_scripts", authentication.file_share_openldap_scripts_name)
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
         pulumi.export("guacamole_postgresql_password", self.secrets.get("guacamole-postgresql-password"))
         pulumi.export("guacamole_postgresql_server_name", guacamole.postgresql_server_name)

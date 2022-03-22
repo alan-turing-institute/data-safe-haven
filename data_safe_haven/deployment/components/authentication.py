@@ -53,13 +53,22 @@ class AuthenticationComponent(ComponentResource):
         )
 
         # Define configuration file shares
-        file_share_openldap = storage.FileShare(
-            "file_share_authentication_openldap",
+        file_share_openldap_ldifs = storage.FileShare(
+            "file_share_authentication_openldap_ldifs",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
-            share_name="authentication-openldap",
-            share_quota=5120,
+            share_name="authentication-openldap-ldifs",
+            share_quota=1024,
+            opts=child_opts,
+        )
+        file_share_openldap_scripts = storage.FileShare(
+            "file_share_authentication_openldap_scripts",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group,
+            share_name="authentication-openldap-scripts",
+            share_quota=1024,
             opts=child_opts,
         )
 
@@ -137,7 +146,12 @@ class AuthenticationComponent(ComponentResource):
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
                             mount_path="/opt/ldifs",
-                            name="authentication-openldap-config",
+                            name="authentication-openldap-ldifs",
+                            read_only=False,
+                        ),
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/docker-entrypoint-initdb.d/",
+                            name="authentication-openldap-scripts",
                             read_only=False,
                         ),
                     ],
@@ -197,11 +211,19 @@ class AuthenticationComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_openldap.name,
+                        share_name=file_share_openldap_ldifs.name,
                         storage_account_key=storage_account_keys.keys[0].value,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="authentication-openldap-config",
+                    name="authentication-openldap-ldifs",
+                ),
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share_openldap_scripts.name,
+                        storage_account_key=storage_account_keys.keys[0].value,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="authentication-openldap-scripts",
                 ),
             ],
             opts=child_opts,
@@ -209,7 +231,8 @@ class AuthenticationComponent(ComponentResource):
 
         # Register outputs
         self.container_group_name = container_group.name
-        self.file_share_openldap_name = file_share_openldap.name
+        self.file_share_openldap_ldifs_name = file_share_openldap_ldifs.name
+        self.file_share_openldap_scripts_name = file_share_openldap_scripts.name
         self.private_ip_address = Output.from_input(props.ip_address_container)
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.subdomain = "authentication"
