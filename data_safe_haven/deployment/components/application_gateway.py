@@ -38,7 +38,9 @@ class ApplicationGatewayComponent(ComponentResource):
     def __init__(
         self, name: str, props: ApplicationGatewayProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:application_gateway:ApplicationGatewayComponent", name, {}, opts)
+        super().__init__(
+            "dsh:application_gateway:ApplicationGatewayComponent", name, {}, opts
+        )
         child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resource group and subnet
@@ -80,7 +82,7 @@ class ApplicationGatewayComponent(ComponentResource):
                         )
                     ],
                     name="appGatewayBackendAuthentication",
-                )
+                ),
             ],
             backend_http_settings_collection=[
                 network.ApplicationGatewayBackendHttpSettingsArgs(
@@ -89,12 +91,6 @@ class ApplicationGatewayComponent(ComponentResource):
                     protocol="Http",
                     request_timeout=30,
                 ),
-                # network.ApplicationGatewayBackendHttpSettingsArgs(
-                #     name="appGatewayBackendHttpsSettings",
-                #     port=443,
-                #     protocol="Https",
-                #     request_timeout=30,
-                # ),
             ],
             frontend_ip_configurations=[
                 network.ApplicationGatewayFrontendIPConfigurationArgs(
@@ -230,7 +226,10 @@ class ApplicationGatewayComponent(ComponentResource):
                     redirect_type="Permanent",
                     request_routing_rules=[
                         network.SubResourceArgs(
-                            id=Output.concat(resource_group.id,  f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection"),
+                            id=Output.concat(
+                                resource_group.id,
+                                f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection",
+                            ),
                         )
                     ],
                     target_listener=network.SubResourceArgs(
@@ -248,7 +247,10 @@ class ApplicationGatewayComponent(ComponentResource):
                     redirect_type="Permanent",
                     request_routing_rules=[
                         network.SubResourceArgs(
-                            id=Output.concat(resource_group.id,  f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection"),
+                            id=Output.concat(
+                                resource_group.id,
+                                f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection",
+                            ),
                         )
                     ],
                     target_listener=network.SubResourceArgs(
@@ -257,7 +259,7 @@ class ApplicationGatewayComponent(ComponentResource):
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/GuacamoleHttpsListener",
                         )
                     ),
-                )
+                ),
             ],
             request_routing_rules=[
                 # Authentication routing

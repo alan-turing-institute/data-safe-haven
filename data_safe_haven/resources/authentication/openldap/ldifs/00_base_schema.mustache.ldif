@@ -7,61 +7,61 @@ objectClass: top
 o: Data Safe Haven {{environment_name}}
 
 # OU: groups
-dn: ou=groups,{{ldap_root_dn}}
+dn: {{ldap_group_base_dn}}
 ou: groups
 objectClass: organizationalUnit
 objectClass: top
 
 # OU: users
-dn: ou=users,{{ldap_root_dn}}
+dn: {{ldap_user_base_dn}}
 ou: users
 objectClass: organizationalUnit
 objectClass: top
 
 # Group: all users
-dn: cn=allusers,ou=groups,{{ldap_root_dn}}
+dn: cn=allusers,{{ldap_group_base_dn}}
 cn: allusers
 gidNumber: 10000
 objectClass: posixGroup
 objectClass: top
 
 # Group: service accounts
-dn: cn=serviceaccounts,ou=groups,{{ldap_root_dn}}
+dn: cn=serviceaccounts,{{ldap_group_base_dn}}
 cn: serviceaccounts
 gidNumber: 10001
 objectClass: posixGroup
 objectClass: top
 
 # Group: sysadmins
-dn: cn=sysadmins,ou=groups,{{ldap_root_dn}}
+dn: cn=sysadmins,{{ldap_group_base_dn}}
 cn: sysadmins
 gidNumber: 10002
 objectClass: posixGroup
 objectClass: top
 
 # Group: dataadmins
-dn: cn=dataadmins,ou=groups,{{ldap_root_dn}}
+dn: cn=dataadmins,{{ldap_group_base_dn}}
 cn: dataadmins
 gidNumber: 10003
 objectClass: posixGroup
 objectClass: top
 
 # Group: researchers
-dn: cn=researchers,ou=groups,{{ldap_root_dn}}
+dn: cn=researchers,{{ldap_group_base_dn}}
 cn: researchers
 gidNumber: 10004
 objectClass: posixGroup
 objectClass: top
 
 # User: ldapsearchuser
-dn: uid=ldapsearchuser,ou=users,{{ldap_root_dn}}
+dn: uid={{ldap_search_user_id}},{{ldap_user_base_dn}}
 sn: ServiceAccount
 cn: LDAP search user
-uid: ldapsearchuser
+uid: {{ldap_search_user_id}}
 objectClass: inetOrgPerson
 objectClass: posixAccount
 objectClass: top
-userPassword: ldapsearchpassword
+userPassword: {{ldap_search_user_password}}
 uidNumber: 20000
 gidNumber: 10000
-homeDirectory: /home/ldapsearchuser
+homeDirectory: /home/{{ldap_search_user_id}}

@@ -12,9 +12,9 @@ class AuthenticationProps:
     def __init__(
         self,
         ip_address_container: Input[str],
-        openldap_password: Input[str],
+        ldap_admin_password: Input[str],
+        ldap_root_dn: Input[str],
         resource_group_name: Input[str],
-        root_dn: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
         virtual_network_name: Input[str],
@@ -22,9 +22,9 @@ class AuthenticationProps:
         subnet_name: Optional[Input[str]] = "OpenLDAPSubnet",
     ):
         self.ip_address_container = ip_address_container
-        self.openldap_password = openldap_password
+        self.ldap_admin_password = ldap_admin_password
+        self.ldap_root_dn = ldap_root_dn
         self.resource_group_name = resource_group_name
-        self.root_dn = root_dn
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
         self.subnet_name = subnet_name
@@ -106,7 +106,8 @@ class AuthenticationComponent(ComponentResource):
                             name="BITNAMI_DEBUG", value="true"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_ADMIN_PASSWORD", secure_value=props.openldap_password
+                            name="LDAP_ADMIN_PASSWORD",
+                            secure_value=props.ldap_admin_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_ADMIN_USERNAME", value="admin"
@@ -124,7 +125,7 @@ class AuthenticationComponent(ComponentResource):
                             name="LDAP_PORT_NUMBER", value="1389"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_ROOT", value=props.root_dn
+                            name="LDAP_ROOT", value=props.ldap_root_dn
                         ),
                     ],
                     ports=[

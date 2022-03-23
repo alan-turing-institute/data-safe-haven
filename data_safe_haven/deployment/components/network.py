@@ -34,37 +34,37 @@ class NetworkProps:
     def __init__(
         self,
         resource_group_name: Input[str],
-        address_range_vnet: Optional[Input[Sequence[str]]] = [
+        ip_range_vnet: Optional[Input[Sequence[str]]] = [
             "10.0.0.0",
             "10.0.255.255",
         ],
-        address_range_application_gateway: Optional[Input[Sequence[str]]] = [
+        ip_range_application_gateway: Optional[Input[Sequence[str]]] = [
             "10.0.0.0",
             "10.0.0.255",
         ],
-        address_range_authelia: Optional[Input[Sequence[str]]] = [
+        ip_range_authelia: Optional[Input[Sequence[str]]] = [
             "10.0.1.0",
             "10.0.1.127",
         ],
-        address_range_openldap: Optional[Input[Sequence[str]]] = [
+        ip_range_openldap: Optional[Input[Sequence[str]]] = [
             "10.0.1.128",
             "10.0.1.255",
         ],
-        address_range_guacamole_db: Optional[Input[Sequence[str]]] = [
+        ip_range_guacamole_postgresql: Optional[Input[Sequence[str]]] = [
             "10.0.2.0",
             "10.0.2.127",
         ],
-        address_range_guacamole_containers: Optional[Input[Sequence[str]]] = [
+        ip_range_guacamole_containers: Optional[Input[Sequence[str]]] = [
             "10.0.2.128",
             "10.0.2.255",
         ],
     ):
-        self.address_range_vnet = address_range_vnet
-        self.address_range_application_gateway = address_range_application_gateway
-        self.address_range_authelia = address_range_authelia
-        self.address_range_openldap = address_range_openldap
-        self.address_range_guacamole_db = address_range_guacamole_db
-        self.address_range_guacamole_containers = address_range_guacamole_containers
+        self.ip_range_vnet = ip_range_vnet
+        self.ip_range_application_gateway = ip_range_application_gateway
+        self.ip_range_authelia = ip_range_authelia
+        self.ip_range_openldap = ip_range_openldap
+        self.ip_range_guacamole_postgresql = ip_range_guacamole_postgresql
+        self.ip_range_guacamole_containers = ip_range_guacamole_containers
         self.resource_group_name = resource_group_name
 
 
@@ -76,21 +76,18 @@ class NetworkComponent(ComponentResource):
         child_opts = ResourceOptions(parent=self)
 
         # Set address prefixes from ranges
-        ip_network_vnet = AzureIPv4Range(*props.address_range_vnet)
+        ip_network_vnet = AzureIPv4Range(*props.ip_range_vnet)
         ip_network_application_gateway = AzureIPv4Range(
-            *props.address_range_application_gateway
+            *props.ip_range_application_gateway
         )
-        ip_network_authelia = AzureIPv4Range(*props.address_range_authelia)
-        ip_network_openldap = AzureIPv4Range(*props.address_range_openldap)
-        ip_network_guacamole_db = AzureIPv4Range(*props.address_range_guacamole_db)
+        ip_network_authelia = AzureIPv4Range(*props.ip_range_authelia)
+        ip_network_openldap = AzureIPv4Range(*props.ip_range_openldap)
+        ip_network_guacamole_postgresql = AzureIPv4Range(
+            *props.ip_range_guacamole_postgresql
+        )
         ip_network_guacamole_containers = AzureIPv4Range(
-            *props.address_range_guacamole_containers
+            *props.ip_range_guacamole_containers
         )
-        ip4 = {
-            "openldap": ip_network_openldap.available()[0],
-            "guacamole_container": ip_network_guacamole_containers.available()[0],
-            "guacamole_postgresql": ip_network_guacamole_db.available()[0],
-        }
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
@@ -200,7 +197,7 @@ class NetworkComponent(ComponentResource):
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_guacamole_db),
+                    address_prefix=str(ip_network_guacamole_postgresql),
                     name="GuacamoleDatabaseSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole.id
@@ -227,12 +224,14 @@ class NetworkComponent(ComponentResource):
         )
 
         # Register outputs
-        self.ip4_openldap = Output.from_input(str(ip4["openldap"]))
-        self.ip4_guacamole_container = Output.from_input(
-            str(ip4["guacamole_container"])
+        self.ip_address_openldap = Output.from_input(
+            str(ip_network_openldap.available()[0])
         )
-        self.ip4_guacamole_postgresql = Output.from_input(
-            str(ip4["guacamole_postgresql"])
+        self.ip_address_guacamole_container = Output.from_input(
+            str(ip_network_guacamole_containers.available()[0])
+        )
+        self.ip_address_guacamole_postgresql = Output.from_input(
+            str(ip_network_guacamole_postgresql.available()[0])
         )
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.vnet_name = vnet.name

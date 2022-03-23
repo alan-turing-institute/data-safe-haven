@@ -47,12 +47,12 @@ class PulumiProgram:
         networking = NetworkComponent(
             self.cfg.environment_name,
             NetworkProps(
-                address_range_vnet=("10.0.0.0", "10.0.255.255"),
-                address_range_application_gateway=("10.0.0.0", "10.0.0.255"),
-                address_range_authelia=("10.0.1.0", "10.0.1.127"),
-                address_range_openldap=("10.0.1.128", "10.0.1.255"),
-                address_range_guacamole_db=("10.0.2.0", "10.0.2.127"),
-                address_range_guacamole_containers=("10.0.2.128", "10.0.2.255"),
+                ip_range_vnet=("10.0.0.0", "10.0.255.255"),
+                ip_range_application_gateway=("10.0.0.0", "10.0.0.255"),
+                ip_range_authelia=("10.0.1.0", "10.0.1.127"),
+                ip_range_openldap=("10.0.1.128", "10.0.1.255"),
+                ip_range_guacamole_postgresql=("10.0.2.0", "10.0.2.127"),
+                ip_range_guacamole_containers=("10.0.2.128", "10.0.2.255"),
                 resource_group_name=rg_networking.name,
             ),
         )
@@ -69,10 +69,12 @@ class PulumiProgram:
         authentication = AuthenticationComponent(
             self.cfg.environment_name,
             AuthenticationProps(
-                ip_address_container=networking.ip4_openldap,
-                openldap_password=self.secrets.get("authentication-openldap-password"),
+                ip_address_container=networking.ip_address_openldap,
+                ldap_root_dn=self.cfg.ldap_root_dn,
+                ldap_admin_password=self.secrets.get(
+                    "authentication-openldap-admin-password"
+                ),
                 resource_group_name=rg_authentication.name,
-                root_dn=self.cfg.root_dn,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
                 virtual_network_name=networking.vnet_name,
@@ -84,8 +86,15 @@ class PulumiProgram:
         guacamole = GuacamoleComponent(
             self.cfg.environment_name,
             GuacamoleProps(
-                ip_address_container=networking.ip4_guacamole_container,
-                ip_address_postgresql=networking.ip4_guacamole_postgresql,
+                ip_address_container=networking.ip_address_guacamole_container,
+                ip_address_postgresql=networking.ip_address_guacamole_postgresql,
+                ldap_group_base_dn=self.cfg.ldap_group_base_dn,
+                ldap_search_user_id=self.cfg.ldap_search_user_id,
+                ldap_search_user_password=self.secrets.get(
+                    "authentication-openldap-search-password"
+                ),
+                ldap_server_ip=networking.ip_address_openldap,
+                ldap_user_base_dn=self.cfg.ldap_user_base_dn,
                 postgresql_password=self.secrets.get("guacamole-postgresql-password"),
                 resource_group_name=rg_guacamole.name,
                 storage_account_name=state_storage.account_name,
@@ -117,18 +126,32 @@ class PulumiProgram:
                 dns_name=self.cfg.environment.url,
                 public_ip=application_gateway.public_ip_address,
                 resource_group_name=rg_networking.name,
-                subdomains=[authentication.subdomain]
+                subdomains=[authentication.subdomain],
             ),
         )
 
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
-        pulumi.export("auth_share_openldap_ldifs", authentication.file_share_openldap_ldifs_name)
-        pulumi.export("auth_share_openldap_scripts", authentication.file_share_openldap_scripts_name)
+        pulumi.export(
+            "auth_share_openldap_ldifs", authentication.file_share_openldap_ldifs_name
+        )
+        pulumi.export(
+            "auth_share_openldap_scripts",
+            authentication.file_share_openldap_scripts_name,
+        )
+        pulumi.export(
+            "auth_ldap_search_user_password",
+            self.secrets.get("authentication-openldap-search-password"),
+        )
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
-        pulumi.export("guacamole_postgresql_password", self.secrets.get("guacamole-postgresql-password"))
-        pulumi.export("guacamole_postgresql_server_name", guacamole.postgresql_server_name)
+        pulumi.export(
+            "guacamole_postgresql_password",
+            self.secrets.get("guacamole-postgresql-password"),
+        )
+        pulumi.export(
+            "guacamole_postgresql_server_name", guacamole.postgresql_server_name
+        )
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
         pulumi.export("guacamole_share_caddy", guacamole.file_share_caddy_name)
         pulumi.export("storage_account_key", state_storage.access_key)

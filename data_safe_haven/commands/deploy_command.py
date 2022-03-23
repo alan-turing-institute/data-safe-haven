@@ -74,7 +74,13 @@ class DeployCommand(LoggingMixin, Command):
                     filepath,
                     mustache_values={
                         "environment_name": config.environment_name,
-                        "ldap_root_dn": config.root_dn,
+                        "ldap_group_base_dn": config.ldap_group_base_dn,
+                        "ldap_root_dn": config.ldap_root_dn,
+                        "ldap_search_user_id": config.ldap_search_user_id,
+                        "ldap_search_user_password": creator.output(
+                            "auth_ldap_search_user_password"
+                        ),
+                        "ldap_user_base_dn": config.ldap_user_base_dn,
                     },
                 )
 

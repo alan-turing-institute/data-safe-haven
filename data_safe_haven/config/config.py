@@ -72,8 +72,20 @@ class Config(AzureMixin):
         return f"config-{self.environment_name}.yaml"
 
     @property
-    def root_dn(self):
+    def ldap_group_base_dn(self):
+        return f"ou=groups,{self.ldap_root_dn}"
+
+    @property
+    def ldap_root_dn(self):
         return ",".join([f"dc={elem}" for elem in self.environment.url.split(".")])
+
+    @property
+    def ldap_search_user_id(self):
+        return "ldapsearchuser"
+
+    @property
+    def ldap_user_base_dn(self):
+        return f"ou=users,{self.ldap_root_dn}"
 
     def download(self):
         """Load the config file from Azure storage"""
