@@ -7,6 +7,27 @@ from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import network
 
 
+class AzureIPv4Range(ipaddress.IPv4Network):
+    """Azure-aware IPv4 address range"""
+
+    def __init__(self, ip_address_first: str, ip_address_last: str):
+        networks = list(
+            ipaddress.summarize_address_range(
+                ipaddress.ip_address(ip_address_first),
+                ipaddress.ip_address(ip_address_last),
+            )
+        )
+        if len(networks) != 1:
+            raise ValueError(
+                f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
+            )
+        super().__init__(networks[0])
+
+    def available(self):
+        """Azure reserves x.x.x.1 for the default gateway and (x.x.x.2, x.x.x.3) to map Azure DNS IPs."""
+        return list(self.hosts())[3:]
+
+
 class NetworkProps:
     """Properties for NetworkComponent"""
 
@@ -46,18 +67,6 @@ class NetworkProps:
         self.address_range_guacamole_containers = address_range_guacamole_containers
         self.resource_group_name = resource_group_name
 
-    @staticmethod
-    def get_ip_range(ip_address_first, ip_address_last):
-        networks = list(
-            ipaddress.summarize_address_range(
-                ipaddress.ip_address(ip_address_first),
-                ipaddress.ip_address(ip_address_last),
-            )
-        )
-        if len(networks) != 1:
-            raise ValueError(f"Found {len(networks)} networks when expecting one.")
-        return networks[0]
-
 
 class NetworkComponent(ComponentResource):
     """Deploy networking with Pulumi"""
@@ -67,16 +76,20 @@ class NetworkComponent(ComponentResource):
         child_opts = ResourceOptions(parent=self)
 
         # Set address prefixes from ranges
-        ip_network_vnet = props.get_ip_range(*props.address_range_vnet)
-        ip_network_application_gateway = props.get_ip_range(*props.address_range_application_gateway)
-        ip_network_authelia = props.get_ip_range(*props.address_range_authelia)
-        ip_network_openldap = props.get_ip_range(*props.address_range_openldap)
-        ip_network_guacamole_db = props.get_ip_range(*props.address_range_guacamole_db)
-        ip_network_guacamole_containers = props.get_ip_range(*props.address_range_guacamole_containers)
+        ip_network_vnet = AzureIPv4Range(*props.address_range_vnet)
+        ip_network_application_gateway = AzureIPv4Range(
+            *props.address_range_application_gateway
+        )
+        ip_network_authelia = AzureIPv4Range(*props.address_range_authelia)
+        ip_network_openldap = AzureIPv4Range(*props.address_range_openldap)
+        ip_network_guacamole_db = AzureIPv4Range(*props.address_range_guacamole_db)
+        ip_network_guacamole_containers = AzureIPv4Range(
+            *props.address_range_guacamole_containers
+        )
         ip4 = {
-            "openldap": ip_network_openldap[4],
-            "guacamole_container": ip_network_guacamole_containers[4],
-            "guacamole_postgresql": ip_network_guacamole_db[4],
+            "openldap": ip_network_openldap.available()[0],
+            "guacamole_container": ip_network_guacamole_containers.available()[0],
+            "guacamole_postgresql": ip_network_guacamole_db.available()[0],
         }
 
         # Define NSGs
@@ -215,7 +228,11 @@ class NetworkComponent(ComponentResource):
 
         # Register outputs
         self.ip4_openldap = Output.from_input(str(ip4["openldap"]))
-        self.ip4_guacamole_container = Output.from_input(str(ip4["guacamole_container"]))
-        self.ip4_guacamole_postgresql = Output.from_input(str(ip4["guacamole_postgresql"]))
+        self.ip4_guacamole_container = Output.from_input(
+            str(ip4["guacamole_container"])
+        )
+        self.ip4_guacamole_postgresql = Output.from_input(
+            str(ip4["guacamole_postgresql"])
+        )
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.vnet_name = vnet.name
