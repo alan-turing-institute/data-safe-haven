@@ -263,6 +263,11 @@ class GuacamoleComponent(ComponentResource):
                 containerinstance.ContainerArgs(
                     image="guacamole/guacd:1.4.0",
                     name=f"container-{self._name}-guacamole-guacd",
+                    environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GUACD_LOG_LEVEL", value="debug"
+                        ),
+                    ],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=4822,
@@ -311,5 +316,4 @@ class GuacamoleComponent(ComponentResource):
         self.container_group_name = container_group.name
         self.file_share_caddy_name = file_share_caddy.name
         self.postgresql_server_name = postgresql_server.name
-        self.private_ip_address = Output.from_input(props.ip_address_container)
         self.resource_group_name = Output.from_input(props.resource_group_name)

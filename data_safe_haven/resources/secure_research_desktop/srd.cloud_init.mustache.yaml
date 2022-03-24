@@ -1,0 +1,45 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/nslcd.conf"
+    permissions: "0400"
+    content: |
+      # nslcd configuration file.
+      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
+
+      # Runtime options
+      uid nslcd
+      gid nslcd
+      log syslog debug
+
+      # General connection options
+      uri ldap://{{ldap_server_ip}}:1389
+      binddn uid=ldapsearchuser,ou=users,{{ldap_root_dn}}
+      bindpw {{ldap_search_password}}
+
+      # Search/mapping options
+      base {{ldap_root_dn}}
+
+# List of packages to install with apt-get
+packages:
+  - libnss-ldapd # LDAP login
+  - libpam-ldapd # LDAP login
+  - ldap-utils   # LDAP login
+
+package_update: true
+package_upgrade: true
+
+runcmd:
+  # Allow LDAP users to login
+  # -------------------------
+  # Configure nsswitch
+  - echo "Adding ldap to /etc/nsswitch.conf"
+  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
+  # Configure PAM
+  - echo "Configuring PAM for LDAP login"
+  - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir
+  - sed -i "s| use_authtok||g" /usr/share/pam-configs/ldap
+  - pam-auth-update --enable mkhomedir ldap
+  # Restart services
+  - systemctl restart nslcd
+  - systemctl restart nscd

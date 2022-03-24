@@ -11,6 +11,9 @@ Create a config file with the following structure:
 environment:
   name: <my project name>
   url: <url where the SRE will be hosted>
+  vm_sizes: # list of VM sizes of desktops that will be available to end users
+    - Standard_D2s_v3
+    - Standard_D2s_v3
 azure:
   subscription_name: <my subscription name>
   admin_group_id: <the ID of an Azure security group that contains all administrators>

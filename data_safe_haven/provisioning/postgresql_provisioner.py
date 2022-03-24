@@ -89,8 +89,9 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                 f"Database access action {action} was not recognised."
             )
         server = db_client.servers.get(self.resource_group_name, self.server_name)
-        self.info(f"Public network access to <fg=green>{self.server_name}</> is: {server.public_network_access}")
-
+        self.info(
+            f"Public network access to <fg=green>{self.server_name}</> is: {server.public_network_access}"
+        )
 
     def update(self):
         # Connect to Azure clients

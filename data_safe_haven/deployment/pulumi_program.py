@@ -12,6 +12,10 @@ from .components.dns import DnsComponent, DnsProps
 from .components.guacamole import GuacamoleComponent, GuacamoleProps
 from .components.network import NetworkComponent, NetworkProps
 from .components.authentication import AuthenticationComponent, AuthenticationProps
+from .components.secure_research_desktop import (
+    SecureResearchDesktopComponent,
+    SecureResearchDesktopProps,
+)
 from .components.state_storage import StateStorageComponent, StateStorageProps
 
 
@@ -38,6 +42,10 @@ class PulumiProgram:
             "rg_networking",
             resource_group_name=f"rg-{self.cfg.environment_name}-networking",
         )
+        rg_secure_research_desktop = resources.ResourceGroup(
+            "rg_secure_research_desktop",
+            resource_group_name=f"rg-{self.cfg.environment_name}-secure-research-desktop",
+        )
         rg_state = resources.ResourceGroup(
             "rg_state",
             resource_group_name=f"rg-{self.cfg.environment_name}-state",
@@ -53,6 +61,7 @@ class PulumiProgram:
                 ip_range_openldap=("10.0.1.128", "10.0.1.255"),
                 ip_range_guacamole_postgresql=("10.0.2.0", "10.0.2.127"),
                 ip_range_guacamole_containers=("10.0.2.128", "10.0.2.255"),
+                ip_range_secure_research_desktop=("10.0.3.0", "10.0.3.255"),
                 resource_group_name=rg_networking.name,
             ),
         )
@@ -110,8 +119,8 @@ class PulumiProgram:
             ApplicationGatewayProps(
                 hostname_authentication=f"{authentication.subdomain}.{self.cfg.environment.url}",
                 hostname_guacamole=self.cfg.environment.url,
-                ip_address_authentication=authentication.private_ip_address,
-                ip_address_guacamole=guacamole.private_ip_address,
+                ip_address_authentication=networking.ip_address_openldap,
+                ip_address_guacamole=networking.ip_address_guacamole_container,
                 key_vault_certificate_id=self.cfg.deployment.certificate_id,
                 key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
                 resource_group_name=rg_networking.name,
@@ -130,8 +139,31 @@ class PulumiProgram:
             ),
         )
 
+        # Define containerised remote desktop gateway
+        srd = SecureResearchDesktopComponent(
+            self.cfg.environment_name,
+            SecureResearchDesktopProps(
+                ip_addresses=networking.ip_addresses_srd,
+                ldap_group_base_dn=self.cfg.ldap_group_base_dn,
+                ldap_root_dn=self.cfg.ldap_root_dn,
+                ldap_search_password=self.secrets.get(
+                    "authentication-openldap-search-password"
+                ),
+                ldap_server_ip=networking.ip_address_openldap,
+                ldap_user_base_dn=self.cfg.ldap_user_base_dn,
+                resource_group_name=rg_secure_research_desktop.name,
+                virtual_network_name=networking.vnet_name,
+                virtual_network_resource_group=rg_networking.name,
+                vm_sizes=self.cfg.environment.vm_sizes,
+            ),
+        )
+
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
+        pulumi.export(
+            "auth_openldap_search_password",
+            self.secrets.get("authentication-openldap-search-password"),
+        )
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
         pulumi.export(
             "auth_share_openldap_ldifs", authentication.file_share_openldap_ldifs_name

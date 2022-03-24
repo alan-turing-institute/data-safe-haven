@@ -58,6 +58,10 @@ class NetworkProps:
             "10.0.2.128",
             "10.0.2.255",
         ],
+        ip_range_secure_research_desktop: Optional[Input[Sequence[str]]] = [
+            "10.0.3.0",
+            "10.0.3.255",
+        ],
     ):
         self.ip_range_vnet = ip_range_vnet
         self.ip_range_application_gateway = ip_range_application_gateway
@@ -65,6 +69,7 @@ class NetworkProps:
         self.ip_range_openldap = ip_range_openldap
         self.ip_range_guacamole_postgresql = ip_range_guacamole_postgresql
         self.ip_range_guacamole_containers = ip_range_guacamole_containers
+        self.ip_range_secure_research_desktop = ip_range_secure_research_desktop
         self.resource_group_name = resource_group_name
 
 
@@ -87,6 +92,9 @@ class NetworkComponent(ComponentResource):
         )
         ip_network_guacamole_containers = AzureIPv4Range(
             *props.ip_range_guacamole_containers
+        )
+        ip_network_secure_research_desktop = AzureIPv4Range(
+            *props.ip_range_secure_research_desktop
         )
 
         # Define NSGs
@@ -150,6 +158,26 @@ class NetworkComponent(ComponentResource):
             "nsg_guacamole",
             network_security_group_name=f"nsg-{self._name}-guacamole",
             resource_group_name=props.resource_group_name,
+            opts=child_opts,
+        )
+        nsg_secure_research_desktop = network.NetworkSecurityGroup(
+            "nsg_secure_research_desktop",
+            network_security_group_name=f"nsg-{self._name}-secure-research-deskto",
+            resource_group_name=props.resource_group_name,
+            security_rules=[
+                network.SecurityRuleArgs(
+                    access="Allow",
+                    description="Allow inbound SSH from Guacamole.",
+                    destination_address_prefix="*",
+                    destination_port_range="22",
+                    direction="Inbound",
+                    name="AllowGuacamoleSSHInbound",
+                    priority=1000,
+                    protocol="*",
+                    source_address_prefix=str(ip_network_guacamole_containers),
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
 
@@ -218,6 +246,13 @@ class NetworkComponent(ComponentResource):
                         id=nsg_guacamole.id
                     ),
                 ),
+                network.SubnetArgs(
+                    address_prefix=str(ip_network_secure_research_desktop),
+                    name="SecureResearchDesktopSubnet",
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_secure_research_desktop.id
+                    ),
+                ),
             ],
             virtual_network_name=f"vnet-{self._name}",
             opts=child_opts,
@@ -232,6 +267,9 @@ class NetworkComponent(ComponentResource):
         )
         self.ip_address_guacamole_postgresql = Output.from_input(
             str(ip_network_guacamole_postgresql.available()[0])
+        )
+        self.ip_addresses_srd = Output.from_input(
+            [str(ip) for ip in ip_network_secure_research_desktop.available()]
         )
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.vnet_name = vnet.name

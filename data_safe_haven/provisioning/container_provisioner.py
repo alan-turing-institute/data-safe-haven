@@ -29,5 +29,11 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
         )
 
         # Restart container group
-        self.info(f"Restarting container group <fg=green>{self.container_group_name}</>.")
-        self.wait(aci_client.container_groups.begin_restart(self.resource_group_name, self.container_group_name))
+        self.info(
+            f"Restarting container group <fg=green>{self.container_group_name}</>."
+        )
+        self.wait(
+            aci_client.container_groups.begin_restart(
+                self.resource_group_name, self.container_group_name
+            )
+        )
