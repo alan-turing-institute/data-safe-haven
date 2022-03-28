@@ -1,9 +1,14 @@
 # Standard library imports
+import pathlib
 from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
+
+# Local imports
+from .file_share_file import FileShareFile, FileShareFileProps
+from data_safe_haven.deployment import FileReader
 
 
 class AuthenticationProps:
@@ -13,7 +18,11 @@ class AuthenticationProps:
         self,
         ip_address_container: Input[str],
         ldap_admin_password: Input[str],
+        ldap_group_base_dn: Input[str],
         ldap_root_dn: Input[str],
+        ldap_search_user_id: Input[str],
+        ldap_search_user_password: Input[str],
+        ldap_user_base_dn: Input[str],
         resource_group_name: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
@@ -23,7 +32,11 @@ class AuthenticationProps:
     ):
         self.ip_address_container = ip_address_container
         self.ldap_admin_password = ldap_admin_password
+        self.ldap_group_base_dn = ldap_group_base_dn
         self.ldap_root_dn = ldap_root_dn
+        self.ldap_search_user_id = ldap_search_user_id
+        self.ldap_search_user_password = ldap_search_user_password
+        self.ldap_user_base_dn = ldap_user_base_dn
         self.resource_group_name = resource_group_name
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
@@ -51,6 +64,7 @@ class AuthenticationComponent(ComponentResource):
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
         )
+        storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
 
         # Define configuration file shares
         file_share_openldap_ldifs = storage.FileShare(
@@ -230,9 +244,38 @@ class AuthenticationComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Upload LDIFs and ACL scripts to separate shares
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
+        for (folder, fileshare) in [
+            ("ldifs", file_share_openldap_ldifs),
+            ("scripts", file_share_openldap_scripts),
+        ]:
+            for filepath in (
+                resources_path / "authentication" / "openldap" / folder
+            ).glob("**/*"):
+                reader = FileReader(filepath)
+                script_file = FileShareFile(
+                    f"{self._name}/authentication/openldap/{folder}/{reader.name}",
+                    FileShareFileProps(
+                        destination_path=reader.name,
+                        share_name=fileshare.name,
+                        file_contents=reader.get_file_contents(
+                            mustache_values={
+                                "environment_name": self._name,
+                                "ldap_group_base_dn": props.ldap_group_base_dn,
+                                "ldap_root_dn": props.ldap_root_dn,
+                                "ldap_search_user_id": props.ldap_search_user_id,
+                                "ldap_search_user_password": props.ldap_search_user_password,
+                                "ldap_user_base_dn": props.ldap_user_base_dn,
+                            },
+                        ),
+                        storage_account_key=storage_account_key_secret,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    opts=child_opts,
+                )
+
         # Register outputs
         self.container_group_name = container_group.name
-        self.file_share_openldap_ldifs_name = file_share_openldap_ldifs.name
-        self.file_share_openldap_scripts_name = file_share_openldap_scripts.name
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.subdomain = "authentication"

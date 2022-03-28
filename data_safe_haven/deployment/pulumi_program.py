@@ -79,10 +79,16 @@ class PulumiProgram:
             self.cfg.environment_name,
             AuthenticationProps(
                 ip_address_container=networking.ip_address_openldap,
-                ldap_root_dn=self.cfg.ldap_root_dn,
                 ldap_admin_password=self.secrets.get(
                     "authentication-openldap-admin-password"
                 ),
+                ldap_group_base_dn=self.cfg.ldap_group_base_dn,
+                ldap_root_dn=self.cfg.ldap_root_dn,
+                ldap_search_user_id=self.cfg.ldap_search_user_id,
+                ldap_search_user_password=self.secrets.get(
+                    "authentication-openldap-search-password"
+                ),
+                ldap_user_base_dn=self.cfg.ldap_user_base_dn,
                 resource_group_name=rg_authentication.name,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
@@ -160,22 +166,7 @@ class PulumiProgram:
 
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
-        pulumi.export(
-            "auth_openldap_search_password",
-            self.secrets.get("authentication-openldap-search-password"),
-        )
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
-        pulumi.export(
-            "auth_share_openldap_ldifs", authentication.file_share_openldap_ldifs_name
-        )
-        pulumi.export(
-            "auth_share_openldap_scripts",
-            authentication.file_share_openldap_scripts_name,
-        )
-        pulumi.export(
-            "auth_ldap_search_user_password",
-            self.secrets.get("authentication-openldap-search-password"),
-        )
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
         pulumi.export(
             "guacamole_postgresql_password",
@@ -185,6 +176,3 @@ class PulumiProgram:
             "guacamole_postgresql_server_name", guacamole.postgresql_server_name
         )
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
-        pulumi.export("guacamole_share_caddy", guacamole.file_share_caddy_name)
-        pulumi.export("storage_account_key", state_storage.access_key)
-        pulumi.export("storage_account_name", state_storage.account_name)

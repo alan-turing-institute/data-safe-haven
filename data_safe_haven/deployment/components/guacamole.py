@@ -1,9 +1,14 @@
 # Standard library imports
+import pathlib
 from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
+
+# Local imports
+from .file_share_file import FileShareFile, FileShareFileProps
+from data_safe_haven.deployment import FileReader
 
 
 class GuacamoleProps:
@@ -68,6 +73,7 @@ class GuacamoleComponent(ComponentResource):
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
         )
+        storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
 
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
@@ -312,8 +318,22 @@ class GuacamoleComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Upload Caddyfile
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
+        reader = FileReader(resources_path / "guacamole" / "caddy" / "Caddyfile")
+        caddyfile = FileShareFile(
+            f"{self._name}/guacamole/caddy/{reader.name}",
+            FileShareFileProps(
+                destination_path=reader.name,
+                share_name=file_share_caddy.name,
+                file_contents=reader.get_file_contents(),
+                storage_account_key=storage_account_key_secret,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=child_opts,
+        )
+
         # Register outputs
         self.container_group_name = container_group.name
-        self.file_share_caddy_name = file_share_caddy.name
         self.postgresql_server_name = postgresql_server.name
         self.resource_group_name = Output.from_input(props.resource_group_name)

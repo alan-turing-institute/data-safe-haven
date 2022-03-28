@@ -9,7 +9,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.deployment import FileHandler, PulumiCreator
+from data_safe_haven.deployment import PulumiCreator
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
@@ -54,35 +54,8 @@ class DeployCommand(LoggingMixin, Command):
         self.info(f"Uploading config <fg=green>{config.name}</> to blob storage")
         config.upload()
 
-        # Upload container configuration files to Azure file storage
-        storage_account_name = creator.output("storage_account_name")
-        storage_account_key = creator.output("storage_account_key")
-        handler = FileHandler(
-            storage_account_name=storage_account_name,
-            storage_account_key=storage_account_key,
-        )
-        resources_path = pathlib.Path(__file__).parent.parent / "resources"
-
         # Provision authentication
         # ------------------------
-
-        # Upload configuration files
-        for filepath in (resources_path / "authentication" / "openldap").glob("**/*"):
-            if filepath.is_file():
-                handler.upload(
-                    creator.output(f"auth_share_openldap_{filepath.parent.name}"),
-                    filepath,
-                    mustache_values={
-                        "environment_name": config.environment_name,
-                        "ldap_group_base_dn": config.ldap_group_base_dn,
-                        "ldap_root_dn": config.ldap_root_dn,
-                        "ldap_search_user_id": config.ldap_search_user_id,
-                        "ldap_search_user_password": creator.output(
-                            "auth_ldap_search_user_password"
-                        ),
-                        "ldap_user_base_dn": config.ldap_user_base_dn,
-                    },
-                )
 
         # Restart the authentication container group
         authentication_provisioner = ContainerProvisioner(
@@ -95,13 +68,8 @@ class DeployCommand(LoggingMixin, Command):
         # Provision Guacamole
         # -------------------
 
-        # Upload configuration files
-        guacamole_share_caddy = creator.output("guacamole_share_caddy")
-        handler.upload(
-            guacamole_share_caddy, resources_path / "guacamole" / "caddy" / "Caddyfile"
-        )
-
         # Provision the Guacamole PostgreSQL server
+        resources_path = pathlib.Path(__file__).parent.parent / "resources"
         postgres_provisioner = PostgreSQLProvisioner(
             config,
             resources_path,

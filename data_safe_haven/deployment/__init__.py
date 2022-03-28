@@ -1,7 +1,7 @@
-from .file_handler import FileHandler
+from .file_reader import FileReader
 from .pulumi_creator import PulumiCreator
 
 __all__ = [
-    FileHandler,
+    FileReader,
     PulumiCreator,
 ]
