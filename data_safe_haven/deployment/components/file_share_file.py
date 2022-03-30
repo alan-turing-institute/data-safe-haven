@@ -176,5 +176,5 @@ class FileShareFile(Resource):
         props: FileShareFileProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "storage:FileShareFile" # set resource type
+        self._resource_type_name = "storage:FileShareFile"  # set resource type
         super().__init__(FileShareFileProvider(), name, {**vars(props)}, opts)

@@ -15,10 +15,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins.azure_mixin import AzureMixin
+from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
-class Config(AzureMixin):
+class Config(LoggingMixin, AzureMixin):
     alphanumeric = re.compile(r"[^0-9a-zA-Z]+")
     storage_container_name = "config"
 
@@ -102,8 +102,11 @@ class Config(AzureMixin):
 
     def merge_dicts(self, d_old, d_new):
         for key, value in d_new.items():
-            if key in d_old and isinstance(value, dict):
-                d_old[key] = self.merge_dicts(d_old[key], value)
+            if isinstance(value, dict):
+                if key in d_old:
+                    d_old[key] = self.merge_dicts(d_old[key], value)
+                else:
+                    d_old[key] = dotmap.DotMap(value)
             else:
                 d_old[key] = value
         return d_old
@@ -126,6 +129,10 @@ class Config(AzureMixin):
 
     def upload(self):
         """Dump the config file to Azure storage"""
+        self.info(
+            f"Uploading config <fg=green>{self.name}</> to blob storage.",
+            no_newline=True,
+        )
         # Connect to blob storage
         blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.storage_account_name};AccountKey={self.storage_account_key()};EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(
@@ -137,3 +144,6 @@ class Config(AzureMixin):
             blob=f"config-{self.environment_name}.yaml",
         )
         blob_client.upload_blob(self.__str__(), overwrite=True)
+        self.info(
+            f"Uploaded config <fg=green>{self.name}</> to blob storage.", overwrite=True
+        )

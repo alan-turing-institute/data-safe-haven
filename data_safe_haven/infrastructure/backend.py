@@ -61,7 +61,8 @@ class Backend(AzureMixin, LoggingMixin):
 
             # Ensure that certificate exists
             self.info(
-                f"Ensuring that certificate for <fg=green>{certificate_url}</> exists..."
+                f"Ensuring that certificate for <fg=green>{certificate_url}</> exists...",
+                no_newline=True,
             )
             policy = CertificatePolicy(
                 issuer_name="Self",
@@ -78,6 +79,10 @@ class Backend(AzureMixin, LoggingMixin):
             )
             certificate = poller.result()
             self.cfg.deployment.certificate_id = certificate.secret_id
+            self.info(
+                f"Ensured that certificate for <fg=green>{certificate_url}</> exists.",
+                overwrite=True,
+            )
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create certificate {certificate_name}."
@@ -91,7 +96,10 @@ class Backend(AzureMixin, LoggingMixin):
         )
 
         # Ensure that key exists
-        self.info(f"Ensuring that key <fg=green>{key_name}</> exists...")
+        self.info(
+            f"Ensuring that key <fg=green>{key_name}</> exists...",
+            no_newline=True,
+        )
         key = None
         try:
             key = key_client.get_key(key_name)
@@ -100,7 +108,10 @@ class Backend(AzureMixin, LoggingMixin):
         try:
             if not key:
                 key = key_client.get_key(key_name)
-            self.info(f"Key <fg=green>{key.name}</> exists.")
+            self.info(
+                f"Ensured that key <fg=green>{key_name}</> exists.",
+                overwrite=True,
+            )
             self.cfg.pulumi.encryption_key = key.id.replace("https:", "azurekeyvault:")
         except (HttpResponseError, ResourceNotFoundError):
             raise DataSafeHavenAzureException(f"Failed to create key {key_name}.")
@@ -114,7 +125,10 @@ class Backend(AzureMixin, LoggingMixin):
         )
 
         # Ensure that key vault exists
-        self.info(f"Ensuring that key vault <fg=green>{key_vault_name}</> exists...")
+        self.info(
+            f"Ensuring that key vault <fg=green>{key_vault_name}</> exists...",
+            no_newline=True,
+        )
         key_vault_client.vaults.begin_create_or_update(
             self.resource_group_name,
             key_vault_name,
@@ -153,7 +167,10 @@ class Backend(AzureMixin, LoggingMixin):
             kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
         ]
         if key_vaults:
-            self.info(f"Key vault <fg=green>{key_vaults[0].name}</> exists.")
+            self.info(
+                f"Ensured that key vault <fg=green>{key_vault_name}</> exists.",
+                overwrite=True,
+            )
         else:
             raise DataSafeHavenAzureException(
                 f"Failed to create key vault {key_vault_name}."
@@ -162,6 +179,10 @@ class Backend(AzureMixin, LoggingMixin):
     def ensure_managed_identity(self, identity_name):
         """Ensure that managed identity exists"""
         try:
+            self.info(
+                f"Ensuring that managed identity <fg=green>{identity_name}</> exists...",
+                no_newline=True,
+            )
             msi_client = ManagedServiceIdentityClient(
                 self.credential, self.subscription_id
             )
@@ -171,6 +192,10 @@ class Backend(AzureMixin, LoggingMixin):
                     identity_name,
                     {"location": self.cfg.azure.location},
                 )
+            )
+            self.info(
+                f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
+                overwrite=True,
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -187,7 +212,8 @@ class Backend(AzureMixin, LoggingMixin):
 
         # Ensure that resource group exists
         self.info(
-            f"Ensuring that resource group <fg=green>{resource_group_name}</> exists..."
+            f"Ensuring that resource group <fg=green>{resource_group_name}</> exists...",
+            no_newline=True,
         )
         resource_client.resource_groups.create_or_update(
             resource_group_name,
@@ -200,7 +226,8 @@ class Backend(AzureMixin, LoggingMixin):
         ]
         if resource_groups:
             self.info(
-                f"Found resource group <fg=green>{resource_groups[0].name}</> in {resource_groups[0].location}."
+                f"Ensured that resource group <fg=green>{resource_groups[0].name}</> exists in <fg=green>{resource_groups[0].location}</>.",
+                overwrite=True,
             )
         else:
             raise DataSafeHavenAzureException(
@@ -214,7 +241,8 @@ class Backend(AzureMixin, LoggingMixin):
         storage_client = StorageManagementClient(self.credential, self.subscription_id)
 
         self.info(
-            f"Ensuring that storage account <fg=green>{storage_account_name}</> exists..."
+            f"Ensuring that storage account <fg=green>{storage_account_name}</> exists...",
+            no_newline=True,
         )
         try:
             poller = storage_client.storage_accounts.begin_create(
@@ -228,7 +256,10 @@ class Backend(AzureMixin, LoggingMixin):
                 },
             )
             storage_account = poller.result()
-            self.info(f"Storage account <fg=green>{storage_account.name}</> exists.")
+            self.info(
+                f"Ensured that storage account <fg=green>{storage_account.name}</> exists.",
+                overwrite=True,
+            )
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create storage account {storage_account_name}."
@@ -240,7 +271,8 @@ class Backend(AzureMixin, LoggingMixin):
         storage_client = StorageManagementClient(self.credential, self.subscription_id)
 
         self.info(
-            f"Ensuring that storage container <fg=green>{container_name}</> exists..."
+            f"Ensuring that storage container <fg=green>{container_name}</> exists...",
+            no_newline=True,
         )
         try:
             container = storage_client.blob_containers.create(
@@ -249,7 +281,10 @@ class Backend(AzureMixin, LoggingMixin):
                 container_name,
                 {"public_access": "none"},
             )
-            self.info(f"Storage container <fg=green>{container.name}</> exists.")
+            self.info(
+                f"Ensured that storage container <fg=green>{container.name}</> exists.",
+                overwrite=True,
+            )
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create storage container <fg=green>{container_name}."

@@ -20,10 +20,15 @@ class DeployCommand(LoggingMixin, Command):
 
     deploy
         {--c|config= : Path to an input config YAML file}
+        {--l|log= : Path to an output log file}
         {--p|project= : Path to the output directory which will hold the project files}
     """
 
     def handle(self):
+        # Set up logging for anything called by this command
+        self.initialise_logging(self.io.verbosity, self.option("log"))
+
+        # Load the job configuration
         config_path = self.option("config") if self.option("config") else "example.yaml"
         config = Config(config_path)
 
@@ -51,7 +56,6 @@ class DeployCommand(LoggingMixin, Command):
         config.pulumi.stack = stack_yaml
 
         # Upload config to blob storage
-        self.info(f"Uploading config <fg=green>{config.name}</> to blob storage")
         config.upload()
 
         # Provision authentication

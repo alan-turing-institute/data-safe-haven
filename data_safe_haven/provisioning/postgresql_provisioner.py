@@ -49,7 +49,8 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
         rule_name = "AllowConfigurationUpdate"
         if action == "enabled":
             self.info(
-                f"Adding temporary firewall rule for <fg=green>{self.current_ip}</>."
+                f"Adding temporary firewall rule for <fg=green>{self.current_ip}</>...",
+                no_newline=True,
             )
             self.wait(
                 db_client.servers.begin_update(
@@ -68,9 +69,14 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                     ),
                 )
             )
+            self.info(
+                f"Added temporary firewall rule for <fg=green>{self.current_ip}</>.",
+                overwrite=True,
+            )
         elif action == "disabled":
             self.info(
-                f"Removing temporary firewall rule for <fg=green>{self.current_ip}</>."
+                f"Removing temporary firewall rule for <fg=green>{self.current_ip}</>...",
+                no_newline=True,
             )
             self.wait(
                 db_client.firewall_rules.begin_delete(
@@ -83,6 +89,10 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                     self.server_name,
                     ServerUpdateParameters(public_network_access="Disabled"),
                 )
+            )
+            self.info(
+                f"Removed temporary firewall rule for <fg=green>{self.current_ip}</>.",
+                overwrite=True,
             )
         else:
             raise DataSafeHavenInputException(
@@ -116,13 +126,13 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             cursor = connection.cursor()
 
             # Apply the Guacamole initialisation script
-            self.info("Initialising required Guacamole configuration.")
+            self.info("Applying initial configuration...", no_newline=True)
             commands = self.initialisation_commands()
             cursor.execute(commands)
 
             # Commit changes
             connection.commit()
-            self.info("Finished configuring Guacamole.")
+            self.info("Applied initial configuration.", overwrite=True)
 
         except (Exception, psycopg2.Error) as exc:
             raise DataSafeHavenAzureException(
