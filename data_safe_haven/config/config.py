@@ -51,7 +51,7 @@ class Config(LoggingMixin, AzureMixin):
             self._map = dotmap.DotMap()
 
         # Update the map with local config variables
-        self.merge_dicts(self._map, base_yaml)
+        self.add_data(base_yaml)
         self.tags.deployed_by = "Python"
         self.tags.project = "Data Safe Haven"
         self.tags.version = __version__
@@ -86,6 +86,9 @@ class Config(LoggingMixin, AzureMixin):
     @property
     def ldap_user_base_dn(self):
         return f"ou=users,{self.ldap_root_dn}"
+
+    def add_data(self, dicts):
+        self._map = self.merge_dicts(self._map, dicts)
 
     def download(self):
         """Load the config file from Azure storage"""

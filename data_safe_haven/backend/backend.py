@@ -16,8 +16,10 @@ from data_safe_haven.exceptions import DataSafeHavenAzureException
 class Backend(AzureMixin, LoggingMixin):
     """Ensure that storage backend exists"""
 
-    def __init__(self, config):
-        super().__init__(subscription_name=config.azure.subscription_name)
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(
+            subscription_name=config.azure.subscription_name, *args, **kwargs
+        )
         self.cfg = config
         self.tags = (
             {"component": "backend"} | self.cfg.tags

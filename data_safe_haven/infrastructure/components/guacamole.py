@@ -8,7 +8,7 @@ from pulumi_azure_native import containerinstance, dbforpostgresql, network, sto
 
 # Local imports
 from .file_share_file import FileShareFile, FileShareFileProps
-from data_safe_haven.deployment import FileReader
+from data_safe_haven.infrastructure import FileReader
 
 
 class GuacamoleProps:

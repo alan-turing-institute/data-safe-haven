@@ -9,7 +9,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.deployment import PulumiCreator
+from data_safe_haven.infrastructure import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
@@ -20,13 +20,13 @@ class DeployCommand(LoggingMixin, Command):
 
     deploy
         {--c|config= : Path to an input config YAML file}
-        {--l|log= : Path to an output log file}
+        {--o|output= : Path to an output log file}
         {--p|project= : Path to the output directory which will hold the project files}
     """
 
     def handle(self):
         # Set up logging for anything called by this command
-        self.initialise_logging(self.io.verbosity, self.option("log"))
+        self.initialise_logging(self.io.verbosity, self.option("output"))
 
         # Load the job configuration
         config_path = self.option("config") if self.option("config") else "example.yaml"
@@ -47,13 +47,40 @@ class DeployCommand(LoggingMixin, Command):
             project_path.mkdir()
 
         # Deploy infrastructure with Pulumi
-        creator = PulumiCreator(config, project_path)
-        creator.apply()
+        infrastructure = PulumiInterface(config, project_path)
+        infrastructure.deploy()
 
-        # Add stack information config
-        with open(creator.local_stack_path, "r") as f_stack:
+        # Add Pulumi output information to the config file
+        with open(infrastructure.local_stack_path, "r") as f_stack:
             stack_yaml = yaml.safe_load(f_stack)
         config.pulumi.stack = stack_yaml
+        config.add_data(
+            {
+                "pulumi": {
+                    "outputs": {
+                        "authentication": {
+                            "container_group_name": infrastructure.output(
+                                "auth_container_group_name"
+                            ),
+                            "resource_group_name": infrastructure.output(
+                                "auth_resource_group_name"
+                            ),
+                        },
+                        "guacamole": {
+                            "container_group_name": infrastructure.output(
+                                "guacamole_container_group_name"
+                            ),
+                            "postgresql_server_name": infrastructure.output(
+                                "guacamole_postgresql_server_name"
+                            ),
+                            "resource_group_name": infrastructure.output(
+                                "guacamole_resource_group_name"
+                            ),
+                        },
+                    }
+                }
+            }
+        )
 
         # Upload config to blob storage
         config.upload()
@@ -64,8 +91,8 @@ class DeployCommand(LoggingMixin, Command):
         # Restart the authentication container group
         authentication_provisioner = ContainerProvisioner(
             config,
-            creator.output("auth_resource_group_name"),
-            creator.output("auth_container_group_name"),
+            config.pulumi.outputs.authentication.resource_group_name,
+            config.pulumi.outputs.authentication.container_group_name,
         )
         authentication_provisioner.restart()
 
@@ -73,20 +100,26 @@ class DeployCommand(LoggingMixin, Command):
         # -------------------
 
         # Provision the Guacamole PostgreSQL server
-        resources_path = pathlib.Path(__file__).parent.parent / "resources"
         postgres_provisioner = PostgreSQLProvisioner(
             config,
-            resources_path,
-            creator.output("guacamole_resource_group_name"),
-            creator.output("guacamole_postgresql_server_name"),
-            creator.output("guacamole_postgresql_password"),
+            config.pulumi.outputs.guacamole.resource_group_name,
+            config.pulumi.outputs.guacamole.postgresql_server_name,
+            infrastructure.secret("guacamole-postgresql-password"),
         )
-        postgres_provisioner.update()
+        postgres_provisioner.execute_scripts(
+            [
+                pathlib.Path(__file__).parent.parent
+                / "resources"
+                / "guacamole"
+                / "postgresql"
+                / "init_db.sql"
+            ]
+        )
 
         # Restart the Guacamole container group
         guacamole_provisioner = ContainerProvisioner(
             config,
-            creator.output("guacamole_resource_group_name"),
-            creator.output("guacamole_container_group_name"),
+            config.pulumi.outputs.guacamole.resource_group_name,
+            config.pulumi.outputs.guacamole.container_group_name,
         )
         guacamole_provisioner.restart()

@@ -1,0 +1,1 @@
+select name FROM guacamole_entity WHERE guacamole_entity.type = 'USER';

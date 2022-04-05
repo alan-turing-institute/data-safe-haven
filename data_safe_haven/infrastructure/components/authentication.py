@@ -8,7 +8,7 @@ from pulumi_azure_native import containerinstance, dbforpostgresql, network, sto
 
 # Local imports
 from .file_share_file import FileShareFile, FileShareFileProps
-from data_safe_haven.deployment import FileReader
+from data_safe_haven.infrastructure import FileReader
 
 
 class AuthenticationProps:
@@ -67,6 +67,15 @@ class AuthenticationComponent(ComponentResource):
         storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
 
         # Define configuration file shares
+        file_share_openldap_commands = storage.FileShare(
+            "file_share_authentication_openldap_commands",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group,
+            share_name="authentication-openldap-commands",
+            share_quota=1024,
+            opts=child_opts,
+        )
         file_share_openldap_ldifs = storage.FileShare(
             "file_share_authentication_openldap_ldifs",
             access_tier="TransactionOptimized",
@@ -160,6 +169,11 @@ class AuthenticationComponent(ComponentResource):
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
+                            mount_path="/opt/commands",
+                            name="authentication-openldap-commands",
+                            read_only=False,
+                        ),
+                        containerinstance.VolumeMountArgs(
                             mount_path="/opt/ldifs",
                             name="authentication-openldap-ldifs",
                             read_only=False,
@@ -226,6 +240,14 @@ class AuthenticationComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share_openldap_commands.name,
+                        storage_account_key=storage_account_keys.keys[0].value,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="authentication-openldap-commands",
+                ),
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
                         share_name=file_share_openldap_ldifs.name,
                         storage_account_key=storage_account_keys.keys[0].value,
                         storage_account_name=props.storage_account_name,
@@ -244,9 +266,10 @@ class AuthenticationComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Upload LDIFs and ACL scripts to separate shares
+        # Upload each category of resource to the appropriate share
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
         for (folder, fileshare) in [
+            ("commands", file_share_openldap_commands),
             ("ldifs", file_share_openldap_ldifs),
             ("scripts", file_share_openldap_scripts),
         ]:

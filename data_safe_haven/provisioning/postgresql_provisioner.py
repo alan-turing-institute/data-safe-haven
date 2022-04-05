@@ -1,5 +1,6 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
+import pathlib
 import requests
 import time
 
@@ -19,12 +20,9 @@ from data_safe_haven.exceptions import (
 class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
     """Provisioner for Azure PostgreSQL databases."""
 
-    def __init__(
-        self, config, resources_path, resource_group_name, server_name, admin_password
-    ):
+    def __init__(self, config, resource_group_name, server_name, admin_password):
         super().__init__(subscription_name=config.azure.subscription_name)
         self.cfg = config
-        self.resources_path = resources_path
         self.resource_group_name = resource_group_name
         self.server_name = server_name
         self.admin_password = admin_password
@@ -35,12 +33,9 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
         while not poller.done():
             time.sleep(10)
 
-    def initialisation_commands(self):
-        init_db_sql_path = (
-            self.resources_path / "guacamole" / "postgresql" / "init_db.sql"
-        )
+    def load_sql(self, filepath):
         # Read file line-by-line removing comments
-        with open(init_db_sql_path, "r") as f_sql:
+        with open(filepath, "r") as f_sql:
             lines = [l.split("--")[0] for l in map(str.strip, f_sql.readlines())]
         # Join lines and return all commands
         return " ".join(lines)
@@ -103,7 +98,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             f"Public network access to <fg=green>{self.server_name}</> is: {server.public_network_access}"
         )
 
-    def update(self):
+    def execute_scripts(self, sql_filepaths):
         # Connect to Azure clients
         db_client = PostgreSQLManagementClient(self.credential, self.subscription_id)
         server = db_client.servers.get(self.resource_group_name, self.server_name)
@@ -112,6 +107,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
         # Add temporary firewall rule
         self.set_database_access(db_client, "enabled")
 
+        outputs = []
         try:
             # Connect to the database
             connection = psycopg2.connect(
@@ -126,13 +122,15 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             cursor = connection.cursor()
 
             # Apply the Guacamole initialisation script
-            self.info("Applying initial configuration...", no_newline=True)
-            commands = self.initialisation_commands()
+            self.info("Running SQL scripts...", no_newline=True)
+            for filepath in sql_filepaths:
+                commands = self.load_sql(filepath)
             cursor.execute(commands)
+            outputs = [record for record in cursor]
 
             # Commit changes
             connection.commit()
-            self.info("Applied initial configuration.", overwrite=True)
+            self.info("Finished running SQL scripts.", overwrite=True)
 
         except (Exception, psycopg2.Error) as exc:
             raise DataSafeHavenAzureException(
@@ -145,3 +143,4 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                 connection.close()
             # Remove temporary firewall rules
             self.set_database_access(db_client, "disabled")
+        return outputs

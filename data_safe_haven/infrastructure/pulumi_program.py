@@ -169,10 +169,6 @@ class PulumiProgram:
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
         pulumi.export(
-            "guacamole_postgresql_password",
-            self.secrets.get("guacamole-postgresql-password"),
-        )
-        pulumi.export(
             "guacamole_postgresql_server_name", guacamole.postgresql_server_name
         )
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)

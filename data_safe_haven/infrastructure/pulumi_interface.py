@@ -16,12 +16,12 @@ from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.mixins import LoggingMixin
 
 
-class PulumiCreator(LoggingMixin):
-    """Deploy infrastructure with Pulumi"""
+class PulumiInterface(LoggingMixin):
+    """Interact with infrastructure using Pulumi"""
 
     def __init__(self, config, project_path, *args, **kwargs):
         self.cfg = config
-        self.stack = None
+        self.stack_ = None
         self.work_dir = pathlib.Path(project_path / "pulumi").resolve()
         self.program = PulumiProgram(self.cfg)
         self.env = {
@@ -33,13 +33,33 @@ class PulumiCreator(LoggingMixin):
 
     @property
     def local_stack_path(self):
+        """Return the local stack path"""
         return self.work_dir / f"Pulumi.{self.cfg.environment.name}.yaml"
 
-    def apply(self):
+    # def load_stack(self):
+    @property
+    def stack(self):
+        """Load the Pulumi stack, creating if needed."""
+        if not self.stack_:
+            self.info(
+                f"Creating/loading stack <fg=green>{self.cfg.environment.name}</>."
+            )
+            self.stack_ = automation.create_or_select_stack(
+                project_name="data_safe_haven",
+                stack_name=self.cfg.environment.name,
+                program=self.program.run,
+                opts=automation.LocalWorkspaceOptions(
+                    secrets_provider=self.cfg.pulumi.encryption_key,
+                    work_dir=self.work_dir,
+                    env_vars=self.env,
+                ),
+            )
+        return self.stack_
+
+    def deploy(self):
         """Deploy the infrastructure with Pulumi."""
         self.initialise_workdir()
         self.login()
-        self.load_stack()
         self.install_plugins()
         self.configure_stack()
         self.refresh()
@@ -54,11 +74,6 @@ class PulumiCreator(LoggingMixin):
         )
         self.ensure_config(
             "authentication-openldap-admin-password",
-            self.generate_password(20),
-            secret=True,
-        )
-        self.ensure_config(
-            "authentication-openldap-search-password",
             self.generate_password(20),
             secret=True,
         )
@@ -112,20 +127,6 @@ class PulumiCreator(LoggingMixin):
         """For inline programs, we must manage plugins ourselves."""
         self.stack.workspace.install_plugin("azure-native", "1.60.0")
 
-    def load_stack(self):
-        """Load the Pulumi stack, creating if needed."""
-        self.info(f"Creating/loading stack <fg=green>{self.cfg.environment.name}</>.")
-        self.stack = automation.create_or_select_stack(
-            project_name="data_safe_haven",
-            stack_name=self.cfg.environment.name,
-            program=self.program.run,
-            opts=automation.LocalWorkspaceOptions(
-                secrets_provider=self.cfg.pulumi.encryption_key,
-                work_dir=self.work_dir,
-                env_vars=self.env,
-            ),
-        )
-
     def login(self):
         """Login to Pulumi."""
         env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
@@ -156,6 +157,14 @@ class PulumiCreator(LoggingMixin):
             self.stack.refresh(color="always")
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi refresh failed.") from exc
+
+    def secret(self, name):
+        try:
+            return self.stack.get_config(name).value
+        except automation.errors.CommandError as exc:
+            raise DataSafeHavenPulumiException(
+                f"Secret '{name}' was not found."
+            ) from exc
 
     def update(self):
         """Update deployed infrastructure."""
