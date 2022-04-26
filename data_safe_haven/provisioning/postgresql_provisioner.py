@@ -1,6 +1,5 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
-import pathlib
 import requests
 import time
 
@@ -98,7 +97,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             f"Public network access to <fg=green>{self.server_name}</> is: {server.public_network_access}"
         )
 
-    def execute_scripts(self, sql_filepaths):
+    def execute_scripts(self, filepaths):
         # Connect to Azure clients
         db_client = PostgreSQLManagementClient(self.credential, self.subscription_id)
         server = db_client.servers.get(self.resource_group_name, self.server_name)
@@ -123,10 +122,11 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
             # Apply the Guacamole initialisation script
             self.info("Running SQL scripts...", no_newline=True)
-            for filepath in sql_filepaths:
+            for filepath in filepaths:
                 commands = self.load_sql(filepath)
             cursor.execute(commands)
-            outputs = [record for record in cursor]
+            if "SELECT" in cursor.statusmessage:
+                outputs = [record for record in cursor]
 
             # Commit changes
             connection.commit()

@@ -21,11 +21,15 @@ class FileReader(LoggingMixin):
     def name(self):
         return self.file_path.name.replace(".mustache", "")
 
-    def get_file_contents(self, mustache_values=None):
-        """Read a local file into a bytearray for upload, expanding template values"""
+    def file_contents(self, mustache_values=None):
+        """Read a local file into a string, expanding template values"""
         with open(self.file_path, "r") as source_file:
             if mustache_values:
                 contents = chevron.render(source_file, mustache_values)
             else:
                 contents = source_file.read()
-        return Output.secret(contents)
+        return contents
+
+    def file_contents_secret(self, mustache_values=None):
+        """Read local file contents into a pulumi secret."""
+        return Output.secret(self.file_contents(mustache_values))

@@ -8,7 +8,7 @@ from pulumi_azure_native import containerinstance, dbforpostgresql, network, sto
 
 # Local imports
 from .file_share_file import FileShareFile, FileShareFileProps
-from data_safe_haven.infrastructure import FileReader
+from data_safe_haven.helpers import FileReader
 
 
 class AuthenticationProps:
@@ -282,7 +282,7 @@ class AuthenticationComponent(ComponentResource):
                     FileShareFileProps(
                         destination_path=reader.name,
                         share_name=fileshare.name,
-                        file_contents=reader.get_file_contents(
+                        file_contents=reader.file_contents_secret(
                             mustache_values={
                                 "environment_name": self._name,
                                 "ldap_group_base_dn": props.ldap_group_base_dn,
@@ -301,4 +301,5 @@ class AuthenticationComponent(ComponentResource):
         # Register outputs
         self.container_group_name = container_group.name
         self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.file_share_name_ldifs = Output.from_input(file_share_openldap_ldifs.name)
         self.subdomain = "authentication"

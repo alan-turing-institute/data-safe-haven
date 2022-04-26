@@ -167,8 +167,12 @@ class PulumiProgram:
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
+        pulumi.export("auth_file_share_name_ldifs", authentication.file_share_name_ldifs)
         pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
         pulumi.export(
             "guacamole_postgresql_server_name", guacamole.postgresql_server_name
         )
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
+        pulumi.export("state_resource_group_name", state_storage.resource_group_name)
+        pulumi.export("state_storage_account_name", state_storage.account_name,)
+

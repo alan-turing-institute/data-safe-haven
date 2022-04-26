@@ -8,7 +8,7 @@ from pulumi_azure_native import containerinstance, dbforpostgresql, network, sto
 
 # Local imports
 from .file_share_file import FileShareFile, FileShareFileProps
-from data_safe_haven.infrastructure import FileReader
+from data_safe_haven.helpers import FileReader
 
 
 class GuacamoleProps:
@@ -326,7 +326,7 @@ class GuacamoleComponent(ComponentResource):
             FileShareFileProps(
                 destination_path=reader.name,
                 share_name=file_share_caddy.name,
-                file_contents=reader.get_file_contents(),
+                file_contents=reader.file_contents_secret(),
                 storage_account_key=storage_account_key_secret,
                 storage_account_name=props.storage_account_name,
             ),

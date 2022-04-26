@@ -18,6 +18,7 @@ class AdminCommand(LoggingMixin, Command):
     Administration for a Data Safe Haven deployment
 
     admin
+        {--a|add= : Add one or more users from a CSV file}
         {--c|config= : Path to an input config YAML file}
         {--l|list : List available users}
         {--o|output= : Path to an output log file}
@@ -43,11 +44,15 @@ class AdminCommand(LoggingMixin, Command):
 
         # Load users interface
         infrastructure = PulumiInterface(config, project_path)
-        users = Users(config)
+        users = Users(config, infrastructure.secret("guacamole-postgresql-password"))
+
+        # Add one or more users
+        if self.option("add"):
+            users.add(self.option("add"))
 
         # Print table of users
         if self.option("list"):
-            users.list(infrastructure.secret("guacamole-postgresql-password"))
+            users.list()
 
         # Upload config to blob storage
         config.upload()

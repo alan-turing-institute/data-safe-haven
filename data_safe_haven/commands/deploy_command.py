@@ -62,6 +62,9 @@ class DeployCommand(LoggingMixin, Command):
                             "container_group_name": infrastructure.output(
                                 "auth_container_group_name"
                             ),
+                            "file_share_name_ldifs": infrastructure.output(
+                                "auth_file_share_name_ldifs"
+                            ),
                             "resource_group_name": infrastructure.output(
                                 "auth_resource_group_name"
                             ),
@@ -77,6 +80,14 @@ class DeployCommand(LoggingMixin, Command):
                                 "guacamole_resource_group_name"
                             ),
                         },
+                        "state": {
+                            "resource_group_name": infrastructure.output(
+                                "state_resource_group_name"
+                            ),
+                            "storage_account_name": infrastructure.output(
+                                "state_storage_account_name"
+                            ),
+                        }
                     }
                 }
             }

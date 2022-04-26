@@ -53,15 +53,3 @@ gidNumber: 10004
 objectClass: posixGroup
 objectClass: top
 
-# User: ldapsearchuser
-dn: uid={{ldap_search_user_id}},{{ldap_user_base_dn}}
-sn: ServiceAccount
-cn: LDAP search user
-uid: {{ldap_search_user_id}}
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: top
-userPassword: {{ldap_search_user_password}}
-uidNumber: 20000
-gidNumber: 10000
-homeDirectory: /home/{{ldap_search_user_id}}
