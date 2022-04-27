@@ -9,20 +9,22 @@ from cleo import Command
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.administration import Users
+from data_safe_haven.administration import UserHandler
 from data_safe_haven.infrastructure import PulumiInterface
 
 
-class AdminCommand(LoggingMixin, Command):
+class UsersCommand(LoggingMixin, Command):
     """
-    Administration for a Data Safe Haven deployment
+    User management for a Data Safe Haven deployment
 
-    admin
+    users
         {--a|add= : Add one or more users from a CSV file}
         {--c|config= : Path to an input config YAML file}
         {--l|list : List available users}
         {--o|output= : Path to an output log file}
         {--p|project= : Path to the output directory which will hold the project files}
+        {--r|remove=* : Remove the specified user by username}
+        {--s|set= : Set list of users to match those in a CSV file}
     """
 
     def handle(self):
@@ -44,7 +46,9 @@ class AdminCommand(LoggingMixin, Command):
 
         # Load users interface
         infrastructure = PulumiInterface(config, project_path)
-        users = Users(config, infrastructure.secret("guacamole-postgresql-password"))
+        users = UserHandler(
+            config, infrastructure.secret("guacamole-postgresql-password")
+        )
 
         # Add one or more users
         if self.option("add"):
@@ -53,6 +57,14 @@ class AdminCommand(LoggingMixin, Command):
         # Print table of users
         if self.option("list"):
             users.list()
+
+        # Remove one or more users
+        if self.option("remove"):
+            users.remove(self.option("remove"))
+
+        # Set list of users
+        if self.option("set"):
+            users.set(self.option("set"))
 
         # Upload config to blob storage
         config.upload()

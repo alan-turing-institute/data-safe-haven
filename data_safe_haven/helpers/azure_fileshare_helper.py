@@ -8,12 +8,22 @@ from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.mixins import AzureMixin
 
+
 class AzureFileShareHelper(AzureMixin):
     """Helper class for Azure fileshares"""
 
-
-    def __init__(self, config: Config, storage_account_name: str, storage_account_resource_group_name: str, share_name: str, *args: list, **kwargs: dict):
-        super().__init__(subscription_name=config.azure.subscription_name, *args, **kwargs)
+    def __init__(
+        self,
+        config: Config,
+        storage_account_name: str,
+        storage_account_resource_group_name: str,
+        share_name: str,
+        *args: list,
+        **kwargs: dict,
+    ):
+        super().__init__(
+            subscription_name=config.azure.subscription_name, *args, **kwargs
+        )
         self.storage_client_ = None
         self.storage_account_key_ = None
         self.storage_account_name = storage_account_name
@@ -23,13 +33,17 @@ class AzureFileShareHelper(AzureMixin):
     @property
     def storage_client(self):
         if not self.storage_client_:
-            self.storage_client_ = StorageManagementClient(self.credential, self.subscription_id)
+            self.storage_client_ = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
         return self.storage_client_
 
     @property
     def storage_account_key(self):
         if not self.storage_account_key_:
-            storage_keys = self.storage_client.storage_accounts.list_keys(self.resource_group_name, self.storage_account_name)
+            storage_keys = self.storage_client.storage_accounts.list_keys(
+                self.resource_group_name, self.storage_account_name
+            )
             self.storage_account_key_ = [key.value for key in storage_keys.keys][0]
         return self.storage_account_key_
 
@@ -95,4 +109,3 @@ class AzureFileShareHelper(AzureMixin):
             file_path=file_name,
             credential=self.storage_account_key,
         )
-

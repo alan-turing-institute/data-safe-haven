@@ -87,7 +87,7 @@ class DeployCommand(LoggingMixin, Command):
                             "storage_account_name": infrastructure.output(
                                 "state_storage_account_name"
                             ),
-                        }
+                        },
                     }
                 }
             }

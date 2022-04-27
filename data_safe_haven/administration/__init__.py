@@ -1,3 +1,3 @@
-from .users import Users
+from .users import UserHandler
 
-__all__ = [Users]
+__all__ = [UserHandler]
