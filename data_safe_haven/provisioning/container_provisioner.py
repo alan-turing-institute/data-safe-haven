@@ -34,17 +34,22 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
         aci_client = ContainerInstanceManagementClient(
             self.credential, self.subscription_id
         )
+        initial_ip_address = aci_client.container_groups.get(self.resource_group_name, self.container_group_name).ip_address.ip
 
         # Restart container group
         self.info(
             f"Restarting container group <fg=green>{self.container_group_name}</>...",
             no_newline=True,
         )
-        self.wait(
-            aci_client.container_groups.begin_restart(
-                self.resource_group_name, self.container_group_name
+        while True:
+            self.wait(
+                aci_client.container_groups.begin_restart(
+                    self.resource_group_name, self.container_group_name
+                )
             )
-        )
+            final_ip_address = aci_client.container_groups.get(self.resource_group_name, self.container_group_name).ip_address.ip
+            if final_ip_address == initial_ip_address:
+                break
         self.info(
             f"Restarted container group <fg=green>{self.container_group_name}</>.",
             overwrite=True,
