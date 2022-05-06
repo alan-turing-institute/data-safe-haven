@@ -98,7 +98,7 @@ class LoggingHandlerPlainFile(logging.FileHandler):
 class LoggingMixin:
     """Mixin class for anything needing logging"""
 
-    date_fmt = r"%Y-%m-%d %I:%M:%S"
+    date_fmt = r"%Y-%m-%d %H:%M:%S"
     coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)-8s]</> %(message)s"
     is_setup = False
 

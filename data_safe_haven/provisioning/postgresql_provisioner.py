@@ -3,7 +3,7 @@
 import pathlib
 import requests
 import time
-from typing import Sequence
+from typing import Dict, Sequence
 
 # Third party imports
 from azure.core.polling import LROPoller
@@ -13,6 +13,7 @@ from azure.mgmt.rdbms.postgresql.models import ServerUpdateParameters, FirewallR
 import psycopg2
 
 # Local imports
+from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
@@ -65,7 +66,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             )
         return self.db_server_
 
-    def db_connection(self, n_retries: int = 0) -> psycopg2.connection:
+    def db_connection(self, n_retries: int = 0) -> psycopg2._psycopg.connection:
         """Get the database connection as a ServersOperations object."""
         while True:
             try:
@@ -83,18 +84,25 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                     n_retries -= 1
                     time.sleep(10)
                 else:
-                    raise DataSafeHavenAzureException("Could not connect to database.") from exc
+                    raise DataSafeHavenAzureException(
+                        "Could not connect to database."
+                    ) from exc
         return connection
 
-    def load_sql(self, filepath: pathlib.Path) -> str:
+    def load_sql(self, filepath: pathlib.Path, mustache_values: Dict = None) -> str:
         """Load filepath into a single SQL string."""
-        # Read file line-by-line removing comments
-        with open(filepath, "r") as f_sql:
-            lines = [l.split("--")[0] for l in map(str.strip, f_sql.readlines())]
-        # Join lines and return all commands
-        return " ".join(lines)
+        reader = FileReader(filepath)
+        # Strip any comment lines
+        sql_lines = [
+            line.split("--")[0]
+            for line in reader.file_contents(mustache_values).split("\n")
+        ]
+        # Join into a single SQL string
+        return " ".join([line for line in sql_lines if line])
 
-    def execute_scripts(self, filepaths: Sequence[pathlib.Path]) -> Sequence[str]:
+    def execute_scripts(
+        self, filepaths: Sequence[pathlib.Path], mustache_values: Dict = None
+    ) -> Sequence[str]:
         """Execute scripts on the PostgreSQL server."""
         outputs = []
         connection = None
@@ -110,8 +118,8 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             # Apply the Guacamole initialisation script
             self.info("Running SQL scripts...", no_newline=True)
             for filepath in filepaths:
-                commands = self.load_sql(filepath)
-            cursor.execute(commands)
+                commands = self.load_sql(filepath, mustache_values)
+                cursor.execute(commands)
             if "SELECT" in cursor.statusmessage:
                 outputs = [record for record in cursor]
 

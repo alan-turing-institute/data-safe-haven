@@ -14,6 +14,7 @@ class SecureResearchDesktopProps:
 
     def __init__(
         self,
+        admin_password: Input[str],
         ip_addresses: Input[Sequence[str]],
         ldap_group_base_dn: Input[str],
         ldap_root_dn: Input[str],
@@ -26,6 +27,7 @@ class SecureResearchDesktopProps:
         vm_sizes: Sequence[Input[str]],
         subnet_name: Optional[Input[str]] = "SecureResearchDesktopSubnet",
     ):
+        self.admin_password = admin_password
         self.ip_addresses = ip_addresses
         self.ldap_group_base_dn = ldap_group_base_dn
         self.ldap_root_dn = ldap_root_dn
@@ -36,7 +38,23 @@ class SecureResearchDesktopProps:
         self.subnet_name = subnet_name
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group = virtual_network_resource_group
+        self.vm_short_names = Output.from_input(vm_sizes).apply(
+            lambda vm_sizes: self.construct_names(vm_sizes)
+        )
         self.vm_sizes = vm_sizes
+
+    def construct_names(self, vm_sizes):
+        """Construct VM names from a list of sizes"""
+        vm_names = []
+        idx_cpu, idx_gpu = 0, 0
+        for vm_size in vm_sizes:
+            if vm_size.startswith("Standard_N"):
+                vm_names.append(f"srd-gpu-{idx_gpu:02d}")
+                idx_gpu = idx_gpu + 1
+            else:
+                vm_names.append(f"srd-cpu-{idx_cpu:02d}")
+                idx_cpu = idx_cpu + 1
+        return vm_names
 
 
 class SecureResearchDesktopComponent(ComponentResource):
@@ -50,35 +68,47 @@ class SecureResearchDesktopComponent(ComponentResource):
 
         # Deploy a variable number of VMs depending on the input parameters
         Output.all(
+            admin_password=props.admin_password,
             ip_addresses=props.ip_addresses,
             ldap_group_base_dn=props.ldap_group_base_dn,
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
             ldap_user_base_dn=props.ldap_user_base_dn,
+            vm_short_names=props.vm_short_names,
             vm_sizes=props.vm_sizes,
         ).apply(
             lambda args: self.deploy(
+                admin_password=args["admin_password"],
                 ip_addresses=args["ip_addresses"],
                 ldap_group_base_dn=args["ldap_group_base_dn"],
                 ldap_root_dn=args["ldap_root_dn"],
                 ldap_search_password=args["ldap_search_password"],
                 ldap_server_ip=args["ldap_server_ip"],
                 ldap_user_base_dn=args["ldap_user_base_dn"],
+                vm_short_names=args["vm_short_names"],
                 vm_sizes=args["vm_sizes"],
                 props=props,
                 opts=child_opts,
             )
         )
 
+        # Register outputs
+        self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.vm_details = Output.all(
+            vm_short_names=props.vm_short_names, ip_addresses=props.ip_addresses
+        ).apply(lambda args: list(zip(args["vm_short_names"], args["ip_addresses"])))
+
     def deploy(
         self,
+        admin_password: str,
         ip_addresses: Sequence[str],
         ldap_group_base_dn: str,
         ldap_root_dn: str,
         ldap_search_password: str,
         ldap_server_ip: str,
         ldap_user_base_dn: str,
+        vm_short_names: Sequence[str],
         vm_sizes: Sequence[str],
         props: SecureResearchDesktopProps,
         opts: ResourceOptions = None,
@@ -108,15 +138,15 @@ class SecureResearchDesktopComponent(ComponentResource):
             b64cloudinit = base64.b64encode(cloudinit.encode("utf-8")).decode()
 
         # Deploy secure research desktops
-        for idx, (vm_size, ip_address) in enumerate(
-            zip(vm_sizes, ip_addresses), start=1
+        for vm_short_name, vm_size, ip_address in zip(
+            vm_short_names, vm_sizes, ip_addresses
         ):
-            category = "gpu" if vm_size.startswith("Standard_N") else "cpu"
-            vm_name = f"vm-{self._name}-srd-{category}{idx:02d}"
+            vm_name = f"vm-{self._name}-{vm_short_name}"
+            vm_name_underscored = vm_name.replace("-", "_")
 
             # Define public IP address
             public_ip = network.PublicIPAddress(
-                f"public_ip_{vm_name}",
+                f"public_ip_{vm_name_underscored}",
                 public_ip_address_name=f"{vm_name}-public-ip",
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
@@ -124,7 +154,7 @@ class SecureResearchDesktopComponent(ComponentResource):
                 opts=opts,
             )
             network_interface = network.NetworkInterface(
-                f"network_interface_{vm_name}",
+                f"network_interface_{vm_name_underscored}",
                 enable_accelerated_networking=True,
                 ip_configurations=[
                     network.NetworkInterfaceIPConfigurationArgs(
@@ -134,12 +164,12 @@ class SecureResearchDesktopComponent(ComponentResource):
                         subnet=network.SubnetArgs(id=snet_secure_research_desktop.id),
                     )
                 ],
-                network_interface_name=f"{vm_name}-nic",
+                network_interface_name=f"{vm_name_underscored}-nic",
                 resource_group_name=props.resource_group_name,
                 opts=opts,
             )
             virtual_machine = compute.VirtualMachine(
-                f"virtual_machine_{vm_name}",
+                f"virtual_machine_{vm_name_underscored}",
                 hardware_profile=compute.HardwareProfileArgs(
                     vm_size=vm_size,
                 ),
@@ -152,7 +182,7 @@ class SecureResearchDesktopComponent(ComponentResource):
                     ],
                 ),
                 os_profile=compute.OSProfileArgs(
-                    admin_password="P4ssw0rd",
+                    admin_password=admin_password,
                     admin_username="dshadmin",
                     computer_name=vm_name,
                     custom_data=b64cloudinit,
@@ -186,6 +216,3 @@ class SecureResearchDesktopComponent(ComponentResource):
                     delete_before_replace=True, replace_on_changes=["os_profile"]
                 ),
             )
-
-        # Register outputs
-        self.resource_group_name = Output.from_input(props.resource_group_name)

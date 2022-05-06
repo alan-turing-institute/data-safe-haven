@@ -97,6 +97,28 @@ class PulumiProgram:
             ),
         )
 
+        # Define containerised secure desktops
+        srd = SecureResearchDesktopComponent(
+            self.cfg.environment_name,
+            SecureResearchDesktopProps(
+                admin_password=self.secrets.get(
+                    "secure-research-desktop-admin-password"
+                ),
+                ip_addresses=networking.ip_addresses_srd,
+                ldap_group_base_dn=self.cfg.ldap_group_base_dn,
+                ldap_root_dn=self.cfg.ldap_root_dn,
+                ldap_search_password=self.secrets.get(
+                    "authentication-openldap-search-password"
+                ),
+                ldap_server_ip=networking.ip_address_openldap,
+                ldap_user_base_dn=self.cfg.ldap_user_base_dn,
+                resource_group_name=rg_secure_research_desktop.name,
+                virtual_network_name=networking.vnet_name,
+                virtual_network_resource_group=rg_networking.name,
+                vm_sizes=self.cfg.environment.vm_sizes,
+            ),
+        )
+
         # Define containerised remote desktop gateway
         guacamole = GuacamoleComponent(
             self.cfg.environment_name,
@@ -145,25 +167,6 @@ class PulumiProgram:
             ),
         )
 
-        # Define containerised remote desktop gateway
-        srd = SecureResearchDesktopComponent(
-            self.cfg.environment_name,
-            SecureResearchDesktopProps(
-                ip_addresses=networking.ip_addresses_srd,
-                ldap_group_base_dn=self.cfg.ldap_group_base_dn,
-                ldap_root_dn=self.cfg.ldap_root_dn,
-                ldap_search_password=self.secrets.get(
-                    "authentication-openldap-search-password"
-                ),
-                ldap_server_ip=networking.ip_address_openldap,
-                ldap_user_base_dn=self.cfg.ldap_user_base_dn,
-                resource_group_name=rg_secure_research_desktop.name,
-                virtual_network_name=networking.vnet_name,
-                virtual_network_resource_group=rg_networking.name,
-                vm_sizes=self.cfg.environment.vm_sizes,
-            ),
-        )
-
         # Export values for later use
         pulumi.export("auth_container_group_name", authentication.container_group_name)
         pulumi.export("auth_resource_group_name", authentication.resource_group_name)
@@ -180,3 +183,4 @@ class PulumiProgram:
             "state_storage_account_name",
             state_storage.account_name,
         )
+        pulumi.export("vm_details", srd.vm_details)

@@ -34,7 +34,9 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
         aci_client = ContainerInstanceManagementClient(
             self.credential, self.subscription_id
         )
-        initial_ip_address = aci_client.container_groups.get(self.resource_group_name, self.container_group_name).ip_address.ip
+        initial_ip_address = aci_client.container_groups.get(
+            self.resource_group_name, self.container_group_name
+        ).ip_address.ip
 
         # Restart container group
         self.info(
@@ -47,7 +49,9 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
                     self.resource_group_name, self.container_group_name
                 )
             )
-            final_ip_address = aci_client.container_groups.get(self.resource_group_name, self.container_group_name).ip_address.ip
+            final_ip_address = aci_client.container_groups.get(
+                self.resource_group_name, self.container_group_name
+            ).ip_address.ip
             if final_ip_address == initial_ip_address:
                 break
         self.info(

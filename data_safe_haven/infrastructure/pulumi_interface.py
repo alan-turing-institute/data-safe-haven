@@ -13,6 +13,7 @@ import yaml
 # Local imports
 from .pulumi_program import PulumiProgram
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -74,16 +75,17 @@ class PulumiInterface(LoggingMixin):
         )
         self.ensure_config(
             "authentication-openldap-admin-password",
-            self.generate_password(20),
+            password(20),
             secret=True,
         )
         self.ensure_config(
             "authentication-openldap-search-password",
-            self.generate_password(20),
+            password(20),
             secret=True,
         )
+        self.ensure_config("guacamole-postgresql-password", password(20), secret=True)
         self.ensure_config(
-            "guacamole-postgresql-password", self.generate_password(20), secret=True
+            "secure-research-desktop-admin-password", password(20), secret=True
         )
 
     def ensure_config(self, name, value, secret=False):
@@ -102,11 +104,6 @@ class PulumiInterface(LoggingMixin):
         else:
             self.error("Pulumi operation <fg=red>failed</>.")
             raise DataSafeHavenPulumiException("Pulumi operation failed.")
-
-    def generate_password(self, length):
-        """Generate an alphnumeric password."""
-        alphabet = string.ascii_letters + string.digits
-        return "".join(secrets.choice(alphabet) for _ in range(length))
 
     def initialise_workdir(self):
         """Create project directory if it does not exist and update local stack."""

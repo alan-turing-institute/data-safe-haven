@@ -117,14 +117,31 @@ class DeployCommand(LoggingMixin, Command):
             config.pulumi.outputs.guacamole.postgresql_server_name,
             infrastructure.secret("guacamole-postgresql-password"),
         )
+        connections = infrastructure.output("vm_details")
+        connection_data = {
+            "connections": [
+                {
+                    "connection_name": connection,
+                    "disable_copy": (not config.settings.allow_copy),
+                    "disable_paste": (not config.settings.allow_paste),
+                    "ip_address": ip_address,
+                    "timezone": config.settings.timezone,
+                }
+                for (connection, ip_address) in connections
+            ]
+        }
+        postgres_script_path = (
+            pathlib.Path(__file__).parent.parent
+            / "resources"
+            / "guacamole"
+            / "postgresql"
+        )
         postgres_provisioner.execute_scripts(
             [
-                pathlib.Path(__file__).parent.parent
-                / "resources"
-                / "guacamole"
-                / "postgresql"
-                / "init_db.sql"
-            ]
+                postgres_script_path / "init_db.sql",
+                postgres_script_path / "update_connections.mustache.sql",
+            ],
+            mustache_values=connection_data,
         )
 
         # Restart the Guacamole container group

@@ -197,6 +197,8 @@ class GuacamoleComponent(ComponentResource):
                         ),
                     ],
                 ),
+                # Note that the environment variables are not all documented.
+                # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
                     image="guacamole/guacamole:1.4.0",
                     name=f"container-{self._name}-guacamole-guacamole",

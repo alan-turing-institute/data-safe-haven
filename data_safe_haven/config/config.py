@@ -1,6 +1,7 @@
 # Standard library imports
 import pathlib
 import re
+import zoneinfo
 
 # Third party imports
 from azure.storage.blob import BlobServiceClient
@@ -57,6 +58,21 @@ class Config(LoggingMixin, AzureMixin):
         self.tags.version = __version__
         self.backend.resource_group_name = self.resource_group_name
         self.backend.storage_account_name = self.storage_account_name
+        self.settings.allow_copy = (
+            False
+            if isinstance(self.settings.allow_copy, dotmap.DotMap)
+            else self.settings.allow_copy
+        )
+        self.settings.allow_paste = (
+            False
+            if isinstance(self.settings.allow_paste, dotmap.DotMap)
+            else self.settings.allow_paste
+        )
+        self.settings.timezone = (
+            "Europe/London"
+            if isinstance(self.settings.timezone, dotmap.DotMap)
+            else self.settings.timezone
+        )
 
     def __repr__(self):
         return f"{self.__class__} containing: {self._map}"
