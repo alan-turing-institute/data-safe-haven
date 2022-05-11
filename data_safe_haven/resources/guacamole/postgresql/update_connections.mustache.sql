@@ -1,9 +1,11 @@
 -- Require that connection names are unique
 ALTER TABLE guacamole_connection DROP CONSTRAINT IF EXISTS connection_name_constraint;
-
 ALTER TABLE guacamole_connection ADD CONSTRAINT connection_name_constraint UNIQUE (connection_name);
 
--- Add initial connections via RDP and ssh
+-- Remove all connections (NB. this will cascade delete guacamole_connection_parameter entries)
+TRUNCATE guacamole_connection CASCADE;
+
+-- Add entries for RDP and ssh for each specified connection
 {{#connections}}
 INSERT INTO
     guacamole_connection (connection_name, protocol)

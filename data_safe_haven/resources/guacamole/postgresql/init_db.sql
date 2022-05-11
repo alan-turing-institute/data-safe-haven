@@ -755,42 +755,55 @@ CREATE INDEX IF NOT EXISTS guacamole_user_password_history_user_id
     ON guacamole_user_password_history(user_id);
 
 --
--- User creation
+-- Set up user groups
 --
 
--- -- Create default user "guacadmin" with password "guacadmin"
--- INSERT INTO guacamole_entity (name, type) VALUES ('guacadmin', 'USER') ON CONFLICT DO NOTHING;
--- INSERT INTO guacamole_user (entity_id, password_hash, password_salt, password_date)
--- SELECT
---     entity_id,
---     decode('CA458A7D494E3BE824F5E1E175A1556C0F8EEF2C2D7DF3633BEC4A29C4411960', 'hex'),  -- 'guacadmin'
---     decode('FE24ADC5E11E2B25288D1704ABE67A79E342ECC26064CE69C5B3177795A82264', 'hex'),
---     CURRENT_TIMESTAMP
--- FROM guacamole_entity WHERE name = 'guacadmin' AND guacamole_entity.type = 'USER' ON CONFLICT DO NOTHING;
+-- Create user group entities
+INSERT INTO
+    guacamole_entity (name, type)
+VALUES
+    ('System Administrators', 'USER_GROUP'),
+    ('Research Users', 'USER_GROUP')
+ON CONFLICT DO NOTHING;
 
--- -- Grant this user all system permissions
--- INSERT INTO guacamole_system_permission (entity_id, permission)
--- SELECT entity_id, permission::guacamole_system_permission_type
--- FROM (
---     VALUES
---         ('guacadmin', 'CREATE_CONNECTION'),
---         ('guacadmin', 'CREATE_CONNECTION_GROUP'),
---         ('guacadmin', 'CREATE_SHARING_PROFILE'),
---         ('guacadmin', 'CREATE_USER'),
---         ('guacadmin', 'CREATE_USER_GROUP'),
---         ('guacadmin', 'ADMINISTER')
--- ) permissions (username, permission)
--- JOIN guacamole_entity ON permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER' ON CONFLICT DO NOTHING;
+-- Create user groups
+INSERT INTO
+    guacamole_user_group (entity_id)
+SELECT entity_id
+FROM
+    guacamole_entity
+WHERE
+    guacamole_entity.type = 'USER_GROUP'
+ON CONFLICT DO NOTHING;
 
--- -- Grant admin permission to read/update/administer self
--- INSERT INTO guacamole_user_permission (entity_id, affected_user_id, permission)
--- SELECT guacamole_entity.entity_id, guacamole_user.user_id, permission::guacamole_object_permission_type
--- FROM (
---     VALUES
---         ('guacadmin', 'guacadmin', 'READ'),
---         ('guacadmin', 'guacadmin', 'UPDATE'),
---         ('guacadmin', 'guacadmin', 'ADMINISTER')
--- ) permissions (username, affected_username, permission)
--- JOIN guacamole_entity          ON permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER'
--- JOIN guacamole_entity affected ON permissions.affected_username = affected.name AND guacamole_entity.type = 'USER'
--- JOIN guacamole_user            ON guacamole_user.entity_id = affected.entity_id ON CONFLICT DO NOTHING;
+-- Grant administration permissions to members of the System Administrators group
+INSERT INTO guacamole_system_permission (entity_id, permission)
+SELECT entity_id, permission :: guacamole_system_permission_type
+FROM
+    (
+        VALUES
+            ('System Administrators', 'CREATE_CONNECTION'),
+            ('System Administrators', 'CREATE_CONNECTION_GROUP'),
+            ('System Administrators', 'CREATE_SHARING_PROFILE'),
+            ('System Administrators', 'CREATE_USER'),
+            ('System Administrators', 'CREATE_USER_GROUP'),
+            ('System Administrators', 'ADMINISTER')
+    ) group_permissions (username, permission)
+    JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER_GROUP'
+ON CONFLICT DO NOTHING;
+
+-- Grant appropriate connection permissions to each group
+INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
+    SELECT entity_id, connection_id, permission::guacamole_object_permission_type
+    FROM
+        (
+            VALUES
+                ('System Administrators', 'READ'),
+                ('System Administrators', 'UPDATE'),
+                ('System Administrators', 'DELETE'),
+                ('System Administrators', 'ADMINISTER'),
+                ('Research Users', 'READ')
+        ) group_permissions (username, permission)
+        CROSS JOIN guacamole_connection
+        JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name
+ON CONFLICT DO NOTHING;

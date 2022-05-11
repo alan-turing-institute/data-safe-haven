@@ -23,11 +23,20 @@ azure:
   location: <Azure location where resources should be deployed>
 ```
 
-Run the following:
+- Run the following to initialise the deployment:
 
-- `dsh init --config <my config file> --project <my project directory>`
-- `dsh deploy --config <my config file>`
+```bash
+> dsh init --config <my YAML config file>
+```
 
-Now enter `<my project directory>/kubernetes` and run
+- Next deploy the infrastructure with:
 
-- `kubectl --kubeconfig kubeconfig-<my project name>.yaml get nodes`
+```bash
+> dsh deploy --config <my YAMLconfig file>
+```
+
+- Add one or more users from a CSV file with columns named (`first_name;last_name;email_address;phone_number`)
+
+```bash
+> dsh users --config <my YAML config file> --add <my CSV users file>
+```

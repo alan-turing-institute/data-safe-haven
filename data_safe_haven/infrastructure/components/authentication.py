@@ -299,7 +299,8 @@ class AuthenticationComponent(ComponentResource):
                 )
 
         # Register outputs
+        self.container_group_ip = container_group.ip_address.ip
         self.container_group_name = container_group.name
-        self.resource_group_name = Output.from_input(props.resource_group_name)
         self.file_share_name_ldifs = Output.from_input(file_share_openldap_ldifs.name)
+        self.resource_group_name = Output.from_input(props.resource_group_name)
         self.subdomain = "authentication"

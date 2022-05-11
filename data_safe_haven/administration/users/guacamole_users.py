@@ -65,6 +65,7 @@ class GuacamoleUsers(LoggingMixin):
             "users": [
                 {
                     "username": user.username,
+                    "group": "Research Users",
                     "password_hash": user.password_hash,
                     "password_salt": user.password_salt,
                     "password_date": user.password_date.isoformat(),

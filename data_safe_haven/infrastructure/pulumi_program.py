@@ -147,8 +147,8 @@ class PulumiProgram:
             ApplicationGatewayProps(
                 hostname_authentication=f"{authentication.subdomain}.{self.cfg.environment.url}",
                 hostname_guacamole=self.cfg.environment.url,
-                ip_address_authentication=networking.ip_address_openldap,
-                ip_address_guacamole=networking.ip_address_guacamole_container,
+                ip_address_authentication=authentication.container_group_ip,
+                ip_address_guacamole=guacamole.container_group_ip,
                 key_vault_certificate_id=self.cfg.deployment.certificate_id,
                 key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
                 resource_group_name=rg_networking.name,
