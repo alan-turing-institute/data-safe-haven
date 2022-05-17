@@ -92,8 +92,8 @@ class PulumiProgram:
                 resource_group_name=rg_authentication.name,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
-                virtual_network_name=networking.vnet_name,
-                virtual_network_resource_group=rg_networking.name,
+                virtual_network=networking.vnet,
+                virtual_network_resource_group_name=networking.resource_group_name,
             ),
         )
 
@@ -113,8 +113,8 @@ class PulumiProgram:
                 ldap_server_ip=networking.ip_address_openldap,
                 ldap_user_base_dn=self.cfg.ldap_user_base_dn,
                 resource_group_name=rg_secure_research_desktop.name,
-                virtual_network_name=networking.vnet_name,
-                virtual_network_resource_group=rg_networking.name,
+                virtual_network=networking.vnet,
+                virtual_network_resource_group_name=networking.resource_group_name,
                 vm_sizes=self.cfg.environment.vm_sizes,
             ),
         )
@@ -136,8 +136,8 @@ class PulumiProgram:
                 resource_group_name=rg_guacamole.name,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
-                virtual_network_name=networking.vnet_name,
-                virtual_network_resource_group=rg_networking.name,
+                virtual_network=networking.vnet,
+                virtual_network_resource_group_name=networking.resource_group_name,
             ),
         )
 
@@ -152,7 +152,7 @@ class PulumiProgram:
                 key_vault_certificate_id=self.cfg.deployment.certificate_id,
                 key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
                 resource_group_name=rg_networking.name,
-                vnet_name=networking.vnet_name,
+                virtual_network=networking.vnet,
             ),
         )
 

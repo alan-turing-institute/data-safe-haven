@@ -2,9 +2,8 @@
 # Standard library imports
 from contextlib import suppress
 import pathlib
-import secrets
 import subprocess
-import string
+import time
 
 # Third party imports
 from pulumi import automation
@@ -25,11 +24,7 @@ class PulumiInterface(LoggingMixin):
         self.stack_ = None
         self.work_dir = pathlib.Path(project_path / "pulumi").resolve()
         self.program = PulumiProgram(self.cfg)
-        self.env = {
-            "AZURE_STORAGE_ACCOUNT": config.backend.storage_account_name,
-            "AZURE_STORAGE_KEY": config.storage_account_key(),
-            "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-        }
+        self.env_ = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -37,7 +32,16 @@ class PulumiInterface(LoggingMixin):
         """Return the local stack path"""
         return self.work_dir / f"Pulumi.{self.cfg.environment.name}.yaml"
 
-    # def load_stack(self):
+    @property
+    def env(self):
+        if not self.env_:
+            self.env_ = {
+                "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
+                "AZURE_STORAGE_KEY": self.cfg.storage_account_key(),
+                "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+            }
+        return self.env_
+
     @property
     def stack(self):
         """Load the Pulumi stack, creating if needed."""
@@ -66,6 +70,24 @@ class PulumiInterface(LoggingMixin):
         self.refresh()
         self.preview()
         self.update()
+
+    def destroy(self):
+        """Destroy deployed infrastructure."""
+        try:
+            # Note that the first iteration can fail due to failure to delete container NICs
+            # See https://github.com/MicrosoftDocs/azure-docs/issues/20737 for details
+            while True:
+                try:
+                    result = self.stack.destroy(color="always", on_output=self.info)
+                    self.evaluate(result.summary.result)
+                    break
+                except automation.errors.CommandError as exc:
+                    if any([error in str(exc) for error in ("NetworkProfileAlreadyInUseWithContainerNics", "InUseSubnetCannotBeDeleted")]):
+                        time.sleep(10)
+                    else:
+                        raise
+        except automation.errors.CommandError as exc:
+            raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
     def configure_stack(self):
         """Set Azure config options"""
@@ -156,12 +178,22 @@ class PulumiInterface(LoggingMixin):
             raise DataSafeHavenPulumiException("Pulumi refresh failed.") from exc
 
     def secret(self, name):
+        """Read a secret from the Pulumi stack."""
         try:
             return self.stack.get_config(name).value
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(
                 f"Secret '{name}' was not found."
             ) from exc
+
+    def teardown(self):
+        """Teardown the infrastructure deployed with Pulumi."""
+        self.initialise_workdir()
+        self.login()
+        self.install_plugins()
+        self.configure_stack()
+        self.refresh()
+        self.destroy()
 
     def update(self):
         """Update deployed infrastructure."""

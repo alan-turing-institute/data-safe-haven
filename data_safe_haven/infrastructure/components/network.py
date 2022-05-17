@@ -162,7 +162,7 @@ class NetworkComponent(ComponentResource):
         )
         nsg_secure_research_desktop = network.NetworkSecurityGroup(
             "nsg_secure_research_desktop",
-            network_security_group_name=f"nsg-{self._name}-secure-research-deskto",
+            network_security_group_name=f"nsg-{self._name}-secure-research-desktop",
             resource_group_name=props.resource_group_name,
             security_rules=[
                 network.SecurityRuleArgs(
@@ -272,4 +272,4 @@ class NetworkComponent(ComponentResource):
             [str(ip) for ip in ip_network_secure_research_desktop.available()]
         )
         self.resource_group_name = Output.from_input(props.resource_group_name)
-        self.vnet_name = vnet.name
+        self.vnet = vnet

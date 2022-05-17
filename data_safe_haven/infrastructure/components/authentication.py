@@ -4,7 +4,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
+from pulumi_azure_native import containerinstance, network, storage
 
 # Local imports
 from .file_share_file import FileShareFile, FileShareFileProps
@@ -26,8 +26,8 @@ class AuthenticationProps:
         resource_group_name: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
-        virtual_network_name: Input[str],
-        virtual_network_resource_group: Input[str],
+        virtual_network: Input[network.VirtualNetwork],
+        virtual_network_resource_group_name: Input[str],
         subnet_name: Optional[Input[str]] = "OpenLDAPSubnet",
     ):
         self.ip_address_container = ip_address_container
@@ -41,8 +41,8 @@ class AuthenticationProps:
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
         self.subnet_name = subnet_name
-        self.virtual_network_name = virtual_network_name
-        self.virtual_network_resource_group = virtual_network_resource_group
+        self.virtual_network = virtual_network
+        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class AuthenticationComponent(ComponentResource):
@@ -55,10 +55,10 @@ class AuthenticationComponent(ComponentResource):
         child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resources
-        snet_openldap = network.get_subnet(
+        snet_openldap = network.get_subnet_output(
             subnet_name=props.subnet_name,
-            resource_group_name=props.virtual_network_resource_group,
-            virtual_network_name=props.virtual_network_name,
+            resource_group_name=props.virtual_network_resource_group_name,
+            virtual_network_name=props.virtual_network.name,
         )
         storage_account_keys = storage.list_storage_account_keys(
             account_name=props.storage_account_name,
@@ -112,8 +112,8 @@ class AuthenticationComponent(ComponentResource):
                 )
             ],
             network_profile_name=f"np-{self._name}-authentication",
-            resource_group_name=props.virtual_network_resource_group,
-            opts=child_opts,
+            resource_group_name=props.virtual_network_resource_group_name,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[props.virtual_network]))
         )
 
         # Define the container group with guacd and openldap

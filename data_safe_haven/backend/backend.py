@@ -52,6 +52,9 @@ class Backend(AzureMixin, LoggingMixin):
         self.ensure_key(self.cfg.pulumi.encryption_key_name)
         self.ensure_cert(self.cfg.deployment.certificate_name, self.cfg.environment.url)
 
+    def destroy(self):
+        self.remove_resource_group(self.cfg.backend.resource_group_name)
+
     def ensure_cert(self, certificate_name, certificate_url):
         """Ensure that self-signed certificate exists"""
         try:
@@ -291,3 +294,35 @@ class Backend(AzureMixin, LoggingMixin):
             raise DataSafeHavenAzureException(
                 f"Failed to create storage container <fg=green>{container_name}."
             ) from exc
+
+    def remove_resource_group(self, resource_group_name):
+        """Ensure that backend resource group exists"""
+        # Connect to Azure clients
+        resource_client = ResourceManagementClient(
+            self.credential, self.subscription_id
+        )
+
+        # Ensure that resource group exists
+        self.info(
+            f"Removing resource group <fg=green>{resource_group_name}</> if it exists...",
+            no_newline=True,
+        )
+        poller = resource_client.resource_groups.begin_delete(
+            resource_group_name,
+        )
+        while not poller.done():
+            poller.wait(10)
+        resource_groups = [
+            rg
+            for rg in resource_client.resource_groups.list()
+            if rg.name == resource_group_name
+        ]
+        if not resource_groups:
+            self.info(
+                f"Ensured that resource group <fg=green>{resource_group_name}</> does not exist.",
+                overwrite=True,
+            )
+        else:
+            raise DataSafeHavenAzureException(
+                f"Failed to remove resource group {resource_group_name}."
+            )

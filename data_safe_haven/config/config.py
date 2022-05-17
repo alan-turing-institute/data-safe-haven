@@ -106,6 +106,13 @@ class Config(LoggingMixin, AzureMixin):
     def add_data(self, dicts):
         self._map = self.merge_dicts(self._map, dicts)
 
+    def backend_exists(self):
+        try:
+            _ = self.storage_account_key()
+        except DataSafeHavenAzureException:
+            return False
+        return True
+
     def download(self):
         """Load the config file from Azure storage"""
         # Connect to blob storage

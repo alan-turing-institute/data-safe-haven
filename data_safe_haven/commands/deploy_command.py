@@ -16,7 +16,7 @@ from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisi
 
 class DeployCommand(LoggingMixin, Command):
     """
-    Deploy a Data Safe Haven from project files
+    Deploy a Data Safe Haven using local configuration and project files
 
     deploy
         {--c|config= : Path to an input config YAML file}

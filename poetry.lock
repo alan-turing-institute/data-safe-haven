@@ -147,6 +147,19 @@ azure-mgmt-core = ">=1.2.0,<2.0.0"
 msrest = ">=0.6.21"
 
 [[package]]
+name = "azure-mgmt-network"
+version = "20.0.0"
+description = "Microsoft Azure Network Management Client Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+azure-common = ">=1.1,<2.0"
+azure-mgmt-core = ">=1.3.0,<2.0.0"
+msrest = ">=0.6.21"
+
+[[package]]
 name = "azure-mgmt-rdbms"
 version = "10.1.0"
 description = "Microsoft Azure RDBMS Management Client Library for Python"
@@ -613,7 +626,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyjwt"
-version = "2.3.0"
+version = "2.4.0"
 description = "JSON Web Token implementation in Python"
 category = "main"
 optional = false
@@ -787,7 +800,7 @@ test = ["websockets"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "8d434d04975a83904ae9d2e90aac9a275a5f0c40cf13b27e13e7d5d5c8505b14"
+content-hash = "57c564d39804f16cdd66ae75c5711441b3d132b08d326d9384abc2f0a9269cfa"
 
 [metadata.files]
 arpeggio = [
@@ -837,6 +850,10 @@ azure-mgmt-keyvault = [
 azure-mgmt-msi = [
     {file = "azure-mgmt-msi-6.0.0b1.zip", hash = "sha256:be505f63218e0801c710a4f5743025b801fc2afab9e09cb07e446dc7ed16fcb6"},
     {file = "azure_mgmt_msi-6.0.0b1-py2.py3-none-any.whl", hash = "sha256:e5b10b7aa4edd424f71009f85e6f3f713a70d2860e9aaf3bc4239503cf5e99ef"},
+]
+azure-mgmt-network = [
+    {file = "azure-mgmt-network-20.0.0.zip", hash = "sha256:9a78cfc82009fab94d819e2e9926237d555583cdc4a1b65863fceea720e37686"},
+    {file = "azure_mgmt_network-20.0.0-py3-none-any.whl", hash = "sha256:e56ca31ddedc5c4492e243b0cec42096207f6fd640829aeae1e221a1732a10f0"},
 ]
 azure-mgmt-rdbms = [
     {file = "azure-mgmt-rdbms-10.1.0.zip", hash = "sha256:a87d401c876c84734cdd4888af551e4a1461b4b328d9816af60cb8ac5979f035"},
@@ -1157,8 +1174,8 @@ pycparser = [
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
 ]
 pyjwt = [
-    {file = "PyJWT-2.3.0-py3-none-any.whl", hash = "sha256:e0c4bb8d9f0af0c7f5b1ec4c5036309617d03d56932877f2f7a0beeb5318322f"},
-    {file = "PyJWT-2.3.0.tar.gz", hash = "sha256:b888b4d56f06f6dcd777210c334e69c737be74755d3e5e9ee3fe67dc18a0ee41"},
+    {file = "PyJWT-2.4.0-py3-none-any.whl", hash = "sha256:72d1d253f32dbd4f5c88eaf1fdc62f3a19f676ccbadb9dbc5d07e951b2b26daf"},
+    {file = "PyJWT-2.4.0.tar.gz", hash = "sha256:d42908208c699b3b973cbeb01a969ba6a96c821eefb1c5bfe4c390c01d67abba"},
 ]
 pylev = [
     {file = "pylev-1.4.0-py2.py3-none-any.whl", hash = "sha256:7b2e2aa7b00e05bb3f7650eb506fc89f474f70493271a35c242d9a92188ad3dd"},

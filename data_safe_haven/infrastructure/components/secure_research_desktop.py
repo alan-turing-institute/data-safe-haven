@@ -22,8 +22,8 @@ class SecureResearchDesktopProps:
         ldap_server_ip: Input[str],
         ldap_user_base_dn: Input[str],
         resource_group_name: Input[str],
-        virtual_network_name: Input[str],
-        virtual_network_resource_group: Input[str],
+        virtual_network: Input[network.VirtualNetwork],
+        virtual_network_resource_group_name: Input[str],
         vm_sizes: Sequence[Input[str]],
         subnet_name: Optional[Input[str]] = "SecureResearchDesktopSubnet",
     ):
@@ -36,8 +36,8 @@ class SecureResearchDesktopProps:
         self.ldap_user_base_dn = ldap_user_base_dn
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
-        self.virtual_network_name = virtual_network_name
-        self.virtual_network_resource_group = virtual_network_resource_group
+        self.virtual_network = virtual_network
+        self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_short_names = Output.from_input(vm_sizes).apply(
             lambda vm_sizes: self.construct_names(vm_sizes)
         )
@@ -114,10 +114,10 @@ class SecureResearchDesktopComponent(ComponentResource):
         opts: ResourceOptions = None,
     ):
         # Retrieve existing resources
-        snet_secure_research_desktop = network.get_subnet(
+        snet_secure_research_desktop = network.get_subnet_output(
             subnet_name=props.subnet_name,
-            resource_group_name=props.virtual_network_resource_group,
-            virtual_network_name=props.virtual_network_name,
+            resource_group_name=props.virtual_network_resource_group_name,
+            virtual_network_name=props.virtual_network.name,
         )
 
         # Load cloud-init file
@@ -185,7 +185,7 @@ class SecureResearchDesktopComponent(ComponentResource):
                     admin_password=admin_password,
                     admin_username="dshadmin",
                     computer_name=vm_name,
-                    custom_data=b64cloudinit,
+                    custom_data=Output.secret(b64cloudinit),
                     linux_configuration=compute.LinuxConfigurationArgs(
                         patch_settings=compute.LinuxPatchSettingsArgs(
                             assessment_mode="ImageDefault",

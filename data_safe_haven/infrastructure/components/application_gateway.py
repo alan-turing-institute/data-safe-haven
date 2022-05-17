@@ -18,7 +18,7 @@ class ApplicationGatewayProps:
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[str],
         resource_group_name: Input[str],
-        vnet_name: Input[str],
+        virtual_network: Input[network.VirtualNetwork],
         subnet_name: Optional[Input[str]] = "ApplicationGatewaySubnet",
     ):
         self.hostname_authentication = hostname_authentication
@@ -29,7 +29,7 @@ class ApplicationGatewayProps:
         self.ip_address_guacamole = ip_address_guacamole
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
-        self.vnet_name = vnet_name
+        self.virtual_network = virtual_network
 
 
 class ApplicationGatewayComponent(ComponentResource):
@@ -45,10 +45,10 @@ class ApplicationGatewayComponent(ComponentResource):
 
         # Retrieve existing resource group and subnet
         resource_group = resources.get_resource_group(props.resource_group_name)
-        snet_application_gateway = network.get_subnet(
+        snet_application_gateway = network.get_subnet_output(
             subnet_name="ApplicationGatewaySubnet",
             resource_group_name=props.resource_group_name,
-            virtual_network_name=props.vnet_name,
+            virtual_network_name=props.virtual_network.name,
         )
 
         # Define public IP address
