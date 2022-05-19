@@ -9,7 +9,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 [![Docs](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/build_docs.yaml/badge.svg)](https://alan-turing-institute.github.io/data-safe-haven)
 [![Build status](https://app.travis-ci.com/alan-turing-institute/data-safe-haven.svg?token=fmccRP1RHVJaEoiWy6QF&branch=develop)](https://app.travis-ci.com/alan-turing-institute/data-safe-haven)
 [![Latest version](https://img.shields.io/github/v/release/alan-turing-institute/data-safe-haven?style=flat&label=Latest&color=%234B78E6)](https://github.com/alan-turing-institute/data-safe-haven/releases)
-[![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/shared_invite/zt-104oyd8wn-DyOufeaAQFiJDlG5dDGk~w)
+[![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/signup)
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 
 ## :family: Community & support
