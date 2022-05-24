@@ -113,7 +113,9 @@ class AuthenticationComponent(ComponentResource):
             ],
             network_profile_name=f"np-{self._name}-authentication",
             resource_group_name=props.virtual_network_resource_group_name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[props.virtual_network]))
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(depends_on=[props.virtual_network])
+            ),
         )
 
         # Define the container group with guacd and openldap

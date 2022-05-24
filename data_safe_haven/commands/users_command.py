@@ -7,10 +7,11 @@ import sys
 from cleo import Command
 
 # Local imports
+from data_safe_haven.administration.users import AzureADUserHandler, UserHandler
+from data_safe_haven.backend import Backend
 from data_safe_haven.config import Config
-from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.administration import UserHandler
 from data_safe_haven.infrastructure import PulumiInterface
+from data_safe_haven.mixins import LoggingMixin
 
 
 class UsersCommand(LoggingMixin, Command):
@@ -43,6 +44,20 @@ class UsersCommand(LoggingMixin, Command):
         if not project_path.exists():
             self.warning(f"Project path '{project_path}' does not exist.")
             sys.exit(0)
+
+        # Ensure that the Pulumi backend exists
+        backend = Backend(config)
+        aad_users = AzureADUserHandler(
+            tenant_id=config.azure.aad_tenant_id,
+            application_id=backend.get_secret(
+                config.backend.key_vault_name, "azuread-user-management-application-id"
+            ),
+            application_secret=backend.get_secret(
+                config.backend.key_vault_name,
+                "azuread-user-management-application-secret",
+            ),
+        )
+        aad_users.update_users()
 
         # Load users interface
         infrastructure = PulumiInterface(config, project_path)

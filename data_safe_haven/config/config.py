@@ -1,7 +1,6 @@
 # Standard library imports
 import pathlib
 import re
-import zoneinfo
 
 # Third party imports
 from azure.storage.blob import BlobServiceClient

@@ -28,6 +28,7 @@ class InitialiseCommand(LoggingMixin, Command):
         # Ensure that the Pulumi backend exists
         backend = Backend(config)
         backend.create()
+        backend.update_config()
 
         # Upload config to blob storage
         config.upload()

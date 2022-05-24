@@ -104,7 +104,6 @@ class LoggingMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fallback_io = ConsoleIO()
         self.logger = logging.getLogger("data_safe_haven")
         self.console = LoggingHandlerClikit(
             fmt=self.coloured_fmt, datefmt=self.date_fmt
@@ -134,6 +133,7 @@ class LoggingMixin:
             args={},
             exc_info=None,
         )
+        record.style = LoggingFilterColouredLevel.STYLES[record.levelname]
         return self.console.format(record)
 
     def initialise_logging(self, verbosity, log_file):
@@ -152,6 +152,7 @@ class LoggingMixin:
             )
             # Disable unnecessarily verbose Azure logging
             logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
+            logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
             logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
 
     # Pass log levels through to the logger

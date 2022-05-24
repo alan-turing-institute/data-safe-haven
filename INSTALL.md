@@ -1,10 +1,12 @@
 # Requirements
+
 Install the following requirements before starting
 
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
 
 # Deploying a Data Safe Haven
+
 Create a config file with the following structure:
 
 ```yaml
@@ -18,6 +20,7 @@ settings:
   allow_copy: <True/False> (default False) # allow copying of text from the environment
   allow_paste: <True/False> (default False) # allow pasting of text into the environment
 azure:
+  aad_tenant_id: <the tenant ID of the Azure Active Directory where your users are registered>
   subscription_name: <my subscription name>
   admin_group_id: <the ID of an Azure security group that contains all administrators>
   location: <Azure location where resources should be deployed>

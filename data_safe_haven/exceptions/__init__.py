@@ -14,5 +14,9 @@ class DataSafeHavenAzureException(DataSafeHavenCloudException):
     pass
 
 
+class DataSafeHavenMicrosoftGraphException(DataSafeHavenAzureException):
+    pass
+
+
 class DataSafeHavenPulumiException(DataSafeHavenCloudException):
     pass
