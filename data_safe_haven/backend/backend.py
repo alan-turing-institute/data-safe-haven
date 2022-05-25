@@ -36,6 +36,9 @@ class Backend(AzureMixin, LoggingMixin):
         )
         self.certificate_id = None
         self.pulumi_encryption_key = None
+        self.guacamole_application_id = None
+        self.authentication_application_id = None
+        self.user_management_application_id = None
         # Set any missing config values
         self.cfg.azure.subscription_id = self.get_config_value(
             self.cfg.azure.subscription_id, self.subscription_id
@@ -59,6 +62,9 @@ class Backend(AzureMixin, LoggingMixin):
         )
         self.cfg.pulumi.storage_container_name = self.get_config_value(
             self.cfg.pulumi.storage_container_name, "pulumi"
+        )
+        self.cfg.azure.aad_group_research_users = self.get_config_value(
+            self.cfg.azure.aad_group_research_users, f"sre-{self.cfg.environment_name}-research-users"
         )
 
     def get_config_value(self, config_item: Union[str, DotMap], default_value: str):
@@ -107,50 +113,96 @@ class Backend(AzureMixin, LoggingMixin):
             certificate_url=self.cfg.environment.url,
             key_vault_name=key_vault_name,
         )
-        self.ensure_azuread_application(
-            application_scopes=["User.Read.All", "Group.Read.All"],
-            application_type="authentication",
-            key_vault_name=key_vault_name,
+        graph_api = GraphApi(
             tenant_id=self.cfg.azure.aad_tenant_id,
+            default_scopes=["Application.ReadWrite.All"],
         )
+        self.authentication_application_id = self.ensure_azuread_application(
+            application_scopes=["User.Read.All", "Group.Read.All"],
+            application_short_name="authentication",
+            delegated_scopes=["User.Read.All", "GroupMember.Read.All"],
+            graph_api=graph_api,
+            key_vault_name=key_vault_name,
+        )
+        self.user_management_application_id = self.ensure_azuread_application(
+            application_scopes=["User.ReadWrite.All", "Group.ReadWrite.All"],
+            application_short_name="user-management",
+            graph_api=graph_api,
+            key_vault_name=key_vault_name,
+        )
+        # Register Guacamole application as an OpenID redirect endpoint
+        application_name = f"sre-{self.cfg.environment_name}-azuread-guacamole"
+        guacamole_app = graph_api.application(
+            application_name=application_name,
+            request_json={
+                "displayName": application_name,
+                "web": {
+                    "redirectUris": [
+                        f"https://{self.cfg.environment.url}"
+                    ],
+                    "implicitGrantSettings": {
+                        "enableIdTokenIssuance": True
+                    }
+                },
+                "signInAudience": "AzureADMyOrg",
+            },
+        )
+        self.guacamole_application_id = guacamole_app["appId"]
+        self.ensure_azuread_group(graph_api, self.cfg.azure.aad_group_research_users)
 
     def destroy(self) -> None:
         self.remove_resource_group(self.cfg.backend.resource_group_name)
 
+    def ensure_azuread_group(self, graph_api, group_name):
+        """Ensure that an AzureAD group exists"""
+        self.info(
+            f"Ensuring that group <fg=green>{group_name}</> exists...",
+            no_newline=True,
+        )
+        group = graph_api.create_group(group_name)
+        self.info(
+            f"Ensured that group <fg=green>{group_name}</> exists.",
+            overwrite=True,
+        )
+        return group
+
     def ensure_azuread_application(
         self,
-        application_scopes: Sequence[str],
-        application_type: str,
+        application_short_name: str,
+        graph_api: GraphApi,
         key_vault_name: str,
-        tenant_id: str,
+        application_scopes: Sequence[str] = [],
+        delegated_scopes: Sequence[str] = [],
     ) -> None:
         """Ensure that an AzureAD application is registered"""
-        graph_api = GraphApi(
-            tenant_id=tenant_id,
-            default_scopes=["Application.ReadWrite.All"],
+        application_name = (
+            f"sre-{self.cfg.environment_name}-azuread-{application_short_name}"
         )
-        application_name = f"sre-{self.cfg.environment_name}-azuread-{application_type}"
-        authentication_app = graph_api.application(
-            application_name=application_name, application_scopes=application_scopes
+        aad_application = graph_api.application(
+            application_name=application_name,
+            application_scopes=application_scopes,
+            delegated_scopes=delegated_scopes,
         )
         self.ensure_secret(
             key_vault_name,
-            f"azuread-{application_type}-application-id",
-            authentication_app["appId"],
+            f"azuread-{application_short_name}-application-id",
+            aad_application["appId"],
         )
         try:
-            application_secret_name = f"azuread-{application_type}-application-secret"
+            application_secret_name = (
+                f"azuread-{application_short_name}-application-secret"
+            )
             application_secret = self.get_secret(
                 key_vault_name, application_secret_name
             )
         except DataSafeHavenAzureException:
             application_secret = graph_api.application_secret(
-                f"SRE {self.cfg.environment_name} AzureAD {application_type} secret",
-                authentication_app,
+                f"SRE {self.cfg.environment_name} AzureAD {application_short_name} secret",
+                aad_application,
             )
-        self.ensure_secret(
-            self.cfg.backend.key_vault_name, application_secret_name, application_secret
-        )
+        self.ensure_secret(key_vault_name, application_secret_name, application_secret)
+        self.info(f"Ensured that application <fg=green>{application_name}</> exists.")
+        return aad_application["appId"]
 
     def ensure_cert(
         self,
@@ -516,4 +568,7 @@ class Backend(AzureMixin, LoggingMixin):
     def update_config(self) -> None:
         """Add backend settings to config"""
         self.cfg.deployment.certificate_id = self.certificate_id
+        self.cfg.deployment.aad_app_id_guacamole = self.guacamole_application_id
+        self.cfg.deployment.aad_app_id_authentication = self.authentication_application_id
+        self.cfg.deployment.aad_app_id_user_management = self.user_management_application_id
         self.cfg.pulumi.encryption_key = self.pulumi_encryption_key

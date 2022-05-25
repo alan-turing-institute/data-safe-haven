@@ -99,7 +99,10 @@ class GraphApi(LoggingMixin):
                     "Could not initiate device login"
                 )
             self.info(
-                "Please use credentials for a <fg=green>global administrator</> for the Azure Active Directory where your users are stored."
+                f"This application has requested permissions that need administrator approval."
+            )
+            self.info(
+                "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
             )
             self.info(
                 "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Powershell</> - this is expected."
@@ -124,6 +127,7 @@ class GraphApi(LoggingMixin):
         auth_token=None,
         application_scopes=[],
         delegated_scopes=[],
+        request_json=None,
     ):
         """Ensure that an application exists"""
         auth_token = auth_token if auth_token else self.default_token
@@ -141,17 +145,18 @@ class GraphApi(LoggingMixin):
             f"Creating new application '<fg=green>{application_name}</>'...",
             no_newline=True,
         )
-        request_json = {
-            "displayName": application_name,
-            "signInAudience": "AzureADMyOrg",
-            "passwordCredentials": [],
-            "publicClient": {
-                "redirectUris": [
-                    "https://login.microsoftonline.com/common/oauth2/nativeclient",
-                    "urn:ietf:wg:oauth:2.0:oob",
-                ]
-            },
-        }
+        if not request_json:
+            request_json = {
+                "displayName": application_name,
+                "signInAudience": "AzureADMyOrg",
+                "passwordCredentials": [],
+                "publicClient": {
+                    "redirectUris": [
+                        "https://login.microsoftonline.com/common/oauth2/nativeclient",
+                        "urn:ietf:wg:oauth:2.0:oob",
+                    ]
+                },
+            }
         # Add scopes if there are any
         scopes = [
             {
@@ -174,11 +179,11 @@ class GraphApi(LoggingMixin):
                 }
             ]
         try:
-            json_response = self.json_post(
+            json_response = self.http_post(
                 f"{self.base_endpoint}/applications",
                 headers={"Authorization": f"Bearer {auth_token}"},
                 json=request_json,
-            )
+            ).json()
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not create application: {str(exc)}"
@@ -189,15 +194,21 @@ class GraphApi(LoggingMixin):
         )
 
         # Grant admin consent for the requested scopes
-        self.info(
-            f"Please visit <fg=green>https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id={json_response['appId']}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient</> to provide admin consent for requested permissions."
-        )
-        if not self.log_confirm(
-            "Have you consented to the required application permissions?",
-            False,
-        ):
-            raise DataSafeHavenInputException("Admin consent not confirmed")
-
+        if scopes:
+            self.info(
+                f"Application <fg=green>{application_name}</> has requested permissions that need administrator approval."
+            )
+            self.info(
+                "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
+            )
+            self.info(
+                f"To sign in, use a web browser to open the page <fg=green>https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id={json_response['appId']}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient</> and follow the instructions."
+            )
+            if not self.log_confirm(
+                "Have you consented to the required application permissions?",
+                False,
+            ):
+                raise DataSafeHavenInputException("Admin consent not confirmed")
         return json_response
 
     def application_secret(
@@ -226,24 +237,79 @@ class GraphApi(LoggingMixin):
                     ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             }
-            json_response = self.json_post(
+            json_response = self.http_post(
                 f"{self.base_endpoint}/applications/{application_json['id']}/addPassword",
                 headers={"Authorization": f"Bearer {auth_token}"},
                 json=request_json,
-            )
+            ).json()
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not create application secret: {str(exc)}"
             ) from exc
         return json_response["secretText"]
 
-    def get_users(self, auth_token, attributes):
+    def create_group(
+        self,
+        group_name,
+        auth_token=None,
+    ):
+        """Ensure that a group exists"""
+        auth_token = auth_token if auth_token else self.default_token
         try:
-            endpoint = f"{self.base_endpoint}/users?$select={','.join(attributes)}"
-            json_response = self.json_get(
+            matched_group = [
+                group
+                for group in self.get_groups(auth_token=auth_token)
+                if group["displayName"] == group_name
+            ]
+            if matched_group:
+                return matched_group[0]
+            endpoint = f"{self.base_endpoint}/groups"
+            request_json = {
+                "displayName": group_name,
+                "groupTypes": [],
+                "mailEnabled": False,
+                "mailNickname": group_name,
+                "securityEnabled": True,
+            }
+            json_response = self.http_post(
                 endpoint,
                 headers={"Authorization": f"Bearer {auth_token}"},
-            )
+                json=request_json,
+            ).json()
+        except DataSafeHavenMicrosoftGraphException as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not create group {group_name}: {str(exc)}"
+            ) from exc
+
+        return json_response["value"]
+
+    def get_groups(
+        self,
+        auth_token=None,
+    ):
+        """Ensure that a group exists"""
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            endpoint = f"{self.base_endpoint}/groups"
+            json_response = self.http_get(
+                endpoint,
+                headers={"Authorization": f"Bearer {auth_token}"},
+            ).json()
+        except DataSafeHavenMicrosoftGraphException as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not load list of groups: {str(exc)}"
+            ) from exc
+
+        return json_response["value"]
+
+    def get_users(self, attributes, auth_token=None):
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            endpoint = f"{self.base_endpoint}/users?$select={','.join(attributes)}"
+            json_response = self.http_get(
+                endpoint,
+                headers={"Authorization": f"Bearer {auth_token}"},
+            ).json()
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of users: {str(exc)}"
@@ -251,33 +317,33 @@ class GraphApi(LoggingMixin):
 
         return [AzureADUser(**props) for props in json_response["value"]]
 
-    def json_get(self, url, **kwargs):
+    def http_get(self, url, **kwargs):
         response = requests.get(url, **kwargs)
         if not response.ok:
             raise DataSafeHavenMicrosoftGraphException(response.content)
-        return response.json()
+        return response
 
-    def json_patch(self, url, **kwargs):
+    def http_patch(self, url, **kwargs):
         response = requests.patch(url, **kwargs)
         if not response.ok:
             raise DataSafeHavenMicrosoftGraphException(response.content)
-        return response.json()
+        return response
 
-    def json_post(self, url, **kwargs):
+    def http_post(self, url, **kwargs):
         response = requests.post(url, **kwargs)
         if not response.ok:
             raise DataSafeHavenMicrosoftGraphException(response.content)
         time.sleep(30)  # wait for operation to complete
-        return response.json()
+        return response
 
     def list_applications(self, auth_token=None):
         """Get list of application names"""
         auth_token = auth_token if auth_token else self.default_token
         try:
-            json_response = self.json_get(
+            json_response = self.http_get(
                 f"{self.base_endpoint}/applications",
                 headers={"Authorization": f"Bearer {auth_token}"},
-            )
+            ).json()
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of applications: {str(exc)}"
