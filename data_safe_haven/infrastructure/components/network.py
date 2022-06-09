@@ -42,14 +42,6 @@ class NetworkProps:
             "10.0.0.0",
             "10.0.0.255",
         ],
-        ip_range_authelia: Optional[Input[Sequence[str]]] = [
-            "10.0.1.0",
-            "10.0.1.127",
-        ],
-        ip_range_openldap: Optional[Input[Sequence[str]]] = [
-            "10.0.1.128",
-            "10.0.1.255",
-        ],
         ip_range_guacamole_postgresql: Optional[Input[Sequence[str]]] = [
             "10.0.2.0",
             "10.0.2.127",
@@ -65,8 +57,6 @@ class NetworkProps:
     ):
         self.ip_range_vnet = ip_range_vnet
         self.ip_range_application_gateway = ip_range_application_gateway
-        self.ip_range_authelia = ip_range_authelia
-        self.ip_range_openldap = ip_range_openldap
         self.ip_range_guacamole_postgresql = ip_range_guacamole_postgresql
         self.ip_range_guacamole_containers = ip_range_guacamole_containers
         self.ip_range_secure_research_desktop = ip_range_secure_research_desktop
@@ -85,8 +75,6 @@ class NetworkComponent(ComponentResource):
         ip_network_application_gateway = AzureIPv4Range(
             *props.ip_range_application_gateway
         )
-        ip_network_authelia = AzureIPv4Range(*props.ip_range_authelia)
-        ip_network_openldap = AzureIPv4Range(*props.ip_range_openldap)
         ip_network_guacamole_postgresql = AzureIPv4Range(
             *props.ip_range_guacamole_postgresql
         )
@@ -142,18 +130,6 @@ class NetworkComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_authelia = network.NetworkSecurityGroup(
-            "nsg_authelia",
-            network_security_group_name=f"nsg-{self._name}-authelia",
-            resource_group_name=props.resource_group_name,
-            opts=child_opts,
-        )
-        nsg_openldap = network.NetworkSecurityGroup(
-            "nsg_openldap",
-            network_security_group_name=f"nsg-{self._name}-openldap",
-            resource_group_name=props.resource_group_name,
-            opts=child_opts,
-        )
         nsg_guacamole = network.NetworkSecurityGroup(
             "nsg_guacamole",
             network_security_group_name=f"nsg-{self._name}-guacamole",
@@ -197,34 +173,6 @@ class NetworkComponent(ComponentResource):
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_authelia),
-                    delegations=[
-                        network.DelegationArgs(
-                            name="SubnetDelegationContainerGroups",
-                            service_name="Microsoft.ContainerInstance/containerGroups",
-                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
-                        ),
-                    ],
-                    name="AutheliaSubnet",
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_authelia.id
-                    ),
-                ),
-                network.SubnetArgs(
-                    address_prefix=str(ip_network_openldap),
-                    delegations=[
-                        network.DelegationArgs(
-                            name="SubnetDelegationContainerGroups",
-                            service_name="Microsoft.ContainerInstance/containerGroups",
-                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
-                        ),
-                    ],
-                    name="OpenLDAPSubnet",
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_openldap.id
-                    ),
-                ),
-                network.SubnetArgs(
                     address_prefix=str(ip_network_guacamole_postgresql),
                     name="GuacamoleDatabaseSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
@@ -259,9 +207,6 @@ class NetworkComponent(ComponentResource):
         )
 
         # Register outputs
-        self.ip_address_openldap = Output.from_input(
-            str(ip_network_openldap.available()[0])
-        )
         self.ip_address_guacamole_container = Output.from_input(
             str(ip_network_guacamole_containers.available()[0])
         )

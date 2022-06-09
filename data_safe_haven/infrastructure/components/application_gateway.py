@@ -11,9 +11,7 @@ class ApplicationGatewayProps:
 
     def __init__(
         self,
-        hostname_authentication: Input[str],
         hostname_guacamole: Input[str],
-        ip_address_authentication: Input[str],
         ip_address_guacamole: Input[str],
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[str],
@@ -21,11 +19,9 @@ class ApplicationGatewayProps:
         virtual_network: Input[network.VirtualNetwork],
         subnet_name: Optional[Input[str]] = "ApplicationGatewaySubnet",
     ):
-        self.hostname_authentication = hostname_authentication
         self.hostname_guacamole = hostname_guacamole
         self.key_vault_certificate_id = key_vault_certificate_id
         self.key_vault_identity = key_vault_identity
-        self.ip_address_authentication = ip_address_authentication
         self.ip_address_guacamole = ip_address_guacamole
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
@@ -75,14 +71,6 @@ class ApplicationGatewayComponent(ComponentResource):
                     ],
                     name="appGatewayBackendGuacamole",
                 ),
-                network.ApplicationGatewayBackendAddressPoolArgs(
-                    backend_addresses=[
-                        network.ApplicationGatewayBackendAddressArgs(
-                            ip_address=props.ip_address_authentication
-                        )
-                    ],
-                    name="appGatewayBackendAuthentication",
-                ),
             ],
             backend_http_settings_collection=[
                 network.ApplicationGatewayBackendHttpSettingsArgs(
@@ -116,53 +104,6 @@ class ApplicationGatewayComponent(ComponentResource):
                 )
             ],
             http_listeners=[
-                # Authentication listeners
-                network.ApplicationGatewayHttpListenerArgs(
-                    frontend_ip_configuration=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
-                        )
-                    ),
-                    frontend_port=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttp",
-                        )
-                    ),
-                    host_name=props.hostname_authentication,
-                    name="AuthenticationHttpListener",
-                    protocol="Http",
-                ),
-                network.ApplicationGatewayHttpListenerArgs(
-                    frontend_ip_configuration=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
-                        )
-                    ),
-                    frontend_port=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttps",
-                        )
-                    ),
-                    host_name=props.hostname_authentication,
-                    name="AuthenticationHttpsListener",
-                    protocol="Https",
-                    ssl_certificate=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/sslcert",
-                        ),
-                    ),
-                    ssl_profile=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslProfiles/sslProfile",
-                        ),
-                    ),
-                ),
                 # Guacamole listeners
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
@@ -218,27 +159,6 @@ class ApplicationGatewayComponent(ComponentResource):
                 },
             ),
             redirect_configurations=[
-                # Authentication HTTP redirect
-                network.ApplicationGatewayRedirectConfigurationArgs(
-                    include_path=True,
-                    include_query_string=True,
-                    name="AuthenticationHttpToHttpsRedirection",
-                    redirect_type="Permanent",
-                    request_routing_rules=[
-                        network.SubResourceArgs(
-                            id=Output.concat(
-                                resource_group.id,
-                                f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection",
-                            ),
-                        )
-                    ],
-                    target_listener=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/AuthenticationHttpsListener",
-                        )
-                    ),
-                ),
                 # Guacamole HTTP redirect
                 network.ApplicationGatewayRedirectConfigurationArgs(
                     include_path=True,
@@ -262,45 +182,6 @@ class ApplicationGatewayComponent(ComponentResource):
                 ),
             ],
             request_routing_rules=[
-                # Authentication routing
-                network.ApplicationGatewayRequestRoutingRuleArgs(
-                    http_listener=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/AuthenticationHttpListener",
-                        )
-                    ),
-                    redirect_configuration=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/redirectConfigurations/AuthenticationHttpToHttpsRedirection",
-                        )
-                    ),
-                    name="AuthenticationHttpRouting",
-                    rule_type="Basic",
-                ),
-                network.ApplicationGatewayRequestRoutingRuleArgs(
-                    backend_address_pool=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendAddressPools/appGatewayBackendAuthentication",
-                        )
-                    ),
-                    backend_http_settings=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendHttpSettingsCollection/appGatewayBackendHttpSettings",
-                        )
-                    ),
-                    http_listener=network.SubResourceArgs(
-                        id=Output.concat(
-                            resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/AuthenticationHttpsListener",
-                        )
-                    ),
-                    name="AuthenticationHttpsRouting",
-                    rule_type="Basic",
-                ),
                 # Guacamole routing
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     http_listener=network.SubResourceArgs(

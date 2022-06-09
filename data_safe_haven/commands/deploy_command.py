@@ -58,17 +58,6 @@ class DeployCommand(LoggingMixin, Command):
             {
                 "pulumi": {
                     "outputs": {
-                        "authentication": {
-                            "container_group_name": infrastructure.output(
-                                "auth_container_group_name"
-                            ),
-                            "file_share_name_ldifs": infrastructure.output(
-                                "auth_file_share_name_ldifs"
-                            ),
-                            "resource_group_name": infrastructure.output(
-                                "auth_resource_group_name"
-                            ),
-                        },
                         "guacamole": {
                             "container_group_name": infrastructure.output(
                                 "guacamole_container_group_name"
@@ -95,17 +84,6 @@ class DeployCommand(LoggingMixin, Command):
 
         # Upload config to blob storage
         config.upload()
-
-        # Provision authentication
-        # ------------------------
-
-        # Restart the authentication container group
-        authentication_provisioner = ContainerProvisioner(
-            config,
-            config.pulumi.outputs.authentication.resource_group_name,
-            config.pulumi.outputs.authentication.container_group_name,
-        )
-        authentication_provisioner.restart()
 
         # Provision Guacamole
         # -------------------

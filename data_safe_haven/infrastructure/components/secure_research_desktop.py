@@ -16,24 +16,14 @@ class SecureResearchDesktopProps:
         self,
         admin_password: Input[str],
         ip_addresses: Input[Sequence[str]],
-        ldap_group_base_dn: Input[str],
-        ldap_root_dn: Input[str],
-        ldap_search_password: Input[str],
-        ldap_server_ip: Input[str],
-        ldap_user_base_dn: Input[str],
         resource_group_name: Input[str],
-        virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
+        virtual_network: Input[network.VirtualNetwork],
         vm_sizes: Sequence[Input[str]],
         subnet_name: Optional[Input[str]] = "SecureResearchDesktopSubnet",
     ):
         self.admin_password = admin_password
         self.ip_addresses = ip_addresses
-        self.ldap_group_base_dn = ldap_group_base_dn
-        self.ldap_root_dn = ldap_root_dn
-        self.ldap_search_password = ldap_search_password
-        self.ldap_server_ip = ldap_server_ip
-        self.ldap_user_base_dn = ldap_user_base_dn
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
         self.virtual_network = virtual_network
@@ -70,22 +60,12 @@ class SecureResearchDesktopComponent(ComponentResource):
         Output.all(
             admin_password=props.admin_password,
             ip_addresses=props.ip_addresses,
-            ldap_group_base_dn=props.ldap_group_base_dn,
-            ldap_root_dn=props.ldap_root_dn,
-            ldap_search_password=props.ldap_search_password,
-            ldap_server_ip=props.ldap_server_ip,
-            ldap_user_base_dn=props.ldap_user_base_dn,
             vm_short_names=props.vm_short_names,
             vm_sizes=props.vm_sizes,
         ).apply(
             lambda args: self.deploy(
                 admin_password=args["admin_password"],
                 ip_addresses=args["ip_addresses"],
-                ldap_group_base_dn=args["ldap_group_base_dn"],
-                ldap_root_dn=args["ldap_root_dn"],
-                ldap_search_password=args["ldap_search_password"],
-                ldap_server_ip=args["ldap_server_ip"],
-                ldap_user_base_dn=args["ldap_user_base_dn"],
                 vm_short_names=args["vm_short_names"],
                 vm_sizes=args["vm_sizes"],
                 props=props,
@@ -103,11 +83,6 @@ class SecureResearchDesktopComponent(ComponentResource):
         self,
         admin_password: str,
         ip_addresses: Sequence[str],
-        ldap_group_base_dn: str,
-        ldap_root_dn: str,
-        ldap_search_password: str,
-        ldap_server_ip: str,
-        ldap_user_base_dn: str,
         vm_short_names: Sequence[str],
         vm_sizes: Sequence[str],
         props: SecureResearchDesktopProps,
@@ -127,13 +102,7 @@ class SecureResearchDesktopComponent(ComponentResource):
             / "secure_research_desktop"
         )
         with open(resources_path / "srd.cloud_init.mustache.yaml", "r") as f_cloudinit:
-            mustache_values = {
-                "ldap_group_base_dn": ldap_group_base_dn,
-                "ldap_root_dn": ldap_root_dn,
-                "ldap_search_password": ldap_search_password,
-                "ldap_server_ip": ldap_server_ip,
-                "ldap_user_base_dn": ldap_user_base_dn,
-            }
+
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             b64cloudinit = base64.b64encode(cloudinit.encode("utf-8")).decode()
 

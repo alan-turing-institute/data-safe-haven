@@ -64,7 +64,8 @@ class Backend(AzureMixin, LoggingMixin):
             self.cfg.pulumi.storage_container_name, "pulumi"
         )
         self.cfg.azure.aad_group_research_users = self.get_config_value(
-            self.cfg.azure.aad_group_research_users, f"sre-{self.cfg.environment_name}-research-users"
+            self.cfg.azure.aad_group_research_users,
+            f"sre-{self.cfg.environment_name}-research-users",
         )
 
     def get_config_value(self, config_item: Union[str, DotMap], default_value: str):
@@ -137,12 +138,8 @@ class Backend(AzureMixin, LoggingMixin):
             request_json={
                 "displayName": application_name,
                 "web": {
-                    "redirectUris": [
-                        f"https://{self.cfg.environment.url}"
-                    ],
-                    "implicitGrantSettings": {
-                        "enableIdTokenIssuance": True
-                    }
+                    "redirectUris": [f"https://{self.cfg.environment.url}"],
+                    "implicitGrantSettings": {"enableIdTokenIssuance": True},
                 },
                 "signInAudience": "AzureADMyOrg",
             },
@@ -569,6 +566,10 @@ class Backend(AzureMixin, LoggingMixin):
         """Add backend settings to config"""
         self.cfg.deployment.certificate_id = self.certificate_id
         self.cfg.deployment.aad_app_id_guacamole = self.guacamole_application_id
-        self.cfg.deployment.aad_app_id_authentication = self.authentication_application_id
-        self.cfg.deployment.aad_app_id_user_management = self.user_management_application_id
+        self.cfg.deployment.aad_app_id_authentication = (
+            self.authentication_application_id
+        )
+        self.cfg.deployment.aad_app_id_user_management = (
+            self.user_management_application_id
+        )
         self.cfg.pulumi.encryption_key = self.pulumi_encryption_key

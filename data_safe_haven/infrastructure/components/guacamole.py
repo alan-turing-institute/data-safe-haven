@@ -18,11 +18,6 @@ class GuacamoleProps:
         self,
         ip_address_container: Input[str],
         ip_address_postgresql: Input[str],
-        ldap_group_base_dn: Input[str],
-        ldap_search_user_id: Input[str],
-        ldap_search_user_password: Input[str],
-        ldap_server_ip: Input[str],
-        ldap_user_base_dn: Input[str],
         postgresql_password: Input[str],
         resource_group_name: Input[str],
         storage_account_name: Input[str],
@@ -35,11 +30,6 @@ class GuacamoleProps:
     ):
         self.ip_address_container = ip_address_container
         self.ip_address_postgresql = ip_address_postgresql
-        self.ldap_group_base_dn = ldap_group_base_dn
-        self.ldap_search_user_id = ldap_search_user_id
-        self.ldap_search_user_password = ldap_search_user_password
-        self.ldap_server_ip = ldap_server_ip
-        self.ldap_user_base_dn = ldap_user_base_dn
         self.postgresql_username = postgresql_username
         self.postgresql_password = postgresql_password
         self.resource_group_name = resource_group_name
@@ -105,7 +95,7 @@ class GuacamoleComponent(ComponentResource):
                 },
                 "version": "11",
             },
-            resource_group_name="rg-v4example-guacamole",
+            resource_group_name=props.resource_group_name,
             server_name=postgresql_server_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
@@ -207,34 +197,6 @@ class GuacamoleComponent(ComponentResource):
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_HOSTNAME", value="localhost"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_HOSTNAME", value=props.ldap_server_ip
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_PORT", value="1389"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_USER_BASE_DN", value=props.ldap_user_base_dn
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_USERNAME_ATTRIBUTE", value="uid"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_GROUP_BASE_DN", value=props.ldap_group_base_dn
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_SEARCH_BIND_DN",
-                            value=Output.concat(
-                                "uid=",
-                                props.ldap_search_user_id,
-                                ",",
-                                props.ldap_user_base_dn,
-                            ),
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_SEARCH_BIND_PASSWORD",
-                            secure_value=props.ldap_search_user_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LOGBACK_LEVEL", value="debug"

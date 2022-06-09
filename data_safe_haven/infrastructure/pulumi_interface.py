@@ -82,7 +82,15 @@ class PulumiInterface(LoggingMixin):
                     self.evaluate(result.summary.result)
                     break
                 except automation.errors.CommandError as exc:
-                    if any([error in str(exc) for error in ("NetworkProfileAlreadyInUseWithContainerNics", "InUseSubnetCannotBeDeleted")]):
+                    if any(
+                        [
+                            error in str(exc)
+                            for error in (
+                                "NetworkProfileAlreadyInUseWithContainerNics",
+                                "InUseSubnetCannotBeDeleted",
+                            )
+                        ]
+                    ):
                         time.sleep(10)
                     else:
                         raise
@@ -94,16 +102,6 @@ class PulumiInterface(LoggingMixin):
         self.ensure_config("azure-native:location", self.cfg.azure.location)
         self.ensure_config(
             "azure-native:subscriptionId", self.cfg.azure.subscription_id
-        )
-        self.ensure_config(
-            "authentication-openldap-admin-password",
-            password(20),
-            secret=True,
-        )
-        self.ensure_config(
-            "authentication-openldap-search-password",
-            password(20),
-            secret=True,
         )
         self.ensure_config("guacamole-postgresql-password", password(20), secret=True)
         self.ensure_config(

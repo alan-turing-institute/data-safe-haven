@@ -69,4 +69,6 @@ class AzureADUserHandler(LoggingMixin):
                 )
                 self.info(f"Updated user {user.userPrincipalName}.")
             except DataSafeHavenMicrosoftGraphException as exc:
-                self.error(f"Failed to update user {user.userPrincipalName}: {str(exc)}")
+                self.error(
+                    f"Failed to update user {user.userPrincipalName}: {str(exc)}"
+                )

@@ -1,5 +1,0 @@
-# Add to group
-dn: cn=serviceaccounts,ou=groups,{{ldap_root_dn}}
-changetype: modify
-add: memberUid
-memberUid: ldapsearchuser

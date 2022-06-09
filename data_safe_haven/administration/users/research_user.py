@@ -41,30 +41,6 @@ class ResearchUser:
         )
 
     @classmethod
-    def from_ldap(cls, ldap_string: str):
-        kwargs = {}
-        for item in ldap_string.split(";"):
-            with contextlib.suppress(ValueError):
-                field, value = item.split(":")
-                if field == "employeeType":
-                    kwargs["account_status"] = value
-                elif field == "givenName":
-                    kwargs["first_name"] = value
-                elif field == "isResearcher":
-                    kwargs["is_researcher"] = value == "1"
-                elif field == "mail":
-                    kwargs["email_address"] = value
-                elif field == "mobile":
-                    kwargs["phone_number"] = value
-                elif field == "uid":
-                    kwargs["username"] = value
-                elif field == "uidNumber":
-                    kwargs["uid_number"] = value
-                elif field == "sn":
-                    kwargs["last_name"] = value
-        return cls(**kwargs)
-
-    @classmethod
     def from_csv(cls, **kwargs):
         return cls(**kwargs)
 
