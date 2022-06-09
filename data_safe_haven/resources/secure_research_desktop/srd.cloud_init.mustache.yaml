@@ -1,4 +1,65 @@
 #cloud-config
 
+write_files:
+  # Note that all users need to be able to read this so the application must have *very* limited permissions
+  - path: "/etc/azuread/parameters.json"
+    permissions: "0444"
+    content: |
+      {
+        "authority": "https://login.microsoftonline.com/{{aad_tenant_id}}",
+        "client_id": "{{aad_auth_app_id}}",
+        "scope": [ "https://graph.microsoft.com/.default" ],
+        "secret": "{{aad_auth_app_secret}}",
+        "endpoint": "https://graph.microsoft.com/v1.0/users"
+      }
+  - path: "/etc/azuread/parameters.toml"
+    permissions: "0400"
+    content: |
+      # Tenant ID for this AzureAD
+      tenant-id="{{aad_tenant_id}}"
+
+      # The Application (client) ID for your registered app
+      client-id="{{aad_auth_app_id}}"
+
+      # The (time-limited) client secret generated for this application above
+      client-secret="{{aad_auth_app_secret}}"
+
+      # Name of AAD group that authenticated users must belong to
+      group-name="{{aad_group_research_users}}"
+
+      # Default domain for AAD users. This will be appended to any users not in `username@domain` format.
+      domain="{{aad_domain_name}}"
+
+  - path: "/usr/share/pam-configs/aad_oidc"
+    permissions: "0644"
+    content: |
+      Name: Allow AzureAD login
+      Default: no
+      Priority: 129
+      Auth-Type: Primary
+      Auth:
+        [success=end default=ignore]	pam_aad_oidc.so config=/etc/azuread/parameters.toml
+      Auth-Initial:
+        [success=end default=ignore]	pam_aad_oidc.so config=/etc/azuread/parameters.toml
+
 package_update: true
 package_upgrade: true
+
+# List of packages to install with apt-get
+packages:
+  - libjansson4 # Needed by libnss_aad
+
+runcmd:
+  # Allow AzureAD users to login
+  # ----------------------------
+  # Install PAM and NSS modules
+  - wget https://github.com/alan-turing-institute/pam-aad-oidc/releases/download/v0.2.0/pam_aad_oidc.so -O /lib/x86_64-linux-gnu/security/pam_aad_oidc.so
+  - wget https://github.com/alan-turing-institute/pam-aad-oidc/releases/download/v0.2.0/libnss_aad.so -O /usr/lib/x86_64-linux-gnu/libnss_aad.so
+  - ln -s /usr/lib/x86_64-linux-gnu/libnss_aad.so /lib/x86_64-linux-gnu/libnss_aad.so.2
+  # Add libnss_aad to /etc/nsswitch.conf
+  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 aad|g" /etc/nsswitch.conf
+  # Add pam_aad_oidc to /etc/pam.d/common-auth
+  - pam-auth-update --enable mkhomedir aad_oidc
+  # Allow SSH password authentication
+  - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+  - systemctl restart sshd

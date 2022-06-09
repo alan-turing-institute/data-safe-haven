@@ -16,6 +16,9 @@ class GuacamoleProps:
 
     def __init__(
         self,
+        aad_tenant_id: Input[str],
+        aad_application_id: Input[str],
+        aad_application_url: Input[str],
         ip_address_container: Input[str],
         ip_address_postgresql: Input[str],
         postgresql_password: Input[str],
@@ -28,6 +31,9 @@ class GuacamoleProps:
         subnet_container_name: Optional[Input[str]] = "GuacamoleContainersSubnet",
         subnet_database_name: Optional[Input[str]] = "GuacamoleDatabaseSubnet",
     ):
+        self.aad_tenant_id = aad_tenant_id
+        self.aad_application_id = aad_application_id
+        self.aad_application_url = aad_application_url
         self.ip_address_container = ip_address_container
         self.ip_address_postgresql = ip_address_postgresql
         self.postgresql_username = postgresql_username
@@ -200,6 +206,30 @@ class GuacamoleComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LOGBACK_LEVEL", value="debug"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_AUTHORIZATION_ENDPOINT",
+                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/oauth2/v2.0/authorize",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_CLIENT_ID",
+                            value=props.aad_application_id,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_ISSUER",
+                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/v2.0",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_JWKS_ENDPOINT",
+                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/discovery/v2.0/keys",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_REDIRECT_URI", value=props.aad_application_url
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="OPENID_USERNAME_CLAIM_TYPE",
+                            # value="name", # this is 'GivenName Surname'
+                            value="preferred_username",  # this is 'username@domain'
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_DATABASE", value="guacamole"

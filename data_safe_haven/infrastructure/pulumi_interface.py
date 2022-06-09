@@ -61,12 +61,17 @@ class PulumiInterface(LoggingMixin):
             )
         return self.stack_
 
-    def deploy(self):
+    def deploy(self, aad_auth_app_secret):
         """Deploy the infrastructure with Pulumi."""
         self.initialise_workdir()
         self.login()
         self.install_plugins()
-        self.configure_stack()
+        self.set_config_options()
+        self.ensure_config(
+            "azuread-authentication-application-secret",
+            aad_auth_app_secret,
+            secret=True,
+        )
         self.refresh()
         self.preview()
         self.update()
@@ -96,17 +101,6 @@ class PulumiInterface(LoggingMixin):
                         raise
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
-
-    def configure_stack(self):
-        """Set Azure config options"""
-        self.ensure_config("azure-native:location", self.cfg.azure.location)
-        self.ensure_config(
-            "azure-native:subscriptionId", self.cfg.azure.subscription_id
-        )
-        self.ensure_config("guacamole-postgresql-password", password(20), secret=True)
-        self.ensure_config(
-            "secure-research-desktop-admin-password", password(20), secret=True
-        )
 
     def ensure_config(self, name, value, secret=False):
         """Ensure that config values have been set"""
@@ -184,12 +178,32 @@ class PulumiInterface(LoggingMixin):
                 f"Secret '{name}' was not found."
             ) from exc
 
+    def set_config_options(self):
+        """Set Pulumi config options"""
+        self.ensure_config("azure-native:location", self.cfg.azure.location)
+        self.ensure_config(
+            "azure-native:subscriptionId", self.cfg.azure.subscription_id
+        )
+        self.ensure_config(
+            "authentication-openldap-admin-password",
+            password(20),
+            secret=True,
+        )
+        self.ensure_config(
+            "authentication-openldap-search-password",
+            password(20),
+            secret=True,
+        )
+        self.ensure_config("guacamole-postgresql-password", password(20), secret=True)
+        self.ensure_config(
+            "secure-research-desktop-admin-password", password(20), secret=True
+        )
+
     def teardown(self):
         """Teardown the infrastructure deployed with Pulumi."""
         self.initialise_workdir()
         self.login()
         self.install_plugins()
-        self.configure_stack()
         self.refresh()
         self.destroy()
 
@@ -200,3 +214,33 @@ class PulumiInterface(LoggingMixin):
             self.evaluate(result.summary.result)
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi update failed.") from exc
+
+    def update_config(self):
+        """Add infrastructure settings to config"""
+        self.cfg.add_data(
+            {
+                "pulumi": {
+                    "outputs": {
+                        "guacamole": {
+                            "container_group_name": self.output(
+                                "guacamole_container_group_name"
+                            ),
+                            "postgresql_server_name": self.output(
+                                "guacamole_postgresql_server_name"
+                            ),
+                            "resource_group_name": self.output(
+                                "guacamole_resource_group_name"
+                            ),
+                        },
+                        "state": {
+                            "resource_group_name": self.output(
+                                "state_resource_group_name"
+                            ),
+                            "storage_account_name": self.output(
+                                "state_storage_account_name"
+                            ),
+                        },
+                    }
+                }
+            }
+        )

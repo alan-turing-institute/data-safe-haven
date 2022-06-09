@@ -12,12 +12,14 @@ ON CONFLICT DO NOTHING;
 INSERT INTO
     guacamole_user (
         entity_id,
+        full_name,
         password_hash,
         password_salt,
         password_date
     )
 SELECT
     entity_id,
+    '{{full_name}}',
     decode(
         '{{password_hash}}',
         'hex'
@@ -30,7 +32,7 @@ SELECT
 FROM
     guacamole_entity
 WHERE
-    name = '{{username}}'
+    guacamole_entity.name = '{{username}}'
     AND guacamole_entity.type = 'USER'
 ON CONFLICT DO NOTHING;
 {{/users}}
@@ -51,5 +53,5 @@ FROM
     CROSS JOIN guacamole_entity guac_user
 WHERE
     guac_user.type = 'USER'
-    AND guac_group.name = '{{group}}'
+    AND guac_group.name = '{{group_name}}'
 ON CONFLICT DO NOTHING;

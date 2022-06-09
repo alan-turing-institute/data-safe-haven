@@ -7,6 +7,6 @@ USING
 WHERE
     guacamole_user.entity_id = guacamole_entity.entity_id
 AND
-    name = '{{username}}'
+    guacamole_entity.name = '{{username}}'
     AND guacamole_entity.type = 'USER';
 {{/users}}

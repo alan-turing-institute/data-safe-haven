@@ -120,8 +120,8 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             for filepath in filepaths:
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
-            if "SELECT" in cursor.statusmessage:
-                outputs = [record for record in cursor]
+                if "SELECT" in cursor.statusmessage:
+                    outputs += [record for record in cursor]
 
             # Commit changes
             connection.commit()

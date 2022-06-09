@@ -791,19 +791,3 @@ FROM
     ) group_permissions (username, permission)
     JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER_GROUP'
 ON CONFLICT DO NOTHING;
-
--- Grant appropriate connection permissions to each group
-INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
-    SELECT entity_id, connection_id, permission::guacamole_object_permission_type
-    FROM
-        (
-            VALUES
-                ('System Administrators', 'READ'),
-                ('System Administrators', 'UPDATE'),
-                ('System Administrators', 'DELETE'),
-                ('System Administrators', 'ADMINISTER'),
-                ('Research Users', 'READ')
-        ) group_permissions (username, permission)
-        CROSS JOIN guacamole_connection
-        JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name
-ON CONFLICT DO NOTHING;

@@ -7,7 +7,7 @@ import sys
 from cleo import Command
 
 # Local imports
-from data_safe_haven.administration.users import AzureADUserHandler, UserHandler
+from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import Config
 from data_safe_haven.infrastructure import PulumiInterface
@@ -45,24 +45,23 @@ class UsersCommand(LoggingMixin, Command):
             self.warning(f"Project path '{project_path}' does not exist.")
             sys.exit(0)
 
-        # Ensure that the Pulumi backend exists
+        # Read backend secrets
         backend = Backend(config)
-        aad_users = AzureADUserHandler(
-            tenant_id=config.azure.aad_tenant_id,
-            application_id=backend.get_secret(
-                config.backend.key_vault_name, "azuread-user-management-application-id"
-            ),
-            application_secret=backend.get_secret(
-                config.backend.key_vault_name,
-                "azuread-user-management-application-secret",
-            ),
+        aad_application_id = backend.get_secret(
+            config.backend.key_vault_name, "azuread-user-management-application-id"
         )
-        aad_users.update_users()
+        aad_application_secret = backend.get_secret(
+            config.backend.key_vault_name,
+            "azuread-user-management-application-secret",
+        )
 
         # Load users interface
         infrastructure = PulumiInterface(config, project_path)
         users = UserHandler(
-            config, infrastructure.secret("guacamole-postgresql-password")
+            config,
+            aad_application_id,
+            aad_application_secret,
+            infrastructure.secret("guacamole-postgresql-password"),
         )
 
         # Add one or more users

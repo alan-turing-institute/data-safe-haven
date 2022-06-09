@@ -99,7 +99,7 @@ class LoggingMixin:
     """Mixin class for anything needing logging"""
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
-    coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)-8s]</> %(message)s"
+    coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)8s]</> %(message)s"
     is_setup = False
 
     def __init__(self, *args, **kwargs):
@@ -151,9 +151,10 @@ class LoggingMixin:
                 level=max(logging.INFO - 10 * verbosity, 0),
             )
             # Disable unnecessarily verbose Azure logging
+            logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
             logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
             logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
-            logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
+            logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
 
     # Pass log levels through to the logger
     def critical(self, message, no_newline=False, overwrite=False):

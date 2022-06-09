@@ -37,7 +37,8 @@ class GuacamoleUsers(LoggingMixin):
             )
             self.users_ = [
                 ResearchUser(
-                    username=result[0],
+                    username=result[0].split("@")[0],
+                    user_principal_name=result[0],
                     password_salt=result[1],
                     password_hash=result[2],
                     password_date=result[3],
@@ -52,42 +53,32 @@ class GuacamoleUsers(LoggingMixin):
         users_to_add = []
         for new_user in users:
             if new_user in self.users:
-                self.debug(f"User '{new_user.username}' already exists in Guacamole")
+                self.debug(
+                    f"User '{new_user.preferred_username}' already exists in Guacamole"
+                )
             else:
-                self.info(f"Adding '{new_user.username}' to Guacamole")
+                self.info(f"Adding '{new_user.preferred_username}' to Guacamole")
                 users_to_add.append(new_user)
-        if not users_to_add:
-            return
 
         # Add user details to the mustache template
-        reader = FileReader(self.postgres_script_path / "add_users.mustache.sql")
         user_data = {
             "users": [
                 {
-                    "username": user.username,
-                    "group": "Research Users",
+                    "username": user.user_principal_name,
+                    "full_name": user.display_name,
                     "password_hash": user.password_hash,
                     "password_salt": user.password_salt,
                     "password_date": user.password_date.isoformat(),
                 }
                 for user in users_to_add
-            ]
+            ],
+            "group_name": "Research Users",
         }
-
-        # Create a temporary file with user details and run it on the Guacamole database
-        sql_file_name = None
-        try:
-            with tempfile.NamedTemporaryFile("w", delete=False) as f_tmp:
-                f_tmp.writelines(reader.file_contents(user_data))
-                sql_file_name = f_tmp.name
-            self.postgres_provisioner.execute_scripts([sql_file_name])
-            for user in users_to_add:
-                self.users_.append(user)
-        except Exception as exc:
-            raise DataSafeHavenInputException(exc)
-        finally:
-            if sql_file_name:
-                pathlib.Path(sql_file_name).unlink()
+        if user_data:
+            self.postgres_provisioner.execute_scripts(
+                [self.postgres_script_path / "add_users.mustache.sql"],
+                mustache_values=user_data,
+            )
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from Guacamole"""
@@ -98,13 +89,13 @@ class GuacamoleUsers(LoggingMixin):
         user_data = {
             "users": [
                 {
-                    "username": user.username,
+                    "username": user.user_principal_name,
                 }
                 for user in users
             ]
         }
         for user in users:
-            self.info(f"Removing '{user.username}' from Guacamole")
+            self.info(f"Removing '{user.preferred_username}' from Guacamole")
 
         # Create a temporary file with user details and run it on the Guacamole database
         sql_file_name = None

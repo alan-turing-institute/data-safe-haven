@@ -26,15 +26,29 @@ SELECT
 FROM
     (
         VALUES
-            ('hostname', '{{ip_address}}'),
             ('clipboard-encoding', 'UTF-8'),
             ('disable-copy', '{{disable_copy}}'),
             ('disable-paste', '{{disable_paste}}'),
-            ('password', '${GUAC_PASSWORD}'),
+            ('hostname', '{{ip_address}}'),
             ('server-layout', 'en-gb-qwerty'),
-            ('timezone', '{{timezone}}'),
-            ('username', '${GUAC_USERNAME}')
+            ('timezone', '{{timezone}}')
     ) connection_settings (parameter_name, parameter_value)
     JOIN guacamole_connection ON guacamole_connection.connection_name LIKE '% {{connection_name}}'
 ON CONFLICT DO NOTHING;
 {{/connections}}
+
+-- Grant appropriate connection permissions to each group
+INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
+    SELECT entity_id, connection_id, permission::guacamole_object_permission_type
+    FROM
+        (
+            VALUES
+                ('System Administrators', 'READ'),
+                ('System Administrators', 'UPDATE'),
+                ('System Administrators', 'DELETE'),
+                ('System Administrators', 'ADMINISTER'),
+                ('Research Users', 'READ')
+        ) group_permissions (username, permission)
+        CROSS JOIN guacamole_connection
+        JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name
+ON CONFLICT DO NOTHING;

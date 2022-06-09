@@ -116,17 +116,23 @@ class Backend(AzureMixin, LoggingMixin):
         )
         graph_api = GraphApi(
             tenant_id=self.cfg.azure.aad_tenant_id,
-            default_scopes=["Application.ReadWrite.All"],
+            default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
         self.authentication_application_id = self.ensure_azuread_application(
-            application_scopes=["User.Read.All", "Group.Read.All"],
+            application_scopes=["Group.Read.All", "User.Read.All"],
             application_short_name="authentication",
-            delegated_scopes=["User.Read.All", "GroupMember.Read.All"],
+            delegated_scopes=["GroupMember.Read.All", "User.Read.All"],
             graph_api=graph_api,
             key_vault_name=key_vault_name,
         )
         self.user_management_application_id = self.ensure_azuread_application(
-            application_scopes=["User.ReadWrite.All", "Group.ReadWrite.All"],
+            application_scopes=[
+                "Directory.Read.All",
+                "Domain.Read.All",
+                "Group.ReadWrite.All",
+                "User.ReadWrite.All",
+                "UserAuthenticationMethod.ReadWrite.All",
+            ],
             application_short_name="user-management",
             graph_api=graph_api,
             key_vault_name=key_vault_name,
@@ -145,23 +151,12 @@ class Backend(AzureMixin, LoggingMixin):
             },
         )
         self.guacamole_application_id = guacamole_app["appId"]
-        self.ensure_azuread_group(graph_api, self.cfg.azure.aad_group_research_users)
+        self.ensure_azuread_group(
+            graph_api, self.cfg.azure.aad_group_research_users, 20000
+        )
 
     def destroy(self) -> None:
         self.remove_resource_group(self.cfg.backend.resource_group_name)
-
-    def ensure_azuread_group(self, graph_api, group_name):
-        """Ensure that an AzureAD group exists"""
-        self.info(
-            f"Ensuring that group <fg=green>{group_name}</> exists...",
-            no_newline=True,
-        )
-        group = graph_api.create_group(group_name)
-        self.info(
-            f"Ensured that group <fg=green>{group_name}</> exists.",
-            overwrite=True,
-        )
-        return group
 
     def ensure_azuread_application(
         self,
@@ -200,6 +195,19 @@ class Backend(AzureMixin, LoggingMixin):
         self.ensure_secret(key_vault_name, application_secret_name, application_secret)
         self.info(f"Ensured that application <fg=green>{application_name}</> exists.")
         return aad_application["appId"]
+
+    def ensure_azuread_group(self, graph_api, group_name, group_id):
+        """Ensure that an AzureAD group exists"""
+        self.info(
+            f"Ensuring that group <fg=green>{group_name}</> exists...",
+            no_newline=True,
+        )
+        group = graph_api.create_group(group_name, group_id)
+        self.info(
+            f"Ensured that group <fg=green>{group_name}</> exists.",
+            overwrite=True,
+        )
+        return group
 
     def ensure_cert(
         self,

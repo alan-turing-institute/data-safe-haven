@@ -14,6 +14,11 @@ class SecureResearchDesktopProps:
 
     def __init__(
         self,
+        aad_auth_app_id: Input[str],
+        aad_auth_app_secret: Input[str],
+        aad_domain_name: Input[str],
+        aad_group_research_users: Input[str],
+        aad_tenant_id: Input[str],
         admin_password: Input[str],
         ip_addresses: Input[Sequence[str]],
         resource_group_name: Input[str],
@@ -22,6 +27,11 @@ class SecureResearchDesktopProps:
         vm_sizes: Sequence[Input[str]],
         subnet_name: Optional[Input[str]] = "SecureResearchDesktopSubnet",
     ):
+        self.aad_auth_app_id = aad_auth_app_id
+        self.aad_auth_app_secret = aad_auth_app_secret
+        self.aad_domain_name = aad_domain_name
+        self.aad_group_research_users = aad_group_research_users
+        self.aad_tenant_id = aad_tenant_id
         self.admin_password = admin_password
         self.ip_addresses = ip_addresses
         self.resource_group_name = resource_group_name
@@ -58,12 +68,22 @@ class SecureResearchDesktopComponent(ComponentResource):
 
         # Deploy a variable number of VMs depending on the input parameters
         Output.all(
+            aad_auth_app_id=props.aad_auth_app_id,
+            aad_auth_app_secret=props.aad_auth_app_secret,
+            aad_domain_name=props.aad_domain_name,
+            aad_group_research_users=props.aad_group_research_users,
+            aad_tenant_id=props.aad_tenant_id,
             admin_password=props.admin_password,
             ip_addresses=props.ip_addresses,
             vm_short_names=props.vm_short_names,
             vm_sizes=props.vm_sizes,
         ).apply(
             lambda args: self.deploy(
+                aad_auth_app_id=args["aad_auth_app_id"],
+                aad_auth_app_secret=args["aad_auth_app_secret"],
+                aad_domain_name=args["aad_domain_name"],
+                aad_group_research_users=args["aad_group_research_users"],
+                aad_tenant_id=args["aad_tenant_id"],
                 admin_password=args["admin_password"],
                 ip_addresses=args["ip_addresses"],
                 vm_short_names=args["vm_short_names"],
@@ -81,6 +101,11 @@ class SecureResearchDesktopComponent(ComponentResource):
 
     def deploy(
         self,
+        aad_auth_app_id: str,
+        aad_auth_app_secret: str,
+        aad_domain_name: str,
+        aad_group_research_users: str,
+        aad_tenant_id: str,
         admin_password: str,
         ip_addresses: Sequence[str],
         vm_short_names: Sequence[str],
@@ -102,7 +127,13 @@ class SecureResearchDesktopComponent(ComponentResource):
             / "secure_research_desktop"
         )
         with open(resources_path / "srd.cloud_init.mustache.yaml", "r") as f_cloudinit:
-
+            mustache_values = {
+                "aad_tenant_id": aad_tenant_id,
+                "aad_auth_app_id": aad_auth_app_id,
+                "aad_auth_app_secret": aad_auth_app_secret,
+                "aad_group_research_users": aad_group_research_users,
+                "aad_domain_name": aad_domain_name,
+            }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             b64cloudinit = base64.b64encode(cloudinit.encode("utf-8")).decode()
 

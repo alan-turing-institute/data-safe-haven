@@ -21,27 +21,28 @@ settings:
   allow_paste: <True/False> (default False) # allow pasting of text into the environment
 azure:
   aad_tenant_id: <the tenant ID of the Azure Active Directory where your users are registered>
+  domain_suffix: <the domain that users will belong to>
   subscription_name: <my subscription name>
   admin_group_id: <the ID of an Azure security group that contains all administrators>
   location: <Azure location where resources should be deployed>
 ```
 
-- Run the following to initialise the deployment:
+- Run the following to initialise the deployment (approx 5 minutes):
 
 ```bash
 > dsh init --config <my YAML config file>
 ```
 
-- Next deploy the infrastructure with:
+- Next deploy the infrastructure with (approx 20 minutes):
 
 ```bash
 > dsh deploy --config <my YAML config file>
 ```
 
-- Add one or more users from a CSV file with columns named (`first_name;last_name;email_address;phone_number`)
+- Add one or more users from a CSV file with columns named (`first_name;last_name;email_address;phone_number`). Note that the phone number must be in full international format.
 
 ```bash
-> dsh users --config <my YAML config file> --add <my CSV users file>
+> dsh users --config <my YAML config file> --set <my CSV users file>
 ```
 
 - Run the following if you want to teardown a deployed environment:

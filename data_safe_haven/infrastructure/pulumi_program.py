@@ -67,33 +67,43 @@ class PulumiProgram:
             ),
         )
 
-        # Define containerised secure desktops
-        srd = SecureResearchDesktopComponent(
-            self.cfg.environment_name,
-            SecureResearchDesktopProps(
-                admin_password=self.secrets.get(
-                    "secure-research-desktop-admin-password"
-                ),
-                ip_addresses=networking.ip_addresses_srd,
-                resource_group_name=rg_secure_research_desktop.name,
-                virtual_network=networking.vnet,
-                virtual_network_resource_group_name=networking.resource_group_name,
-                vm_sizes=self.cfg.environment.vm_sizes,
-            ),
-        )
-
         # Define containerised remote desktop gateway
         guacamole = GuacamoleComponent(
             self.cfg.environment_name,
             GuacamoleProps(
+                aad_application_id=self.cfg.deployment.aad_app_id_guacamole,
+                aad_application_url=f"https://{self.cfg.environment.url}",
+                aad_tenant_id=self.cfg.azure.aad_tenant_id,
                 ip_address_container=networking.ip_address_guacamole_container,
                 ip_address_postgresql=networking.ip_address_guacamole_postgresql,
                 postgresql_password=self.secrets.get("guacamole-postgresql-password"),
                 resource_group_name=rg_guacamole.name,
                 storage_account_name=state_storage.account_name,
                 storage_account_resource_group=state_storage.resource_group_name,
-                virtual_network=networking.vnet,
                 virtual_network_resource_group_name=networking.resource_group_name,
+                virtual_network=networking.vnet,
+            ),
+        )
+
+        # Define containerised secure desktops
+        srd = SecureResearchDesktopComponent(
+            self.cfg.environment_name,
+            SecureResearchDesktopProps(
+                aad_auth_app_id=self.cfg.deployment.aad_app_id_authentication,
+                aad_auth_app_secret=self.secrets.get(
+                    "azuread-authentication-application-secret"
+                ),
+                aad_domain_name=self.cfg.azure.domain_suffix,
+                aad_group_research_users=self.cfg.azure.aad_group_research_users,
+                aad_tenant_id=self.cfg.azure.aad_tenant_id,
+                admin_password=self.secrets.get(
+                    "secure-research-desktop-admin-password"
+                ),
+                ip_addresses=networking.ip_addresses_srd,
+                resource_group_name=rg_secure_research_desktop.name,
+                virtual_network_resource_group_name=networking.resource_group_name,
+                virtual_network=networking.vnet,
+                vm_sizes=self.cfg.environment.vm_sizes,
             ),
         )
 
@@ -128,8 +138,5 @@ class PulumiProgram:
         )
         pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
         pulumi.export("state_resource_group_name", state_storage.resource_group_name)
-        pulumi.export(
-            "state_storage_account_name",
-            state_storage.account_name,
-        )
+        pulumi.export("state_storage_account_name", state_storage.account_name)
         pulumi.export("vm_details", srd.vm_details)

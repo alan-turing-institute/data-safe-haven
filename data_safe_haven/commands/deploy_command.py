@@ -9,6 +9,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config
+from data_safe_haven.backend import Backend
 from data_safe_haven.infrastructure import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
@@ -47,40 +48,20 @@ class DeployCommand(LoggingMixin, Command):
             project_path.mkdir()
 
         # Deploy infrastructure with Pulumi
+        backend = Backend(config)
         infrastructure = PulumiInterface(config, project_path)
-        infrastructure.deploy()
+        infrastructure.deploy(
+            aad_auth_app_secret=backend.get_secret(
+                config.backend.key_vault_name,
+                "azuread-authentication-application-secret",
+            ),
+        )
+        infrastructure.update_config()
 
         # Add Pulumi output information to the config file
         with open(infrastructure.local_stack_path, "r") as f_stack:
             stack_yaml = yaml.safe_load(f_stack)
         config.pulumi.stack = stack_yaml
-        config.add_data(
-            {
-                "pulumi": {
-                    "outputs": {
-                        "guacamole": {
-                            "container_group_name": infrastructure.output(
-                                "guacamole_container_group_name"
-                            ),
-                            "postgresql_server_name": infrastructure.output(
-                                "guacamole_postgresql_server_name"
-                            ),
-                            "resource_group_name": infrastructure.output(
-                                "guacamole_resource_group_name"
-                            ),
-                        },
-                        "state": {
-                            "resource_group_name": infrastructure.output(
-                                "state_resource_group_name"
-                            ),
-                            "storage_account_name": infrastructure.output(
-                                "state_storage_account_name"
-                            ),
-                        },
-                    }
-                }
-            }
-        )
 
         # Upload config to blob storage
         config.upload()

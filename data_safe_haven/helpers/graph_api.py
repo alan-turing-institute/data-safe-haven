@@ -16,67 +16,26 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.mixins import LoggingMixin
 
 
-class AzureADUser:
-    schema_name = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
-
-    def __init__(self, **kwargs):
-        schema_props = kwargs.get(self.schema_name, {})
-        self.gecos = kwargs.get("gecos", None)
-        self.gid = kwargs.get("gid", None)
-        self.gidnumber = schema_props.get("gidnumber", None)
-        self.group = schema_props.get("group", None)
-        self.homedir = schema_props.get("homedir", None)
-        self.mail = kwargs.get("mail", None)
-        self.members = schema_props.get("members", None)
-        self.oid = kwargs.get("id", None)
-        self.passwd = schema_props.get("passwd", None)
-        self.shell = schema_props.get("shell", None)
-        self.uid = schema_props.get("uid", None)
-        self.user = schema_props.get("user", None)
-        self.userPrincipalName = kwargs.get("userPrincipalName", None)
-
-    def __str__(self):
-        attrs = []
-        if self.gecos:
-            attrs.append(f"gecos {self.gecos}")
-        if self.gid:
-            attrs.append(f"gid {self.gid}")
-        if self.gidnumber:
-            attrs.append(f"gidnumber {self.gidnumber}")
-        if self.group:
-            attrs.append(f"group {self.group}")
-        if self.homedir:
-            attrs.append(f"homedir {self.homedir}")
-        if self.mail:
-            attrs.append(f"mail {self.mail}")
-        if self.members:
-            attrs.append(f"members {self.members}")
-        if self.oid:
-            attrs.append(f"oid {self.oid}")
-        if self.passwd:
-            attrs.append(f"passwd {self.passwd}")
-        if self.shell:
-            attrs.append(f"shell {self.shell}")
-        if self.uid:
-            attrs.append(f"uid {self.uid}")
-        if self.user:
-            attrs.append(f"user {self.user}")
-        if self.userPrincipalName:
-            attrs.append(f"userPrincipalName {self.userPrincipalName}")
-        return "; ".join(attrs)
-
-
 class GraphApi(LoggingMixin):
-    to_uuid = {
+    linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
+    role_template_ids = {"Global Administrator": "62e90394-69f5-4237-9190-012177145e10"}
+    uuid_application = {
+        "Directory.Read.All": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+        "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
         "Group.ReadWrite.All": "62a82d76-70ea-41e2-9197-370581804d09",
-        "GroupMember.Read.All": "bc024368-1153-4739-b217-4326f2e966d0",
-        "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
         "User.Read.All": "df021288-bdef-4463-88db-98f22de89214",
+        "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
+        "UserAuthenticationMethod.ReadWrite.All": "50483e42-d915-4231-9639-7fdb7fd190e5",
+    }
+    uuid_delegated = {
+        "GroupMember.Read.All": "bc024368-1153-4739-b217-4326f2e966d0",
+        "User.Read.All": "a154be20-db9c-4678-8ab7-66f6cc099a59",
     }
 
     def __init__(self, tenant_id, base_endpoint="", default_scopes=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.tenant_id = tenant_id
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
@@ -90,6 +49,7 @@ class GraphApi(LoggingMixin):
             # Use the default application
             app = PublicClientApplication(
                 client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",  # this is the Powershell client id
+                # client_id="04b07795-8ddb-461a-bbee-02f9e1bf7b46",  # this is the Azure CLI client id
                 authority=f"https://login.microsoftonline.com/{self.tenant_id}",
             )
             # Initiate device code flow
@@ -99,7 +59,7 @@ class GraphApi(LoggingMixin):
                     "Could not initiate device login"
                 )
             self.info(
-                f"This application has requested permissions that need administrator approval."
+                f"Making changes to Azure Active Directory needs administrator approval."
             )
             self.info(
                 "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
@@ -120,6 +80,62 @@ class GraphApi(LoggingMixin):
                     else "Could not acquire access token"
                 )
         return self.default_token_
+
+    def access_token(self, application_id, application_secret):
+        """Return an access token for the given application ID and secret"""
+        # Use a created application
+        app = ConfidentialClientApplication(
+            client_id=application_id,
+            client_credential=application_secret,
+            authority=f"https://login.microsoftonline.com/{self.tenant_id}",
+        )
+        # Block until a response is received
+        # For this call the scopes are pre-defined by the application privileges
+        result = app.acquire_token_for_client(
+            scopes="https://graph.microsoft.com/.default"
+        )
+        try:
+            return result["access_token"]
+        except KeyError:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not acquire access token: {result['error_description']}"
+                if result and "error_description" in result
+                else "Could not acquire access token"
+            )
+
+    def add_user_to_group(
+        self,
+        username,
+        group_name,
+        auth_token=None,
+    ):
+        """Create a user if it does not already exist"""
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            user_id = self.get_id_from_username(username, auth_token)
+            group_id = self.get_id_from_groupname(group_name, auth_token)
+            # Check whether user already belongs to group
+            json_response = self.http_get(
+                f"{self.base_endpoint}/groups/{group_id}/members",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            ).json()
+            if any([user_id == member["id"] for member in json_response["value"]]):
+                return False
+            # Add user to group
+            request_json = {
+                "@odata.id": f"https://graph.microsoft.com/v1.0/directoryObjects/{user_id}"
+            }
+            self.http_post(
+                f"{self.base_endpoint}/groups/{group_id}/members/$ref",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                json=request_json,
+            )
+            self.info(f"Added user '{username}' to group '{group_name}'.")
+            return True
+        except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not create application: {str(exc)}"
+            ) from exc
 
     def application(
         self,
@@ -160,14 +176,14 @@ class GraphApi(LoggingMixin):
         # Add scopes if there are any
         scopes = [
             {
-                "id": self.to_uuid[application_scope],
-                "type": "Role",
+                "id": self.uuid_application[application_scope],
+                "type": "Role",  # 'Role' is the type for application permissions
             }
             for application_scope in application_scopes
         ] + [
             {
-                "id": self.to_uuid[delegated_scope],
-                "type": "Scope",
+                "id": self.uuid_delegated[delegated_scope],
+                "type": "Scope",  # 'Scope' is the type for delegated permissions
             }
             for delegated_scope in delegated_scopes
         ]
@@ -251,18 +267,14 @@ class GraphApi(LoggingMixin):
     def create_group(
         self,
         group_name,
+        group_id,
         auth_token=None,
     ):
-        """Ensure that a group exists"""
+        """Ensure that a group exists. Returns 'True' if new group was created and 'False' if the group already exists."""
         auth_token = auth_token if auth_token else self.default_token
         try:
-            matched_group = [
-                group
-                for group in self.get_groups(auth_token=auth_token)
-                if group["displayName"] == group_name
-            ]
-            if matched_group:
-                return matched_group[0]
+            if self.get_id_from_groupname(group_name, auth_token):
+                return False
             endpoint = f"{self.base_endpoint}/groups"
             request_json = {
                 "displayName": group_name,
@@ -276,21 +288,157 @@ class GraphApi(LoggingMixin):
                 headers={"Authorization": f"Bearer {auth_token}"},
                 json=request_json,
             ).json()
+            # Add Linux group name and ID
+            patch_json = {
+                self.linux_schema: {
+                    "group": group_name,
+                    "gid": group_id,
+                }
+            }
+            self.http_patch(
+                f"{self.base_endpoint}/groups/{json_response['id']}",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                json=patch_json,
+            )
+            return True
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not create group {group_name}: {str(exc)}"
+            ) from exc
+
+    def create_user(
+        self,
+        request_json,
+        email_address,
+        phone_number,
+        auth_token=None,
+    ):
+        """Create a user if it does not already exist. Returns 'True' if new user was created and 'False' if the user already exists."""
+        auth_token = auth_token if auth_token else self.default_token
+        username = request_json["mailNickname"]
+        user_was_created = False
+        try:
+            # Check whether user already exists
+            user_id = self.get_id_from_username(username, auth_token)
+            if not user_id:
+                # If they do not then create them
+                endpoint = f"{self.base_endpoint}/users"
+                json_response = self.http_post(
+                    endpoint,
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                    json=request_json,
+                ).json()
+                user_id = json_response["id"]
+                user_was_created = True
+            # Set the authentication email address
+            try:
+                self.http_post(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods",
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                    json={"emailAddress": email_address},
+                )
+            except DataSafeHavenMicrosoftGraphException as exc:
+                if "already exists" not in str(exc):
+                    raise
+            # Set the authentication phone number
+            try:
+                self.http_post(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods",
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                    json={"phoneNumber": phone_number, "phoneType": "mobile"},
+                )
+            except DataSafeHavenMicrosoftGraphException as exc:
+                if "already exists" not in str(exc):
+                    raise
+            # Ensure user is enabled
+            self.http_patch(
+                f"{self.base_endpoint}/users/{user_id}",
+                headers={"Authorization": f"Bearer {auth_token}"},
+                json={"accountEnabled": True},
+            )
+            # Return 'True' if new user was created and 'False' if the user already exists
+            return user_was_created
+        except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not create user {username}: {str(exc)}"
+            ) from exc
+
+    def create_user_with_group(
+        self,
+        request_json,
+        email_address,
+        phone_number,
+        auth_token=None,
+    ):
+        try:
+            # Ensure that the user exists
+            self.create_user(request_json, email_address, phone_number, auth_token)
+            user = [
+                user
+                for user in self.get_users(auth_token=auth_token)
+                if user["mailNickname"] == request_json["mailNickname"]
+            ][0]
+            # Create a group with the same name and UID as the user and add the user to it
+            self.create_group(user["user"], user["uid"], auth_token)
+            self.add_user_to_group(user["user"], user["user"], auth_token)
+        except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not create user and group: {str(exc)}"
+            ) from exc
+
+    def disable_user(
+        self,
+        username,
+        auth_token=None,
+    ) -> bool:
+        """Disable an existing user"""
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            for user in self.get_users(auth_token=auth_token):
+                if str(user["userPrincipalName"]).startswith(username):
+                    self.http_patch(
+                        f"{self.base_endpoint}/users/{user['id']}",
+                        headers={"Authorization": f"Bearer {auth_token}"},
+                        json={"accountEnabled": False},
+                    )
+                    self.debug(f"Disabled user '{user['userPrincipalName']}'")
+                    return True
+        except DataSafeHavenMicrosoftGraphException as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not disable user {username}: {str(exc)}"
+            ) from exc
+
+    def get_domains(
+        self,
+        auth_token=None,
+    ):
+        """Get all available domains"""
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            endpoint = f"{self.base_endpoint}/domains"
+            json_response = self.http_get(
+                endpoint,
+                headers={"Authorization": f"Bearer {auth_token}"},
+            ).json()
+        except DataSafeHavenMicrosoftGraphException as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not load list of domains: {str(exc)}"
             ) from exc
 
         return json_response["value"]
 
     def get_groups(
         self,
+        attributes=None,
         auth_token=None,
     ):
         """Ensure that a group exists"""
+        # attributes = attributes if attributes else ["displayName", "id"]
         auth_token = auth_token if auth_token else self.default_token
         try:
             endpoint = f"{self.base_endpoint}/groups"
+            if attributes:
+                endpoint += f"?$select={','.join(attributes)}"
             json_response = self.http_get(
                 endpoint,
                 headers={"Authorization": f"Bearer {auth_token}"},
@@ -302,39 +450,156 @@ class GraphApi(LoggingMixin):
 
         return json_response["value"]
 
-    def get_users(self, attributes, auth_token=None):
+    def get_id_from_groupname(self, group_name, auth_token=None):
         auth_token = auth_token if auth_token else self.default_token
         try:
-            endpoint = f"{self.base_endpoint}/users?$select={','.join(attributes)}"
+            return [
+                group
+                for group in self.get_groups(auth_token=auth_token)
+                if group["displayName"] == group_name
+            ][0]["id"]
+        except (DataSafeHavenMicrosoftGraphException, IndexError):
+            return None
+
+    def get_id_from_username(self, username, auth_token=None):
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            return [
+                user
+                for user in self.get_users(auth_token=auth_token)
+                if user["mailNickname"] == username
+            ][0]["id"]
+        except (DataSafeHavenMicrosoftGraphException, IndexError):
+            return None
+
+    def get_users(self, attributes=None, auth_token=None):
+        """Get users from AzureAD"""
+        attributes = (
+            attributes
+            if attributes
+            else [
+                "accountEnabled",
+                "displayName",
+                "givenName",
+                "id",
+                "mail",
+                "mailNickname",
+                "mobilePhone",
+                "userPrincipalName",
+                "surname",
+                self.linux_schema,
+            ]
+        )
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            endpoint = f"{self.base_endpoint}/users"
+            if attributes:
+                endpoint += f"?$select={','.join(attributes)}"
             json_response = self.http_get(
                 endpoint,
                 headers={"Authorization": f"Bearer {auth_token}"},
             ).json()
+            users = json_response["value"]
         except DataSafeHavenMicrosoftGraphException as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of users: {str(exc)}"
             ) from exc
+        try:
+            endpoint = f"{self.base_endpoint}/directoryRoles/roleTemplateId={self.role_template_ids['Global Administrator']}/members"
+            json_response = self.http_get(
+                endpoint,
+                headers={"Authorization": f"Bearer {auth_token}"},
+            ).json()
+            administrators = json_response["value"]
+        except DataSafeHavenMicrosoftGraphException as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not load list of administrators: {str(exc)}"
+            ) from exc
+        for user in users:
+            user["isGlobalAdmin"] = any(
+                [user["id"] == admin["id"] for admin in administrators]
+            )
+            for key, value in user.get(self.linux_schema, {}).items():
+                user[key] = value
+            user[self.linux_schema] = {}
+        return users
 
-        return [AzureADUser(**props) for props in json_response["value"]]
+    def http_delete(self, url, **kwargs):
+        try:
+            response = requests.delete(url, **kwargs)
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute DELETE request:", str(exc)
+            )
+        if not response.ok:
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute DELETE request:", response.content
+            )
+        return response
 
     def http_get(self, url, **kwargs):
-        response = requests.get(url, **kwargs)
+        try:
+            response = requests.get(url, **kwargs)
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute GET request:", str(exc)
+            )
         if not response.ok:
-            raise DataSafeHavenMicrosoftGraphException(response.content)
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute GET request:", response.content
+            )
         return response
 
     def http_patch(self, url, **kwargs):
-        response = requests.patch(url, **kwargs)
+        try:
+            response = requests.patch(url, **kwargs)
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute PATCH request:", str(exc)
+            )
         if not response.ok:
-            raise DataSafeHavenMicrosoftGraphException(response.content)
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute PATCH request:", response.content
+            )
         return response
 
     def http_post(self, url, **kwargs):
-        response = requests.post(url, **kwargs)
+        try:
+            response = requests.post(url, **kwargs)
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute POST request:", str(exc)
+            )
         if not response.ok:
-            raise DataSafeHavenMicrosoftGraphException(response.content)
+            raise DataSafeHavenMicrosoftGraphException(
+                "Could not execute POST request:", response.content
+            )
         time.sleep(30)  # wait for operation to complete
         return response
+
+    def remove_user_from_group(
+        self,
+        username,
+        group_name,
+        auth_token=None,
+    ):
+        """Create a user if it does not already exist"""
+        auth_token = auth_token if auth_token else self.default_token
+        try:
+            user_id = self.get_id_from_username(username, auth_token)
+            group_id = self.get_id_from_groupname(group_name, auth_token)
+            # Attempt to remove user from group
+            response = self.http_delete(
+                f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+            if response.ok:
+                return True
+            return False
+        except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not create application: {str(exc)}"
+            ) from exc
 
     def list_applications(self, auth_token=None):
         """Get list of application names"""
@@ -349,25 +614,3 @@ class GraphApi(LoggingMixin):
                 f"Could not load list of applications: {str(exc)}"
             ) from exc
         return json_response["value"]
-
-    def access_token(self, application_id, application_secret):
-        # Use a created application
-        app = ConfidentialClientApplication(
-            client_id=application_id,
-            client_credential=application_secret,
-            authority=f"https://login.microsoftonline.com/{self.tenant_id}",
-        )
-        # Block until a response is received
-        # For this call the scopes are pre-defined by the application privileges
-        result = app.acquire_token_for_client(
-            scopes="https://graph.microsoft.com/.default"
-        )
-
-        try:
-            return result["access_token"]
-        except KeyError:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not acquire access token: {result['error_description']}"
-                if result and "error_description" in result
-                else "Could not acquire access token"
-            )
