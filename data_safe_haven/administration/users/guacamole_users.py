@@ -21,7 +21,7 @@ class GuacamoleUsers(LoggingMixin):
             self.cfg.pulumi.outputs.guacamole.postgresql_server_name,
             postgresql_password,
         )
-        self.users_ = []
+        self.users_ = None
         self.postgres_script_path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
@@ -31,7 +31,7 @@ class GuacamoleUsers(LoggingMixin):
 
     @property
     def users(self) -> Sequence[ResearchUser]:
-        if not self.users_:
+        if self.users_ is None:  # Allow for the possibility of an empty list of users
             postgres_output = self.postgres_provisioner.execute_scripts(
                 [self.postgres_script_path / "list_users.sql"]
             )

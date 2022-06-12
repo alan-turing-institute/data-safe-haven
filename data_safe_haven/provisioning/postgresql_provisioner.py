@@ -195,6 +195,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             raise DataSafeHavenInputException(
                 f"Database access action {action} was not recognised."
             )
+        self.db_server_ = None  # Force refresh of self.db_server
         self.info(
-            f"Public network access to <fg=green>{self.server_name}</> is: {self.db_server.public_network_access}"
+            f"Public network access to <fg=green>{self.server_name}</> is <fg=green>{self.db_server.public_network_access}</>."
         )
