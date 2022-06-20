@@ -48,6 +48,7 @@ Moreover, a formal data transfer agreement between the data provider and the Ins
 We recommend that the following conditions be met by all users who will be given access to unconsented patient data:
 
 - Completion of at least one of the following accredited courses, documented by an electronic certificate dated no longer than **3 months** prior to the start of the data access.
+  - [NHS Data Security Awareness](https://www.e-lfh.org.uk/programmes/data-security-awareness/)
   - [MRC Research Data and Confidentiality](https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
   - [ADRC SURE Training](https://adrc-scotland-sure-training.weebly.com/)
 - The researcher must be named as an approved data user by the data controller (Caldicott Guardian, PBPP or NHS digital depending on the data source; see data ingress conditions).
