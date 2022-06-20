@@ -4,7 +4,7 @@
 
 ## Multifactor Authentication and Password strength
 
-Once a user account is created by a {ref}`role_system_manager`, the user must then activates their account online.
+Once a user account is created by a {ref}`role_system_manager`, the user must then activate their account online.
 They choose their own password, which must meet password strength requirements, and set up multi-factor authentication.
 
 ## Isolated network
