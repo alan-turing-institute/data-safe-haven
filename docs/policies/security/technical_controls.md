@@ -86,7 +86,7 @@ At tier 2 and higher, the use of copy-and-paste is blocked by the remote desktop
 
 ```{attention}
 Users cannot be absolutely prevented from copying data to the device they are using to access the SRE, since malicious users can script automated screen-grabs.
-The aim of this control is to deter accidentally or unthinking workarounds.
+The aim of this control is to deter non-malicious workaround breach where Researchers misunderstand or misinterpret what is permitted.
 ```
 
 ## Data ingress
