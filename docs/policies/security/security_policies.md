@@ -5,7 +5,7 @@
 Before data is imported into a Safe Haven it must go through an assessment process to classify it into one of five {ref}`sensitivity tiers <policy_classification_sensitivity_tiers>`.
 This classification is conducted by the {ref}`role_data_provider_representative`, the research project lead ({ref}`role_investigator`) and an independent adviser ({ref}`role_referee`).
 The least sensitive category is Tier 0, and most sensitive is Tier 4 - currently, we recommend the use of the Data Safe Haven for projects in tiers 2 or 3.
-A full overview of the classification process can be found `here <policy_data_classification_process>`.
+A full overview of the classification process can be found {ref}`here <policy_data_classification_process>`.
 
 ## Data sharing agreement
 
