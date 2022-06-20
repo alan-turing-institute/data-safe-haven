@@ -4,7 +4,7 @@ The base Data Safe Haven analysis environment provided in the secure research en
 We also provide access to certain package repositories for supported programming languages: currently `PyPI (Python)` and `CRAN (R)`.
 
 For packages not available through a supported package repository, an alternative method of software ingress must be provided.
-This includes custom researcher-written code not available via the package mirrors (e.g. code available on a researcher's personal or institutional Github repositories).
+This includes custom researcher-written code not available via the supported package repositories (e.g. code available on a researcher's personal or institutional Github repositories).
 
 For lower tier environments, the Data Safe Haven analysis environment has outbound access to the internet and software can be installed in the usual manner by either a normal user or an administrator as required.
 For higher tier environments, the following software ingress options are available.
