@@ -108,7 +108,7 @@ At **Tier 2**, the most significant risks are "workaround breach" and the risk o
 ### Relationships to other classification schemes
 
 - Almost all data at the baseline UK government OFFICIAL classification is likely to be **Tier 2**, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
-- All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is **Tier 2**.
+- All **strongly** pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is **Tier 2**.
 
 (policy_tier_3)=
 
