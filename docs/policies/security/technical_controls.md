@@ -29,7 +29,7 @@ This access may also be remote for authorised users (for example, via VPN).
 
 At tier 2 or above SRE firewall rules permit inbound access only from network IP ranges corresponding to specific pre-approved `Institutional` and `Restricted` networks.
 Similarly, at tier 2 or above, connections to resources outside the SRE private network (such as external websites) are not permitted.
-Finally, different SREs attached to the same SHM are isolated from one another.
+Finally, different SREs within the same Data Safe Haven are isolated from one another at the network level.
 
 ## User Devices
 
