@@ -389,18 +389,18 @@
     },
     "storage": {
       "artifacts": {
-        "accountName": "shmtestbartifactslubiehy",
+        "accountName": "shmtestbartifactsnaycqgw",
         "rg": "RG_SHM_TESTB_STORAGE"
       },
       "bootdiagnostics": {
-        "accountName": "shmtestbbootdiagslubiehy",
+        "accountName": "shmtestbbootdiagsnaycqgw",
         "rg": "RG_SHM_TESTB_STORAGE"
       },
       "persistentdata": {
         "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
       }
     },
-    "subscriptionName": "Safe Haven Management Test B",
+    "subscriptionName": "Data Safe Haven Development",
     "time": {
       "ntp": {
         "serverAddresses": [
@@ -673,21 +673,21 @@
         "account": {
           "accessTier": "Cool",
           "allowedIpAddresses": "any",
-          "name": "testbt2guacartifactsfmjy",
+          "name": "testbt2guacartifactsnrza",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
         "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
       },
       "bootdiagnostics": {
-        "accountName": "testbt2guacbootdiagsfmjy",
+        "accountName": "testbt2guacbootdiagsnrza",
         "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
       },
       "persistentdata": {
         "account": {
           "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testbt2guacdatafmjyhpocz",
+          "name": "testbt2guacdatanrzabxpji",
           "performance": "Standard_LRS",
           "storageKind": "BlobStorage"
         },
@@ -707,7 +707,7 @@
       "userdata": {
         "account": {
           "accessTier": "Hot",
-          "name": "testbt2guacuserdatafmjyh",
+          "name": "testbt2guacuserdatanrzab",
           "performance": "Premium_LRS",
           "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE",
           "storageKind": "FileStorage"
@@ -726,7 +726,7 @@
         }
       }
     },
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
+    "subscriptionName": "Data Safe Haven Development",
     "tier": "2",
     "time": {
       "timezone": {

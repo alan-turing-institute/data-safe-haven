@@ -2,7 +2,7 @@
     "sreId": "t1guac",
     "tier": "1",
     "shmId": "testb",
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
+    "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.151.0",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",

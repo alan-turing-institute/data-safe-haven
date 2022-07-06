@@ -3,7 +3,7 @@
     "tier": "3",
     "nexus": false,
     "shmId": "testa",
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.163.0",
     "inboundAccessFrom": "default",
     "outboundInternetAccess": "default",
