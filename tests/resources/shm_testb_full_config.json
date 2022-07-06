@@ -388,18 +388,18 @@
   },
   "storage": {
     "artifacts": {
-      "accountName": "shmtestbartifactslubiehy",
+      "accountName": "shmtestbartifactsnaycqgw",
       "rg": "RG_SHM_TESTB_STORAGE"
     },
     "bootdiagnostics": {
-      "accountName": "shmtestbbootdiagslubiehy",
+      "accountName": "shmtestbbootdiagsnaycqgw",
       "rg": "RG_SHM_TESTB_STORAGE"
     },
     "persistentdata": {
       "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
     }
   },
-  "subscriptionName": "Safe Haven Management Test B",
+  "subscriptionName": "Data Safe Haven Development",
   "time": {
     "ntp": {
       "serverAddresses": [

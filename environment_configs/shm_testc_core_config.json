@@ -4,7 +4,7 @@
     "domain": "testc.dsgroupdev.co.uk",
     "timezone": "Europe/London",
     "azure": {
-        "subscriptionName": "Safe Haven Management Test C",
+        "subscriptionName": "Data Safe Haven Development",
         "adminGroupName" : "Safe Haven Test Admins",
         "location": "uksouth"
     },
