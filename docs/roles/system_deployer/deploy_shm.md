@@ -282,7 +282,7 @@ Do not use this account unless absolutely required!
 
 ## 6. {{iphone}} Enable MFA and self-service password reset
 
-To enable MFA and self-service password reset, you must have sufficient licences for all users.
+To enable self-service password reset and MFA-via-phone-call, you must have sufficient licences for all users.
 
 ### Add licences that support MFA
 
