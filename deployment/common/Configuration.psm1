@@ -961,7 +961,7 @@ function Get-SreConfig {
         rg = "$($config.sre.rgPrefix)_DATABASES".ToUpper()
     }
     $dbConfig = @{
-        MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev" }
+        MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev-gen2" }
         PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
     }
     $ipOffset = 4

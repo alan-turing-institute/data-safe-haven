@@ -77,9 +77,9 @@
         },
         "Sql_Server_Edition": {
             "type": "string",
-             "defaultValue": "sqldev",
+             "defaultValue": "sqldev-gen2",
              "allowedValues": [
-                "sqldev",
+                "sqldev-gen2",
                 "enterprise"
             ],
             "metadata": {
@@ -120,8 +120,8 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "microsoftsqlserver",
-                        "offer": "sql2019-ws2019",
+                        "publisher": "MicrosoftSQLServer",
+                        "offer": "SQL2022-WS2022",
                         "sku": "[parameters('Sql_Server_Edition')]",
                         "version": "latest"
                     },
