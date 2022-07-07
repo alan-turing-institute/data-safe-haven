@@ -164,8 +164,11 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "patchSettings": {
+                            "patchMode": "AutomaticByPlatform"
+                        },
+                        "provisionVMAgent": true
                     },
                     "secrets": []
                 },
@@ -275,8 +278,11 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "patchSettings": {
+                            "patchMode": "AutomaticByPlatform"
+                        },
+                        "provisionVMAgent": true
                     },
                     "secrets": []
                 },

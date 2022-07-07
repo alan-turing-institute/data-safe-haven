@@ -139,8 +139,11 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": false,
+                        "patchSettings": {
+                            "patchMode": "AutomaticByPlatform"
+                        },
+                        "provisionVMAgent": true
                     },
                     "secrets": [],
                     "allowExtensionOperations": true
