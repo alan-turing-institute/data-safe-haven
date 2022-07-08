@@ -1,4 +1,4 @@
-hash: 39b76fe07149ffa91f126b6f5f38a79afea8386b1fd4228bc22a6f42887e71c2
-version: 2022.02.3-492
+hash: 9722278cf6229610b3fe1100cc69486c79bb44396235d8af8724530af2dd33c5
+version: 2022.07.0-548
 debfile: rstudio-|VERSION|-amd64.deb
 remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
