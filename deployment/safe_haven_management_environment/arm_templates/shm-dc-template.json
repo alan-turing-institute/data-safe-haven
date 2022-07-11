@@ -163,7 +163,7 @@
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
                         "sku": "2022-Datacenter",
-                        "version": "latest"
+                        "version": "20348.643.220403" // switch back to 'latest' when #1129 is fixed
                     },
                     "osDisk": {
                         "osType": "Windows",
@@ -274,7 +274,7 @@
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
                         "sku": "2022-Datacenter",
-                        "version": "latest"
+                        "version": "20348.643.220403" // switch back to 'latest' when #1129 is fixed
                     },
                     "osDisk": {
                         "osType": "Windows",

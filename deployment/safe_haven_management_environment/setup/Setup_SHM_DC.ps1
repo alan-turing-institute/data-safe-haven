@@ -44,7 +44,7 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 # ------------------
 Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to storage account '$($config.storage.artifacts.accountName)'..."
 $dc1DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts"
-Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "CreateADPDC.zip") `
+Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "CreatePrimaryDomainController.ps1") `
                              -ContainerName "shm-dsc-dc" `
                              -Force `
                              -ResourceGroupName $config.storage.artifacts.rg `
@@ -52,7 +52,7 @@ Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "CreateAD
                              -StorageAccountName $config.storage.artifacts.accountName
 $success = $?
 $dc2DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts"
-Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath "CreateADBDC.zip") `
+Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath "CreateSecondaryDomainController.ps1") `
                              -ContainerName "shm-dsc-dc" `
                              -Force `
                              -ResourceGroupName $config.storage.artifacts.rg `
@@ -162,35 +162,37 @@ Add-LogMessage -Level Info "Applying domain controller desired state..."
 $domainAdminCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)))
 $safeModeCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)))
 # DC1
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc1DscPath "dependencies.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 $ds1ConfigurationArguments = @{
     DomainName               = $config.domain.fqdn
     DomainNetBIOSName        = $config.domain.netbiosName
     AdministratorCredentials = $domainAdminCredentials
     SafeModeCredentials      = $safeModeCredentials
 }
-Set-AzVMDscExtension -ArchiveBlobName "CreateADPDC.zip" `
+Set-AzVMDscExtension -ArchiveBlobName "CreatePrimaryDomainController.ps1.zip" `
                      -ArchiveContainerName "shm-dsc-dc" `
                      -ArchiveResourceGroupName $config.storage.artifacts.rg `
                      -ArchiveStorageAccountName $config.storage.artifacts.accountName `
                      -ConfigurationArgument $ds1ConfigurationArguments `
-                     -ConfigurationName "CreateADPDC" `
+                     -ConfigurationName "CreatePrimaryDomainController" `
                      -Location $config.location `
                      -ResourceGroupName $config.dc.rg `
                      -Version "2.77" `
                      -VMName $config.dc.vmName
 # DC2
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc2DscPath "dependencies.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 $ds2ConfigurationArguments = @{
     DNSServer                = $config.dc.ip
     DomainName               = $config.domain.fqdn
     AdministratorCredentials = $domainAdminCredentials
     SafeModeCredentials      = $safeModeCredentials
 }
-Set-AzVMDscExtension -ArchiveBlobName "CreateADBDC.zip" `
+Set-AzVMDscExtension -ArchiveBlobName "CreateSecondaryDomainController.ps1.zip" `
                     -ArchiveContainerName "shm-dsc-dc" `
                     -ArchiveResourceGroupName $config.storage.artifacts.rg `
                     -ArchiveStorageAccountName $config.storage.artifacts.accountName `
                     -ConfigurationArgument $configurationArguments `
-                    -ConfigurationName "CreateADBDC" `
+                    -ConfigurationName "CreateSecondaryDomainController" `
                     -Location $config.location `
                     -ResourceGroupName $config.dc.rg `
                     -Version "2.77" `
