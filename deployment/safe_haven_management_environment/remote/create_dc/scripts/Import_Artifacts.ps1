@@ -10,7 +10,7 @@ param(
     [string]$blobNameArrayB64,
     [Parameter(HelpMessage = "Absolute path to directory which blobs should be downloaded to")]
     [ValidateNotNullOrEmpty()]
-    [string]$downloadDir,
+    [string]$targetDirectory,
     [Parameter(HelpMessage = "Base-64 encoded SAS token with read/list rights to the storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$sasTokenB64,
@@ -30,20 +30,20 @@ $sasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64S
 
 # Clear any previously downloaded artifacts
 # -----------------------------------------
-Write-Output "Clearing all pre-existing files and folders from '$downloadDir'"
-if (Test-Path -Path $downloadDir) {
-    Get-ChildItem $downloadDir -Recurse | Remove-Item -Recurse -Force
+Write-Output "Clearing all pre-existing files and folders from '$targetDirectory'"
+if (Test-Path -Path $targetDirectory) {
+    Get-ChildItem $targetDirectory -Recurse | Remove-Item -Recurse -Force
 } else {
-    New-Item -ItemType directory -Path $downloadDir
+    New-Item -ItemType directory -Path $targetDirectory
 }
 
 
 # Download artifacts
 # ------------------
-Write-Output "Downloading $($blobNames.Length) files to '$downloadDir'..."
+Write-Output "Downloading $($blobNames.Length) files to '$targetDirectory'..."
 foreach ($blobName in $blobNames) {
     # Ensure that local directory exists
-    $localDir = Join-Path $downloadDir $(Split-Path -Parent $blobName)
+    $localDir = Join-Path $targetDirectory $(Split-Path -Parent $blobName)
     if (-not (Test-Path -Path $localDir)) {
         $null = New-Item -ItemType Directory -Path $localDir
     }
@@ -65,7 +65,7 @@ foreach ($blobName in $blobNames) {
 # Extract GPOs
 # ------------
 Write-Output "Extracting zip files..."
-Expand-Archive "${downloadDir}\GPOs.zip" -DestinationPath $downloadDir -Force
+Expand-Archive "${targetDirectory}\GPOs.zip" -DestinationPath $targetDirectory -Force
 if ($?) {
     Write-Output " [o] Completed"
 } else {
@@ -75,5 +75,5 @@ if ($?) {
 
 # List items
 # ----------
-Write-Output "Contents of '$downloadDir' are:"
-Write-Output (Get-ChildItem -Path $downloadDir)
+Write-Output "Contents of '$targetDirectory' are:"
+Write-Output (Get-ChildItem -Path $targetDirectory)
