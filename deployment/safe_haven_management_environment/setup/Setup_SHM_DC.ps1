@@ -45,7 +45,7 @@ foreach ($containerName in ($storageContainerDcDscName, $storageContainerDcConfi
 # Upload DSC scripts
 # ------------------
 Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to storage account '$($storageAccount.Name)'..."
-$dc1DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts"
+$dc1DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-desiredstate"
 $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "CreatePrimaryDomainController.ps1") `
                                      -ContainerName $storageContainerDcDscName `
                                      -Force `
@@ -53,7 +53,7 @@ $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "
                                      -SkipDependencyDetection `
                                      -StorageAccountName $config.storage.artifacts.accountName
 $success = $?
-$dc2DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts"
+$dc2DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-desiredstate"
 $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath "CreateSecondaryDomainController.ps1") `
                                      -ContainerName $storageContainerDcDscName `
                                      -Force `
@@ -72,7 +72,7 @@ if ($success) {
 # ---------------------------------------
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to storage account '$($storageAccount.Name)'..."
 $success = $true
-foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
+foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-uploads"))) {
     if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.mustache.ps1") {
         # Expand the AD disconnection template before uploading
         $adScriptLocalFilePath = (New-TemporaryFile).FullName
