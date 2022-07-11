@@ -14,15 +14,15 @@ param(
 
 # Get SID for the Local Administrators group
 # ------------------------------------------
-$groupSID = ""
-$gpo = Get-GPO -Name "All servers - Local Administrators"
-[xml]$gpoReportXML = Get-GPOReport -Guid $gpo.ID -ReportType xml
+$localAdminGroupSID = ""
+$localAdminGpo = Get-GPO -Name "All servers - Local Administrators"
+[xml]$gpoReportXML = Get-GPOReport -Guid $localAdminGpo.ID -ReportType xml
 foreach ($group in $gpoReportXML.GPO.Computer.ExtensionData.Extension.RestrictedGroups) {
     if ($group.GroupName.Name.'#text' -eq "BUILTIN\Administrators") {
-        $groupSID = $group.GroupName.SID.'#text'
+        $localAdminGroupSID = $group.GroupName.SID.'#text'
     }
 }
-Write-Output "Found the 'Local Administrators' group: $groupSID"
+Write-Output "Found the 'Local Administrators' group: $localAdminGroupSID"
 
 
 # Edit GptTmpl file controlling which domain users should be considered local administrators
@@ -35,10 +35,10 @@ Unicode=yes
 signature="`$CHICAGO`$"
 Revision=1
 [Group Membership]
-*${groupSID}__Memberof =
-*${groupSID}__Members = ${serverAdminSgName}
+*${localAdminGroupSID}__Memberof =
+*${localAdminGroupSID}__Members = ${serverAdminSgName}
 "@
-Set-Content -Path "F:\SYSVOL\domain\Policies\{$($gpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
+Set-Content -Path "C:\ActiveDirectory\SYSVOL\domain\Policies\{$($localAdminGpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
 if ($?) {
     Write-Output " [o] Successfully set group policies for 'Local Administrators'"
 } else {
@@ -53,7 +53,7 @@ $null = Set-GPRegistryValue -Key "HKCU\Software\Policies\Microsoft\Windows\Explo
                             -Name "Session Servers - Remote Desktop Control" `
                             -Type "ExpandString" `
                             -ValueName "StartLayoutFile" `
-                            -Value "\\$shmFqdn\SYSVOL\$shmFqdn\scripts\ServerStartMenu\LayoutModification.xml"
+                            -Value "\\${shmFqdn}\SYSVOL\${shmFqdn}\scripts\ServerStartMenu\LayoutModification.xml"
 if ($?) {
     Write-Output " [o] Succeeded"
 } else {

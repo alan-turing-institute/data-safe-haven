@@ -40,22 +40,35 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 }
 
 
-# Upload artifacts
-# ----------------
-Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
 # Upload DSC scripts
-Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
-$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
+# ------------------
+Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to storage account '$($config.storage.artifacts.accountName)'..."
+$dc1DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts"
+Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "CreateADPDC.zip") `
+                             -ContainerName "shm-dsc-dc" `
+                             -Force `
+                             -ResourceGroupName $config.storage.artifacts.rg `
+                             -SkipDependencyDetection `
+                             -StorageAccountName $config.storage.artifacts.accountName
 $success = $?
-$null = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
+$dc2DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts"
+Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath "CreateADBDC.zip") `
+                             -ContainerName "shm-dsc-dc" `
+                             -Force `
+                             -ResourceGroupName $config.storage.artifacts.rg `
+                             -SkipDependencyDetection `
+                             -StorageAccountName $config.storage.artifacts.accountName
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
 } else {
     Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
 }
+
+
 # Upload artifacts for configuring the DC
-Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
+# ---------------------------------------
+Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to storage account '$($config.storage.artifacts.accountName)'..."
 $success = $true
 foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
     if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.mustache.ps1") {
@@ -74,8 +87,11 @@ if ($success) {
 } else {
     Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
 }
+
+
 # Upload Windows package installers
-Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
+# ---------------------------------
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($config.storage.artifacts.accountName)'..."
 $success = $true
 # AzureADConnect
 $filename = "AzureADConnect.msi"
@@ -114,40 +130,71 @@ $safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 
 # Deploy SHM DC from template
 # ---------------------------
-Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
-$artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
+Add-LogMessage -Level Info "Deploying domain controllers from template..."
 $params = @{
-    administratorPassword           = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    administratorUser               = $domainAdminUsername
-    artifactsLocation               = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
-    artifactsLocationSasToken       = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    bootDiagnosticsAccountName      = $config.storage.bootdiagnostics.accountName
-    dc1DataDiskSizeGb               = [int]$config.dc.disks.data.sizeGb
-    dc1DataDiskType                 = $config.dc.disks.data.type
-    dc1HostName                     = $config.dc.hostname
-    dc1IpAddress                    = $config.dc.ip
-    dc1OsDiskSizeGb                 = [int]$config.dc.disks.os.sizeGb
-    dc1OsDiskType                   = $config.dc.disks.os.type
-    dc1VmName                       = $config.dc.vmName
-    dc1VmSize                       = $config.dc.vmSize
-    dc2DataDiskSizeGb               = [int]$config.dcb.disks.data.sizeGb
-    dc2DataDiskType                 = $config.dcb.disks.data.type
-    dc2HostName                     = $config.dcb.hostname
-    dc2IpAddress                    = $config.dcb.ip
-    dc2OsDiskSizeGb                 = [int]$config.dcb.disks.os.sizeGb
-    dc2OsDiskType                   = $config.dcb.disks.os.type
-    dc2VmName                       = $config.dcb.vmName
-    dc2VmSize                       = $config.dcb.vmSize
-    domainName                      = $config.domain.fqdn
-    domainNetBiosName               = $config.domain.netbiosName
-    externalDnsResolverIpAddress    = $config.dc.external_dns_resolver
-    safeModePassword                = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
-    shmId                           = $config.id
-    virtualNetworkName              = $config.network.vnet.name
-    virtualNetworkResourceGroupName = $config.network.vnet.rg
-    virtualNetworkSubnetName        = $config.network.vnet.subnets.identity.name
+    administratorPassword            = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
+    administratorUser                = $domainAdminUsername
+    bootDiagnosticsAccountName       = $config.storage.bootdiagnostics.accountName
+    dc1HostName                      = $config.dc.hostname
+    dc1IpAddress                     = $config.dc.ip
+    dc1DiskSizeGb                    = [int]$config.dc.disks.os.sizeGb
+    dc1DiskType                      = $config.dc.disks.os.type
+    dc1VmName                        = $config.dc.vmName
+    dc1VmSize                        = $config.dc.vmSize
+    dc2HostName                      = $config.dcb.hostname
+    dc2IpAddress                     = $config.dcb.ip
+    dc2DiskSizeGb                    = [int]$config.dcb.disks.os.sizeGb
+    dc2DiskType                      = $config.dcb.disks.os.type
+    dc2VmName                        = $config.dcb.vmName
+    dc2VmSize                        = $config.dcb.vmSize
+    externalDnsResolverIpAddress     = $config.dc.externalDnsResolverIpAddress
+    shmId                            = $config.id
+    virtualNetworkName               = $config.network.vnet.name
+    virtualNetworkResourceGroupName  = $config.network.vnet.rg
+    virtualNetworkIdentitySubnetName = $config.network.vnet.subnets.identity.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
+
+
+# Apply SHM DC desired state
+# --------------------------
+Add-LogMessage -Level Info "Applying domain controller desired state..."
+$domainAdminCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)))
+$safeModeCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)))
+# DC1
+$ds1ConfigurationArguments = @{
+    DomainName               = $config.domain.fqdn
+    DomainNetBIOSName        = $config.domain.netbiosName
+    AdministratorCredentials = $domainAdminCredentials
+    SafeModeCredentials      = $safeModeCredentials
+}
+Set-AzVMDscExtension -ArchiveBlobName "CreateADPDC.zip" `
+                     -ArchiveContainerName "shm-dsc-dc" `
+                     -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                     -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                     -ConfigurationArgument $ds1ConfigurationArguments `
+                     -ConfigurationName "CreateADPDC" `
+                     -Location $config.location `
+                     -ResourceGroupName $config.dc.rg `
+                     -Version "2.77" `
+                     -VMName $config.dc.vmName
+# DC2
+$ds2ConfigurationArguments = @{
+    DNSServer                = $config.dc.ip
+    DomainName               = $config.domain.fqdn
+    AdministratorCredentials = $domainAdminCredentials
+    SafeModeCredentials      = $safeModeCredentials
+}
+Set-AzVMDscExtension -ArchiveBlobName "CreateADBDC.zip" `
+                    -ArchiveContainerName "shm-dsc-dc" `
+                    -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                    -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                    -ConfigurationArgument $configurationArguments `
+                    -ConfigurationName "CreateADBDC" `
+                    -Location $config.location `
+                    -ResourceGroupName $config.dc.rg `
+                    -Version "2.77" `
+                    -VMName $config.dc.vmName
 
 
 # Import artifacts from blob storage
@@ -208,7 +255,7 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName 
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Configure DNS to forward requests to the Azure DNS resolver
     $params = @{
-        ExternalDnsResolver = $config.dc.external_dns_resolver
+        ExternalDnsResolver = $config.dc.externalDnsResolverIpAddress
         IdentitySubnetCidr  = $config.network.vnet.subnets.identity.cidr
     }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"

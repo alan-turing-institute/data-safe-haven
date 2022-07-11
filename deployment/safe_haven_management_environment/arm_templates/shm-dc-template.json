@@ -14,34 +14,10 @@
                 "description": "Username for domain administrator"
             }
         },
-        "artifactsLocation": {
-            "type": "string",
-            "metadata": {
-                "description": "URL of the blob storage where the artifacts are held"
-            }
-        },
-        "artifactsLocationSasToken": {
-            "type": "securestring",
-            "metadata": {
-                "Description": "SAS token for the artifact store above, you may need to generate this"
-            }
-        },
         "bootDiagnosticsAccountName": {
             "type": "string",
             "metadata": {
                 "description": "Name of storage account used for boot diagnostics"
-            }
-        },
-        "dc1DataDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of DC1 data disk in GB"
-            }
-        },
-        "dc1DataDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of DC1 data disk"
             }
         },
         "dc1HostName": {
@@ -80,18 +56,6 @@
                 "description": "VM size of DC1"
             }
         },
-        "dc2DataDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of DC2 data disk in GB"
-            }
-        },
-        "dc2DataDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of DC2 data disk"
-            }
-        },
         "dc2HostName": {
             "type": "string",
             "metadata": {
@@ -128,28 +92,10 @@
                 "description": "VM size of DC2"
             }
         },
-        "domainName": {
-            "type": "string",
-            "metadata": {
-                "Description": "Public domain name for the SHM"
-            }
-        },
-        "domainNetBiosName": {
-            "type": "string",
-            "metadata": {
-                "Description": "NetBIOS name for the SHM"
-            }
-        },
         "externalDnsResolverIpAddress": {
             "type": "string",
             "metadata": {
                 "Description": "IP address for the external (Azure) DNS resolver"
-            }
-        },
-        "safeModePassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter safeModePassword"
             }
         },
         "shmId": {
@@ -229,20 +175,7 @@
                             "storageAccountType": "[parameters('dc1OsDiskType')]"
                         },
                         "diskSizeGB": "[parameters('dc1OsDiskSizeGb')]"
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat(parameters('dc1VmName'),'-DATA-DISK')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('dc1DataDiskType')]"
-                            },
-                            "diskSizeGB": "[parameters('dc1DataDiskSizeGb')]"
-                        }
-                    ]
+                    }
                 },
                 "osProfile": {
                     "computerName": "[parameters('dc1HostName')]",
@@ -274,48 +207,6 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]",
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('dc1nic'))]"
-            ],
-            "resources": [
-                {
-                    "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(parameters('dc1VmName'), '/CreateADForest')]",
-                    "apiVersion": "2019-03-01",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc1VmName'))]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.Powershell",
-                        "type": "DSC",
-                        "typeHandlerVersion": "2.77",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "WMFVersion": "latest",
-                            "configuration": {
-                                "url": "[concat(parameters('artifactsLocation'), '/shm-dsc-dc/CreateADPDC.zip')]",
-                                "script": "CreateADPDC.ps1",
-                                "function": "CreateADPDC"
-                            },
-                            "configurationArguments": {
-                                "DomainName": "[parameters('domainName')]",
-                                "DomainNetBIOSName": "[parameters('domainNetBiosName')]"
-                            }
-                        },
-                        "protectedSettings": {
-                            "configurationArguments": {
-                                "adminCreds": {
-                                    "UserName": "[parameters('administratorUser')]",
-                                    "Password": "[parameters('administratorPassword')]"
-                                },
-                                "SafeModeAdminCreds": {
-                                    "UserName": "[parameters('administratorUser')]",
-                                    "Password": "[parameters('safeModePassword')]"
-                                }
-                            },
-                            "configurationUrlSasToken": "[parameters('artifactsLocationSasToken')]"
-                        }
-                    }
-                }
             ]
         },
         {
@@ -382,7 +273,7 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -395,20 +286,7 @@
                             "storageAccountType": "[parameters('dc2OsDiskType')]"
                         },
                         "diskSizeGB": "[parameters('dc2OsDiskSizeGb')]"
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat(parameters('dc2VmName'),'-DATA-DISK')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('dc2DataDiskType')]"
-                            },
-                            "diskSizeGB": "[parameters('dc2DataDiskSizeGb')]"
-                        }
-                    ]
+                    }
                 },
                 "osProfile": {
                     "computerName": "[parameters('dc2HostName')]",
@@ -440,49 +318,6 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]",
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('dc2nic'))]"
-            ],
-            "resources": [
-                {
-                    "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(parameters('dc2VmName'), '/CreateADBDC')]",
-                    "apiVersion": "2019-07-01",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc2VmName'))]",
-                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('dc1VmName'), 'CreateADForest')]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.Powershell",
-                        "type": "DSC",
-                        "typeHandlerVersion": "2.77",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "WMFVersion": "latest",
-                            "configuration": {
-                                "url": "[concat(parameters('artifactsLocation'), '/shm-dsc-dc/CreateADBDC.zip')]",
-                                "script": "CreateADBDC.ps1",
-                                "function": "CreateADBDC"
-                            },
-                            "configurationArguments": {
-                                "DomainName": "[parameters('domainName')]",
-                                "DNSServer": "[parameters('dc1IpAddress')]"
-                            }
-                        },
-                        "protectedSettings": {
-                            "configurationArguments": {
-                                "adminCreds": {
-                                    "UserName": "[parameters('administratorUser')]",
-                                    "Password": "[parameters('administratorPassword')]"
-                                },
-                                "SafeModeAdminCreds": {
-                                    "UserName": "[parameters('administratorUser')]",
-                                    "Password": "[parameters('safeModePassword')]"
-                                }
-                            },
-                            "configurationUrlSasToken": "[parameters('artifactsLocationSasToken')]"
-                        }
-                    }
-                }
             ]
         },
         {
