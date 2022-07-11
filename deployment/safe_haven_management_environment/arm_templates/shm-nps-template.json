@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Administrator_User": {
@@ -78,7 +78,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('NPS_VM_Name')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -152,7 +152,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('npsnic')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-05-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -184,7 +184,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('NPS_VM_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -198,9 +198,9 @@
             ]
         },
         {
-            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('NPS_VM_Name'),'/joindomain')]",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('NPS_VM_Name'))]",

@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Administrator_Password": {
@@ -152,7 +152,7 @@
                 "name": "Aligned"
             },
             "name": "[variables('avsetname')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -163,7 +163,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('DC1_VM_Name')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -177,7 +177,7 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -282,7 +282,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('dc1nic')]",
-            "apiVersion": "2019-09-01",
+            "apiVersion": "2020-05-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -313,7 +313,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('DC1_VM_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -329,7 +329,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('DC2_VM_Name')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -406,7 +406,7 @@
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
                     "name": "[concat(parameters('DC2_VM_Name'), '/CreateADBDC')]",
-                    "apiVersion": "2019-03-01",
+                    "apiVersion": "2019-07-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
                         "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]",
@@ -449,7 +449,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('dc2nic')]",
-            "apiVersion": "2019-09-01",
+            "apiVersion": "2020-05-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -480,7 +480,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('DC2_VM_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
