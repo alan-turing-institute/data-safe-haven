@@ -2,148 +2,187 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_Password": {
+        "administratorPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter VM Administrator_Password"
+                "description": "Password for domain administrator"
             }
         },
-        "Administrator_User": {
+        "administratorUser": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for VM Administrator"
+                "description": "Username for domain administrator"
             }
         },
-        "Artifacts_Location": {
+        "artifactsLocation": {
             "type": "string",
             "metadata": {
-                "description": "Enter the URL of the blob storage where the artifacts are held"
+                "description": "URL of the blob storage where the artifacts are held"
             }
         },
-        "Artifacts_Location_SAS_Token": {
+        "artifactsLocationSasToken": {
             "type": "securestring",
             "metadata": {
-                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
+                "Description": "SAS token for the artifact store above, you may need to generate this"
             }
         },
-        "BootDiagnostics_Account_Name": {
+        "bootDiagnosticsAccountName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of storage account used for boot diagnostics"
+                "description": "Name of storage account used for boot diagnostics"
             }
         },
-        "DC1_Data_Disk_Size_GB": {
+        "dc1DataDiskSizeGb": {
             "type": "int",
             "metadata": {
                 "description": "Size of DC1 data disk in GB"
             }
         },
-        "DC1_Data_Disk_Type": {
-            "type": "string"
+        "dc1DataDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of DC1 data disk"
+            }
         },
-        "DC1_Host_Name": {
-            "type": "string"
+        "dc1HostName": {
+            "type": "string",
+            "metadata": {
+                "description": "Hostname for DC1"
+            }
         },
-        "DC1_IP_Address": {
-            "type": "string"
+        "dc1IpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Private IP address for DC1"
+            }
         },
-        "DC1_Os_Disk_Size_GB": {
+        "dc1OsDiskSizeGb": {
             "type": "int",
             "metadata": {
                 "description": "Size of DC1 OS disk in GB"
             }
         },
-        "DC1_Os_Disk_Type": {
-            "type": "string"
+        "dc1OsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of DC1 OS disk"
+            }
         },
-        "DC1_VM_Name": {
-            "type": "string"
+        "dc1VmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM name of DC1"
+            }
         },
-        "DC1_VM_Size": {
-            "type": "string"
+        "dc1VmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "VM size of DC1"
+            }
         },
-        "DC2_Data_Disk_Size_GB": {
+        "dc2DataDiskSizeGb": {
             "type": "int",
             "metadata": {
                 "description": "Size of DC2 data disk in GB"
             }
         },
-        "DC2_Data_Disk_Type": {
-            "type": "string"
+        "dc2DataDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of DC2 data disk"
+            }
         },
-        "DC2_Host_Name": {
-            "type": "string"
+        "dc2HostName": {
+            "type": "string",
+            "metadata": {
+                "description": "Hostname for DC2"
+            }
         },
-        "DC2_IP_Address": {
-            "type": "string"
+        "dc2IpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Private IP address for DC2"
+            }
         },
-        "DC2_Os_Disk_Size_GB": {
+        "dc2OsDiskSizeGb": {
             "type": "int",
             "metadata": {
                 "description": "Size of DC2 OS disk in GB"
             }
         },
-        "DC2_Os_Disk_Type": {
-            "type": "string"
+        "dc2OsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of DC2 OS disk"
+            }
         },
-        "DC2_VM_Name": {
-            "type": "string"
+        "dc2VmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM name of DC2"
+            }
         },
-        "DC2_VM_Size": {
-            "type": "string"
+        "dc2VmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "VM size of DC2"
+            }
         },
-        "Domain_Name": {
+        "domainName": {
             "type": "string",
             "metadata": {
                 "Description": "Public domain name for the SHM"
             }
         },
-        "Domain_NetBIOS_Name": {
+        "domainNetBiosName": {
             "type": "string",
             "metadata": {
                 "Description": "NetBIOS name for the SHM"
             }
         },
-        "External_DNS_Resolver": {
+        "externalDnsResolverIpAddress": {
             "type": "string",
             "metadata": {
                 "Description": "IP address for the external (Azure) DNS resolver"
             }
         },
-        "SafeMode_Password": {
+        "safeModePassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter SafeMode_Password"
+                "description": "Enter safeModePassword"
             }
         },
-        "Shm_Id": {
-            "type": "string"
-        },
-        "Virtual_Network_Name": {
+        "shmId": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of virtual network to provision these VMs"
+                "description": "Name of SHM"
             }
         },
-        "Virtual_Network_Resource_Group": {
+        "virtualNetworkName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of resource group that is associated with the virtual network above"
+                "description": "Name of virtual network to provision these VMs"
             }
         },
-        "Virtual_Network_Subnet": {
+        "virtualNetworkResourceGroupName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of subnet where you want to provision this VM"
+                "description": "Name of resource group that is associated with the virtual network above"
+            }
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of subnet where you want to provision this VM"
             }
         }
     },
     "variables": {
-        "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
-        "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
-        "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('Shm_Id')), '-VM-DC')]",
-        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-        "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('Virtual_Network_Subnet'))]"
+        "dc1nic": "[concat(parameters('dc1VmName'),'-','NIC')]",
+        "dc2nic": "[concat(parameters('dc2VmName'),'-','NIC')]",
+        "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('shmId')), '-VM-DC')]",
+        "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('virtualNetworkSubnetName'))]"
     },
     "resources": [
         {
@@ -162,7 +201,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('DC1_VM_Name')]",
+            "name": "[parameters('dc1VmName')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -171,7 +210,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('DC1_VM_Size')]"
+                    "vmSize": "[parameters('dc1VmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -182,33 +221,33 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('DC1_VM_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('dc1VmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('DC1_Os_Disk_Type')]"
+                            "storageAccountType": "[parameters('dc1OsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('DC1_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[parameters('dc1OsDiskSizeGb')]"
                     },
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('DC1_VM_Name'),'-DATA-DISK')]",
+                            "name": "[concat(parameters('dc1VmName'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "[parameters('DC1_Data_Disk_Type')]"
+                                "storageAccountType": "[parameters('dc1DataDiskType')]"
                             },
-                            "diskSizeGB": "[parameters('DC1_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[parameters('dc1DataDiskSizeGb')]"
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('DC1_Host_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "computerName": "[parameters('dc1HostName')]",
+                    "adminUsername": "[parameters('administratorUser')]",
+                    "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -228,7 +267,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
+                        "storageUri": "[concat('https://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -239,11 +278,11 @@
             "resources": [
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(parameters('DC1_VM_Name'), '/CreateADForest')]",
+                    "name": "[concat(parameters('dc1VmName'), '/CreateADForest')]",
                     "apiVersion": "2019-03-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC1_VM_Name'))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc1VmName'))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -253,27 +292,27 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                                "url": "[concat(parameters('Artifacts_Location'), '/shm-dsc-dc/CreateADPDC.zip')]",
+                                "url": "[concat(parameters('artifactsLocation'), '/shm-dsc-dc/CreateADPDC.zip')]",
                                 "script": "CreateADPDC.ps1",
                                 "function": "CreateADPDC"
                             },
                             "configurationArguments": {
-                                "DomainName": "[parameters('Domain_Name')]",
-                                "DomainNetBIOSName": "[parameters('Domain_NetBIOS_Name')]"
+                                "DomainName": "[parameters('domainName')]",
+                                "DomainNetBIOSName": "[parameters('domainNetBiosName')]"
                             }
                         },
                         "protectedSettings": {
                             "configurationArguments": {
                                 "adminCreds": {
-                                    "UserName": "[parameters('Administrator_User')]",
-                                    "Password": "[parameters('Administrator_Password')]"
+                                    "UserName": "[parameters('administratorUser')]",
+                                    "Password": "[parameters('administratorPassword')]"
                                 },
                                 "SafeModeAdminCreds": {
-                                    "UserName": "[parameters('Administrator_User')]",
-                                    "Password": "[parameters('SafeMode_Password')]"
+                                    "UserName": "[parameters('administratorUser')]",
+                                    "Password": "[parameters('safeModePassword')]"
                                 }
                             },
-                            "configurationUrlSasToken": "[parameters('Artifacts_Location_SAS_Token')]"
+                            "configurationUrlSasToken": "[parameters('artifactsLocationSasToken')]"
                         }
                     }
                 }
@@ -290,7 +329,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('DC1_IP_Address')]",
+                            "privateIPAddress": "[parameters('dc1IpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -301,7 +340,7 @@
                     }
                 ],
                 "dnsSettings": {
-                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "[parameters('External_DNS_Resolver')]"]
+                    "dnsServers": ["[parameters('dc1IpAddress')]", "[parameters('dc2IpAddress')]", "[parameters('externalDnsResolverIpAddress')]"]
                 },
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
@@ -312,7 +351,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('DC1_VM_Name'), '/', 'bginfo')]",
+            "name": "[concat(parameters('dc1VmName'), '/', 'bginfo')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -323,12 +362,12 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC1_VM_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc1VmName'))]"
             ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('DC2_VM_Name')]",
+            "name": "[parameters('dc2VmName')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -337,7 +376,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('DC2_VM_Size')]"
+                    "vmSize": "[parameters('dc2VmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -348,33 +387,33 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('DC2_VM_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('dc2VmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('DC2_Os_Disk_Type')]"
+                            "storageAccountType": "[parameters('dc2OsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('DC2_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[parameters('dc2OsDiskSizeGb')]"
                     },
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('DC2_VM_Name'),'-DATA-DISK')]",
+                            "name": "[concat(parameters('dc2VmName'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "[parameters('DC2_Data_Disk_Type')]"
+                                "storageAccountType": "[parameters('dc2DataDiskType')]"
                             },
-                            "diskSizeGB": "[parameters('DC2_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[parameters('dc2DataDiskSizeGb')]"
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('DC2_Host_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "computerName": "[parameters('dc2HostName')]",
+                    "adminUsername": "[parameters('administratorUser')]",
+                    "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -394,7 +433,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net', '/')]"
                     }
                 }
             },
@@ -405,12 +444,12 @@
             "resources": [
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(parameters('DC2_VM_Name'), '/CreateADBDC')]",
+                    "name": "[concat(parameters('dc2VmName'), '/CreateADBDC')]",
                     "apiVersion": "2019-07-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]",
-                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('DC1_VM_Name'), 'CreateADForest')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc2VmName'))]",
+                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('dc1VmName'), 'CreateADForest')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -420,27 +459,27 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                                "url": "[concat(parameters('Artifacts_Location'), '/shm-dsc-dc/CreateADBDC.zip')]",
+                                "url": "[concat(parameters('artifactsLocation'), '/shm-dsc-dc/CreateADBDC.zip')]",
                                 "script": "CreateADBDC.ps1",
                                 "function": "CreateADBDC"
                             },
                             "configurationArguments": {
-                                "DomainName": "[parameters('Domain_Name')]",
-                                "DNSServer": "[parameters('DC1_IP_Address')]"
+                                "DomainName": "[parameters('domainName')]",
+                                "DNSServer": "[parameters('dc1IpAddress')]"
                             }
                         },
                         "protectedSettings": {
                             "configurationArguments": {
                                 "adminCreds": {
-                                    "UserName": "[parameters('Administrator_User')]",
-                                    "Password": "[parameters('Administrator_Password')]"
+                                    "UserName": "[parameters('administratorUser')]",
+                                    "Password": "[parameters('administratorPassword')]"
                                 },
                                 "SafeModeAdminCreds": {
-                                    "UserName": "[parameters('Administrator_User')]",
-                                    "Password": "[parameters('SafeMode_Password')]"
+                                    "UserName": "[parameters('administratorUser')]",
+                                    "Password": "[parameters('safeModePassword')]"
                                 }
                             },
-                            "configurationUrlSasToken": "[parameters('Artifacts_Location_SAS_Token')]"
+                            "configurationUrlSasToken": "[parameters('artifactsLocationSasToken')]"
                         }
                     }
                 }
@@ -457,7 +496,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('DC2_IP_Address')]",
+                            "privateIPAddress": "[parameters('dc2IpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -468,7 +507,7 @@
                     }
                 ],
                 "dnsSettings": {
-                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "[parameters('External_DNS_Resolver')]"]
+                    "dnsServers": ["[parameters('dc1IpAddress')]", "[parameters('dc2IpAddress')]", "[parameters('externalDnsResolverIpAddress')]"]
                 },
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
@@ -479,7 +518,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('DC2_VM_Name'), '/', 'bginfo')]",
+            "name": "[concat(parameters('dc2VmName'), '/', 'bginfo')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -490,7 +529,7 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('dc2VmName'))]"
             ]
         }
     ]
