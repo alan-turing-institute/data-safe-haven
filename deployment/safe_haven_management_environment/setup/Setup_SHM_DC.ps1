@@ -174,21 +174,15 @@ $params = @{
     DomainNetBIOSName        = $config.domain.netbiosName
     SafeModeCredentials      = $safeModeCredentials
 }
-$null = Set-AzVMDscExtension -ArchiveBlobName "CreatePrimaryDomainController.ps1.zip" `
-                             -ArchiveContainerName $storageContainerDcDscName `
-                             -ArchiveResourceGroupName $config.storage.artifacts.rg `
-                             -ArchiveStorageAccountName $config.storage.artifacts.accountName `
-                             -ConfigurationArgument $params `
-                             -ConfigurationName "CreatePrimaryDomainController" `
-                             -Location $config.location `
-                             -ResourceGroupName $config.dc.rg `
-                             -Version "2.77" `
-                             -VMName $config.dc.vmName
-if ($?) {
-    Add-LogMessage -Level Success "Applied desired state configuration to DC1"
-} else {
-    Add-LogMessage -Level Fatal "Failed to apply desired state configuration to DC1!"
-}
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "CreatePrimaryDomainController.ps1.zip" `
+                                   -ArchiveContainerName $storageContainerDcDscName `
+                                   -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                                   -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                                   -ConfigurationName "CreatePrimaryDomainController" `
+                                   -ConfigurationParameters $params `
+                                   -VmLocation $config.location `
+                                   -VmResourceGroupName $config.dc.rg `
+                                   -VmName $config.dc.vmName
 # DC2
 Add-LogMessage -Level Info "Applying desired state configuration to DC2..."
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc2DscPath "dependencies.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
@@ -198,21 +192,16 @@ $params = @{
     DomainName               = $config.domain.fqdn
     SafeModeCredentials      = $safeModeCredentials
 }
-$null = Set-AzVMDscExtension -ArchiveBlobName "CreateSecondaryDomainController.ps1.zip" `
-                             -ArchiveContainerName $storageContainerDcDscName `
-                             -ArchiveResourceGroupName $config.storage.artifacts.rg `
-                             -ArchiveStorageAccountName $config.storage.artifacts.accountName `
-                             -ConfigurationArgument $params `
-                             -ConfigurationName "CreateSecondaryDomainController" `
-                             -Location $config.location `
-                             -ResourceGroupName $config.dc.rg `
-                             -Version "2.77" `
-                             -VMName $config.dc.vmName
-if ($?) {
-    Add-LogMessage -Level Success "Applied desired state configuration to DC2"
-} else {
-    Add-LogMessage -Level Fatal "Failed to apply desired state configuration to DC2!"
-}
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "CreateSecondaryDomainController.ps1.zip" `
+                                   -ArchiveContainerName $storageContainerDcDscName `
+                                   -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                                   -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                                   -ConfigurationName "CreateSecondaryDomainController" `
+                                   -ConfigurationParameters $params `
+                                   -VmLocation $config.location `
+                                   -VmResourceGroupName $config.dc.rg `
+                                   -VmName $config.dcb.vmName
+
 
 # Import artifacts from blob storage
 # ----------------------------------
@@ -227,21 +216,15 @@ $params = @{
     StorageContainerName = $storageContainerDcConfigName
     TargetDirectory      = $config.dc.installationDirectory
 }
-$null = Set-AzVMDscExtension -ArchiveBlobName "UploadArtifacts.ps1.zip" `
-                             -ArchiveContainerName $storageContainerDcDscName `
-                             -ArchiveResourceGroupName $config.storage.artifacts.rg `
-                             -ArchiveStorageAccountName $config.storage.artifacts.accountName `
-                             -ConfigurationArgument $params `
-                             -ConfigurationName "UploadArtifacts" `
-                             -Location $config.location `
-                             -ResourceGroupName $config.dc.rg `
-                             -Version "2.77" `
-                             -VMName $config.dc.vmName
-if ($?) {
-    Add-LogMessage -Level Success "Imported configuration artifacts to DC1"
-} else {
-    Add-LogMessage -Level Fatal "Failed to import configuration artifacts to DC1!"
-}
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "UploadArtifacts.ps1.zip" `
+                                   -ArchiveContainerName $storageContainerDcDscName `
+                                   -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                                   -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                                   -ConfigurationName "UploadArtifacts" `
+                                   -ConfigurationParameters $params `
+                                   -VmLocation $config.location `
+                                   -VmResourceGroupName $config.dc.rg `
+                                   -VmName $config.dc.vmName
 
 
 # Configure Active Directory remotely
