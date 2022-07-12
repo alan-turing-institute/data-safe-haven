@@ -1139,7 +1139,7 @@ function Invoke-AzureVmDesiredState {
         [string]$ArchiveStorageAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the configuration function being invoked")]
         [string]$ConfigurationName,
-        [Parameter(Mandatory = $true, HelpMessage = "Hash table that contains the arguments to the configuration function")]
+        [Parameter(Mandatory = $false, HelpMessage = "Hash table that contains the arguments to the configuration function")]
         [System.Collections.Hashtable]$ConfigurationParameters,
         [Parameter(Mandatory = $true, HelpMessage = "Location of the VM being configured")]
         [string]$VmLocation,
@@ -1150,16 +1150,18 @@ function Invoke-AzureVmDesiredState {
     )
     # Run remote configuration
     Add-LogMessage -Level Info "Running desired state configuration '$ConfigurationName' on VM '$VmName'."
+    $params = @{}
+    if ($ConfigurationParameters) { $params["ConfigurationArgument"] = $ConfigurationParameters }
     $result = Set-AzVMDscExtension -ArchiveBlobName $ArchiveBlobName `
                                    -ArchiveContainerName $ArchiveContainerName `
                                    -ArchiveResourceGroupName $ArchiveResourceGroupName `
                                    -ArchiveStorageAccountName $ArchiveStorageAccountName `
-                                   -ConfigurationArgument $ConfigurationParameters `
                                    -ConfigurationName $ConfigurationName `
                                    -Location $VmLocation `
                                    -ResourceGroupName $VmResourceGroupName `
                                    -Version "2.77" `
-                                   -VMName $VmName
+                                   -VMName $VmName `
+                                   @params
     # Check for success or failure
     if ($? -and $result.IsSuccessStatusCode) {
         Add-LogMessage -Level Success "Ran desired state configuration '$ConfigurationName' on VM '$VmName'."

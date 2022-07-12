@@ -1,4 +1,4 @@
-configuration UploadArtifacts {
+configuration UploadArtifactsDC1 {
     param (
         [Parameter(HelpMessage = "Base-64 encoded array of blob names to download from storage blob container")]
         [ValidateNotNullOrEmpty()]
