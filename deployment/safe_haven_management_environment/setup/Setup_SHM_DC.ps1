@@ -142,21 +142,18 @@ $params = @{
     bootDiagnosticsAccountName      = $config.storage.bootdiagnostics.accountName
     dc1HostName                     = $config.dc.hostname
     dc1IpAddress                    = $config.dc.ip
-    dc1OsDiskSizeGb                 = [int]$config.dc.disks.os.sizeGb
-    dc1OsDiskType                   = $config.dc.disks.os.type
     dc1VmName                       = $config.dc.vmName
-    dc1VmSize                       = $config.dc.vmSize
     dc2HostName                     = $config.dcb.hostname
     dc2IpAddress                    = $config.dcb.ip
-    dc2OsDiskSizeGb                 = [int]$config.dcb.disks.os.sizeGb
-    dc2OsDiskType                   = $config.dcb.disks.os.type
     dc2VmName                       = $config.dcb.vmName
-    dc2VmSize                       = $config.dcb.vmSize
     externalDnsResolverIpAddress    = $config.dc.external_dns_resolver
     shmId                           = $config.id
     virtualNetworkName              = $config.network.vnet.name
     virtualNetworkResourceGroupName = $config.network.vnet.rg
     virtualNetworkSubnetName        = $config.network.vnet.subnets.identity.name
+    vmOsDiskSizeGb                  = [int]$config.dc.disks.os.sizeGb
+    vmOsDiskType                    = $config.dc.disks.os.type
+    vmSize                          = $config.dc.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 

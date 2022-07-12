@@ -2,10 +2,6 @@
   "azureAdminGroupName": "Safe Haven Test Admins",
   "dc": {
     "disks": {
-      "data": {
-        "sizeGb": "20",
-        "type": "Standard_LRS"
-      },
       "os": {
         "sizeGb": "128",
         "type": "Standard_LRS"
@@ -24,21 +20,10 @@
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "disks": {
-      "data": {
-        "sizeGb": "20",
-        "type": "Standard_LRS"
-      },
-      "os": {
-        "sizeGb": "128",
-        "type": "Standard_LRS"
-      }
-    },
     "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
     "hostname": "DC2-SHM-TESTA",
     "ip": "10.0.0.5",
-    "vmName": "DC2-SHM-TESTA",
-    "vmSize": "Standard_D2s_v3"
+    "vmName": "DC2-SHM-TESTA"
   },
   "dns": {
     "rg": "RG_SHM_DNS_TEST",

@@ -32,28 +32,10 @@
                 "description": "Private IP address for DC1"
             }
         },
-        "dc1OsDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of DC1 OS disk in GB"
-            }
-        },
-        "dc1OsDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of DC1 OS disk"
-            }
-        },
         "dc1VmName": {
             "type": "string",
             "metadata": {
                 "description": "VM name of DC1"
-            }
-        },
-        "dc1VmSize": {
-            "type": "string",
-            "metadata": {
-                "description": "VM size of DC1"
             }
         },
         "dc2HostName": {
@@ -68,28 +50,10 @@
                 "description": "Private IP address for DC2"
             }
         },
-        "dc2OsDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of DC2 OS disk in GB"
-            }
-        },
-        "dc2OsDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of DC2 OS disk"
-            }
-        },
         "dc2VmName": {
             "type": "string",
             "metadata": {
                 "description": "VM name of DC2"
-            }
-        },
-        "dc2VmSize": {
-            "type": "string",
-            "metadata": {
-                "description": "VM size of DC2"
             }
         },
         "externalDnsResolverIpAddress": {
@@ -120,6 +84,24 @@
             "type": "string",
             "metadata": {
                 "description": "Name of subnet where you want to provision this VM"
+            }
+        },
+        "vmOsDiskSizeGb": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC2 OS disk in GB"
+            }
+        },
+        "vmOsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of DC2 OS disk"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "VM size of DC2"
             }
         }
     },
@@ -156,7 +138,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('dc1VmSize')]"
+                    "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -172,9 +154,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('dc1OsDiskType')]"
+                            "storageAccountType": "[parameters('vmOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('dc1OsDiskSizeGb')]"
+                        "diskSizeGB": "[parameters('vmOsDiskSizeGb')]"
                     }
                 },
                 "osProfile": {
@@ -267,7 +249,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('dc2VmSize')]"
+                    "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -283,9 +265,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('dc2OsDiskType')]"
+                            "storageAccountType": "[parameters('vmOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('dc2OsDiskSizeGb')]"
+                        "diskSizeGB": "[parameters('vmOsDiskSizeGb')]"
                     }
                 },
                 "osProfile": {
