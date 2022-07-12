@@ -26,8 +26,6 @@ configuration CreatePrimaryDomainController {
     # Construct variables for use in DSC modules
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     [System.Management.Automation.PSCredential]$DomainAdministratorCredentials = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($AdministratorCredentials.UserName)", $AdministratorCredentials.Password)
-    $BlobSasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($BlobSasTokenB64))
-    $BlobNames = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($BlobNamesB64)) | ConvertFrom-Json
 
     Node localhost {
         LocalConfigurationManager {
