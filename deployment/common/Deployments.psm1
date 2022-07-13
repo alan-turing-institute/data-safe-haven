@@ -1152,21 +1152,31 @@ function Invoke-AzureVmDesiredState {
     Add-LogMessage -Level Info "Running desired state configuration '$ConfigurationName' on VM '$VmName'."
     $params = @{}
     if ($ConfigurationParameters) { $params["ConfigurationArgument"] = $ConfigurationParameters }
-    $result = Set-AzVMDscExtension -ArchiveBlobName $ArchiveBlobName `
-                                   -ArchiveContainerName $ArchiveContainerName `
-                                   -ArchiveResourceGroupName $ArchiveResourceGroupName `
-                                   -ArchiveStorageAccountName $ArchiveStorageAccountName `
-                                   -ConfigurationName $ConfigurationName `
-                                   -Location $VmLocation `
-                                   -ResourceGroupName $VmResourceGroupName `
-                                   -Version "2.77" `
-                                   -VMName $VmName `
-                                   @params
+    $maxTries = 5
+    for ($attempt = 1; $attempt -le $maxTries; $attempt++) {
+        try {
+            $result = Set-AzVMDscExtension -ArchiveBlobName $ArchiveBlobName `
+                                           -ArchiveContainerName $ArchiveContainerName `
+                                           -ArchiveResourceGroupName $ArchiveResourceGroupName `
+                                           -ArchiveStorageAccountName $ArchiveStorageAccountName `
+                                           -ConfigurationName $ConfigurationName `
+                                           -Location $VmLocation `
+                                           -Name "DataSafeHavenDesiredState" `
+                                           -ResourceGroupName $VmResourceGroupName `
+                                           -Version "2.77" `
+                                           -VMName $VmName `
+                                           @params
+            break
+        } catch {
+            Add-LogMessage -Level Error "Error when applying desired state configuration. Attempt [$attempt/$maxTries]."
+            $ErrorMessage = $_.Exception
+        }
+    }
     # Check for success or failure
-    if ($? -and $result.IsSuccessStatusCode) {
+    if ($result.IsSuccessStatusCode) {
         Add-LogMessage -Level Success "Ran desired state configuration '$ConfigurationName' on VM '$VmName'."
     } else {
-        Add-LogMessage -Level Fatal "Failed to run desired state configuration '$ConfigurationName' on VM '$VmName'! [$($result.StatusCode): $($result.ReasonPhrase)]"
+        Add-LogMessage -Level Fatal "Failed to run desired state configuration '$ConfigurationName' on VM '$VmName'!`n${ErrorMessage}"
     }
     return $result
 }

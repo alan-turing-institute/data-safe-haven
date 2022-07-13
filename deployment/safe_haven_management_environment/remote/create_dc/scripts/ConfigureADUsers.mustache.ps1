@@ -8,24 +8,15 @@ param(
     [Parameter(HelpMessage = "Username for a user with domain admin privileges")]
     [ValidateNotNullOrEmpty()]
     [string]$domainAdminUsername,
-    [Parameter(HelpMessage = "Name of this VM (the domain controller)")]
+    [Parameter(HelpMessage = "Domain NetBIOS name")]
     [ValidateNotNullOrEmpty()]
-    [string]$domainControllerVmName,
+    [string]$domainNetBiosName,
     [Parameter(HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainOuBase,
-    [Parameter(HelpMessage = "Path to GPO backup files")]
-    [ValidateNotNullOrEmpty()]
-    [string]$gpoBackupPath,
-    [Parameter(HelpMessage = "NetBios name")]
-    [ValidateNotNullOrEmpty()]
-    [string]$netbiosName,
     [Parameter(HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
     [ValidateNotNullOrEmpty()]
     [string]$shmFdqn,
-    [Parameter(HelpMessage = "Base64-encoded security groups")]
-    [ValidateNotNullOrEmpty()]
-    [string]$securityGroupsB64,
     [Parameter(HelpMessage = "Base64-encoded user account details")]
     [ValidateNotNullOrEmpty()]
     [string]$userAccountsB64
@@ -125,90 +116,6 @@ function New-ShmUser {
 }
 
 
-# Enable AD Recycle Bin
-# ---------------------
-Write-Output "Configuring AD recycle bin..."
-$featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $domainControllerVmName).EnabledScopes | Select-String "$domainOuBase"
-if ($featureExists) {
-    Write-Output " [o] AD recycle bin is already enabled"
-} else {
-    Enable-ADOptionalFeature -Identity "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target $shmFdqn -Server $domainControllerVmName -Confirm:$false
-    if ($?) {
-        Write-Output " [o] Successfully enabled AD recycle bin"
-    } else {
-        Write-Output " [x] Failed to enable AD recycle bin!"
-    }
-}
-
-# Set domain admin user account password to never expire
-# ------------------------------------------------------
-Write-Output "Setting domain admin password to never expire..."
-Set-ADUser -Identity $domainAdminUsername -PasswordNeverExpires $true
-if ($?) {
-    Write-Output " [o] Successfully set domain admin password expiry"
-} else {
-    Write-Output " [x] Failed to set domain admin password expiry!"
-}
-
-
-# Set minumium password age to 0
-# ------------------------------
-Write-Output "Changing minimum password age to 0..."
-Set-ADDefaultDomainPasswordPolicy -Identity $shmFdqn -MinPasswordAge 0.0:0:0.0
-if ($?) {
-    Write-Output " [o] Successfully changed minimum password age"
-} else {
-    Write-Output " [x] Failed to change minimum password age!"
-}
-
-
-# Ensure that OUs exist
-# ---------------------
-Write-Output "Creating management OUs..."
-foreach ($ouName in ("{{domain.ous.researchUsers.name}}",
-                     "{{domain.ous.securityGroups.name}}",
-                     "{{domain.ous.serviceAccounts.name}}",
-                     "{{domain.ous.databaseServers.name}}",
-                     "{{domain.ous.identityServers.name}}",
-                     "{{domain.ous.linuxServers.name}}",
-                     "{{domain.ous.rdsSessionServers.name}}",
-                     "{{domain.ous.rdsGatewayServers.name}}")
-) {
-    $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
-    if ("$ouExists" -ne "") {
-        Write-Output " [o] OU '$ouName' already exists"
-    } else {
-        New-ADOrganizationalUnit -Name "$ouName" -Description "$ouName"
-        if ($?) {
-            Write-Output " [o] OU '$ouName' created successfully"
-        } else {
-            Write-Output " [x] OU '$ouName' creation failed!"
-        }
-    }
-}
-
-
-# Create security groups
-# ----------------------
-Write-Output "Creating security groups..."
-$securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
-foreach ($groupCfg in $securityGroups.PSObject.Members) {
-    if ($groupCfg.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    $groupName = $groupCfg.Value.name
-    $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
-    if ($groupExists) {
-        Write-Output " [o] Security group '$groupName' already exists"
-    } else {
-        New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU={{domain.ous.securityGroups.name}},$domainOuBase"
-        if ($?) {
-            Write-Output " [o] Security group '$groupName' created successfully"
-        } else {
-            Write-Output " [x] Security group '$groupName' creation failed!"
-        }
-    }
-}
-
-
 # Decode user accounts and create them
 # ------------------------------------
 $userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
@@ -229,60 +136,6 @@ Write-Output "Adding users to security groups..."
 Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $securityGroups.serverAdmins.name
 foreach ($serviceAccount in $userAccounts.Keys) {
     Add-ShmUserToGroup -SamAccountName $userAccounts."$serviceAccount".samAccountName -GroupName $securityGroups.computerManagers.name
-}
-
-
-# Import GPOs onto domain controller
-# ----------------------------------
-Write-Output "Importing GPOs..."
-foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
-                               ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
-                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
-                               ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
-    $backup, $target = $backupTargetPair
-    $null = Import-GPO -BackupId "$backup" -TargetName "$target" -Path $gpoBackupPath -CreateIfNeeded
-    if ($?) {
-        Write-Output " [o] Importing '$backup' to '$target' succeeded"
-    } else {
-        Write-Output " [x] Importing '$backup' to '$target' failed!"
-    }
-}
-
-
-# Link GPO with OUs
-# -----------------
-Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "{{domain.ous.databaseServers.name}}"),
-                            ("All servers - Local Administrators", "{{domain.ous.identityServers.name}}"),
-                            ("All servers - Local Administrators", "{{domain.ous.rdsSessionServers.name}}"),
-                            ("All servers - Local Administrators", "{{domain.ous.rdsGatewayServers.name}}"),
-                            ("All Servers - Windows Services", "Domain Controllers"),
-                            ("All Servers - Windows Services", "{{domain.ous.databaseServers.name}}"),
-                            ("All Servers - Windows Services", "{{domain.ous.identityServers.name}}"),
-                            ("All Servers - Windows Services", "{{domain.ous.rdsSessionServers.name}}"),
-                            ("All Servers - Windows Services", "{{domain.ous.rdsGatewayServers.name}}"),
-                            ("All Servers - Windows Update", "Domain Controllers"),
-                            ("All Servers - Windows Update", "{{domain.ous.databaseServers.name}}"),
-                            ("All Servers - Windows Update", "{{domain.ous.identityServers.name}}"),
-                            ("All Servers - Windows Update", "{{domain.ous.rdsSessionServers.name}}"),
-                            ("All Servers - Windows Update", "{{domain.ous.rdsGatewayServers.name}}"),
-                            ("Session Servers - Remote Desktop Control", "{{domain.ous.rdsSessionServers.name}}"))) {
-    $gpoName, $ouName = $gpoOuNamePair
-    $gpo = Get-GPO -Name "$gpoName"
-    # Check for a match in existing GPOs
-    [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.Id -ReportType xml
-    $hasGPLink = (@($gpoReportXML.GPO.LinksTo | Where-Object { ($_.SOMName -like "*${ouName}*") -and ($_.SOMPath -eq "${shmFdqn}/${ouName}") }).Count -gt 0)
-    # Create a GP link if it doesn't already exist
-    if ($hasGPLink) {
-        Write-Output " [o] GPO '$gpoName' already linked to '$ouName'"
-    } else {
-        $null = New-GPLink -Guid $gpo.Id -Target "OU=${ouName},${domainOuBase}" -LinkEnabled Yes
-        if ($?) {
-            Write-Output " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
-        } else {
-            Write-Output " [x] Linking GPO '$gpoName' to '$ouName' failed!"
-        }
-    }
 }
 
 
@@ -343,12 +196,12 @@ if ($success) {
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
 # Allow the database server user to register computers in the '{{domain.ous.databaseServers.name}}' container
-Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.databaseServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.databaseServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.databaseServers.name}}" -UserPrincipalName "${domainNetBiosName}\$($userAccounts.databaseServers.samAccountName)"
 # Allow the identity server user to register computers in the '{{domain.ous.identityServers.name}}' container
-Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.identityServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.identityServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.identityServers.name}}" -UserPrincipalName "${domainNetBiosName}\$($userAccounts.identityServers.samAccountName)"
 # Allow the Linux server user to register computers in the '{{domain.ous.linuxServers.name}}' container
-Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.linuxServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.linuxServers.name}}" -UserPrincipalName "${domainNetBiosName}\$($userAccounts.linuxServers.samAccountName)"
 # Allow the RDS gateway server user to register computers in the '{{domain.ous.rdsGatewayServers.name}}' container
-Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsGatewayServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsGatewayServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsGatewayServers.name}}" -UserPrincipalName "${domainNetBiosName}\$($userAccounts.rdsGatewayServers.samAccountName)"
 # Allow the RDS session server user to register computers in the '{{domain.ous.rdsSessionServers.name}}' container
-Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsSessionServers.name}}" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsSessionServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "{{domain.ous.rdsSessionServers.name}}" -UserPrincipalName "${domainNetBiosName}\$($userAccounts.rdsSessionServers.samAccountName)"

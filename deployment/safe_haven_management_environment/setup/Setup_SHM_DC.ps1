@@ -44,28 +44,28 @@ foreach ($containerName in ($storageContainerDcDscName, $storageContainerDcConfi
 
 # Upload DSC scripts
 # ------------------
-Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to storage account '$($storageAccount.Name)'..."
+Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to storage account '$($storageAccount.StorageAccountName)'..."
 $dc1DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-desiredstate"
 $success = $true
-foreach ($filename in @("CreatePrimaryDomainController.ps1", "InstallPowershellModulesDC1.ps1", "UploadArtifactsDC1.ps1")) {
-    $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath $filename) `
-                                         -ContainerName $storageContainerDcDscName `
-                                         -Force `
-                                         -ResourceGroupName $config.storage.artifacts.rg `
-                                         -SkipDependencyDetection `
-                                         -StorageAccountName $config.storage.artifacts.accountName
-    $success = $success -and $?
-}
+# foreach ($filename in @("ConfigureActiveDirectoryDC1.ps1", "CreatePrimaryDomainController.ps1", "InstallPowershellModulesDC1.ps1", "UploadArtifactsDC1.ps1")) {
+$null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc1DscPath "ConfigurePrimaryDomainController.ps1") `
+                                     -ContainerName $storageContainerDcDscName `
+                                     -Force `
+                                     -ResourceGroupName $config.storage.artifacts.rg `
+                                     -SkipDependencyDetection `
+                                     -StorageAccountName $config.storage.artifacts.accountName
+$success = $success -and $?
+# }
 $dc2DscPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-desiredstate"
-foreach ($filename in @("CreateSecondaryDomainController.ps1", "InstallPowershellModulesDC2.ps1")) {
-    $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath $filename) `
-                                         -ContainerName $storageContainerDcDscName `
-                                         -Force `
-                                         -ResourceGroupName $config.storage.artifacts.rg `
-                                         -SkipDependencyDetection `
-                                         -StorageAccountName $config.storage.artifacts.accountName
-    $success = $success -and $?
-}
+# foreach ($filename in @("CreateSecondaryDomainController.ps1", "InstallPowershellModulesDC2.ps1")) {
+$null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dc2DscPath "ConfigureSecondaryDomainController.ps1") `
+                                        -ContainerName $storageContainerDcDscName `
+                                        -Force `
+                                        -ResourceGroupName $config.storage.artifacts.rg `
+                                        -SkipDependencyDetection `
+                                        -StorageAccountName $config.storage.artifacts.accountName
+$success = $success -and $?
+# }
 if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
 } else {
@@ -75,7 +75,7 @@ if ($success) {
 
 # Upload artifacts for configuring the DC
 # ---------------------------------------
-Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to storage account '$($storageAccount.Name)'..."
+Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to storage account '$($storageAccount.StorageAccountName)'..."
 $success = $true
 foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-uploads"))) {
     if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.mustache.ps1") {
@@ -98,7 +98,7 @@ if ($success) {
 
 # Upload Windows package installers
 # ---------------------------------
-Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.Name)'..."
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.StorageAccountName)'..."
 $success = $true
 # AzureADConnect
 $filename = "AzureADConnect.msi"
@@ -172,58 +172,49 @@ $commonDscParams = @{
     VmResourceGroupName       = $config.dc.rg
 }
 # DC1
-Add-LogMessage -Level Info "Applying desired state configuration to DC1..."
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc1DscPath "PrerequisitesDC1.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
-# DC1: InstallPowershellModules
-$null = Invoke-AzureVmDesiredState -ArchiveBlobName "InstallPowershellModulesDC1.ps1.zip" `
-                                   -ConfigurationName "InstallPowershellModulesDC1" `
-                                   -VmName $config.dc.vmName `
-                                   @commonDscParams
+Add-LogMessage -Level Info "Installing desired state prerequisites on DC1..."
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc1DscPath "BootstrapDSC.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
 $params = @{
-    AdministratorCredentials = $domainAdminCredentials
-    DomainName               = $config.domain.fqdn
-    DomainNetBIOSName        = $config.domain.netbiosName
-    SafeModeCredentials      = $safeModeCredentials
+    ActiveDirectoryBasePath       = $config.dc.adDirectory
+    AdministratorCredentials      = $domainAdminCredentials
+    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $storageContainerDcConfigName -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ArtifactsBlobSasTokenB64      = (New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.subscriptionName -ResourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName) | ConvertTo-Base64
+    ArtifactsStorageAccountName   = $config.storage.artifacts.accountName
+    ArtifactsStorageContainerName = $storageContainerDcConfigName
+    ArtifactsTargetDirectory      = $config.dc.installationDirectory
+    DomainControllerVmName        = $config.dc.vmName
+    DomainFqdn                    = $config.domain.fqdn
+    DomainNetBiosName             = $config.domain.netbiosName
+    DomainDn                      = $config.domain.dn
+    DomainOusB64                  = $config.domain.ous | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    DomainSecurityGroupsB64       = $config.domain.securityGroups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    SafeModeCredentials           = $safeModeCredentials
 }
-# DC1: CreatePrimaryDomainController
-$null = Invoke-AzureVmDesiredState -ArchiveBlobName "CreatePrimaryDomainController.ps1.zip" `
-                                   -ConfigurationName "CreatePrimaryDomainController" `
-                                   -ConfigurationParameters $params `
-                                   -VmName $config.dc.vmName `
-                                   @commonDscParams
-# DC1: UploadArtifacts
-$params = @{
-    BlobNamesB64         = Get-AzStorageBlob -Container $storageContainerDcConfigName -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-    BlobSasTokenB64      = (New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.subscriptionName -ResourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName) | ConvertTo-Base64
-    StorageAccountName   = $config.storage.artifacts.accountName
-    StorageContainerName = $storageContainerDcConfigName
-    TargetDirectory      = $config.dc.installationDirectory
-}
-$null = Invoke-AzureVmDesiredState -ArchiveBlobName "UploadArtifactsDC1.ps1.zip" `
-                                   -ConfigurationName "UploadArtifactsDC1" `
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigurePrimaryDomainController.ps1.zip" `
+                                   -ConfigurationName "ConfigurePrimaryDomainController" `
                                    -ConfigurationParameters $params `
                                    -VmName $config.dc.vmName `
                                    @commonDscParams
 # DC2
-Add-LogMessage -Level Info "Applying desired state configuration to DC2..."
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc1DscPath "PrerequisitesDC2.ps1") -VMName $config.dcb.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
-# $null = Invoke-RemoteScript -Shell "PowerShell" -Script "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module -Name PowerShellModule" -VMName $config.dcb.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
+Add-LogMessage -Level Info "Installing desired state prerequisites on DC2..."
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc2DscPath "BootstrapDSC.ps1") -VMName $config.dcb.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
 $params = @{
-    AdministratorCredentials = $domainAdminCredentials
-    DNSServer                = $config.dc.ip
-    DomainName               = $config.domain.fqdn
-    SafeModeCredentials      = $safeModeCredentials
+    ActiveDirectoryBasePath   = $config.dc.adDirectory
+    AdministratorCredentials  = $domainAdminCredentials
+    DomainFqdn                = $config.domain.fqdn
+    PrimaryDomainControllerIp = $config.dc.ip
+    SafeModeCredentials       = $safeModeCredentials
 }
-$null = Invoke-AzureVmDesiredState -ArchiveBlobName "CreateSecondaryDomainController.ps1.zip" `
-                                   -ConfigurationName "CreateSecondaryDomainController" `
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigureSecondaryDomainController.ps1.zip" `
+                                   -ConfigurationName "ConfigureSecondaryDomainController" `
                                    -ConfigurationParameters $params `
                                    -VmName $config.dcb.vmName `
                                    @commonDscParams
 
 
-# Configure Active Directory remotely
-# -----------------------------------
-Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
+# Configure Active Directory users
+# --------------------------------
+Add-LogMessage -Level Info "Configuring Active Directory users for: $($config.dc.vmName)..."
 # Fetch user and OU details
 $userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
 foreach ($user in $userAccounts.Keys) {
@@ -231,28 +222,14 @@ foreach ($user in $userAccounts.Keys) {
 }
 # Run remote script
 $params = @{
-    domainAdminUsername    = $domainAdminUsername
-    domainControllerVmName = $config.dc.vmName
-    domainOuBase           = $config.domain.dn
-    gpoBackupPath          = "$($config.dc.installationDirectory)\GPOs"
-    netbiosName            = $config.domain.netbiosName
-    shmFdqn                = $config.domain.fqdn
-    userAccountsB64        = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-    securityGroupsB64      = $config.domain.securityGroups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    domainAdminUsername = $domainAdminUsername
+    domainNetBiosName   = $config.domain.netbiosName
+    domainOuBase        = $config.domain.dn
+    shmFdqn             = $config.domain.fqdn
+    userAccountsB64     = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
 }
-$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Active_Directory.mustache.ps1" | Get-Item | Get-Content -Raw
+$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "ConfigureADUsers.mustache.ps1" | Get-Item | Get-Content -Raw
 $null = Invoke-RemoteScript -Shell "PowerShell" -Script (Expand-MustacheTemplate -Template $scriptTemplate -Parameters $config) -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-
-
-# Configure group policies
-# ------------------------
-Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
-$params = @{
-    shmFqdn           = $config.domain.fqdn
-    serverAdminSgName = $config.domain.securityGroups.serverAdmins.name
-}
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 
 # Configure the domain controllers and set their DNS resolution
@@ -263,7 +240,7 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
         ExternalDnsResolver = $config.dc.external_dns_resolver
         IdentitySubnetCidr  = $config.network.vnet.subnets.identity.cidr
     }
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "ConfigureDNS.ps1"
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
     # Remove custom per-NIC DNS settings
@@ -276,7 +253,7 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 # Finally set locale and apply updates
 # -------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-        # Set locale, install updates and reboot
+    # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverFqdns)[0] -AdditionalPowershellModules "MSOnline"
 }
