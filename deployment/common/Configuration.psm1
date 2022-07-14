@@ -378,6 +378,7 @@ function Get-ShmConfig {
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         installationDirectory      = "C:\Installation"
+        adDirectory                = "C:\ActiveDirectory"
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
             os   = [ordered]@{

@@ -2,6 +2,7 @@
   "shm": {
     "azureAdminGroupName": "Safe Haven Test Admins",
     "dc": {
+      "adDirectory": "C:\\ActiveDirectory",
       "disks": {
         "os": {
           "sizeGb": "128",
