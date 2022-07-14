@@ -171,6 +171,11 @@ $commonDscParams = @{
     VmLocation                = $config.location
     VmResourceGroupName       = $config.dc.rg
 }
+# Fetch user and OU details
+$userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
+foreach ($user in $userAccounts.Keys) {
+    $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
+}
 # DC1
 Add-LogMessage -Level Info "Installing desired state prerequisites on DC1..."
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dc1DscPath "BootstrapDSC.ps1") -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -SuppressOutput
@@ -188,6 +193,7 @@ $params = @{
     DomainOusB64                  = $config.domain.ous | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     DomainSecurityGroupsB64       = $config.domain.securityGroups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     SafeModeCredentials           = $safeModeCredentials
+    UserAccountsB64               = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
 }
 $null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigurePrimaryDomainController.ps1.zip" `
                                    -ConfigurationName "ConfigurePrimaryDomainController" `
@@ -214,11 +220,6 @@ $null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigureSecondaryDomainCon
 # Configure Active Directory users
 # --------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory users for: $($config.dc.vmName)..."
-# Fetch user and OU details
-$userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
-foreach ($user in $userAccounts.Keys) {
-    $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20 -AsPlaintext
-}
 # Run remote script
 $params = @{
     domainAdminUsername = $domainAdminUsername

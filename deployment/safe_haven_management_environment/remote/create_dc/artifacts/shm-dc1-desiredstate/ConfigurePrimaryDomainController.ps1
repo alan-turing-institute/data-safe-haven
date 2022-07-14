@@ -234,9 +234,17 @@ configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [string[]]$SecurityGroupNames,
 
-        [Parameter(HelpMessage = "DN for security groups ou")]
+        [Parameter(HelpMessage = "DN for security groups OU")]
         [ValidateNotNullOrEmpty()]
-        [string]$SecurityGroupsOuDn
+        [string]$SecurityGroupsOuDn,
+
+        [Parameter(HelpMessage = "DN for service accounts OU")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ServiceAccountsOuDn,
+
+        [Parameter(HelpMessage = "User accounts to create")]
+        [ValidateNotNullOrEmpty()]
+        [hashtable[]]$UserAccounts
     )
 
     Import-DscResource -Module ActiveDirectoryDsc
@@ -274,30 +282,32 @@ configuration ConfigureActiveDirectory {
         }
 
         # Set domain admin password to never expire
-        Script SetAdminPasswordExpiry {
-            SetScript  = {
-                try {
-                    Write-Verbose -Verbose "Setting domain admin password to never expire..."
-                    Set-ADUser -Identity $using:DomainAdminUsername -PasswordNeverExpires $true
-                    if ($?) {
-                        Write-Verbose -Verbose "Successfully set domain admin password expiry"
-                    } else {
-                        throw "Failed to set domain admin password expiry!"
-                    }
-                } catch {
-                    Write-Error "SetAdminPasswordExpiry: $($_.Exception)"
-                }
-            }
-            GetScript  = { @{} }
-            TestScript = { $false }
+        ADUser SetAdminPasswordExpiry {
+            UserName             = $DomainAdminUsername
+            DomainName           = $DomainFqdn
+            PasswordNeverExpires = $true
         }
 
-        ADDomainDefaultPasswordPolicy SetMinimumPasswordAge {
+        # Disable minimum password age
+        ADDomainDefaultPasswordPolicy DisableMinimumPasswordAge {
             Credential        = $DomainAdministratorCredentials
             DomainName        = $DomainFqdn
             MinPasswordAge    = 0
         }
 
+        # Create service users
+        foreach ($userAccount in $UserAccounts) {
+            ADUser $userAccount.name {
+                Description          = $userAccount.name
+                DisplayName          = $userAccount.name
+                DomainName           = $DomainFqdn
+                Ensure               = "Present"
+                Password             = $userAccount.credentials
+                PasswordNeverExpires = $true
+                Path                 = $ServiceAccountsOuDn
+                UserName             = $userAccount.credentials.UserName
+            }
+        }
     }
 }
 
@@ -562,7 +572,7 @@ configuration ConfigurePrimaryDomainController {
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBIOSName,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base-64 domain organisational units")]
+        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded domain organisational units")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainOusB64,
 
@@ -572,7 +582,11 @@ configuration ConfigurePrimaryDomainController {
 
         [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSCredential]$SafeModeCredentials
+        [System.Management.Automation.PSCredential]$SafeModeCredentials,
+
+        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded user accounts")]
+        [ValidateNotNullOrEmpty()]
+        [string]$UserAccountsB64
     )
 
     # Construct variables for passing to DSC configurations
@@ -586,6 +600,7 @@ configuration ConfigurePrimaryDomainController {
     $ouNames = $domainOus.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
     $securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DomainSecurityGroupsB64)) | ConvertFrom-Json
     $securityGroupNames = $securityGroups.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
+    $userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($UserAccountsB64)) | ConvertFrom-Json | ForEach-Object { $_.PSObject.Members } | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { @{ "name" = $_.Value.name; "credentials" = (New-Object System.Management.Automation.PSCredential ($_.Value.samAccountName, (ConvertTo-SecureString $_.Value.password -AsPlainText -Force))) } }
 
     Node localhost {
         InstallPowershellModules InstallPowershellModules {}
@@ -617,6 +632,8 @@ configuration ConfigurePrimaryDomainController {
             OuNames                        = $ouNames
             SecurityGroupNames             = $securityGroupNames
             SecurityGroupsOuDn             = "OU=$($domainOus.securityGroups.name),${DomainDn}"
+            ServiceAccountsOuDn            = "OU=$($domainOus.serviceAccounts.name),${DomainDn}"
+            UserAccounts                   = $userAccounts
             DependsOn                      = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
         }
 
