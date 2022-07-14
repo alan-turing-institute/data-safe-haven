@@ -226,17 +226,17 @@ configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [string]$DomainDn,
 
+        [Parameter(Mandatory=$true, HelpMessage = "NetBIOS name for the domain")]
+        [ValidateNotNullOrEmpty()]
+        [String]$DomainNetBIOSName,
+
         [Parameter(HelpMessage = "Array of OU names to create")]
         [ValidateNotNullOrEmpty()]
         [string[]]$OuNames,
 
         [Parameter(HelpMessage = "Array of security group names to create")]
         [ValidateNotNullOrEmpty()]
-        [string[]]$SecurityGroupNames,
-
-        [Parameter(HelpMessage = "DN for security groups OU")]
-        [ValidateNotNullOrEmpty()]
-        [string]$SecurityGroupsOuDn,
+        [hashtable[]]$SecurityGroups,
 
         [Parameter(HelpMessage = "DN for service accounts OU")]
         [ValidateNotNullOrEmpty()]
@@ -248,6 +248,21 @@ configuration ConfigureActiveDirectory {
     )
 
     Import-DscResource -Module ActiveDirectoryDsc
+
+    $localAdSyncUser = $UserAccounts | Where-Object { $_.key -eq "aadLocalSync" }
+    $computerManagersSG  = $SecurityGroups | Where-Object { $_.key -eq "computerManagers" }
+    $serverAdminsSG  = $SecurityGroups | Where-Object { $_.key -eq "serverAdmins" }
+    $guidMap = @{
+        "lockoutTime" = "28630ebf-41d5-11d1-a9c1-0000f80367c1";
+        "mS-DS-ConsistencyGuid" = "23773dc2-b63a-11d2-90e1-00c04fd91ab1";
+        "msDS-KeyCredentialLink" = "5b47d60f-6090-40b2-9f37-2a4de88f3063";
+        "pwdLastSet" = "bf967a0a-0de6-11d0-a285-00aa003049e2";
+        "user" = "bf967aba-0de6-11d0-a285-00aa003049e2";
+    }
+    $extendedrightsmap = @{
+        "Change Password" = "ab721a53-1e2f-11d0-9819-00aa0040529b";
+        "Reset Password" = "00299570-246d-11d0-a768-00aa006e0529";
+    }
 
     Node localhost {
         # Create organisational units
@@ -262,15 +277,38 @@ configuration ConfigureActiveDirectory {
             }
         }
 
+        # Create service users
+        foreach ($userAccount in $UserAccounts) {
+            ADUser "$($userAccount.name)" {
+                Description          = $userAccount.name
+                DisplayName          = $userAccount.name
+                DomainName           = $DomainFqdn
+                Ensure               = "Present"
+                Password             = $userAccount.credentials
+                PasswordNeverExpires = $true
+                Path                 = $ServiceAccountsOuDn
+                UserName             = $userAccount.credentials.UserName
+            }
+        }
+
         # Create security groups
-        foreach ($securityGroupName in $SecurityGroupNames) {
-            ADGroup $securityGroupName { # from ActiveDirectoryDsc
+        foreach ($securityGroup in $SecurityGroups) {
+            $Members = @()
+            # Add domain admin to server administrators group
+            if ($securityGroup.name -eq $serverAdminsSG.name) {
+                $Members = @($DomainAdminUsername)
+            # Add service users to computer managers group (except the localAdSync user)
+            } elseif ($computerManagersSG.name -eq $serverAdminsSG.name) {
+                $Members = $UserAccounts | Where-Object { $_.key -ne $localAdSyncUser.key } | ForEach-Object { $_.credentials.UserName }
+            }
+            ADGroup "$($securityGroup.name)" { # from ActiveDirectoryDsc
                 Category    = "Security"
-                Description = $securityGroupName
+                Description = $securityGroup.name
                 Ensure      = "Present"
-                GroupName   = $securityGroupName
+                GroupName   = $securityGroup.name
                 GroupScope  = "Global"
-                Path        = $SecurityGroupsOuDn
+                Members     = $Members
+                Path        = $SecurityGroup.dn
             }
         }
 
@@ -295,18 +333,105 @@ configuration ConfigureActiveDirectory {
             MinPasswordAge    = 0
         }
 
-        # Create service users
-        foreach ($userAccount in $UserAccounts) {
-            ADUser $userAccount.name {
-                Description          = $userAccount.name
-                DisplayName          = $userAccount.name
-                DomainName           = $DomainFqdn
-                Ensure               = "Present"
-                Password             = $userAccount.credentials
-                PasswordNeverExpires = $true
-                Path                 = $ServiceAccountsOuDn
-                UserName             = $userAccount.credentials.UserName
+        # Give write permissions to the local AD sync account
+        foreach ($property in @("lockoutTime", "pwdLastSet", "mS-DS-ConsistencyGuid", "msDS-KeyCredentialLink")) {
+            ADObjectPermissionEntry "$property" {
+                AccessControlType                  = "Allow"
+                ActiveDirectoryRights              = "WriteProperty"
+                ActiveDirectorySecurityInheritance = "Descendents"
+                Ensure                             = "Present"
+                IdentityReference                  = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
+                InheritedObjectType                = $guidMap["user"]
+                ObjectType                         = $guidmap[$property]
+                Path                               = $DomainDn
             }
+        }
+
+        # Give extended rights to the local AD sync account
+        foreach ($extendedRight in @("Change Password", "Reset Password")) {
+            ADObjectPermissionEntry "$extendedRight" {
+                AccessControlType                  = "Allow"
+                ActiveDirectoryRights              = "ExtendedRight"
+                ActiveDirectorySecurityInheritance = "Descendents"
+                Ensure                             = "Present"
+                IdentityReference                  = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
+                InheritedObjectType                = $guidMap["user"]
+                ObjectType                         = $extendedrightsmap[$extendedRight]
+                Path                               = $DomainDn
+            }
+        }
+
+        # Allow the local AD sync account to replicate directory changes
+        Script SetLocalAdSyncPermissions {
+            SetScript  = {
+                try {
+                    $success = $true
+                    $rootDse = Get-ADRootDSE
+                    $aadLocalSyncSID = (Get-ADUser $using:localAdSyncUser.credentials.UserName).SID
+                    $null = dsacls "$($rootDse.DefaultNamingContext)" /G "${aadLocalSyncSID}:CA;Replicating Directory Changes"
+                    $success = $success -and $?
+                    $null = dsacls "$($rootDse.ConfigurationNamingContext)" /G "${aadLocalSyncSID}:CA;Replicating Directory Changes"
+                    $success = $success -and $?
+                    $null = dsacls "$($rootDse.DefaultNamingContext)" /G "${aadLocalSyncSID}:CA;Replicating Directory Changes All"
+                    $success = $success -and $?
+                    $null = dsacls "$($rootDse.ConfigurationNamingContext)" /G "${aadLocalSyncSID}:CA;Replicating Directory Changes All"
+                    $success = $success -and $?
+                    if ($success) {
+                        Write-Verbose -Verbose "Successfully updated ACL permissions for AD Sync Service account '$($using:localAdSyncUsercredentials.UserName)'"
+                    } else {
+                        throw "Failed to update ACL permissions for AD Sync Service account '$($using:localAdSyncUsercredentials.UserName)'!"
+                    }
+                } catch {
+                    Write-Error "SetLocalAdSyncPermissions: $($_.Exception)"
+                }
+            }
+            GetScript  = { @{} }
+            TestScript = { $false }
+            DependsOn = "[ADUser]$($localAdSyncUser.name)"
+        }
+
+        # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
+        Script SetComputerRegistrationPermissions {
+            SetScript  = {
+                try {
+                    foreach ($userAccount in $using:UserAccounts) {
+                        $success = $true
+                        if (-not $userAccount.groupOu) { continue }
+                        $organisationalUnit = Get-ADObject -Filter "distinguishedName -eq '$($userAccount.groupOu)'"
+                        $userPrincipalName = "$($using:DomainNetBiosName)\$($userAccount.credentials.UserName)"
+                        # Add permission to create child computer objects
+                        $null = dsacls $organisationalUnit /I:T /G "${userPrincipalName}:CC;computer"
+                        $success = $success -and $?
+                        # Give 'write property' permissions over several attributes of child computer objects
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;DNS Host Name Attributes;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;msDS-SupportedEncryptionTypes;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;operatingSystem;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;operatingSystemVersion;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;operatingSystemServicePack;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;sAMAccountName;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;servicePrincipalName;computer"
+                        $success = $success -and $?
+                        $null = dsacls $organisationalUnit /I:S /G "${userPrincipalName}:WP;userPrincipalName;computer"
+                        $success = $success -and $?
+                    }
+                    if ($success) {
+                        Write-Verbose -Verbose "Successfully delegated Active Directory permissions on '$($userAccount.groupOu)' to '$userPrincipalName'"
+                    } else {
+                        throw "Failed to delegate Active Directory permissions on '$($userAccount.groupOu)' to '$userPrincipalName'!"
+                    }
+                } catch {
+                    Write-Error "SetComputerRegistrationPermissions: $($_.Exception)"
+                }
+            }
+            GetScript  = { @{} }
+            TestScript = { $false }
+            DependsOn = "[Script]SetLocalAdSyncPermissions"
         }
     }
 }
@@ -599,8 +724,8 @@ configuration ConfigurePrimaryDomainController {
     $domainOus = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DomainOusB64)) | ConvertFrom-Json
     $ouNames = $domainOus.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
     $securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DomainSecurityGroupsB64)) | ConvertFrom-Json
-    $securityGroupNames = $securityGroups.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
-    $userAccounts = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($UserAccountsB64)) | ConvertFrom-Json | ForEach-Object { $_.PSObject.Members } | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { @{ "name" = $_.Value.name; "credentials" = (New-Object System.Management.Automation.PSCredential ($_.Value.samAccountName, (ConvertTo-SecureString $_.Value.password -AsPlainText -Force))) } }
+    $securityGroupsHashtable = $securityGroups | ForEach-Object { $_.PSObject.Members } | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { @{ "key" = $_.Name; "name" = $_.Value.name; "dn" = "OU=$($domainOus.securityGroups.name),${DomainDn}" } }
+    $userAccountsHashtable = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($UserAccountsB64)) | ConvertFrom-Json | ForEach-Object { $_.PSObject.Members } | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { @{ "key" = $_.Name; "name" = $_.Value.name; "groupOu" = $domainOus."$($_.Name)".path; "credentials" = (New-Object System.Management.Automation.PSCredential ($_.Value.samAccountName, (ConvertTo-SecureString $_.Value.password -AsPlainText -Force))) } }
 
     Node localhost {
         InstallPowershellModules InstallPowershellModules {}
@@ -629,11 +754,11 @@ configuration ConfigurePrimaryDomainController {
             DomainAdminUsername            = $AdministratorCredentials.UserName
             DomainFqdn                     = $DomainFqdn
             DomainDn                       = $DomainDn
+            DomainNetBiosName              = $DomainNetBiosName
             OuNames                        = $ouNames
-            SecurityGroupNames             = $securityGroupNames
-            SecurityGroupsOuDn             = "OU=$($domainOus.securityGroups.name),${DomainDn}"
+            SecurityGroups                 = $securityGroupsHashtable
             ServiceAccountsOuDn            = "OU=$($domainOus.serviceAccounts.name),${DomainDn}"
-            UserAccounts                   = $userAccounts
+            UserAccounts                   = $userAccountsHashtable
             DependsOn                      = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
         }
 

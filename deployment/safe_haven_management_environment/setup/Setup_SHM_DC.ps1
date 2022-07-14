@@ -217,21 +217,6 @@ $null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigureSecondaryDomainCon
                                    @commonDscParams
 
 
-# Configure Active Directory users
-# --------------------------------
-Add-LogMessage -Level Info "Configuring Active Directory users for: $($config.dc.vmName)..."
-# Run remote script
-$params = @{
-    domainAdminUsername = $domainAdminUsername
-    domainNetBiosName   = $config.domain.netbiosName
-    domainOuBase        = $config.domain.dn
-    shmFdqn             = $config.domain.fqdn
-    userAccountsB64     = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-}
-$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "ConfigureADUsers.mustache.ps1" | Get-Item | Get-Content -Raw
-$null = Invoke-RemoteScript -Shell "PowerShell" -Script (Expand-MustacheTemplate -Template $scriptTemplate -Parameters $config) -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-
-
 # Configure the domain controllers and set their DNS resolution
 # -------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
