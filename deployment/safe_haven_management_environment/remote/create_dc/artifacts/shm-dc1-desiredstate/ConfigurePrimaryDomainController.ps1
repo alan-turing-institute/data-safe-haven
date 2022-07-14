@@ -210,13 +210,13 @@ configuration UploadArtifacts {
 
 configuration ConfigureActiveDirectory {
     param (
+        [Parameter(Mandatory=$true, HelpMessage = "Domain administrator credentials")]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]$DomainAdministratorCredentials,
+
         [Parameter(HelpMessage = "Username for a user with domain admin privileges")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainAdminUsername,
-
-        [Parameter(HelpMessage = "Name of this VM (the domain controller)")]
-        [ValidateNotNullOrEmpty()]
-        [string]$DomainControllerVmName,
 
         [Parameter(HelpMessage = "Fully-qualified SHM domain name")]
         [ValidateNotNullOrEmpty()]
@@ -230,88 +230,50 @@ configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [string[]]$OuNames,
 
-        [Parameter(HelpMessage = "Security groups")]
+        [Parameter(HelpMessage = "Array of security group names to create")]
         [ValidateNotNullOrEmpty()]
-        [PSCustomObject]$SecurityGroups
+        [string[]]$SecurityGroupNames,
+
+        [Parameter(HelpMessage = "DN for security groups ou")]
+        [ValidateNotNullOrEmpty()]
+        [string]$SecurityGroupsOuDn
     )
 
+    Import-DscResource -Module ActiveDirectoryDsc
+
     Node localhost {
-        Script CreateGroupOrganisationalUnits {
-            SetScript  = {
-                try {
-                    Write-Verbose -Verbose "Creating management OUs..."
-                    foreach ($ouName in $using:OuNames) {
-                        $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
-                        if ("$ouExists" -ne "") {
-                            Write-Verbose -Verbose "OU '$ouName' already exists"
-                        } else {
-                            New-ADOrganizationalUnit -Name "$ouName" -Description "$ouName"
-                            if ($?) {
-                                Write-Verbose -Verbose "OU '$ouName' created successfully"
-                            } else {
-                                throw "OU '$ouName' creation failed!"
-                            }
-                        }
-                    }
-                } catch {
-                    Write-Error "CreateGroupOrganisationalUnits: $($_.Exception)"
-                }
+        # Create organisational units
+        foreach ($ouName in $OuNames) {
+            ADOrganizationalUnit $ouName { # from ActiveDirectoryDsc
+                Credential                      = $DomainAdministratorCredentials
+                Description                     = $ouName
+                Ensure                          = "Present"
+                Name                            = $ouName
+                Path                            = $DomainDn
+                ProtectedFromAccidentalDeletion = $true
             }
-            GetScript  = { @{} }
-            TestScript = { $false }
         }
 
-        Script CreateSecurityGroups {
-            SetScript  = {
-                try {
-                    Write-Verbose -Verbose "Creating security groups..."
-                    foreach ($groupCfg in $using:SecurityGroups.PSObject.Members) {
-                        if ($groupCfg.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-                        $groupName = $groupCfg.Value.name
-                        $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
-                        if ($groupExists) {
-                            Write-Verbose -Verbose "Security group '$groupName' already exists"
-                        } else {
-                            New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=$($using:OuNameSecurityGroups),$($using:DomainDn)"
-                            if ($?) {
-                                Write-Verbose -Verbose "Security group '$groupName' created successfully"
-                            } else {
-                                throw "Security group '$groupName' creation failed!"
-                            }
-                        }
-                    }
-                } catch {
-                    Write-Error "CreateSecurityGroups: $($_.Exception)"
-                }
+        # Create security groups
+        foreach ($securityGroupName in $SecurityGroupNames) {
+            ADGroup $securityGroupName { # from ActiveDirectoryDsc
+                Category    = "Security"
+                Description = $securityGroupName
+                Ensure      = "Present"
+                GroupName   = $securityGroupName
+                GroupScope  = "Global"
+                Path        = $SecurityGroupsOuDn
             }
-            GetScript  = { @{} }
-            TestScript = { $false }
-            DependsOn  = "[Script]CreateGroupOrganisationalUnits"
         }
 
-        Script EnableADRecycleBin {
-            SetScript  = {
-                try {
-                    Write-Verbose -Verbose "Configuring AD recycle bin..."
-                    $featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $using:DomainControllerVmName).EnabledScopes | Select-String "$using:DomainDn"
-                    if ($featureExists) {
-                        Write-Verbose -Verbose "AD recycle bin is already enabled"
-                    } else {
-                        Enable-ADOptionalFeature -Identity "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target $using:DomainFqdn -Server $using:DomainControllerVmName -Confirm:$false
-                        if ($?) {
-                            Write-Verbose -Verbose "Successfully enabled AD recycle bin"
-                        } else {
-                            throw "Failed to enable AD recycle bin!"
-                        }
-                    }
-                } catch {
-                    Write-Error "EnableADRecycleBin: $($_.Exception)"
-                }
-            }
-            GetScript  = { @{} }
-            TestScript = { $false }
+        # Enable the AD recycle bin
+        ADOptionalFeature RecycleBin { # from ActiveDirectoryDsc
+            EnterpriseAdministratorCredential = $DomainAdministratorCredentials
+            FeatureName                       = "Recycle Bin Feature"
+            ForestFQDN                        = $DomainFqdn
         }
 
+        # Set domain admin password to never expire
         Script SetAdminPasswordExpiry {
             SetScript  = {
                 try {
@@ -330,23 +292,12 @@ configuration ConfigureActiveDirectory {
             TestScript = { $false }
         }
 
-        Script SetMinimumPasswordAge {
-            SetScript  = {
-                try {
-                    Write-Verbose -Verbose "Changing minimum password age to 0..."
-                    Set-ADDefaultDomainPasswordPolicy -Identity $using:DomainFqdn -MinPasswordAge 0.0:0:0.0
-                    if ($?) {
-                        Write-Verbose -Verbose "Successfully changed minimum password age"
-                    } else {
-                        throw "Failed to change minimum password age!"
-                    }
-                } catch {
-                    Write-Error "SetMinimumPasswordAge: $($_.Exception)"
-                }
-            }
-            GetScript  = { @{} }
-            TestScript = { $false }
+        ADDomainDefaultPasswordPolicy SetMinimumPasswordAge {
+            Credential        = $DomainAdministratorCredentials
+            DomainName        = $DomainFqdn
+            MinPasswordAge    = 0
         }
+
     }
 }
 
@@ -599,9 +550,9 @@ configuration ConfigurePrimaryDomainController {
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsTargetDirectory,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Name of this VM (the domain controller)")]
+        [Parameter(Mandatory=$true, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
         [ValidateNotNullOrEmpty()]
-        [string]$DomainControllerVmName,
+        [string]$DomainDn,
 
         [Parameter(Mandatory=$true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
@@ -610,10 +561,6 @@ configuration ConfigurePrimaryDomainController {
         [Parameter(Mandatory=$true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBIOSName,
-
-        [Parameter(Mandatory=$true, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
-        [ValidateNotNullOrEmpty()]
-        [string]$DomainDn,
 
         [Parameter(Mandatory=$true, HelpMessage = "Base-64 domain organisational units")]
         [ValidateNotNullOrEmpty()]
@@ -636,16 +583,9 @@ configuration ConfigurePrimaryDomainController {
     $artifactsBlobSasToken = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($ArtifactsBlobSasTokenB64))
     $domainAdministratorCredentials = New-Object System.Management.Automation.PSCredential ("${DomainFqdn}\$($AdministratorCredentials.UserName)", $AdministratorCredentials.Password)
     $domainOus = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DomainOusB64)) | ConvertFrom-Json
-    $ouNameDatabaseServers = $domainOus.databaseServers.name
-    $ouNameIdentityServers = $domainOus.identityServers.name
-    $ouNameLinuxServers = $domainOus.linuxServers.name
-    $ouNameRdsGatewayServers = $domainOus.rdsGatewayServers.name
-    $ouNameRdsSessionServers = $domainOus.rdsSessionServers.name
-    $ouNameResearchUsers = $domainOus.researchUsers.name
-    $ouNameSecurityGroups = $domainOus.securityGroups.name
-    $ouNameServiceAccounts = $domainOus.serviceAccounts.name
-    $ouNames = @($OuNameDatabaseServers, $OuNameIdentityServers, $OuNameLinuxServers, $OuNameRdsGatewayServers, $OuNameRdsSessionServers, $OuNameResearchUsers, $OuNameServiceAccounts)
+    $ouNames = $domainOus.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
     $securityGroups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DomainSecurityGroupsB64)) | ConvertFrom-Json
+    $securityGroupNames = $securityGroups.PSObject.Members | Where-Object { $_.TypeNameOfValue -eq "System.Management.Automation.PSCustomObject" } | ForEach-Object { $_.Value.name }
 
     Node localhost {
         InstallPowershellModules InstallPowershellModules {}
@@ -670,13 +610,14 @@ configuration ConfigurePrimaryDomainController {
         }
 
         ConfigureActiveDirectory ConfigureActiveDirectory {
-            DomainAdminUsername       = $AdministratorCredentials.UserName
-            DomainControllerVmName    = $DomainControllerVmName
-            DomainFqdn                = $DomainFqdn
-            DomainDn                  = $DomainDn
-            OuNames                   = $ouNames
-            SecurityGroups            = $securityGroups
-            DependsOn                 = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
+            DomainAdministratorCredentials = $domainAdministratorCredentials
+            DomainAdminUsername            = $AdministratorCredentials.UserName
+            DomainFqdn                     = $DomainFqdn
+            DomainDn                       = $DomainDn
+            OuNames                        = $ouNames
+            SecurityGroupNames             = $securityGroupNames
+            SecurityGroupsOuDn             = "OU=$($domainOus.securityGroups.name),${DomainDn}"
+            DependsOn                      = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
         }
 
         ApplyGroupPolicies ApplyGroupPolicies {
@@ -684,14 +625,14 @@ configuration ConfigurePrimaryDomainController {
             ArtifactsDirectory        = $ArtifactsTargetDirectory
             DomainFqdn                = $DomainFqdn
             DomainDn                  = $DomainDn
-            OuNameDatabaseServers     = $ouNameDatabaseServers
-            OuNameIdentityServers     = $ouNameIdentityServers
-            OuNameLinuxServers        = $ouNameLinuxServers
-            OuNameRdsGatewayServers   = $ouNameRdsGatewayServers
-            OuNameRdsSessionServers   = $ouNameRdsSessionServers
-            OuNameResearchUsers       = $ouNameResearchUsers
-            OuNameSecurityGroups      = $ouNameSecurityGroups
-            OuNameServiceAccounts     = $ouNameServiceAccounts
+            OuNameDatabaseServers     = $domainOus.databaseServers.name
+            OuNameIdentityServers     = $domainOus.identityServers.name
+            OuNameLinuxServers        = $domainOus.linuxServers.name
+            OuNameRdsGatewayServers   = $domainOus.rdsGatewayServers.name
+            OuNameRdsSessionServers   = $domainOus.rdsSessionServers.name
+            OuNameResearchUsers       = $domainOus.researchUsers.name
+            OuNameSecurityGroups      = $domainOus.securityGroups.name
+            OuNameServiceAccounts     = $domainOus.serviceAccounts.name
             ServerAdminSgName         = $securityGroups.serverAdmins.name
             DependsOn                 = @("[UploadArtifacts]UploadArtifacts", "[ConfigureActiveDirectory]ConfigureActiveDirectory")
         }

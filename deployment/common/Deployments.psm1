@@ -1152,7 +1152,7 @@ function Invoke-AzureVmDesiredState {
     Add-LogMessage -Level Info "Running desired state configuration '$ConfigurationName' on VM '$VmName'."
     $params = @{}
     if ($ConfigurationParameters) { $params["ConfigurationArgument"] = $ConfigurationParameters }
-    $maxTries = 5
+    $maxTries = 3
     for ($attempt = 1; $attempt -le $maxTries; $attempt++) {
         try {
             $result = Set-AzVMDscExtension -ArchiveBlobName $ArchiveBlobName `
