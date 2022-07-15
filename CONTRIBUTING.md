@@ -81,7 +81,7 @@ Please see the section on [project management through issues](#project-managemen
 
 [git](https://git-scm.com) is a really useful tool for version control. [GitHub](https://github.com) sits on top of git and supports collaborative and distributed working.
 We know that it can be daunting to start using `git` and `GitHub` if you haven't worked with them in the past, but the team are happy to help you figure out any of the jargon or confusing instructions you encounter! :heart:
-In order to contribute via GitHub you'll need to set up a free account and sign in. Here are some [instructions](https://help.github.com/articles/signing-up-for-a-new-github-account/) to help you get going.
+In order to contribute via GitHub you'll need to set up a free account and sign in. Here are some [instructions](https://docs.github.com/en/get-started/signing-up-for-github/signing-up-for-a-new-github-account) to help you get going.
 
 We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
@@ -96,7 +96,7 @@ This means that:
 - releases are made by branching from `develop` into a branch called `release-<version name>`
   - deployment is tested from this release and any necessary integration changes are made on this branch
   - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
-- we prefer to use [merge commits](https://docs.github.com/en/github/administering-a-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
+- we prefer to use [merge commits](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
 ### Discussions vs Issues
 
@@ -122,9 +122,9 @@ When opening an issue, pick a suitable template (if possible) to make the proces
 
 ### Writing in Markdown
 
-GitHub has a helpful page on [getting started with writing and formatting on GitHub](https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github).
+GitHub has a helpful page on [getting started with writing and formatting on GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github).
 
-Most of the writing that you'll do will be in [Markdown](https://guides.github.com/features/mastering-markdown/).
+Most of the writing that you'll do will be in [Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
 You can think of Markdown as a few little symbols around your text that will allow GitHub to render the text with a little bit of formatting.
 For example you could write words as bold ( `**bold**` ), or in italics ( `*italics*` ), or as a [link](https://youtu.be/dQw4w9WgXcQ) ( `[link](https://youtu.be/dQw4w9WgXcQ)` ) to another webpage.
 
@@ -165,7 +165,7 @@ If an issue is growing to encompass more than one task, consider breaking it int
 You can think of the issues as **conversations** about a particular topic.
 `GitHub`'s tagline is **social coding** and the issues are inspired by social media conversations.
 
-You can [mention a user](https://help.github.com/articles/basic-writing-and-formatting-syntax/#mentioning-people-and-teams) by putting `@` infront of their github id.
+You can [mention a user](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#mentioning-people-and-teams) by putting `@` infront of their github id.
 For example, `@KirstieJane` will send a notification to `Kirstie Whitaker` so she knows to visit the issue and (for example) reply to your question.
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
@@ -197,25 +197,27 @@ This allows other members of the Data Safe Haven project team to confirm that yo
 
 [This blog](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests) is a nice explanation of why putting this work in up front is so useful to everyone involved.
 
-#### 2. [Fork](https://help.github.com/articles/fork-a-repo) the [Data Safe Haven repository](https://github.com/alan-turing-institute/data-safe-haven) to your profile
+#### 2. Fork Data Safe Haven repository to your profile
+
+Follow [the instructions here](https://docs.github.com/en/get-started/quickstart/fork-a-repo) to fork the [Data Safe Haven repository](https://github.com/alan-turing-institute/data-safe-haven).
 
 This is now your own unique copy of the Data Safe Haven repository. Changes here won't affect anyone else's work, so it's a safe space to explore edits to the code or documentation!
-Make sure to [keep your fork up to date](https://help.github.com/articles/syncing-a-fork) with the upstream repository, otherwise you can end up with lots of dreaded [merge conflicts](https://help.github.com/articles/about-merge-conflicts).
+Make sure to [keep your fork up to date](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) with the upstream repository, otherwise you can end up with lots of dreaded [merge conflicts](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/about-merge-conflicts).
 
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
 
-#### 4. Submit a [pull request](https://help.github.com/articles/creating-a-pull-request)
+#### 4. Submit a pull request
 
-A member of the Safe Haven project team will review your changes to confirm that they can be merged into the codebase.
+Once you submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request), a member of the Safe Haven project team will review your changes to confirm that they can be merged into the codebase.
 
-A [review](https://help.github.com/articles/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
+A [review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
 You can update your [fork][github-fork] of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
 
-GitHub has a [nice introduction](https://guides.github.com/introduction/flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
+GitHub has a [nice introduction](https://docs.github.com/en/get-started/quickstart/github-flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
 ### Who's involved in the project
 

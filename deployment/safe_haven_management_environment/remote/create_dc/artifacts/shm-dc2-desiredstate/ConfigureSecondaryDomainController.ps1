@@ -3,23 +3,23 @@ configuration InstallPowershellModules {
 
     Node localhost {
         PSModuleResource MSOnline {
-            Ensure          = "present"
-            Module_Name     = "MSOnline"
+            Ensure = "present"
+            Module_Name = "MSOnline"
         }
 
         PSModuleResource PackageManagement {
-            Ensure          = "present"
-            Module_Name     = "PackageManagement"
+            Ensure = "present"
+            Module_Name = "PackageManagement"
         }
 
         PSModuleResource PowerShellGet {
-            Ensure          = "present"
-            Module_Name     = "PowerShellGet"
+            Ensure = "present"
+            Module_Name = "PowerShellGet"
         }
 
         PSModuleResource PSWindowsUpdate {
-            Ensure          = "present"
-            Module_Name     = "PSWindowsUpdate"
+            Ensure = "present"
+            Module_Name = "PSWindowsUpdate"
         }
     }
 }
@@ -39,11 +39,11 @@ configuration CreateSecondaryDomainController {
         [ValidateNotNullOrEmpty()]
         [string]$ActiveDirectorySysvolPath,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Domain administrator credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "Domain administrator credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$DomainAdministratorCredentials,
 
-        [Parameter(Mandatory=$true, HelpMessage = "FQDN for the SHM domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainFqdn,
 
@@ -51,7 +51,7 @@ configuration CreateSecondaryDomainController {
         [ValidateNotNullOrEmpty()]
         [String]$PrimaryDomainControllerIp,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$SafeModeCredentials
     )
@@ -66,56 +66,56 @@ configuration CreateSecondaryDomainController {
 
     Node localhost {
         LocalConfigurationManager {
-            ActionAfterReboot  = "ContinueConfiguration"
-            ConfigurationMode  = "ApplyOnly"
+            ActionAfterReboot = "ContinueConfiguration"
+            ConfigurationMode = "ApplyOnly"
             RebootNodeIfNeeded = $true
         }
 
         WindowsFeature ADDomainServices {
-            Ensure    = "Present"
-            Name      = "AD-Domain-Services"
+            Ensure = "Present"
+            Name = "AD-Domain-Services"
         }
 
         WindowsFeature ADDSTools {
-            Ensure    = "Present"
-            Name      = "RSAT-ADDS-Tools"
+            Ensure = "Present"
+            Name = "RSAT-ADDS-Tools"
         }
 
         WindowsFeature ADAdminCenter {
-            Ensure    = "Present"
-            Name      = "RSAT-AD-AdminCenter"
+            Ensure = "Present"
+            Name = "RSAT-AD-AdminCenter"
         }
 
         WindowsFeature ADPowerShell {
-            Ensure    = "Present"
-            Name      = "RSAT-AD-PowerShell"
+            Ensure = "Present"
+            Name = "RSAT-AD-PowerShell"
         }
 
         DnsServerAddress DnsServerAddress { # from NetworkingDsc
-            Address        = $PrimaryDomainControllerIp
-            AddressFamily  = "IPv4"
+            Address = $PrimaryDomainControllerIp
+            AddressFamily = "IPv4"
             InterfaceAlias = $Interface.Name
         }
 
         WaitForADDomain WaitForestAvailability { # from ActiveDirectoryDsc
             Credential = $DomainAdministratorCredentials
             DomainName = $DomainFqdn
-            DependsOn  = @("[WindowsFeature]ADPowerShell", "[WindowsFeature]ADDomainServices", "[DnsServerAddress]DnsServerAddress")
+            DependsOn = @("[WindowsFeature]ADPowerShell", "[WindowsFeature]ADDomainServices", "[DnsServerAddress]DnsServerAddress")
         }
 
         ADDomainController SecondaryDomainController { # from ActiveDirectoryDsc
-            Credential                    = $DomainAdministratorCredentials
-            DatabasePath                  = $ActiveDirectoryNtdsPath
-            DomainName                    = $DomainFqdn
-            InstallDns                    = $false
-            LogPath                       = $ActiveDirectoryLogPath
+            Credential = $DomainAdministratorCredentials
+            DatabasePath = $ActiveDirectoryNtdsPath
+            DomainName = $DomainFqdn
+            InstallDns = $false
+            LogPath = $ActiveDirectoryLogPath
             SafeModeAdministratorPassword = $SafeModeCredentials
-            SysvolPath                    = $ActiveDirectorySysvolPath
-            DependsOn                     = "[WaitForADDomain]WaitForestAvailability"
+            SysvolPath = $ActiveDirectorySysvolPath
+            DependsOn = "[WaitForADDomain]WaitForestAvailability"
         }
 
         PendingReboot RebootAfterPromotion { # from ComputerManagementDsc
-            Name      = "RebootAfterDCPromotion"
+            Name = "RebootAfterDCPromotion"
             DependsOn = "[ADDomainController]SecondaryDomainController"
         }
     }
@@ -124,15 +124,15 @@ configuration CreateSecondaryDomainController {
 
 configuration ConfigureSecondaryDomainController {
     param (
-        [Parameter(Mandatory=$true, HelpMessage = "Active Directory base path")]
+        [Parameter(Mandatory = $true, HelpMessage = "Active Directory base path")]
         [ValidateNotNullOrEmpty()]
         [string]$ActiveDirectoryBasePath,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$AdministratorCredentials,
 
-        [Parameter(Mandatory=$true, HelpMessage = "FQDN for the SHM domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainFqdn,
 
@@ -140,7 +140,7 @@ configuration ConfigureSecondaryDomainController {
         [ValidateNotNullOrEmpty()]
         [String]$PrimaryDomainControllerIp,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$SafeModeCredentials
     )
@@ -155,14 +155,13 @@ configuration ConfigureSecondaryDomainController {
         InstallPowershellModules InstallPowershellModules {}
 
         CreateSecondaryDomainController CreateSecondaryDomainController {
-            ActiveDirectoryLogPath         = $activeDirectoryLogPath
-            ActiveDirectoryNtdsPath        = $activeDirectoryNtdsPath
-            ActiveDirectorySysvolPath      = $activeDirectorySysvolPath
+            ActiveDirectoryLogPath = $activeDirectoryLogPath
+            ActiveDirectoryNtdsPath = $activeDirectoryNtdsPath
+            ActiveDirectorySysvolPath = $activeDirectorySysvolPath
             DomainAdministratorCredentials = $domainAdministratorCredentials
-            DomainFqdn                     = $DomainFqdn
-            PrimaryDomainControllerIp      = $PrimaryDomainControllerIp
-            SafeModeCredentials            = $SafeModeCredentials
+            DomainFqdn = $DomainFqdn
+            PrimaryDomainControllerIp = $PrimaryDomainControllerIp
+            SafeModeCredentials = $SafeModeCredentials
         }
     }
 }
-

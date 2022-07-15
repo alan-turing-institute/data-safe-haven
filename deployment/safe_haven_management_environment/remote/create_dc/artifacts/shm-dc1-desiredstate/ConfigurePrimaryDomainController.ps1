@@ -3,22 +3,22 @@ configuration InstallPowershellModules {
 
     Node localhost {
         PSModuleResource MSOnline {
-            Ensure      = "present"
+            Ensure = "present"
             Module_Name = "MSOnline"
         }
 
         PSModuleResource PackageManagement {
-            Ensure      = "present"
+            Ensure = "present"
             Module_Name = "PackageManagement"
         }
 
         PSModuleResource PowerShellGet {
-            Ensure      = "present"
+            Ensure = "present"
             Module_Name = "PowerShellGet"
         }
 
         PSModuleResource PSWindowsUpdate {
-            Ensure      = "present"
+            Ensure = "present"
             Module_Name = "PSWindowsUpdate"
         }
     }
@@ -39,19 +39,19 @@ configuration CreatePrimaryDomainController {
         [ValidateNotNullOrEmpty()]
         [string]$ActiveDirectorySysvolPath,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Domain administrator credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "Domain administrator credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$DomainAdministratorCredentials,
 
-        [Parameter(Mandatory=$true, HelpMessage = "FQDN for the SHM domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainFqdn,
 
-        [Parameter(Mandatory=$true, HelpMessage = "NetBIOS name for the domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBIOSName,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$SafeModeCredentials
     )
@@ -66,67 +66,67 @@ configuration CreatePrimaryDomainController {
 
     Node localhost {
         LocalConfigurationManager {
-            ActionAfterReboot  = "ContinueConfiguration"
-            ConfigurationMode  = "ApplyOnly"
+            ActionAfterReboot = "ContinueConfiguration"
+            ConfigurationMode = "ApplyOnly"
             RebootNodeIfNeeded = $true
         }
 
         WindowsFeature DNS {
             Ensure = "Present"
-            Name   = "DNS"
+            Name = "DNS"
         }
 
         WindowsFeature DnsServer {
-            Ensure    = "Present"
-            Name      = "RSAT-DNS-Server"
-            DependsOn  = "[WindowsFeature]DNS"
+            Ensure = "Present"
+            Name = "RSAT-DNS-Server"
+            DependsOn = "[WindowsFeature]DNS"
         }
 
         WindowsFeature ADDomainServices {
-            Ensure     = "Present"
-            Name       = "AD-Domain-Services"
+            Ensure = "Present"
+            Name = "AD-Domain-Services"
         }
 
         WindowsFeature ADDSTools {
-            Ensure     = "Present"
-            Name       = "RSAT-ADDS-Tools"
+            Ensure = "Present"
+            Name = "RSAT-ADDS-Tools"
         }
 
         WindowsFeature ADAdminCenter {
-            Ensure    = "Present"
-            Name      = "RSAT-AD-AdminCenter"
+            Ensure = "Present"
+            Name = "RSAT-AD-AdminCenter"
         }
 
         Script EnableDNSDiags {
-            SetScript  = {
+            SetScript = {
                 Write-Verbose -Verbose "Enabling DNS client diagnostics"
                 Set-DnsServerDiagnostics -All $true
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[WindowsFeature]DnsServer"
+            DependsOn = "[WindowsFeature]DnsServer"
         }
 
         DnsServerAddress DnsServerAddress { # from NetworkingDsc
-            Address        = "127.0.0.1"
-            AddressFamily  = "IPv4"
+            Address = "127.0.0.1"
+            AddressFamily = "IPv4"
             InterfaceAlias = $Interface.Name
-            DependsOn      = "[WindowsFeature]DnsServer"
+            DependsOn = "[WindowsFeature]DnsServer"
         }
 
         ADDomain PrimaryDomainController { # from ActiveDirectoryDsc
-            Credential                    = $DomainAdministratorCredentials
-            DatabasePath                  = $ActiveDirectoryNtdsPath
-            DomainName                    = $DomainFqdn
-            DomainNetBiosName             = $DomainNetBIOSName
-            LogPath                       = $ActiveDirectoryLogPath
+            Credential = $DomainAdministratorCredentials
+            DatabasePath = $ActiveDirectoryNtdsPath
+            DomainName = $DomainFqdn
+            DomainNetBiosName = $DomainNetBIOSName
+            LogPath = $ActiveDirectoryLogPath
             SafeModeAdministratorPassword = $SafeModeCredentials
-            SysvolPath                    = $ActiveDirectorySysvolPath
-            DependsOn                     = @("[DnsServerAddress]DnsServerAddress", "[WindowsFeature]ADDomainServices", "[WindowsFeature]ADDSTools")
+            SysvolPath = $ActiveDirectorySysvolPath
+            DependsOn = @("[DnsServerAddress]DnsServerAddress", "[WindowsFeature]ADDomainServices", "[WindowsFeature]ADDSTools")
         }
 
         PendingReboot RebootAfterPromotion { # from ComputerManagementDsc
-            Name      = "RebootAfterPromotion"
+            Name = "RebootAfterPromotion"
             DependsOn = "[ADDomain]PrimaryDomainController"
         }
     }
@@ -158,7 +158,7 @@ configuration UploadArtifacts {
 
     Node localhost {
         Script EmptyDirectory {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Clearing all pre-existing files and folders from '$using:ArtifactsDirectory'"
                     if (Test-Path -Path $using:ArtifactsDirectory) {
@@ -170,12 +170,12 @@ configuration UploadArtifacts {
                     Write-Error "EmptyDirectory: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { (Test-Path -Path $using:ArtifactsDirectory) -and -not (Test-Path -Path "$using:ArtifactsDirectory/*") }
         }
 
         Script DownloadArtifacts {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Downloading $($using:BlobNames.Length) files to '$using:ArtifactsDirectory'..."
                     foreach ($BlobName in $using:BlobNames) {
@@ -200,9 +200,9 @@ configuration UploadArtifacts {
                     Write-Error "DownloadArtifacts: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[Script]EmptyDirectory"
+            DependsOn = "[Script]EmptyDirectory"
         }
     }
 }
@@ -210,7 +210,7 @@ configuration UploadArtifacts {
 
 configuration ConfigureActiveDirectory {
     param (
-        [Parameter(Mandatory=$true, HelpMessage = "Domain administrator credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "Domain administrator credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$DomainAdministratorCredentials,
 
@@ -226,7 +226,7 @@ configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [string]$DomainDn,
 
-        [Parameter(Mandatory=$true, HelpMessage = "NetBIOS name for the domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBIOSName,
 
@@ -250,29 +250,29 @@ configuration ConfigureActiveDirectory {
     Import-DscResource -Module ActiveDirectoryDsc
 
     $localAdSyncUser = $UserAccounts | Where-Object { $_.key -eq "aadLocalSync" }
-    $computerManagersSG  = $SecurityGroups | Where-Object { $_.key -eq "computerManagers" }
-    $serverAdminsSG  = $SecurityGroups | Where-Object { $_.key -eq "serverAdmins" }
+    $computerManagersSG = $SecurityGroups | Where-Object { $_.key -eq "computerManagers" }
+    $serverAdminsSG = $SecurityGroups | Where-Object { $_.key -eq "serverAdmins" }
     $guidMap = @{
-        "lockoutTime" = "28630ebf-41d5-11d1-a9c1-0000f80367c1";
-        "mS-DS-ConsistencyGuid" = "23773dc2-b63a-11d2-90e1-00c04fd91ab1";
+        "lockoutTime"            = "28630ebf-41d5-11d1-a9c1-0000f80367c1";
+        "mS-DS-ConsistencyGuid"  = "23773dc2-b63a-11d2-90e1-00c04fd91ab1";
         "msDS-KeyCredentialLink" = "5b47d60f-6090-40b2-9f37-2a4de88f3063";
-        "pwdLastSet" = "bf967a0a-0de6-11d0-a285-00aa003049e2";
-        "user" = "bf967aba-0de6-11d0-a285-00aa003049e2";
+        "pwdLastSet"             = "bf967a0a-0de6-11d0-a285-00aa003049e2";
+        "user"                   = "bf967aba-0de6-11d0-a285-00aa003049e2";
     }
     $extendedrightsmap = @{
         "Change Password" = "ab721a53-1e2f-11d0-9819-00aa0040529b";
-        "Reset Password" = "00299570-246d-11d0-a768-00aa006e0529";
+        "Reset Password"  = "00299570-246d-11d0-a768-00aa006e0529";
     }
 
     Node localhost {
         # Create organisational units
         foreach ($ouName in $OuNames) {
             ADOrganizationalUnit $ouName { # from ActiveDirectoryDsc
-                Credential                      = $DomainAdministratorCredentials
-                Description                     = $ouName
-                Ensure                          = "Present"
-                Name                            = $ouName
-                Path                            = $DomainDn
+                Credential = $DomainAdministratorCredentials
+                Description = $ouName
+                Ensure = "Present"
+                Name = $ouName
+                Path = $DomainDn
                 ProtectedFromAccidentalDeletion = $true
             }
         }
@@ -280,14 +280,14 @@ configuration ConfigureActiveDirectory {
         # Create service users
         foreach ($userAccount in $UserAccounts) {
             ADUser "$($userAccount.name)" {
-                Description          = $userAccount.name
-                DisplayName          = $userAccount.name
-                DomainName           = $DomainFqdn
-                Ensure               = "Present"
-                Password             = $userAccount.credentials
+                Description = $userAccount.name
+                DisplayName = $userAccount.name
+                DomainName = $DomainFqdn
+                Ensure = "Present"
+                Password = $userAccount.credentials
                 PasswordNeverExpires = $true
-                Path                 = $ServiceAccountsOuDn
-                UserName             = $userAccount.credentials.UserName
+                Path = $ServiceAccountsOuDn
+                UserName = $userAccount.credentials.UserName
             }
         }
 
@@ -302,68 +302,68 @@ configuration ConfigureActiveDirectory {
                 $Members = $UserAccounts | Where-Object { $_.key -ne $localAdSyncUser.key } | ForEach-Object { $_.credentials.UserName }
             }
             ADGroup "$($securityGroup.name)" { # from ActiveDirectoryDsc
-                Category    = "Security"
+                Category = "Security"
                 Description = $securityGroup.name
-                Ensure      = "Present"
-                GroupName   = $securityGroup.name
-                GroupScope  = "Global"
-                Members     = $Members
-                Path        = $SecurityGroup.dn
+                Ensure = "Present"
+                GroupName = $securityGroup.name
+                GroupScope = "Global"
+                Members = $Members
+                Path = $SecurityGroup.dn
             }
         }
 
         # Enable the AD recycle bin
         ADOptionalFeature RecycleBin { # from ActiveDirectoryDsc
             EnterpriseAdministratorCredential = $DomainAdministratorCredentials
-            FeatureName                       = "Recycle Bin Feature"
-            ForestFQDN                        = $DomainFqdn
+            FeatureName = "Recycle Bin Feature"
+            ForestFQDN = $DomainFqdn
         }
 
         # Set domain admin password to never expire
         ADUser SetAdminPasswordExpiry {
-            UserName             = $DomainAdminUsername
-            DomainName           = $DomainFqdn
+            UserName = $DomainAdminUsername
+            DomainName = $DomainFqdn
             PasswordNeverExpires = $true
         }
 
         # Disable minimum password age
         ADDomainDefaultPasswordPolicy DisableMinimumPasswordAge {
-            Credential        = $DomainAdministratorCredentials
-            DomainName        = $DomainFqdn
-            MinPasswordAge    = 0
+            Credential = $DomainAdministratorCredentials
+            DomainName = $DomainFqdn
+            MinPasswordAge = 0
         }
 
         # Give write permissions to the local AD sync account
         foreach ($property in @("lockoutTime", "pwdLastSet", "mS-DS-ConsistencyGuid", "msDS-KeyCredentialLink")) {
             ADObjectPermissionEntry "$property" {
-                AccessControlType                  = "Allow"
-                ActiveDirectoryRights              = "WriteProperty"
+                AccessControlType = "Allow"
+                ActiveDirectoryRights = "WriteProperty"
                 ActiveDirectorySecurityInheritance = "Descendents"
-                Ensure                             = "Present"
-                IdentityReference                  = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
-                InheritedObjectType                = $guidMap["user"]
-                ObjectType                         = $guidmap[$property]
-                Path                               = $DomainDn
+                Ensure = "Present"
+                IdentityReference = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
+                InheritedObjectType = $guidMap["user"]
+                ObjectType = $guidmap[$property]
+                Path = $DomainDn
             }
         }
 
         # Give extended rights to the local AD sync account
         foreach ($extendedRight in @("Change Password", "Reset Password")) {
             ADObjectPermissionEntry "$extendedRight" {
-                AccessControlType                  = "Allow"
-                ActiveDirectoryRights              = "ExtendedRight"
+                AccessControlType = "Allow"
+                ActiveDirectoryRights = "ExtendedRight"
                 ActiveDirectorySecurityInheritance = "Descendents"
-                Ensure                             = "Present"
-                IdentityReference                  = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
-                InheritedObjectType                = $guidMap["user"]
-                ObjectType                         = $extendedrightsmap[$extendedRight]
-                Path                               = $DomainDn
+                Ensure = "Present"
+                IdentityReference = "${DomainNetBIOSName}\$($localAdSyncUser.credentials.UserName)"
+                InheritedObjectType = $guidMap["user"]
+                ObjectType = $extendedrightsmap[$extendedRight]
+                Path = $DomainDn
             }
         }
 
         # Allow the local AD sync account to replicate directory changes
         Script SetLocalAdSyncPermissions {
-            SetScript  = {
+            SetScript = {
                 try {
                     $success = $true
                     $rootDse = Get-ADRootDSE
@@ -385,14 +385,14 @@ configuration ConfigureActiveDirectory {
                     Write-Error "SetLocalAdSyncPermissions: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
             DependsOn = "[ADUser]$($localAdSyncUser.name)"
         }
 
         # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
         Script SetComputerRegistrationPermissions {
-            SetScript  = {
+            SetScript = {
                 try {
                     foreach ($userAccount in $using:UserAccounts) {
                         $success = $true
@@ -429,7 +429,7 @@ configuration ConfigureActiveDirectory {
                     Write-Error "SetComputerRegistrationPermissions: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
             DependsOn = "[Script]SetLocalAdSyncPermissions"
         }
@@ -497,7 +497,7 @@ configuration ApplyGroupPolicies {
 
     Node localhost {
         Script ExtractGroupPolicies {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Extracting GPO zip files..."
                     Expand-Archive "$($using:ArtifactsDirectory)\GPOs.zip" -DestinationPath $using:ArtifactsDirectory -Force
@@ -510,12 +510,12 @@ configuration ApplyGroupPolicies {
                     Write-Error "ExtractGroupPolicies: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { Test-Path -Path "$($using:GpoOutputPath)/*" }
         }
 
         Script ImportGroupPolicies {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Importing GPOs..."
                     foreach ($sourceTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
@@ -534,13 +534,13 @@ configuration ApplyGroupPolicies {
                     Write-Error "ImportGroupPolicies: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[Script]ExtractGroupPolicies"
+            DependsOn = "[Script]ExtractGroupPolicies"
         }
 
         Script LinkGroupPoliciesToOus {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Linking GPOs to OUs..."
                     foreach ($gpoOuNamePair in (("All servers - Local Administrators", "$using:OuNameDatabaseServers"),
@@ -579,13 +579,13 @@ configuration ApplyGroupPolicies {
                     Write-Error "LinkGroupPoliciesToOus: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[Script]ImportGroupPolicies"
+            DependsOn = "[Script]ImportGroupPolicies"
         }
 
         Script GiveDomainAdminsLocalPrivileges {
-            SetScript  = {
+            SetScript = {
                 try {
                     # Get SID for the Local Administrators group
                     $localAdminGroupName = "All servers - Local Administrators"
@@ -624,13 +624,13 @@ configuration ApplyGroupPolicies {
                     Write-Error "GiveDomainAdminsLocalPrivileges: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[Script]ImportGroupPolicies"
+            DependsOn = "[Script]ImportGroupPolicies"
         }
 
         Script SetRemoteDesktopServerLayout {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Setting the layout file for the Remote Desktop servers..."
                     $null = Set-GPRegistryValue -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
@@ -647,20 +647,20 @@ configuration ApplyGroupPolicies {
                     Write-Error "SetRemoteDesktopServerLayout: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = { $false }
-            DependsOn  = "[Script]ImportGroupPolicies"
+            DependsOn = "[Script]ImportGroupPolicies"
         }
     }
 }
 
 configuration ConfigureDns {
     param (
-        [Parameter(Mandatory=$true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
+        [Parameter(Mandatory = $true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
         [ValidateNotNullOrEmpty()]
         [string]$ExternalDnsResolver,
 
-        [Parameter(Mandatory=$true, HelpMessage = "IP addresses for the domain controllers")]
+        [Parameter(Mandatory = $true, HelpMessage = "IP addresses for the domain controllers")]
         [ValidateNotNullOrEmpty()]
         [string]$IdentitySubnetCidr
     )
@@ -674,13 +674,13 @@ configuration ConfigureDns {
     Node localhost {
         # Use Microsoft Azure DNS server for resolving external addresses
         DnsServerForwarder DnsServerForwarder {
-            IPAddresses      = @($ExternalDnsResolver)
+            IPAddresses = @($ExternalDnsResolver)
             IsSingleInstance = "Yes"
         }
 
         # Ensure that reverse lookup zone exists
         Script ReverseLookupZone {
-            SetScript  = {
+            SetScript = {
                 try {
                     Write-Verbose -Verbose "Creating reverse-lookup zone for '$using:IdentitySubnetCidr'..."
                     Add-DnsServerPrimaryZone -NetworkID $using:IdentitySubnetCidr -ReplicationScope "Forest"
@@ -693,7 +693,7 @@ configuration ConfigureDns {
                     Write-Error "ReverseLookupZone: $($_.Exception)"
                 }
             }
-            GetScript  = { @{} }
+            GetScript = { @{} }
             TestScript = {
                 if (Get-DnsServerZone -Name $using:ZoneName -ErrorAction SilentlyContinue | Where-Object { $_.IsReverseLookupZone }) {
                     Write-Verbose -Verbose "Reverse-lookup zone for '$using:IdentitySubnetCidr' already exists"
@@ -701,7 +701,7 @@ configuration ConfigureDns {
                 }
                 return $false
              }
-            DependsOn  = "[Script]ImportGroupPolicies"
+            DependsOn = "[Script]ImportGroupPolicies"
         }
     }
 }
@@ -709,67 +709,67 @@ configuration ConfigureDns {
 
 configuration ConfigurePrimaryDomainController {
     param (
-        [Parameter(Mandatory=$true, HelpMessage = "Active Directory base path")]
+        [Parameter(Mandatory = $true, HelpMessage = "Active Directory base path")]
         [ValidateNotNullOrEmpty()]
         [string]$ActiveDirectoryBasePath,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$AdministratorCredentials,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded array of blob names to download from storage blob container")]
+        [Parameter(Mandatory = $true, HelpMessage = "Base-64 encoded array of blob names to download from storage blob container")]
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsBlobNamesB64,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded SAS token with read/list rights to the storage blob container")]
+        [Parameter(Mandatory = $true, HelpMessage = "Base-64 encoded SAS token with read/list rights to the storage blob container")]
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsBlobSasTokenB64,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Name of the artifacts storage account")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the artifacts storage account")]
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsStorageAccountName,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Name of the artifacts storage container")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the artifacts storage container")]
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsStorageContainerName,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Absolute path to directory which blobs should be downloaded to")]
+        [Parameter(Mandatory = $true, HelpMessage = "Absolute path to directory which blobs should be downloaded to")]
         [ValidateNotNullOrEmpty()]
         [string]$ArtifactsTargetDirectory,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainDn,
 
-        [Parameter(Mandatory=$true, HelpMessage = "FQDN for the SHM domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainFqdn,
 
-        [Parameter(Mandatory=$true, HelpMessage = "NetBIOS name for the domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBIOSName,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded domain organisational units")]
+        [Parameter(Mandatory = $true, HelpMessage = "Base-64 encoded domain organisational units")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainOusB64,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base64-encoded security groups")]
+        [Parameter(Mandatory = $true, HelpMessage = "Base64-encoded security groups")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainSecurityGroupsB64,
 
-        [Parameter(Mandatory=$true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
+        [Parameter(Mandatory = $true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
         [ValidateNotNullOrEmpty()]
         [string]$ExternalDnsResolver,
 
-        [Parameter(Mandatory=$true, HelpMessage = "IP addresses for the domain controllers")]
+        [Parameter(Mandatory = $true, HelpMessage = "IP addresses for the domain controllers")]
         [ValidateNotNullOrEmpty()]
         [string]$IdentitySubnetCidr,
 
-        [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
+        [Parameter(Mandatory = $true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]$SafeModeCredentials,
 
-        [Parameter(Mandatory=$true, HelpMessage = "Base-64 encoded user accounts")]
+        [Parameter(Mandatory = $true, HelpMessage = "Base-64 encoded user accounts")]
         [ValidateNotNullOrEmpty()]
         [string]$UserAccountsB64
     )
@@ -791,52 +791,52 @@ configuration ConfigurePrimaryDomainController {
         InstallPowershellModules InstallPowershellModules {}
 
         CreatePrimaryDomainController CreatePrimaryDomainController {
-            ActiveDirectoryLogPath         = $activeDirectoryLogPath
-            ActiveDirectoryNtdsPath        = $activeDirectoryNtdsPath
-            ActiveDirectorySysvolPath      = $activeDirectorySysvolPath
+            ActiveDirectoryLogPath = $activeDirectoryLogPath
+            ActiveDirectoryNtdsPath = $activeDirectoryNtdsPath
+            ActiveDirectorySysvolPath = $activeDirectorySysvolPath
             DomainAdministratorCredentials = $domainAdministratorCredentials
-            DomainFqdn                     = $DomainFqdn
-            DomainNetBiosName              = $DomainNetBiosName
-            SafeModeCredentials            = $SafeModeCredentials
+            DomainFqdn = $DomainFqdn
+            DomainNetBiosName = $DomainNetBiosName
+            SafeModeCredentials = $SafeModeCredentials
         }
 
         UploadArtifacts UploadArtifacts {
-            BlobNames            = $artifactsBlobNames
-            BlobSasToken         = $artifactsBlobSasToken
-            StorageAccountName   = $ArtifactsStorageAccountName
+            BlobNames = $artifactsBlobNames
+            BlobSasToken = $artifactsBlobSasToken
+            StorageAccountName = $ArtifactsStorageAccountName
             StorageContainerName = $ArtifactsStorageContainerName
-            ArtifactsDirectory   = $ArtifactsTargetDirectory
-            DependsOn            = "[CreatePrimaryDomainController]CreatePrimaryDomainController"
+            ArtifactsDirectory = $ArtifactsTargetDirectory
+            DependsOn = "[CreatePrimaryDomainController]CreatePrimaryDomainController"
         }
 
         ConfigureActiveDirectory ConfigureActiveDirectory {
             DomainAdministratorCredentials = $domainAdministratorCredentials
-            DomainAdminUsername            = $AdministratorCredentials.UserName
-            DomainFqdn                     = $DomainFqdn
-            DomainDn                       = $DomainDn
-            DomainNetBiosName              = $DomainNetBiosName
-            OuNames                        = $ouNames
-            SecurityGroups                 = $securityGroupsHashtable
-            ServiceAccountsOuDn            = "OU=$($domainOus.serviceAccounts.name),${DomainDn}"
-            UserAccounts                   = $userAccountsHashtable
-            DependsOn                      = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
+            DomainAdminUsername = $AdministratorCredentials.UserName
+            DomainFqdn = $DomainFqdn
+            DomainDn = $DomainDn
+            DomainNetBiosName = $DomainNetBiosName
+            OuNames = $ouNames
+            SecurityGroups = $securityGroupsHashtable
+            ServiceAccountsOuDn = "OU=$($domainOus.serviceAccounts.name),${DomainDn}"
+            UserAccounts = $userAccountsHashtable
+            DependsOn = @("[CreatePrimaryDomainController]CreatePrimaryDomainController", "[UploadArtifacts]UploadArtifacts")
         }
 
         ApplyGroupPolicies ApplyGroupPolicies {
             ActiveDirectorySysvolPath = $activeDirectorySysvolPath
-            ArtifactsDirectory        = $ArtifactsTargetDirectory
-            DomainFqdn                = $DomainFqdn
-            DomainDn                  = $DomainDn
-            OuNameDatabaseServers     = $domainOus.databaseServers.name
-            OuNameIdentityServers     = $domainOus.identityServers.name
-            OuNameLinuxServers        = $domainOus.linuxServers.name
-            OuNameRdsGatewayServers   = $domainOus.rdsGatewayServers.name
-            OuNameRdsSessionServers   = $domainOus.rdsSessionServers.name
-            OuNameResearchUsers       = $domainOus.researchUsers.name
-            OuNameSecurityGroups      = $domainOus.securityGroups.name
-            OuNameServiceAccounts     = $domainOus.serviceAccounts.name
-            ServerAdminSgName         = $securityGroups.serverAdmins.name
-            DependsOn                 = @("[UploadArtifacts]UploadArtifacts", "[ConfigureActiveDirectory]ConfigureActiveDirectory")
+            ArtifactsDirectory = $ArtifactsTargetDirectory
+            DomainFqdn = $DomainFqdn
+            DomainDn = $DomainDn
+            OuNameDatabaseServers = $domainOus.databaseServers.name
+            OuNameIdentityServers = $domainOus.identityServers.name
+            OuNameLinuxServers = $domainOus.linuxServers.name
+            OuNameRdsGatewayServers = $domainOus.rdsGatewayServers.name
+            OuNameRdsSessionServers = $domainOus.rdsSessionServers.name
+            OuNameResearchUsers = $domainOus.researchUsers.name
+            OuNameSecurityGroups = $domainOus.securityGroups.name
+            OuNameServiceAccounts = $domainOus.serviceAccounts.name
+            ServerAdminSgName = $securityGroups.serverAdmins.name
+            DependsOn = @("[UploadArtifacts]UploadArtifacts", "[ConfigureActiveDirectory]ConfigureActiveDirectory")
         }
     }
 }

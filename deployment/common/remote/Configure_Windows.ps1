@@ -107,7 +107,7 @@ $LogFilePath = "C:\Windows\Logs\Powershell\WindowsUpdate.$((Get-Date -Format Fil
 $null = New-Item (Split-Path -Path $LogFilePath) -ItemType Directory -Force
 $null = Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false # Register Microsoft Update servers
 
-while $true {
+while ($true) {
     # Check whether there are any remaining updates
     $updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
     if ($updatesToInstall.Count -eq 0) { break; }

@@ -163,7 +163,7 @@ Please follow these steps carefully.
   Note that this will also ensure that it passes the [Microsoft Azure AD password requirements](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-policy).
 
   ```{tip}
-  We recommend using this [Secure Password Generator](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1) to create a password that meets these requirements.
+  We recommend using a password generator [like this one](https://bitwarden.com/password-generator/) to create a password that meets these requirements.
   This will ensure that the password is different from any others that you might use and that it is unlikely to be on any list of commonly used passwords.
   ```
 

@@ -1168,7 +1168,7 @@ function Invoke-AzureVmDesiredState {
                                            @params
             break
         } catch {
-            Add-LogMessage -Level Error "Error when applying desired state configuration. Attempt [$attempt/$maxTries]."
+            Add-LogMessage -Level Info "Applying desired state configuration failed. Attempt [$attempt/$maxTries]."
             $ErrorMessage = $_.Exception
         }
     }

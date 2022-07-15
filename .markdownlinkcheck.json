@@ -5,6 +5,10 @@
             "pattern": "^https://github.com/alan-turing-institute/data-safe-haven"
         },
         {
+            "_comment": "As the repository is private, without authentication these paths will return 404",
+            "pattern": "^https://github.com/alan-turing-institute/data-classification-app"
+        },
+        {
             "_comment": "Returns permanent direct code",
             "pattern": "^https://www.egress.com"
         },
