@@ -35,9 +35,10 @@ $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountN
 # Create blob storage containers
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-$storageContainerDcConfigName = "shm-configuration-dc"
-$storageContainerDcDscName = "shm-dsc-dc"
-foreach ($containerName in ($storageContainerDcDscName, $storageContainerDcConfigName, "sre-rds-sh-packages")) {
+$storageContainerDcConfigName = "shm-dc1-artifacts"
+$storageContainerDcDscName = "shm-desired-state"
+$storageContainerSreRds = "sre-rds-sh-packages"
+foreach ($containerName in ($storageContainerDcDscName, $storageContainerDcConfigName, $storageContainerSreRds)) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
 
@@ -102,18 +103,18 @@ Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage 
 $success = $true
 # AzureADConnect
 $filename = "AzureADConnect.msi"
-Start-AzStorageBlobCopy -AbsoluteUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/$filename" -DestContainer "shm-configuration-dc" -DestBlob $filename -DestContext $storageAccount.Context -Force
+Start-AzStorageBlobCopy -AbsoluteUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/$filename" -DestContainer $storageContainerDcConfigName -DestBlob $filename -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # Chrome
 $filename = "GoogleChromeStandaloneEnterprise64.msi"
-Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
+Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer $storageContainerSreRds -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
 $httpContent = Invoke-WebRequest -Uri $baseUri
 $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 $version = ($filename -split "-")[2]
-Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
+Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer $storageContainerSreRds -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded Windows package installers"
