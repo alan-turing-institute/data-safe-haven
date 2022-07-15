@@ -382,7 +382,7 @@ function Get-ShmConfig {
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
             os = [ordered]@{
-                sizeGb = "128"
+                sizeGb = "64"
                 type   = "Standard_LRS"
             }
         }
@@ -411,7 +411,7 @@ function Get-ShmConfig {
         installationDirectory   = "C:\Installation"
         disks                   = [ordered]@{
             os   = [ordered]@{
-                sizeGb = "128"
+                sizeGb = "64"
                 type   = "Standard_LRS"
             }
         }
