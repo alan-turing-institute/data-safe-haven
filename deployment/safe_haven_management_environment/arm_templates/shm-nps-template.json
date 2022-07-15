@@ -44,18 +44,6 @@
                 "Description": "Public domain name for the SHM"
             }
         },
-        "npsDataDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of NPS data disk in GB"
-            }
-        },
-        "npsDataDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of NPS data disk"
-            }
-        },
         "npsHostName": {
             "type": "string",
             "metadata": {
@@ -144,20 +132,7 @@
                             "storageAccountType": "[parameters('npsOsDiskType')]"
                         },
                         "diskSizeGB": "[parameters('npsOsDiskSizeGb')]"
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat(parameters('npsVmName'), '-DATA-DISK')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('npsDataDiskType')]"
-                            },
-                            "diskSizeGB": "[parameters('npsDataDiskSizeGb')]"
-                        }
-                    ]
+                    }
                 },
                 "osProfile": {
                     "computerName": "[parameters('npsHostName')]",

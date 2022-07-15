@@ -410,10 +410,6 @@ function Get-ShmConfig {
         ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
         installationDirectory   = "C:\Installation"
         disks                   = [ordered]@{
-            data = [ordered]@{
-                sizeGb = "20"
-                type   = "Standard_LRS"
-            }
             os   = [ordered]@{
                 sizeGb = "128"
                 type   = "Standard_LRS"
