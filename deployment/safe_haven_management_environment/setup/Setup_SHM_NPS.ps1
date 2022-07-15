@@ -71,7 +71,7 @@ Add-LogMessage -Level Info "Deploying network policy server (NPS) from template.
 # This will need some deeper thought about which OU each VM should belong to.
 $params = @{
     administratorPassword           = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    administratorUser               = $vmAdminUsername
+    administratorUsername           = $vmAdminUsername
     bootDiagnosticsAccountName      = $config.storage.bootdiagnostics.accountName
     domainJoinOuPath                = $config.domain.ous.identityServers.path
     domainJoinPassword              = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)

@@ -1,81 +1,56 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "Administrator_Password": {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",    "parameters": {
+        "administratorPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for VM Administrator"
+                "description": "Password for domain administrator"
             }
         },
-        "Administrator_User": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
-                "description": "Username for VM Administrator"
+                "description": "Username for domain administrator"
             }
         },
-        "BootDiagnostics_Account_Name": {
+        "bootDiagnosticsAccountName": {
             "type": "string",
             "metadata": {
-                "description": "Storage account used for boot diagnostics"
+                "description": "Name of storage account used for boot diagnostics"
             }
         },
-        "Data_Disk_Size": {
-            "type": "string",
-            "metadata": {
-                "description": "Size of data disk in GB"
-            }
-        },
-        "Data_Disk_Type": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of data disk"
-            }
-        },
-        "Db_Admin_Password": {
-            "type": "string",
-            "metadata": {
-                "description": "Password for SQL AuthUpdate User"
-            }
-        },
-        "Db_Admin_Username": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for SQL AuthUpdate User"
-            }
-        },
-        "IP_Address": {
+        "privateIpAddress": {
             "type": "string",
             "defaultValue": "10.x.x.x",
             "metadata": {
                 "description": "IP Address for VM"
             }
         },
-        "OS_Disk_Size": {
+        "sqlDbAdministratorPassword": {
             "type": "string",
             "metadata": {
-                "description": "Size of OS disk in GB"
+                "description": "Password for SQL AuthUpdate User"
             }
         },
-        "OS_Disk_Type": {
+        "sqlDbAdministratorUsername": {
             "type": "string",
             "metadata": {
-                "description": "Type of OS disk"
+                "description": "Username for SQL AuthUpdate User"
             }
         },
-        "Sql_Connection_Port": {
+        "sqlServerConnectionPort": {
             "type": "string",
             "metadata": {
                 "description": "Which port to use for connections"
             }
         },
-        "Sql_Server_Name": {
+        "sqlServerName": {
             "type": "string",
             "metadata": {
                 "description": "Name for SQL Server VM"
             }
         },
-        "Sql_Server_Edition": {
+        "sqlServerEdition": {
             "type": "string",
              "defaultValue": "sqldev-gen2",
              "allowedValues": [
@@ -86,13 +61,49 @@
                 "description": "SQL Server Edition to be installed"
             }
         },
-        "SubnetResourceId": {
+        "virtualNetworkName": {
             "type": "string",
             "metadata": {
-                "description": "ResourceId of subnet the VM will join"
+                "description": "Name of virtual network to provision these VMs"
             }
         },
-        "VM_Size": {
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of resource group that is associated with the virtual network above"
+            }
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of subnet where you want to provision this VM"
+            }
+        },
+        "vmDataDiskSizeGb": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of NPS OS disk in GB"
+            }
+        },
+        "vmDataDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of data disk"
+            }
+        },
+        "vmOsDiskSizeGb": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of OS disk in GB"
+            }
+        },
+        "vmOsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of OS disk"
+            }
+        },
+        "vmSize": {
             "type": "string",
             "defaultValue": "Standard_GS1",
             "metadata": {
@@ -101,40 +112,41 @@
         }
     },
     "variables": {
-        "nic": "[concat(parameters('Sql_Server_Name'), '-', 'NIC')]",
-        "datadisk": "[concat(parameters('Sql_Server_Name'), '-DATA-DISK')]",
-        "sqlDisksLUNs": [
-            "0"
-        ]
+        "nic": "[concat(parameters('sqlServerName'), '-', 'NIC')]",
+        "datadisk": "[concat(parameters('sqlServerName'), '-DATA-DISK')]",
+        "sqlDisksLUNs": ["0"],
+        "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetId": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
+
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('Sql_Server_Name')]",
-            "apiVersion": "2018-06-01",
+            "name": "[parameters('sqlServerName')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM_Size')]"
+                    "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftSQLServer",
                         "offer": "SQL2022-WS2022",
-                        "sku": "[parameters('Sql_Server_Edition')]",
+                        "sku": "[parameters('sqlServerEdition')]",
                         "version": "latest"
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('Sql_Server_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('sqlServerName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('OS_Disk_Type')]"
+                            "storageAccountType": "[parameters('vmOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('OS_Disk_Size')]"
+                        "diskSizeGB": "[parameters('vmOsDiskSizeGb')]"
                     },
                     "dataDisks": [
                         {
@@ -144,16 +156,16 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "[parameters('Data_Disk_Type')]"
+                                "storageAccountType": "[parameters('vmDataDiskType')]"
                             },
-                            "diskSizeGB": "[parameters('Data_Disk_Size')]"
+                            "diskSizeGB": "[parameters('vmDataDiskSizeGb')]"
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('Sql_Server_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "computerName": "[parameters('sqlServerName')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
+                    "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -173,7 +185,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
+                        "storageUri": "[concat('https://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -184,7 +196,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nic')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -192,10 +204,10 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('IP_Address')]",
+                            "privateIPAddress": "[parameters('privateIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[parameters('SubnetResourceId')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -215,8 +227,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('Sql_Server_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "name": "[concat(parameters('sqlServerName'), '/', 'bginfo')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -226,57 +238,57 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlServerName'))]"
             ]
         },
         {
-            "name": "[parameters('Sql_Server_Name')]",
+            "name": "[parameters('sqlServerName')]",
             "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
-            "apiVersion": "2017-03-01-preview",
+            "apiVersion": "2021-11-01-preview",
             "location": "[resourceGroup().location]",
             "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]",
+                "sqlServerLicenseType": "PAYG",
                 "sqlManagement": "Full",
-                "SqlServerLicenseType": "PAYG",
-                "AutoPatchingSettings": {
-                    "Enable": true,
-                    "DayOfWeek": "Sunday",
-                    "MaintenanceWindowStartingHour": "2",
-                    "MaintenanceWindowDuration": "60"
+                "autoPatchingSettings": {
+                    "dayOfWeek": "Sunday",
+                    "enable": true,
+                    "maintenanceWindowDuration": 60,
+                    "maintenanceWindowStartingHour": 2
                 },
-                "KeyVaultCredentialSettings": {
-                    "Enable": false,
-                    "CredentialName": ""
+                "keyVaultCredentialSettings": {
+                    "enable": false,
+                    "credentialName": ""
                 },
-                "StorageConfigurationSettings": {
-                    "DiskConfigurationType": "NEW",
-                    "StorageWorkloadType": "GENERAL",
-                    "SQLDataSettings": {
-                        "LUNs": "[variables('sqlDisksLUNs')]",
-                        "DefaultFilePath": "F:\\data"
+                "serverConfigurationsManagementSettings": {
+                    "additionalFeaturesServerConfigurations": {
+                        "isRServicesEnabled": false
                     },
-                    "SQLLogSettings": {
-                        "LUNs": "[variables('sqlDisksLUNs')]",
-                        "DefaultFilePath": "F:\\log"
-                    },
-                    "SQLTempDbSettings": {
-                        "DefaultFilePath": "D:\\tempDb"
+                    "sqlConnectivityUpdateSettings": {
+                        "connectivityType": "Private",
+                        "port": "[parameters('sqlServerConnectionPort')]",
+                        "sqlAuthUpdateUserName": "[parameters('sqlDbAdministratorUsername')]",
+                        "sqlAuthUpdatePassword": "[parameters('sqlDbAdministratorPassword')]"
                     }
                 },
-                "ServerConfigurationsManagementSettings": {
-                    "SQLConnectivityUpdateSettings": {
-                        "ConnectivityType": "Private",
-                        "Port": "[parameters('Sql_Connection_Port')]",
-                        "SQLAuthUpdateUserName": "[parameters('Db_Admin_Username')]",
-                        "SQLAuthUpdatePassword": "[parameters('Db_Admin_Password')]"
+                "storageConfigurationSettings": {
+                    "diskConfigurationType": "NEW",
+                    "sqlDataSettings": {
+                        "defaultFilePath": "F:\\data",
+                        "luns": "[variables('sqlDisksLUNs')]"
                     },
-                    "AdditionalFeaturesServerConfigurations": {
-                        "IsRServicesEnabled": "false"
-                    }
-                }
+                    "sqlLogSettings": {
+                        "defaultFilePath": "F:\\log",
+                        "luns": "[variables('sqlDisksLUNs')]"
+                    },
+                    "sqlTempDbSettings": {
+                        "defaultFilePath": "D:\\tempDb"
+                    },
+                    "storageWorkloadType": "GENERAL"
+                },
+                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlServerName'))]"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlServerName'))]"
             ]
         }
     ]

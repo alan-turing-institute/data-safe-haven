@@ -8,7 +8,7 @@
                 "description": "Password for domain administrator"
             }
         },
-        "administratorUser": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
                 "description": "Username for domain administrator"
@@ -114,13 +114,13 @@
     "variables": {
         "npsnic": "[concat(parameters('npsVmName'),'-','NIC')]",
         "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
+        "subnetId": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('npsVmName')]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -161,7 +161,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('npsHostName')]",
-                    "adminUsername": "[parameters('administratorUser')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
@@ -205,7 +205,7 @@
                             "privateIPAddress": "[parameters('npsIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[variables('subnet')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"

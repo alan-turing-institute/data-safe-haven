@@ -141,7 +141,7 @@ $safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 Add-LogMessage -Level Info "Deploying domain controllers from template..."
 $params = @{
     administratorPassword           = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    administratorUser               = $domainAdminUsername
+    administratorUsername           = $domainAdminUsername
     bootDiagnosticsAccountName      = $config.storage.bootdiagnostics.accountName
     dc1HostName                     = $config.dc.hostname
     dc1IpAddress                    = $config.dc.ip
