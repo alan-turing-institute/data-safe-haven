@@ -17,7 +17,7 @@
   - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
   - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 - `Microsoft Remote Desktop`
-  - On macOS this can be installed from the [Apple store](https://apps.apple.com)
+  - On macOS this can be installed from the [Apple store](https://www.apple.com/app-store/)
 - `OpenSSL`
   - Install using your package manager of choice
 

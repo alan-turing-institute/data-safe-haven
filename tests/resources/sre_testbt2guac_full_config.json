@@ -2,11 +2,8 @@
   "shm": {
     "azureAdminGroupName": "Safe Haven Test Admins",
     "dc": {
+      "adDirectory": "C:\\ActiveDirectory",
       "disks": {
-        "data": {
-          "sizeGb": "20",
-          "type": "Standard_LRS"
-        },
         "os": {
           "sizeGb": "128",
           "type": "Standard_LRS"
@@ -25,21 +22,10 @@
       "vmSize": "Standard_D2s_v3"
     },
     "dcb": {
-      "disks": {
-        "data": {
-          "sizeGb": "20",
-          "type": "Standard_LRS"
-        },
-        "os": {
-          "sizeGb": "128",
-          "type": "Standard_LRS"
-        }
-      },
       "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
       "hostname": "DC2-SHM-TESTB",
       "ip": "10.0.0.5",
-      "vmName": "DC2-SHM-TESTB",
-      "vmSize": "Standard_D2s_v3"
+      "vmName": "DC2-SHM-TESTB"
     },
     "dns": {
       "rg": "RG_SHM_DNS_TEST",

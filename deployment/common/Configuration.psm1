@@ -378,13 +378,10 @@ function Get-ShmConfig {
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         installationDirectory      = "C:\Installation"
+        adDirectory                = "C:\ActiveDirectory"
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
-            data = [ordered]@{
-                sizeGb = "20"
-                type   = "Standard_LRS"
-            }
-            os   = [ordered]@{
+            os = [ordered]@{
                 sizeGb = "128"
                 type   = "Standard_LRS"
             }
@@ -396,20 +393,9 @@ function Get-ShmConfig {
     $hostname = "DC2-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
     $shm.dcb = [ordered]@{
         vmName   = $hostname
-        vmSize   = "Standard_D2s_v3"
         hostname = $hostname
         fqdn     = "${hostname}.$($shm.domain.fqdn)"
         ip       = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
-        disks    = [ordered]@{
-            data = [ordered]@{
-                sizeGb = "20"
-                type   = "Standard_LRS"
-            }
-            os   = [ordered]@{
-                sizeGb = "128"
-                type   = "Standard_LRS"
-            }
-        }
     }
 
     # NPS config

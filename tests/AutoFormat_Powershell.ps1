@@ -18,7 +18,7 @@ $CodeRootPath = $TargetPath ? $TargetPath : (Join-Path -Path (Get-Item $PSScript
 # ------------------
 $FileExtensions = @("*.ps1", "*.psm1", "*.psd1")
 $SettingsPath = Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath ".PSScriptFormatterSettings.psd1"
-$PowershellFilePaths = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | Select-Object -ExpandProperty FullName | Where-Object { ($_ -notmatch "shm-dc1-setup-scripts") -and ($_ -notmatch "shm-dc2-setup-scripts") } )
+$PowershellFilePaths = @(Get-ChildItem -Path $CodeRootPath -Include $FileExtensions -Recurse | Select-Object -ExpandProperty FullName)
 
 
 # Run Invoke-Formatter on all files
