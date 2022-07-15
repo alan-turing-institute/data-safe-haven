@@ -192,6 +192,8 @@ $params = @{
     DomainNetBiosName             = $config.domain.netbiosName
     DomainOusB64                  = $config.domain.ous | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     DomainSecurityGroupsB64       = $config.domain.securityGroups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ExternalDnsResolver           = $config.dc.external_dns_resolver
+    IdentitySubnetCidr            = $config.network.vnet.subnets.identity.cidr
     SafeModeCredentials           = $safeModeCredentials
     UserAccountsB64               = $userAccounts | ConvertTo-Json -Depth 99 | ConvertTo-Base64
 }
@@ -217,27 +219,14 @@ $null = Invoke-AzureVmDesiredState -ArchiveBlobName "ConfigureSecondaryDomainCon
                                    @commonDscParams
 
 
-# Configure the domain controllers and set their DNS resolution
-# -------------------------------------------------------------
+# Set DNS servers for each network card then set locale and apply updates
+# -----------------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-    # Configure DNS to forward requests to the Azure DNS resolver
-    $params = @{
-        ExternalDnsResolver = $config.dc.external_dns_resolver
-        IdentitySubnetCidr  = $config.network.vnet.subnets.identity.cidr
-    }
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "ConfigureDNS.ps1"
-    $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
-
     # Remove custom per-NIC DNS settings
     $networkCard = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
     $networkCard.DnsSettings.DnsServers.Clear()
     $null = $networkCard | Set-AzNetworkInterface
-}
 
-
-# Finally set locale and apply updates
-# -------------------------------------------------------------
-foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverFqdns)[0] -AdditionalPowershellModules "MSOnline"

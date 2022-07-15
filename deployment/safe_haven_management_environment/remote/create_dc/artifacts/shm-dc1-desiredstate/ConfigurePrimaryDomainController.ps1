@@ -654,6 +654,58 @@ configuration ApplyGroupPolicies {
     }
 }
 
+configuration ConfigureDns {
+    param (
+        [Parameter(Mandatory=$true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ExternalDnsResolver,
+
+        [Parameter(Mandatory=$true, HelpMessage = "IP addresses for the domain controllers")]
+        [ValidateNotNullOrEmpty()]
+        [string]$IdentitySubnetCidr
+    )
+
+    Import-DscResource -ModuleName DnsServerDsc
+
+    # # Construct variables for passing to DSC configurations
+    $IpOctets = $IdentitySubnetCidr.Split(".")
+    $ZoneName = "$($IpOctets[2]).$($IpOctets[1]).$($IpOctets[0]).in-addr.arpa"
+
+    Node localhost {
+        # Use Microsoft Azure DNS server for resolving external addresses
+        DnsServerForwarder DnsServerForwarder {
+            IPAddresses      = @($ExternalDnsResolver)
+            IsSingleInstance = "Yes"
+        }
+
+        # Ensure that reverse lookup zone exists
+        Script ReverseLookupZone {
+            SetScript  = {
+                try {
+                    Write-Verbose -Verbose "Creating reverse-lookup zone for '$using:IdentitySubnetCidr'..."
+                    Add-DnsServerPrimaryZone -NetworkID $using:IdentitySubnetCidr -ReplicationScope "Forest"
+                    if ($?) {
+                        Write-Verbose -Verbose "Successfully created reverse-lookup zone for '$using:IdentitySubnetCidr'"
+                    } else {
+                        throw "Failed to create reverse-lookup zone for '$using:IdentitySubnetCidr'!"
+                    }
+                } catch {
+                    Write-Error "ReverseLookupZone: $($_.Exception)"
+                }
+            }
+            GetScript  = { @{} }
+            TestScript = {
+                if (Get-DnsServerZone -Name $using:ZoneName -ErrorAction SilentlyContinue | Where-Object { $_.IsReverseLookupZone }) {
+                    Write-Verbose -Verbose "Reverse-lookup zone for '$using:IdentitySubnetCidr' already exists"
+                    return $true
+                }
+                return $false
+             }
+            DependsOn  = "[Script]ImportGroupPolicies"
+        }
+    }
+}
+
 
 configuration ConfigurePrimaryDomainController {
     param (
@@ -704,6 +756,14 @@ configuration ConfigurePrimaryDomainController {
         [Parameter(Mandatory=$true, HelpMessage = "Base64-encoded security groups")]
         [ValidateNotNullOrEmpty()]
         [string]$DomainSecurityGroupsB64,
+
+        [Parameter(Mandatory=$true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ExternalDnsResolver,
+
+        [Parameter(Mandatory=$true, HelpMessage = "IP addresses for the domain controllers")]
+        [ValidateNotNullOrEmpty()]
+        [string]$IdentitySubnetCidr,
 
         [Parameter(Mandatory=$true, HelpMessage = "VM administrator safe mode credentials")]
         [ValidateNotNullOrEmpty()]
