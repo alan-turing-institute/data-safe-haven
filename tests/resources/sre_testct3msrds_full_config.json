@@ -5,7 +5,7 @@
       "adDirectory": "C:\\ActiveDirectory",
       "disks": {
         "os": {
-          "sizeGb": "128",
+          "sizeGb": "64",
           "type": "Standard_LRS"
         }
       },
@@ -279,12 +279,8 @@
     "nps": {
       "adminPasswordSecretName": "shm-testc-vm-admin-password-nps",
       "disks": {
-        "data": {
-          "sizeGb": "20",
-          "type": "Standard_LRS"
-        },
         "os": {
-          "sizeGb": "128",
+          "sizeGb": "64",
           "type": "Standard_LRS"
         }
       },
@@ -467,7 +463,7 @@
         "enableSSIS": true,
         "ip": "10.163.3.4",
         "port": "1433",
-        "sku": "sqldev",
+        "sku": "sqldev-gen2",
         "subnet": "databases",
         "type": "MSSQL",
         "vmName": "MSSQL-T3MSRDS",

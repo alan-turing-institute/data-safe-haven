@@ -87,21 +87,23 @@ foreach ($keyName in $config.sre.databases.Keys) {
         # Create SQL server from template
         Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
         $params = @{
-            Administrator_Password       = $vmAdminPasswordSecure
-            Administrator_User           = $vmAdminUsername
-            BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-            Data_Disk_Size               = $databaseCfg.disks.data.sizeGb
-            Data_Disk_Type               = $databaseCfg.disks.data.type
-            Db_Admin_Password            = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
-            Db_Admin_Username            = $dbAdminUsername
-            IP_Address                   = $deploymentIpAddress
-            OS_Disk_Size                 = $databaseCfg.disks.os.sizeGb
-            OS_Disk_Type                 = $databaseCfg.disks.os.type
-            Sql_Connection_Port          = $databaseCfg.port
-            Sql_Server_Name              = $databaseCfg.vmName
-            Sql_Server_Edition           = $databaseCfg.sku
-            SubnetResourceId             = $deploymentSubnet.Id
-            VM_Size                      = $databaseCfg.vmSize
+            administratorPassword           = $vmAdminPasswordSecure
+            administratorUsername           = $vmAdminUsername
+            bootDiagnosticsAccountName      = $config.sre.storage.bootdiagnostics.accountName
+            privateIpAddress                = $deploymentIpAddress
+            sqlDbAdministratorPassword      = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
+            sqlDbAdministratorUsername      = $dbAdminUsername
+            sqlServerConnectionPort         = $databaseCfg.port
+            sqlServerEdition                = $databaseCfg.sku
+            sqlServerName                   = $databaseCfg.vmName
+            virtualNetworkName              = $virtualNetwork.Name
+            virtualNetworkResourceGroupName = $config.sre.network.vnet.rg
+            virtualNetworkSubnetName        = $config.sre.network.vnet.subnets.deployment.name
+            vmDataDiskSizeGb                = $databaseCfg.disks.data.sizeGb
+            vmDataDiskType                  = $databaseCfg.disks.data.type
+            vmOsDiskSizeGb                  = $databaseCfg.disks.os.sizeGb
+            vmOsDiskType                    = $databaseCfg.disks.os.type
+            vmSize                          = $databaseCfg.vmSize
         }
         Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 

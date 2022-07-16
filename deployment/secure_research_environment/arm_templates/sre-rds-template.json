@@ -1,223 +1,218 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_User": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for VM Administrator"
             }
         },
-        "BootDiagnostics_Account_Name": {
+        "bootDiagnosticsAccountName": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "Domain_Join_Password_Gateway": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for DC Administrator Password"
-            }
-        },
-        "Domain_Join_Password_Session_Hosts": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for DC Administrator Password"
-            }
-        },
-        "Domain_Join_User_Gateway": {
+        "domainName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for DC Administrator"
+                "Description": "Public domain name for the SHM"
             }
         },
-        "Domain_Join_User_Session_Hosts": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for DC Administrator"
-            }
-        },
-        "Domain_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter Domain Name"
-            }
-        },
-        "OU_Path_Gateway": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter OU path for gateway VMs"
-            }
-        },
-        "OU_Path_Session_Hosts": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter OU path for session host VMs"
-            }
-        },
-        "RDS_Gateway_Admin_Password": {
+        "gatewayAdministratorPassword": {
             "type": "securestring",
             "metadata": {
                 "description": "Password for RDS gateway"
             }
         },
-        "RDS_Gateway_Data_Disk_Size_GB": {
+        "gatewayDataDiskSizeGb": {
             "type": "int"
         },
-        "RDS_Gateway_Data_Disk_Type": {
+        "gatewayDataDiskType": {
             "type": "string"
         },
-        "RDS_Gateway_IP_Address": {
+        "gatewayDomainJoinOuPath": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for gateway VMs"
+            }
+        },
+        "gatewayDomainJoinPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "gatewayDomainJoinUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
+        "gatewayNsgName": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter NSG Gateway Name"
+            }
+        },
+        "gatewayOsDiskSizeGb": {
+            "type": "int"
+        },
+        "gatewayOsDiskType": {
+            "type": "string"
+        },
+        "gatewayPrivateIpAddress": {
             "type": "string",
             "defaultValue": "10.250.x.250",
             "metadata": {
                 "description": "Enter IP address for RDS Gateway VM, must end in 250"
             }
         },
-        "RDS_Gateway_Name": {
+        "gatewayVmName": {
             "type": "string",
             "metadata": {
                 "description": "Name of the RDS gateway VM"
             }
         },
-        "RDS_Gateway_NSG_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter NSG Gateway Name"
-            }
-        },
-        "RDS_Gateway_Os_Disk_Size_GB": {
-            "type": "int"
-        },
-        "RDS_Gateway_Os_Disk_Type": {
-            "type": "string"
-        },
-        "RDS_Gateway_Subnet_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the subnet that the RDS gateway should belong to"
-            }
-        },
-        "RDS_Gateway_VM_Size": {
+        "gatewayVmSize": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
             "metadata": {
                 "description": "Select size of RDS Gateway VM"
             }
         },
-        "RDS_Session_Host_Apps_Admin_Password": {
+
+        "sessionHostAppsAdministratorPassword": {
             "type": "securestring",
             "metadata": {
                 "description": "Password for RDS gateway"
             }
         },
-        "RDS_Session_Host_Apps_IP_Address": {
+        "sessionHostAppsOsDiskSizeGb": {
+            "type": "int"
+        },
+        "sessionHostAppsOsDiskType": {
+            "type": "string"
+        },
+        "sessionHostAppsPrivateIpAddress": {
             "type": "string",
             "defaultValue": "10.250.x.249",
             "metadata": {
                 "description": "Enter IP address for RDS_Session_Host_Apps VM, must end in 249"
             }
         },
-        "RDS_Session_Host_Apps_Name": {
+        "sessionHostAppsVmName": {
             "type": "string",
             "metadata": {
                 "description": "Name of the RDS apps session host VM"
             }
         },
-        "RDS_Session_Host_Apps_Os_Disk_Size_GB": {
-            "type": "int"
-        },
-        "RDS_Session_Host_Apps_Os_Disk_Type": {
-            "type": "string"
-        },
-        "RDS_Session_Host_Apps_VM_Size": {
+        "sessionHostAppsVmSize": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
             "metadata": {
                 "description": "Select size of RDS_Session_Host_Apps VM"
             }
         },
-        "RDS_Session_Host_Subnet_Name": {
+        "sessionHostsDomainJoinOuPath": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for session host VMs"
+            }
+        },
+        "sessionHostsDomainJoinPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "sessionHostsDomainJoinUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
+        "virtualNetworkGatewaySubnetName": {
             "type": "string",
             "metadata": {
                 "description": "Name of the subnet that the RDS gateway should belong to"
             }
         },
-        "SRE_ID": {
+        "virtualNetworkName": {
             "type": "string",
             "metadata": {
-                "description": "Enter ID for SRE e.g. 'testsandbox'"
+                "description": "Name of virtual network to provision these VMs"
             }
         },
-        "Virtual_Network_Name": {
+        "virtualNetworkResourceGroupName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of virtual network to provision this VM"
+                "description": "Name of resource group that is associated with the virtual network above"
             }
         },
-        "Virtual_Network_Resource_Group": {
+        "virtualNetworkSessionHostsSubnetName": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of resource group that is assoicated with the virtual network above"
+                "description": "Name of the subnet that the RDS gateway should belong to"
             }
-        }
+        },
     },
     "variables": {
-        "rdsGatewayNic": "[concat(parameters('RDS_Gateway_Name'),'-','NIC')]",
-        "rdsAppSessionHostNic": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-','NIC')]",
-        "rdsGatewayPip": "[concat(parameters('RDS_Gateway_Name'),'-','PIP')]",
-        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-        "rdsGatewaySubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Gateway_Subnet_Name'))]",
-        "rdsServersSubnet": "[concat(variables('vnetID'),'/subnets/', parameters('RDS_Session_Host_Subnet_Name'))]"
+        "rdsGatewayNic": "[concat(parameters('gatewayVmName'),'-','NIC')]",
+        "rdsAppSessionHostNic": "[concat(parameters('sessionHostAppsVmName'),'-','NIC')]",
+        "rdsGatewayPip": "[concat(parameters('gatewayVmName'),'-','PIP')]",
+        "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "rdsGatewaySubnet": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkGatewaySubnetName'))]",
+        "rdsServersSubnet": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSessionHostsSubnetName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('RDS_Gateway_Name')]",
-            "apiVersion": "2018-06-01",
+            "name": "[parameters('gatewayVmName')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('RDS_Gateway_VM_Size')]"
+                    "vmSize": "[parameters('gatewayVmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('RDS_Gateway_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('gatewayVmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('RDS_Gateway_Os_Disk_Type')]"
+                            "storageAccountType": "[parameters('gatewayOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('RDS_Gateway_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[parameters('gatewayOsDiskSizeGb')]"
                     },
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK')]",
+                            "name": "[concat(parameters('gatewayVmName'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "[parameters('RDS_Gateway_Data_Disk_Type')]"
+                                "storageAccountType": "[parameters('gatewayDataDiskType')]"
                             },
-                            "diskSizeGB": "[parameters('RDS_Gateway_Data_Disk_Size_GB')]"
+                            "diskSizeGB": "[parameters('gatewayDataDiskSizeGb')]"
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('RDS_Gateway_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('RDS_Gateway_Admin_Password')]",
+                    "computerName": "[parameters('gatewayVmName')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
+                    "adminPassword": "[parameters('gatewayAdministratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -238,7 +233,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
+                        "storageUri": "[concat('https://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -248,38 +243,38 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('RDS_Session_Host_Apps_Name')]",
-            "apiVersion": "2018-06-01",
+            "name": "[parameters('sessionHostAppsVmName')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('RDS_Session_Host_Apps_VM_Size')]"
+                    "vmSize": "[parameters('sessionHostAppsVmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('sessionHostAppsVmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('RDS_Session_Host_Apps_Os_Disk_Type')]"
+                            "storageAccountType": "[parameters('sessionHostAppsOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('RDS_Session_Host_Apps_Os_Disk_Size_GB')]"
+                        "diskSizeGB": "[parameters('sessionHostAppsOsDiskSizeGb')]"
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "[parameters('RDS_Session_Host_Apps_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('RDS_Session_Host_Apps_Admin_Password')]",
+                    "computerName": "[parameters('sessionHostAppsVmName')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
+                    "adminPassword": "[parameters('sessionHostAppsAdministratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -300,7 +295,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
+                        "storageUri": "[concat('https://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -311,7 +306,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('rdsAppSessionHostNic')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -319,7 +314,7 @@
                     {
                         "name": "ipConfigRdsAppSessionHost",
                         "properties": {
-                            "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
+                            "privateIPAddress": "[parameters('sessionHostAppsPrivateIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('rdsServersSubnet')]"
@@ -343,7 +338,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('rdsGatewayNic')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -351,7 +346,7 @@
                     {
                         "name": "ipConfigRdsGateway",
                         "properties": {
-                            "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
+                            "privateIPAddress": "[parameters('gatewayPrivateIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "publicIPAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdsGatewayPip'))]"
@@ -371,7 +366,7 @@
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
-                    "id": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/networkSecurityGroups', parameters('RDS_Gateway_NSG_Name'))]"
+                    "id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/networkSecurityGroups', parameters('gatewayNsgName'))]"
                 },
                 "primary": true,
                 "tapConfigurations": []
@@ -387,7 +382,7 @@
                 "tier": "Regional"
             },
             "name": "[variables('rdsGatewayPip')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -400,8 +395,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Gateway_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "name": "[concat(parameters('gatewayVmName'), '/', 'bginfo')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -411,13 +406,13 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Gateway_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('gatewayVmName'))]"
             ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Session_Host_Apps_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "name": "[concat(parameters('sessionHostAppsVmName'), '/', 'bginfo')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -427,17 +422,17 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Session_Host_Apps_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('sessionHostAppsVmName'))]"
             ]
         },
         {
-            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Gateway_Name'),'/joindomain')]",
+            "name": "[concat(parameters('gatewayVmName'),'/joindomain')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Gateway_Name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('RDS_Gateway_Name'),'bginfo')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('gatewayVmName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('gatewayVmName'),'bginfo')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",
@@ -445,25 +440,25 @@
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path_Gateway')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Gateway'))]",
+                    "Name": "[parameters('domainName')]",
+                    "OUPath": "[parameters('gatewayDomainJoinOuPath')]",
+                    "User": "[concat(parameters('domainName'), '\\', parameters('gatewayDomainJoinUser'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password_Gateway')]"
+                    "Password": "[parameters('gatewayDomainJoinPassword')]"
                 }
             }
         },
         {
-            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('RDS_Session_Host_Apps_Name'),'/joindomain')]",
+            "name": "[concat(parameters('sessionHostAppsVmName'),'/joindomain')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('RDS_Session_Host_Apps_Name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('RDS_Session_Host_Apps_Name'),'bginfo')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('sessionHostAppsVmName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('sessionHostAppsVmName'),'bginfo')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",
@@ -471,14 +466,14 @@
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
+                    "Name": "[parameters('domainName')]",
+                    "OUPath": "[parameters('sessionHostsDomainJoinOuPath')]",
+                    "User": "[concat(parameters('domainName'), '\\', parameters('sessionHostsDomainJoinUser'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
+                    "Password": "[parameters('sessionHostsDomainJoinPassword')]"
                 }
             }
         }

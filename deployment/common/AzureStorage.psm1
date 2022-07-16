@@ -531,3 +531,33 @@ function Set-StorageNfsShareQuota {
     }
 }
 Export-ModuleMember -Function Set-StorageNfsShareQuota
+
+
+# Create an Azure blob from a URI
+# -------------------------------
+function Set-AzStorageBlobFromUri {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "URI to file to copy")]
+        [string]$FileUri,
+        [Parameter(Mandatory = $false, HelpMessage = "Filename to upload to")]
+        [string]$BlobFilename,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the destination container")]
+        [string]$StorageContainer,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage context for the destination storage account")]
+        [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IStorageContext]$StorageContext
+    )
+    # Note that Start-AzStorageBlobCopy exists but is asynchronous and can stall
+    if (-not $BlobFilename) {
+        $BlobFilename = $FileUri -split "/" | Select-Object -Last 1
+    }
+    $tempFolder = New-Item -Type Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) (New-Guid))
+    # Suppress progress bars
+    $ProgressPreferenceOld = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue"
+    $null = Invoke-WebRequest -Uri $FileUri -OutFile (Join-Path $tempFolder $BlobFilename)
+    $null = Set-AzStorageBlobContent -Container $StorageContainer -Context $StorageContext -File (Join-Path $tempFolder $BlobFilename) -Force
+    $ProgressPreference = $ProgressPreferenceOld
+    # Remove temporary directory
+    Remove-Item -Recurse $tempFolder
+}
+Export-ModuleMember -Function Set-AzStorageBlobFromUri

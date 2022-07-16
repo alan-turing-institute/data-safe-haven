@@ -8,7 +8,7 @@
                 "description": "Password for domain administrator"
             }
         },
-        "administratorUser": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
                 "description": "Username for domain administrator"
@@ -110,7 +110,7 @@
         "dc2nic": "[concat(parameters('dc2VmName'),'-','NIC')]",
         "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('shmId')), '-VM-DC')]",
         "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-        "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('virtualNetworkSubnetName'))]"
+        "subnetId": "[concat(variables('vnetID'), '/subnets/', parameters('virtualNetworkSubnetName'))]"
     },
     "resources": [
         {
@@ -130,7 +130,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('dc1VmName')]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -161,7 +161,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('dc1HostName')]",
-                    "adminUsername": "[parameters('administratorUser')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
@@ -205,7 +205,7 @@
                             "privateIPAddress": "[parameters('dc1IpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[variables('subnet')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -241,7 +241,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('dc2VmName')]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -272,7 +272,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('dc2HostName')]",
-                    "adminUsername": "[parameters('administratorUser')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
@@ -316,7 +316,7 @@
                             "privateIPAddress": "[parameters('dc2IpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[variables('subnet')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"

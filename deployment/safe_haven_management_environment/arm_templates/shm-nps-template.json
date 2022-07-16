@@ -8,7 +8,7 @@
                 "description": "Password for domain administrator"
             }
         },
-        "administratorUser": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
                 "description": "Username for domain administrator"
@@ -44,54 +44,6 @@
                 "Description": "Public domain name for the SHM"
             }
         },
-        "npsDataDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of NPS data disk in GB"
-            }
-        },
-        "npsDataDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of NPS data disk"
-            }
-        },
-        "npsHostName": {
-            "type": "string",
-            "metadata": {
-                "description": "Hostname for NPS"
-            }
-        },
-        "npsIpAddress": {
-            "type": "string",
-            "metadata": {
-                "description": "Private IP address for NPS"
-            }
-        },
-        "npsOsDiskSizeGb": {
-            "type": "int",
-            "metadata": {
-                "description": "Size of NPS OS disk in GB"
-            }
-        },
-        "npsOsDiskType": {
-            "type": "string",
-            "metadata": {
-                "description": "Type of NPS OS disk"
-            }
-        },
-        "npsVmName": {
-            "type": "string",
-            "metadata": {
-                "description": "VM name of NPS"
-            }
-        },
-        "npsVmSize": {
-            "type": "string",
-            "metadata": {
-                "description": "VM size of NPS"
-            }
-        },
         "virtualNetworkName": {
             "type": "string",
             "metadata": {
@@ -109,59 +61,82 @@
             "metadata": {
                 "description": "Name of subnet where you want to provision this VM"
             }
+        },
+        "vmHostName": {
+            "type": "string",
+            "metadata": {
+                "description": "Hostname for NPS"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM name of NPS"
+            }
+        },
+        "vmOsDiskSizeGb": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of NPS OS disk in GB"
+            }
+        },
+        "vmOsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of NPS OS disk"
+            }
+        },
+        "vmPrivateIpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Private IP address for NPS"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "VM size of NPS"
+            }
         }
     },
     "variables": {
-        "npsnic": "[concat(parameters('npsVmName'),'-','NIC')]",
+        "npsnic": "[concat(parameters('vmName'),'-','NIC')]",
         "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
+        "subnetId": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('npsVmName')]",
-            "apiVersion": "2019-07-01",
+            "name": "[parameters('vmName')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('npsVmSize')]"
+                    "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('npsVmName'),'-OS-DISK')]",
+                        "name": "[concat(parameters('vmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('npsOsDiskType')]"
+                            "storageAccountType": "[parameters('vmOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('npsOsDiskSizeGb')]"
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat(parameters('npsVmName'), '-DATA-DISK')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('npsDataDiskType')]"
-                            },
-                            "diskSizeGB": "[parameters('npsDataDiskSizeGb')]"
-                        }
-                    ]
+                        "diskSizeGB": "[parameters('vmOsDiskSizeGb')]"
+                    }
                 },
                 "osProfile": {
-                    "computerName": "[parameters('npsHostName')]",
-                    "adminUsername": "[parameters('administratorUser')]",
+                    "computerName": "[parameters('vmHostName')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
@@ -202,10 +177,10 @@
                         {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('npsIpAddress')]",
+                            "privateIPAddress": "[parameters('vmPrivateIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[variables('subnet')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -225,7 +200,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('npsVmName'), '/', 'bginfo')]",
+            "name": "[concat(parameters('vmName'), '/', 'bginfo')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -236,17 +211,17 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('npsVmName'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
             ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('npsVmName'),'/joindomain')]",
+            "name": "[concat(parameters('vmName'),'/joindomain')]",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('npsVmName'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('npsVmName'),'bginfo')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'),'bginfo')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",

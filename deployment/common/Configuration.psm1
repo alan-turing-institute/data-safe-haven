@@ -382,7 +382,7 @@ function Get-ShmConfig {
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
         disks                      = [ordered]@{
             os = [ordered]@{
-                sizeGb = "128"
+                sizeGb = "64"
                 type   = "Standard_LRS"
             }
         }
@@ -410,12 +410,8 @@ function Get-ShmConfig {
         ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
         installationDirectory   = "C:\Installation"
         disks                   = [ordered]@{
-            data = [ordered]@{
-                sizeGb = "20"
-                type   = "Standard_LRS"
-            }
-            os   = [ordered]@{
-                sizeGb = "128"
+            os = [ordered]@{
+                sizeGb = "64"
                 type   = "Standard_LRS"
             }
         }
@@ -961,7 +957,7 @@ function Get-SreConfig {
         rg = "$($config.sre.rgPrefix)_DATABASES".ToUpper()
     }
     $dbConfig = @{
-        MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev" }
+        MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev-gen2" }
         PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
     }
     $ipOffset = 4
