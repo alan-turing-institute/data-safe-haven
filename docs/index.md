@@ -28,7 +28,7 @@ If this sounds interesting to you, take a look at our GitHub releases: [![Data S
 
 ## Documentation structure
 
-The documentation for this project covers into several different topics.
+The documentation for this project covers several different topics.
 You can read them through in order or simply jump to the section that you are most interested in.
 
 - [**Introduction**](introduction/index.md)
