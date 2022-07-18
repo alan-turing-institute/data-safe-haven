@@ -1,6 +1,6 @@
 ## {{rocket}} Set up your account
 
-This section of the user guide will help you set up your new account on the SRE which you'll be using.
+This section of the user guide will help you set up your new account on the SRE you'll be using.
 
 ### {{seedling}} Prerequisites
 
