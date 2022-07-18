@@ -1075,7 +1075,7 @@ Therefore we will block access for all users other than Global Administrators.
 
 ```{error}
 Security defaults must be disabled in order to create this policy.
-This should have been done in done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
+This should have been done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
 (roles_system_deployer_shm_deploy_mirrors)=
