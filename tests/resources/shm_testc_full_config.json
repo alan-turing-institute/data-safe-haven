@@ -4,7 +4,7 @@
     "adDirectory": "C:\\ActiveDirectory",
     "disks": {
       "os": {
-        "sizeGb": "64",
+        "sizeGb": "128",
         "type": "Standard_LRS"
       }
     },
@@ -279,7 +279,7 @@
     "adminPasswordSecretName": "shm-testc-vm-admin-password-nps",
     "disks": {
       "os": {
-        "sizeGb": "64",
+        "sizeGb": "128",
         "type": "Standard_LRS"
       }
     },
