@@ -206,11 +206,18 @@ function Get-ShmConfig {
         $shm.domain.securityGroups[$groupName].description = $shm.domain.securityGroups[$groupName].name
     }
 
+    # Automation config
+    # -----------------
+    $shm.automation = [ordered]@{
+        rg          = "$($shm.rgPrefix)_AUTOMATION".ToUpper()
+        accountName = "shm-$($shm.id)-automation".ToLower()
+    }
+
     # Logging config
     # --------------
     $shm.logging = [ordered]@{
         rg            = "$($shm.rgPrefix)_LOGGING".ToUpper()
-        workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower()
+        workspaceName = "shm$($shm.id)loganalytics".ToLower()
     }
 
     # Network config
