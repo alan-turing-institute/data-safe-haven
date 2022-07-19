@@ -1271,7 +1271,7 @@ Export-ModuleMember -Function Invoke-RemoteScript
 
 # Update and reboot a machine
 # ---------------------------
-function Invoke-WindowsConfigureAndUpdate {
+function Invoke-WindowsConfiguration {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
         [string]$VMName,
@@ -1301,7 +1301,7 @@ function Invoke-WindowsConfigureAndUpdate {
     # Reboot the VM
     Start-VM -Name $VMName -ResourceGroupName $ResourceGroupName -ForceRestart
 }
-Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
+Export-ModuleMember -Function Invoke-WindowsConfiguration
 
 
 # Create DNS Zone if it does not exist

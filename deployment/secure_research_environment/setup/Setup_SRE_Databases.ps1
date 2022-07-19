@@ -111,7 +111,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Set locale, install updates and reboot
         Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."
-        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
+        Invoke-WindowsConfiguration -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
 
         # Change subnets and IP address while the VM is off
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip

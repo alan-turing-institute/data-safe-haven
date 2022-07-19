@@ -99,10 +99,3 @@ if ($NTPServer) {
 } else {
     Write-Output " [x] Invalid NTP server '$NTPServer' provided!"
 }
-
-
-# Register Microsoft Update servers
-# ---------------------------------
-$LogFilePath = "C:\Windows\Logs\Powershell\WindowsUpdate.$((Get-Date -Format FileDateTime).Substring(0, 13)).log"
-$null = New-Item (Split-Path -Path $LogFilePath) -ItemType Directory -Force
-$null = Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false
