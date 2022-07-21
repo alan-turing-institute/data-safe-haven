@@ -35,7 +35,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 
 - `Microsoft Remote Desktop`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://www.apple.com/app-store/)
-  - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://www.microsoft.com/en-gb/p/microsoft-remote-desktop/9wzdncrfj3ps)
+  - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://apps.microsoft.com/store/detail/microsoft-remote-desktop/9WZDNCRFJ3PS)
   - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite remote desktop client
 - `OpenSSL`
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
