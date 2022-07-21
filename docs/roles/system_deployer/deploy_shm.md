@@ -1127,21 +1127,15 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 
 (roles_system_deployer_shm_deploy_logging)=
 
-## 14. {{chart_with_upwards_trend}} Deploy logging
+## 14. {{chart_with_upwards_trend}} Deploy monitoring
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> ./Setup_SHM_Logging.ps1 -shmId <SHM ID>
+PS> ./Setup_SHM_Monitoring.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-```{error}
-The API call that installs the logging extensions to the VMs times out after a few minutes, so you may get some extension installation failure messages.
-If so, try re-running the logging set up script.
-In most cases the extensions have actually been successfully installed.
-```
 
 (roles_system_deployer_shm_deploy_firewall)=
 

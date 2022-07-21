@@ -7,6 +7,7 @@ Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -19,15 +20,51 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Create logging resource group if it does not exist
-# --------------------------------------------------
+# Create resource groups if they do not exist
+# -------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.logging.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.automation.rg -Location $config.location
 
 
 # Deploy Log Analytics workspace
 # ------------------------------
 $workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
-$key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
+$workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
+
+
+# Deploy automation account
+# -------------------------
+$account = Deploy-AutomationAccount -Name $config.automation.accountName -ResourceGroupName $config.automation.rg -Location $config.location
+$null = Connect-AutomationAccountLogAnalytics -AutomationAccountName $account.AutomationAccountName -LogAnalyticsWorkspace $workspace
+$null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
+
+
+# Ensure all SHM VMs are registered with the logging workspace
+# This will also ensure they are registered for update management
+# ---------------------------------------------------------------
+$rgFilter = "RG_SHM_$($config.id)*"
+$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
+$VMs = @{ "Windows" = @(); "Linux" = @() }
+foreach ($shmResourceGroup in $shmResourceGroups) {
+    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
+        $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
+        if ($null -ne $vm.OSProfile.LinuxConfiguration) {
+            $VMs["Linux"] += $VM
+        } elseif ($null -ne $vm.OSProfile.WindowsConfiguration) {
+            $VMs["Windows"] += $VM
+        }
+    }
+}
+
+
+# Create Windows and Linux update schedules
+# -----------------------------------------
+# Register Windows VMs
+$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
+# Register Linux VMs
+$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
 
 
 # Enable the collection of syslog logs from Linux hosts
@@ -37,7 +74,7 @@ $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.logging.workspa
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
 #     - https://tools.ietf.org/html/rfc5424 (page 10)
 #     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
-$null = Enable-AzOperationalInsightsLinuxSyslogCollection -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
+$null = Enable-AzOperationalInsightsLinuxSyslogCollection -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name
 $facilities = @{
     "auth"     = "security/authorization messages";
     "authpriv" = "non-system authorization messages";
@@ -53,9 +90,9 @@ $facilities = @{
     "uucp"     = "UUCP subsystem";
 }
 # Delete all existing syslog sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'LinuxSysLog'
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'LinuxSysLog'
 foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
 }
 # Syslog severities:
 #   See
@@ -71,20 +108,19 @@ foreach ($source in $sources) {
 #   Informational: informational messages
 #   Debug:         debug-level messages
 foreach ($facility in $facilities.GetEnumerator()) {
-    $null = New-AzOperationalInsightsLinuxSyslogDataSource `
-            -ResourceGroupName $config.logging.rg `
-            -WorkspaceName $config.logging.workspaceName `
-            -Name "Linux-syslog-$($facility.Key)" `
-            -Facility $facility.Key `
-            -CollectEmergency `
-            -CollectAlert `
-            -CollectCritical `
-            -CollectError `
-            -CollectWarning `
-            -CollectNotice `
-            -CollectInformational `
-            -CollectDebug `
-            -Force
+    $null = New-AzOperationalInsightsLinuxSyslogDataSource -CollectAlert `
+                                                           -CollectCritical `
+                                                           -CollectDebug `
+                                                           -CollectEmergency `
+                                                           -CollectError `
+                                                           -CollectInformational `
+                                                           -CollectNotice `
+                                                           -CollectWarning `
+                                                           -Facility $facility.Key `
+                                                           -Force `
+                                                           -Name "Linux-syslog-$($facility.Key)" `
+                                                           -ResourceGroupName $workspace.ResourceGroupName `
+                                                           -WorkspaceName $workspace.Name
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$($facility.Key)' syslog facility [$($facility.Value)]."
     } else {
@@ -107,21 +143,20 @@ $eventLogNames = @(
 )
 
 # Delete all existing event log sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'WindowsEvent'
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsEvent'
 foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
 }
 
 foreach ($eventLogName in $eventLogNames) {
     $sourceName = "windows-event-$eventLogName".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $null = New-AzOperationalInsightsWindowsEventDataSource `
-            -Name $sourceName `
-            -ResourceGroupName $config.logging.rg `
-            -WorkspaceName $config.logging.workspaceName `
-            -EventLogName $eventLogName `
-            -CollectErrors `
-            -CollectWarnings `
-            -CollectInformation
+    $null = New-AzOperationalInsightsWindowsEventDataSource -CollectErrors `
+                                                            -CollectInformation `
+                                                            -CollectWarnings `
+                                                            -EventLogName $eventLogName `
+                                                            -Name $sourceName `
+                                                            -ResourceGroupName $workspace.ResourceGroupName `
+                                                            -WorkspaceName $workspace.Name
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$eventLogName'."
     } else {
@@ -149,21 +184,20 @@ $counters = @(
 )
 
 # Delete all existing performance counter log sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Kind 'WindowsPerformanceCounter'
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsPerformanceCounter'
 foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName -Name $source.Name -Force
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
 }
 
 foreach ($counter in $counters) {
     $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
-    $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource `
-            -Name $sourceName `
-            -ResourceGroupName $config.logging.rg `
-            -WorkspaceName $config.logging.workspaceName `
-            -ObjectName $counter.setName `
-            -InstanceName "*" `
-            -CounterName $counter.counterName `
-            -IntervalSeconds 60
+    $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource -CounterName $counter.counterName `
+                                                                         -InstanceName "*" `
+                                                                         -IntervalSeconds 60 `
+                                                                         -Name $sourceName `
+                                                                         -ObjectName $counter.setName `
+                                                                         -ResourceGroupName $workspace.ResourceGroupName `
+                                                                         -WorkspaceName $workspace.Name
     if ($?) {
         Add-LogMessage -Level Success "Logging activated for '$($counter.setName)/$($counter.counterName)'."
     } else {
@@ -197,13 +231,13 @@ $packNames = @(
 )
 
 # Ensure only the selected intelligence packs are enabled
-$packsAvailable = Get-AzOperationalInsightsIntelligencePack -ResourceGroupName $config.logging.rg -WorkspaceName $config.logging.workspaceName
+$packsAvailable = Get-AzOperationalInsightsIntelligencePack -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name
 foreach ($pack in $packsAvailable) {
     if ($pack.Name -in $packNames) {
         if ($pack.Enabled) {
             Add-LogMessage -Level InfoSuccess "'$($pack.Name)' Intelligence Pack already enabled."
         } else {
-            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $true
+            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $workspace.Name -ResourceGroupName $workspace.ResourceGroupName -Enabled $true
             if ($?) {
                 Add-LogMessage -Level Success "'$($pack.Name)' Intelligence Pack enabled."
             } else {
@@ -212,7 +246,7 @@ foreach ($pack in $packsAvailable) {
         }
     } else {
         if ($pack.Enabled) {
-            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Enabled $false
+            $null = Set-AzOperationalInsightsIntelligencePack -IntelligencePackName $pack.Name -WorkspaceName $workspace.Name -ResourceGroupName $workspace.ResourceGroupName -Enabled $false
             if ($?) {
                 Add-LogMessage -Level Success "'$($pack.Name)' Intelligence Pack disabled."
             } else {
@@ -221,16 +255,6 @@ foreach ($pack in $packsAvailable) {
         } else {
             Add-LogMessage -Level InfoSuccess "'$($pack.Name)' Intelligence Pack already disabled."
         }
-    }
-}
-
-# Ensure logging is active on all SHM VMs
-# ---------------------------------------
-$rgFilter = "RG_SHM_$($config.id)*"
-$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-foreach ($shmResourceGroup in $shmResourceGroups) {
-    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
-        $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
     }
 }
 
