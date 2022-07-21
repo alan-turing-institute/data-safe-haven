@@ -837,15 +837,15 @@ function Deploy-VirtualMachineMonitoringExtension {
             foreach ($i in 1..5) {
                 try {
                     Set-AzVMExtension -ExtensionName $type `
-                                    -ExtensionType $type `
-                                    -Location $VM.location `
-                                    -ProtectedSettings $ProtectedSettings `
-                                    -Publisher $publisher `
-                                    -ResourceGroupName $VM.ResourceGroupName `
-                                    -Settings $PublicSettings `
-                                    -TypeHandlerVersion $version `
-                                    -VMName $VM.Name `
-                                    -ErrorAction Stop
+                                      -ExtensionType $type `
+                                      -Location $VM.location `
+                                      -ProtectedSettings $ProtectedSettings `
+                                      -Publisher $publisher `
+                                      -ResourceGroupName $VM.ResourceGroupName `
+                                      -Settings $PublicSettings `
+                                      -TypeHandlerVersion $version `
+                                      -VMName $VM.Name `
+                                      -ErrorAction Stop
                     break
                 } catch {
                     Start-Sleep 10
