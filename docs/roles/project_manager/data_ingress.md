@@ -26,6 +26,5 @@ They should {ref}`reclassify <policy_data_classification_process>` the project -
 If ingress of new data would change the classification of a project, we suggest defining this as a new work package and deploying a new environment for it.
 ```
 
-You should ensure that the go through the
 At the end of this process they should have classified the work package into one of the Data Safe Haven security tiers.
 Follow the guide to [data ingress](data_ingress.md) to bring all necessary code and data into the secure research environment.
