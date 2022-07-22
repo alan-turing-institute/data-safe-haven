@@ -140,9 +140,6 @@
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
                         "enableAutomaticUpdates": false,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByPlatform"
-                        },
                         "provisionVMAgent": true
                     },
                     "secrets": [],

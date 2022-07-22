@@ -720,7 +720,7 @@ function Deploy-UbuntuVirtualMachine {
         } else {
             Add-LogMessage -Level Fatal "Could not determine which source image to use!"
         }
-        $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml -PatchMode "AutomaticByPlatform"
+        $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
         if (-not $NicId) {
             $NicId = (Deploy-VirtualMachineNIC -Name "${Name}-NIC" -ResourceGroupName $ResourceGroupName -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -Location $Location).Id
         }

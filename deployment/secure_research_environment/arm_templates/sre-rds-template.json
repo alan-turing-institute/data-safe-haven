@@ -215,9 +215,6 @@
                     "adminPassword": "[parameters('gatewayAdministratorPassword')]",
                     "windowsConfiguration": {
                         "enableAutomaticUpdates": true,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByPlatform"
-                        },
                         "provisionVMAgent": true
                     },
                     "secrets": [],
@@ -280,9 +277,6 @@
                     "adminPassword": "[parameters('sessionHostAppsAdministratorPassword')]",
                     "windowsConfiguration": {
                         "enableAutomaticUpdates": true,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByPlatform"
-                        },
                         "provisionVMAgent": true
                     },
                     "secrets": [],
