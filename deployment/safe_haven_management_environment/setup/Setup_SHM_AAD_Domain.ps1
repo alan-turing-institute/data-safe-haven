@@ -52,7 +52,7 @@ if ($aadDomain.IsVerified) {
     # Fetch TXT version of AAD domain verification record set
     $validationRecord = Get-MgDomainVerificationDnsRecord -DomainId $config.domain.fqdn | Where-Object { $_.RecordType -eq "Txt" }
     # Make a DNS TXT Record object containing the validation code
-    $validationCode = New-AzDnsRecordConfig -Value $validationRecord.Text
+    $validationCode = New-AzDnsRecordConfig -Value $validationRecord.AdditionalProperties.text
 
     # Check if this validation record already exists for the domain
     $recordSet = Get-AzDnsRecordSet -RecordType TXT -Name "@" -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -79,7 +79,6 @@ if ($aadDomain.IsVerified) {
     for ($tries = 1; $tries -le $maxTries; $tries++) {
         Confirm-MgDomain -DomainId $config.domain.fqdn | Out-Null
         Add-LogMessage -Level Info "Checking domain verification status on SHM AAD (attempt $tries of $maxTries)..."
-        # $aadDomain = Get-AzureADDomain -Name $config.domain.fqdn
         $aadDomain = Get-MgDomain -DomainId $config.domain.fqdn
         if ($aadDomain.IsVerified) {
             Add-LogMessage -Level Success "Domain '$($config.domain.fqdn)' is verified on SHM AAD."
