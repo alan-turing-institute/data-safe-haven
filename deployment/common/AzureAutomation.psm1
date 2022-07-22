@@ -147,19 +147,20 @@ function Register-VmsWithAutomationSchedule {
         Add-LogMessage -Level Warning "Skipping application of automation schedule '$($Schedule.Name)' as no VMs were specified."
         return $null
     }
-    Add-LogMessage -Level Info "Applying automation schedule '$($Schedule.Name)' to $($VmIds.Count) VMs..."
+    Add-LogMessage -Level Info "Applying automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)..."
     try {
-        Add-LogMessage -Level Info "[ ] Creating automation schedule '$Name'"
+        Add-LogMessage -Level Info "[ ] Registering automation schedule for $VmType VMs..."
+        $null = Get-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName $Account.ResourceGroupName -AutomationAccountName $Account.AutomationAccountName | Where-Object { $_.Name -eq $schedule.Name } | Remove-AzAutomationSoftwareUpdateConfiguration
         $duration = New-TimeSpan -Hours $DurationHours
         if ($VmType -eq "Windows") {
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
-                                                                    -AzureVMResourceId $VmIds `
-                                                                    -Duration $duration `
-                                                                    -IncludedUpdateClassification @("Unclassified", "Critical", "Security", "UpdateRollup", "FeaturePack", "ServicePack", "Definition", "Tools", "Updates") `
-                                                                    -ResourceGroupName $Account.ResourceGroupName `
-                                                                    -Schedule $Schedule `
-                                                                    -Windows `
-                                                                    -ErrorAction Stop
+                                                                  -AzureVMResourceId $VmIds `
+                                                                  -Duration $duration `
+                                                                  -IncludedUpdateClassification @("Unclassified", "Critical", "Security", "UpdateRollup", "FeaturePack", "ServicePack", "Definition", "Tools", "Updates") `
+                                                                  -ResourceGroupName $Account.ResourceGroupName `
+                                                                  -Schedule $Schedule `
+                                                                  -Windows `
+                                                                  -ErrorAction Stop
         } else {
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -AzureVMResourceId $VmIds `
@@ -171,9 +172,9 @@ function Register-VmsWithAutomationSchedule {
                                                                   -ErrorAction Stop
         }
     } catch {
-        Add-LogMessage -Level Fatal "Failed to apply automation schedule '$($Schedule.Name)' to $($VmIds.Count) VMs!"
+        Add-LogMessage -Level Fatal "Failed to apply automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)!"
     }
-    Add-LogMessage -Level Success "Applied automation schedule '$($Schedule.Name)' to $($VmIds.Count) VMs."
+    Add-LogMessage -Level Success "Applied automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)."
     return $config
 }
 Export-ModuleMember -Function Register-VmsWithAutomationSchedule
