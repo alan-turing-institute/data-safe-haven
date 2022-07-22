@@ -85,21 +85,63 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "windowsupdate.microsoft.com",
-                            "*.windowsupdate.microsoft.com",
-                            "*.windowsupdate.microsoft.com",
-                            "*.update.microsoft.com",
+                            "*.download.windowsupdate.com",
                             "*.update.microsoft.com",
                             "*.windowsupdate.com",
-                            "download.windowsupdate.com",
+                            "*.windowsupdate.microsoft.com",
                             "download.microsoft.com",
-                            "*.download.windowsupdate.com",
-                            "test.stats.update.microsoft.com",
+                            "download.windowsupdate.com",
                             "ntservicepack.microsoft.com",
                             "settings-win.data.microsoft.com",
+                            "test.stats.update.microsoft.com",
                             "v10.events.data.microsoft.com",
+                            "v10.vortex-win.data.microsoft.com",
                             "v10c.events.data.microsoft.com",
-                            "v10.vortex-win.data.microsoft.com"
+                            "windowsupdate.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureAutomation",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ac-agentservice-prod-1.azure-automation.net",
+                            "ac-jobruntimedata-prod-su1.azure-automation.net",
+                            "ae-agentservice-prod-1.azure-automation.net",
+                            "ae-jobruntimedata-prod-su1.azure-automation.net",
+                            "ase-agentservice-prod-1.azure-automation.net",
+                            "ase-jobruntimedata-prod-su1.azure-automation.net",
+                            "cc-agentservice-prod-1.azure-automation.net",
+                            "cc-jobruntimedata-prod-su1.azure-automation.net",
+                            "cid-agentservice-prod-1.azure-automation.net",
+                            "cid-jobruntimedata-prod-su1.azure-automation.net",
+                            "eus2-agentservice-prod-1.azure-automation.net",
+                            "eus2-jobruntimedata-prod-su1.azure-automation.net",
+                            "jpe-agentservice-prod-1.azure-automation.net",
+                            "jpe-jobruntimedata-prod-su1.azure-automation.net",
+                            "ne-agentservice-prod-1.azure-automation.net",
+                            "ne-jobruntimedata-prod-su1.azure-automation.net",
+                            "scus-agentservice-prod-1.azure-automation.net",
+                            "scus-jobruntimedata-prod-su1.azure-automation.net",
+                            "sea-agentservice-prod-1.azure-automation.net",
+                            "sea-jobruntimedata-prod-su1.azure-automation.net",
+                            "stzn-agentservice-prod-su1.azure-automation.net",
+                            "stzn-jobruntimedata-prod-su1.azure-automation.net",
+                            "uks-agentservice-prod-1.azure-automation.net",
+                            "uks-jobruntimedata-prod-su1.azure-automation.net",
+                            "usge-agentservice-prod-1.azure-automation.us",
+                            "usge-jobruntimedata-prod-su1.azure-automation.us",
+                            "wcus-agentservice-prod-1.azure-automation.net",
+                            "wcus-jobruntimedata-prod-su1.azure-automation.net",
+                            "we-agentservice-prod-1.azure-automation.net",
+                            "we-jobruntimedata-prod-su1.azure-automation.net",
+                            "wus2-agentservice-prod-1.azure-automation.net",
+                            "wus2-jobruntimedata-prod-su1.azure-automation.net"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -113,16 +155,16 @@
                        ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "database.clamav.net",
-                            "packages.microsoft.com",
-                            "download.mono-project.com",
-                            "developer.download.nvidia.com",
-                            "packagecloud.io",
                             "apt.postgresql.org",
-                            "cloud.r-project.org",
                             "archive.ubuntu.com",
                             "azure.archive.ubuntu.com",
                             "changelogs.ubuntu.com",
+                            "cloud.r-project.org",
+                            "database.clamav.net",
+                            "developer.download.nvidia.com",
+                            "download.mono-project.com",
+                            "packagecloud.io",
+                            "packages.microsoft.com",
                             "security.ubuntu.com"
                         ],
                         "sourceAddresses": [
@@ -154,10 +196,10 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "ocsp.digicert.com",
+                            "crl.microsoft.com",
                             "crl3.digicert.com",
                             "crl4.digicert.com",
-                            "crl.microsoft.com"
+                            "ocsp.digicert.com"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -185,10 +227,10 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "{{logging.workspaceId}}.ods.opinsights.azure.com",
-                            "{{logging.workspaceId}}.oms.opinsights.azure.com",
+                            "{{logging.workspaceId}}.agentsvc.azure-automation.net",
                             "{{logging.workspaceId}}.blob.core.windows.net",
-                            "{{logging.workspaceId}}.agentsvc.azure-automation.net"
+                            "{{logging.workspaceId}}.ods.opinsights.azure.com",
+                            "{{logging.workspaceId}}.oms.opinsights.azure.com"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -234,11 +276,11 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "login.microsoftonline.com",
-                            "secure.aadcdn.microsoftonline-p.com",
-                            "login.windows.net",
                             "aadcdn.msftauth.net",
-                            "login.live.com"
+                            "login.live.com",
+                            "login.microsoftonline.com",
+                            "login.windows.net",
+                            "secure.aadcdn.microsoftonline-p.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
@@ -251,9 +293,9 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
+                            "css.phonefactor.net",
                             "pfd.phonefactor.net",
-                            "pfd2.phonefactor.net",
-                            "css.phonefactor.net"
+                            "pfd2.phonefactor.net"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
@@ -266,13 +308,13 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "adminwebservice.microsoftonline.com",
-                            "passwordreset.microsoftonline.com",
-                            "*.blob.core.windows.net",
-                            "*.servicebus.windows.net",
-                            "*.events.data.microsoft.com",
                             "*.aadconnecthealth.azure.com",
-                            "*.adhybridhealth.azure.com"
+                            "*.adhybridhealth.azure.com",
+                            "*.blob.core.windows.net",
+                            "*.events.data.microsoft.com",
+                            "*.servicebus.windows.net",
+                            "adminwebservice.microsoftonline.com",
+                            "passwordreset.microsoftonline.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
@@ -327,27 +369,10 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "management.azure.com",
                             "*.adhybridhealth.azure.com",
-                            "www.office.com",
-                            "policykeyservice.dc.ad.msft.net"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowAzureADLoginForADConnectAndMFAConnectSetup",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "login.microsoftonline.com",
-                            "secure.aadcdn.microsoftonline-p.com",
-                            "login.windows.net",
-                            "aadcdn.msftauth.net",
-                            "login.live.com"
+                            "management.azure.com",
+                            "policykeyservice.dc.ad.msft.net",
+                            "www.office.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
