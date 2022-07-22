@@ -52,7 +52,7 @@ if ($aadDomain.IsVerified) {
     # Fetch TXT version of AAD domain verification record set
     $validationRecord = Get-MgDomainVerificationDnsRecord -DomainId $config.domain.fqdn | Where-Object { $_.RecordType -eq "Txt" }
     # Make a DNS TXT Record object containing the validation code
-    $validationCode = New-AzDnsRecordConfig -Value $validationRecord.Text
+    $validationCode = New-AzDnsRecordConfig -Value $validationRecord.AdditionalProperties.text
 
     # Check if this validation record already exists for the domain
     $recordSet = Get-AzDnsRecordSet -RecordType TXT -Name "@" -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
