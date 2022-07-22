@@ -79,7 +79,6 @@ if ($aadDomain.IsVerified) {
     for ($tries = 1; $tries -le $maxTries; $tries++) {
         Confirm-MgDomain -DomainId $config.domain.fqdn | Out-Null
         Add-LogMessage -Level Info "Checking domain verification status on SHM AAD (attempt $tries of $maxTries)..."
-        # $aadDomain = Get-AzureADDomain -Name $config.domain.fqdn
         $aadDomain = Get-MgDomain -DomainId $config.domain.fqdn
         if ($aadDomain.IsVerified) {
             Add-LogMessage -Level Success "Domain '$($config.domain.fqdn)' is verified on SHM AAD."
