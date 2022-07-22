@@ -654,6 +654,7 @@ configuration ApplyGroupPolicies {
     }
 }
 
+
 configuration ConfigureDns {
     param (
         [Parameter(Mandatory = $true, HelpMessage = "IP address for the external (Azure) DNS resolver")]
@@ -701,7 +702,7 @@ configuration ConfigureDns {
                 }
                 return $false
              }
-            DependsOn = "[Script]ImportGroupPolicies"
+            DependsOn = "[DnsServerForwarder]DnsServerForwarder"
         }
     }
 }
@@ -837,6 +838,11 @@ configuration ConfigurePrimaryDomainController {
             OuNameServiceAccounts = $domainOus.serviceAccounts.name
             ServerAdminSgName = $securityGroups.serverAdmins.name
             DependsOn = @("[UploadArtifacts]UploadArtifacts", "[ConfigureActiveDirectory]ConfigureActiveDirectory")
+        }
+
+        ConfigureDns ConfigureDns {
+            ExternalDnsResolver = $ExternalDnsResolver
+            IdentitySubnetCidr = $IdentitySubnetCidr
         }
     }
 }
