@@ -104,7 +104,13 @@ function Deploy-ArmTemplate {
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable templateErrors
+    New-AzResourceGroupDeployment -DeploymentDebugLogLevel ResponseContent `
+                                  -Name $templateName `
+                                  -ResourceGroupName $ResourceGroupName `
+                                  -TemplateFile $TemplatePath `
+                                  -TemplateObject @Params `
+                                  -Verbose `
+                                  -ErrorVariable templateErrors
     $result = $?
     Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
     if ($result) {
