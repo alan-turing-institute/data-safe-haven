@@ -1,4 +1,5 @@
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -535,7 +536,7 @@ Export-ModuleMember -Function Set-StorageNfsShareQuota
 
 # Create an Azure blob from a URI
 # -------------------------------
-function Set-AzStorageBlobFromUri {
+function Set-AzureStorageBlobFromUri {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "URI to file to copy")]
         [string]$FileUri,
@@ -560,4 +561,4 @@ function Set-AzStorageBlobFromUri {
     # Remove temporary directory
     Remove-Item -Recurse $tempFolder
 }
-Export-ModuleMember -Function Set-AzStorageBlobFromUri
+Export-ModuleMember -Function Set-AzureStorageBlobFromUri

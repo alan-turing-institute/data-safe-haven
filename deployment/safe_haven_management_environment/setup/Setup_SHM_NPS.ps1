@@ -3,7 +3,9 @@ param(
     [string]$shmId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -61,8 +63,8 @@ try {
         $success = $success -and $?
     }
     # Remote artifacts
-    $null = Set-AzStorageBlobFromUri -FileUri "https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
-    $null = Set-AzStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
     if (-not $success) { throw }
     Add-LogMessage -Level Success "Uploaded NPS artifacts to storage account '$($config.storage.artifacts.accountName)'"
 } catch {

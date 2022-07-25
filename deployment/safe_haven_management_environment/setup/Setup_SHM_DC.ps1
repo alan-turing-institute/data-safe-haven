@@ -3,7 +3,10 @@ param(
     [string]$shmId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -97,14 +100,14 @@ if ($success) {
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.StorageAccountName)'..."
 try {
     # AzureADConnect
-    $null = Set-AzStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
     # Chrome
-    $null = Set-AzStorageBlobFromUri -FileUri "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -BlobFilename "GoogleChrome_x64.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -BlobFilename "GoogleChrome_x64.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
     # PuTTY
     $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
     $filename = $(Invoke-WebRequest -Uri $baseUri).Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
     $version = ($filename -split "-")[2]
-    $null = Set-AzStorageBlobFromUri -FileUri "$($baseUri.Replace('latest', $version))/$filename" -BlobFilename "PuTTY_x64.msi" -StorageContainer $storageContainerSreRds -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "$($baseUri.Replace('latest', $version))/$filename" -BlobFilename "PuTTY_x64.msi" -StorageContainer $storageContainerSreRds -StorageContext $storageAccount.Context
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } catch {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"

@@ -979,21 +979,6 @@ function Enable-AzVM {
 Export-ModuleMember -Function Enable-AzVM
 
 
-# Get subnet
-# ----------
-function Get-AzSubnet {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
-        $VirtualNetwork
-    )
-    Add-LogMessage -Level Info "Get-AzSubnet is deprecated - consider switching to Get-Subnet"
-    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
-}
-Export-ModuleMember -Function Get-AzSubnet
-
-
 # Get image ID
 # ------------
 function Get-ImageFromGallery {
