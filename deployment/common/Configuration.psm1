@@ -240,6 +240,14 @@ function Get-ShmConfig {
                         rules = "shm-nsg-rules-identity.json"
                     }
                 }
+                monitoring = [ordered]@{
+                    name = "MonitoringSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_MONITORING".ToUpper()
+                        rules = "shm-nsg-rules-monitoring.json"
+                    }
+                }
                 firewall = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
                     name = "AzureFirewallSubnet"

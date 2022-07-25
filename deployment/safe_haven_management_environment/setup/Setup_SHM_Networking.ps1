@@ -30,14 +30,19 @@ $vnet = Deploy-VirtualNetwork -Name $config.network.vnet.name -ResourceGroupName
 $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 $gatewaySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.gateway.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.gateway.cidr
 $identitySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.identity.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.identity.cidr
+$monitoringSubnet = Deploy-Subnet -Name $config.network.vnet.subnets.monitoring.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.monitoring.cidr
 
 
-# Ensure that identity NSG exists with correct rules and attach it to the identity subnet
-# -------------------------------------------------------------------------------------
+# Ensure that NSGs exist with the correct rules and attach them to the correct subnet
+# -----------------------------------------------------------------------------------
+# Identity
 $identityNsg = Deploy-NetworkSecurityGroup -Name $config.network.vnet.subnets.identity.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
-$rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules"$config.network.vnet.subnets.identity.nsg.rules) -Parameters $config -AsHashtable
-$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $identityNsg -Rules $rules
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $identityNsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnet.subnets.identity.nsg.rules) -Parameters $config -AsHashtable)
 $identitySubnet = Set-SubnetNetworkSecurityGroup -Subnet $identitySubnet -NetworkSecurityGroup $identityNsg
+# Monitoring
+$monitoringNsg = Deploy-NetworkSecurityGroup -Name $config.network.vnet.subnets.monitoring.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $monitoringNsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnet.subnets.monitoring.nsg.rules) -Parameters $config -AsHashtable)
+$monitoringSubnet = Set-SubnetNetworkSecurityGroup -Subnet $monitoringSubnet -NetworkSecurityGroup $monitoringNsg
 
 
 # Create the VPN gateway
