@@ -113,7 +113,7 @@ $params = @{
     virtualNetworkResourceGroupName      = $config.sre.network.vnet.rg
     virtualNetworkSessionHostsSubnetName = $config.sre.network.vnet.subnets.remoteDesktop.name
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.remoteDesktop.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Create blob containers in SRE storage account

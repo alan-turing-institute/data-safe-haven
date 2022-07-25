@@ -146,7 +146,7 @@ $params = @{
     vmOsDiskType                    = $config.dc.disks.os.type
     vmSize                          = $config.dc.vmSize
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -TemplateParameters $params -ResourceGroupName $config.dc.rg
 
 
 # Apply SHM DC desired state

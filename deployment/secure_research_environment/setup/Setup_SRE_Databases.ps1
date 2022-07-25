@@ -105,7 +105,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
             vmOsDiskType                    = $databaseCfg.disks.os.type
             vmSize                          = $databaseCfg.vmSize
         }
-        Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
+        Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.databases.rg
 
         # Set locale, install updates and reboot
         Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."

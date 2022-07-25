@@ -91,7 +91,7 @@ $params = @{
     vmPrivateIpAddress              = $config.nps.ip
     vmSize                          = $config.nps.vmSize
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -TemplateParameters $params -ResourceGroupName $config.nps.rg
 
 
 # Apply SHM NPS desired state
