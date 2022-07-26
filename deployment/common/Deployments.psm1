@@ -770,7 +770,7 @@ function Deploy-VirtualMachineNIC {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
-        $Subnet,
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         [string]$Location,
         [Parameter(Mandatory = $false, HelpMessage = "Public IP address for this NIC")]
@@ -1090,7 +1090,7 @@ Export-ModuleMember -Function Get-Subnet
 function Get-VirtualNetworkFromSubnet {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
-        $Subnet
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
     )
     $originalContext = Get-AzContext
     $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2] -ErrorAction Stop
@@ -1526,7 +1526,7 @@ Export-ModuleMember -Function Set-NSRecords
 function Set-SubnetNetworkSecurityGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Subnet whose NSG will be set")]
-        $Subnet,
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
         $NetworkSecurityGroup,
         [Parameter(Mandatory = $false, HelpMessage = "Virtual network that the subnet belongs to")]
