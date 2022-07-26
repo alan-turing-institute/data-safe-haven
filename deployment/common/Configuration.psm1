@@ -206,16 +206,24 @@ function Get-ShmConfig {
         $shm.domain.securityGroups[$groupName].description = $shm.domain.securityGroups[$groupName].name
     }
 
-    # Automation config
+    # Monitoring config
     # -----------------
-    $shm.automation = [ordered]@{
-        rg          = "$($shm.rgPrefix)_AUTOMATION".ToUpper()
-        accountName = "shm-$($shm.id)-automation".ToLower()
+    $shm.monitoring = [ordered]@{
+        rg                = "$($shm.rgPrefix)_MONITORING".ToUpper()
+        automationAccount = @{
+            name = "shm-$($shm.id)-automation".ToLower()
+        }
+        loggingWorkspace  = @{
+            name = "shm-$($shm.id)-loganalytics".ToLower()
+        }
+        privatelink       = @{
+            name = "shm-$($shm.id)-privatelinkscope".ToLower()
+        }
     }
 
     # Logging config
     # --------------
-    $shm.logging = [ordered]@{
+    $shm.logging = [ordered]@{ # TODO move these to the monitoring config
         rg            = "$($shm.rgPrefix)_LOGGING".ToUpper()
         workspaceName = "shm$($shm.id)loganalytics".ToLower()
     }
@@ -232,7 +240,7 @@ function Get-ShmConfig {
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
             subnets = [ordered]@{
-                identity = [ordered]@{
+                identity   = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
                     nsg  = [ordered]@{
@@ -248,12 +256,12 @@ function Get-ShmConfig {
                         rules = "shm-nsg-rules-monitoring.json"
                     }
                 }
-                firewall = [ordered]@{
+                firewall   = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
                     name = "AzureFirewallSubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 2).0/24"
                 }
-                gateway  = [ordered]@{
+                gateway    = [ordered]@{
                     # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
                     name = "GatewaySubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
@@ -310,7 +318,6 @@ function Get-ShmConfig {
             }
         }
     }
-
 
     # Firewall config
     # ---------------

@@ -170,6 +170,18 @@
     "rg": "RG_SHM_TESTA_PKG_MIRRORS",
     "vmSize": "Standard_B2ms"
   },
+  "monitoring": {
+    "automationAccount": {
+      "name": "shm-testa-automation"
+    },
+    "loggingWorkspace": {
+      "name": "shm-testa-loganalytics"
+    },
+    "privatelink": {
+      "name": "shm-testa-privatelinkscope"
+    },
+    "rg": "RG_SHM_TESTA_MONITORING"
+  },
   "name": "Turing Development Safe Haven A",
   "network": {
     "mirrorVnets": {
@@ -267,6 +279,14 @@
           "nsg": {
             "name": "NSG_SHM_TESTA_IDENTITY",
             "rules": "shm-nsg-rules-identity.json"
+          }
+        },
+        "monitoring": {
+          "cidr": "10.0.1.0/24",
+          "name": "MonitoringSubnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTA_MONITORING",
+            "rules": "shm-nsg-rules-monitoring.json"
           }
         }
       }

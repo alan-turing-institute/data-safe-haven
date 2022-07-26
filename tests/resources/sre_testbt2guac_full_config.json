@@ -171,6 +171,18 @@
       "rg": "RG_SHM_TESTB_PKG_MIRRORS",
       "vmSize": "Standard_B2ms"
     },
+    "monitoring": {
+      "automationAccount": {
+        "name": "shm-testb-automation"
+      },
+      "loggingWorkspace": {
+        "name": "shm-testb-loganalytics"
+      },
+      "privatelink": {
+        "name": "shm-testb-privatelinkscope"
+      },
+      "rg": "RG_SHM_TESTB_MONITORING"
+    },
     "name": "Turing Development Safe Haven B",
     "network": {
       "mirrorVnets": {
@@ -268,6 +280,14 @@
             "nsg": {
               "name": "NSG_SHM_TESTB_IDENTITY",
               "rules": "shm-nsg-rules-identity.json"
+            }
+          },
+          "monitoring": {
+            "cidr": "10.0.1.0/24",
+            "name": "MonitoringSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_MONITORING",
+              "rules": "shm-nsg-rules-monitoring.json"
             }
           }
         }

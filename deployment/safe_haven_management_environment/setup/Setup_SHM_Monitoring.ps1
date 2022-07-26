@@ -20,21 +20,20 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Create resource groups if they do not exist
-# -------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.logging.rg -Location $config.location
-$null = Deploy-ResourceGroup -Name $config.automation.rg -Location $config.location
+# Create resource group if it does not exist
+# ------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
 
 
 # Deploy Log Analytics workspace
 # ------------------------------
-$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
 
 
 # Deploy automation account
 # -------------------------
-$account = Deploy-AutomationAccount -Name $config.automation.accountName -ResourceGroupName $config.automation.rg -Location $config.location
+$account = Deploy-AutomationAccount -Name $config.monitoring.automationAccount.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 $null = Connect-AutomationAccountLogAnalytics -AutomationAccountName $account.AutomationAccountName -LogAnalyticsWorkspace $workspace
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
 

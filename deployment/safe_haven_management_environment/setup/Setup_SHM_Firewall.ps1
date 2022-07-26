@@ -35,7 +35,7 @@ $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $conf
 
 # Create the logging workspace if it does not already exist
 # ---------------------------------------------------------
-$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 
 
 # Enable logging for this firewall
@@ -43,9 +43,9 @@ $workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -R
 Add-LogMessage -Level Info "Enable logging for this firewall"
 $null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 if ($?) {
-    Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"
+    Add-LogMessage -Level Success "Enabled logging to workspace '$($workspace.Name)'"
 } else {
-    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($config.logging.workspaceName)'!"
+    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($workspace.Name)'!"
 }
 
 
