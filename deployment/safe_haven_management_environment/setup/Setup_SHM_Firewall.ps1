@@ -3,7 +3,10 @@ param(
     [string]$shmId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Monitor -ErrorAction Stop
+Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -19,7 +22,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Ensure that firewall subnet exists
 # ----------------------------------
-$VirtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$VirtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg -ErrorAction Stop
 $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $VirtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 

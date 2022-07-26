@@ -96,15 +96,26 @@ Export-ModuleMember -Function Confirm-VmStopped
 # -----------------------------------------
 function Deploy-ArmTemplate {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Path to template file")]
-        $TemplatePath,
-        [Parameter(Mandatory = $true, HelpMessage = "Template parameters")]
-        $Params,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
+        [ValidateNotNullOrEmpty()]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Template parameters")]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$TemplateParameters,
+        [Parameter(Mandatory = $true, HelpMessage = "Path to template file")]
+        [ValidateNotNullOrEmpty()]
+        [string]$TemplatePath
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable templateErrors
+    # Note we must use inline parameters rather than -TemplateParameterObject in order to support securestring
+    # Furthermore, using -SkipTemplateParameterPrompt will cause inline parameters to fail
+    New-AzResourceGroupDeployment -DeploymentDebugLogLevel ResponseContent `
+                                  -ErrorVariable templateErrors `
+                                  -Name $templateName `
+                                  -ResourceGroupName $ResourceGroupName `
+                                  -TemplateFile $TemplatePath `
+                                  -Verbose `
+                                  @TemplateParameters
     $result = $?
     Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
     if ($result) {
@@ -966,21 +977,6 @@ function Enable-AzVM {
     }
 }
 Export-ModuleMember -Function Enable-AzVM
-
-
-# Get subnet
-# ----------
-function Get-AzSubnet {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
-        $VirtualNetwork
-    )
-    Add-LogMessage -Level Info "Get-AzSubnet is deprecated - consider switching to Get-Subnet"
-    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
-}
-Export-ModuleMember -Function Get-AzSubnet
 
 
 # Get image ID

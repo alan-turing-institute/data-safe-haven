@@ -83,6 +83,7 @@ function Add-DeploymentLogMessages {
         [Parameter(Mandatory = $true, HelpMessage = "Name of deployment to track")]
         $DeploymentName,
         [Parameter(Mandatory = $true, HelpMessage = "Error messages from template deployment")]
+        [AllowNull()]
         $ErrorDetails
     )
     $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName

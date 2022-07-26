@@ -5,7 +5,11 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Dns -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -113,7 +117,7 @@ $params = @{
     virtualNetworkResourceGroupName      = $config.sre.network.vnet.rg
     virtualNetworkSessionHostsSubnetName = $config.sre.network.vnet.subnets.remoteDesktop.name
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.remoteDesktop.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Create blob containers in SRE storage account

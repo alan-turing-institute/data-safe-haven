@@ -6,7 +6,8 @@ param(
     [string]$tier
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -39,7 +40,6 @@ function Remove-PackageMirror {
 
 # Check if Resource Group exists
 # ------------------------------
-
 $null = Get-AzResourceGroup -Name $config.mirrors.rg -Location $config.location -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
     Add-LogMessage -Level InfoSuccess "Resource group '$($config.mirrors.rg)' does not exist"
