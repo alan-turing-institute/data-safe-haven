@@ -8,9 +8,13 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureMonitor -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -25,7 +29,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
 
 
-# Deploy Log Analytics workspace
+# Deploy log analytics workspace
 # ------------------------------
 $workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
@@ -36,6 +40,37 @@ $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Nam
 $account = Deploy-AutomationAccount -Name $config.monitoring.automationAccount.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 $null = Connect-AutomationAccountLogAnalytics -AutomationAccountName $account.AutomationAccountName -LogAnalyticsWorkspace $workspace
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
+
+
+# Connect log analytics workspace to private link scope
+# -----------------------------------------------------
+# Note that we cannot connect a private endpoint directly to a log analytics workspace
+$logAnalyticsLink = Deploy-MonitorPrivateLinkScope -Name $config.monitoring.privatelink.name -ResourceGroupName $config.monitoring.rg
+$null = Connect-PrivateLinkToLogWorkspace -LogAnalyticsWorkspace $workspace -PrivateLinkScope $logAnalyticsLink
+
+
+# Create private endpoints for the automation account and log analytics link
+# --------------------------------------------------------------------------
+$monitoringSubnet = Get-Subnet -Name $config.network.vnet.subnets.monitoring.name -VirtualNetworkName $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$virtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $monitoringSubnet
+$accountEndpoint = Deploy-AutomationAccountEndpoint -Account $account -Subnet $monitoringSubnet
+$logAnalyticsEndpoint = Deploy-MonitorPrivateLinkScopeEndpoint -PrivateLinkScope $logAnalyticsLink -Subnet $monitoringSubnet -Location $config.location
+
+# Create private DNS records for each endpoint DNS entry
+# ------------------------------------------------------
+$DnsConfigs = $accountEndpoint.CustomDnsConfigs + $logAnalyticsEndpoint.CustomDnsConfigs
+$PossibleDomains = @("azure-automation.net", "blob.core.windows.net", "monitor.azure.com", "opinsights.azure.com")
+foreach ($DnsConfig in $DnsConfigs) {
+    $BaseDomain = $PossibleDomains | Where-Object { $DnsConfig.Fqdn.Endswith($_) } | Select-Object -First 1
+    if ($BaseDomain) {
+        $privateZone = Deploy-PrivateDnsZone -Name "privatelink.${BaseDomain}" -ResourceGroup $config.network.vnet.rg
+        $recordName = $DnsConfig.Fqdn.Substring(0, $DnsConfig.Fqdn.IndexOf($BaseDomain) - 1)
+        $null = Deploy-PrivateDnsRecordSet -Name $recordName -ZoneName $privateZone.Name -ResourceGroupName $privateZone.ResourceGroupName -PrivateIpAddresses $DnsConfig.IpAddresses -Ttl 10
+        $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
+    } else {
+        Add-LogMessage -Level Fatal "No zone created for '$($DnsConfig.Fqdn)'!"
+    }
+}
 
 
 # Ensure all SHM VMs are registered with the logging workspace
