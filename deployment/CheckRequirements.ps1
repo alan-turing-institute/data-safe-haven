@@ -5,6 +5,7 @@ $PowershellVersionRequired = "7.0.0"
 $ModuleVersionRequired = @{
     "Az"              = @("ge", "6.0.0")
     "Az.Resources"    = @("ge", "6.0.1")
+    "Az.Storage"      = @("ge", "4.7.0")
     "Microsoft.Graph" = @("ge", "1.5.0")
     "Poshstache"      = @("ge", "0.1.10")
     "Powershell-Yaml" = @("ge", "0.4.2")
