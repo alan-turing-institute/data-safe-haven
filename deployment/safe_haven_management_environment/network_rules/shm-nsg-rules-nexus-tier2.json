@@ -48,6 +48,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMonitoringToolsOutbound",
+        "access": "Allow",
+        "description": "Allow connections to local monitoring tools",
+        "destinationAddressPrefix": "{{network.vnet.subnets.monitoring.cidr}}",
+        "destinationPortRange": "443",
+        "direction": "Outbound",
+        "priority": 1500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
