@@ -777,6 +777,17 @@ function Get-SreConfig {
     }
 
 
+    # Backup config
+    # -------------
+    $backupRg = "$($config.sre.rgPrefix)_BACKUP".ToUpper()
+    $config.sre.backup = [ordered]@{
+        rg = $backupRg
+        vault = [ordered]@{
+            name = "$($config.sre.id)-vault"
+        }
+    }
+
+
     # Secrets config
     # --------------
     $config.sre.keyVault = [ordered]@{

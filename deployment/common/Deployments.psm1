@@ -127,6 +127,43 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
+# Deploy a data protection backup vault
+# -------------------------------------
+function Deploy-DataProtectionBackupVault{
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault")]
+        $VaultName,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of data protection backup vault")]
+        $Location,
+    )
+
+    # Check if vault exists
+    $vault = Get-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
+                                             -VaultName $VaultName `
+                                             -ErrorVariable notExists `
+                                             -ErrorAction SilentlyContinue
+
+    if ($notExists) {
+        $storagesetting = New-AzDataProtectionBackupVaultStorageSettingObject -DataStoreType VaultStore `
+                                                                              -Type LocallyRedundant
+
+        $null = New-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
+                                                -VaultName $VaultName `
+                                                -StorageSetting $storagesetting `
+                                                -Location $Location
+
+        if ($?) {
+            Add-LogMessage -Level Success "Successfully deployed backup vault $VaultName"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to deploy backup vault $VaultName"
+        }
+    }
+}
+Export-ModuleMember -Function Deploy-DataProtectionBackupVault
+
+
 # Add A (and optionally CNAME) DNS records
 # ----------------------------------------
 function Deploy-DNSRecords {
