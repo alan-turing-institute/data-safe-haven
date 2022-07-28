@@ -12,11 +12,11 @@ function Connect-PrivateDnsToVirtualNetwork {
         [Microsoft.Azure.Commands.Network.Models.PSVirtualNetwork]$VirtualNetwork
     )
     Add-LogMessage -Level Info "Ensuring that private DNS zone '$($DnsZone.Name)' is connected to virtual network '$($VirtualNetwork.Name)'.."
-    $link = Get-AzPrivateDnsVirtualNetworkLink -ZoneName $DnsZone.Name -ResourceGroupName $DnsZone.ResourceGroupName -ErrorAction SilentlyContinue
+    $link = Get-AzPrivateDnsVirtualNetworkLink -ZoneName $DnsZone.Name -ResourceGroupName $DnsZone.ResourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.VirtualNetworkId -eq $VirtualNetwork.Id } | Select-Object -First 1
     if (-not $link) {
         Add-LogMessage -Level Info "[ ] Connecting private DNS zone '$($DnsZone.Name)' to virtual network '$($VirtualNetwork.Name)'"
         try {
-            $linkName = "$($DnsZone.Name)-to-$($VirtualNetwork.Name)".Replace(".", "-").Replace("_", "-").ToLower()
+            $linkName = "link-to-$($VirtualNetwork.Name)".Replace("_", "-").ToLower()
             $link = New-AzPrivateDnsVirtualNetworkLink -ZoneName $DnsZone.Name -ResourceGroupName $DnsZone.ResourceGroupName -VirtualNetworkId $VirtualNetwork.Id -Name $linkName -ErrorAction Stop
             Add-LogMessage -Level Success "Connected private DNS zone '$($DnsZone.Name)' to virtual network '$($VirtualNetwork.Name)'"
         } catch {

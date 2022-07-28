@@ -323,6 +323,23 @@ function Get-NextAvailableIpInRange {
 Export-ModuleMember -Function Get-NextAvailableIpInRange
 
 
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetwork {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Name of virtual network to retrieve")]
+        [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group that this virtual network belongs to")]
+        [string]$ResourceGroupName
+    )
+    $params = @{}
+    if ($Name) { $params["Name"] = $Name }
+    if ($ResourceGroupName) { $params["ResourceGroupName"] = $ResourceGroupName }
+    return Get-AzVirtualNetwork @params
+}
+Export-ModuleMember -Function Get-VirtualNetwork
+
+
 # Set Network Security Group Rules
 # --------------------------------
 function Set-NetworkSecurityGroupRules {

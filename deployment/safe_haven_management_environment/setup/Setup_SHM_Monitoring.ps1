@@ -35,46 +35,13 @@ $workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorksp
 $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
 
 
-# Deploy automation account
-# -------------------------
+# Deploy automation account and connect to log analytics
+# ------------------------------------------------------
 $account = Deploy-AutomationAccount -Name $config.monitoring.automationAccount.name -ResourceGroupName $config.monitoring.rg -Location $config.location
 $null = Connect-AutomationAccountLogAnalytics -AutomationAccountName $account.AutomationAccountName -LogAnalyticsWorkspace $workspace
-$null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
-
-
-# Connect log analytics workspace to private link scope
-# -----------------------------------------------------
-# Note that we cannot connect a private endpoint directly to a log analytics workspace
-$logAnalyticsLink = Deploy-MonitorPrivateLinkScope -Name $config.monitoring.privatelink.name -ResourceGroupName $config.monitoring.rg
-$null = Connect-PrivateLinkToLogWorkspace -LogAnalyticsWorkspace $workspace -PrivateLinkScope $logAnalyticsLink
-
-
-# Create private endpoints for the automation account and log analytics link
-# --------------------------------------------------------------------------
-$monitoringSubnet = Get-Subnet -Name $config.network.vnet.subnets.monitoring.name -VirtualNetworkName $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$virtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $monitoringSubnet
-$accountEndpoint = Deploy-AutomationAccountEndpoint -Account $account -Subnet $monitoringSubnet
-$logAnalyticsEndpoint = Deploy-MonitorPrivateLinkScopeEndpoint -PrivateLinkScope $logAnalyticsLink -Subnet $monitoringSubnet -Location $config.location
-
-# Create private DNS records for each endpoint DNS entry
-# ------------------------------------------------------
-$DnsConfigs = $accountEndpoint.CustomDnsConfigs + $logAnalyticsEndpoint.CustomDnsConfigs
-$PossibleDomains = @("azure-automation.net", "blob.core.windows.net", "monitor.azure.com", "opinsights.azure.com")
-foreach ($DnsConfig in $DnsConfigs) {
-    $BaseDomain = $PossibleDomains | Where-Object { $DnsConfig.Fqdn.Endswith($_) } | Select-Object -First 1
-    if ($BaseDomain) {
-        $privateZone = Deploy-PrivateDnsZone -Name "privatelink.${BaseDomain}" -ResourceGroup $config.network.vnet.rg
-        $recordName = $DnsConfig.Fqdn.Substring(0, $DnsConfig.Fqdn.IndexOf($BaseDomain) - 1)
-        $null = Deploy-PrivateDnsRecordSet -Name $recordName -ZoneName $privateZone.Name -ResourceGroupName $privateZone.ResourceGroupName -PrivateIpAddresses $DnsConfig.IpAddresses -Ttl 10
-        $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
-    } else {
-        Add-LogMessage -Level Fatal "No zone created for '$($DnsConfig.Fqdn)'!"
-    }
-}
 
 
 # Ensure all SHM VMs are registered with the logging workspace
-# This will also ensure they are registered for update management
 # ---------------------------------------------------------------
 $rgFilter = "RG_SHM_$($config.id)*"
 $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
@@ -91,24 +58,73 @@ foreach ($shmResourceGroup in $shmResourceGroups) {
 }
 
 
-# Create Windows and Linux update schedules
-# -----------------------------------------
-# Register Windows VMs
+# Register all connected VMs for update management
+# ------------------------------------------------
+$null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
+# Create Windows VM update schedule
 $windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
 $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
-# Register Linux VMs
+# Create Linux VM update schedule
 $linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
 $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
 
 
+# Connect log analytics workspace to private link scope
+# -----------------------------------------------------
+# Note that we cannot connect a private endpoint directly to a log analytics workspace
+$logAnalyticsLink = Deploy-MonitorPrivateLinkScope -Name $config.monitoring.privatelink.name -ResourceGroupName $config.monitoring.rg
+$null = Connect-PrivateLinkToLogWorkspace -LogAnalyticsWorkspace $workspace -PrivateLinkScope $logAnalyticsLink
+
+
+# Create private endpoints for the automation account and log analytics link
+# --------------------------------------------------------------------------
+$monitoringSubnet = Get-Subnet -Name $config.network.vnet.subnets.monitoring.name -VirtualNetworkName $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$accountEndpoint = Deploy-AutomationAccountEndpoint -Account $account -Subnet $monitoringSubnet
+$logAnalyticsEndpoint = Deploy-MonitorPrivateLinkScopeEndpoint -PrivateLinkScope $logAnalyticsLink -Subnet $monitoringSubnet -Location $config.location
+
+
+# Create private DNS records for each endpoint DNS entry
+# ------------------------------------------------------
+$DnsConfigs = $accountEndpoint.CustomDnsConfigs + $logAnalyticsEndpoint.CustomDnsConfigs
+# Only these exact domains are available as privatelink.{domain} through Azure Private DNS
+# See https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+$PrivateLinkDomains = @(
+    "agentsvc.azure-automation.net",
+    "azure-automation.net", # note this must come after 'agentsvc.azure-automation.net'
+    "blob.core.windows.net",
+    "monitor.azure.com",
+    "ods.opinsights.azure.com",
+    "oms.opinsights.azure.com"
+)
+foreach ($DnsConfig in $DnsConfigs) {
+    $BaseDomain = $PrivateLinkDomains | Where-Object { $DnsConfig.Fqdn.Endswith($_) } | Select-Object -First 1 # we want the first (most specific) match
+    if ($BaseDomain) {
+        $privateZone = Deploy-PrivateDnsZone -Name "privatelink.${BaseDomain}" -ResourceGroup $config.network.vnet.rg
+        $recordName = $DnsConfig.Fqdn.Substring(0, $DnsConfig.Fqdn.IndexOf($BaseDomain) - 1)
+        $null = Deploy-PrivateDnsRecordSet -Name $recordName -ZoneName $privateZone.Name -ResourceGroupName $privateZone.ResourceGroupName -PrivateIpAddresses $DnsConfig.IpAddresses -Ttl 10
+        # Connect the private DNS zones to all virtual networks in the SHM
+        foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.network.vnet.rg) {
+            $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
+        }
+    } else {
+        Add-LogMessage -Level Fatal "No zone created for '$($DnsConfig.Fqdn)'!"
+    }
+}
+
+
 # Enable the collection of syslog logs from Linux hosts
 # -----------------------------------------------------
+$null = Enable-AzOperationalInsightsLinuxSyslogCollection -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name
+# Delete all existing syslog sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'LinuxSysLog'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
+}
 # Syslog facilities:
 #   See
 #     - https://wiki.gentoo.org/wiki/Rsyslog#Facility
 #     - https://tools.ietf.org/html/rfc5424 (page 10)
 #     - https://rsyslog.readthedocs.io/en/latest/configuration/filters.html
-$null = Enable-AzOperationalInsightsLinuxSyslogCollection -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name
 $facilities = @{
     "auth"     = "security/authorization messages";
     "authpriv" = "non-system authorization messages";
@@ -122,11 +138,6 @@ $facilities = @{
     "syslog"   = "messages generated internally by syslogd";
     "user"     = "user-level messages";
     "uucp"     = "UUCP subsystem";
-}
-# Delete all existing syslog sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'LinuxSysLog'
-foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
 }
 # Syslog severities:
 #   See
@@ -166,6 +177,11 @@ foreach ($facility in $facilities.GetEnumerator()) {
 # Ensure required Windows event logs are collected
 # ------------------------------------------------
 Add-LogMessage -Level Info "Ensuring required Windows event logs are being collected...'"
+# Delete all existing event log sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsEvent'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
+}
 $eventLogNames = @(
     "Active Directory Web Services"
     "Directory Service",
@@ -175,13 +191,6 @@ $eventLogNames = @(
     "Microsoft-Windows-Winlogon/Operational",
     "System"
 )
-
-# Delete all existing event log sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsEvent'
-foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
-}
-
 foreach ($eventLogName in $eventLogNames) {
     $sourceName = "windows-event-$eventLogName".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
     $null = New-AzOperationalInsightsWindowsEventDataSource -CollectErrors `
@@ -202,6 +211,11 @@ foreach ($eventLogName in $eventLogNames) {
 # Ensure require Windows performance counters are collected
 # ---------------------------------------------------------
 Add-LogMessage -Level Info "Ensuring required Windows performance counters are being collected...'"
+# Delete all existing performance counter log sources
+$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsPerformanceCounter'
+foreach ($source in $sources) {
+    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
+}
 $counters = @(
     @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Read" },
     @{setName = "LogicalDisk"; counterName = "Avg. Disk sec/Write" },
@@ -216,13 +230,6 @@ $counters = @(
     @{setName = "Processor"; counterName = "% Processor Time" },
     @{setName = "System"; counterName = "Processor Queue Length" }
 )
-
-# Delete all existing performance counter log sources
-$sources = Get-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Kind 'WindowsPerformanceCounter'
-foreach ($source in $sources) {
-    $null = Remove-AzOperationalInsightsDataSource -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name -Name $source.Name -Force
-}
-
 foreach ($counter in $counters) {
     $sourceName = "windows-counter-$($counter.setName)-$($counter.counterName)".Replace("%", "percent").Replace("/", "-per-").Replace(" ", "-").ToLower()
     $null = New-AzOperationalInsightsWindowsPerformanceCounterDataSource -CounterName $counter.counterName `
@@ -263,7 +270,6 @@ $packNames = @(
     "WindowsFirewall",
     "WinLog"
 )
-
 # Ensure only the selected intelligence packs are enabled
 $packsAvailable = Get-AzOperationalInsightsIntelligencePack -ResourceGroupName $workspace.ResourceGroupName -WorkspaceName $workspace.Name
 foreach ($pack in $packsAvailable) {
