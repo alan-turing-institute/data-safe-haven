@@ -94,10 +94,9 @@ function New-RandomLetters {
         [string]$SeedPhrase = $null
     )
     if ($SeedPhrase -ne $null) {
-        $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
+        $Seed = [bigint](($SeedPhrase).ToCharArray() | ForEach-Object { [string][int]$_ } | Join-String) % [int32]::MaxValue
     }
-    return ( -join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % { [char]$_ }))
-
+    return ( -join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | ForEach-Object { [char]$_ }))
 }
 Export-ModuleMember -Function New-RandomLetters
 
