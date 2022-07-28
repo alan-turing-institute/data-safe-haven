@@ -781,7 +781,7 @@ function Get-SreConfig {
     # -------------
     $backupRg = "$($config.sre.rgPrefix)_BACKUP".ToUpper()
     $config.sre.backup = [ordered]@{
-        rg = $backupRg
+        rg    = $backupRg
         vault = [ordered]@{
             name = "$($config.sre.id)-vault"
         }

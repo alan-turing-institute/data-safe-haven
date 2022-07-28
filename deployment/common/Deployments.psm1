@@ -129,14 +129,14 @@ Export-ModuleMember -Function Deploy-ArmTemplate
 
 # Deploy a data protection backup vault
 # -------------------------------------
-function Deploy-DataProtectionBackupVault{
+function Deploy-DataProtectionBackupVault {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
         $ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault")]
         $VaultName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of data protection backup vault")]
-        $Location,
+        $Location
     )
 
     # Check if vault exists
