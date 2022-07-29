@@ -150,10 +150,14 @@ function Deploy-DataProtectionBackupVault {
         Add-LogMessage -Level Info "[ ] Creating backup vault '$VaultName'"
         $storagesetting = New-AzDataProtectionBackupVaultStorageSettingObject -DataStoreType VaultStore `
                                                                               -Type LocallyRedundant
+        # Create backup vault
+        # The SystemAssigned identity is necessary to give the backup vault
+        # appropriate permissions to backup resources.
         $null = New-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
                                                 -VaultName $VaultName `
                                                 -StorageSetting $storagesetting `
-                                                -Location $Location
+                                                -Location $Location `
+                                                -IdentityType "SystemAssigned"
 
         if ($?) {
             Add-LogMessage -Level Success "Successfully deployed backup vault $VaultName"
