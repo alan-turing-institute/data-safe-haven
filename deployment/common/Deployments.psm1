@@ -193,13 +193,12 @@ function Deploy-DataProtectionBackupPolicy {
 
     Add-LogMessage -Level Info "Ensuring backup policy '$PolicyName' exists"
     $Policy = Get-AzDataProtectionBackupPolicy -Name $PolicyName `
-                                                    -ResourceGroupName $ResourceGroupName `
-                                                    -VaultName $VaultName `
-                                                    -ErrorVariable $notExists `
-                                                    -ErrorAction SilentlyContinue
-    if($notExists) {
+                                             -ResourceGroupName $ResourceGroupName `
+                                             -VaultName $VaultName `
+                                             -ErrorAction SilentlyContinue
+    if($Policy -eq $null) {
         Add-LogMessage -Level Info "[ ] Creating backup policy '$PolicyName'"
-        $Policy = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType] `
+        $Policy = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType]
         $null = New-AzDataProtectionBackupPolicy -ResourceGroupName $ResourceGroupName `
                                                  -VaultName $VaultName `
                                                  -Name $PolicyName `
