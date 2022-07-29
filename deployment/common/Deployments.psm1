@@ -167,6 +167,51 @@ function Deploy-DataProtectionBackupVault {
 Export-ModuleMember -Function Deploy-DataProtectionBackupVault
 
 
+# Deploy a data protection backup policy
+# Currently only supports default policies
+# ----------------------------------------
+function Deploy-DataProtectionBackupPolicy {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault")]
+        $VaultName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup policy")]
+        $PolicyName,
+        [Parameter(Mandatory = $true, HelpMessage = "backup data source")]
+        [ValidateSet("blob")]
+        $DataSourceType
+    )
+
+    $DataSourceMap = @{
+        "blob" = "AzureBlob"
+    }
+
+    Add-LogMessage -Level Info "Ensuring backup policy '$PolicyName' exists"
+    $Policy = Get-AzDataProtectionBackupPolicy -Name $PolicyName `
+                                                    -ResourceGroupName $ResourceGroupName `
+                                                    -VaultName $VaultName `
+                                                    -ErrorVariable $notExists `
+                                                    -ErrorAction SilentlyContinue
+    if($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating backup policy '$PolicyName'"
+        $Policy = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType] `
+        $null = New-AzDataProtectionBackupPolicy -ResourceGroupName $ResourceGroupName `
+                                                 -VaultName $VaultName `
+                                                 -Name $PolicyName `
+                                                 -Policy $Policy
+        if ($?) {
+                Add-LogMessage -Level Success "Successfully deployed backup policy $PolicyName"
+            } else {
+                Add-LogMessage -Level Fatal "Failed to deploy backup policy $PolicyName"
+            }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Backup policy '$PolicyName' already exists"
+    }
+}
+Export-ModuleMember -Function Deploy-DataProtectionBackupPolicy
+
+
 # Add A (and optionally CNAME) DNS records
 # ----------------------------------------
 function Deploy-DNSRecords {

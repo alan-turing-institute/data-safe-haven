@@ -26,25 +26,7 @@ $null = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.r
 
 # Create blob backup policy
 # This enforces the default policy for blobs
-$policy_name = $config.sre.backup.blob.policy_name
-Add-LogMessage -Level Info "Ensuring backup policy '$policy_name' is configured"
-$blob_policy = Get-AzDataProtectionBackupPolicy -Name $policy_name `
-                                                -ResourceGroupName $config.sre.backup.rg `
-                                                -VaultName $config.sre.backup.vault.name `
-                                                -ErrorVariable $notExists `
-                                                -ErrorAction SilentlyContinue
-if($notExists) {
-    Add-LogMessage -Level Info "[ ] Creating backup policy '$policy_name'"
-    $blob_policy = Get-AzDataProtectionPolicyTemplate -DatasourceType AzureBlob
-    $null = New-AzDataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
-                                             -VaultName $config.sre.backup.vault.name `
-                                             -Name $policy_name `
-                                             -Policy $blob_policy
-    if ($?) {
-            Add-LogMessage -Level Success "Successfully deployed backup policy $policy_name"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to deploy backup policy $policy_name"
-        }
-} else {
-    Add-LogMessage -Level InfoSuccess "Backup policy '$policy_name' already exists"
-}
+Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
+                                  -Vaultname $config.sre.backup.vault.name `
+                                  -PolicyName $config.sre.backup.blob.policy_name `
+                                  -DataSourcetype 'blob'
