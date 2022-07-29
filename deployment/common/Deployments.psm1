@@ -141,7 +141,7 @@ function Deploy-DataProtectionBackupVault {
 
     # Check if vault exists
     Add-LogMessage -Level Info "Ensuring that backup vault '$VaultName' exists..."
-    $vault = Get-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
+    $Vault = Get-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
                                              -VaultName $VaultName `
                                              -ErrorVariable notExists `
                                              -ErrorAction SilentlyContinue
@@ -153,11 +153,11 @@ function Deploy-DataProtectionBackupVault {
         # Create backup vault
         # The SystemAssigned identity is necessary to give the backup vault
         # appropriate permissions to backup resources.
-        $null = New-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
-                                                -VaultName $VaultName `
-                                                -StorageSetting $storagesetting `
-                                                -Location $Location `
-                                                -IdentityType "SystemAssigned"
+        $Vault = New-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
+                                                 -VaultName $VaultName `
+                                                 -StorageSetting $storagesetting `
+                                                 -Location $Location `
+                                                 -IdentityType "SystemAssigned"
 
         if ($?) {
             Add-LogMessage -Level Success "Successfully deployed backup vault $VaultName"
@@ -167,6 +167,8 @@ function Deploy-DataProtectionBackupVault {
     } else {
         Add-LogMessage -Level InfoSuccess "Backup vault '$VaultName' already exists"
     }
+
+return $Vault
 }
 Export-ModuleMember -Function Deploy-DataProtectionBackupVault
 
@@ -196,6 +198,7 @@ function Deploy-DataProtectionBackupPolicy {
                                              -ResourceGroupName $ResourceGroupName `
                                              -VaultName $VaultName `
                                              -ErrorAction SilentlyContinue
+
     if($Policy -eq $null) {
         Add-LogMessage -Level Info "[ ] Creating backup policy '$PolicyName'"
         $Policy = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType]
@@ -211,6 +214,8 @@ function Deploy-DataProtectionBackupPolicy {
     } else {
         Add-LogMessage -Level InfoSuccess "Backup policy '$PolicyName' already exists"
     }
+
+    return
 }
 Export-ModuleMember -Function Deploy-DataProtectionBackupPolicy
 

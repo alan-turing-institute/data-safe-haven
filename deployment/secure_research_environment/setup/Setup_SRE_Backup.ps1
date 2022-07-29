@@ -20,7 +20,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Deploy-ResourceGroup -Name $config.sre.backup.rg -Location $config.shm.location
 
 # Deploy data protection backup vault
-$null = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.rg `
+$Vault = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.rg `
                                          -VaultName $config.sre.backup.vault.name `
                                          -Location $config.sre.location
 
@@ -30,3 +30,24 @@ Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
                                   -Vaultname $config.sre.backup.vault.name `
                                   -PolicyName $config.sre.backup.blob.policy_name `
                                   -DataSourcetype 'blob'
+
+# Assign permissions required for backup to the Vault's managed identity
+$VaultIdentityId = $Vault.IdentityPrincipalId
+
+Add-LogMessage -Level Info "Ensuring that role assignment(s) for blob backup exists..."
+$Assignment = Get-AzRoleAssignment -ObjectId $VaultIdentityId `
+                     -RoleDefinitionName "Storage Account Backup Contributor" `
+                     -ResourceGroupName $config.sre.storage.rg
+if ($Assignment -eq $null) {
+    Add-LogMessage -Level Info "[ ] Creating role assignment(s) for blob backup"
+    New-AzRoleAssignment -ObjectId $VaultIdentityId `
+                         -RoleDefinitionName "Storage Account Backup Contributor" `
+                         -ResourceGroupName $config.sre.storage.rg
+    if ($?) {
+        Add-LogMessage -Level Success "Successfully created role assignment(s)"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to create role assignment(s)"
+    }
+} else {
+    Add-LogMessage -Level InfoSuccess "Role assignment(s) already exists"
+}

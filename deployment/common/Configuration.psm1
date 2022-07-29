@@ -709,6 +709,7 @@ function Get-SreConfig {
     $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
+        rg              = $storageRg
         accessPolicies  = [ordered]@{
             readOnly  = [ordered]@{
                 permissions = "rl"
