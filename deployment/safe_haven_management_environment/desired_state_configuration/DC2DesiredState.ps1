@@ -91,6 +91,17 @@ configuration CreateSecondaryDomainController {
             Name = "RSAT-AD-PowerShell"
         }
 
+        WindowsFeature DNS {
+            Ensure = "Present"
+            Name = "DNS"
+        }
+
+        WindowsFeature DnsServer {
+            Ensure = "Present"
+            Name = "RSAT-DNS-Server"
+            DependsOn = "[WindowsFeature]DNS"
+        }
+
         DnsServerAddress DnsServerAddress { # from NetworkingDsc
             Address = $PrimaryDomainControllerIp
             AddressFamily = "IPv4"
