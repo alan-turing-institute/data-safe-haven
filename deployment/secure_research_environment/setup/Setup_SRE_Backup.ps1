@@ -26,10 +26,10 @@ $Vault = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.
 
 # Create blob backup policy
 # This enforces the default policy for blobs
-Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
-                                  -Vaultname $config.sre.backup.vault.name `
-                                  -PolicyName $config.sre.backup.blob.policy_name `
-                                  -DataSourcetype 'blob'
+$Policy = Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
+                                            -Vaultname $config.sre.backup.vault.name `
+                                            -PolicyName $config.sre.backup.blob.policy_name `
+                                            -DataSourcetype 'blob'
 
 # Assign permissions required for backup to the Vault's managed identity
 $VaultIdentityId = $Vault.IdentityPrincipalId
@@ -60,3 +60,12 @@ if ($Assignment -eq $null) {
 } else {
     Add-LogMessage -Level InfoSuccess "Role assignment(s) already exists"
 }
+
+# Create blob backup instance
+$Instance = Initialize-AzDataProtectionBackupInstance -DataSourceType  "AzureBlob" `
+                                                      -DataSourceLocation $PersistentStorageAccount.Location `
+                                                      -PolicyId $Policy.Id `
+                                                      -DataSourceId $PersistentStorageAccount.Id
+New-AzDataProtectionBackupInstance -ResourceGroupName $config.sre.backup.rg `
+                                   -VaultName $config.sre.backup.vault.name `
+                                   -BackupInstance $Instance

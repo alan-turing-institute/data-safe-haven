@@ -215,7 +215,7 @@ function Deploy-DataProtectionBackupPolicy {
         Add-LogMessage -Level InfoSuccess "Backup policy '$PolicyName' already exists"
     }
 
-    return
+    return $Policy
 }
 Export-ModuleMember -Function Deploy-DataProtectionBackupPolicy
 
