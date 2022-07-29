@@ -785,6 +785,9 @@ function Get-SreConfig {
         vault = [ordered]@{
             name = "$($config.sre.id)-vault"
         }
+        blob  = [ordered]@{
+            policy_name = "blobbackuppolicy"
+        }
     }
 
 

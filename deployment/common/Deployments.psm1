@@ -140,15 +140,16 @@ function Deploy-DataProtectionBackupVault {
     )
 
     # Check if vault exists
+    Add-LogMessage -Level Info "Ensuring that backup vault '$VaultName' exists..."
     $vault = Get-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
                                              -VaultName $VaultName `
                                              -ErrorVariable notExists `
                                              -ErrorAction SilentlyContinue
 
     if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating backup vault '$VaultName'"
         $storagesetting = New-AzDataProtectionBackupVaultStorageSettingObject -DataStoreType VaultStore `
                                                                               -Type LocallyRedundant
-
         $null = New-AzDataProtectionBackupVault -ResourceGroupName $ResourceGroupName `
                                                 -VaultName $VaultName `
                                                 -StorageSetting $storagesetting `
@@ -159,6 +160,8 @@ function Deploy-DataProtectionBackupVault {
         } else {
             Add-LogMessage -Level Fatal "Failed to deploy backup vault $VaultName"
         }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Backup vault '$VaultName' already exists"
     }
 }
 Export-ModuleMember -Function Deploy-DataProtectionBackupVault
