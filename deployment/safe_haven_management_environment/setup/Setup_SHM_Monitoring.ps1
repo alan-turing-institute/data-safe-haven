@@ -62,10 +62,10 @@ foreach ($shmResourceGroup in $shmResourceGroups) {
 # ------------------------------------------------
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
 # Create Windows VM update schedule
-$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate-SHM-$($config.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
 $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
 # Create Linux VM update schedule
-$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate-SHM-$($config.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
 $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
 
 

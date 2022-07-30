@@ -25,8 +25,8 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 Add-LogMessage -Level Info "[ ] Getting Log Analytics Workspace details..."
 try {
     $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-    $workspace = Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
-    $key = Get-AzOperationalInsightsWorkspaceSharedKey -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg
+    $workspace = Deploy-LogAnalyticsWorkspace -Name $config.shm.monitoring.loggingWorkspace.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.sre.location
+    $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
     $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
     Add-LogMessage -Level Success "Retrieved Log Analytics Workspace '$($workspace.Name)."
 } catch {
@@ -39,15 +39,33 @@ try {
 Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SRE VMs..."
 try {
     $sreResourceGroups = Get-SreResourceGroups -sreConfig $config
+    $VMs = @{ "Windows" = @(); "Linux" = @() }
     foreach ($sreResourceGroup in $sreResourceGroups) {
         foreach ($vm in $(Get-AzVM -ResourceGroup $sreResourceGroup.ResourceGroupName)) {
-            $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $key.PrimarySharedKey
+            $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
+            if ($null -ne $vm.OSProfile.LinuxConfiguration) {
+                $VMs["Linux"] += $VM
+            } elseif ($null -ne $vm.OSProfile.WindowsConfiguration) {
+                $VMs["Windows"] += $VM
+            }
         }
     }
     Add-LogMessage -Level Success "Ensured that logging agent is installed on all SRE VMs."
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that logging agent is installed on all SRE VMs!" -Exception $_.Exception
 }
+
+
+# Register all connected VMs for update management
+# ------------------------------------------------
+$account = Deploy-AutomationAccount -Name $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.shm.location
+#$null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates" # re-register all connected VMs for Update Management
+# Create Windows VM update schedule
+$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate-SRE-$($config.sre.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
+# Create Linux VM update schedule
+$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate-SRE-$($config.sre.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
 
 
 # Switch back to original subscription
