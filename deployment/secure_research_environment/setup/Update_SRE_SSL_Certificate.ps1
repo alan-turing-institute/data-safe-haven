@@ -222,11 +222,11 @@ if ($requestCertificate) {
     # Import signed certificate
     # -------------------------
     Add-LogMessage -Level Info "Importing signed certificate into Key Vault '$($config.sre.keyVault.name)'..."
-    $kvCertificate = Import-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -FilePath $certificateFilePath
-    if ($?) {
+    try {
+        $kvCertificate = Import-AzKeyVaultCertificate -VaultName $config.sre.keyVault.name -Name $certificateName -FilePath $certificateFilePath -ErrorAction Stop
         Add-LogMessage -Level Success "Certificate import succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Certificate import failed!"
+    } catch {
+        Add-LogMessage -Level Fatal "Certificate import failed!" -Exception $_.Exception
     }
 }
 
