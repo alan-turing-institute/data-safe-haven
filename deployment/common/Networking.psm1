@@ -99,7 +99,7 @@ function Add-WindowsVMtoDomain {
     )
     Add-LogMessage -Level Info "[ ] Attempting to join VM '$Name' to domain '$DomainName'"
     $domainJoinCredentials = New-Object System.Management.Automation.PSCredential("${DomainName}\${DomainJoinUsername}", $DomainJoinPassword)
-    $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
+    $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -Name "joindomain" -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
     if ($?) {
         Add-LogMessage -Level Success "Joined VM '$Name' to domain '$DomainName'"
     } else {
