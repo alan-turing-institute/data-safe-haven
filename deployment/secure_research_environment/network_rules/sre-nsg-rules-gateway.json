@@ -132,6 +132,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMonitoringToolsOutbound",
+        "access": "Allow",
+        "description": "Allow connections to local monitoring tools",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.monitoring.cidr}}",
+        "destinationPortRange": "443",
+        "direction": "Outbound",
+        "priority": 1500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.remoteDesktop.gateway.ip}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
