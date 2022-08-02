@@ -197,11 +197,14 @@ if ($restrictedSubnets) {
 # -----------------------------------------
 # If a domain has previously been queried and is in the cache, it will be
 # returned without recursion to external DNS servers
-Write-Output "`nClearing DNS cache..."
+Write-Output "`nDisabling DNS cache..."
 try {
-    $null = Clear-DnsServerCache -Force
-    Write-Output " [o] Successfully cleared DNS cache."
+    Set-ItemProperty HKLM:\System\CurrentControlSet\Services\DNS\Parameters MaxCacheTtl 0x0 -Type DWord -ErrorAction Stop
+    Restart-Service -Name DNS -ErrorAction Stop
+    Start-Sleep -Seconds 30
+    Clear-DnsServerCache -Force -ErrorAction Stop
+    Write-Output " [o] Successfully disabled DNS cache."
 } catch {
-    Write-Output " [x] Failed to clear DNS cache."
+    Write-Output " [x] Failed to disable DNS cache."
     Write-Output $_.Exception
 }
