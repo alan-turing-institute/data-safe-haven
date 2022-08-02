@@ -75,21 +75,26 @@ elif [ "$OUTBOUND_INTERNET" == "Allow" ]; then
     confirm_dns_lookup_succeeds "google.com" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_succeeds "facebook.com" || FAILED_TESTS=$(($FAILED_TESTS + 1))
 fi
+# Check a domain on the allowlist which should always work
+confirm_dns_lookup_succeeds "time.google.com" || FAILED_TESTS=$(($FAILED_TESTS + 1))
 
 echo -e "\nTesting DNS lookup for non-existent external domains via Azure Platform DNS servers..."
 confirm_dns_lookup_fails "fail.example.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
 
 echo -e "\nTesting DNS lookup for resolvable external domains via Azure Platform DNS servers..."
 if [ "$OUTBOUND_INTERNET" == "Deny" ]; then
+    # All domains should fail as the Azure DNS server is not directly contactable
     confirm_dns_lookup_fails "example.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_fails "doi.org" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_fails "google.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_fails "facebook.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
+    confirm_dns_lookup_fails "time.google.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
 elif [ "$OUTBOUND_INTERNET" == "Allow" ]; then
     confirm_dns_lookup_succeeds "example.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_succeeds "doi.org" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_succeeds "google.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
     confirm_dns_lookup_succeeds "facebook.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
+    confirm_dns_lookup_succeeds "time.google.com" "168.63.129.16" || FAILED_TESTS=$(($FAILED_TESTS + 1))
 fi
 
 if [ $FAILED_TESTS -eq 0 ]; then
