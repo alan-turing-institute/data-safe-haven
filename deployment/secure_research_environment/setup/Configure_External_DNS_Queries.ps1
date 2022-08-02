@@ -9,6 +9,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -23,15 +24,28 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
+# Construct list of always-allowed FQDNs
+# --------------------------------------
+$templateParams = $config.shm
+$templateParams.logging["workspaceId"] = (Get-AzOperationalInsightsWorkspace -Name $config.shm.logging.workspaceName -ResourceGroup $config.shm.logging.rg).CustomerId
+$firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $templateParams -AsHashtable
+$allowedFqdns = $firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns } | Sort-Object -Unique
+
+
+# Construct lists of CIDRs to apply restrictions to
+# -------------------------------------------------
+$cidrsToRestrict = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr, $config.sre.network.vnet.subnets.databases.cidr, $config.sre.network.vnet.subnets.webapps.cidr)
+$cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
+
+
 # Configure external DNS resolution for SRDs via SHM DNS servers
 # --------------------------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
-$cidrsToBlock = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr)
-$cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
 $params = @{
-    sreId                            = $config.sre.id
-    blockedCidrsCommaSeparatedList   = ($cidrsToBlock -join ",")
-    exceptionCidrsCommaSeparatedList = ($cidrsToAllow -join ",")
+    AllowedFqdnsCommaSeparatedList      = ($allowedFqdns -join ",")
+    RestrictedCidrsCommaSeparatedList   = ($cidrsToRestrict -join ",")
+    SreId                               = $config.sre.id
+    UnrestrictedCidrsCommaSeparatedList = ($cidrsToAllow -join ",")
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "Configure_External_DNS_Queries_Remote.ps1"
 foreach ($dnsServerName in @($config.shm.dc.vmName, $config.shm.dcb.vmName)) {
