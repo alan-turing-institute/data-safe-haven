@@ -142,7 +142,7 @@
                 "{{.}}",
             {{/shm.time.ntp.serverAddresses}}
         ],
-        "destinationPortRange": 123,
+        "destinationPortRange": "123",
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
@@ -171,6 +171,22 @@
         "destinationPortRange": ["53", "443"],
         "direction": "Outbound",
         "priority": 3300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": [
+            {{#shm.monitoring.updateServers.linux}}
+                "{{.}}",
+            {{/shm.monitoring.updateServers.linux}}
+        ],
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3600,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"

@@ -72,18 +72,34 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "DenyExternalNTPOutbound",
-        "access": "Deny",
-        "description": "Deny outbound connections to external NTP servers",
+        "name": "AllowExternalNTPOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external NTP servers",
         "destinationAddressPrefix": [
             {{#time.ntp.serverAddresses}}
                 "{{.}}",
             {{/time.ntp.serverAddresses}}
         ],
-        "destinationPortRange": 123,
+        "destinationPortRange": "123",
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.linux}}
+                "{{.}}",
+            {{/monitoring.updateServers.linux}}
+        ],
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3600,
+        "protocol": "TCP",
         "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
         "sourcePortRange": "*"
     },

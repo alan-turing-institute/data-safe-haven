@@ -219,6 +219,23 @@ function Get-ShmConfig {
         privatelink       = @{
             name = "shm-$($shm.id)-privatelinkscope".ToLower()
         }
+        updateServers     = @{
+            linux   = (
+                @("91.189.91.38", "91.189.91.39", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, security.ubuntu.com
+                @("51.132.212.186") # azure.archive.ubuntu.com
+            )
+            windows = (
+                @("96.17.178.173", "96.17.178.180") + # au.download.windowsupdate.com
+                @("8.238.55.126", "8.238.60.254", "8.250.17.254", "8.238.5.126", "8.238.9.126") + # ctldl.windowsupdate.com
+                @("93.184.221.240") + # download.windowsupdate.com
+                @("52.167.107.72") + # eus2-jobruntimedata-prod-su1.azure-automation.net
+                @("20.83.81.160", "20.62.190.187") + # fe2cr.update.microsoft.com
+                @("20.49.150.241") + # settings-win.data.microsoft.com
+                @("52.152.110.14") + # slscr.update.microsoft.com
+                @("20.189.173.22") + # umwatson.events.data.microsoft.com
+                @("13.89.179.9") # v10.events.data.microsoft.com
+            )
+        }
     }
 
     # Logging config

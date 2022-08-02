@@ -152,7 +152,7 @@
                 "{{.}}",
             {{/shm.time.ntp.serverAddresses}}
         ],
-        "destinationPortRange": 123,
+        "destinationPortRange": "123",
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",

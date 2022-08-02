@@ -104,7 +104,7 @@
                         ]
                     },
                     {
-                        "name": "AllowUbuntuUpdate",
+                        "name": "AllowLinuxUpdate",
                         "protocols": [
                             "http:80",
                             "https:443"
@@ -124,10 +124,7 @@
                             "security.ubuntu.com"
                         ],
                         "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.cidr}}",
-                            "{{network.mirrorVnets.tier3.cidr}}",
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
+                            "*"
                         ]
                     },
                     {
@@ -299,7 +296,7 @@
                             "www.powershellgallery.com"
                         ],
                         "sourceAddresses": [
-                            "{{dc.ip}}"
+                            "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
