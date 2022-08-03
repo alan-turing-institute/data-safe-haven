@@ -54,10 +54,9 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 # Set firewall rules from template
 # --------------------------------
 $workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
-$workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
-$config.logging["workspaceId"] = $workspaceId
+$config.logging["workspaceId"] = $workspace.CustomerId
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 
