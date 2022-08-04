@@ -59,6 +59,28 @@ function Deploy-AutomationAccount {
 Export-ModuleMember -Function Deploy-AutomationAccount
 
 
+# Create automation query if it does not exist
+# --------------------------------------------
+function Deploy-AutomationAzureQuery {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Automation account to deploy the schedule into")]
+        [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource groups covered by the query")]
+        [Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels.PSResourceGroup[]]$ResourceGroups
+    )
+    try {
+        return New-AzAutomationUpdateManagementAzureQuery -AutomationAccountName $Account.AutomationAccountName `
+                                                          -Location $Account.location `
+                                                          -ResourceGroupName $Account.ResourceGroupName `
+                                                          -Scope @($ResourceGroups | ForEach-Object { $_.ResourceId } ) `
+                                                          -ErrorAction Stop
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to create automation query!" -Exception $_.Exception
+    }
+}
+Export-ModuleMember -Function Deploy-AutomationAzureQuery
+
+
 # Create automation schedule if it does not exist
 # -----------------------------------------------
 function Deploy-AutomationScheduleDaily {
@@ -74,26 +96,26 @@ function Deploy-AutomationScheduleDaily {
         [Parameter(Mandatory = $false, HelpMessage = "Time zone")]
         [System.TimeZoneInfo]$TimeZone = "UTC"
     )
-    Add-LogMessage -Level Info "Ensuring that automation schedule '$Name' exists..."
-    $schedule = Get-AzAutomationSchedule -ResourceGroupName $Account.ResourceGroupName -AutomationAccountName $Account.AutomationAccountName | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
-    if ($schedule) {
-        Add-LogMessage -Level InfoSuccess "Automation schedule '$Name' already exists"
-    } else {
+    try {
+        Add-LogMessage -Level Info "Ensuring that automation schedule '$Name' exists..."
+        # Remove any existing automation schedule with the same name, noting that a UUID might have been appended to the name
+        $schedule = Get-AzAutomationSchedule -ResourceGroupName $Account.ResourceGroupName -AutomationAccountName $Account.AutomationAccountName | Where-Object { $_.Name -like "${Name}*" } | Remove-AzAutomationSchedule -Force
+        # Create the new automation schedule
         Add-LogMessage -Level Info "[ ] Creating automation schedule '$Name'"
         $startTime = (Get-Date $Time).AddDays(1)
         $schedule = New-AzAutomationSchedule -AutomationAccountName $account.AutomationAccountName `
                                              -DayInterval $DayInterval `
+                                             -ForUpdateConfiguration `
                                              -Name $Name `
                                              -ResourceGroupName $account.ResourceGroupName `
                                              -StartTime $startTime `
-                                             -TimeZone $TimeZone.Id
-        if ($?) {
-            Add-LogMessage -Level Success "Created automation schedule '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create automation schedule '$Name'!"
-        }
+                                             -TimeZone $TimeZone.Id `
+                                             -ErrorAction Stop
+        Add-LogMessage -Level Success "Created automation schedule '$($schedule.Name)'"
+        return $schedule
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to create automation schedule '$Name'!" -Exception $_.Exception
     }
-    return $schedule
 }
 Export-ModuleMember -Function Deploy-AutomationScheduleDaily
 
@@ -134,47 +156,55 @@ function Register-VmsWithAutomationSchedule {
         [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
         [Parameter(Mandatory = $false, HelpMessage = "How many hours to allow for updates")]
         [int]$DurationHours = 2,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByQuery", HelpMessage = "Azure query to apply the schedule to")]
+        [Microsoft.Azure.Commands.Automation.Model.UpdateManagement.AzureQueryProperties]$Query,
         [Parameter(Mandatory = $true, HelpMessage = "Schedule to apply to the VMs")]
         [Microsoft.Azure.Commands.Automation.Model.Schedule]$Schedule,
-        [Parameter(Mandatory = $true, HelpMessage = "IDs of VMs to apply the schedule to")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByVMId", HelpMessage = "IDs of VMs to apply the schedule to")]
         [AllowNull()]
         [string[]]$VmIds,
         [Parameter(Mandatory = $true, HelpMessage = "Type of VMs")]
         [ValidateSet("Linux", "Windows")]
         [string]$VmType
     )
-    if ((-not $VmIds) -or ($VmIds.Count -eq 0)) {
-        Add-LogMessage -Level Warning "Skipping application of automation schedule '$($Schedule.Name)' as no VMs were specified."
-        return $null
+    # Use either query or VM IDs
+    $params = @{ "Duration" = (New-TimeSpan -Hours $DurationHours) }
+    if ($Query) {
+        $params["AzureQuery"] = $Query
+    } else {
+        if ((-not $VmIds) -or ($VmIds.Count -eq 0)) {
+            Add-LogMessage -Level Warning "Skipping application of automation schedule '$($ScheduleName)' as no VMs were specified."
+            return $null
+        }
+        $params["AzureVMResourceId"] = $VmIds
     }
-    Add-LogMessage -Level Info "Applying automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)..."
+    Add-LogMessage -Level Info "Applying automation schedule '$($Schedule.Name)' for $VmType VM(s)..."
     try {
-        Add-LogMessage -Level Info "[ ] Registering automation schedule for $VmType VMs..."
-        $null = Get-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName $Account.ResourceGroupName -AutomationAccountName $Account.AutomationAccountName | Where-Object { $_.Name -eq $schedule.Name } | Remove-AzAutomationSoftwareUpdateConfiguration
-        $duration = New-TimeSpan -Hours $DurationHours
+        # Remove any existing update configuration with the same name
+        $null = Remove-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName "$($Account.ResourceGroupName)" -AutomationAccountName "$($Account.AutomationAccountName)" -Name $Schedule.Name -ErrorAction SilentlyContinue
         if ($VmType -eq "Windows") {
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
-                                                                  -AzureVMResourceId $VmIds `
-                                                                  -Duration $duration `
+                                                                  -Confirm:$false `
+                                                                  -ErrorAction Stop `
                                                                   -IncludedUpdateClassification @("Unclassified", "Critical", "Security", "UpdateRollup", "FeaturePack", "ServicePack", "Definition", "Tools", "Updates") `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `
                                                                   -Windows `
-                                                                  -ErrorAction Stop
+                                                                  @params
         } else {
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
-                                                                  -AzureVMResourceId $VmIds `
-                                                                  -Duration $duration `
+                                                                  -Confirm:$false `
+                                                                  -ErrorAction Stop `
                                                                   -IncludedPackageClassification @("Unclassified", "Critical", "Security", "Other") `
                                                                   -Linux `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `
-                                                                  -ErrorAction Stop
+                                                                  @params
         }
+        Add-LogMessage -Level Success "Applied automation schedule '$($Schedule.Name)' to $VmType VM(s)."
+        return $config
     } catch {
-        Add-LogMessage -Level Fatal "Failed to apply automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)!"
+        Add-LogMessage -Level Fatal "Failed to apply automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)!" -Exception $_.Exception
     }
-    Add-LogMessage -Level Success "Applied automation schedule '$($Schedule.Name)' to $($VmIds.Count) VM(s)."
-    return $config
 }
 Export-ModuleMember -Function Register-VmsWithAutomationSchedule
