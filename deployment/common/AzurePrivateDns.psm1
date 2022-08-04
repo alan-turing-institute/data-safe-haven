@@ -91,3 +91,27 @@ function Deploy-PrivateDnsRecordSet {
     return $record
 }
 Export-ModuleMember -Function Deploy-PrivateDnsRecordSet
+
+
+# Create an Azure Private DNS zone
+# --------------------------------
+function Get-PrivateDnsZones {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subscription to retrieve zones for")]
+        [string]$SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to check for zones")]
+        [string]$ResourceGroupName
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop
+        $zones = Get-AzPrivateDnsZone -ResourceGroupName $ResourceGroupName
+        return $zones
+    } catch {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Fatal "Failed to load private DNS zones for resource group '$ResourceGroupName' in subscription '$SubscriptionName'!" -Exception $_.Exception
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction SilentlyContinue
+    }
+}
+Export-ModuleMember -Function Get-PrivateDnsZones
