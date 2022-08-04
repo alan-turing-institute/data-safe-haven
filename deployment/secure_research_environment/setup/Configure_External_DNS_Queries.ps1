@@ -9,6 +9,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -29,6 +30,7 @@ $templateParams = $config.shm
 $templateParams.logging["workspaceId"] = (Deploy-LogAnalyticsWorkspace -Name $config.shm.monitoring.loggingWorkspace.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.sre.location).CustomerId
 $firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $templateParams -AsHashtable
 $allowedFqdns = $firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns } | Sort-Object -Unique
+$allowedFqdns += Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name.Replace("privatelink", "*") }
 
 
 # Construct lists of CIDRs to apply restrictions to
