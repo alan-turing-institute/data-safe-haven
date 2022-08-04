@@ -10,6 +10,7 @@ param(
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Automation -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/DataStructures -Force -ErrorAction Stop
@@ -94,6 +95,18 @@ if ($dryRun.IsPresent) {
     Add-LogMessage -Level Info "SRE data would be removed from the SHM by running: $scriptPath -shmId $shmId -sreId $sreId"
 } else {
     Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
+}
+
+
+# Remove update configuration from the SHM automation account
+# -----------------------------------------------------------
+try {
+    Add-LogMessage -Level Info "Removing update automation for SRE $sreId..."
+    $null = Remove-AzAutomationSoftwareUpdateConfiguration -Name "sre-$($config.sre.id.ToLower())-windows" -AutomationAccountName $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -ErrorAction Stop
+    $null = Remove-AzAutomationSoftwareUpdateConfiguration -Name "sre-$($config.sre.id.ToLower())-linux" -AutomationAccountName $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -ErrorAction Stop
+    Add-LogMessage -Level Success "Removed update automation for SRE $sreId"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to remove update automation for SRE $sreId!" -Exception $_.Exception
 }
 
 
