@@ -8,8 +8,10 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
@@ -37,18 +39,10 @@ try {
 # Ensure logging agent is installed on all SRE VMs
 # ------------------------------------------------
 Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SRE VMs..."
+$sreResourceGroups = Get-SreResourceGroups -sreConfig $config
 try {
-    $sreResourceGroups = Get-SreResourceGroups -sreConfig $config
-    $VMs = @{ "Windows" = @(); "Linux" = @() }
-    foreach ($sreResourceGroup in $sreResourceGroups) {
-        foreach ($vm in $(Get-AzVM -ResourceGroup $sreResourceGroup.ResourceGroupName)) {
-            $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
-            if ($null -ne $vm.OSProfile.LinuxConfiguration) {
-                $VMs["Linux"] += $VM
-            } elseif ($null -ne $vm.OSProfile.WindowsConfiguration) {
-                $VMs["Windows"] += $VM
-            }
-        }
+    $null = $sreResourceGroups | ForEach-Object { Get-AzVM -ResourceGroup $_.ResourceGroupName} | ForEach-Object {
+        Deploy-VirtualMachineMonitoringExtension -VM $_ -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
     }
     Add-LogMessage -Level Success "Ensured that logging agent is installed on all SRE VMs."
 } catch {
@@ -59,13 +53,22 @@ try {
 # Register all connected VMs for update management
 # ------------------------------------------------
 $account = Deploy-AutomationAccount -Name $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.shm.location
-#$null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates" # re-register all connected VMs for Update Management
+$sreQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $sreResourceGroups
 # Create Windows VM update schedule
-$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate-SRE-$($config.sre.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
+$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "sre-$($config.sre.id.ToLower())-windows" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $sreQuery -Schedule $windowsSchedule -VmType "Windows"
 # Create Linux VM update schedule
-$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate-SRE-$($config.sre.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
+$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "sre-$($config.sre.id.ToLower())-linux" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $sreQuery -Schedule $linuxSchedule -VmType "Linux"
+
+
+# Connect the private DNS zones to all virtual networks in the SRE
+# ----------------------------------------------------------------
+foreach ($PrivateZone in (Get-AzPrivateDnsZone -ResourceGroupName $config.shm.network.vnet.rg)) {
+    foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg) {
+        $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
+    }
+}
 
 
 # Switch back to original subscription

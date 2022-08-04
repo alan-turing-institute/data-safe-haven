@@ -43,30 +43,28 @@ $null = Connect-AutomationAccountLogAnalytics -AutomationAccountName $account.Au
 
 # Ensure all SHM VMs are registered with the logging workspace
 # ---------------------------------------------------------------
-$rgFilter = "RG_SHM_$($config.id)*"
-$shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $rgFilter } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-$VMs = @{ "Windows" = @(); "Linux" = @() }
-foreach ($shmResourceGroup in $shmResourceGroups) {
-    foreach ($vm in $(Get-AzVM -ResourceGroup $shmResourceGroup.ResourceGroupName)) {
-        $null = Deploy-VirtualMachineMonitoringExtension -VM $vm -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
-        if ($null -ne $vm.OSProfile.LinuxConfiguration) {
-            $VMs["Linux"] += $VM
-        } elseif ($null -ne $vm.OSProfile.WindowsConfiguration) {
-            $VMs["Windows"] += $VM
-        }
+Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SHM VMs..."
+$shmResourceGroups = Get-ShmResourceGroups -shmConfig $config
+try {
+    $null = $shmResourceGroups | ForEach-Object { Get-AzVM -ResourceGroup $_.ResourceGroupName} | ForEach-Object {
+        Deploy-VirtualMachineMonitoringExtension -VM $_ -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
     }
+    Add-LogMessage -Level Success "Ensured that logging agent is installed on all SHM VMs."
+} catch {
+    Add-LogMessage -Level Fatal "Failed to ensure that logging agent is installed on all SHM VMs!" -Exception $_.Exception
 }
 
 
 # Register all connected VMs for update management
 # ------------------------------------------------
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
+$shmQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $shmResourceGroups
 # Create Windows VM update schedule
-$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "WindowsUpdate-SHM-$($config.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $windowsSchedule -VmIds ($VMs["Windows"] | ForEach-Object { $_.Id }) -VmType "Windows"
+$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "shm-$($config.id)-windows".ToLower() -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $shmQuery -Schedule $windowsSchedule -VmType "Windows"
 # Create Linux VM update schedule
-$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "LinuxUpdate-SHM-$($config.id)" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Schedule $linuxSchedule -VmIds ($VMs["Linux"] | ForEach-Object { $_.Id }) -VmType "Linux"
+$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "shm-$($config.id)-linux".ToLower() -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $shmQuery -Schedule $linuxSchedule -VmType "Linux"
 
 
 # Connect log analytics workspace to private link scope
