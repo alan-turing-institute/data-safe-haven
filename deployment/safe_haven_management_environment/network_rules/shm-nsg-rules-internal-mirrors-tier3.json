@@ -104,6 +104,22 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowAzureAutomationOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure automation servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.azureAutomation}}
+                "{{.}}",
+            {{/monitoring.updateServers.azureAutomation}}
+        ],
+        "destinationPortRange": ["443"],
+        "direction": "Outbound",
+        "priority": 3800,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.mirrorVnets.tier3.subnets.internal.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAllOtherOutbound",
         "access": "Deny",
         "description": "Deny all other outbound traffic.",

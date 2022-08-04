@@ -78,26 +78,156 @@
                 },
                 "rules": [
                     {
-                        "name": "AllowWindowsUpdate",
+                        "name": "AllowAzureADConnectOperations",
                         "protocols": [
-                            "http:80",
                             "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.download.windowsupdate.com",
-                            "*.update.microsoft.com",
-                            "*.windowsupdate.com",
-                            "*.windowsupdate.microsoft.com",
-                            "download.microsoft.com",
-                            "download.windowsupdate.com",
-                            "ntservicepack.microsoft.com",
-                            "settings-win.data.microsoft.com",
-                            "test.stats.update.microsoft.com",
-                            "v10.events.data.microsoft.com",
-                            "v10.vortex-win.data.microsoft.com",
-                            "v10c.events.data.microsoft.com",
-                            "windowsupdate.microsoft.com"
+                            "*.aadconnecthealth.azure.com",
+                            "*.adhybridhealth.azure.com",
+                            "*.blob.core.windows.net",
+                            "*.events.data.microsoft.com",
+                            "*.servicebus.windows.net",
+                            "adminwebservice.microsoftonline.com",
+                            "passwordreset.microsoftonline.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADConnectSetup",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.adhybridhealth.azure.com",
+                            "management.azure.com",
+                            "policykeyservice.dc.ad.msft.net",
+                            "www.office.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureADLogin",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "aadcdn.msftauth.net",
+                            "login.live.com",
+                            "login.microsoftonline.com",
+                            "login.windows.net",
+                            "secure.aadcdn.microsoftonline-p.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureAutomationOperations",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ac-jobruntimedata-prod-su1.azure-automation.net",
+                            "ae-jobruntimedata-prod-su1.azure-automation.net",
+                            "ase-jobruntimedata-prod-su1.azure-automation.net",
+                            "cc-jobruntimedata-prod-su1.azure-automation.net",
+                            "cid-jobruntimedata-prod-su1.azure-automation.net",
+                            "eus2-jobruntimedata-prod-su1.azure-automation.net",
+                            "jpe-jobruntimedata-prod-su1.azure-automation.net",
+                            "ne-jobruntimedata-prod-su1.azure-automation.net",
+                            "scus-jobruntimedata-prod-su1.azure-automation.net",
+                            "sea-jobruntimedata-prod-su1.azure-automation.net",
+                            "stzn-jobruntimedata-prod-su1.azure-automation.net",
+                            "uks-jobruntimedata-prod-su1.azure-automation.net",
+                            "usge-jobruntimedata-prod-su1.azure-automation.us",
+                            "wcus-jobruntimedata-prod-su1.azure-automation.net",
+                            "we-jobruntimedata-prod-su1.azure-automation.net",
+                            "wus2-jobruntimedata-prod-su1.azure-automation.net"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureMFAConnectOperations",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "css.phonefactor.net",
+                            "pfd.phonefactor.net",
+                            "pfd2.phonefactor.net"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowAzureMFAConnectSetup",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "adnotifications.windowsazure.com",
+                            "credentials.azure.com",
+                            "strongauthenticationservice.auth.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowCertificateStatusCheck",
+                        "protocols": [
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "crl.microsoft.com",
+                            "crl3.digicert.com",
+                            "crl4.digicert.com",
+                            "ocsp.digicert.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowDocker",
+                        "protocols": [
+                            "https:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.docker.com",
+                            "*.docker.io"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowGoogleNTP",
+                        "protocols": [
+                            "http:123"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            {{#time.ntp.serverFqdns}}
+                                "{{.}}",
+                            {{/time.ntp.serverFqdns}}
                         ],
                         "sourceAddresses": [
                             "*"
@@ -128,70 +258,7 @@
                         ]
                     },
                     {
-                        "name": "AllowDocker",
-                        "protocols": [
-                            "https:443"
-                       ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "*.docker.com",
-                            "*.docker.io"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowCertificateStatusCheck",
-                        "protocols": [
-                            "http:80"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "crl.microsoft.com",
-                            "crl3.digicert.com",
-                            "crl4.digicert.com",
-                            "ocsp.digicert.com"
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowNTP",
-                        "protocols": [
-                            "http:123"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            {{#time.ntp.serverFqdns}}
-                                "{{.}}",
-                            {{/time.ntp.serverFqdns}}
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowPyPIPackageInstallation",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "files.pythonhosted.org",
-                            "pypi.org"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
-                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowCRANPackageInstallation",
+                        "name": "AllowPackageInstallationCRAN",
                         "protocols": [
                             "https:443"
                         ],
@@ -207,82 +274,20 @@
                         ]
                     },
                     {
-                        "name": "AllowAzureADLogin",
+                        "name": "AllowPackageInstallationPyPI",
                         "protocols": [
                             "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "aadcdn.msftauth.net",
-                            "login.live.com",
-                            "login.microsoftonline.com",
-                            "login.windows.net",
-                            "secure.aadcdn.microsoftonline-p.com"
+                            "files.pythonhosted.org",
+                            "pypi.org"
                         ],
                         "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowAzureMFAConnectOperations",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "css.phonefactor.net",
-                            "pfd.phonefactor.net",
-                            "pfd2.phonefactor.net"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowADConnectOperations",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "*.aadconnecthealth.azure.com",
-                            "*.adhybridhealth.azure.com",
-                            "*.blob.core.windows.net",
-                            "*.events.data.microsoft.com",
-                            "*.servicebus.windows.net",
-                            "adminwebservice.microsoftonline.com",
-                            "passwordreset.microsoftonline.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowNPSConnectionsToAzureMFA",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "adnotifications.windowsazure.com",
-                            "credentials.azure.com",
-                            "strongauthenticationservice.auth.microsoft.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowMSOnlinePSModule",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "provisioningapi.microsoftonline.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
+                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
+                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
                         ]
                     },
                     {
@@ -300,19 +305,41 @@
                         ]
                     },
                     {
-                        "name": "AllowADConnectSetup",
+                        "name": "AllowPowershellModuleMSOnlineConnections",
                         "protocols": [
                             "https:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.adhybridhealth.azure.com",
-                            "management.azure.com",
-                            "policykeyservice.dc.ad.msft.net",
-                            "www.office.com"
+                            "provisioningapi.microsoftonline.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowWindowsUpdate",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.download.windowsupdate.com",
+                            "*.events.data.microsoft.com",
+                            "*.update.microsoft.com",
+                            "*.windowsupdate.com",
+                            "*.windowsupdate.microsoft.com",
+                            "download.microsoft.com",
+                            "download.windowsupdate.com",
+                            "ntservicepack.microsoft.com",
+                            "settings-win.data.microsoft.com",
+                            "test.stats.update.microsoft.com",
+                            "v10.vortex-win.data.microsoft.com",
+                            "windowsupdate.microsoft.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
                         ]
                     }
                 ]

@@ -128,6 +128,22 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowAzureAutomationOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure automation servers",
+        "destinationAddressPrefix": [
+            {{#shm.monitoring.updateServers.azureAutomation}}
+                "{{.}}",
+            {{/shm.monitoring.updateServers.azureAutomation}}
+        ],
+        "destinationPortRange": ["443"],
+        "direction": "Outbound",
+        "priority": 3800,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",

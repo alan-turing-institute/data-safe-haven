@@ -196,6 +196,38 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowWindowsUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Windows update servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.windows}}
+                "{{.}}",
+            {{/monitoring.updateServers.windows}}
+        ],
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3700,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowAzureAutomationOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure automation servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.azureAutomation}}
+                "{{.}}",
+            {{/monitoring.updateServers.azureAutomation}}
+        ],
+        "destinationPortRange": ["443"],
+        "direction": "Outbound",
+        "priority": 3800,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",

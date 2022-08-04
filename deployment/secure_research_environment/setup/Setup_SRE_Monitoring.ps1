@@ -9,6 +9,7 @@ Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
@@ -22,17 +23,27 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Get Log Analytics Workspace details
+# Connect the private DNS zones to all virtual networks in the SRE
+# Note that this must be done before connecting the VMs to log analytics to ensure that they use the private link
+# ---------------------------------------------------------------------------------------------------------------
+foreach ($PrivateZone in (Get-AzPrivateDnsZone -ResourceGroupName $config.shm.network.vnet.rg)) {
+    foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg) {
+        $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
+    }
+}
+
+
+# Get log analytics workspace details
 # -----------------------------------
-Add-LogMessage -Level Info "[ ] Getting Log Analytics Workspace details..."
+Add-LogMessage -Level Info "[ ] Getting log analytics workspace details..."
 try {
     $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
     $workspace = Deploy-LogAnalyticsWorkspace -Name $config.shm.monitoring.loggingWorkspace.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.sre.location
     $workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
     $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-    Add-LogMessage -Level Success "Retrieved Log Analytics Workspace '$($workspace.Name)."
+    Add-LogMessage -Level InfoSuccess "Retrieved log analytics workspace '$($workspace.Name)."
 } catch {
-    Add-LogMessage -Level Fatal "Failed to retrieve Log Analytics Workspace!" -Exception $_.Exception
+    Add-LogMessage -Level Fatal "Failed to retrieve log analytics workspace!" -Exception $_.Exception
 }
 
 
@@ -41,7 +52,7 @@ try {
 Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SRE VMs..."
 $sreResourceGroups = Get-SreResourceGroups -sreConfig $config
 try {
-    $null = $sreResourceGroups | ForEach-Object { Get-AzVM -ResourceGroup $_.ResourceGroupName} | ForEach-Object {
+    $null = $sreResourceGroups | ForEach-Object { Get-AzVM -ResourceGroup $_.ResourceGroupName } | ForEach-Object {
         Deploy-VirtualMachineMonitoringExtension -VM $_ -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
     }
     Add-LogMessage -Level Success "Ensured that logging agent is installed on all SRE VMs."
@@ -50,8 +61,8 @@ try {
 }
 
 
-# Register all connected VMs for update management
-# ------------------------------------------------
+# Schedule updates for all connected VMs
+# --------------------------------------
 $account = Deploy-AutomationAccount -Name $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.shm.location
 $sreQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $sreResourceGroups
 # Create Windows VM update schedule
@@ -60,15 +71,6 @@ $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Q
 # Create Linux VM update schedule
 $linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "sre-$($config.sre.id.ToLower())-linux" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
 $null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $sreQuery -Schedule $linuxSchedule -VmType "Linux"
-
-
-# Connect the private DNS zones to all virtual networks in the SRE
-# ----------------------------------------------------------------
-foreach ($PrivateZone in (Get-AzPrivateDnsZone -ResourceGroupName $config.shm.network.vnet.rg)) {
-    foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg) {
-        $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
-    }
-}
 
 
 # Switch back to original subscription
