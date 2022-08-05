@@ -1,4 +1,3 @@
-- `atom`
 - `emacs`
 - `nano`
 - `PyCharm`
