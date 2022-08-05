@@ -7,6 +7,11 @@ write_files:
     content: |
       {{audit.rules}}
 
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/gitlab/gitlab.rb"
     permissions: "0600"
     content: |

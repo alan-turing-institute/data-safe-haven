@@ -12,6 +12,11 @@ write_files:
     content: |
       {{cocalc_docker_compose.mustache.yaml}}
 
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/pip.conf"
     permissions: "0444"
     content: |

@@ -29,6 +29,11 @@ packages:
   - apache2
 
 write_files:
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: /var/local/cran-mirror-apache.conf
     permissions: 0644
     content: |

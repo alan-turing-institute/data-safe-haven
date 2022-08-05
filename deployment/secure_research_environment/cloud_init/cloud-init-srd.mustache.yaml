@@ -26,6 +26,11 @@ write_files:
     content: |
       {{audit.rules}}
 
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/bash.bashrc"
     permissions: "0644"
     append: true

@@ -29,6 +29,11 @@ packages:
   - python3-venv
 
 write_files:
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/systemd/system/pypiserver.service"
     content: |
       [Unit]

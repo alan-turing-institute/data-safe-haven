@@ -36,6 +36,11 @@ packages:
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 # NB. Since write_files runs before user creation, only pre-existing users can be assigned as file owners
 write_files:
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
 
