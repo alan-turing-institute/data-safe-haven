@@ -449,6 +449,12 @@ runcmd:
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
 
+  # Allowing cloud.rproject.org would give unrestricted access to CRAN
+  # As we do not want this, we remove this repository before deploying
+  - rm /etc/apt/sources.list.d/rproject-updates.list
+  - apt update
+  - apt --fix-broken install
+
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
