@@ -94,7 +94,6 @@ r-base-dev
 realmd
 ristretto
 rustc
-sbt
 scala
 sssd
 sssd-tools
