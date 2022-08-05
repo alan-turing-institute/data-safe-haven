@@ -75,7 +75,6 @@ print("Editors/IDEs:")
 (success, failure) = run_tests(
     success,
     failure,
-    ("atom", "dpkg -s atom | grep '^Version:' | awk '{print $NF}'"),
     ("code", "code -v --user-data-dir /tmp 2>/dev/null | head -n 1"),
     ("emacs", "emacs --version | head -n 1 |  awk '{print $NF}'"),
     ("nano", "nano --version | head -n 1 |  awk '{print $NF}'"),
