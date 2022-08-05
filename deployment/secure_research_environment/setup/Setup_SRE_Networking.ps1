@@ -55,8 +55,8 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $
 $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg
 
 
-# Ensure that database NSG exists with correct rules and attach it to the deployment subnet
-# -----------------------------------------------------------------------------------------
+# Ensure that database NSG exists with correct rules and attach it to the database subnet
+# ---------------------------------------------------------------------------------------
 $databasesNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.databases.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $databasesNsg -Rules $rules
