@@ -63,22 +63,30 @@ function Test-PackageExistence {
 function Get-Dependencies {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of package repository")]
+        [ValidateNotNullOrEmpty()]
         [string]$Repository,
         [Parameter(Mandatory = $true, HelpMessage = "Name of package to get dependencies for")]
+        [ValidateNotNullOrEmpty()]
         [string]$Package,
         [Parameter(Mandatory = $true, HelpMessage = "Versions of package to get dependencies for")]
-        $Versions,
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Versions,
         [Parameter(Mandatory = $true, HelpMessage = "Hashtable containing cached dependencies")]
-        $Cache,
+        [ValidateNotNullOrEmpty()]
+        [hashtable]$Cache,
         [Parameter(Mandatory = $true, HelpMessage = "Only consider the most recent NVersions. Set to -1 to consider all versions.")]
+        [ValidateNotNullOrEmpty()]
         [int]$NVersions,
         [Parameter(Mandatory = $false, HelpMessage = "API key for libraries.io")]
         [string]$ApiKey
     )
     $dependencies = @()
-    if ($Package -notin $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
     Add-LogMessage -Level Info "... found $($Versions.Count) versions of $Package"
     $MostRecentVersions = ($NVersions -gt 0) ? ($Versions | Select-Object -Last $NVersions) : $Versions
+    # If the package is not in the cache or is an invalid/empty object then replace it with a new ordered hashtable
+    if (($Package -notin $Cache[$Repository].Keys) -or (-not $Cache[$Repository][$Package])) {
+        $Cache[$Repository][$Package] = [ordered]@{}
+    }
     foreach ($Version in $MostRecentVersions) {
         if ($Version -notin $Cache[$Repository][$Package].Keys) {
             try {
@@ -101,6 +109,7 @@ function Get-Dependencies {
                 }
             } catch {
                 Add-LogMessage -Level Warning "No dependencies found for ${Package} (${Version}) from ${Repository}!"
+                $Cache[$Repository][$Package][$Version] = @()
             }
         }
         $dependencies += $Cache[$Repository][$Package][$Version]
