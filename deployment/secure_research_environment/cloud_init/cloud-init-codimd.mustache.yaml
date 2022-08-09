@@ -57,6 +57,11 @@ write_files:
       networks:
         dockernet:
 
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
+
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}
@@ -123,8 +128,10 @@ runcmd:
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
@@ -132,6 +139,8 @@ runcmd:
   - systemctl enable auditd
 
   # Check server settings
+  - echo ">=== DNS ===<"
+  - /opt/configuration/set_dns.sh
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"

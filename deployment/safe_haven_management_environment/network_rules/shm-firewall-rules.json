@@ -245,13 +245,16 @@
                             "archive.ubuntu.com",
                             "azure.archive.ubuntu.com",
                             "changelogs.ubuntu.com",
-                            "cloud.r-project.org",
                             "database.clamav.net",
+                            "dbeaver.io",
                             "developer.download.nvidia.com",
+                            "download.docker.com",
                             "download.mono-project.com",
                             "packagecloud.io",
                             "packages.microsoft.com",
-                            "security.ubuntu.com"
+                            "qgis.org",
+                            "security.ubuntu.com",
+                            "ubuntu.qgis.org"
                         ],
                         "sourceAddresses": [
                             "*"
@@ -325,6 +328,7 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
+                            "*.delivery.mp.microsoft.com",
                             "*.download.windowsupdate.com",
                             "*.events.data.microsoft.com",
                             "*.update.microsoft.com",
@@ -332,6 +336,7 @@
                             "*.windowsupdate.microsoft.com",
                             "download.microsoft.com",
                             "download.windowsupdate.com",
+                            "geo-prod.do.dsp.mp.microsoft.com",
                             "ntservicepack.microsoft.com",
                             "settings-win.data.microsoft.com",
                             "test.stats.update.microsoft.com",

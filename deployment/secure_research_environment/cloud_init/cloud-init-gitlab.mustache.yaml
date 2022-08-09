@@ -40,6 +40,11 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/data" } })
 
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
+
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}
@@ -102,10 +107,16 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
+  # As packages.gitlab.com forwards you to a CDN we would need to allow access to *.cloudfront.net
+  # As we do not want this, we remove this repository before continuing deployment
+  - rm /etc/apt/sources.list.d/gitlab.list
+
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
@@ -113,6 +124,8 @@ runcmd:
   - systemctl enable auditd
 
   # Check server settings
+  - echo ">=== DNS ===<"
+  - /opt/configuration/set_dns.sh
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"
