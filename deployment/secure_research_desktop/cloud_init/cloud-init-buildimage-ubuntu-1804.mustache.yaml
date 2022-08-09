@@ -45,8 +45,8 @@ apt:
       keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
 
     qgis.list:
-      source: "deb https://qgis.org/ubuntu bionic main"
-      keyid: 2445D6B254DAC452A498989E46B5721DBBD2996A  # QGIS Archive Automatic Signing Key (2021) <qgis-developer@lists.osgeo.org>
+      source: "deb https://ubuntu.qgis.org/ubuntu bionic main"
+      keyid: 2D7E3441A707FDB3E7059441D155B8E6A419C5BE  # QGIS Archive Automatic Signing Key (2022-2027) <qgis-developer@lists.osgeo.org>
 
     rproject-updates.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
