@@ -23,20 +23,28 @@ $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
-
 # Construct list of always-allowed FQDNs
 # --------------------------------------
-$templateParams = $config.shm
-$templateParams.logging["workspaceId"] = (Deploy-LogAnalyticsWorkspace -Name $config.shm.monitoring.loggingWorkspace.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.sre.location).CustomerId
-$firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $templateParams -AsHashtable
-$allowedFqdns = $firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns } | Sort-Object -Unique
-$allowedFqdns += Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name.Replace("privatelink", "*") }
-
+$firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $config.shm -AsHashtable
+$allowedFqdns = @($firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns }) +
+                @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name })
+# List all unique FQDNs
+$allowedFqdns = $allowedFqdns | Sort-Object -Unique
+Add-LogMessage -Level Info "Restricted networks will be allowed to run DNS lookup on the following $($allowedFqdns.Count) FQDNs:"
+foreach ($allowedFqdn in $allowedFqdns) { Add-LogMessage -Level Info "... $allowedFqdn" }
+# Allow DNS resolution for arbitrary subdomains under a private link
+# Note: this does NOT guarantee that we control the subdomain, but there is currently no way to dynamically resolve only those subdomains belonging to the private link
+$allowedFqdns = $allowedFqdns | ForEach-Object { $_.Replace("privatelink", "*") }
 
 # Construct lists of CIDRs to apply restrictions to
 # -------------------------------------------------
-$cidrsToRestrict = ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") ? @() : @($config.sre.network.vnet.subnets.compute.cidr, $config.sre.network.vnet.subnets.databases.cidr, $config.sre.network.vnet.subnets.webapps.cidr)
-$cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
+if ($config.sre.remoteDesktop.networkRules.outboundInternet -eq "Allow") {
+    $cidrsToRestrict = @()
+    $cidrsToAllow = @($config.sre.network.vnet.subnets.compute.cidr, $config.sre.network.vnet.subnets.databases.cidr, $config.sre.network.vnet.subnets.deployment.cidr, $config.sre.network.vnet.subnets.webapps.cidr)
+} else {
+    $cidrsToRestrict = @($config.sre.network.vnet.subnets.compute.cidr, $config.sre.network.vnet.subnets.databases.cidr, $config.sre.network.vnet.subnets.webapps.cidr)
+    $cidrsToAllow = @($config.sre.network.vnet.subnets.deployment.cidr)
+}
 
 
 # Configure external DNS resolution for SRDs via SHM DNS servers
