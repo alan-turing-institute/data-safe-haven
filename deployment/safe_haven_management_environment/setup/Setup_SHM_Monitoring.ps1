@@ -255,6 +255,7 @@ $packNames = @(
     "AzureNetworking",
     "AzureResources",
     "AntiMalware",
+    "AzureAutomation",
     "CapacityPerformance",
     "ChangeTracking",
     "DnsAnalytics",
