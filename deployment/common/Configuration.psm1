@@ -782,13 +782,12 @@ function Get-SreConfig {
     $config.sre.backup = [ordered]@{
         rg    = "$($config.sre.rgPrefix)_BACKUP".ToUpper()
         vault = [ordered]@{
-            name = "$($config.sre.id)-vault"
+            name = "bv-$($config.shm.id)-sre-$($config.sre.id)"
         }
         blob  = [ordered]@{
             policy_name = "blobbackuppolicy"
         }
     }
-
 
     # Secrets config
     # --------------
