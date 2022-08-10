@@ -41,10 +41,7 @@ $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
                               -RoleDefinitionName "Storage Account Backup Contributor"
 
 # Create blob backup instance
-$Instance = Initialize-AzDataProtectionBackupInstance -DataSourceType  "AzureBlob" `
-                                                      -DataSourceLocation $PersistentStorageAccount.Location `
-                                                      -PolicyId $Policy.Id `
-                                                      -DataSourceId $PersistentStorageAccount.Id
-New-AzDataProtectionBackupInstance -ResourceGroupName $config.sre.backup.rg `
-                                   -VaultName $config.sre.backup.vault.name `
-                                   -BackupInstance $Instance
+$Instance = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
+                                                -ResourceGroupName $config.sre.backup.rg `
+                                                -StorageAccount $PersistentStorageAccount `
+                                                -VaultName $Vault.Name
