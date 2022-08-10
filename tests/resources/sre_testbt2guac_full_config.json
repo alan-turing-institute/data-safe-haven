@@ -1092,6 +1092,15 @@
   },
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
+    "backup": {
+      "blob": {
+        "policy_name": "blobbackuppolicy"
+      },
+      "rg": "RG_SHM_TESTB_SRE_T2GUAC_BACKUP",
+      "vault": {
+        "name": "bv-testb-sre-t2guac"
+      }
+    },
     "databases": {
       "dbmssql": {
         "adminPasswordSecretName": "sre-t2guac-vm-admin-password-mssql",
@@ -1318,9 +1327,14 @@
           "allowedIpAddresses": "193.60.220.253",
           "name": "testbt2guacdatanrzabxpji",
           "performance": "Standard_LRS",
-          "storageKind": "BlobStorage"
+          "storageKind": "StorageV2"
         },
         "containers": {
+          "backup": {
+            "accessPolicyName": "readWrite",
+            "connectionSecretName": "sre-t2guac-data-backup-connection-readwrite",
+            "mountType": "BlobSMB"
+          },
           "egress": {
             "accessPolicyName": "readWrite",
             "connectionSecretName": "sre-t2guac-data-egress-connection-readwrite",
