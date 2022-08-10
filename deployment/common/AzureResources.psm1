@@ -42,25 +42,26 @@ function Deploy-RoleAssignment {
     )
     # Check if assignment exists
     Add-LogMessage -Level Info "Ensuring that role assignment(s) for blob backup exist..."
-    try {
-        $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
-                                           -RoleDefinitionName $RoleDefinitionName `
-                                           -ResourceGroupName $ResourceGroupName `
-                                           -ResourceName $ResourceName `
-                                           -ResourceType $ResourceType `
-                                           -ErrorAction Stop
+    $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
+                                       -RoleDefinitionName $RoleDefinitionName `
+                                       -ResourceGroupName $ResourceGroupName `
+                                       -ResourceName $ResourceName `
+                                       -ResourceType $ResourceType `
+                                       -ErrorAction SilentlyContinue
+    if ($Assignment) {
         Add-LogMessage -Level InfoSuccess "Role assignment(s) already exist"
-    } catch {
-        Add-LogMessage -Level Info "[ ] Creating role assignment(s) for blob backup"
-        $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
-                                           -RoleDefinitionName $RoleDefinitionName `
-                                           -ResourceGroupName $ResourceGroupName `
-                                           -ResourceName $ResourceName `
-                                           -ResourceType $ResourceType
-        if ($?) {
+    } else {
+        try {
+            Add-LogMessage -Level Info "[ ] Creating role assignment(s) for blob backup"
+            $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
+                                               -RoleDefinitionName $RoleDefinitionName `
+                                               -ResourceGroupName $ResourceGroupName `
+                                               -ResourceName $ResourceName `
+                                               -ResourceType $ResourceType `
+                                               -ErrorAction Stop
             Add-LogMessage -Level Success "Successfully created role assignment(s)"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create role assignment(s)"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create role assignment(s)" -Exception $_.Exception
         }
     }
     return $Assignment
