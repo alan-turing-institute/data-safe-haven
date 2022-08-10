@@ -136,6 +136,11 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Firewall.p
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Monitoring.ps1')" -shmId $shmId -sreId $sreId }
 
 
+# Enable backup
+# -------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Backup.ps1')" -shmId $shmId -sreId $sreId }
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop

@@ -1092,6 +1092,15 @@
   },
   "sre": {
     "azureAdminGroupName": "Safe Haven Test Admins",
+    "backup": {
+      "blob": {
+        "policy_name": "blobbackuppolicy"
+      },
+      "rg": "RG_SHM_TESTC_SRE_T3MSRDS_BACKUP",
+      "vault": {
+        "name": "bv-testc-sre-t3msrds"
+      }
+    },
     "databases": {
       "dbmssql": {
         "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-mssql",
@@ -1340,9 +1349,14 @@
           "allowedIpAddresses": "193.60.220.253",
           "name": "testct3msrdsdatapjnkuhzc",
           "performance": "Standard_LRS",
-          "storageKind": "BlobStorage"
+          "storageKind": "StorageV2"
         },
         "containers": {
+          "backup": {
+            "accessPolicyName": "readWrite",
+            "connectionSecretName": "sre-t3msrds-data-backup-connection-readwrite",
+            "mountType": "BlobSMB"
+          },
           "egress": {
             "accessPolicyName": "readWrite",
             "connectionSecretName": "sre-t3msrds-data-egress-connection-readwrite",

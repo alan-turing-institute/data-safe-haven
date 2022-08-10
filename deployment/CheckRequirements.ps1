@@ -4,6 +4,7 @@ Import-Module $PSScriptRoot/common/Logging -ErrorAction Stop
 $PowershellVersionRequired = "7.0.0"
 $ModuleVersionRequired = @{
     "Az"                     = @("ge", "6.0.0")
+    "Az.DataProtection"      = @("ge", "0.4.0")
     "Az.MonitoringSolutions" = @("ge", "0.1.0")
     "Az.Resources"           = @("ge", "6.0.1")
     "Az.Storage"             = @("ge", "4.7.0")

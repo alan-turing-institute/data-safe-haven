@@ -120,8 +120,10 @@ function Deploy-StorageAccountEndpoint {
     # Allow a default if we're using a storage account that is only compatible with one storage type
     if ($StorageType -eq "Default") {
         if ($StorageAccount.Kind -eq "BlobStorage") { $StorageType = "Blob" }
-        if ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType = "Blob" }
-        if ($StorageAccount.Kind -eq "FileStorage") { $StorageType = "File" }
+        elseif ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType = "Blob" }
+        elseif ($StorageAccount.Kind -eq "FileStorage") { $StorageType = "File" }
+        elseif ($StorageAccount.Kind -eq "StorageV2") { $StorageType = "Blob" } # default to blob storage for StorageV2
+        else { Add-LogMessage -Level Fatal "Storage type must be specified as 'Blob' or 'File' for $($StorageAccount.Kind) storage accounts" }
     }
     # Validate that the storage type is compatible with this storage account
     if ((($StorageAccount.Kind -eq "BlobStorage") -and ($StorageType -ne "Blob")) -or
@@ -155,15 +157,13 @@ function Deploy-StorageAccountEndpoint {
         }
         Add-LogMessage -Level InfoSuccess "Private endpoint '$privateEndpointName' already exists for storage account '$($StorageAccount.StorageAccountName)'"
     } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
-        Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType
-        $success = $?
-        $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
-        $success = $success -and $?
-        if ($success) {
+        try {
+            Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
+            $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType -ErrorAction Stop
+            $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection -ErrorAction Stop
             Add-LogMessage -Level Success "Created private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'!"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
         }
     }
     return $privateEndpoint

@@ -755,12 +755,16 @@ function Get-SreConfig {
         persistentdata  = [ordered]@{
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
-                storageKind        = "BlobStorage"
+                storageKind        = "StorageV2"
                 performance        = "Standard_LRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.srdImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
+                backup  = [ordered]@{
+                    accessPolicyName = "readWrite"
+                    mountType        = "BlobSMB"
+                }
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
                     mountType        = "BlobSMB"
@@ -776,6 +780,18 @@ function Get-SreConfig {
         $config.sre.storage.persistentdata.containers[$containerName].connectionSecretName = "sre-$($config.sre.id)-data-${containerName}-connection-$($config.sre.storage.persistentdata.containers[$containerName].accessPolicyName)".ToLower()
     }
 
+
+    # Backup config
+    # -------------
+    $config.sre.backup = [ordered]@{
+        rg    = "$($config.sre.rgPrefix)_BACKUP".ToUpper()
+        vault = [ordered]@{
+            name = "bv-$($config.shm.id)-sre-$($config.sre.id)"
+        }
+        blob  = [ordered]@{
+            policy_name = "blobbackuppolicy"
+        }
+    }
 
     # Secrets config
     # --------------

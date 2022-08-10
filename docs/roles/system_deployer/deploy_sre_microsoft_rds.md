@@ -338,12 +338,18 @@ The initial shared `SRD Main` shared VM should be deployed with the last octet `
 
 ## 12. {{chart_with_upwards_trend}} Configure logging
 
-```{include} snippets/12_configure_logging.partial.md
+```{include} snippets/12_configure_monitoring.partial.md
 :relative-images:
 ```
 
-## 13. {{fire}} Run smoke tests on SRD
+## 13. {{left_right_arrow}} Enable backup
 
-```{include} snippets/13_run_smoke_tests.partial.md
+```{include} snippets/13_enable_backup.partial.md
+:relative-images:
+```
+
+## 14. {{fire}} Run smoke tests on SRD
+
+```{include} snippets/14_run_smoke_tests.partial.md
 :relative-images:
 ```

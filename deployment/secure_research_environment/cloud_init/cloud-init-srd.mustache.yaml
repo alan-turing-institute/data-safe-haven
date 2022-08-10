@@ -263,6 +263,37 @@ write_files:
       [Install]
       WantedBy=timers.target
 
+  - path: "/etc/systemd/system/backup.mount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for backup volume (via blobfuse)
+      Requires=network-online.target
+      After=network-online.target
+
+      [Mount]
+      What=/opt/configuration/mount-backup.sh
+      Where=/backup
+      Type=fuse
+      Options=_netdev
+
+      [Install]
+      WantedBy=network-online.target
+
+  - path: "/etc/systemd/system/backup.automount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/backup
+
+      [Automount]
+      Where=/backup
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
   - path: "/etc/systemd/system/data.mount"
     permissions: "0644"
     content: |
@@ -370,13 +401,13 @@ write_files:
     content: |
       {{configure_pycharm.py}}
 
-  - path: "/opt/configuration/credentials-ingress.secret"
+  - path: "/opt/configuration/credentials-backup.secret"
     permissions: "0400"
     content: |
       accountName {{sre.storage.persistentdata.account.name}}
-      sasToken {{{srd.ingressContainerSasToken}}}
+      sasToken {{{srd.backupContainerSasToken}}}
       authType SAS
-      containerName ingress
+      containerName backup
 
   - path: "/opt/configuration/credentials-egress.secret"
     permissions: "0400"
@@ -385,6 +416,14 @@ write_files:
       sasToken {{{srd.egressContainerSasToken}}}
       authType SAS
       containerName egress
+
+  - path: "/opt/configuration/credentials-ingress.secret"
+    permissions: "0400"
+    content: |
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{srd.ingressContainerSasToken}}}
+      authType SAS
+      containerName ingress
 
   - path: "/opt/configuration/jdk-template.xml"
     permissions: "0400"
@@ -396,15 +435,15 @@ write_files:
     content: |
       {{join_domain.sh}}
 
-  - path: "/opt/configuration/mount-ingress.sh"
+  - path: "/opt/configuration/mount-backup.sh"
     permissions: "0500"
     content: |
       if [ ! "$(df -h | grep $1)" ]; then
-        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-backup"
         rm -rf $BLOBFUSE_CACHE_DIR
         mkdir -p $BLOBFUSE_CACHE_DIR
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
-        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+        /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-backup.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
   - path: "/opt/configuration/mount-egress.sh"
@@ -416,6 +455,17 @@ write_files:
         mkdir -p $BLOBFUSE_CACHE_DIR
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+
+  - path: "/opt/configuration/mount-ingress.sh"
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
+        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
   - path: "/usr/local/bin/runonce"
@@ -559,12 +609,14 @@ runcmd:
   - systemctl enable xrdp-sesman
 
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
-  - echo ">=== Configure ingress and egress mounts... ===<"
+  - echo ">=== Configure ingress, egress and backup mounts... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
   - echo "user_allow_other" >> /etc/fuse.conf.tmp
   - mv /etc/fuse.conf.tmp /etc/fuse.conf
+  - systemctl enable backup.mount
   - systemctl enable data.mount
   - systemctl enable output.mount
+  - systemctl enable backup.automount
   - systemctl enable data.automount
   - systemctl enable output.automount
 

@@ -154,9 +154,18 @@ If you specify the same size more than once, you will create multiple SRDs of th
 </details>
 
 <details>
-<summary><strong>Configure logging</strong></summary>
+<summary><strong>Configure monitoring</strong></summary>
 
-```{include} snippets/12_configure_logging.partial.md
+```{include} snippets/12_configure_monitoring.partial.md
+:relative-images:
+```
+
+</details>
+
+<details>
+<summary><strong>Enable backup</strong></summary>
+
+```{include} snippets/13_enable_backup.partial.md
 :relative-images:
 ```
 
@@ -235,6 +244,6 @@ If you see an error like the following when attempting to log in, it is likely t
 
 ### {{fire}} Run smoke tests on SRD
 
-```{include} snippets/13_run_smoke_tests.partial.md
+```{include} snippets/14_run_smoke_tests.partial.md
 :relative-images:
 ```

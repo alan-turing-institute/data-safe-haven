@@ -245,7 +245,6 @@ function Deploy-MonitorPrivateLinkScopeEndpoint {
         [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
         [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
     )
-    # $endpoint = Deploy-PrivateEndpoint -Name "test" `
     $endpoint = Deploy-PrivateEndpoint -Name "$($PrivateLinkScope.Name)-endpoint".ToLower() `
                                        -GroupId "azuremonitor" `
                                        -Location $Location `
