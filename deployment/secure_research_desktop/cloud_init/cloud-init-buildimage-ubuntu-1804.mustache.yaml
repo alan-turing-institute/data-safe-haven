@@ -34,7 +34,7 @@ apt:
 
     nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
-      keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
+      keyid: EB693B3035CD5710E231E123A4B469963BF863CC  # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
       source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
