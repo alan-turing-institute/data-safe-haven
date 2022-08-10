@@ -761,6 +761,10 @@ function Get-SreConfig {
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.srdImage.build.nsg.allowedIpAddresses
             }
             containers = [ordered]@{
+                backup  = [ordered]@{
+                    accessPolicyName = "readWrite"
+                    mountType        = "BlobSMB"
+                }
                 ingress = [ordered]@{
                     accessPolicyName = "readOnly"
                     mountType        = "BlobSMB"

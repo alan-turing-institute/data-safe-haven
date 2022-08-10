@@ -164,6 +164,7 @@ if ([int]$osDiskSizeGB -lt [int]$image.StorageProfile.OsDiskImage.SizeInGB) {
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.sre.keyVault.name)'..."
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20 -AsPlaintext
+$backupContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.backup.connectionSecretName -AsPlaintext
 $ingressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.ingress.connectionSecretName -AsPlaintext
 $egressContainerSasToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers.egress.connectionSecretName -AsPlaintext
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20 -AsPlaintext
@@ -182,6 +183,7 @@ $config["srd"] = @{
     ldapUserFilter           = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
     ldapSearchUserDn         = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
     ldapSearchUserPassword   = $ldapSearchPassword
+    backupContainerSasToken  = $backupContainerSasToken
     ingressContainerSasToken = $ingressContainerSasToken
     egressContainerSasToken  = $egressContainerSasToken
     hostname                 = ($vmHostname | Limit-StringLength -MaximumLength 15)
