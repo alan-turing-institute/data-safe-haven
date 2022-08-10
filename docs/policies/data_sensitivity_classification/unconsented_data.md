@@ -37,7 +37,7 @@ Data provided by multiple NHS Trusts/Boards (Scotland)
 Data provided by multiple NHS Trusts/Boards (England)
 : approval from NHS Digital
 
-In addition to this, the data provider must provide evidence to certify that the data does not include personal information for patients who have explicitly requested to [opt-out](https://digital.nhs.uk/about-nhs-digital/our-work/keeping-patient-data-safe/how-we-look-after-your-health-and-care-information/your-information-choices/opting-out-of-sharing-your-confidential-patient-information) from their data being used for purposes that are not directly related to their own care.
+In addition to this, the data provider must provide evidence to certify that the data does not include personal information for patients who have explicitly requested to [opt-out](https://www.nhs.uk/using-the-nhs/about-the-nhs/opt-out-of-sharing-your-health-records/) from their data being used for purposes that are not directly related to their own care.
 
 Finally, whenever possible, the amount of identifiable personal information must be minimised prior to data ingress.
 This includes, but it is not restricted to: name, postcode, NHS number (England) and CHI number (Scotland).

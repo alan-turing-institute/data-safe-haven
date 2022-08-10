@@ -11,5 +11,4 @@ this will attempt to install the extensions again, skipping any VMs that already
 
 Where the issue was an API timeout, these VMs will report that the extension is already installed when the logging set up script is run again.
 Where there was a genuine failure in the installation of a VM extension, the script will try again to install the extension when the logging set up script is run again.
-If you get consistent failure messages after re-running the logging set up script a few times, then further investigation will be required.
-````
+If you get consistent failure messages after re-running the set up script a few times, then further investigation will be required.
