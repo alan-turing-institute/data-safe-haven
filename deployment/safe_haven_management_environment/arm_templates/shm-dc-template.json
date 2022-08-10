@@ -164,8 +164,8 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "provisionVMAgent": true
                     },
                     "secrets": []
                 },
@@ -275,8 +275,8 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "provisionVMAgent": true
                     },
                     "secrets": []
                 },

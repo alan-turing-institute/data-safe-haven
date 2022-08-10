@@ -26,6 +26,11 @@ write_files:
     content: |
       {{audit.rules}}
 
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/bash.bashrc"
     permissions: "0644"
     append: true
@@ -446,6 +451,18 @@ prefer_fqdn_over_hostname: true
 
 runcmd:
   - echo ">=== Beginning SRD configuration... ===<"
+
+  # Allowing cloud.rproject.org would give unrestricted access to CRAN
+  # As we do not want this, we remove this repository before continuing deployment
+  - rm /etc/apt/sources.list.d/rproject-updates.list
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
 

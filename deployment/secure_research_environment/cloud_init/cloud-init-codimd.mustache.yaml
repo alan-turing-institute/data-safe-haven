@@ -7,6 +7,11 @@ write_files:
     content: |
       {{audit.rules}}
 
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/opt/codimd/docker-compose.yml"
     permissions: "0400"
     content: |
@@ -52,6 +57,11 @@ write_files:
       networks:
         dockernet:
 
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
+
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}
@@ -69,7 +79,7 @@ ntp:
 apt:
   preserve_sources_list: true
   sources:
-    gitlab.list:
+    docker.list:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
       keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
@@ -118,8 +128,10 @@ runcmd:
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
@@ -127,6 +139,8 @@ runcmd:
   - systemctl enable auditd
 
   # Check server settings
+  - echo ">=== DNS ===<"
+  - /opt/configuration/set_dns.sh
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"

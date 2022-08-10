@@ -1,26 +1,36 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/nexus/docker-compose.yaml"
     permissions: "0400"
     content: |
       {{nexus_docker_compose.mustache.yaml}}
+
   - path: "/etc/nexus/allowlist-pypi"
     permissions: "0644"
     content: |
       {{allowlist-full-python-pypi-tier3.list}}
+
   - path: "/etc/nexus/allowlist-cran"
     permissions: "0644"
     content: |
       {{allowlist-full-r-cran-tier3.list}}
+
   - path: "/etc/nexus/nginx.conf"
     permissions: "0400"
     content: |
       {{nexus_nginx.mustache.conf}}
+
   - path: "/usr/local/bin/configure-nexus"
     permissions: "0755"
     content: |
       {{configure_nexus.py}}
+
   - path: "/usr/local/update-nexus-allowlists"
     permissions: "0700"
     content: |

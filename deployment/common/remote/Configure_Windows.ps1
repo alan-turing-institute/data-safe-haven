@@ -99,25 +99,3 @@ if ($NTPServer) {
 } else {
     Write-Output " [x] Invalid NTP server '$NTPServer' provided!"
 }
-
-
-# Install Windows updates
-# -----------------------
-$LogFilePath = "C:\Windows\Logs\Powershell\WindowsUpdate.$((Get-Date -Format FileDateTime).Substring(0, 13)).log"
-$null = New-Item (Split-Path -Path $LogFilePath) -ItemType Directory -Force
-$null = Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false # Register Microsoft Update servers
-
-while ($true) {
-    # Check whether there are any remaining updates
-    $updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
-    if ($updatesToInstall.Count -eq 0) { break; }
-    # Install any updates if found
-    Write-Output " [ ] Found $($updatesToInstall.Count) Windows updates to install:" | Tee-Object -FilePath $LogFilePath -Append
-    $updatesToInstall | ForEach-Object { Write-Output " ... $($_.Title)" | Tee-Object -FilePath $LogFilePath -Append }
-    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-File $LogFilePath -Append
-    if ($?) {
-        Write-Output " [o] Installing Windows updates succeeded." | Tee-Object -FilePath $LogFilePath -Append
-    } else {
-        Write-Output " [x] Installing Windows updates failed!" | Tee-Object -FilePath $LogFilePath -Append
-    }
-}

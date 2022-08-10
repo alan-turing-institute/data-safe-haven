@@ -1,5 +1,6 @@
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/AzureResources -ErrorAction Stop
 Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -98,7 +99,7 @@ function Add-WindowsVMtoDomain {
     )
     Add-LogMessage -Level Info "[ ] Attempting to join VM '$Name' to domain '$DomainName'"
     $domainJoinCredentials = New-Object System.Management.Automation.PSCredential("${DomainName}\${DomainJoinUsername}", $DomainJoinPassword)
-    $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
+    $null = Set-AzVMADDomainExtension -VMName $Name -ResourceGroupName $ResourceGroupName -DomainName $DomainName -Credential $domainJoinCredentials -Name "joindomain" -JoinOption 3 -TypeHandlerVersion 1.3 -OUPath $OUPath -Restart:$ForceRestart
     if ($?) {
         Add-LogMessage -Level Success "Joined VM '$Name' to domain '$DomainName'"
     } else {
@@ -212,6 +213,87 @@ function Convert-OctetsToIpAddress {
 Export-ModuleMember -Function Convert-OctetsToIpAddress
 
 
+# Create a private endpoint for an automation account
+# ---------------------------------------------------
+function Deploy-AutomationAccountEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Automation account to create the private endpoint for")]
+        [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    $endpoint = Deploy-PrivateEndpoint -Name "$($Account.AutomationAccountName)-endpoint".ToLower() `
+                                       -GroupId "DSCAndHybridWorker" `
+                                       -Location $Account.Location `
+                                       -PrivateLinkServiceId (Get-ResourceId $Account.AutomationAccountName) `
+                                       -ResourceGroupName $Account.ResourceGroupName `
+                                       -Subnet $Subnet
+    return $endpoint
+
+}
+Export-ModuleMember -Function Deploy-AutomationAccountEndpoint
+
+
+# Create a private endpoint for an automation account
+# ---------------------------------------------------
+function Deploy-MonitorPrivateLinkScopeEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint")]
+        [string]$Location,
+        [Parameter(Mandatory = $true, HelpMessage = "Private link scope to connect")]
+        [Microsoft.Azure.Commands.Insights.OutputClasses.PSMonitorPrivateLinkScope]$PrivateLinkScope,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    # $endpoint = Deploy-PrivateEndpoint -Name "test" `
+    $endpoint = Deploy-PrivateEndpoint -Name "$($PrivateLinkScope.Name)-endpoint".ToLower() `
+                                       -GroupId "azuremonitor" `
+                                       -Location $Location `
+                                       -PrivateLinkServiceId $PrivateLinkScope.Id `
+                                       -ResourceGroupName (Get-ResourceGroupName $PrivateLinkScope.Name) `
+                                       -Subnet $Subnet
+    return $endpoint
+
+}
+Export-ModuleMember -Function Deploy-MonitorPrivateLinkScopeEndpoint
+
+
+# Create a private endpoint
+# -------------------------
+function Deploy-PrivateEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Group ID for this endpoint")]
+        [string]$GroupId,
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint")]
+        [string]$Location,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the endpoint")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "ID of the service to link against")]
+        [string]$PrivateLinkServiceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    Add-LogMessage -Level Info "Ensuring that private endpoint '$Name' exists..."
+    $endpoint = Get-AzPrivateEndpoint -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating private endpoint '$Name'"
+        $privateLinkServiceConnection = New-AzPrivateLinkServiceConnection -Name "${Name}LinkServiceConnection" -PrivateLinkServiceId $PrivateLinkServiceId -GroupId $GroupId
+        $endpoint = New-AzPrivateEndpoint -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateLinkServiceConnection
+        if ($?) {
+            Add-LogMessage -Level Success "Created private endpoint '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create private endpoint '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Private endpoint '$Name' already exists"
+    }
+    return $endpoint
+}
+Export-ModuleMember -Function Deploy-PrivateEndpoint
+
+
 # Get next available IP address in range
 # --------------------------------------
 function Get-NextAvailableIpInRange {
@@ -239,6 +321,23 @@ function Get-NextAvailableIpInRange {
     return $ipAddress
 }
 Export-ModuleMember -Function Get-NextAvailableIpInRange
+
+
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetwork {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Name of virtual network to retrieve")]
+        [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group that this virtual network belongs to")]
+        [string]$ResourceGroupName
+    )
+    $params = @{}
+    if ($Name) { $params["Name"] = $Name }
+    if ($ResourceGroupName) { $params["ResourceGroupName"] = $ResourceGroupName }
+    return Get-AzVirtualNetwork @params
+}
+Export-ModuleMember -Function Get-VirtualNetwork
 
 
 # Set Network Security Group Rules

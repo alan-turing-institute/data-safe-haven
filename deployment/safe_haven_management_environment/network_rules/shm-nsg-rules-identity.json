@@ -156,6 +156,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMonitoringToolsOutbound",
+        "access": "Allow",
+        "description": "Allow connections to local monitoring tools",
+        "destinationAddressPrefix": "{{network.vnet.subnets.monitoring.cidr}}",
+        "destinationPortRange": "443",
+        "direction": "Outbound",
+        "priority": 1500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalNTPOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to external NTP servers",
@@ -164,7 +176,7 @@
                 "{{.}}",
             {{/time.ntp.serverAddresses}}
         ],
-        "destinationPortRange": 123,
+        "destinationPortRange": "123",
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
@@ -179,6 +191,38 @@
         "destinationPortRange": ["80", "443"],
         "direction": "Outbound",
         "priority": 3500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowWindowsUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Windows update servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.windows}}
+                "{{.}}",
+            {{/monitoring.updateServers.windows}}
+        ],
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3700,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowAzureAutomationOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure automation servers",
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.azureAutomation}}
+                "{{.}}",
+            {{/monitoring.updateServers.azureAutomation}}
+        ],
+        "destinationPortRange": ["443"],
+        "direction": "Outbound",
+        "priority": 3800,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{network.vnet.subnets.identity.cidr}}",
         "sourcePortRange": "*"

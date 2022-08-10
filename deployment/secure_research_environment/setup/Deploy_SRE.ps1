@@ -131,9 +131,9 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Apply_SRE_Network_Co
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Firewall.ps1')" -shmId $shmId -sreId $sreId }
 
 
-# Configure logging
-# ------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Logging.ps1')" -shmId $shmId -sreId $sreId }
+# Configure monitoring
+# --------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Monitoring.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Switch back to original subscription

@@ -59,6 +59,18 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },
+    {
+        "name": "AllowMonitoringToolsOutbound",
+        "access": "Allow",
+        "description": "Allow connections to local monitoring tools",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.monitoring.cidr}}",
+        "destinationPortRange": "443",
+        "direction": "Outbound",
+        "priority": 1500,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
     {{#sre.repositories.network.cidr}}
         {
             "name": "AllowPackageRepositoriesOutbound",
@@ -82,10 +94,42 @@
                 "{{.}}",
             {{/shm.time.ntp.serverAddresses}}
         ],
-        "destinationPortRange": 123,
+        "destinationPortRange": "123",
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": [
+            {{#shm.monitoring.updateServers.linux}}
+                "{{.}}",
+            {{/shm.monitoring.updateServers.linux}}
+        ],
+        "destinationPortRange": ["80", "443"],
+        "direction": "Outbound",
+        "priority": 3600,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
+        "name": "AllowAzureAutomationOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Azure automation servers",
+        "destinationAddressPrefix": [
+            {{#shm.monitoring.updateServers.azureAutomation}}
+                "{{.}}",
+            {{/shm.monitoring.updateServers.azureAutomation}}
+        ],
+        "destinationPortRange": ["443"],
+        "direction": "Outbound",
+        "priority": 3800,
+        "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },

@@ -33,15 +33,19 @@ $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualN
 $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -Location $config.location -VirtualNetworkName $config.network.vnet.name
 
 
+# Create the logging workspace if it does not already exist
+# ---------------------------------------------------------
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
+
+
 # Enable logging for this firewall
 # --------------------------------
 Add-LogMessage -Level Info "Enable logging for this firewall"
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 $null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 if ($?) {
-    Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"
+    Add-LogMessage -Level Success "Enabled logging to workspace '$($workspace.Name)'"
 } else {
-    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($config.logging.workspaceName)'!"
+    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($workspace.Name)'!"
 }
 
 
@@ -53,10 +57,8 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 
 # Set firewall rules from template
 # --------------------------------
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
-$config.logging["workspaceId"] = $workspace.CustomerId
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 

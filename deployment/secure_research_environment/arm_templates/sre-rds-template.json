@@ -214,8 +214,8 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('gatewayAdministratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "provisionVMAgent": true
                     },
                     "secrets": [],
                     "allowExtensionOperations": true
@@ -276,8 +276,8 @@
                     "adminUsername": "[parameters('administratorUsername')]",
                     "adminPassword": "[parameters('sessionHostAppsAdministratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": true,
+                        "provisionVMAgent": true
                     },
                     "secrets": [],
                     "allowExtensionOperations": true

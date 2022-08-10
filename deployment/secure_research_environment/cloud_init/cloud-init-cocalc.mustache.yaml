@@ -12,6 +12,16 @@ write_files:
     content: |
       {{cocalc_docker_compose.mustache.yaml}}
 
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
+
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
   - path: "/etc/pip.conf"
     permissions: "0444"
     content: |
@@ -147,8 +157,10 @@ runcmd:
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
@@ -156,6 +168,8 @@ runcmd:
   - systemctl enable auditd
 
   # Check server settings
+  - echo ">=== DNS ===<"
+  - /opt/configuration/set_dns.sh
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"

@@ -41,7 +41,11 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     Add-LogMessage -Level Info "Ensure Guacamole server is bound to correct NSG..."
     $remoteDesktopSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
     $nsgs["remoteDesktop"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.remoteDesktop.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $nsgs["remoteDesktop"] -ErrorAction Stop
+    if ($remoteDesktopSubnet.NetworkSecurityGroup.Id -eq $nsgs["remoteDesktop"].Id) {
+        Add-LogMessage -Level Info "Guacamole server is bound to NSG '$($nsgs["remoteDesktop"].Name)'"
+    } else {
+        Add-LogMessage -Level Fatal "Guacamole server is not bound to NSG '$($nsgs["remoteDesktop"].Name)'!"
+    }
 } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
     # RDS gateway
     Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
@@ -59,19 +63,31 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
 Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
 $databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"] -ErrorAction Stop
+if ($databaseSubnet.NetworkSecurityGroup.Id -eq $nsgs["databases"].Id) {
+    Add-LogMessage -Level Info "Database servers are bound to NSG '$($nsgs["databases"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "Database servers are not bound to NSG '$($nsgs["databases"].Name)'!"
+}
 
 # Webapp servers
 Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
 $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
+if ($webappsSubnet.NetworkSecurityGroup.Id -eq $nsgs["webapps"].Id) {
+    Add-LogMessage -Level Info "Webapp servers are bound to NSG '$($nsgs["webapps"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "Webapp servers are not bound to NSG '$($nsgs["webapps"].Name)'!"
+}
 
 # SRDs
 Add-LogMessage -Level Info "Ensure SRDs are bound to correct NSG..."
 $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
+if ($computeSubnet.NetworkSecurityGroup.Id -eq $nsgs["compute"].Id) {
+    Add-LogMessage -Level Info "SRDs are bound to NSG '$($nsgs["compute"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "SRDs are not bound to NSG '$($nsgs["compute"].Name)'!"
+}
 
 # Update remote desktop server NSG rules
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
