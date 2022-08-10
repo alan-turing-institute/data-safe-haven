@@ -6,6 +6,7 @@ param(
 )
 
 Import-Module $PSScriptRoot/../../common/AzureDataProtection -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -27,39 +28,17 @@ $Vault = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.
 # Create blob backup policy
 # This enforces the default policy for blobs
 $Policy = Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
-                                            -Vaultname $config.sre.backup.vault.name `
+                                            -VaultName $config.sre.backup.vault.name `
                                             -PolicyName $config.sre.backup.blob.policy_name `
-                                            -DataSourcetype 'blob'
+                                            -DataSourceType 'blob'
 
 # Assign permissions required for backup to the Vault's managed identity
-$VaultIdentityId = $Vault.IdentityPrincipalId
-$ResourceType = "Microsoft.Storage/storageAccounts"
-$RoleDefinition = "Storage Account Backup Contributor"
-
-$PersistentStorageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg `
-                                                 -Name $config.sre.storage.persistentdata.account.name
-
-Add-LogMessage -Level Info "Ensuring that role assignment(s) for blob backup exists..."
-$Assignment = Get-AzRoleAssignment -ObjectId $VaultIdentityId `
-                                   -RoleDefinitionName $RoleDefinition `
-                                   -ResourceGroupName $config.shm.storage.persistentdata.rg `
-                                   -ResourceType $ResourceType `
-                                   -ResourceName $config.sre.storage.persistentdata.account.name
-if ($Assignment -eq $null) {
-    Add-LogMessage -Level Info "[ ] Creating role assignment(s) for blob backup"
-    $null = New-AzRoleAssignment -ObjectId $VaultIdentityId `
-                                 -RoleDefinitionName RoleDefinition `
-                                 -ResourceGroupName $config.shm.storage.persistentdata.rg `
-                                 -ResourceType $ResourceType `
-                                 -ResourceName $config.sre.storage.persistentdata.account.name
-    if ($?) {
-        Add-LogMessage -Level Success "Successfully created role assignment(s)"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to create role assignment(s)"
-    }
-} else {
-    Add-LogMessage -Level InfoSuccess "Role assignment(s) already exists"
-}
+$PersistentStorageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name
+$null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
+                              -ResourceGroupName $PersistentStorageAccount.ResourceGroupName `
+                              -ResourceType "Microsoft.Storage/storageAccounts" `
+                              -ResourceName $PersistentStorageAccount.StorageAccountName `
+                              -RoleDefinitionName "Storage Account Backup Contributor"
 
 # Create blob backup instance
 $Instance = Initialize-AzDataProtectionBackupInstance -DataSourceType  "AzureBlob" `
