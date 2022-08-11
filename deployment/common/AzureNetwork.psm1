@@ -1,6 +1,41 @@
 Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+
+
+# Associate a VM to an NSG
+# ------------------------
+function Add-VmToNSG {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine")]
+        [string]$VMName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group")]
+        [string]$NSGName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        [string]$VmResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the NSG belongs to")]
+        [string]$NsgResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Allow failures, printing a warning message instead of throwing an exception")]
+        [switch]$WarnOnFailure
+    )
+    $LogLevel = $WarnOnFailure ? "Warning" : "Fatal"
+    Add-LogMessage -Level Info "[ ] Associating $VMName with $NSGName..."
+    $matchingVMs = Get-AzVM -Name $VMName -ResourceGroupName $VmResourceGroupName -ErrorAction SilentlyContinue
+    if ($matchingVMs.Count -ne 1) { Add-LogMessage -Level $LogLevel "Found $($matchingVMs.Count) VM(s) called $VMName!"; return }
+    $networkCard = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $matchingVMs[0].Id }
+    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName -ResourceGroupName $NsgResourceGroupName -ErrorAction SilentlyContinue
+    if ($nsg.Count -ne 1) { Add-LogMessage -Level $LogLevel "Found $($nsg.Count) NSG(s) called $NSGName!"; return }
+    $networkCard.NetworkSecurityGroup = $nsg
+    $null = ($networkCard | Set-AzNetworkInterface)
+    if ($?) {
+        Start-Sleep -Seconds 10  # Allow NSG association to propagate
+        Add-LogMessage -Level Success "NSG association succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "NSG association failed!"
+    }
+}
+Export-ModuleMember -Function Add-VmToNSG
 
 
 # Create a firewall if it does not exist
