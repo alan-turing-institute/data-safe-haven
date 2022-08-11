@@ -293,6 +293,96 @@ function Get-VMsByResourceGroupPrefix {
 Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 
 
+# Run remote shell script
+# -----------------------
+function Invoke-RemoteScript {
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = "ByPath", HelpMessage = "Path to local script that will be run remotely")]
+        [string]$ScriptPath,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByString", HelpMessage = "Contents of script that will be run remotely")]
+        [string]$Script,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
+        [string]$VMName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
+        [ValidateSet("PowerShell", "UnixShell")]
+        [string]$Shell = "PowerShell",
+        [Parameter(Mandatory = $false, HelpMessage = "Suppress script output on success")]
+        [switch]$SuppressOutput,
+        [Parameter(Mandatory = $false, HelpMessage = "(Optional) hashtable of script parameters")]
+        [System.Collections.IDictionary]$Parameter = $null
+    )
+    # If we're given a script then create a file from it
+    $tmpScriptFile = $null
+    if ($Script) {
+        $tmpScriptFile = New-TemporaryFile
+        $Script | Out-File -FilePath $tmpScriptFile.FullName
+        $ScriptPath = $tmpScriptFile.FullName
+    }
+    # Validate any external parameters as non-string arguments or arguments containing special characters will cause Invoke-AzVMRunCommand to fail
+    $params = @{}
+    if ($Parameter) { $params["Parameter"] = $Parameter }
+    $params["CommandId"] = ($Shell -eq "PowerShell") ? "RunPowerShellScript" : "RunShellScript"
+    if ($params.Contains("Parameter")) {
+        foreach ($kv in $params["Parameter"].GetEnumerator()) {
+            if ($kv.Value -isnot [string]) {
+                Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) must be a string!"
+            }
+            foreach ($unsafeCharacter in @("|", "&")) {
+                if ($kv.Value.Contains($unsafeCharacter)) {
+                    Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$unsafeCharacter' which will cause Invoke-AzVMRunCommand to fail. Consider encoding this variable in Base-64."
+                }
+            }
+            foreach ($whitespaceCharacter in @(" ", "`t")) {
+                if (($Shell -eq "UnixShell") -and ($kv.Value.Contains($whitespaceCharacter))) {
+                    if (-not (($kv.Value[0] -eq "'") -or ($kv.Value[0] -eq '"'))) {
+                        Write-Information -InformationAction "Continue" $kv.Value[0]
+                        Add-LogMessage -Level Fatal "$($kv.Key) argument ($($kv.Value)) contains '$whitespaceCharacter' which will cause the shell script to fail. Consider wrapping this variable in single quotes."
+                    }
+                }
+            }
+        }
+    }
+    try {
+        # Catch failures from running two commands in close proximity and rerun
+        while ($true) {
+            try {
+                $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -ScriptPath $ScriptPath @params -ErrorAction Stop
+                $success = $?
+                break
+            } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+               if (-not ($_.Exception.Message -match "Run command extension execution is in progress")) { throw }
+            }
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Running '$ScriptPath' on remote VM '$VMName' failed." -Exception $_.Exception
+    }
+    $success = $success -and ($result.Status -eq "Succeeded")
+    foreach ($outputStream in $result.Value) {
+        # Check for 'ComponentStatus/<stream name>/succeeded' as a signal of success
+        $success = $success -and (($outputStream.Code -split "/")[-1] -eq "succeeded")
+        # Check for ' [x] ' in the output stream as a signal of failure
+        if ($outputStream.Message -ne "") {
+            $success = $success -and ([string]($outputStream.Message) -NotLike '* `[x`] *')
+        }
+    }
+    # Clean up any temporary scripts
+    if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
+    # Check for success or failure
+    if ($success) {
+        Add-LogMessage -Level Success "Remote script execution succeeded"
+        if (-not $SuppressOutput) { Write-Information -InformationAction "Continue" ($result.Value | Out-String) }
+    } else {
+        Add-LogMessage -Level Info "Script output:"
+        Write-Information -InformationAction "Continue" ($result | Out-String)
+        Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
+    }
+    return $result
+}
+Export-ModuleMember -Function Invoke-RemoteScript
+
+
 # Set Azure Monitoring Extension on a VM
 # --------------------------------------
 function Set-VirtualMachineExtensionIfNotInstalled {

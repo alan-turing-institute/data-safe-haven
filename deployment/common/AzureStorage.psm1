@@ -1,5 +1,6 @@
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/AzureCompute -ErrorAction Stop
 Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 

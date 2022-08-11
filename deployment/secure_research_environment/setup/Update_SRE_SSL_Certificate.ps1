@@ -14,6 +14,7 @@ param(
 Import-Module Az.Accounts
 Import-Module Az.Compute
 Import-Module Az.KeyVault
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop

@@ -6,6 +6,7 @@ param(
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -ErrorAction Stop
 

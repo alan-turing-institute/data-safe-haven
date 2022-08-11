@@ -10,6 +10,7 @@ Import-Module Az.Dns -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
