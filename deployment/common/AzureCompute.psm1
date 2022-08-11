@@ -191,6 +191,101 @@ function Deploy-ManagedDisk {
 Export-ModuleMember -Function Deploy-ManagedDisk
 
 
+# Deploy Azure Monitoring Extension on a VM
+# -----------------------------------------
+function Deploy-VirtualMachineMonitoringExtension {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
+        [string]$WorkspaceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
+        [string]$WorkspaceKey
+    )
+    if ($VM.OSProfile.WindowsConfiguration) {
+        # Install Monitoring Agent
+        Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "MicrosoftMonitoringAgent" -Version 1.0 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
+        # # Install Dependency Agent
+        # Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentWindows" -Version 9.10 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
+    } elseif ($VM.OSProfile.LinuxConfiguration) {
+        # Install Monitoring Agent
+        Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "OmsAgentForLinux" -EnableAutomaticUpgrade $true -Version 1.14 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
+        # # Install Dependency Agent - not working with current Ubuntu 20.04 (https://docs.microsoft.com/en-us/answers/questions/938560/unable-to-enable-insights-on-ubuntu-2004-server.html)
+        # Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentLinux" -Version 9.10 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
+    } else {
+        Add-LogMessage -Level Fatal "VM OSProfile not recognised. Cannot activate logging for VM '$($vm.Name)'!"
+    }
+}
+Export-ModuleMember -Function Deploy-VirtualMachineMonitoringExtension
+
+
+# Set Azure Monitoring Extension on a VM
+# --------------------------------------
+function Set-VirtualMachineExtensionIfNotInstalled {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Extension publisher")]
+        [boolean]$EnableAutomaticUpgrade = $false,
+        [Parameter(Mandatory = $true, HelpMessage = "Extension publisher")]
+        [string]$Publisher,
+        [Parameter(Mandatory = $true, HelpMessage = "Extension type")]
+        [string]$Type,
+        [Parameter(Mandatory = $true, HelpMessage = "Extension version")]
+        [string]$Version,
+        [Parameter(Mandatory = $true, HelpMessage = "VM object")]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace ID")]
+        [string]$WorkspaceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Log Analytics Workspace key")]
+        [string]$WorkspaceKey
+    )
+    Add-LogMessage -Level Info "[ ] Ensuring extension '$type' is installed on VM '$($VM.Name)'."
+    $extension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -ErrorAction SilentlyContinue | Where-Object { $_.Publisher -eq $Publisher -and $_.ExtensionType -eq $Type }
+    if ($extension -and $extension.ProvisioningState -ne "Succeeded") {
+        Add-LogMessage -Level Warning "Removing misconfigured extension '$type' installation on VM '$($VM.Name)'."
+        $null = Remove-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name $Type -Force
+        $extension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name $Type -ErrorAction SilentlyContinue
+    }
+    if ($extension) {
+        Add-LogMessage -Level InfoSuccess "Extension '$type' is already installed on VM '$($VM.Name)'."
+    } else {
+        foreach ($i in 1..5) {
+            try {
+                $null = Set-AzVMExtension -EnableAutomaticUpgrade $EnableAutomaticUpgrade `
+                                          -ExtensionName $type `
+                                          -ExtensionType $type `
+                                          -Location $VM.location `
+                                          -ProtectedSettings @{ "workspaceKey" = $WorkspaceKey } `
+                                          -Publisher $publisher `
+                                          -ResourceGroupName $VM.ResourceGroupName `
+                                          -Settings @{ "workspaceId" = $WorkspaceId } `
+                                          -TypeHandlerVersion $version `
+                                          -VMName $VM.Name `
+                                          -ErrorAction Stop
+                Start-Sleep 10
+                $extension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name $Type -ErrorAction Stop
+                if ($extension -and $extension.ProvisioningState -eq "Succeeded") {
+                    break
+                }
+            } catch {
+                $exception = $_.Exception
+                Start-Sleep 30
+            }
+        }
+        $extension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name $Type -ErrorAction Stop
+        if ($extension -and $extension.ProvisioningState -eq "Succeeded") {
+            Add-LogMessage -Level Success "Installed extension '$type' on VM '$($VM.Name)'."
+        } else {
+            if ($exception) {
+                Add-LogMessage -Level Fatal "Failed to install extension '$type' on VM '$($VM.Name)'!" -Exception $exception
+            } else {
+                Add-LogMessage -Level Fatal "Failed to install extension '$type' on VM '$($VM.Name)'!"
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Set-VirtualMachineExtensionIfNotInstalled
+
+
 # Ensure VM is started, with option to force a restart
 # ----------------------------------------------------
 function Start-VM {

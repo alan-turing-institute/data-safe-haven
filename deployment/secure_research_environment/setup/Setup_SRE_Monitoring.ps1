@@ -9,6 +9,7 @@ Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
