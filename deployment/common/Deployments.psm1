@@ -46,35 +46,6 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
-# Create network security group if it does not exist
-# --------------------------------------------------
-function Deploy-NetworkSecurityGroup {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that network security group '$Name' exists..."
-    $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating network security group '$Name'"
-        $nsg = New-AzNetworkSecurityGroup -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created network security group '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create network security group '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Network security group '$Name' already exists"
-    }
-    return $nsg
-}
-Export-ModuleMember -Function Deploy-NetworkSecurityGroup
-
-
 # Create resource group if it does not exist
 # ------------------------------------------
 function Deploy-ResourceGroup {
