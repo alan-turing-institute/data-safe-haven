@@ -46,3 +46,38 @@ function Deploy-KeyVault {
     return $keyVault
 }
 Export-ModuleMember -Function Deploy-KeyVault
+
+
+# Set key vault permissions to the group and remove the user who deployed it
+# --------------------------------------------------------------------------
+function Set-KeyVaultPermissions {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
+        [string]$GroupName
+    )
+    Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
+    try {
+        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName).Id | Select-Object -First 1
+    } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
+        Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
+    }
+    Set-AzKeyVaultAccessPolicy -VaultName $Name `
+                               -ObjectId $securityGroupId `
+                               -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover, Purge `
+                               -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore, Purge `
+                               -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore, Purge `
+                               -WarningAction SilentlyContinue
+    $success = $?
+    foreach ($accessPolicy in (Get-AzKeyVault $Name -WarningAction SilentlyContinue).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
+        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId -WarningAction SilentlyContinue
+        $success = $success -and $?
+    }
+    if ($success) {
+        Add-LogMessage -Level Success "Set correct access policies for key vault '$Name'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set correct access policies for key vault '$Name'!"
+    }
+}
+Export-ModuleMember -Function Set-KeyVaultPermissions
