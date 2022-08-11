@@ -1,4 +1,4 @@
-Import-Module $PSScriptRoot/common/Logging -ErrorAction Stop
+Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
 $PowershellVersionRequired = "7.0.0"

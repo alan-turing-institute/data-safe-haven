@@ -9,12 +9,12 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureResources.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Cryptography.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription

@@ -128,7 +128,6 @@ function Deploy-AutomationAccountEndpoint {
                                        -ResourceGroupName $Account.ResourceGroupName `
                                        -Subnet $Subnet
     return $endpoint
-
 }
 Export-ModuleMember -Function Deploy-AutomationAccountEndpoint
 
@@ -353,7 +352,6 @@ function Deploy-MonitorPrivateLinkScopeEndpoint {
                                        -ResourceGroupName (Get-ResourceGroupName $PrivateLinkScope.Name) `
                                        -Subnet $Subnet
     return $endpoint
-
 }
 Export-ModuleMember -Function Deploy-MonitorPrivateLinkScopeEndpoint
 

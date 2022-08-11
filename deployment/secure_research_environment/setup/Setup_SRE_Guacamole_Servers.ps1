@@ -15,12 +15,12 @@ Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureResources.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Cryptography.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 

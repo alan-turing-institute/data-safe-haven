@@ -7,7 +7,7 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
