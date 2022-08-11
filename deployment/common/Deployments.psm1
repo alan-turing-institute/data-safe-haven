@@ -46,26 +46,6 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
-# Ensure that an Azure VM is turned on
-# ------------------------------------
-function Enable-AzVM {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to enable")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
-        [string]$ResourceGroupName
-    )
-    Add-LogMessage -Level Info "Enable-AzVM is deprecated - consider switching to Start-VM"
-    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
-    if ($powerState -eq "PowerState/running") {
-        return Start-VM -Name $Name -ResourceGroupName $ResourceGroupName -ForceRestart
-    } else {
-        return Start-VM -Name $Name -ResourceGroupName $ResourceGroupName
-    }
-}
-Export-ModuleMember -Function Enable-AzVM
-
-
 # Get image ID
 # ------------
 function Get-ImageFromGallery {
