@@ -455,6 +455,23 @@ function Deploy-VirtualNetworkGateway {
 Export-ModuleMember -Function Deploy-VirtualNetworkGateway
 
 
+# Get subnet
+# ----------
+function Get-Subnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network that this subnet belongs to")]
+        [string]$VirtualNetworkName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that this subnet belongs to")]
+        [string]$ResourceGroupName
+    )
+    $virtualNetwork = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName
+    return ($virtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+}
+Export-ModuleMember -Function Get-Subnet
+
+
 # Get the virtual network that a given subnet belongs to
 # ------------------------------------------------------
 function Get-VirtualNetwork {

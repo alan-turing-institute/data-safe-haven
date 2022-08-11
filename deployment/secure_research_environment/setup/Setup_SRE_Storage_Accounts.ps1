@@ -6,6 +6,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureResources.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
