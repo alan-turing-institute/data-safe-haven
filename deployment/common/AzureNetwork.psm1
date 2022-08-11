@@ -111,6 +111,27 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
+# Create a private endpoint for an automation account
+# ---------------------------------------------------
+function Deploy-AutomationAccountEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Automation account to create the private endpoint for")]
+        [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    $endpoint = Deploy-PrivateEndpoint -Name "$($Account.AutomationAccountName)-endpoint".ToLower() `
+                                       -GroupId "DSCAndHybridWorker" `
+                                       -Location $Account.Location `
+                                       -PrivateLinkServiceId (Get-ResourceId $Account.AutomationAccountName) `
+                                       -ResourceGroupName $Account.ResourceGroupName `
+                                       -Subnet $Subnet
+    return $endpoint
+
+}
+Export-ModuleMember -Function Deploy-AutomationAccountEndpoint
+
+
 # Create a firewall if it does not exist
 # --------------------------------------
 function Deploy-Firewall {
@@ -313,6 +334,29 @@ function Deploy-NetworkInterface {
 Export-ModuleMember -Function Deploy-NetworkInterface
 
 
+# Create a private endpoint for an automation account
+# ---------------------------------------------------
+function Deploy-MonitorPrivateLinkScopeEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint")]
+        [string]$Location,
+        [Parameter(Mandatory = $true, HelpMessage = "Private link scope to connect")]
+        [Microsoft.Azure.Commands.Insights.OutputClasses.PSMonitorPrivateLinkScope]$PrivateLinkScope,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    $endpoint = Deploy-PrivateEndpoint -Name "$($PrivateLinkScope.Name)-endpoint".ToLower() `
+                                       -GroupId "azuremonitor" `
+                                       -Location $Location `
+                                       -PrivateLinkServiceId $PrivateLinkScope.Id `
+                                       -ResourceGroupName (Get-ResourceGroupName $PrivateLinkScope.Name) `
+                                       -Subnet $Subnet
+    return $endpoint
+
+}
+Export-ModuleMember -Function Deploy-MonitorPrivateLinkScopeEndpoint
+
+
 # Create network security group if it does not exist
 # --------------------------------------------------
 function Deploy-NetworkSecurityGroup {
@@ -379,6 +423,42 @@ function Deploy-PublicIpAddress {
     return $publicIpAddress
 }
 Export-ModuleMember -Function Deploy-PublicIpAddress
+
+
+# Create a private endpoint
+# -------------------------
+function Deploy-PrivateEndpoint {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Group ID for this endpoint")]
+        [string]$GroupId,
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy the endpoint")]
+        [string]$Location,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the endpoint")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "ID of the service to link against")]
+        [string]$PrivateLinkServiceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to deploy into")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    Add-LogMessage -Level Info "Ensuring that private endpoint '$Name' exists..."
+    $endpoint = Get-AzPrivateEndpoint -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating private endpoint '$Name'"
+        $privateLinkServiceConnection = New-AzPrivateLinkServiceConnection -Name "${Name}LinkServiceConnection" -PrivateLinkServiceId $PrivateLinkServiceId -GroupId $GroupId
+        $endpoint = New-AzPrivateEndpoint -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateLinkServiceConnection
+        if ($?) {
+            Add-LogMessage -Level Success "Created private endpoint '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create private endpoint '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Private endpoint '$Name' already exists"
+    }
+    return $endpoint
+}
+Export-ModuleMember -Function Deploy-PrivateEndpoint
 
 
 # Create a route if it does not exist
