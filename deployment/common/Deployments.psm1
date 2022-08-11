@@ -68,64 +68,6 @@ function Get-ImageDefinition {
 Export-ModuleMember -Function Get-ImageDefinition
 
 
-# Run Azure desired state configuration
-# -------------------------------------
-function Invoke-AzureVmDesiredState {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of configuration file previously uploaded with Publish-AzVMDscConfiguration.")]
-        [string]$ArchiveBlobName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Azure storage container where the configuration archive is located.")]
-        [string]$ArchiveContainerName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that contains the storage account containing the configuration archive.")]
-        [string]$ArchiveResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Azure storage account containing the configuration archive.")]
-        [string]$ArchiveStorageAccountName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of the configuration function being invoked")]
-        [string]$ConfigurationName,
-        [Parameter(Mandatory = $false, HelpMessage = "Hash table that contains the arguments to the configuration function")]
-        [System.Collections.Hashtable]$ConfigurationParameters,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of the VM being configured")]
-        [string]$VmLocation,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of the VM being configured")]
-        [string]$VmName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that contains the VM being configured")]
-        [string]$VmResourceGroupName
-    )
-    # Run remote configuration
-    Add-LogMessage -Level Info "Running desired state configuration '$ConfigurationName' on VM '$VmName'."
-    $params = @{}
-    if ($ConfigurationParameters) { $params["ConfigurationArgument"] = $ConfigurationParameters }
-    $maxTries = 3
-    for ($attempt = 1; $attempt -le $maxTries; $attempt++) {
-        try {
-            $result = Set-AzVMDscExtension -ArchiveBlobName $ArchiveBlobName `
-                                           -ArchiveContainerName $ArchiveContainerName `
-                                           -ArchiveResourceGroupName $ArchiveResourceGroupName `
-                                           -ArchiveStorageAccountName $ArchiveStorageAccountName `
-                                           -ConfigurationName $ConfigurationName `
-                                           -Location $VmLocation `
-                                           -Name "DataSafeHavenDesiredState" `
-                                           -ResourceGroupName $VmResourceGroupName `
-                                           -Version "2.77" `
-                                           -VMName $VmName `
-                                           @params
-            break
-        } catch {
-            Add-LogMessage -Level Info "Applying desired state configuration failed. Attempt [$attempt/$maxTries]."
-            $ErrorMessage = $_.Exception
-        }
-    }
-    # Check for success or failure
-    if ($result.IsSuccessStatusCode) {
-        Add-LogMessage -Level Success "Ran desired state configuration '$ConfigurationName' on VM '$VmName'."
-    } else {
-        Add-LogMessage -Level Fatal "Failed to run desired state configuration '$ConfigurationName' on VM '$VmName'!`n${ErrorMessage}"
-    }
-    return $result
-}
-Export-ModuleMember -Function Invoke-AzureVmDesiredState
-
-
 # Run remote shell script
 # -----------------------
 function Invoke-RemoteScript {
