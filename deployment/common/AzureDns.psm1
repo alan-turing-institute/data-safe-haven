@@ -114,6 +114,37 @@ function New-DNSZone {
 Export-ModuleMember -Function New-DNSZone
 
 
+# Remove a DNS record if it exists
+# --------------------------------
+function Remove-DnsRecord {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
+        [string]$RecordName,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of 'A' record")]
+        [string]$RecordType,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS resource group")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
+        [string]$SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
+        [string]$ZoneName
+    )
+    $originalContext = Get-AzContext
+    try {
+        Add-LogMessage -Level Info "[ ] Removing '$RecordName' $RecordType record from DNS zone $ZoneName"
+        $null = Set-AzContext -SubscriptionId $SubscriptionName -ErrorAction Stop
+        Remove-AzDnsRecordSet -Name $RecordName -RecordType $RecordType -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
+        Add-LogMessage -Level Fatal "DNS record removal succeeded"
+    } catch {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Fatal "DNS record removal failed!" -Excepation $_.Exception
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+}
+Export-ModuleMember -Function Remove-ResourceGroup
+
+
 # Add NS Record Set to DNS Zone if it does not already exist
 # ---------------------------------------------------------
 function Set-DnsZoneAndParentNSRecords {

@@ -130,3 +130,33 @@ function Get-ResourceId {
     return Get-AzResource | Where-Object { $_.Name -eq $ResourceName } | ForEach-Object { $_.ResourceId } | Select-Object -First 1
 }
 Export-ModuleMember -Function Get-ResourceId
+
+
+# Get the resource ID for a named resource
+# ----------------------------------------
+function Get-ResourcesInGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group to check for resources")]
+        [string]$ResourceGroupName
+    )
+    return Get-AzResource | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName }
+}
+Export-ModuleMember -Function Get-ResourcesInGroup
+
+
+# Remove a resource group if it exists
+# ------------------------------------
+function Remove-ResourceGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove")]
+        [string]$Name
+    )
+    Add-LogMessage -Level Info "Attempting to remove resource group '$Name'..."
+    try {
+        $null = Get-AzResourceGroup -ResourceGroupName $Name | Remove-AzResourceGroup -Force -Confirm:$False -ErrorAction Stop
+        Add-LogMessage -Level Success "Resource group removal succeeded"
+    } catch {
+        Add-LogMessage -Level Fatal "Resource group removal failed" -Exception $_.Exception
+    }
+}
+Export-ModuleMember -Function Remove-ResourceGroup
