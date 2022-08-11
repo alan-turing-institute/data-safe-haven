@@ -68,26 +68,6 @@ function Get-ImageDefinition {
 Export-ModuleMember -Function Get-ImageDefinition
 
 
-# Get all VMs for an SHM or SRE
-# -----------------------------
-function Get-VMsByResourceGroupPrefix {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
-        [string]$ResourceGroupPrefix
-    )
-    $matchingResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "${ResourceGroupPrefix}_*" }
-    $matchingVMs = [ordered]@{}
-    foreach ($rg in $matchingResourceGroups) {
-        $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
-        if ($rgVms) {
-            $matchingVMs[$rg.ResourceGroupName] = $rgVms
-        }
-    }
-    return $matchingVMs
-}
-Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
-
-
 # Run Azure desired state configuration
 # -------------------------------------
 function Invoke-AzureVmDesiredState {

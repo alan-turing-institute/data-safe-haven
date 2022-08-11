@@ -1,4 +1,5 @@
 Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -269,6 +270,26 @@ function Get-ImageFromGallery {
     return $image
 }
 Export-ModuleMember -Function Get-ImageFromGallery
+
+
+# Get all VMs for an SHM or SRE
+# -----------------------------
+function Get-VMsByResourceGroupPrefix {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Prefix to match resource groups on")]
+        [string]$ResourceGroupPrefix
+    )
+    $matchingResourceGroups = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "${ResourceGroupPrefix}_*" }
+    $matchingVMs = [ordered]@{}
+    foreach ($rg in $matchingResourceGroups) {
+        $rgVms = Get-AzVM -ResourceGroup $rg.ResourceGroupName
+        if ($rgVms) {
+            $matchingVMs[$rg.ResourceGroupName] = $rgVms
+        }
+    }
+    return $matchingVMs
+}
+Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 
 
 # Set Azure Monitoring Extension on a VM
