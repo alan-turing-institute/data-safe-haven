@@ -258,30 +258,41 @@ function Get-ImageFromGallery {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
         [string]$ImageVersion,
-        [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ByImageDefinition", HelpMessage = "Image definition that image belongs to")]
         [string]$ImageDefinition,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByImageSku", HelpMessage = "Image SKU that image belongs to")]
+        [string]$ImageSku,
         [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
         [string]$GalleryName,
         [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
-        [string]$ResourceGroup,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
         [string]$Subscription
     )
     $originalContext = Get-AzContext
     try {
         $null = Set-AzContext -Subscription $Subscription -ErrorAction Stop
+        if (-not $ImageDefinition) {
+            try {
+                Add-LogMessage -Level Info "[ ] Looking for image definition corresponding to '$ImageSku'..."
+                $ImageDefinition = (Get-AzGalleryImageDefinition -ResourceGroupName $ResourceGroupName -GalleryName $GalleryName | Where-Object { $_.Identifier.Sku -eq $ImageSku })[0].Name
+                Add-LogMessage -Level Success "Interpreted $ImageSku as image definition $imageDefinition"
+            } catch {
+                Add-LogMessage -Level Fatal "Failed to interpret $ImageSku as an image type!" -Exception $_.Exception
+            }
+        }
         Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
         try {
-            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroupName -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
         } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
-            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
+            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroupName -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
             Add-LogMessage -Level Error "Image version '$ImageVersion' is invalid. Available versions are: $versions"
             $ImageVersion = $versions | Select-Object -Last 1
             $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$ImageVersion')"
             if ($versions.Contains($userVersion)) {
                 $ImageVersion = $userVersion
             }
-            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroupName -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
         }
         if ($image) {
             $commitHash = $image.Tags["Build commit hash"]
