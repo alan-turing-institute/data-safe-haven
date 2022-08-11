@@ -219,6 +219,58 @@ function Deploy-VirtualMachineMonitoringExtension {
 Export-ModuleMember -Function Deploy-VirtualMachineMonitoringExtension
 
 
+# Get image ID
+# ------------
+function Get-ImageFromGallery {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Image version to retrieve")]
+        [string]$ImageVersion,
+        [Parameter(Mandatory = $true, HelpMessage = "Image definition that image belongs to")]
+        [string]$ImageDefinition,
+        [Parameter(Mandatory = $true, HelpMessage = "Image gallery name")]
+        [string]$GalleryName,
+        [Parameter(Mandatory = $true, HelpMessage = "Resource group containing image gallery")]
+        [string]$ResourceGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Subscription containing image gallery")]
+        [string]$Subscription
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $Subscription -ErrorAction Stop
+        Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
+        try {
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            $versions = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition | Sort-Object Name | ForEach-Object { $_.Name }
+            Add-LogMessage -Level Error "Image version '$ImageVersion' is invalid. Available versions are: $versions"
+            $ImageVersion = $versions | Select-Object -Last 1
+            $userVersion = Read-Host -Prompt "Enter the version you would like to use (or leave empty to accept the default: '$ImageVersion')"
+            if ($versions.Contains($userVersion)) {
+                $ImageVersion = $userVersion
+            }
+            $image = Get-AzGalleryImageVersion -ResourceGroup $ResourceGroup -GalleryName $GalleryName -GalleryImageDefinitionName $ImageDefinition -GalleryImageVersionName $ImageVersion -ErrorAction Stop
+        }
+        if ($image) {
+            $commitHash = $image.Tags["Build commit hash"]
+            if ($commitHash) {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery created from commit $commitHash"
+            } else {
+                Add-LogMessage -Level Success "Found image $imageDefinition version $($image.Name) in gallery"
+            }
+        } else {
+            Add-LogMessage -Level Fatal "Could not find image $imageDefinition version $ImageVersion in gallery!"
+        }
+    } catch {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return $image
+}
+Export-ModuleMember -Function Get-ImageFromGallery
+
+
 # Set Azure Monitoring Extension on a VM
 # --------------------------------------
 function Set-VirtualMachineExtensionIfNotInstalled {
