@@ -342,6 +342,36 @@ function Deploy-RouteTable {
 Export-ModuleMember -Function Deploy-RouteTable
 
 
+# Create subnet if it does not exist
+# ----------------------------------
+function Deploy-Subnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "A VirtualNetwork object to deploy into")]
+        $VirtualNetwork,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        [string]$AddressPrefix
+    )
+    Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
+    $null = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
+        $null = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+        if ($?) {
+            Add-LogMessage -Level Success "Created subnet '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create subnet '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Subnet '$Name' already exists"
+    }
+    return Get-Subnet -Name $Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
+}
+Export-ModuleMember -Function Deploy-Subnet
+
+
 # Peer two vnets
 # --------------
 function Set-VnetPeering {
