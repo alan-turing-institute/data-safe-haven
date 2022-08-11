@@ -335,6 +335,24 @@ function Get-VMsByResourceGroupPrefix {
 Export-ModuleMember -Function Get-VMsByResourceGroupPrefix
 
 
+# Get all VMs for an SHM or SRE
+# -----------------------------
+function Get-VMState {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to get the state of")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
+        [string]$ResourceGroupName
+    )
+    try {
+        return (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status -ErrorAction Stop).PowerState
+    } catch {
+        return "VM does not exist"
+    }
+}
+Export-ModuleMember -Function Get-VMState
+
+
 # Run remote shell script
 # -----------------------
 function Invoke-RemoteScript {
