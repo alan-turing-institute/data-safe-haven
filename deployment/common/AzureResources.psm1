@@ -1,16 +1,40 @@
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
-# Get the resource ID for a named resource
-# ----------------------------------------
-function Get-ResourceId {
+# Deploy an ARM template and log the output
+# -----------------------------------------
+function Deploy-ArmTemplate {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Resource to obtain ID for")]
-        [System.Object]$ResourceName
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Template parameters")]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$TemplateParameters,
+        [Parameter(Mandatory = $true, HelpMessage = "Path to template file")]
+        [ValidateNotNullOrEmpty()]
+        [string]$TemplatePath
     )
-    return Get-AzResource | Where-Object { $_.Name -eq $ResourceName } | ForEach-Object { $_.ResourceId } | Select-Object -First 1
+    $templateName = Split-Path -Path "$TemplatePath" -LeafBase
+    # Note we must use inline parameters rather than -TemplateParameterObject in order to support securestring
+    # Furthermore, using -SkipTemplateParameterPrompt will cause inline parameters to fail
+    New-AzResourceGroupDeployment -DeploymentDebugLogLevel ResponseContent `
+                                  -ErrorVariable templateErrors `
+                                  -Name $templateName `
+                                  -ResourceGroupName $ResourceGroupName `
+                                  -TemplateFile $TemplatePath `
+                                  -Verbose `
+                                  @TemplateParameters
+    $result = $?
+    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
+    if ($result) {
+        Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Template deployment '$templateName' failed!"
+    }
 }
-Export-ModuleMember -Function Get-ResourceId
+Export-ModuleMember -Function Deploy-ArmTemplate
 
 
 # Get the resource ID for a named resource
@@ -67,3 +91,15 @@ function Deploy-RoleAssignment {
     return $Assignment
 }
 Export-ModuleMember -Function Deploy-RoleAssignment
+
+
+# Get the resource ID for a named resource
+# ----------------------------------------
+function Get-ResourceId {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Resource to obtain ID for")]
+        [System.Object]$ResourceName
+    )
+    return Get-AzResource | Where-Object { $_.Name -eq $ResourceName } | ForEach-Object { $_.ResourceId } | Select-Object -First 1
+}
+Export-ModuleMember -Function Get-ResourceId

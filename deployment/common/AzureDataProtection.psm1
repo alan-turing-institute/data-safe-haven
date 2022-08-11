@@ -1,4 +1,5 @@
 Import-Module Az.DataProtection -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Deploy a data protection backup vault
