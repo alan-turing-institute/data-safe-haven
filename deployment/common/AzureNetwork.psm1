@@ -372,6 +372,41 @@ function Deploy-Subnet {
 Export-ModuleMember -Function Deploy-Subnet
 
 
+# Create virtual network if it does not exist
+# ------------------------------------------
+function Deploy-VirtualNetwork {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        [string]$AddressPrefix,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [string]$Location,
+        [Parameter(Mandatory = $false, HelpMessage = "DNS servers to attach to this virtual network")]
+        [string[]]$DnsServer
+    )
+    Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
+    $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
+        $params = @{}
+        if ($DnsServer) { $params["DnsServer"] = $DnsServer }
+        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" @params -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created virtual network '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Virtual network '$Name' already exists"
+    }
+    return $vnet
+}
+Export-ModuleMember -Function Deploy-VirtualNetwork
+
+
 # Peer two vnets
 # --------------
 function Set-VnetPeering {
