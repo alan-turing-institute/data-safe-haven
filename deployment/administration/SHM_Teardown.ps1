@@ -38,24 +38,13 @@ if ($dryRun.IsPresent) {
 }
 
 
-# Remove resource groups and the resources they contain
-# If there are still resources remaining after 10 loops then throw an exception
-# -----------------------------------------------------------------------------
-for ($i = 0; $i -lt $nIterations; $i++) {
-    $shmResourceGroups = Get-ShmResourceGroups -shmConfig $config
-    if (-not $shmResourceGroups.Length) { break }
-    Add-LogMessage -Level Info "Found $($shmResourceGroups.Length) resource group(s) to remove..."
-    foreach ($resourceGroup in $shmResourceGroups) {
-        if ($dryRun.IsPresent) {
-            Add-LogMessage -Level Info "Would attempt to remove $($resourceGroup.ResourceGroupName)..."
-        } else {
-            try {
-                Remove-ResourceGroup -Name $resourceGroup.ResourceGroupName
-            } catch {
-                Add-LogMessage -Level Info "Removal of resource group '$($resourceGroup.ResourceGroupName)' failed - rescheduling."
-            }
-        }
-    }
+# Remove SHM resource groups and the resources they contain
+# ---------------------------------------------------------
+$ResourceGroupNames = Get-ShmResourceGroups -sreConfig $config | ForEach-Object { $_.ResourceGroupName }
+if ($dryRun.IsPresent) {
+    $ResourceGroupNames | ForEach-Object { Add-LogMessage -Level Info "Would attempt to remove $_..." }
+} else {
+    if ($ResourceGroupNames.Count) { Remove-AllResourceGroups -ResourceGroupNames $ResourceGroupNames -MaxAttempts 60 }
 }
 
 

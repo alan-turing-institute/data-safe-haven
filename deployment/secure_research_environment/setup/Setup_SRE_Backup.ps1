@@ -21,8 +21,8 @@ $null = Deploy-ResourceGroup -Name $config.sre.backup.rg -Location $config.shm.l
 
 # Deploy data protection backup vault
 $Vault = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.rg `
-                                         -VaultName $config.sre.backup.vault.name `
-                                         -Location $config.sre.location
+                                          -VaultName $config.sre.backup.vault.name `
+                                          -Location $config.sre.location
 
 # Create blob backup policy
 # This enforces the default policy for blobs
@@ -40,7 +40,7 @@ $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
                               -RoleDefinitionName "Storage Account Backup Contributor"
 
 # Create blob backup instance
-$Instance = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
-                                                -ResourceGroupName $config.sre.backup.rg `
-                                                -StorageAccount $PersistentStorageAccount `
-                                                -VaultName $Vault.Name
+$null = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
+                                            -ResourceGroupName $config.sre.backup.rg `
+                                            -StorageAccount $PersistentStorageAccount `
+                                            -VaultName $Vault.Name

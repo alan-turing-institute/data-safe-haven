@@ -144,19 +144,59 @@ function Get-ResourcesInGroup {
 Export-ModuleMember -Function Get-ResourcesInGroup
 
 
+# Remove resource groups and the resources they contain
+# -----------------------------------------------------
+function Remove-AllResourceGroups {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of iterations to attempt")]
+        [int]$MaxAttempts = 10,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove")]
+        [string[]]$ResourceGroupNames
+    )
+    for ($i = 0; $i -lt $MaxAttempts; $i++) {
+        $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
+        if (-not $ResourceGroups.Count) { return }
+        Add-LogMessage -Level Info "Found $($ResourceGroups.Count) resource group(s) to remove..."
+        # Schedule removal of existing resource groups
+        $ResourceGroups | ForEach-Object { Remove-ResourceGroup -Name $_.ResourceGroupName -NoWait }
+        $InitialNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
+        # Wait for a minute and then check for current resource groups
+        Start-Sleep 60
+        $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
+        # Output any successfully removed resource groups
+        $FinalNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
+        $InitialNames | Where-Object { -not $FinalNames.Contains($_) } | ForEach-Object {
+            Add-LogMessage -Level Success "Removed resource group $_"
+        }
+    }
+    Add-LogMessage -Level Fatal "Failed to remove all requested resource groups!"
+}
+Export-ModuleMember -Function Remove-AllResourceGroups
+
+
 # Remove a resource group if it exists
 # ------------------------------------
 function Remove-ResourceGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove")]
-        [string]$Name
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Do not wait for the removal to complete")]
+        [switch]$NoWait
     )
+    $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name
     Add-LogMessage -Level Info "Attempting to remove resource group '$Name'..."
-    try {
-        $null = Get-AzResourceGroup -ResourceGroupName $Name | Remove-AzResourceGroup -Force -Confirm:$False -ErrorAction Stop
-        Add-LogMessage -Level Success "Resource group removal succeeded"
-    } catch {
-        Add-LogMessage -Level Fatal "Resource group removal failed" -Exception $_.Exception
+    if ($NoWait.IsPresent) {
+        if ($ResourceGroup.ResourceId) {
+            $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue
+            $null = Get-AzResource | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue
+        }
+    } else {
+        try {
+            $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -ErrorAction Stop
+            Add-LogMessage -Level Success "Resource group removal succeeded"
+        } catch {
+            Add-LogMessage -Level Fatal "Resource group removal failed" -Exception $_.Exception
+        }
     }
 }
 Export-ModuleMember -Function Remove-ResourceGroup
