@@ -2,9 +2,43 @@ Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Dns -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
+
+function Deploy-DnsRecord {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "DNS records")]
+        [Microsoft.Azure.Commands.Dns.DnsRecordBase[]]$DnsRecords,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of record")]
+        [string]$RecordName,
+        [Parameter(Mandatory = $true, HelpMessage = "Type of record")]
+        [string]$RecordType,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS resource group")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
+        [string]$SubscriptionName,
+        [Parameter(Mandatory = $true, HelpMessage = "TTL seconds for the DNS records")]
+        [uint]$TtlSeconds,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to add the records to")]
+        [string]$ZoneName
+    )
+    $originalContext = Get-AzContext
+    try {
+        $null = Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop
+        Remove-AzDnsRecordSet -Name $RecordName -RecordType $RecordType -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsRecordSet -DnsRecords $DnsRecords -Name $RecordName -RecordType $RecordType -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -ZoneName $ZoneName -ErrorAction Stop
+    } catch {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        throw
+    } finally {
+        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    }
+    return
+}
+Export-ModuleMember -Function Deploy-DnsRecord
+
+
 # Add A (and optionally CNAME) DNS records
 # ----------------------------------------
-function Deploy-DNSRecords {
+function Deploy-DnsRecordCollection {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS subscription")]
         [string]$SubscriptionName,
@@ -21,53 +55,31 @@ function Deploy-DNSRecords {
         [Parameter(Mandatory = $false, HelpMessage = "Name of 'CNAME' record (if none is provided then no CNAME redirect will be set up)")]
         [string]$RecordNameCName = $null,
         [Parameter(Mandatory = $false, HelpMessage = "TTL seconds for the DNS records")]
-        [int]$TtlSeconds = 30
+        [uint]$TtlSeconds = 30
     )
-    $originalContext = Get-AzContext
+    Add-LogMessage -Level Info "Adding DNS records for DNS zone '$ZoneName'..."
     try {
-        Add-LogMessage -Level Info "Adding DNS records..."
-        $null = Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop
-
         # Set the A record
-        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone ($ZoneName)"
-        Remove-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
-        $null = New-AzDnsRecordSet -Name $RecordNameA -RecordType A -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $PublicIpAddress)
-        if ($?) {
-            Add-LogMessage -Level Success "Successfully set 'A' record"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to set 'A' record!"
-        }
+        Add-LogMessage -Level Info "[ ] Setting 'A' record to '$PublicIpAddress' for DNS zone '$ZoneName'"
+        Deploy-DnsRecord -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $PublicIpAddress) -RecordName $RecordNameA -RecordType "A" -ResourceGroupName $ResourceGroupName -Subscription $SubscriptionName -TtlSeconds $TtlSeconds -ZoneName $ZoneName
+        Add-LogMessage -Level Success "Set 'A' record to '$PublicIpAddress' for DNS zone '$ZoneName'"
         # Set the CNAME record
         if ($RecordNameCName) {
-            Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone ($ZoneName)"
-            Remove-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
-            $null = New-AzDnsRecordSet -Name $RecordNameCName -RecordType CNAME -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName)
-            if ($?) {
-                Add-LogMessage -Level Success "Successfully set 'CNAME' record"
-            } else {
-                Add-LogMessage -Level Fatal "Failed to set 'CNAME' record!"
-            }
+            Add-LogMessage -Level Info "[ ] Setting CNAME record '$RecordNameCName' to point to the 'A' record for DNS zone '$ZoneName'"
+            Deploy-DnsRecord -DnsRecords (New-AzDnsRecordConfig -Cname $ZoneName) -RecordName $RecordNameCName -RecordType "CNAME" -ResourceGroupName $ResourceGroupName -Subscription $SubscriptionName -TtlSeconds $TtlSeconds -ZoneName $ZoneName
+            Add-LogMessage -Level Success "Set 'CNAME' record to '$RecordNameCName' to point to the 'A' record for DNS zone '$ZoneName'"
         }
         # Set the CAA record
         if ($RecordNameCAA) {
             Add-LogMessage -Level Info "[ ] Setting CAA record for $ZoneName to state that certificates will be provided by $RecordNameCAA"
-            Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName
-            $null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -Ttl $TtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue $RecordNameCAA)
-            if ($?) {
-                Add-LogMessage -Level Success "Successfully set 'CAA' record for $ZoneName"
-            } else {
-                Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $ZoneName!"
-            }
+            Deploy-DnsRecord -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue $RecordNameCAA) -RecordName "@" -RecordType "CAA" -ResourceGroupName $ResourceGroupName -Subscription $SubscriptionName -TtlSeconds $TtlSeconds  -ZoneName $ZoneName
+            Add-LogMessage -Level Success "Set 'CAA' record for '$ZoneName' to state that certificates will be provided by $RecordNameCAA"
         }
     } catch {
-        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-        throw
-    } finally {
-        $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+        Add-LogMessage -Level Fatal "Failed to add DNS records for DNS zone '$ZoneName'!" -Exception $_.Exception
     }
-    return
 }
-Export-ModuleMember -Function Deploy-DNSRecords
+Export-ModuleMember -Function Deploy-DnsRecordCollection
 
 
 # Get NS Records

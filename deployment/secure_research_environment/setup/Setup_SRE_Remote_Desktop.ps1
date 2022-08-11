@@ -195,14 +195,14 @@ $rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remo
 
 # Add DNS records for RDS Gateway
 # -------------------------------
-Deploy-DNSRecords -PublicIpAddress $rdsGatewayPublicIp `
-                  -RecordNameA "@" `
-                  -RecordNameCAA "letsencrypt.org" `
-                  -RecordNameCName $serverHostname `
-                  -ResourceGroupName $config.shm.dns.rg `
-                  -SubscriptionName $config.shm.dns.subscriptionName `
-                  -TtlSeconds 30 `
-                  -ZoneName $config.sre.domain.fqdn
+Deploy-DnsRecordCollection -PublicIpAddress $rdsGatewayPublicIp `
+                           -RecordNameA "@" `
+                           -RecordNameCAA "letsencrypt.org" `
+                           -RecordNameCName $serverHostname `
+                           -ResourceGroupName $config.shm.dns.rg `
+                           -SubscriptionName $config.shm.dns.subscriptionName `
+                           -TtlSeconds 30 `
+                           -ZoneName $config.sre.domain.fqdn
 
 
 # Import files to RDS VMs

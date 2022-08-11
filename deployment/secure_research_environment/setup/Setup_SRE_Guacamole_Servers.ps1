@@ -148,14 +148,14 @@ Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $co
 
 # Add DNS records for Guacamole server
 # ------------------------------------
-Deploy-DNSRecords -PublicIpAddress $publicIp.IpAddress `
-                  -RecordNameA "@" `
-                  -RecordNameCAA "letsencrypt.org" `
-                  -RecordNameCName $serverHostname `
-                  -ResourceGroupName $config.shm.dns.rg `
-                  -SubscriptionName $config.shm.dns.subscriptionName `
-                  -TtlSeconds 30 `
-                  -ZoneName $config.sre.domain.fqdn
+Deploy-DnsRecordCollection -PublicIpAddress $publicIp.IpAddress `
+                           -RecordNameA "@" `
+                           -RecordNameCAA "letsencrypt.org" `
+                           -RecordNameCName $serverHostname `
+                           -ResourceGroupName $config.shm.dns.rg `
+                           -SubscriptionName $config.shm.dns.subscriptionName `
+                           -TtlSeconds 30 `
+                           -ZoneName $config.sre.domain.fqdn
 
 
 # Switch back to original subscription
