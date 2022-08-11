@@ -13,7 +13,6 @@ Import-Module $PSScriptRoot/../../common/AzureResources.psm1 -Force -ErrorAction
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force -ErrorAction Stop
 

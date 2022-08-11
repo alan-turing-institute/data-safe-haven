@@ -15,7 +15,6 @@ Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorA
 Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 

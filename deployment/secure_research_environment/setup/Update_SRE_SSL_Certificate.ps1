@@ -18,7 +18,6 @@ Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 
 
 # Check that we are authenticated in Azure
