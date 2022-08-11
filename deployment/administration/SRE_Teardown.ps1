@@ -11,6 +11,7 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Automation -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/AzureDataProtection -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/DataStructures -Force -ErrorAction Stop
@@ -47,6 +48,9 @@ if ($dryRun.IsPresent) {
     $nIterations = 10
 }
 
+# Remove backup instances and policies. Without this the backup vault cannot be deleted
+# -------------------------------------------------------------------------------------
+Remove-StorageAccountBackupInstances -ResourceGroupName $config.sre.backup.rg -VaultName $config.sre.backup.vault.name
 
 # Remove resource groups and the resources they contain
 # If there are still resources remaining after 10 loops then throw an exception
