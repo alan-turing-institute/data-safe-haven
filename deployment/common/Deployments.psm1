@@ -46,40 +46,6 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
-# Create a managed disk if it does not exist
-# ------------------------------------------
-function Deploy-ManagedDisk {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of disk to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Disk size in GB")]
-        $SizeGB,
-        [Parameter(Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
-        $Type,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that managed disk '$Name' exists..."
-    $disk = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating $SizeGB GB managed disk '$Name'"
-        $diskConfig = New-AzDiskConfig -Location $Location -DiskSizeGB $SizeGB -AccountType $Type -OsType Linux -CreateOption Empty
-        $disk = New-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $Name -Disk $diskConfig
-        if ($?) {
-            Add-LogMessage -Level Success "Created managed disk '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create managed disk '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Managed disk '$Name' already exists"
-    }
-    return $disk
-}
-Export-ModuleMember -Function Deploy-ManagedDisk
-
-
 # Create network security group if it does not exist
 # --------------------------------------------------
 function Deploy-NetworkSecurityGroup {
