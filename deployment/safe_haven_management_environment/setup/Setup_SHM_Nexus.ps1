@@ -7,6 +7,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
@@ -98,7 +99,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 
 # Deploy the VM
 # -------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository["tier${tier}"].rg -Subnet $repositorySubnet -PrivateIpAddress $privateIpAddress -Location $config.location
+$vmNic = Deploy-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.repository["tier${tier}"].rg -Subnet $repositorySubnet -PrivateIpAddress $privateIpAddress -Location $config.location
 $params = @{
     Name                   = $vmName
     Size                   = $config.repository["tier${tier}"].vmSize

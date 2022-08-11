@@ -13,6 +13,7 @@ Import-Module Az.Network -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
@@ -56,7 +57,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.remoteDesktop.rg -Location $confi
 
 # Deploy a network card with a public IP address
 # ----------------------------------------------
-$networkCard = Deploy-VirtualMachineNIC -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$networkCard = Deploy-NetworkInterface -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $publicIp = Deploy-PublicIpAddress -Name "$($config.sre.remoteDesktop.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.remoteDesktop.rg -AllocationMethod Static -Location $config.sre.location
 $null = $networkCard | Set-AzNetworkInterfaceIpConfig -Name $networkCard.ipConfigurations[0].Name -SubnetId $deploymentSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 

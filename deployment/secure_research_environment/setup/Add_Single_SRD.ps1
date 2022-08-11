@@ -18,6 +18,7 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module Powershell-Yaml -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -198,7 +199,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 # Deploy the VM
 # -------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.srd.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$networkCard = Deploy-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.sre.srd.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $dataDisks = @(
     (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.srd.disks.scratch.sizeGb -Type $config.sre.srd.disks.scratch.type -ResourceGroupName $config.sre.srd.rg -Location $config.sre.location)
 )

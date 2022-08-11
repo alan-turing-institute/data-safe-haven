@@ -12,6 +12,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -100,7 +101,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "srdbuildadmin" -AsPlaintext
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.srdImage.bootdiagnostics.accountName -ResourceGroupName $config.srdImage.bootdiagnostics.rg -Location $config.srdImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
-$buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location
+$buildVmNic = Deploy-NetworkInterface -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location
 $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${buildVmName}"
 
 
