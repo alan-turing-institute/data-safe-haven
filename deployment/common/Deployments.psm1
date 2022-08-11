@@ -46,54 +46,6 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
-# Create virtual network gateway if it does not exist
-# ---------------------------------------------------
-function Deploy-VirtualNetworkGateway {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network gateway to deploy")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        [string]$Location,
-        [Parameter(Mandatory = $true, HelpMessage = "ID of the public IP address to use")]
-        [string]$PublicIpAddressId,
-        [Parameter(Mandatory = $true, HelpMessage = "ID of the subnet to deploy into")]
-        [string]$SubnetId,
-        [Parameter(Mandatory = $true, HelpMessage = "Point-to-site certificate used by the gateway")]
-        [string]$P2SCertificate,
-        [Parameter(Mandatory = $true, HelpMessage = "Range of IP addresses used by the point-to-site VpnClient")]
-        [string]$VpnClientAddressPool
-    )
-    Add-LogMessage -Level Info "Ensuring that virtual network gateway '$Name' exists..."
-    $gateway = Get-AzVirtualNetworkGateway -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating virtual network gateway '$Name'..."
-        $ipconfig = New-AzVirtualNetworkGatewayIpConfig -Name "shmgwipconf" -SubnetId $SubnetId -PublicIpAddressId $PublicIpAddressId
-        $rootCertificate = New-AzVpnClientRootCertificate -Name "SafeHavenManagementP2SRootCert" -PublicCertData $P2SCertificate
-        $gateway = New-AzVirtualNetworkGateway -Name $Name `
-                                               -GatewaySku VpnGw1 `
-                                               -GatewayType Vpn `
-                                               -IpConfigurations $ipconfig `
-                                               -Location $Location `
-                                               -ResourceGroupName $ResourceGroupName `
-                                               -VpnClientAddressPool $VpnClientAddressPool `
-                                               -VpnClientProtocol IkeV2, SSTP `
-                                               -VpnClientRootCertificates $rootCertificate `
-                                               -VpnType RouteBased
-        if ($?) {
-            Add-LogMessage -Level Success "Created virtual network gateway '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual network gateway '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Virtual network gateway '$Name' already exists"
-    }
-    return $gateway
-}
-Export-ModuleMember -Function Deploy-VirtualNetworkGateway
-
-
 # Ensure that an Azure VM is turned on
 # ------------------------------------
 function Enable-AzVM {
