@@ -4,7 +4,6 @@ Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
-Import-Module $PSScriptRoot/Networking -ErrorAction Stop
 Import-Module $PSScriptRoot/Security -ErrorAction Stop
 
 

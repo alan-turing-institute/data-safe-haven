@@ -9,7 +9,6 @@ Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction S
 Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force -ErrorAction Stop
 
