@@ -12,6 +12,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
@@ -38,11 +39,11 @@ if ($vmSize -eq "default") { $vmSize = $config.srdImage.build.vm.size }
 # Select which source URN to base the build on
 # --------------------------------------------
 if ($sourceImage -eq "Ubuntu1804") {
-    $baseImageSku = "18.04-LTS"
+    $baseImageSku = "Ubuntu-18.04"
     $shortVersion = "1804"
     Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
 } elseif ($sourceImage -eq "Ubuntu2004") {
-    $baseImageSku = "20.04-LTS"
+    $baseImageSku = "Ubuntu-20.04"
     $shortVersion = "2004"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
@@ -133,7 +134,7 @@ $params = @{
     ResourceGroupName      = $config.srdImage.build.rg
     ImageSku               = $baseImageSku
 }
-$vm = Deploy-UbuntuVirtualMachine @params -NoWait
+$vm = Deploy-LinuxVirtualMachine @params -NoWait
 
 
 # Tag the VM with the git commit hash

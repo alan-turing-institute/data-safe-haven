@@ -7,6 +7,7 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -78,7 +79,7 @@ $params = @{
     Size                   = $config.sre.webapps.cocalc.vmSize
     Subnet                 = $deploymentSubnet
 }
-$cocalcVm = Deploy-UbuntuVirtualMachine @params
+$cocalcVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while CoCalc VM is off then restart
 Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
 # Update DNS records for this VM
@@ -116,7 +117,7 @@ $params = @{
     Size                   = $config.sre.webapps.codimd.vmSize
     Subnet                 = $deploymentSubnet
 }
-$codimdVm = Deploy-UbuntuVirtualMachine @params
+$codimdVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while CodiMD VM is off then restart
 Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.codimd.ip
 # Update DNS records for this VM
@@ -154,7 +155,7 @@ $params = @{
     Size                   = $config.sre.webapps.gitlab.vmSize
     Subnet                 = $deploymentSubnet
 }
-$gitlabVm = Deploy-UbuntuVirtualMachine @params
+$gitlabVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while GitLab VM is off then restart
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
 # Update DNS records for this VM

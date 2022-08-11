@@ -18,6 +18,7 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module Powershell-Yaml -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
@@ -218,7 +219,7 @@ $params = @{
     DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
-$vm = Deploy-UbuntuVirtualMachine @params
+$vm = Deploy-LinuxVirtualMachine @params
 $null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 

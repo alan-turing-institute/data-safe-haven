@@ -944,7 +944,7 @@ function Get-SreConfig {
             hostname                = "COCALC"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
-            osVersion               = "20.04-LTS"
+            osVersion               = "Ubuntu-latest"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -961,7 +961,7 @@ function Get-SreConfig {
             hostname                = "CODIMD"
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
-            osVersion               = "20.04-LTS"
+            osVersion               = "Ubuntu-latest"
             codimd                  = [ordered]@{
                 dockerVersion = "2.4.1-cjk"
             }
@@ -986,7 +986,7 @@ function Get-SreConfig {
             vmSize                  = "Standard_D2s_v3"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 5
             rootPasswordSecretName  = "$($config.sre.shortName)-other-gitlab-root-password"
-            osVersion               = "20.04-LTS"
+            osVersion               = "Ubuntu-latest"
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
@@ -1014,7 +1014,7 @@ function Get-SreConfig {
     }
     $dbConfig = @{
         MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev-gen2" }
-        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "20.04-LTS" }
+        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "Ubuntu-latest" }
     }
     $ipOffset = 4
     foreach ($databaseType in $sreConfigBase.databases) {

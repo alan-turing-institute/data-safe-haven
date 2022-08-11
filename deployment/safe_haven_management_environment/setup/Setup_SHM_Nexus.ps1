@@ -7,6 +7,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../../common/AzureCompute.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force
@@ -111,9 +112,9 @@ $params = @{
     NicId                  = $vmNic.Id
     OsDiskType             = $config.repository["tier${tier}"].diskType
     ResourceGroupName      = $config.repository["tier${tier}"].rg
-    ImageSku               = "20.04-LTS"
+    ImageSku               = "Ubuntu-latest"
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-LinuxVirtualMachine @params
 Start-VM -Name $vmName -ResourceGroupName $config.repository["tier${tier}"].rg
 
 

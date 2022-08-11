@@ -9,6 +9,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
@@ -225,10 +226,10 @@ function Deploy-PackageMirror {
                 NicId                  = $vmNic.Id
                 OsDiskType             = $config.mirrors.diskType
                 ResourceGroupName      = $config.mirrors.rg
-                ImageSku               = "20.04-LTS"
+                ImageSku               = "Ubuntu-latest"
                 DataDiskIds            = @($dataDisk.Id)
             }
-            $null = Deploy-UbuntuVirtualMachine @params
+            $null = Deploy-LinuxVirtualMachine @params
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."

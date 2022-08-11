@@ -12,6 +12,7 @@ Import-Module Az.Dns -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
@@ -127,7 +128,7 @@ $params = @{
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitYaml
-    ImageSku               = "20.04-LTS"
+    ImageSku               = "Ubuntu-latest"
     Location               = $config.sre.location
     Name                   = $config.sre.remoteDesktop.guacamole.vmName
     NicId                  = $networkCard.Id
@@ -136,7 +137,7 @@ $params = @{
     ResourceGroupName      = $config.sre.remoteDesktop.rg
     Size                   = $config.sre.remoteDesktop.guacamole.vmSize
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-LinuxVirtualMachine @params
 
 
 # Change subnets and IP address while the VM is off then restart
