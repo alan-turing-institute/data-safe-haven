@@ -643,6 +643,35 @@ function Deploy-VirtualNetworkGateway {
 Export-ModuleMember -Function Deploy-VirtualNetworkGateway
 
 
+# Get next available IP address in range
+# --------------------------------------
+function Get-NextAvailableIpInRange {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Input range in CIDR notation")]
+        [string]$IpRangeCidr,
+        [Parameter(Mandatory = $false, HelpMessage = "Offset to apply before returning an IP address")]
+        [int]$Offset,
+        [Parameter(Mandatory = $false, HelpMessage = "Virtual network to check availability against")]
+        [Microsoft.Azure.Commands.Network.Models.PSVirtualNetwork]$VirtualNetwork
+    )
+    # Get the start and end IP decimals for this CIDR range
+    $ipStart, $ipEnd = Convert-CidrToIpAddressRange -IpRangeCidr $IpRangeCidr -AsDecimal
+
+    # Return the full range or filter as required
+    $ipAddresses = $ipStart..$ipEnd | ForEach-Object { Convert-DecimalToIpAddress -IpDecimal $_ } | Select-Object -Skip $Offset
+    if ($VirtualNetwork) {
+        $ipAddress = $ipAddresses | Where-Object { (Test-AzPrivateIPAddressAvailability -VirtualNetwork $VirtualNetwork -IPAddress $_).Available } | Select-Object -First 1
+    } else {
+        $ipAddress = $ipAddresses | Select-Object -First 1
+    }
+    if (-not $ipAddress) {
+        Add-LogMessage -Level Fatal "There are no free IP addresses in '$IpRangeCidr' after applying the offset '$Offset'!"
+    }
+    return $ipAddress
+}
+Export-ModuleMember -Function Get-NextAvailableIpInRange
+
+
 # Get subnet
 # ----------
 function Get-Subnet {

@@ -1,6 +1,7 @@
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.RecoveryServices -ErrorAction Stop # Note that this contains TimeZoneConverter
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 Import-Module $PSScriptRoot/Networking -ErrorAction Stop
