@@ -1,5 +1,6 @@
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
 Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
@@ -415,6 +416,73 @@ function Invoke-AzureVmDesiredState {
     return $result
 }
 Export-ModuleMember -Function Invoke-AzureVmDesiredState
+
+
+# Remove Virtual Machine disk
+# ---------------------------
+function Remove-ManagedDisk {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the disk to remove")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the disk")]
+        [string]$ResourceGroupName
+    )
+
+    $null = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level InfoSuccess "Disk '$Name' does not exist"
+    } else {
+        Add-LogMessage -Level Info "[ ] Removing disk '$Name'"
+        $null = Remove-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed disk '$Name'"
+        } else {
+            Add-LogMessage -Level Failure "Failed to remove disk '$Name'"
+        }
+    }
+}
+Export-ModuleMember -Function Remove-ManagedDisk
+
+
+# Remove Virtual Machine
+# ----------------------
+function Remove-VirtualMachine {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the VM to remove")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
+        [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Forces the command to run without asking for user confirmation.")]
+        [switch]$Force
+    )
+    $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+    if ($vm) {
+        # Get boot diagnostics details
+        $storageAccountName = [regex]::match($vm.DiagnosticsProfile.bootDiagnostics.storageUri, '^http[s]?://(.+?)\.').Groups[1].Value
+        $bootDiagnosticsContainerName = "bootdiagnostics-*-$($vm.VmId)"
+        # Remove VM
+        Add-LogMessage -Level Info "[ ] Removing VM '$($vm.Name)'"
+        $params = @{}
+        if ($Force) { $params["Force"] = $Force }
+        if ($ErrorAction) { $params["ErrorAction"] = $ErrorAction }
+        $null = $vm | Remove-AzVM @params
+        $success = $?
+        # Remove boot diagnostics container
+        Add-LogMessage -Level Info "[ ] Removing boot diagnostics account for '$($vm.Name)'"
+        $storageAccount = Get-AzStorageAccount | Where-Object { $_.StorageAccountName -eq $storageAccountName }
+        $null = $storageAccount | Get-AzStorageContainer | Where-Object { $_.Name -like $bootDiagnosticsContainerName } | Remove-AzStorageContainer -Force
+        $success = $success -and $?
+        if ($success) {
+            Add-LogMessage -Level Success "Removed VM '$Name'"
+        } else {
+            Add-LogMessage -Level Failure "Failed to remove VM '$Name'"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "VM '$Name' does not exist"
+    }
+}
+Export-ModuleMember -Function Remove-VirtualMachine
 
 
 # Ensure VM is started, with option to force a restart
