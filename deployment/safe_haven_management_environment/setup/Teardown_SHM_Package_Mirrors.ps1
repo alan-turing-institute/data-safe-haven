@@ -9,6 +9,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -35,7 +36,7 @@ function Remove-PackageMirror {
     Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.mirrors.rg -Force
     Remove-ManagedDisk -Name "$vmName-OS-DISK" -ResourceGroupName $config.mirrors.rg
     Remove-ManagedDisk -Name "$vmName-DATA-DISK" -ResourceGroupName $config.mirrors.rg
-    Remove-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg
+    Remove-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg
 }
 
 

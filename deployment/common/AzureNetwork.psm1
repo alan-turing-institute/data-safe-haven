@@ -505,6 +505,31 @@ function Get-VirtualNetworkFromSubnet {
 Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
 
 
+# Remove a virtual machine NIC
+# ----------------------------
+function Remove-NetworkInterface {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM NIC to remove")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
+        [string]$ResourceGroupName
+    )
+    $null = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level InfoSuccess "VM network card '$Name' does not exist"
+    } else {
+        Add-LogMessage -Level Info "[ ] Removing VM network card '$Name'"
+        $null = Remove-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed VM network card '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to remove VM network card '$Name'"
+        }
+    }
+}
+Export-ModuleMember -Function Remove-NetworkInterface
+
+
 # Attach a network security group to a subnet
 # -------------------------------------------
 function Set-SubnetNetworkSecurityGroup {
