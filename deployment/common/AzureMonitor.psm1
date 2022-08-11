@@ -56,3 +56,25 @@ function Connect-PrivateLinkToLogWorkspace {
     return $resource
 }
 Export-ModuleMember -Function Connect-PrivateLinkToLogWorkspace
+
+
+# Connect resource to logging workspace
+# -------------------------------------
+function Set-LogAnalyticsDiagnostics {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Resource to set diagnostics on")]
+        [string]$ResourceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Log analytics workspace to connect")]
+        [string]$ResourceName,
+        [Parameter(Mandatory = $true, HelpMessage = "Log analytics workspace to store the diagnostics")]
+        [string]$WorkspaceId
+    )
+    Add-LogMessage -Level Info "Enable logging for $ResourceName to log analytics workspace"
+    $null = Set-AzDiagnosticSetting -ResourceId $ResourceId -WorkspaceId $WorkspaceId -Enabled $true
+    if ($?) {
+        Add-LogMessage -Level Success "Enabled logging for $ResourceName to log analytics workspace"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to enable logging for $ResourceName to log analytics workspace!"
+    }
+}
+Export-ModuleMember -Function Set-LogAnalyticsDiagnostics

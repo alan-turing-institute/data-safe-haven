@@ -5,8 +5,6 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
-Import-Module Az.Monitor -ErrorAction Stop
-Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorAction Stop
@@ -24,7 +22,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Ensure that firewall subnet exists
 # ----------------------------------
-$VirtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg -ErrorAction Stop
+$VirtualNetwork = Get-VirtualNetwork $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
 $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $VirtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
@@ -42,13 +40,7 @@ $workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorksp
 
 # Enable logging for this firewall
 # --------------------------------
-Add-LogMessage -Level Info "Enable logging for this firewall"
-$null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
-if ($?) {
-    Add-LogMessage -Level Success "Enabled logging to workspace '$($workspace.Name)'"
-} else {
-    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($workspace.Name)'!"
-}
+Set-LogAnalyticsDiagnostics -ResourceId $firewall.Id -ResourceName $firewall.Name -WorkspaceId $workspace.ResourceId
 
 
 # Create or retrieve the route table.
