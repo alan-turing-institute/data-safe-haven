@@ -3,6 +3,54 @@ Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Confirm VM is deallocated
+# -------------------------
+function Confirm-VmDeallocated {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        [string]$ResourceGroupName
+    )
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+}
+Export-ModuleMember -Function Confirm-VmDeallocated
+
+
+# Confirm VM is running
+# ---------------------
+function Confirm-VmRunning {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        [string]$ResourceGroupName
+    )
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+}
+Export-ModuleMember -Function Confirm-VmRunning
+
+
+# Confirm VM is stopped
+# ---------------------
+function Confirm-VmStopped {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        [string]$ResourceGroupName
+    )
+    if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+        Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+    }
+    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
+}
+Export-ModuleMember -Function Confirm-VmStopped
+
+
 # Create Linux virtual machine if it does not exist
 # -------------------------------------------------
 function Deploy-LinuxVirtualMachine {
@@ -107,6 +155,126 @@ function Deploy-LinuxVirtualMachine {
     return (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName)
 }
 Export-ModuleMember -Function Deploy-LinuxVirtualMachine
+
+
+# Ensure VM is started, with option to force a restart
+# ----------------------------------------------------
+function Start-VM {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
+        [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
+        [Parameter(HelpMessage = "Force restart of VM if already running")]
+        [switch]$ForceRestart,
+        [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
+        [switch]$NoWait
+    )
+    # Get VM if not provided
+    if (-not $VM) {
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
+    }
+    # Ensure VM is started but don't restart if already running
+    $operation = "start"
+    if (Confirm-VmRunning -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+        if ($ForceRestart) {
+            $operation = "restart"
+            Add-LogMessage -Level Info "[ ] Restarting VM '$($VM.Name)'"
+            $result = Restart-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
+        } else {
+            Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already running."
+            return
+        }
+    } elseif ((Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) -or (Confirm-VmStopped -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName)) {
+        Add-LogMessage -Level Info "[ ] Starting VM '$($VM.Name)'"
+        $result = Start-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -NoWait:$NoWait
+    } else {
+        $vmStatus = (Get-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Status).Statuses.Code
+        Add-LogMessage -Level Warning "VM '$($VM.Name)' not in supported status: $vmStatus. No action taken."
+        return
+    }
+    if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
+        # Synchronous operation requested
+        if ($result.Status -eq "Succeeded") {
+            Add-LogMessage -Level Success "VM '$($VM.Name)' successfully ${operation}ed."
+        } else {
+            # If (re)start failed, log error with failure reason
+            Add-LogMessage -Level Fatal "Failed to ${operation} VM '$($VM.Name)' [$($result.StatusCode): $($result.ReasonPhrase)]"
+        }
+    } elseif ($result -is [Microsoft.Azure.Commands.Compute.Models.PSAzureOperationResponse]) {
+        # Asynchronous operation requested
+        if (-not $result.IsSuccessStatusCode) {
+            Add-LogMessage -Level Fatal "Request to ${operation} VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+        } else {
+            Add-LogMessage -Level Success "Request to ${operation} VM '$($VM.Name)' accepted."
+        }
+    } else {
+        Add-LogMessage -Level Fatal "Unrecognised return type from operation: '$($result.GetType().Name)'."
+    }
+}
+Export-ModuleMember -Function Start-VM
+
+
+# Ensure VM is stopped (de-allocated)
+# -----------------------------------
+function Stop-VM {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
+        [string]$ResourceGroupName,
+        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [switch]$SkipIfNotExist,
+        [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
+        [switch]$NoWait
+    )
+    # Get VM if not provided
+    if (-not $VM) {
+        try {
+            $VM = Get-AzVM -Name $Name -ResourceGroup $ResourceGroupName -ErrorAction Stop
+        } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
+            if ($SkipIfNotExist) { return }
+            Add-LogMessage -Level Fatal "VM '$Name' could not be found in resource group '$ResourceGroupName'" -Exception $_.Exception
+        }
+    }
+    # Ensure VM is deallocated
+    if (Confirm-VmDeallocated -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName) {
+        Add-LogMessage -Level InfoSuccess "VM '$($VM.Name)' already stopped."
+        return
+    } else {
+        Add-LogMessage -Level Info "[ ] Stopping VM '$($VM.Name)'"
+        $result = Stop-AzVM -Name $VM.Name -ResourceGroupName $VM.ResourceGroupName -Force -NoWait:$NoWait
+    }
+    if ($result -is [Microsoft.Azure.Commands.Compute.Models.PSComputeLongRunningOperation]) {
+        # Synchronous operation requested
+        if ($result.Status -eq "Succeeded") {
+            Add-LogMessage -Level Success "VM '$($VM.Name)' stopped."
+        } else {
+            Add-LogMessage -Level Fatal "Failed to stop VM '$($VM.Name)' [$($result.Status): $($result.Error)]"
+        }
+    } elseif ($result -is [Microsoft.Azure.Commands.Compute.Models.PSAzureOperationResponse]) {
+        # Asynchronous operation requested
+        if (-not $result.IsSuccessStatusCode) {
+            Add-LogMessage -Level Fatal "Request to stop VM '$($VM.Name)' failed [$($result.StatusCode): $($result.ReasonPhrase)]"
+        } else {
+            Add-LogMessage -Level Success "Request to stop VM '$($VM.Name)' accepted."
+        }
+    } else {
+        Add-LogMessage -Level Fatal "Unrecognised return type from operation: '$($result.GetType().Name)'."
+    }
+}
+Export-ModuleMember -Function Stop-VM
 
 
 # Wait for cloud-init provisioning to finish
