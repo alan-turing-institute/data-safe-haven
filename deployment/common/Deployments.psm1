@@ -396,37 +396,6 @@ function Remove-VirtualMachineNIC {
 Export-ModuleMember -Function Remove-VirtualMachineNIC
 
 
-# Attach a network security group to a subnet
-# -------------------------------------------
-function Set-SubnetNetworkSecurityGroup {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Subnet whose NSG will be set")]
-        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet,
-        [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
-        $NetworkSecurityGroup,
-        [Parameter(Mandatory = $false, HelpMessage = "Virtual network that the subnet belongs to")]
-        $VirtualNetwork
-    )
-    if (-not $VirtualNetwork) {
-        $VirtualNetwork = Get-VirtualNetworkFromSubnet -Subnet $Subnet
-    }
-    Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
-    $null = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
-    $success = $?
-    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
-    $success = $success -and $?
-    $updatedSubnet = Get-Subnet -Name $Subnet.Name -VirtualNetworkName $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
-    $success = $success -and $?
-    if ($success) {
-        Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to set network security group on '$($Subnet.Name)'!"
-    }
-    return $updatedSubnet
-}
-Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
-
-
 # Update LDAP secret in the local Active Directory
 # ------------------------------------------------
 function Update-AdLdapSecret {
