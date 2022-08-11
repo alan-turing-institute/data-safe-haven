@@ -455,6 +455,39 @@ function Deploy-VirtualNetworkGateway {
 Export-ModuleMember -Function Deploy-VirtualNetworkGateway
 
 
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetwork {
+    param(
+        [Parameter(Mandatory = $false, HelpMessage = "Name of virtual network to retrieve")]
+        [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group that this virtual network belongs to")]
+        [string]$ResourceGroupName
+    )
+    $params = @{}
+    if ($Name) { $params["Name"] = $Name }
+    if ($ResourceGroupName) { $params["ResourceGroupName"] = $ResourceGroupName }
+    return Get-AzVirtualNetwork @params
+}
+Export-ModuleMember -Function Get-VirtualNetwork
+
+
+# Get the virtual network that a given subnet belongs to
+# ------------------------------------------------------
+function Get-VirtualNetworkFromSubnet {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
+        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
+    )
+    $originalContext = Get-AzContext
+    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2] -ErrorAction Stop
+    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id }).Count -gt 0) }
+    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+    return $virtualNetwork
+}
+Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
+
+
 # Attach a network security group to a subnet
 # -------------------------------------------
 function Set-SubnetNetworkSecurityGroup {

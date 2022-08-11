@@ -85,22 +85,6 @@ function Get-Subnet {
 Export-ModuleMember -Function Get-Subnet
 
 
-# Get the virtual network that a given subnet belongs to
-# ------------------------------------------------------
-function Get-VirtualNetworkFromSubnet {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Subnet that we want the virtual network for")]
-        [Microsoft.Azure.Commands.Network.Models.PSSubnet]$Subnet
-    )
-    $originalContext = Get-AzContext
-    $null = Set-AzContext -SubscriptionId $Subnet.Id.Split("/")[2] -ErrorAction Stop
-    $virtualNetwork = Get-AzVirtualNetwork | Where-Object { (($_.Subnets | Where-Object { $_.Id -eq $Subnet.Id }).Count -gt 0) }
-    $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-    return $virtualNetwork
-}
-Export-ModuleMember -Function Get-VirtualNetworkFromSubnet
-
-
 # Get all VMs for an SHM or SRE
 # -----------------------------
 function Get-VMsByResourceGroupPrefix {
