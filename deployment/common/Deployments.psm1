@@ -68,24 +68,6 @@ function Get-ImageDefinition {
 Export-ModuleMember -Function Get-ImageDefinition
 
 
-# Get NS Records
-# --------------
-function Get-NSRecords {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
-        [string]$RecordSetName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
-        [string]$DnsZoneName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$ResourceGroupName
-    )
-    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
-    $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
-    return $recordSet.Records
-}
-Export-ModuleMember -Function Get-NSRecords
-
-
 # Get subnet
 # ----------
 function Get-Subnet {
@@ -322,32 +304,6 @@ function Invoke-WindowsConfiguration {
 Export-ModuleMember -Function Invoke-WindowsConfiguration
 
 
-# Create DNS Zone if it does not exist
-# ------------------------------------
-function New-DNSZone {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$ResourceGroupName
-    )
-    Add-LogMessage -Level Info "Ensuring that DNS zone '$($Name)' exists..."
-    $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
-        $null = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
-        if ($?) {
-            Add-LogMessage -Level Success "Created DNS Zone '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create DNS Zone '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
-    }
-}
-Export-ModuleMember -Function New-DNSZone
-
-
 # Remove Virtual Machine
 # ----------------------
 function Remove-VirtualMachine {
@@ -440,40 +396,6 @@ function Remove-VirtualMachineNIC {
 Export-ModuleMember -Function Remove-VirtualMachineNIC
 
 
-# Add NS Record Set to DNS Zone if it does not already exist
-# ---------------------------------------------------------
-function Set-DnsZoneAndParentNSRecords {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to create")]
-        [string]$DnsZoneName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group holding DNS zones")]
-        [string]$ResourceGroupName
-    )
-    # Get subdomain and parent domain
-    $subdomain = $DnsZoneName.Split('.')[0]
-    $parentDnsZoneName = $DnsZoneName -replace "$subdomain.", ""
-
-    # Create DNS Zone
-    New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
-
-    # Get NS records from the new DNS Zone
-    Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
-    $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName
-
-    # Check if parent DNS Zone exists in same subscription and resource group
-    $null = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
-        Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
-    } else {
-        # Add NS records to the parent DNS Zone
-        Add-LogMessage -Level Info "Add NS records to the parent DNS Zone..."
-        Set-NSRecords -RecordSetName $subdomain -DnsZoneName $parentDnsZoneName -ResourceGroupName $ResourceGroupName -NsRecords $nsRecords
-    }
-}
-Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords
-
-
 # Set key vault permissions to the group and remove the user who deployed it
 # --------------------------------------------------------------------------
 function Set-KeyVaultPermissions {
@@ -507,36 +429,6 @@ function Set-KeyVaultPermissions {
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions
-
-
-# Add NS Record Set to DNS Zone if it doesn't already exist
-# ---------------------------------------------------------
-function Set-NSRecords {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
-        [string]$RecordSetName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
-        [string]$DnsZoneName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "NS records to add")]
-        $NsRecords
-    )
-    $null = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "Creating new Record Set '$($RecordSetName)' in DNS Zone '$($DnsZoneName)' with NS records '$($nsRecords)' to ..."
-        $null = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
-        if ($?) {
-            Add-LogMessage -Level Success "Created DNS Record Set '$RecordSetName'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create DNS Record Set '$RecordSetName'!"
-        }
-    } else {
-        # It's not straightforward to modify existing record sets idempotently so if the set already exists we do nothing
-        Add-LogMessage -Level InfoSuccess "DNS record set '$RecordSetName' already exists. Will not update!"
-    }
-}
-Export-ModuleMember -Function Set-NSRecords
 
 
 # Attach a network security group to a subnet
