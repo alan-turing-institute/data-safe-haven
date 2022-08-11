@@ -12,6 +12,7 @@ Import-Module Az.Dns -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
@@ -145,37 +146,14 @@ Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $co
 
 # Add DNS records for Guacamole server
 # ------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-$dnsTtlSeconds = 30
-# Set the A record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting 'A' record for $($config.sre.domain.fqdn) to $($publicIp.IpAddress)"
-Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $publicIp.IpAddress)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'A' record for $($config.sre.domain.fqdn)!"
-}
-# Set the CAA record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
-Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
-}
-# Set the CNAME record for the remote desktop server
-$serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in $($config.sre.domain.fqdn)"
-Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CNAME' record for $serverHostname"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for $serverHostname!"
-}
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+Deploy-DNSRecords -PublicIpAddress $publicIp.IpAddress `
+                  -RecordNameA "@" `
+                  -RecordNameCAA "letsencrypt.org" `
+                  -RecordNameCName $serverHostname `
+                  -ResourceGroupName $config.shm.dns.rg `
+                  -SubscriptionName $config.shm.dns.subscriptionName `
+                  -TtlSeconds 30 `
+                  -ZoneName $config.sre.domain.fqdn
 
 
 # Switch back to original subscription
