@@ -56,10 +56,10 @@ $repositorySubnet = Deploy-Subnet -Name $config.network.repositoryVnets["tier${t
 # -----------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $vnetRepository.Name `
-                -Vnet1ResourceGroup $vnetRepository.ResourceGroupName `
+                -Vnet1ResourceGroupName $vnetRepository.ResourceGroupName `
                 -Vnet1SubscriptionName $config.subscriptionName `
                 -Vnet2Name $config.network.vnet.name `
-                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.network.vnet.rg `
                 -Vnet2SubscriptionName $config.subscriptionName
 
 

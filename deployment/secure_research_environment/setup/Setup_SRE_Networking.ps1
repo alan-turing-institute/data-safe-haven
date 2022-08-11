@@ -6,6 +6,7 @@ param(
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
@@ -39,10 +40,10 @@ $webappsSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.webapps.na
 # Peer repository vnet to SHM vnet
 # --------------------------------
 Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
-                -Vnet1ResourceGroup $config.sre.network.vnet.rg `
+                -Vnet1ResourceGroupName $config.sre.network.vnet.rg `
                 -Vnet1SubscriptionName $config.sre.subscriptionName `
                 -Vnet2Name $config.shm.network.vnet.name `
-                -Vnet2ResourceGroup $config.shm.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.shm.network.vnet.rg `
                 -Vnet2SubscriptionName $config.shm.subscriptionName `
                 -AllowRemoteGatewayFromVNet 2
 

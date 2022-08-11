@@ -45,10 +45,10 @@ $subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -Virtu
 # -------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $vnetPkgMirrors.Name `
-                -Vnet1ResourceGroup $vnetPkgMirrors.ResourceGroupName `
+                -Vnet1ResourceGroupName $vnetPkgMirrors.ResourceGroupName `
                 -Vnet1SubscriptionName $config.subscriptionName `
                 -Vnet2Name $config.network.vnet.name `
-                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.network.vnet.rg `
                 -Vnet2SubscriptionName $config.subscriptionName
 
 
