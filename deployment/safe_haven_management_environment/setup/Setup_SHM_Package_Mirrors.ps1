@@ -9,8 +9,9 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureCompute.psm1 -Force
-Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force
+Import-Module $PSScriptRoot/../../common/AzureCompute.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop

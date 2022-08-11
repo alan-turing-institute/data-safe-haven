@@ -9,6 +9,7 @@ Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.KeyVault -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop

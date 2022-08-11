@@ -5,6 +5,7 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop

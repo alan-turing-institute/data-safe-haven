@@ -37,16 +37,31 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
-# Get the resource ID for a named resource
-# ----------------------------------------
-function Get-ResourceGroupName {
+# Create resource group if it does not exist
+# ------------------------------------------
+function Deploy-ResourceGroup {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Resource to obtain ID for")]
-        [System.Object]$ResourceName
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
     )
-    return Get-AzResource | Where-Object { $_.Name -eq $ResourceName } | ForEach-Object { $_.ResourceGroupName } | Select-Object -First 1
+    Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
+    $resourceGroup = Get-AzResourceGroup -Name $Name -Location $Location -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating resource group '$Name'"
+        $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created resource group '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Resource group '$Name' already exists"
+    }
+    return $resourceGroup
 }
-Export-ModuleMember -Function Get-ResourceGroupName
+Export-ModuleMember -Function Deploy-ResourceGroup
 
 
 # Attach an RBAC role to a principal
@@ -91,6 +106,18 @@ function Deploy-RoleAssignment {
     return $Assignment
 }
 Export-ModuleMember -Function Deploy-RoleAssignment
+
+
+# Get the resource ID for a named resource
+# ----------------------------------------
+function Get-ResourceGroupName {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Resource to obtain ID for")]
+        [System.Object]$ResourceName
+    )
+    return Get-AzResource | Where-Object { $_.Name -eq $ResourceName } | ForEach-Object { $_.ResourceGroupName } | Select-Object -First 1
+}
+Export-ModuleMember -Function Get-ResourceGroupName
 
 
 # Get the resource ID for a named resource

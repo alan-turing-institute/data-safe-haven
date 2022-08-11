@@ -46,33 +46,6 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
-function Deploy-ResourceGroup {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
-    $resourceGroup = Get-AzResourceGroup -Name $Name -Location $Location -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating resource group '$Name'"
-        $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created resource group '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Resource group '$Name' already exists"
-    }
-    return $resourceGroup
-}
-Export-ModuleMember -Function Deploy-ResourceGroup
-
-
 # Create a route if it does not exist
 # -----------------------------------
 function Deploy-Route {
