@@ -823,21 +823,22 @@ Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
 # --------------
 function Set-VnetPeering {
     param(
+        [Parameter(Mandatory = $false, ParameterSetName = "AllowVNet1Gateway", HelpMessage = "Enable use of remote gateway from the first VNet")]
+        [switch]$VNet1AllowRemoteGateway,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the first of two VNets to peer")]
         [string]$Vnet1Name,
         [Parameter(Mandatory = $true, HelpMessage = "Resource group name of the first VNet")]
         [string]$Vnet1ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the first VNet")]
         [string]$Vnet1SubscriptionName,
+        [Parameter(Mandatory = $false, ParameterSetName = "AllowVNet2Gateway", HelpMessage = "Enable use of remote gateway from the second VNet")]
+        [switch]$VNet2AllowRemoteGateway,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the second of two VNets to peer")]
         [string]$Vnet2Name,
         [Parameter(Mandatory = $true, HelpMessage = "Resource group name of the second VNet")]
         [string]$Vnet2ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the second VNet")]
-        [string]$Vnet2SubscriptionName,
-        [Parameter(Mandatory = $false, HelpMessage = "Enable use of remote gateway from one of the two VNets")]
-        [ValidateSet(1, 2)]
-        [int]$AllowRemoteGatewayFromVNet
+        [string]$Vnet2SubscriptionName
     )
     try {
         # Get original subscription
@@ -846,54 +847,47 @@ function Set-VnetPeering {
 
         # Get virtual networks
         $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
-        $vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup -ErrorAction Stop
+        $Vnet1 = Get-AzVirtualNetwork -Name $Vnet1Name -ResourceGroupName $Vnet1ResourceGroupName -ErrorAction Stop
         $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
-        $vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup -ErrorAction Stop
+        $Vnet2 = Get-AzVirtualNetwork -Name $Vnet2Name -ResourceGroupName $Vnet2ResourceGroupName -ErrorAction Stop
 
         # Remove any existing peerings
         $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
-        $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1Name -ResourceGroupName $Vnet1ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet2.Id }
-        if ($existingPeering) {
-            $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
-        }
+        $null = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet1.Name -ResourceGroupName $Vnet1.ResourceGroupName | Where-Object { $_.RemoteVirtualNetwork.Id -eq $Vnet2.Id } | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
         $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
-        $existingPeering = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2Name -ResourceGroupName $Vnet2ResourceGroup | Where-Object { $_.RemoteVirtualNetwork.Id -eq $vnet1.Id }
-        if ($existingPeering) {
-            $existingPeering | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
-        }
+        $null = Get-AzVirtualNetworkPeering -VirtualNetworkName $Vnet2.Name -ResourceGroupName $Vnet2.ResourceGroupName | Where-Object { $_.RemoteVirtualNetwork.Id -eq $Vnet1.Id } | Remove-AzVirtualNetworkPeering -Force -ErrorAction Stop
 
         # Set remote gateway parameters if requested
         $paramsVnet1 = @{}
         $paramsVnet2 = @{}
-        if ($AllowRemoteGatewayFromVNet) {
-            if ($AllowRemoteGatewayFromVNet -eq 1) {
-                $paramsVnet1["AllowGatewayTransit"] = $true
-                $paramsVnet2["UseRemoteGateways"] = $true
-            } elseif ($AllowRemoteGatewayFromVNet -eq 2) {
-                $paramsVnet1["UseRemoteGateways"] = $true
-                $paramsVnet2["AllowGatewayTransit"] = $true
-            }
+        if ($AllowVNet1Gateway.IsPresent) {
+            $paramsVnet1["AllowGatewayTransit"] = $true
+            $paramsVnet2["UseRemoteGateways"] = $true
+        }
+        if ($AllowVNet2Gateway.IsPresent) {
+            $paramsVnet1["UseRemoteGateways"] = $true
+            $paramsVnet2["AllowGatewayTransit"] = $true
         }
 
         # Create peering in the direction VNet1 -> VNet2
         $null = Set-AzContext -SubscriptionId $Vnet1SubscriptionName -ErrorAction Stop
-        $peeringName = "PEER_${Vnet2Name}"
-        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet1Name}."
-        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $vnet2.Id @paramsVnet1 -ErrorAction Stop
+        $PeeringName = "PEER_${Vnet2Name}"
+        Add-LogMessage -Level Info "[ ] Adding peering '$PeeringName' to virtual network ${Vnet1Name}."
+        $null = Add-AzVirtualNetworkPeering -Name "$PeeringName" -VirtualNetwork $vnet1 -RemoteVirtualNetworkId $Vnet2.Id @paramsVnet1 -ErrorAction Stop
         if ($?) {
-            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+            Add-LogMessage -Level Success "Adding peering '$PeeringName' succeeded"
         } else {
-            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+            Add-LogMessage -Level Fatal "Adding peering '$PeeringName' failed!"
         }
         # Create peering in the direction VNet2 -> VNet1
         $null = Set-AzContext -SubscriptionId $Vnet2SubscriptionName -ErrorAction Stop
-        $peeringName = "PEER_${Vnet1Name}"
-        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to virtual network ${Vnet2Name}."
-        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $vnet2 -RemoteVirtualNetworkId $vnet1.Id @paramsVnet2 -ErrorAction Stop
+        $PeeringName = "PEER_${Vnet1Name}"
+        Add-LogMessage -Level Info "[ ] Adding peering '$PeeringName' to virtual network ${Vnet2Name}."
+        $null = Add-AzVirtualNetworkPeering -Name "$PeeringName" -VirtualNetwork $Vnet2 -RemoteVirtualNetworkId $Vnet1.Id @paramsVnet2 -ErrorAction Stop
         if ($?) {
-            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+            Add-LogMessage -Level Success "Adding peering '$PeeringName' succeeded"
         } else {
-            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+            Add-LogMessage -Level Fatal "Adding peering '$PeeringName' failed!"
         }
     } finally {
         # Switch back to original subscription

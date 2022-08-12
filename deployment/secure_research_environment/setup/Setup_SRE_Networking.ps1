@@ -44,7 +44,7 @@ Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
                 -Vnet2Name $config.shm.network.vnet.name `
                 -Vnet2ResourceGroupName $config.shm.network.vnet.rg `
                 -Vnet2SubscriptionName $config.shm.subscriptionName `
-                -AllowRemoteGatewayFromVNet 2
+                -VNet2AllowRemoteGateway
 
 
 # Ensure that compute NSG exists with correct rules and attach it to the compute subnet
