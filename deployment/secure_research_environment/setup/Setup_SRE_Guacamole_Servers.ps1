@@ -145,7 +145,6 @@ $null = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while the VM is off then restart
 # --------------------------------------------------------------
 Update-VMIpAddress -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $guacamoleSubnet -IpAddress $config.sre.remoteDesktop.guacamole.ip
-Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Add DNS records for Guacamole server

@@ -230,6 +230,7 @@ $null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $image.Tags["B
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
 Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.srd.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
+# Update DNS records for this VM
 Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vmHostname -VmIpAddress $finalIpAddress
 
 
