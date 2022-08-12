@@ -74,14 +74,16 @@ if (Get-MgContext) {
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
-    if (-not $application) {
+    if ($application) {
+        Add-LogMessage -Level InfoSuccess "'$azureAdApplicationName' is already registered in Azure Active Directory"
+    } else {
         Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
         $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
-    }
-    if (Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'") {
-        Add-LogMessage -Level Success "'$azureAdApplicationName' is already registered in Azure Active Directory"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+        if ($application) {
+            Add-LogMessage -Level Success "Registered '$azureAdApplicationName' in Azure Active Directory"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+        }
     }
 } catch {
     Add-LogMessage -Level Fatal "Could not connect to Microsoft Graph!" -Exception $_.Exception
