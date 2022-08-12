@@ -7,25 +7,23 @@
 param(
     [Parameter(HelpMessage = "Name of security group that will contain SHM sysadmins")]
     [ValidateNotNullOrEmpty()]
-    [String]$shmSystemAdministratorSgName,
+    [String]$ShmSystemAdministratorSgName,
     [Parameter(HelpMessage = "Base64-encoded group details")]
     [ValidateNotNullOrEmpty()]
-    [String]$groupsB64,
-    [Parameter(HelpMessage = "Base64-encoded service user details")]
-    [ValidateNotNullOrEmpty()]
-    [String]$serviceUsersB64,
+    [String]$GroupsB64,
     [Parameter(HelpMessage = "LDAP OU that SRE security groups belong to")]
     [ValidateNotNullOrEmpty()]
-    [String]$securityOuPath,
+    [String]$SecurityOuPath,
     [Parameter(HelpMessage = "LDAP OU that SRE service accounts belong to")]
     [ValidateNotNullOrEmpty()]
-    [String]$serviceOuPath
+    [String]$ServiceOuPath,
+    [Parameter(HelpMessage = "Base64-encoded service user details")]
+    [ValidateNotNullOrEmpty()]
+    [String]$ServiceUsersB64
 )
 
-
-# Create a new security group associated with this SRE
-# ----------------------------------------------------
-function New-SreGroup {
+# Create a new security group
+function New-ActiveDirectoryGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the group to be created")]
         [string]$Name,
@@ -34,100 +32,115 @@ function New-SreGroup {
         [Parameter(Mandatory = $true, HelpMessage = "Path that the group will be created under.")]
         [string]$Path,
         [Parameter(Mandatory = $true, HelpMessage = "Group category.")]
-        [string]$groupCategory,
+        [string]$GroupCategory,
         [Parameter(Mandatory = $true, HelpMessage = "Group scope.")]
-        [string]$groupScope
+        [string]$GroupScope
     )
     if (Get-ADGroup -Filter "Name -eq '$Name'") {
         Write-Output " [o] Group '$Name' already exists"
     } else {
-        Write-Output " [ ] Creating group '$Name' in OU '$path'..."
-        $group = (New-ADGroup -Name "$Name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
+        Write-Output " [ ] Creating group '$Name' in OU '$Path'..."
+        New-ADGroup -Description $Description `
+                    -GroupCategory $GroupCategory `
+                    -GroupScope $GroupScope `
+                    -Name "$Name" `
+                    -Path $Path
         if ($?) {
             Write-Output " [o] Group '$Name' created"
         } else {
             Write-Output " [x] Failed to create group '$Name'!"
         }
-        return $Group
     }
 }
 
-
-# Create a new user associated with this SRE
-# ------------------------------------------
-function New-SreUser {
+# Create a new user
+function New-ActiveDirectoryUser {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user. Maximum 20 characters for backwards compatibility.")]
-        [string]$SamAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the user to be created.")]
         [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "User password as a secure string.")]
+        [securestring]$PasswordSecureString,
         [Parameter(Mandatory = $true, HelpMessage = "Path that the user will be created under.")]
         [string]$Path,
-        [Parameter(Mandatory = $true, HelpMessage = "User password as a secure string.")]
-        [securestring]$PasswordSecureString
+        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user. Maximum 20 characters for backwards compatibility.")]
+        [string]$SamAccountName
     )
     if (Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'") {
         Write-Output " [o] User '$Name' ('$SamAccountName') already exists"
     } else {
-        $principalName = "${SamAccountName}@${shmFqdn}"
+        $UserPrincipalName = "${SamAccountName}@${shmFqdn}"
         Write-Output " [ ] Creating user '$Name' ($SamAccountName)..."
-        $user = (New-ADUser -Name "$Name" `
-                            -UserPrincipalName $principalName `
-                            -Path $path `
-                            -SamAccountName $SamAccountName `
-                            -DisplayName "$Name" `
-                            -Description "$Name" `
-                            -AccountPassword $passwordSecureString `
-                            -Enabled $true `
-                            -PasswordNeverExpires $true)
+        New-ADUser -AccountPassword $PasswordSecureString `
+                   -Description "$Name" `
+                   -DisplayName "$Name" `
+                   -Enabled $true `
+                   -Name "$Name" `
+                   -PasswordNeverExpires $true `
+                   -Path $path `
+                   -UserPrincipalName $UserPrincipalName `
+                   -SamAccountName $SamAccountName
         if ($?) {
             Write-Output " [o] User '$Name' ($SamAccountName) created"
         } else {
             Write-Output " [x] Failed to create user '$Name' ($SamAccountName)!"
         }
-        return $user
     }
 }
 
 
-# Add a user to a group associated with this SRE
-# ----------------------------------------------
-function Add-SreUserToGroup {
+# Add a user to a group
+function Add-ActiveDirectoryAccountToGroup {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user, group, computer, or service account. Maximum 20 characters for backwards compatibility.")]
-        [string]$SamAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the group that the user or group will be added to.")]
-        [string]$GroupName
+        [string]$GroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the Active Directory account.")]
+        [string]$SamAccountName
     )
-    if ((Get-ADGroupMember -Identity "$GroupName" | Where-Object { $_.SamAccountName -eq "$SamAccountName" })) {
-        Write-Output " [o] User '$SamAccountName' is already a member of '$GroupName'"
+    $Account = Get-ADObject -Filter "SamAccountName -eq '$SamAccountName'"
+    # Note that Get-ADGroupMember suffers from this bug: https://docs.microsoft.com/en-us/troubleshoot/windows-server/identity/get-adgroupmember-error-remote-forest-members
+    if (Get-ADGroup -Identity "$GroupName" -Properties Members | Select-Object -ExpandProperty Members | Where-Object { $_ -eq $Account.DistinguishedName }) {
+        Write-Output " [o] Account '$SamAccountName' is already a member of '$GroupName'"
     } else {
-        Write-Output " [ ] Adding '$SamAccountName' user to group '$GroupName'"
-        Add-ADGroupMember -Identity "$GroupName" -Members "$SamAccountName"
+        Write-Output " [ ] Adding '$SamAccountName' to group '$GroupName'..."
+        Add-ADGroupMember -Identity "$GroupName" -Members $Account.ObjectGUID
         if ($?) {
-            Write-Output " [o] User '$SamAccountName' was added to '$GroupName'"
+            Write-Output " [o] Account '$SamAccountName' was added to '$GroupName'"
         } else {
-            Write-Output " [x] User '$SamAccountName' could not be added to '$GroupName'!"
+            Write-Output " [x] Account '$SamAccountName' could not be added to '$GroupName'!"
         }
     }
 }
 
 
 # Unserialise JSON and read into PSCustomObject
-$groups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
-$serviceUsers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
+# ---------------------------------------------
+$Groups = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($GroupsB64)) | ConvertFrom-Json
+$ServiceUsers = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($ServiceUsersB64)) | ConvertFrom-Json
 
-# Create SRE Security Groups
-foreach ($group in $groups.PSObject.Members) {
-    if ($group.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    New-SreGroup -Name $group.Value.name -description $group.Value.description -Path $securityOuPath -GroupScope Global -GroupCategory Security
+
+# Create SRE security groups
+# --------------------------
+foreach ($Group in $Groups.PSObject.Members) {
+    if ($Group.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-ActiveDirectoryGroup -Description $Group.Value.description `
+                             -GroupCategory "Security" `
+                             -GroupScope "Global" `
+                             -Name $Group.Value.name `
+                             -Path $SecurityOuPath
 }
 
+
 # Add SHM sysadmins group to the SRE sysadmins group
-Add-SreUserToGroup -SamAccountName "$shmSystemAdministratorSgName" -GroupName $groups.systemAdministrators.name
+# --------------------------------------------------
+Add-ActiveDirectoryAccountToGroup -SamAccountName "$ShmSystemAdministratorSgName" -GroupName $Groups.systemAdministrators.name
+
 
 # Create SRE service accounts
-foreach ($user in $serviceUsers.PSObject.Members) {
-    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+# ---------------------------
+foreach ($ServiceUser in $ServiceUsers.PSObject.Members) {
+    if ($ServiceUser.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-ActiveDirectoryUser -Name "$($ServiceUser.Value.name)" `
+                            -PasswordSecureString (ConvertTo-SecureString $ServiceUser.Value.password -AsPlainText -Force) `
+                            -Path $ServiceOuPath `
+                            -SamAccountName "$($ServiceUser.Value.samAccountName)"
 }
