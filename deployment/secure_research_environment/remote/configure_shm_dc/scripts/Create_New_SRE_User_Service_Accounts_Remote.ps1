@@ -28,15 +28,15 @@ param(
 function New-SreGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of the group to be created")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Description of the group to be created.")]
-        $Description,
+        [string]$Description,
         [Parameter(Mandatory = $true, HelpMessage = "Path that the group will be created under.")]
-        $Path,
+        [string]$Path,
         [Parameter(Mandatory = $true, HelpMessage = "Group category.")]
-        $groupCategory,
+        [string]$groupCategory,
         [Parameter(Mandatory = $true, HelpMessage = "Group scope.")]
-        $groupScope
+        [string]$groupScope
     )
     if (Get-ADGroup -Filter "Name -eq '$Name'") {
         Write-Output " [o] Group '$Name' already exists"
@@ -58,13 +58,13 @@ function New-SreGroup {
 function New-SreUser {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user. Maximum 20 characters for backwards compatibility.")]
-        $SamAccountName,
+        [string]$SamAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the user to be created.")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Path that the user will be created under.")]
-        $Path,
+        [string]$Path,
         [Parameter(Mandatory = $true, HelpMessage = "User password as a secure string.")]
-        $PasswordSecureString
+        [securestring]$PasswordSecureString
     )
     if (Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'") {
         Write-Output " [o] User '$Name' ('$SamAccountName') already exists"
@@ -95,11 +95,11 @@ function New-SreUser {
 function Add-SreUserToGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user, group, computer, or service account. Maximum 20 characters for backwards compatibility.")]
-        $SamAccountName,
+        [string]$SamAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the group that the user or group will be added to.")]
-        $GroupName
+        [string]$GroupName
     )
-    if ((Get-ADGroupMember -Identity $GroupName | Where-Object { $_.SamAccountName -eq "$SamAccountName" })) {
+    if ((Get-ADGroupMember -Identity "$GroupName" | Where-Object { $_.SamAccountName -eq "$SamAccountName" })) {
         Write-Output " [o] User '$SamAccountName' is already a member of '$GroupName'"
     } else {
         Write-Output " [ ] Adding '$SamAccountName' user to group '$GroupName'"
