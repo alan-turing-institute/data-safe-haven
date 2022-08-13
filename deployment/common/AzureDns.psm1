@@ -72,7 +72,7 @@ function Deploy-DnsRecordCollection {
         # Set the CAA record
         if ($RecordNameCAA) {
             Add-LogMessage -Level Info "[ ] Setting CAA record for $ZoneName to state that certificates will be provided by $RecordNameCAA"
-            Deploy-DnsRecord -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue $RecordNameCAA) -RecordName "@" -RecordType "CAA" -ResourceGroupName $ResourceGroupName -Subscription $SubscriptionName -TtlSeconds $TtlSeconds  -ZoneName $ZoneName
+            Deploy-DnsRecord -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue $RecordNameCAA) -RecordName "@" -RecordType "CAA" -ResourceGroupName $ResourceGroupName -Subscription $SubscriptionName -TtlSeconds $TtlSeconds -ZoneName $ZoneName
             Add-LogMessage -Level Success "Set 'CAA' record for '$ZoneName' to state that certificates will be provided by $RecordNameCAA"
         }
     } catch {
