@@ -10,13 +10,17 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Dns -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -186,46 +190,19 @@ try {
 # ------------------------------------
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
-$rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg)
-$rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
+$rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
 
 # Add DNS records for RDS Gateway
 # -------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-# Add DNS records to SRE DNS Zone
-Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
-$dnsTtlSeconds = 30
-# Set the A record for the SRE FQDN
-$recordName = "@"
-Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'A' record for gateway host!"
-}
-# Set the CNAME record for the remote desktop server
-$serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for gateway host!"
-}
-# Set the CAA record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
-Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
-}
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+Deploy-DnsRecordCollection -PublicIpAddress $rdsGatewayPublicIp `
+                           -RecordNameA "@" `
+                           -RecordNameCAA "letsencrypt.org" `
+                           -RecordNameCName $serverHostname `
+                           -ResourceGroupName $config.shm.dns.rg `
+                           -SubscriptionName $config.shm.dns.subscriptionName `
+                           -TtlSeconds 30 `
+                           -ZoneName $config.sre.domain.fqdn
 
 
 # Import files to RDS VMs

@@ -12,12 +12,15 @@ Import-Module Az.Dns -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
 Import-Module Microsoft.Graph.Applications -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -55,7 +58,7 @@ $null = Deploy-ResourceGroup -Name $config.sre.remoteDesktop.rg -Location $confi
 
 # Deploy a network card with a public IP address
 # ----------------------------------------------
-$networkCard = Deploy-VirtualMachineNIC -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$networkCard = Deploy-NetworkInterface -Name "$($config.sre.remoteDesktop.guacamole.vmName)-NIC" -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $publicIp = Deploy-PublicIpAddress -Name "$($config.sre.remoteDesktop.guacamole.vmName)-PIP" -ResourceGroupName $config.sre.remoteDesktop.rg -AllocationMethod Static -Location $config.sre.location
 $null = $networkCard | Set-AzNetworkInterfaceIpConfig -Name $networkCard.ipConfigurations[0].Name -SubnetId $deploymentSubnet.Id -PublicIpAddressId $publicIp.Id | Set-AzNetworkInterface
 
@@ -71,14 +74,16 @@ if (Get-MgContext) {
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
-    if (-not $application) {
+    if ($application) {
+        Add-LogMessage -Level InfoSuccess "'$azureAdApplicationName' is already registered in Azure Active Directory"
+    } else {
         Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
         $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
-    }
-    if (Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'") {
-        Add-LogMessage -Level Success "'$azureAdApplicationName' is already registered in Azure Active Directory"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+        if ($application) {
+            Add-LogMessage -Level Success "Registered '$azureAdApplicationName' in Azure Active Directory"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to register '$azureAdApplicationName' in Azure Active Directory!"
+        }
     }
 } catch {
     Add-LogMessage -Level Fatal "Could not connect to Microsoft Graph!" -Exception $_.Exception
@@ -125,7 +130,7 @@ $params = @{
     AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml          = $cloudInitYaml
-    ImageSku               = "20.04-LTS"
+    ImageSku               = "Ubuntu-latest"
     Location               = $config.sre.location
     Name                   = $config.sre.remoteDesktop.guacamole.vmName
     NicId                  = $networkCard.Id
@@ -134,48 +139,24 @@ $params = @{
     ResourceGroupName      = $config.sre.remoteDesktop.rg
     Size                   = $config.sre.remoteDesktop.guacamole.vmSize
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-LinuxVirtualMachine @params
 
 
 # Change subnets and IP address while the VM is off then restart
 # --------------------------------------------------------------
 Update-VMIpAddress -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Subnet $guacamoleSubnet -IpAddress $config.sre.remoteDesktop.guacamole.ip
-Start-VM -Name $config.sre.remoteDesktop.guacamole.vmName -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Add DNS records for Guacamole server
 # ------------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-$dnsTtlSeconds = 30
-# Set the A record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting 'A' record for $($config.sre.domain.fqdn) to $($publicIp.IpAddress)"
-Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $publicIp.IpAddress)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'A' record for $($config.sre.domain.fqdn)!"
-}
-# Set the CAA record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
-Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
-}
-# Set the CNAME record for the remote desktop server
-$serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for $serverHostname to point to the 'A' record in $($config.sre.domain.fqdn)"
-Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CNAME' record for $serverHostname"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for $serverHostname!"
-}
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+Deploy-DnsRecordCollection -PublicIpAddress $publicIp.IpAddress `
+                           -RecordNameA "@" `
+                           -RecordNameCAA "letsencrypt.org" `
+                           -RecordNameCName $serverHostname `
+                           -ResourceGroupName $config.shm.dns.rg `
+                           -SubscriptionName $config.shm.dns.subscriptionName `
+                           -TtlSeconds 30 `
+                           -ZoneName $config.sre.domain.fqdn
 
 
 # Switch back to original subscription

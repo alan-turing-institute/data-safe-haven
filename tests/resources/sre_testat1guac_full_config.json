@@ -1141,7 +1141,7 @@
         },
         "ip": "10.151.3.5",
         "port": "5432",
-        "sku": "20.04-LTS",
+        "sku": "Ubuntu-latest",
         "subnet": "databases",
         "type": "PostgreSQL",
         "vmName": "PSTGRS-T1GUAC",
@@ -1408,7 +1408,7 @@
         "fqdn": "COCALC.t1guac.testa.dsgroupdev.co.uk",
         "hostname": "COCALC",
         "ip": "10.151.5.7",
-        "osVersion": "20.04-LTS",
+        "osVersion": "Ubuntu-latest",
         "vmName": "COCALC-SRE-T1GUAC",
         "vmSize": "Standard_D2s_v3"
       },
@@ -1430,7 +1430,7 @@
         "fqdn": "CODIMD.t1guac.testa.dsgroupdev.co.uk",
         "hostname": "CODIMD",
         "ip": "10.151.5.6",
-        "osVersion": "20.04-LTS",
+        "osVersion": "Ubuntu-latest",
         "postgres": {
           "dockerVersion": "13.4-alpine",
           "passwordSecretName": "sre-t1guac-other-codimd-password-postgresdb"
@@ -1453,7 +1453,7 @@
         "fqdn": "GITLAB.t1guac.testa.dsgroupdev.co.uk",
         "hostname": "GITLAB",
         "ip": "10.151.5.5",
-        "osVersion": "20.04-LTS",
+        "osVersion": "Ubuntu-latest",
         "rootPasswordSecretName": "sre-t1guac-other-gitlab-root-password",
         "vmName": "GITLAB-SRE-T1GUAC",
         "vmSize": "Standard_D2s_v3"

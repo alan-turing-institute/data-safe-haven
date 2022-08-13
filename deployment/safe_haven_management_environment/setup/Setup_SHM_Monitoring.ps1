@@ -8,13 +8,14 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.OperationalInsights -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureAutomation -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureMonitor -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzurePrivateDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription

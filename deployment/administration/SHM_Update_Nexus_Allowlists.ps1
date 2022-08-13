@@ -6,9 +6,8 @@ param(
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
-Import-Module Az.Compute -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 
@@ -58,12 +57,11 @@ $script += "/usr/local/update-nexus-allowlists"
 
 # Ensure Nexus VM is running
 $vmName = $config.repository["tier${tier}"].nexus.vmName
-$vmStatus = Get-AzVM -ResourceGroupName $config.repository.rg -Name $vmName -Status
-if (-not $vmStatus) {
-    Add-LogMessage -Level Failure "VM '${vmName}' does not exist. Have you deployed a Nexus VM?"
-}
-if ($vmStatus.PopwerState -ne "VM running") {
-    Add-LogMessage -Level Failure "VM '${vmName}' is not running."
+$vmStatus = Get-VMState -ResourceGroupName $config.repository.rg -Name $vmName
+if ($vmStatus -eq "VM does not exist") {
+    Add-LogMessage -Level Failure "VM '$vmName' does not exist. Have you deployed a Nexus VM?"
+} elseif ($vmStatus -ne "VM running") {
+    Add-LogMessage -Level Failure "VM '$vmName' is not running. Current status: '$vmStatus'."
 }
 
 # Run the script on the Nexus VM

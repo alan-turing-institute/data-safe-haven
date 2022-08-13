@@ -9,12 +9,14 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -43,10 +45,10 @@ $subnetInternal = Deploy-Subnet -Name $mirrorConfig.subnets.internal.name -Virtu
 # -------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $vnetPkgMirrors.Name `
-                -Vnet1ResourceGroup $vnetPkgMirrors.ResourceGroupName `
+                -Vnet1ResourceGroupName $vnetPkgMirrors.ResourceGroupName `
                 -Vnet1SubscriptionName $config.subscriptionName `
                 -Vnet2Name $config.network.vnet.name `
-                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.network.vnet.rg `
                 -Vnet2SubscriptionName $config.subscriptionName
 
 
@@ -181,7 +183,7 @@ function Deploy-PackageMirror {
     if ($notExists) {
         # Deploy NIC and data disks
         # -------------------------
-        $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.location
+        $vmNic = Deploy-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.location
         $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.mirrors[$MirrorType]["tier${tier}"].diskSize -Type $config.mirrors.diskType -ResourceGroupName $config.mirrors.rg -Location $config.location
         $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $subnet.NetworkSecurityGroup.Id }
 
@@ -224,10 +226,10 @@ function Deploy-PackageMirror {
                 NicId                  = $vmNic.Id
                 OsDiskType             = $config.mirrors.diskType
                 ResourceGroupName      = $config.mirrors.rg
-                ImageSku               = "20.04-LTS"
+                ImageSku               = "Ubuntu-latest"
                 DataDiskIds            = @($dataDisk.Id)
             }
-            $null = Deploy-UbuntuVirtualMachine @params
+            $null = Deploy-LinuxVirtualMachine @params
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."

@@ -6,14 +6,16 @@ param(
     [string]$tier
 )
 
-Import-Module Az
-Import-Module $PSScriptRoot/../../common/AzureStorage.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Templates.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
+Import-Module Az.Accounts
+Import-Module Az.Network
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -54,10 +56,10 @@ $repositorySubnet = Deploy-Subnet -Name $config.network.repositoryVnets["tier${t
 # -----------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Peering repository virtual network to SHM virtual network"
 Set-VnetPeering -Vnet1Name $vnetRepository.Name `
-                -Vnet1ResourceGroup $vnetRepository.ResourceGroupName `
+                -Vnet1ResourceGroupName $vnetRepository.ResourceGroupName `
                 -Vnet1SubscriptionName $config.subscriptionName `
                 -Vnet2Name $config.network.vnet.name `
-                -Vnet2ResourceGroup $config.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.network.vnet.rg `
                 -Vnet2SubscriptionName $config.subscriptionName
 
 
@@ -98,7 +100,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 
 # Deploy the VM
 # -------------
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.repository["tier${tier}"].rg -Subnet $repositorySubnet -PrivateIpAddress $privateIpAddress -Location $config.location
+$vmNic = Deploy-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.repository["tier${tier}"].rg -Subnet $repositorySubnet -PrivateIpAddress $privateIpAddress -Location $config.location
 $params = @{
     Name                   = $vmName
     Size                   = $config.repository["tier${tier}"].vmSize
@@ -110,9 +112,9 @@ $params = @{
     NicId                  = $vmNic.Id
     OsDiskType             = $config.repository["tier${tier}"].diskType
     ResourceGroupName      = $config.repository["tier${tier}"].rg
-    ImageSku               = "20.04-LTS"
+    ImageSku               = "Ubuntu-latest"
 }
-$null = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-LinuxVirtualMachine @params
 Start-VM -Name $vmName -ResourceGroupName $config.repository["tier${tier}"].rg
 
 

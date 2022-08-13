@@ -1,5 +1,6 @@
 Import-Module Az.Automation -ErrorAction Stop
 Import-Module Az.MonitoringSolutions -ErrorAction Stop
+Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
 # Connect an automation account to a log analytics workspace

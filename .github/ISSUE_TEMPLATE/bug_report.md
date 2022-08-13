@@ -28,9 +28,24 @@ Additionally, if you think this would be a good issue for newcomers to tackle th
 - Operating System: <!-- Which operating system are you using: Windows, Linux, macOS etc. -->
 - Data Safe Haven version: <!-- Which version of the Data Safe Haven are you using: 3.0.0, 3.1.1 etc. -->
 - Powershell version: <!-- Which version of Powershell are you using: use CheckRequirements.ps1 if unsure -->
-- `Az` Powershell module version: <!-- Which version of the Az Powershell module are you using: use CheckRequirements.ps1  if unsure -->
-- `Microsoft.Graph` Powershell module version: <!-- Which version of the Microsoft.Graph Powershell module are you using: use CheckRequirements.ps1 if unsure -->
-- `Poshstache` module version: <!-- Which version of the Microsoft.Graph Powershell module are you using: use CheckRequirements.ps1 if unsure -->
+- `Az.Accounts` Powershell module version: <!-- Which version of the Az.Accounts Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Automation` Powershell module version: <!-- Which version of the Az.Automation Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Compute` Powershell module version: <!-- Which version of the Az.Compute Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.DataProtection` Powershell module version: <!-- Which version of the Az.DataProtection Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Dns` Powershell module version: <!-- Which version of the Az.Dns Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.KeyVault` Powershell module version: <!-- Which version of the Az.KeyVault Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Monitor` Powershell module version: <!-- Which version of the Az.Monitor Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.MonitoringSolutions` Powershell module version: <!-- Which version of the Az.MonitoringSolutions Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Network` Powershell module version: <!-- Which version of the Az.Network Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.OperationalInsights` Powershell module version: <!-- Which version of the Az.OperationalInsights Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.PrivateDns` Powershell module version: <!-- Which version of the Az.PrivateDns Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.RecoveryServices` Powershell module version: <!-- Which version of the Az.RecoveryServices Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Resources` Powershell module version: <!-- Which version of the Az.Resources Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Az.Storage` Powershell module version: <!-- Which version of the Az.Storage Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Microsoft.Graph` Powershell module version: <!-- Which version of the Microsoft.Graph Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Poshstache` Powershell module version: <!-- Which version of the Poshstache Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+- `Powershell-Yaml` Powershell module version: <!-- Which version of the Powershell-Yaml Powershell module you are using: run CheckRequirements.ps1 if unsure -->
+
 ## :strawberry: Desired behaviour
 
 <!--
@@ -46,17 +61,6 @@ Include specific tasks (if any) in the order in which they need to be done.
 
 <!--
 What happens now and (if relevant) an explanation of why this is incorrect
--->
-
-## :recycle: To reproduce
-
-<!--
-How can the current behaviour be reproduced? Include some steps to reproduce the problem.
-
-Example:
-1. Deploy an SRE with option X set to Y
-2. Attempt to perform action Z
-3. Observe the following failure/error message
 -->
 
 <!-- OPTIONAL
@@ -77,4 +81,15 @@ Your log details here
 Your log details here
 ```
 </details>
+-->
+
+## :recycle: To reproduce
+
+<!--
+How can the current behaviour be reproduced? Include some steps to reproduce the problem.
+
+Example:
+1. Deploy an SRE with option X set to Y
+2. Attempt to perform action Z
+3. Observe the previously mentioned failure/error message
 -->

@@ -18,13 +18,16 @@ Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module Powershell-Yaml -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -147,8 +150,11 @@ if ($orphanedDisks) {
 
 # Check that this is a valid image version and get its ID
 # -------------------------------------------------------
-$imageDefinition = Get-ImageDefinition -Type $config.sre.srd.vmImage.type
-$image = Get-ImageFromGallery -ImageVersion $config.sre.srd.vmImage.version -ImageDefinition $imageDefinition -GalleryName $config.shm.srdImage.gallery.name -ResourceGroup $config.shm.srdImage.gallery.rg -Subscription $config.shm.srdImage.subscription
+$image = Get-ImageFromGallery -GalleryName $config.shm.srdImage.gallery.name `
+                              -ImageSku $config.sre.srd.vmImage.type `
+                              -ImageVersion $config.sre.srd.vmImage.version  `
+                              -ResourceGroupName $config.shm.srdImage.gallery.rg `
+                              -Subscription $config.shm.srdImage.subscription
 
 
 # Set the OS disk size for this image
@@ -198,7 +204,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 # Deploy the VM
 # -------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$networkCard = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.srd.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+$networkCard = Deploy-NetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.sre.srd.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
 $dataDisks = @(
     (Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.srd.disks.scratch.sizeGb -Type $config.sre.srd.disks.scratch.type -ResourceGroupName $config.sre.srd.rg -Location $config.sre.location)
 )
@@ -217,13 +223,14 @@ $params = @{
     DataDiskIds            = ($dataDisks | ForEach-Object { $_.Id })
     ImageId                = $image.Id
 }
-$vm = Deploy-UbuntuVirtualMachine @params
+$vm = Deploy-LinuxVirtualMachine @params
 $null = New-AzTag -ResourceId $vm.Id -Tag @{"Build commit hash" = $image.Tags["Build commit hash"] }
 
 
 # Change subnets and IP address while the VM is off
 # -------------------------------------------------
 Update-VMIpAddress -Name $vmName -ResourceGroupName $config.sre.srd.rg -Subnet $computeSubnet -IpAddress $finalIpAddress
+# Update DNS records for this VM
 Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.shm.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $vmHostname -VmIpAddress $finalIpAddress
 
 

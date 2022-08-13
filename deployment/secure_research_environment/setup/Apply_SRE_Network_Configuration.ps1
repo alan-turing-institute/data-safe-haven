@@ -8,8 +8,9 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Compute -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
@@ -127,7 +128,12 @@ Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository
 if (-not $config.sre.repositories.network.name) {
     Add-LogMessage -Level InfoSuccess "No package repository network is configured for SRE $($config.sre.id) [tier $($config.sre.tier)]. Nothing to do."
 } else {
-    Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.sre.repositories.network.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+    Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
+                    -Vnet1ResourceGroupName $config.sre.network.vnet.rg `
+                    -Vnet1SubscriptionName $config.sre.subscriptionName `
+                    -Vnet2Name $config.sre.repositories.network.name `
+                    -Vnet2ResourceGroupName $config.shm.network.vnet.rg `
+                    -Vnet2SubscriptionName $config.shm.subscriptionName
 }
 
 
