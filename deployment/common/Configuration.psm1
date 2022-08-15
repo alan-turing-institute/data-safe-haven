@@ -278,6 +278,14 @@ function Get-ShmConfig {
                     name = "AzureFirewallSubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 2).0/24"
                 }
+                updateServers = [ordered]@{
+                    name = "UpdateServersSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 3).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_UPDATE_SERVERS".ToUpper()
+                        rules = "shm-nsg-rules-update-servers.json"
+                    }
+                }
                 gateway    = [ordered]@{
                     # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
                     name = "GatewaySubnet"

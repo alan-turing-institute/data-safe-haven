@@ -32,6 +32,7 @@ $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualN
 $gatewaySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.gateway.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.gateway.cidr
 $identitySubnet = Deploy-Subnet -Name $config.network.vnet.subnets.identity.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.identity.cidr
 $monitoringSubnet = Deploy-Subnet -Name $config.network.vnet.subnets.monitoring.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.monitoring.cidr
+$updateServersSubnet = Deploy-Subnet -Name $config.network.vnet.subnets.updateServers.name -VirtualNetwork $vnet -AddressPrefix $config.network.vnet.subnets.updateServers.cidr
 
 
 # Ensure that NSGs exist with the correct rules and attach them to the correct subnet
@@ -44,6 +45,10 @@ $identitySubnet = Set-SubnetNetworkSecurityGroup -Subnet $identitySubnet -Networ
 $monitoringNsg = Deploy-NetworkSecurityGroup -Name $config.network.vnet.subnets.monitoring.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $monitoringNsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnet.subnets.monitoring.nsg.rules) -Parameters $config -AsHashtable)
 $monitoringSubnet = Set-SubnetNetworkSecurityGroup -Subnet $monitoringSubnet -NetworkSecurityGroup $monitoringNsg
+# Update servers
+$updateServersNsg = Deploy-NetworkSecurityGroup -Name $config.network.vnet.subnets.updateServers.nsg.name -ResourceGroupName $config.network.vnet.rg -Location $config.location
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $updateServersNsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnet.subnets.updateServers.nsg.rules) -Parameters $config -AsHashtable)
+$updateServersSubnet = Set-SubnetNetworkSecurityGroup -Subnet $updateServersSubnet -NetworkSecurityGroup $updateServersNsg
 
 
 # Create the VPN gateway
