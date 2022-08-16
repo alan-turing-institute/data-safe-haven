@@ -31,7 +31,7 @@ $Policy = Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backu
                                             -PolicyName $config.sre.backup.blob.policy_name `
                                             -DataSourceType 'blob'
 
-# Assign permissions required for backup to the Vault's managed identity
+# Assign permissions required for blob backup to the Vault's managed identity
 $PersistentStorageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name
 $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
                               -ResourceGroupName $PersistentStorageAccount.ResourceGroupName `
@@ -44,3 +44,25 @@ $null = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
                                             -ResourceGroupName $config.sre.backup.rg `
                                             -StorageAccount $PersistentStorageAccount `
                                             -VaultName $Vault.Name
+
+# Assign permissions required for disk backup
+# Permission to create snapshots in backup resource group
+$null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
+                                           -ResourceGroupName $config.sre.backup.rg `
+                                           -RoleDefinitionName "Disk Snapshot Contributor"
+
+$selected_rgs = @(
+    $config.sre.databases.rg
+    $config.sre.webapps.rg
+)
+foreach($rg in $selected_rgs){
+    # Permission to create snapshots from disks in relevant resource groups
+    $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
+                                               -ResourceGroupName $rg `
+                                               -RoleDefinitionName "Disk Backup Reader"
+
+    # Permission to create new disks (restore points) in relevant resource groups
+    $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
+                                               -ResourceGroupName $rg `
+                                               -RoleDefinitionName "Disk Restore Operator"
+}
