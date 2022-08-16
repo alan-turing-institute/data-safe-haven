@@ -73,12 +73,12 @@ if (Get-MgContext) {
     Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
 }
 try {
-    $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'"
+    $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" -ErrorAction Stop
     if ($application) {
         Add-LogMessage -Level InfoSuccess "'$azureAdApplicationName' is already registered in Azure Active Directory"
     } else {
         Add-LogMessage -Level Info "Registering '$azureAdApplicationName' with Azure Active Directory..."
-        $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } }
+        $application = New-MgApplication -DisplayName "$azureAdApplicationName" -SignInAudience "AzureADMyOrg" -Web @{ RedirectUris = @("https://$($config.sre.domain.fqdn)"); ImplicitGrantSettings = @{ EnableIdTokenIssuance = $true } } -ErrorAction Stop
         if ($application) {
             Add-LogMessage -Level Success "Registered '$azureAdApplicationName' in Azure Active Directory"
         } else {
