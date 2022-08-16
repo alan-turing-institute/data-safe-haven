@@ -72,6 +72,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": ["8000"],
+        "direction": "Outbound",
+        "priority": 900,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDomainJoinedClientsUdpOutbound",
         "access": "Allow",
         "description": "Allow domain-joined client requests over UDP: Kerberos; LDAP.",
@@ -171,22 +183,6 @@
         "destinationPortRange": ["53", "443"],
         "direction": "Outbound",
         "priority": 3300,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowLinuxUpdatesOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to Linux update servers",
-        "destinationAddressPrefix": [
-            {{#shm.monitoring.updateServers.linux}}
-                "{{.}}",
-            {{/shm.monitoring.updateServers.linux}}
-        ],
-        "destinationPortRange": ["80", "443"],
-        "direction": "Outbound",
-        "priority": 3600,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"

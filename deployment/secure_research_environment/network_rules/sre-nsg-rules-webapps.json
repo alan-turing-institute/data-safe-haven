@@ -12,6 +12,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": ["8000"],
+        "direction": "Outbound",
+        "priority": 900,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
@@ -98,22 +110,6 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowLinuxUpdatesOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to Linux update servers",
-        "destinationAddressPrefix": [
-            {{#shm.monitoring.updateServers.linux}}
-                "{{.}}",
-            {{/shm.monitoring.updateServers.linux}}
-        ],
-        "destinationPortRange": ["80", "443"],
-        "direction": "Outbound",
-        "priority": 3600,
-        "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },
