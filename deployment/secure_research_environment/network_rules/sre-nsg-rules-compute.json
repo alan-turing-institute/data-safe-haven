@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowRemoteDesktopGatewayInbound",
+        "access": "Allow",
+        "description": "Allow connections to SRDs from remote desktop gateway",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationPortRange": ["22", "3389"],
+        "direction": "Inbound",
+        "priority": 800,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
@@ -57,18 +69,6 @@
         "priority": 600,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowRemoteDesktopGatewayInbound",
-        "access": "Allow",
-        "description": "Allow connections to SRDs from remote desktop gateway",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "destinationPortRange": ["22", "3389"],
-        "direction": "Inbound",
-        "priority": 800,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
         "sourcePortRange": "*"
     },
     {
