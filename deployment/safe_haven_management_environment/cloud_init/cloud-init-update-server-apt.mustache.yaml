@@ -1,0 +1,52 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      30 * * * * root  apt update
+
+  - path: "/etc/squid-deb-proxy/mirror-dstdomain.acl.d/20-data-safe-haven"
+    content: |
+      # Additional mirror domains that are allowed by this cache
+      apt.postgresql.org
+      cloud.r-project.org
+      dbeaver.io
+      developer.download.nvidia.com
+      download.docker.com
+      download.mono-project.com
+      packages.gitlab.com
+      packages.microsoft.com
+      qgis.org
+      ubuntu.qgis.org
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: {{time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  enabled: true
+  pools:
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
+
+# Install necessary apt packages
+packages:
+  - squid-deb-proxy
+package_update: true
+package_upgrade: true
+
+runcmd:
+  # Remove the unnecessary squid service and prevent it from running
+  - service squid stop
+  - systemctl disable -f squid
+  - update-rc.d -f squid remove
+
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

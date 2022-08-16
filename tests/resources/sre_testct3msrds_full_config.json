@@ -916,6 +916,14 @@
               "name": "NSG_SHM_TESTC_MONITORING",
               "rules": "shm-nsg-rules-monitoring.json"
             }
+          },
+          "updateServers": {
+            "cidr": "10.0.3.0/24",
+            "name": "UpdateServersSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTC_UPDATE_SERVERS",
+              "rules": "shm-nsg-rules-update-servers.json"
+            }
           }
         }
       },
@@ -1050,6 +1058,22 @@
         "linux": "Europe/London",
         "windows": "GMT Standard Time"
       }
+    },
+    "updateServers": {
+      "linux": {
+        "adminPasswordSecretName": "shm-testc-vm-admin-password-linux-update-server",
+        "disks": {
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "hostname": "APT-SHM-TESTC",
+        "ip": "10.0.3.4",
+        "vmName": "APT-SHM-TESTC",
+        "vmSize": "Standard_B2ms"
+      },
+      "rg": "RG_SHM_TESTC_UPDATE_SERVERS"
     },
     "users": {
       "computerManagers": {

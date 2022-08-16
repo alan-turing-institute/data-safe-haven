@@ -915,6 +915,14 @@
             "name": "NSG_SHM_TESTA_MONITORING",
             "rules": "shm-nsg-rules-monitoring.json"
           }
+        },
+        "updateServers": {
+          "cidr": "10.0.3.0/24",
+          "name": "UpdateServersSubnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTA_UPDATE_SERVERS",
+            "rules": "shm-nsg-rules-update-servers.json"
+          }
         }
       }
     },
@@ -1049,6 +1057,22 @@
       "linux": "Europe/London",
       "windows": "GMT Standard Time"
     }
+  },
+  "updateServers": {
+    "linux": {
+      "adminPasswordSecretName": "shm-testa-vm-admin-password-linux-update-server",
+      "disks": {
+        "os": {
+          "sizeGb": "32",
+          "type": "Standard_LRS"
+        }
+      },
+      "hostname": "APT-SHM-TESTA",
+      "ip": "10.0.3.4",
+      "vmName": "APT-SHM-TESTA",
+      "vmSize": "Standard_B2ms"
+    },
+    "rg": "RG_SHM_TESTA_UPDATE_SERVERS"
   },
   "users": {
     "computerManagers": {
