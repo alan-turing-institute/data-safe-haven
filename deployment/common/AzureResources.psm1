@@ -74,30 +74,49 @@ function Deploy-RoleAssignment {
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of role to be assigned")]
         [string]$RoleDefinitionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Type of resource to apply the role over")]
+        [Parameter(Mandatory = $false, HelpMessage = "Type of resource to apply the role over")]
         [string]$ResourceType,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource account to apply the role over")]
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource account to apply the role over")]
         [string]$ResourceName
     )
+    # Validate arguments
+    if ([boolean]$ResourceType -ne [boolean]$ResourceName) {
+        Add-LogMessage -Level Fatal "Failed to create role assignment, both or neither of ResourceType and ResourceName must be declared."
+    }
+
     # Check if assignment exists
     Add-LogMessage -Level Info "Ensuring that role assignment exists..."
-    $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
-                                       -RoleDefinitionName $RoleDefinitionName `
-                                       -ResourceGroupName $ResourceGroupName `
-                                       -ResourceName $ResourceName `
-                                       -ResourceType $ResourceType `
-                                       -ErrorAction SilentlyContinue
+    if ($ResourceType) {
+        $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
+                                           -RoleDefinitionName $RoleDefinitionName `
+                                           -ResourceGroupName $ResourceGroupName `
+                                           -ResourceName $ResourceName `
+                                           -ResourceType $ResourceType `
+                                           -ErrorAction SilentlyContinue
+    } else {
+        $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
+                                           -RoleDefinitionName $RoleDefinitionName `
+                                           -ResourceGroupName $ResourceGroupName `
+                                           -ErrorAction SilentlyContinue
+    }
     if ($Assignment) {
         Add-LogMessage -Level InfoSuccess "Role assignment already exist"
     } else {
         try {
             Add-LogMessage -Level Info "[ ] Creating role assignment"
-            $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
-                                               -RoleDefinitionName $RoleDefinitionName `
-                                               -ResourceGroupName $ResourceGroupName `
-                                               -ResourceName $ResourceName `
-                                               -ResourceType $ResourceType `
-                                               -ErrorAction Stop
+            if ($ResourceType) {
+                $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
+                                                   -RoleDefinitionName $RoleDefinitionName `
+                                                   -ResourceGroupName $ResourceGroupName `
+                                                   -ResourceName $ResourceName `
+                                                   -ResourceType $ResourceType `
+                                                   -ErrorAction Stop
+            } else {
+                $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
+                                                   -RoleDefinitionName $RoleDefinitionName `
+                                                   -ResourceGroupName $ResourceGroupName `
+                                                   -ErrorAction Stop
+            }
             Add-LogMessage -Level Success "Successfully created role assignment"
         } catch {
             Add-LogMessage -Level Fatal "Failed to create role assignment" -Exception $_.Exception
