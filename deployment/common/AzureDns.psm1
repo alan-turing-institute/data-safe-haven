@@ -146,15 +146,15 @@ function Remove-DnsRecord {
         Add-LogMessage -Level Info "[ ] Removing '$RecordName' $RecordType record from DNS zone $ZoneName"
         $null = Set-AzContext -SubscriptionId $SubscriptionName -ErrorAction Stop
         Remove-AzDnsRecordSet -Name $RecordName -RecordType $RecordType -ZoneName $ZoneName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
-        Add-LogMessage -Level Fatal "DNS record removal succeeded"
+        Add-LogMessage -Level Success "DNS record removal succeeded"
     } catch {
         $null = Set-AzContext -Context $originalContext -ErrorAction Stop
-        Add-LogMessage -Level Fatal "DNS record removal failed!" -Excepation $_.Exception
+        Add-LogMessage -Level Fatal "DNS record removal failed!" -Exception $_.Exception
     } finally {
         $null = Set-AzContext -Context $originalContext -ErrorAction Stop
     }
 }
-Export-ModuleMember -Function Remove-ResourceGroup
+Export-ModuleMember -Function Remove-DnsRecord
 
 
 # Add NS Record Set to DNS Zone if it does not already exist

@@ -33,12 +33,12 @@ if (($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") -and -not $tenant
 
 # Make user confirm before beginning deletion
 # -------------------------------------------
-$sreResourceGroups = Get-SreResourceGroups -sreConfig $config
+$ResourceGroups = Get-SreResourceGroups -sreConfig $config
 if ($dryRun.IsPresent) {
-    Add-LogMessage -Level Warning "This would remove $($sreResourceGroups.Count) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
+    Add-LogMessage -Level Warning "This would remove $($ResourceGroups.Count) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
 } else {
-    Add-LogMessage -Level Warning "This will remove $($sreResourceGroups.Count) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
-    $sreResourceGroups | ForEach-Object { Add-LogMessage -Level Warning "... $($_.ResourceGroupName)" }
+    Add-LogMessage -Level Warning "This will remove $($ResourceGroups.Count) resource group(s) belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
+    $ResourceGroups | ForEach-Object { Add-LogMessage -Level Warning "... $($_.ResourceGroupName)" }
     $confirmation = Read-Host "Are you sure you want to proceed? [y/n]"
     while ($confirmation -ne "y") {
         if ($confirmation -eq "n") { exit 0 }
@@ -53,28 +53,30 @@ Remove-StorageAccountBackupInstances -ResourceGroupName $config.sre.backup.rg -V
 
 # Remove SRE resource groups and the resources they contain
 # ---------------------------------------------------------
-$ResourceGroupNames = Get-SreResourceGroups -sreConfig $config | ForEach-Object { $_.ResourceGroupName }
-if ($dryRun.IsPresent) {
-    $ResourceGroupNames | ForEach-Object { Add-LogMessage -Level Info "Would attempt to remove $_..." }
-} else {
-    if ($ResourceGroupNames.Count) { Remove-AllResourceGroups -ResourceGroupNames $ResourceGroupNames -MaxAttempts 60 }
+if ($ResourceGroups.Count) {
+    $ResourceGroupNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
+    if ($dryRun.IsPresent) {
+        $ResourceGroupNames | ForEach-Object {
+            Add-LogMessage -Level Info "Skipping removal of resource group '$_' with its contents."
+        }
+    } else {
+        Remove-AllResourceGroups -ResourceGroupNames $ResourceGroupNames -MaxAttempts 60
+    }
 }
 
 
 # Warn if any resources or groups remain
 # --------------------------------------
-if (-not $dryRun.IsPresent) {
-    $sreResourceGroups = Get-SreResourceGroups -sreConfig $config
-    if ($sreResourceGroups) {
-        Add-LogMessage -Level Error "There are still $($sreResourceGroups.Count) undeleted resource group(s) remaining!"
-        foreach ($resourceGroup in $sreResourceGroups) {
-            Add-LogMessage -Level Error "$($resourceGroup.ResourceGroupName)"
-            Get-ResourcesInGroup -ResourceGroupName $resourceGroup.ResourceGroupName | ForEach-Object {
-                Add-LogMessage -Level Error "... $($_.Name) [$($_.ResourceType)]"
-            }
+$ResourceGroups = $dryRun.IsPresent ? $null : (Get-SreResourceGroups -sreConfig $config)
+if ($ResourceGroups) {
+    Add-LogMessage -Level Error "There are still $($ResourceGroups.Count) undeleted resource group(s) remaining!"
+    foreach ($ResourceGroup in $ResourceGroups) {
+        Add-LogMessage -Level Error "$($ResourceGroup.ResourceGroupName)"
+        Get-ResourcesInGroup -ResourceGroupName $ResourceGroup.ResourceGroupName | ForEach-Object {
+            Add-LogMessage -Level Error "... $($_.Name) [$($_.ResourceType)]"
         }
-        Add-LogMessage -Level Fatal "Failed to teardown SRE '$($config.sre.id)'!"
     }
+    Add-LogMessage -Level Fatal "Failed to teardown SRE '$($config.sre.id)'!"
 }
 
 
@@ -103,18 +105,18 @@ try {
 # Tear down the AzureAD application
 # ---------------------------------
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
-    $azureAdApplicationName = "Guacamole SRE $($config.sre.id)"
+    $AzureAdApplicationName = "Guacamole SRE $($config.sre.id)"
     if ($dryRun.IsPresent) {
-        Add-LogMessage -Level Info "'$azureAdApplicationName' would be removed from Azure Active Directory..."
+        Add-LogMessage -Level Info "'$AzureAdApplicationName' would be removed from Azure Active Directory..."
     } else {
-        Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is removed from Azure Active Directory..."
+        Add-LogMessage -Level Info "Ensuring that '$AzureAdApplicationName' is removed from Azure Active Directory..."
         if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
         Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
         try {
-            Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
-            Add-LogMessage -Level Success "'$azureAdApplicationName' has been removed from Azure Active Directory"
+            Get-MgApplication -Filter "DisplayName eq '$AzureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }
+            Add-LogMessage -Level Success "'$AzureAdApplicationName' has been removed from Azure Active Directory"
         } catch {
-            Add-LogMessage -Level Fatal "Could not remove '$azureAdApplicationName' from Azure Active Directory!" -Exception $_.Exception
+            Add-LogMessage -Level Fatal "Could not remove '$AzureAdApplicationName' from Azure Active Directory!" -Exception $_.Exception
         }
     }
 }
