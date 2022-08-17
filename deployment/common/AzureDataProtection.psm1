@@ -97,7 +97,9 @@ function Deploy-DataProtectionBackupPolicy {
         [string]$DataSourceType
     )
     $DataSourceMap = @{
-        "blob" = "AzureBlob"
+        "blob" = "AzureBlob",
+        "disk" = "AzureDisk"
+
     }
     Add-LogMessage -Level Info "Ensuring backup policy '$PolicyName' exists"
     try {

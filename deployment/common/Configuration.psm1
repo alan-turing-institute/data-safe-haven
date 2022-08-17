@@ -791,6 +791,9 @@ function Get-SreConfig {
         blob  = [ordered]@{
             policy_name = "blobbackuppolicy"
         }
+        disk = [ordered]@{
+            policy_name = "diskbackuppolicy"
+        }
     }
 
     # Secrets config

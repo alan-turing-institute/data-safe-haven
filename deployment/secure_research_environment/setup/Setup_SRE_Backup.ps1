@@ -45,6 +45,13 @@ $null = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
                                             -StorageAccount $PersistentStorageAccount `
                                             -VaultName $Vault.Name
 
+# Create disk backup policy
+# This enforces the default policy for disks
+$Policy = Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backup.rg `
+                                            -VaultName $config.sre.backup.vault.name `
+                                            -PolicyName $config.sre.backup.disk.policy_name `
+                                            -DataSourceType 'disk'
+
 # Assign permissions required for disk backup
 # Permission to create snapshots in backup resource group
 $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
