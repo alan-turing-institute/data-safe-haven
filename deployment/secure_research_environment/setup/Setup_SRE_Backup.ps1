@@ -40,10 +40,13 @@ $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
                               -RoleDefinitionName "Storage Account Backup Contributor"
 
 # Create blob backup instance
-$null = Deploy-StorageAccountBackupInstance -BackupPolicyId $Policy.Id `
+$null = Deploy-DataProtectionBackupInstance -BackupPolicyId $Policy.Id `
                                             -ResourceGroupName $config.sre.backup.rg `
-                                            -StorageAccount $PersistentStorageAccount `
-                                            -VaultName $Vault.Name
+                                            -VaultName $Vault.Name `
+                                            -DataSourceType 'blob' `
+                                            -DataSourceId $PersistentStorageAccount.Id `
+                                            -DataSourceLocation $PersistentStorageAccount.Location `
+                                            -DataSourceName $PersistentStorageAccount.Name
 
 # Create disk backup policy
 # This enforces the default policy for disks

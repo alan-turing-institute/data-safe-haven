@@ -96,43 +96,6 @@ function Deploy-DataProtectionBackupInstance {
 }
 Export-ModuleMember -Function Deploy-DataProtectionBackupInstance
 
-function Deploy-StorageAccountBackupInstance {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "ID of the backup policy to apply")]
-        [string]$BackupPolicyId,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
-        [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Storage account to enable backup on")]
-        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault")]
-        [string]$VaultName
-    )
-    Add-LogMessage -Level Info "Ensuring backup instance for '$($StorageAccount.StorageAccountName)' exists"
-    $instance = Get-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName -VaultName $VaultName -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "$($StorageAccount.StorageAccountName)*" }
-    if ($instance) {
-        Add-LogMessage -Level InfoSuccess "Backup instance for '$($StorageAccount.StorageAccountName)' already exists"
-    } else {
-        try {
-            Add-LogMessage -Level Info "[ ] Creating backup instance for '$($StorageAccount.StorageAccountName)'"
-            $initialisation = Initialize-AzDataProtectionBackupInstance -DatasourceType "AzureBlob" `
-                                                                        -DatasourceLocation $StorageAccount.Location `
-                                                                        -PolicyId $BackupPolicyId `
-                                                                        -DatasourceId $StorageAccount.Id `
-                                                                        -ErrorAction Stop
-            $instance = New-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName `
-                                                           -VaultName $VaultName `
-                                                           -BackupInstance $initialisation `
-                                                           -ErrorAction Stop
-            Add-LogMessage -Level Success "Successfully deployed backup instance for '$($StorageAccount.StorageAccountName)'"
-        } catch {
-            Add-LogMessage -Level Fatal "Failed to deploy backup instance for '$($StorageAccount.StorageAccountName)'" -Exception $_.Exception
-        }
-    }
-    return $instance
-}
-Export-ModuleMember -Function Deploy-StorageAccountBackupInstance
-
-
 # Deploy a data protection backup policy
 # Currently only supports default policies
 # ----------------------------------------
@@ -176,7 +139,7 @@ Export-ModuleMember -Function Deploy-DataProtectionBackupPolicy
 
 # Remove all data protection backup instances
 # -------------------------------------------
-function Remove-StorageAccountBackupInstances {
+function Remove-DataProtectionBackupInstances {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
         [string]$ResourceGroupName,
@@ -194,4 +157,4 @@ function Remove-StorageAccountBackupInstances {
         Add-LogMessage -Level Fatal "Failed to remove backup instances from vault '$VaultName' in resource group '$ResourceGroupName'!"
     }
 }
-Export-ModuleMember -Function Remove-StorageAccountBackupInstances
+Export-ModuleMember -Function Remove-DataProectionBackupInstances
