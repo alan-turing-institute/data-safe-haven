@@ -44,10 +44,12 @@ libcurl4-openssl-dev
 libeccodes-dev
 libffi-dev
 libfftw3-dev
+libfribidi-dev
 libgdal-dev
 libgmp-dev
 libgsl-dev
 libgtk2.0-dev
+libharfbuzz-dev
 liblapack-dev
 liblzma-dev
 libmagick++-dev
