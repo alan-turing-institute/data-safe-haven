@@ -1,13 +1,13 @@
 ---
-name: Enhancement request
-about: Use this template for requested new features or extensions to existing features
+name: Documentation improvement
+about: Use this template to request changes to Data Safe Haven documentation
 title: "<short description of issue>"
-labels: "type: enhancement"
+labels: "type: documentation"
 assignees: ""
 ---
 
 <!--
-Before opening an issue:
+Before reporting a problem:
 - Make sure you are able to reproduce it on the [latest version](https://github.com/alan-turing-institute/data-safe-haven/releases)
 - Search the existing issues.
 - Refer to [our documentation](https://alan-turing-institute.github.io/data-safe-haven/).
@@ -23,19 +23,8 @@ Additionally, if you think this would be a good issue for newcomers to tackle th
 :tada: Thank you!
 -->
 
-## :strawberry: Desired behaviour
+## :memo: Missing documentation
 
 <!--
-A clear and concise description of what the behaviour should be when this issue is closed.
-
-Include specific tasks (if any) in the order in which they need to be done.
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
--->
-
-## :steam_locomotive: Possible workarounds, remediations or solutions
-
-<!--
-Suggested way to implement the desired behaviour or to workaround its lack.
+What needs to be documented and how best to do it
 -->
