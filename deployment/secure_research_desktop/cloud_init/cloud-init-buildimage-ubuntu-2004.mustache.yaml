@@ -123,7 +123,7 @@ write_files:
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
-      {{deb-rstudio.version}}
+      {{deb-rstudio-bionic.version}}
 
   - path: "/opt/monitoring/analyse_build.py"
     permissions: "0755"

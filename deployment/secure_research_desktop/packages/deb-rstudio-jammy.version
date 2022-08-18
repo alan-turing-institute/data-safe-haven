@@ -1,0 +1,4 @@
+hash: 92f2ab75f02e103608fbd6d3799d7bdba3b6daca4fa0394026c193810678f605
+version: 2022.07.1-554
+debfile: rstudio-|VERSION|-amd64.deb
+remote: https://download1.rstudio.org/desktop/jammy/amd64/|DEBFILE|
