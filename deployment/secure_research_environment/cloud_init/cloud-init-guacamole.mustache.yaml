@@ -14,7 +14,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/opt/guacamole/docker-compose.yaml"
     permissions: "0400"

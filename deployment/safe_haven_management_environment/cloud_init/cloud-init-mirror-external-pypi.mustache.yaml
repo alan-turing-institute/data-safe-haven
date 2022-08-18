@@ -44,7 +44,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"

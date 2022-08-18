@@ -46,7 +46,7 @@ write_files:
     append: true
     content: |
       */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
-      30   * * * * root     apt update
+      45   1 * * * root     apt update
       @reboot      root     /usr/local/bin/runonce | logger -t SafeHaven
 
   - path: "/etc/domain-join.secret"

@@ -25,7 +25,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/etc/pip.conf"
     permissions: "0444"

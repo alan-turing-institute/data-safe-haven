@@ -9,7 +9,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/etc/nexus/docker-compose.yaml"
     permissions: "0400"
