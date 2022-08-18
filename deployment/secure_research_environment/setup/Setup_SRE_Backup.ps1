@@ -78,7 +78,7 @@ foreach($rg in $selected_rgs){
 }
 
 # Create backup instances for all disks in selected resource groups
-$selected_disks = Get-AzDisk | Where-Object {$_.ResourceGroupName -in $selected_rgs}
+$selected_disks = Get-AzDisk | Where-Object {$_.ResourceGroupName -in $selected_rgs} | Where-Object {$_.Name -like "*DATA-DISK"}
 foreach($disk in $selected_disks){
     $null = Deploy-DataProtectionBackupInstance -BackupPolicyId $Policy.Id `
                                                 -ResourceGroupName $config.sre.backup.rg `
