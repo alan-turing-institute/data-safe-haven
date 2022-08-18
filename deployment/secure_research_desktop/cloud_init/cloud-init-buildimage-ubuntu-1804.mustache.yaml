@@ -44,6 +44,9 @@ apt:
       source: "deb https://ubuntu.qgis.org/ubuntu bionic main"
       keyid: 2D7E3441A707FDB3E7059441D155B8E6A419C5BE  # QGIS Archive Automatic Signing Key (2022-2027) <qgis-developer@lists.osgeo.org>
 
+    r-base-version.list:
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
+      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
 write_files:
   - path: "/etc/jaas.conf"
@@ -172,6 +175,11 @@ runcmd:
     }
   - sleep 10  # ensure that run commands are cleanly time-separated from other cloud-init commands
   - echo ">=== $(date +%s) Preparing system for installation ===<"
+  # Allowing cloud.rproject.org would give unrestricted access to CRAN
+  # As we do not want this, we remove this repository before continuing deployment
+  - echo "Removing R updates repository..."
+  - rm /etc/apt/sources.list.d/r-base-version.list
+  - apt update
   # Install python packages used in the rest of the build
   - echo "Installing python packages..."
   - pip3 install --upgrade -r /opt/build/packages/packages-python-system.txt
@@ -226,7 +234,7 @@ runcmd:
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
   - echo "... successfully installed DBeaver drivers";
-  # Install RStudio,
+  # Install RStudio
   - echo "Installing RStudio..."
   - /opt/build/download_and_install_deb.sh rstudio
   - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; else echo "... successfully installed RStudio"; fi
