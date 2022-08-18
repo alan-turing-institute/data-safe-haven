@@ -13,7 +13,6 @@ write_files:
       dbeaver.io
       developer.download.nvidia.com
       download.docker.com
-      download.mono-project.com
       packages.gitlab.com
       packages.microsoft.com
       qgis.org

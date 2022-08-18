@@ -28,10 +28,6 @@ apt:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
-    mono-project.list:
-      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
-      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF  # Xamarin Public Jenkins (auto-signing) <releng@xamarin.com>
-
     nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
       keyid: EB693B3035CD5710E231E123A4B469963BF863CC  # cudatools <cudatools@nvidia.com>

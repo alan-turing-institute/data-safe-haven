@@ -50,7 +50,6 @@ print("Programming languages:")
     success,
     failure,
     ("cmake", "cmake --version 2>&1 | head -n 1 | awk '{print $3}'"),
-    ("dotnet", "dotnet --version"),
     ("g++", "g++ --version | grep g++ | awk '{print $NF}'"),
     ("gcc", "gcc --version | grep gcc | awk '{print $NF}'"),
     ("gfortran", "gfortran --version | grep Fortran | awk '{print $NF}'"),

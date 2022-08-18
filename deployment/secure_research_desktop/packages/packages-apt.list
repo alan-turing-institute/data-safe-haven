@@ -19,7 +19,6 @@ cuda
 curl
 dbeaver-ce
 default-jdk
-dotnet-sdk-3.1
 emacs
 firefox
 flex
@@ -76,8 +75,6 @@ libzmq3-dev
 llvm
 lyx
 m4
-mono-complete
-mono-devel
 nfs-common
 octave
 p7zip

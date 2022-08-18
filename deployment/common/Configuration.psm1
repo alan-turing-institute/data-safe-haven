@@ -233,7 +233,6 @@ function Get-ShmConfig {
                 @("104.16.219.84", "104.16.218.84") + # database.clamav.net
                 @("104.131.190.124") + # dbeaver.io
                 $cloudFrontIpAddresses + # download.docker.com (note this is *not* dockerhub and does not host images)
-                @("152.199.19.161") + # download.mono-project.com
                 @("152.199.20.126") + # developer.download.nvidia.com
                 @("104.18.26.123", "104.18.27.123") + # packages.gitlab.com
                 @("52.52.144.96", "54.176.201.225") + # packagecloud.io
