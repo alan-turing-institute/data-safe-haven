@@ -22,7 +22,6 @@ default-jdk
 emacs
 firefox
 flex
-florence
 g++
 gcc
 gdebi-core
@@ -77,6 +76,7 @@ lyx
 m4
 nfs-common
 octave
+onboard
 p7zip
 parallel
 pgadmin3
