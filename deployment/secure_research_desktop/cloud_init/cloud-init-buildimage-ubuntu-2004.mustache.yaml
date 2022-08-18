@@ -52,10 +52,6 @@ apt:
       source: "deb https://ubuntu.qgis.org/ubuntu focal main"
       keyid: 2D7E3441A707FDB3E7059441D155B8E6A419C5BE  # QGIS Archive Automatic Signing Key (2022-2027) <qgis-developer@lists.osgeo.org>
 
-    rproject-updates.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/"
-      keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
-
 
 write_files:
   - path: "/etc/jaas.conf"

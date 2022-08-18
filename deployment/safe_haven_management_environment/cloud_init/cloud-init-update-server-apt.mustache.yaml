@@ -10,7 +10,6 @@ write_files:
     content: |
       # Additional mirror domains that are allowed by this cache
       apt.postgresql.org
-      cloud.r-project.org
       dbeaver.io
       developer.download.nvidia.com
       download.docker.com
