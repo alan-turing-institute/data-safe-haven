@@ -639,17 +639,17 @@ Export-ModuleMember -Function Remove-VirtualMachine
 # ----------------------------------------------------
 function Start-VM {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject", ValueFromPipeline = $true)]
         [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
-        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [Parameter(Mandatory = $false, HelpMessage = "Skip this VM if it does not exist")]
         [switch]$SkipIfNotExist,
-        [Parameter(HelpMessage = "Force restart of VM if already running")]
+        [Parameter(Mandatory = $false, HelpMessage = "Force restart of VM if already running")]
         [switch]$ForceRestart,
-        [Parameter(HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
+        [Parameter(Mandatory = $false, HelpMessage = "Don't wait for VM (re)start operation to complete before returning")]
         [switch]$NoWait
     )
     # Get VM if not provided
@@ -706,15 +706,15 @@ Export-ModuleMember -Function Start-VM
 # -----------------------------------
 function Stop-VM {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject", ValueFromPipeline = $true)]
         [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM name", ParameterSetName = "ByName")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Azure VM resource group", ParameterSetName = "ByName")]
         [string]$ResourceGroupName,
-        [Parameter(HelpMessage = "Skip this VM if it does not exist")]
+        [Parameter(Mandatory = $false, HelpMessage = "Skip this VM if it does not exist")]
         [switch]$SkipIfNotExist,
-        [Parameter(HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
+        [Parameter(Mandatory = $false, HelpMessage = "Don't wait for VM deallocation operation to complete before returning")]
         [switch]$NoWait
     )
     # Get VM if not provided

@@ -1,5 +1,17 @@
 [
     {
+        "name": "AllowRemoteDesktopGatewayInbound",
+        "access": "Allow",
+        "description": "Allow connections to SRDs from remote desktop gateway",
+        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
+        "destinationPortRange": ["22", "3389"],
+        "direction": "Inbound",
+        "priority": 800,
+        "protocol": "*",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
@@ -60,15 +72,15 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowRemoteDesktopGatewayInbound",
+        "name": "AllowLinuxUpdatesOutbound",
         "access": "Allow",
-        "description": "Allow connections to SRDs from remote desktop gateway",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "destinationPortRange": ["22", "3389"],
-        "direction": "Inbound",
-        "priority": 800,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.remoteDesktop.cidr}}",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": ["8000"],
+        "direction": "Outbound",
+        "priority": 900,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -171,22 +183,6 @@
         "destinationPortRange": ["53", "443"],
         "direction": "Outbound",
         "priority": 3300,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowLinuxUpdatesOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to Linux update servers",
-        "destinationAddressPrefix": [
-            {{#shm.monitoring.updateServers.linux}}
-                "{{.}}",
-            {{/shm.monitoring.updateServers.linux}}
-        ],
-        "destinationPortRange": ["80", "443"],
-        "direction": "Outbound",
-        "priority": 3600,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"

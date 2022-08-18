@@ -628,9 +628,20 @@ This may mean that your antivirus is blocking the VPN client.
 You will need configure your antivirus software to make an exception.
 ```
 
+(roles_system_deployer_shm_deploy_update_servers)=
+## 9. {{recycle}} Deploy update servers
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_Update Servers.ps1 -shmId <SHM ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+
 (roles_deployer_shm_domain_controllers)=
 
-## 9. {{house_with_garden}} Deploy and configure domain controllers
+## 10. {{house_with_garden}} Deploy and configure domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
@@ -876,7 +887,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 (roles_system_deployer_shm_deploy_nps)=
 
-## 10. {{police_car}} Deploy and configure network policy server
+## 11. {{police_car}} Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
@@ -1001,7 +1012,7 @@ If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `
 
 (roles_system_deployer_shm_require_mfa)=
 
-## 11. {{closed_lock_with_key}} Require MFA for all users
+## 12. {{closed_lock_with_key}} Require MFA for all users
 
 ```{warning}
 Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement.
@@ -1040,7 +1051,7 @@ Before completing this step, **make sure you have confirmed you are able to succ
 
 (roles_system_deployer_shm_block_portal_access)=
 
-## 12. {{no_pedestrians}} Block portal access for normal users
+## 13. {{no_pedestrians}} Block portal access for normal users
 
 Most users have no reason to access the Azure portal using the SHM tenant.
 Therefore we will block access for all users other than Global Administrators.
@@ -1080,7 +1091,7 @@ This should have been done when creating a policy to {ref}`require MFA for all u
 
 (roles_system_deployer_shm_deploy_mirrors)=
 
-## 13. {{package}} Deploy Python/R package repositories
+## 14. {{package}} Deploy Python/R package repositories
 
 We currently support two different types of package repositories:
 
@@ -1127,9 +1138,9 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 
 (roles_system_deployer_shm_deploy_logging)=
 
-## 14. {{chart_with_upwards_trend}} Deploy monitoring
+## 15. {{chart_with_upwards_trend}} Deploy monitoring
 
-![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
 PS> ./Setup_SHM_Monitoring.ps1 -shmId <SHM ID>
@@ -1139,7 +1150,7 @@ PS> ./Setup_SHM_Monitoring.ps1 -shmId <SHM ID>
 
 (roles_system_deployer_shm_deploy_firewall)=
 
-## 15. {{fire_engine}} Deploy firewall
+## 16. {{fire_engine}} Deploy firewall
 
 <!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 

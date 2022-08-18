@@ -36,6 +36,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": "{{network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": ["8000"],
+        "direction": "Outbound",
+        "priority": 900,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
@@ -83,22 +95,6 @@
         "destinationPortRange": ["80", "443"],
         "direction": "Outbound",
         "priority": 3200,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowLinuxUpdatesOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to Linux update servers",
-        "destinationAddressPrefix": [
-            {{#monitoring.updateServers.linux}}
-                "{{.}}",
-            {{/monitoring.updateServers.linux}}
-        ],
-        "destinationPortRange": ["80", "443"],
-        "direction": "Outbound",
-        "priority": 3600,
         "protocol": "TCP",
         "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
         "sourcePortRange": "*"

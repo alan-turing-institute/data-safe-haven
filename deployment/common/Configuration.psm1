@@ -257,7 +257,7 @@ function Get-ShmConfig {
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
             subnets = [ordered]@{
-                identity   = [ordered]@{
+                identity      = [ordered]@{
                     name = "IdentitySubnet"
                     cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
                     nsg  = [ordered]@{
@@ -265,7 +265,7 @@ function Get-ShmConfig {
                         rules = "shm-nsg-rules-identity.json"
                     }
                 }
-                monitoring = [ordered]@{
+                monitoring    = [ordered]@{
                     name = "MonitoringSubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
                     nsg  = [ordered]@{
@@ -273,12 +273,20 @@ function Get-ShmConfig {
                         rules = "shm-nsg-rules-monitoring.json"
                     }
                 }
-                firewall   = [ordered]@{
+                firewall      = [ordered]@{
                     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
                     name = "AzureFirewallSubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 2).0/24"
                 }
-                gateway    = [ordered]@{
+                updateServers = [ordered]@{
+                    name = "UpdateServersSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 3).0/24"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_UPDATE_SERVERS".ToUpper()
+                        rules = "shm-nsg-rules-update-servers.json"
+                    }
+                }
+                gateway       = [ordered]@{
                     # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
                     name = "GatewaySubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
@@ -527,6 +535,26 @@ function Get-ShmConfig {
                     vmName                  = "$($typeOffset[0])-${direction}-MIRROR-TIER-${tier}".ToUpper()
                 }
             }
+        }
+    }
+
+    # Update servers
+    # --------------
+    $linuxHostname = "APT-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+    $shm.updateServers = [ordered]@{
+        rg    = "$($shm.rgPrefix)_UPDATE_SERVERS".ToUpper()
+        linux = [ordered]@{
+            adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
+            disks                   = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "32"
+                    type   = "Standard_LRS"
+                }
+            }
+            hostname                = $linuxHostname
+            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.updateServers.cidr -Offset 4
+            vmName                  = $linuxHostname
+            vmSize                  = "Standard_B2ms"
         }
     }
 

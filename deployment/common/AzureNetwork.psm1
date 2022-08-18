@@ -823,7 +823,7 @@ Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
 # --------------
 function Set-VnetPeering {
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = "AllowVNet1Gateway", HelpMessage = "Enable use of remote gateway from the first VNet")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enable use of remote gateway from the first VNet")]
         [switch]$VNet1AllowRemoteGateway,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the first of two VNets to peer")]
         [string]$Vnet1Name,
@@ -831,7 +831,7 @@ function Set-VnetPeering {
         [string]$Vnet1ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the first VNet")]
         [string]$Vnet1SubscriptionName,
-        [Parameter(Mandatory = $false, ParameterSetName = "AllowVNet2Gateway", HelpMessage = "Enable use of remote gateway from the second VNet")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enable use of remote gateway from the second VNet")]
         [switch]$VNet2AllowRemoteGateway,
         [Parameter(Mandatory = $true, HelpMessage = "Name of the second of two VNets to peer")]
         [string]$Vnet2Name,
@@ -840,6 +840,10 @@ function Set-VnetPeering {
         [Parameter(Mandatory = $true, HelpMessage = "Subscription name of the second VNet")]
         [string]$Vnet2SubscriptionName
     )
+    # Exit early if trying to enable remote gateways on both virtual networks
+    if ($VNet1AllowRemoteGateway -and $VNet2AllowRemoteGateway) {
+        Add-LogMessage -Level Fatal "Remote gateways cannot be used from both VNets in a peering!"
+    }
     try {
         # Get original subscription
         $originalContext = Get-AzContext
@@ -983,40 +987,41 @@ Export-ModuleMember -Function Stop-Firewall
 # ----------------------------------------------
 function Update-NetworkSecurityGroupRule {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of NSG rule to update")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of NSG that this rule belongs to")]
-        [string]$NetworkSecurityGroup,
-        [Parameter(Mandatory = $false, HelpMessage = "Rule Priority")]
-        $Priority = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule access type")]
+        [ValidateSet("Allow", "Deny")]
+        [string]$Access = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule destination address prefix")]
+        [string[]]$DestinationAddressPrefix = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule destination port range")]
+        [string[]]$DestinationPortRange = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Rule direction")]
         [ValidateSet("Inbound", "Outbound")]
         [string]$Direction = $null,
-        [Parameter(Mandatory = $false, HelpMessage = "Rule access type")]
-        [string]$Access = $null,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of NSG rule to update")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "NSG that this rule belongs to")]
+        [Microsoft.Azure.Commands.Network.Models.PSNetworkSecurityGroup]$NetworkSecurityGroup,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule Priority")]
+        [int]$Priority = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Rule protocol")]
         [string]$Protocol = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Rule source address prefix")]
-        [string]$SourceAddressPrefix = $null,
+        [string[]]$SourceAddressPrefix = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Rule source port range")]
-        [string]$SourcePortRange = $null,
-        [Parameter(Mandatory = $false, HelpMessage = "Rule destination address prefix")]
-        [string]$DestinationAddressPrefix = $null,
-        [Parameter(Mandatory = $false, HelpMessage = "Rule destination port range")]
-        [string]$DestinationPortRange = $null
+        [string[]]$SourcePortRange = $null
     )
     # Load any unspecified parameters from the existing rule
     try {
         $ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
         $Description = $ruleBefore.Description
-        if ($null -eq $Priority) { $Priority = $ruleBefore.Priority }
-        if ($null -eq $Direction) { $Direction = $ruleBefore.Direction }
-        if ($null -eq $Access) { $Access = $ruleBefore.Access }
-        if ($null -eq $Protocol) { $Protocol = $ruleBefore.Protocol }
-        if ($null -eq $SourceAddressPrefix) { $SourceAddressPrefix = $ruleBefore.SourceAddressPrefix }
-        if ($null -eq $SourcePortRange) { $SourcePortRange = $ruleBefore.SourcePortRange }
-        if ($null -eq $DestinationAddressPrefix) { $DestinationAddressPrefix = $ruleBefore.DestinationAddressPrefix }
-        if ($null -eq $DestinationPortRange) { $DestinationPortRange = $ruleBefore.DestinationPortRange }
+        if (-not $Access) { $Access = $ruleBefore.Access }
+        if (-not $DestinationAddressPrefix) { $DestinationAddressPrefix = $ruleBefore.DestinationAddressPrefix }
+        if (-not $DestinationPortRange) { $DestinationPortRange = $ruleBefore.DestinationPortRange }
+        if (-not $Direction) { $Direction = $ruleBefore.Direction }
+        if (-not $Priority) { $Priority = $ruleBefore.Priority }
+        if (-not $Protocol) { $Protocol = $ruleBefore.Protocol }
+        if (-not $SourceAddressPrefix) { $SourceAddressPrefix = $ruleBefore.SourceAddressPrefix }
+        if (-not $SourcePortRange) { $SourcePortRange = $ruleBefore.SourcePortRange }
         # Print the update we're about to make
         if ($Direction -eq "Inbound") {
             Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access from '$SourceAddressPrefix'"
@@ -1024,29 +1029,30 @@ function Update-NetworkSecurityGroupRule {
             Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access to '$DestinationAddressPrefix'"
         }
         # Update rule and NSG (both are required)
-        $null = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                                -Name "$Name" `
-                                                -Description "$Description" `
-                                                -Priority "$Priority" `
-                                                -Direction "$Direction" `
-                                                -Access "$Access" `
-                                                -Protocol "$Protocol" `
+        $null = Set-AzNetworkSecurityRuleConfig -Access $Access `
+                                                -Description $Description `
+                                                -DestinationAddressPrefix $DestinationAddressPrefix `
+                                                -DestinationPortRange $DestinationPortRange `
+                                                -Direction $Direction `
+                                                -Name $Name `
+                                                -NetworkSecurityGroup $NetworkSecurityGroup `
+                                                -Priority $Priority `
+                                                -Protocol $Protocol `
                                                 -SourceAddressPrefix $SourceAddressPrefix `
                                                 -SourcePortRange $SourcePortRange `
-                                                -DestinationAddressPrefix $DestinationAddressPrefix `
-                                                -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                                -ErrorAction Stop | Set-AzNetworkSecurityGroup -ErrorAction Stop
         # Apply the rule and validate whether it succeeded
         $ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
-        if (($ruleAfter.Name -eq $Name) -and
+        if (($ruleAfter.Access -eq $Access) -and
             ($ruleAfter.Description -eq $Description) -and
-            ($ruleAfter.Priority -eq $Priority) -and
+            ("$($ruleAfter.DestinationAddressPrefix)" -eq "$DestinationAddressPrefix") -and
+            ("$($ruleAfter.DestinationPortRange)" -eq "$DestinationPortRange") -and
             ($ruleAfter.Direction -eq $Direction) -and
-            ($ruleAfter.Access -eq $Access) -and
+            ($ruleAfter.Name -eq $Name) -and
+            ($ruleAfter.Priority -eq $Priority) -and
             ($ruleAfter.Protocol -eq $Protocol) -and
             ("$($ruleAfter.SourceAddressPrefix)" -eq "$SourceAddressPrefix") -and
-            ("$($ruleAfter.SourcePortRange)" -eq "$SourcePortRange") -and
-            ("$($ruleAfter.DestinationAddressPrefix)" -eq "$DestinationAddressPrefix") -and
-            ("$($ruleAfter.DestinationPortRange)" -eq "$DestinationPortRange")) {
+            ("$($ruleAfter.SourcePortRange)" -eq "$SourcePortRange")) {
             if ($Direction -eq "Inbound") {
                 Add-LogMessage -Level Success "'$Name' on '$($NetworkSecurityGroup.Name)' will now '$($ruleAfter.Access)' access from '$($ruleAfter.SourceAddressPrefix)'"
             } else {
@@ -1062,7 +1068,7 @@ function Update-NetworkSecurityGroupRule {
         # Return the rule
         return $ruleAfter
     } catch [System.Management.Automation.ValidationMetadataException] {
-        Add-LogMessage -Level Fatal "Could not find rule '$Name' on NSG '$($NetworkSecurityGroup.Name)'"
+        Add-LogMessage -Level Fatal "Could not find rule '$Name' on NSG '$($NetworkSecurityGroup.Name)'" -Exception $_.Exception
     }
 }
 Export-ModuleMember -Function Update-NetworkSecurityGroupRule

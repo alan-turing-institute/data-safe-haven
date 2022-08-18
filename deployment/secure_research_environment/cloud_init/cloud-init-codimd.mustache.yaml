@@ -2,6 +2,11 @@
 
 # Create files
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{shm.updateServers.ip}}:8000";
+
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"
     content: |
@@ -10,7 +15,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/opt/codimd/docker-compose.yml"
     permissions: "0400"

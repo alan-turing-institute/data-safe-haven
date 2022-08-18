@@ -154,19 +154,21 @@ function Remove-AllResourceGroups {
         [string[]]$ResourceGroupNames
     )
     for ($i = 0; $i -lt $MaxAttempts; $i++) {
-        $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
-        if (-not $ResourceGroups.Count) { return }
-        Add-LogMessage -Level Info "Found $($ResourceGroups.Count) resource group(s) to remove..."
-        # Schedule removal of existing resource groups
-        $ResourceGroups | ForEach-Object { Remove-ResourceGroup -Name $_.ResourceGroupName -NoWait }
-        $InitialNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
-        # Wait for a minute and then check for current resource groups
-        Start-Sleep 60
-        $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
-        # Output any successfully removed resource groups
-        $FinalNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
-        $InitialNames | Where-Object { -not $FinalNames.Contains($_) } | ForEach-Object {
-            Add-LogMessage -Level Success "Removed resource group $_"
+        try {
+            $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
+            if (-not $ResourceGroups.Count) { return }
+            Add-LogMessage -Level Info "Found $($ResourceGroups.Count) resource group(s) to remove..."
+            $InitialNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
+            # Schedule removal of existing resource groups then wait for a minute
+            $ResourceGroups | ForEach-Object { Remove-ResourceGroup -Name $_.ResourceGroupName -NoWait }
+            Start-Sleep 60
+            # Check for current resource groups and output any successfully removed resource groups
+            $FinalNames = Get-AzResourceGroup | ForEach-Object { $_.ResourceGroupName } | Where-Object { $ResourceGroupNames.Contains($_) }
+            $InitialNames | Where-Object { -not $FinalNames.Contains($_) } | ForEach-Object {
+                Add-LogMessage -Level Success "Removed resource group $_"
+            }
+        } catch {
+            $null  # ignore errors
         }
     }
     Add-LogMessage -Level Fatal "Failed to remove all requested resource groups!"
@@ -183,20 +185,20 @@ function Remove-ResourceGroup {
         [Parameter(Mandatory = $true, HelpMessage = "Do not wait for the removal to complete")]
         [switch]$NoWait
     )
-    $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name
     Add-LogMessage -Level Info "Attempting to remove resource group '$Name'..."
-    if ($NoWait.IsPresent) {
-        if ($ResourceGroup.ResourceId) {
-            $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue
-            $null = Get-AzResource | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue
-        }
-    } else {
-        try {
+    try {
+        $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name
+        if ($NoWait.IsPresent) {
+            if ($ResourceGroup.ResourceId) {
+                $null = Get-AzResource | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
+                $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
+            }
+        } else {
             $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -ErrorAction Stop
-            Add-LogMessage -Level Success "Resource group removal succeeded"
-        } catch {
-            Add-LogMessage -Level Fatal "Resource group removal failed" -Exception $_.Exception
+            Add-LogMessage -Level Success "Removing resource group '$Name' succeeded"
         }
+    } catch {
+        Add-LogMessage -Level Warning "Removing resource group '$Name' failed!" -Exception $_.Exception
     }
 }
 Export-ModuleMember -Function Remove-ResourceGroup

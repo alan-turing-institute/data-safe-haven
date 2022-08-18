@@ -1,14 +1,26 @@
 [
     {
+        "name": "AllowVirtualNetworkInbound",
+        "access": "Allow",
+        "description": "Allow inbound connections from the local virtual network",
+        "destinationAddressPrefix": "{{network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": "*",
+        "direction": "Inbound",
+        "priority": 1500,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
+        "destinationAddressPrefix": "{{network.vnet.subnets.updateServers.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
         "protocol": "*",
-        "sourceAddressPrefix": "{{shm.network.vpn.cidr}}",
+        "sourceAddressPrefix": "{{network.vpn.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -27,24 +39,16 @@
         "name": "AllowLinuxUpdatesOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Linux update servers",
-        "destinationAddressPrefix": "{{shm.network.vnet.subnets.updateServers.cidr}}",
-        "destinationPortRange": ["8000"],
+        "destinationAddressPrefix": [
+            {{#monitoring.updateServers.linux}}
+                "{{.}}",
+            {{/monitoring.updateServers.linux}}
+        ],
+        "destinationPortRange": ["80", "443"],
         "direction": "Outbound",
-        "priority": 900,
+        "priority": 3600,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
-        "sourcePortRange": "*"
-    },
-    {
-        "name": "AllowExternalInternetOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to internet",
-        "destinationAddressPrefix": "Internet",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 3900,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
+        "sourceAddressPrefix": "{{network.vnet.subnets.updateServers.cidr}}",
         "sourcePortRange": "*"
     },
     {

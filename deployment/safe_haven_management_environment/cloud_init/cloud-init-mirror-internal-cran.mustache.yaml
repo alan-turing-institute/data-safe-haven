@@ -29,10 +29,15 @@ packages:
   - apache2
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
+
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: /var/local/cran-mirror-apache.conf
     permissions: 0644

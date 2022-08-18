@@ -21,6 +21,11 @@ mounts:
   - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{shm.updateServers.ip}}:8000";
+
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"
     content: |
@@ -29,7 +34,7 @@ write_files:
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/etc/bash.bashrc"
     permissions: "0644"

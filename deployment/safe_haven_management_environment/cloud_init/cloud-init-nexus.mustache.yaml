@@ -1,10 +1,15 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
+
   - path: "/etc/crontab"
     append: true
     content: |
-      30 * * * * root  apt update
+      45 1 * * * root  apt update
 
   - path: "/etc/nexus/docker-compose.yaml"
     permissions: "0400"
