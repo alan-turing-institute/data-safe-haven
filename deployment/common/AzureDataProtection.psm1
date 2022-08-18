@@ -157,4 +157,4 @@ function Remove-DataProtectionBackupInstances {
         Add-LogMessage -Level Fatal "Failed to remove backup instances from vault '$VaultName' in resource group '$ResourceGroupName'!"
     }
 }
-Export-ModuleMember -Function Remove-DataProectionBackupInstances
+Export-ModuleMember -Function Remove-DataProtectionBackupInstances
