@@ -54,9 +54,6 @@ libmagick++-dev
 libmpfr-dev
 libncurses5-dev
 libncursesw5-dev
-libnvinfer-dev
-libnvinfer-plugin7
-libnvinfer7
 libopenblas-dev
 libpoppler-cpp-dev
 libpq-dev
