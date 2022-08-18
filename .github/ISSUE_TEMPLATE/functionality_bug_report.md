@@ -1,13 +1,13 @@
 ---
-name: Enhancement request
-about: Use this template for requested new features or extensions to existing features
+name: Functionality bug report
+about: Use this template for reporting a bug that occurs in a running Data Safe Haven
 title: "<short description of issue>"
-labels: "type: enhancement"
+labels: "type: functionality bug"
 assignees: ""
 ---
 
 <!--
-Before opening an issue:
+Before reporting a problem:
 - Make sure you are able to reproduce it on the [latest version](https://github.com/alan-turing-institute/data-safe-haven/releases)
 - Search the existing issues.
 - Refer to [our documentation](https://alan-turing-institute.github.io/data-safe-haven/).
@@ -23,19 +23,18 @@ Additionally, if you think this would be a good issue for newcomers to tackle th
 :tada: Thank you!
 -->
 
-## :strawberry: Desired behaviour
+## :computer: System information
+
+- **Data Safe Haven version:** <!-- Which version of the Data Safe Haven are you using: 3.0.0, 3.1.1 etc. -->
+
+## :no_entry_sign: Problematic behaviour
 
 <!--
-A clear and concise description of what the behaviour should be when this issue is closed.
-
-Include specific tasks (if any) in the order in which they need to be done.
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+What happens now and (if relevant) an explanation of why this is incorrect
 -->
 
 ## :steam_locomotive: Possible workarounds, remediations or solutions
 
 <!--
-Suggested way to implement the desired behaviour or to workaround its lack.
+Suggested way to implement a fix to the problem or to remediate or work around it.
 -->
