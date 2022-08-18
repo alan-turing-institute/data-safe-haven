@@ -79,7 +79,7 @@ octave
 onboard
 p7zip
 parallel
-postgresql-client-12
+postgresql-client
 python-openssl
 python3
 python3-pip
