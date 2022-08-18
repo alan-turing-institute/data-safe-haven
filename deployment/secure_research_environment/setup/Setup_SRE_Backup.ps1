@@ -45,8 +45,8 @@ $null = Deploy-DataProtectionBackupInstance -BackupPolicyId $Policy.Id `
                                             -VaultName $Vault.Name `
                                             -DataSourceType 'blob' `
                                             -DataSourceId $PersistentStorageAccount.Id `
-                                            -DataSourceLocation $PersistentStorageAccount.Location `
-                                            -DataSourceName $PersistentStorageAccount.Name
+                                            -DataSourceLocation $PersistentStorageAccount.PrimaryLocation `
+                                            -DataSourceName $PersistentStorageAccount.StorageAccountName
 
 # Create disk backup policy
 # This enforces the default policy for disks
