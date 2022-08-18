@@ -73,3 +73,15 @@ foreach($rg in $selected_rgs){
                                   -ResourceGroupName $rg `
                                   -RoleDefinitionName "Disk Restore Operator"
 }
+
+# Create backup instances for all disks in selected resource groups
+$selected_disks = Get-AzDisk | Where-Object {$_.ResourceGroupName -in $selected_rgs}
+foreach($disk in $selected_disks){
+    $null = Deploy-DataProtectionBackupInstance -BackupPolicyId $Policy.Id `
+                                                -ResourceGroupName $config.sre.backup.rg `
+                                                -VaultName $Vault.Name `
+                                                -DataSourceType 'disk' `
+                                                -DataSourceId $disk.Id `
+                                                -DataSourceLocation $disk.Location `
+                                                -DataSourceName $disk.Name
+}
