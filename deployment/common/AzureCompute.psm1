@@ -140,7 +140,9 @@ function Deploy-LinuxVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } elseif ($ImageSku) {
-            if (($ImageSku -eq "Ubuntu-20.04") -or ($ImageSku -eq "Ubuntu-latest")) {
+            if (($ImageSku -eq "Ubuntu-22.04") -or ($ImageSku -eq "Ubuntu-latest")) {
+                $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-jammy -Skus "22_04-LTS" -Version "latest"
+            } elseif ($ImageSku -eq "Ubuntu-20.04") {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
             } elseif ($ImageSku -eq "Ubuntu-18.04") {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus "18.04-LTS" -Version "latest"
