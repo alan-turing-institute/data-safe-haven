@@ -55,8 +55,8 @@ $Policy = Deploy-DataProtectionBackupPolicy -ResourceGroupName $config.sre.backu
 # Assign permissions required for disk backup
 # Permission to create snapshots in backup resource group
 $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
-                                           -ResourceGroupName $config.sre.backup.rg `
-                                           -RoleDefinitionName "Disk Snapshot Contributor"
+                              -ResourceGroupName $config.sre.backup.rg `
+                              -RoleDefinitionName "Disk Snapshot Contributor"
 
 $selected_rgs = @(
     $config.sre.databases.rg
@@ -65,11 +65,11 @@ $selected_rgs = @(
 foreach($rg in $selected_rgs){
     # Permission to create snapshots from disks in relevant resource groups
     $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
-                                               -ResourceGroupName $rg `
-                                               -RoleDefinitionName "Disk Backup Reader"
+                                  -ResourceGroupName $rg `
+                                  -RoleDefinitionName "Disk Backup Reader"
 
     # Permission to create new disks (restore points) in relevant resource groups
     $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
-                                               -ResourceGroupName $rg `
-                                               -RoleDefinitionName "Disk Restore Operator"
+                                  -ResourceGroupName $rg `
+                                  -RoleDefinitionName "Disk Restore Operator"
 }

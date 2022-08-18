@@ -84,6 +84,10 @@ Export-ModuleMember -Function Deploy-StorageAccountBackupInstance
 # Deploy a data protection backup policy
 # Currently only supports default policies
 # ----------------------------------------
+$DataSourceMap = @{
+    "blob" = "AzureBlob"
+    "disk" = "AzureDisk"
+}
 function Deploy-DataProtectionBackupPolicy {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
@@ -93,14 +97,10 @@ function Deploy-DataProtectionBackupPolicy {
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup policy")]
         [string]$PolicyName,
         [Parameter(Mandatory = $true, HelpMessage = "backup data source")]
-        [ValidateSet("blob")]
+        [ValidateScript({$_ -in $DataSourceMap.Keys})]
         [string]$DataSourceType
     )
-    $DataSourceMap = @{
-        "blob" = "AzureBlob",
-        "disk" = "AzureDisk"
 
-    }
     Add-LogMessage -Level Info "Ensuring backup policy '$PolicyName' exists"
     try {
         $Policy = Get-AzDataProtectionBackupPolicy -Name $PolicyName `
