@@ -1,9 +1,9 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
-    [ValidateSet("Ubuntu1804", "Ubuntu2004")]
-    [string]$sourceImage = "Ubuntu2004",
+    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804', 'Ubuntu2004' or 'Ubuntu2204' [default]")]
+    [ValidateSet("Ubuntu1804", "Ubuntu2004", "Ubuntu2204")]
+    [string]$sourceImage = "Ubuntu2204",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
@@ -38,13 +38,17 @@ if ($vmSize -eq "default") { $vmSize = $config.srdImage.build.vm.size }
 
 # Select which source URN to base the build on
 # --------------------------------------------
-if ($sourceImage -eq "Ubuntu1804") {
-    $baseImageSku = "Ubuntu-18.04"
-    $shortVersion = "1804"
-    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
+if ($sourceImage -eq "Ubuntu2204") {
+    $baseImageSku = "Ubuntu-22.04"
+    $shortVersion = "2204"
 } elseif ($sourceImage -eq "Ubuntu2004") {
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
     $baseImageSku = "Ubuntu-20.04"
     $shortVersion = "2004"
+} elseif ($sourceImage -eq "Ubuntu1804") {
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
+    $baseImageSku = "Ubuntu-18.04"
+    $shortVersion = "1804"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
@@ -90,7 +94,7 @@ $subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $
 # Load the cloud-init template then add resources and expand mustache placeholders
 # --------------------------------------------------------------------------------
 $config["dbeaver"] = @{
-    drivers = $(Get-Content -Raw -Path "../packages/dbeaver-driver-versions.json" | ConvertFrom-Json -AsHashtable)
+    drivers = $(Get-Content -Raw -Path (Join-Path $PSScriptRoot ".." "packages" "dbeaver-driver-versions.json" -Resolve) | ConvertFrom-Json -AsHashtable)
 }
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
