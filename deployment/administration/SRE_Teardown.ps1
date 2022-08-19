@@ -49,6 +49,7 @@ if ($dryRun.IsPresent) {
 # Remove backup instances and policies. Without this the backup vault cannot be deleted
 # -------------------------------------------------------------------------------------
 Remove-DataProtectionBackupInstances -ResourceGroupName $config.sre.backup.rg -VaultName $config.sre.backup.vault.name
+Remove-DataProtectionBackupDiskSnapshots -ResourceGroupName $config.sre.backup.rg
 
 
 # Remove SRE resource groups and the resources they contain

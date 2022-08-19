@@ -158,3 +158,23 @@ function Remove-DataProtectionBackupInstances {
     }
 }
 Export-ModuleMember -Function Remove-DataProtectionBackupInstances
+
+# Remove all disk snapshots in backup resource group
+# --------------------------------------------------
+function Remove-DataProtectionBackupDiskSnapshots {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
+        [string]$ResourceGroupName
+    )
+    try {
+        $disks = Get-AzSnapshot -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+        if ($disks) {
+            Add-LogMessage -Level Info "Attempting to remove backup disk snapshots from resource group '$ResourceGroupName'..."
+            $null = $disks | Remove-AzSnapshot -Force -ErrorAction Stop
+            Add-LogMessage -Level Success "Removed backup disk snapshots from resource group '$ResourceGroupName'"
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to remove backup disk snapshots from resource group '$ResourceGroupName'!"
+    }
+}
+Export-ModuleMember -Function Remove-DataProtectionBackupDiskSnapshots
