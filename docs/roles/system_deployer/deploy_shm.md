@@ -103,6 +103,10 @@ The following core SHM properties are required - look in the `environment_config
     "subscriptionName": "[Optional] Azure subscription which holds DNS records (if not specified then the value from the 'azure' block will be used).",
     "resourceGroupName": "[Optional] Resource group which holds DNS records (e.g. RG_SHM_DNS_TEST)."
   },
+  "repositoryType": {
+      "tier2": "[Optional] Whether to use 'mirror' or 'proxy' for tier-2 repositories (default is 'proxy').",
+      "tier3": "[Optional] Whether to use 'mirror' or 'proxy' for tier-3 repositories (default is 'proxy')."
+  },
   "vmImages": {
     "subscriptionName": "[Optional] Azure subscription where VM images will be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
     "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
