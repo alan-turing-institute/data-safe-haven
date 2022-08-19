@@ -1095,46 +1095,31 @@ This should have been done when creating a policy to {ref}`require MFA for all u
 
 (roles_system_deployer_shm_deploy_mirrors)=
 
-## 14. {{package}} Deploy Python/R package repositories
+## 14. {{package}} Deploy local package repositories
 
-We currently support two different types of package repositories:
+Two different types of local package repositories are available for {ref}`policy_tier_2` and {ref}`policy_tier_3` SREs:
 
-- Nexus proxy ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
-- Local mirror ({ref}`policy_tier_2` or {ref}`policy_tier_3`)
-
-Each SRE can be configured to connect to either the local mirror or the Nexus proxy as desired - you will simply have to ensure that you have deployed whichever repository you prefer before deploying the SRE.
-
-### How to deploy a Nexus package repository
+- **Proxy** (the repository makes on-demand connections to the external repository)
+- **Mirror** (the repository full replicates all requested packages from the external repository)
 
 ```{hint}
-We **recommend** using a Nexus proxy to avoid the time taken to sync local
-mirrors.
+We **recommend** using Nexus proxies at both {ref}`policy_tier_2` and {ref}`policy_tier_3` to avoid the time taken to sync local mirrors.
 ```
+
+We currently support the **PyPI** (Python) and **CRAN** (R) repositories.
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> ./Setup_SHM_Nexus.ps1 -shmId <SHM ID> -tier <desired tier>
+PS> ./Setup_SHM_Package_Repositories.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<desired tier>` is either `2` or `3`
 
 ```{danger}
-You should never attempt to manage Nexus through the web interface.
+You should never attempt to manage the Nexus proxy through the web interface.
 Doing so from outside the Nexus subnet could expose the admin credentials.
 ```
-
-### How to deploy a local package mirror
-
-![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<desired tier>` is either `2` or `3`
 
 ```{warning}
 Note that a full set of {ref}`policy_tier_2` local mirrors currently take around **two weeks** to fully synchronise with the external package repositories as PyPI contains >10TB of packages.
