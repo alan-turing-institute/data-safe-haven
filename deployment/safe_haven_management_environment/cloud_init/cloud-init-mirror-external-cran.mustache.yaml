@@ -7,7 +7,7 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
@@ -75,10 +75,10 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER={{repositories.tier}}
+      TIER="{{repositories.tier}}"
       echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
-      if [ "$TIER" == "2" ]; then
+      if [ "$TIER" == "tier2" ]; then
           # Download all files
           rsync -rtlvz --delete --delete-excluded --exclude=bin/windows/* --exclude=bin/macos*/* --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
       else
@@ -120,6 +120,11 @@ write_files:
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
+
+  - path: "/home/mirrordaemon/update_known_internal_mirrors.sh"
+    permissions: "0700"
+    content: |
+      {{update_known_internal_mirrors.sh}}
 
 # Add the SHM admin (default) and mirrordaemon users
 # lock_passwd: Lock the password to disable password login

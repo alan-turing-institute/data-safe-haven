@@ -7,7 +7,7 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
