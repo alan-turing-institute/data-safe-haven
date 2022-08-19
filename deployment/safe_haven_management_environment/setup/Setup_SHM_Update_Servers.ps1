@@ -40,7 +40,7 @@ $params = @{
     OsDiskSizeGb           = $config.updateServers.linux.disks.os.sizeGb
     OsDiskType             = $config.updateServers.linux.disks.os.type
     PrivateIpAddress       = $config.updateServers.linux.ip
-    ResourceGroupName      = $config.updateServers.linux.rg
+    ResourceGroupName      = $config.updateServers.rg
     Size                   = $config.updateServers.linux.vmSize
     Subnet                 = (Get-Subnet -Name $config.network.vnet.subnets.updateServers.name -ResourceGroupName $config.network.vnet.rg -VirtualNetworkName $config.network.vnet.name)
 }

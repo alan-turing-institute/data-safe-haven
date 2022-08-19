@@ -32,7 +32,7 @@ write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
+      Acquire::http::Proxy "http://{{updateServers.linux.ip}}:8000";
 
   - path: "/etc/crontab"
     append: true
