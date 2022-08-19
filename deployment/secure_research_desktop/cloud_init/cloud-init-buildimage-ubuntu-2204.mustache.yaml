@@ -20,8 +20,12 @@ apt:
       source: "deb https://dbeaver.io/debs/dbeaver-ce /"
       keyid: 98F5A7CC1ABE72AC3852A007D33A1BD725ED047D  # DBeaver Co. (DBeaver Co. GPG key) <support@dbeaver.com>
 
+    microsoft-general-2004.list:
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main" # needed for some packages eg. blobfuse
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
     microsoft-general.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      source: "deb https://packages.microsoft.com/ubuntu/22.04/prod jammy main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     microsoft-vscode.list:
@@ -29,23 +33,23 @@ apt:
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     nvidia-cuda.list:
-      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
+      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64 /"
       keyid: EB693B3035CD5710E231E123A4B469963BF863CC  # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
-      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /" # there is no 22.04 repository at present
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
     postgresql.list:
-      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main"
       keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8  # PostgreSQL Debian Repository
 
     qgis.list:
-      source: "deb https://ubuntu.qgis.org/ubuntu bionic main"
+      source: "deb https://ubuntu.qgis.org/ubuntu jammy main"
       keyid: 2D7E3441A707FDB3E7059441D155B8E6A419C5BE  # QGIS Archive Automatic Signing Key (2022-2027) <qgis-developer@lists.osgeo.org>
 
     r-base-version.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/"
       keyid: E298A3A825C0D65DFD57CBB651716619E084DAB9  # Michael Rutter <marutter@gmail.com>
 
 write_files:
@@ -119,10 +123,15 @@ write_files:
     content: |
       {{pyenv_pyproject_template.toml}}
 
+  - path: "/opt/build/rbase.debinfo"
+    permissions: "0400"
+    content: |
+      {{deb-rbase-jammy.version}}
+
   - path: "/opt/build/rstudio.debinfo"
     permissions: "0400"
     content: |
-      {{deb-rstudio-bionic.version}}
+      {{deb-rstudio-jammy.version}}
 
   - path: "/opt/monitoring/analyse_build.py"
     permissions: "0755"
@@ -196,7 +205,7 @@ runcmd:
   - echo "export PATH=$PATH" >> /etc/bash.bashrc
   - echo '' >> /etc/bash.bashrc
 
-  - echo ">=== $(date +%s) Installing additional deb/snap/source packages ===<"
+  - echo ">=== $(date +%s) Installing additional deb/source packages ===<"
   # Add snap to path
   - echo "Adding snap to path..."
   - PATH=$PATH:/snap/bin
@@ -222,8 +231,8 @@ runcmd:
   - mkdir -p ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/{{dbeaver.drivers.pgjdbc}}/pgjdbc-core-parent-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/{{dbeaver.drivers.pgjdbc}}/pgjdbc-versions-{{dbeaver.drivers.pgjdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresl}}/postgresql-{{dbeaver.drivers.postgresl}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresql}}/postgresql-{{dbeaver.drivers.postgresql}}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/{{dbeaver.drivers.postgresql}}/postgresql-{{dbeaver.drivers.postgresql}}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   - mkdir -p ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
@@ -345,16 +354,14 @@ runcmd:
   - |
     KERNEL_PATH="/usr/local/share/jupyter/kernels/python3/kernel.json"
     if [ -e "${KERNEL_PATH}" ]; then
-      python3 -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '/opt/pyenv/bin/python-for-jupyter'; kernel['display_name'] = 'Python 3 (active version)'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
+      python3 -c "import json; kernel = json.load(open('${KERNEL_PATH}', 'r')); kernel['argv'][0] = '/opt/pyenv/bin/python-for-jupyter'; json.dump(kernel, open('${KERNEL_PATH}', 'w'), indent=1)"
     fi
 
-  # Install any missing R packages - approximately 1 hr
+  # Install any missing R packages - approximately 40 minutes
   - echo ">=== $(date +%s) Installing R packages ===<"
   - export HOME=/root  # this is needed for the installation of the 'credentials' package
   - echo '# Set up RStudio' >> /etc/bash.bashrc
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc  # this ensures that all users will pick up system R when running RStudio
-  # Fix for GDAL issue in sf: https://github.com/r-spatial/sf/issues/1899
-  - Rscript -e "install.packages('devtools', quiet = TRUE); devtools::install_github('r-spatial/sf', quiet = TRUE)"
   # Install CRAN packages and terminate if any are missing
   - export CRAN_PACKAGES="\"$(sed '/^$/d' /opt/build/packages/packages-r-cran.list | paste -s -d '|' | sed 's/|/", "/g')\""
   - echo "Preparing to install $(echo $CRAN_PACKAGES | wc -w) CRAN packages\n${CRAN_PACKAGES}"
@@ -369,9 +376,9 @@ runcmd:
   - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n${MISSING_BIOCONDUCTOR_PACKAGES}"; exit 1; else echo "... successfully installed BioConductor packages"; fi
   # Add the R kernel to Jupyter
   - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
+  - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
-  - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || die "Could not install R kernel!";
 
   # Clean up any build artifacts

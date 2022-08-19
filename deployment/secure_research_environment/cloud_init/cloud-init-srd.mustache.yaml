@@ -507,10 +507,6 @@ prefer_fqdn_over_hostname: true
 runcmd:
   - echo ">=== Beginning SRD configuration... ===<"
 
-  # Allowing cloud.rproject.org would give unrestricted access to CRAN
-  # As we do not want this, we remove this repository before continuing deployment
-  - rm /etc/apt/sources.list.d/rproject-updates.list
-
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt update

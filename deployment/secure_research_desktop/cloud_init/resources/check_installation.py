@@ -50,7 +50,6 @@ print("Programming languages:")
     success,
     failure,
     ("cmake", "cmake --version 2>&1 | head -n 1 | awk '{print $3}'"),
-    ("dotnet", "dotnet --version"),
     ("g++", "g++ --version | grep g++ | awk '{print $NF}'"),
     ("gcc", "gcc --version | grep gcc | awk '{print $NF}'"),
     ("gfortran", "gfortran --version | grep Fortran | awk '{print $NF}'"),
@@ -80,7 +79,7 @@ print("Editors/IDEs:")
     ("nano", "nano --version | head -n 1 |  awk '{print $NF}'"),
     ("pycharm-community", "snap list pycharm-community | tail -n 1 | awk '{print $2}'"),
     ("rstudio", "dpkg -s rstudio | grep '^Version:' | awk '{print $NF}'"),
-    ("vim", "vim --version | tr ' ' '\n' | grep fdebug-prefix-map | rev | cut -d '/' -f1 | cut -d '-' -f1 | cut -d '=' -f2 | rev"),
+    ("vim", "dpkg -s vim | grep '^Version:' | cut  -d ':' -f 3"),
 )
 
 print("Presentation tools:")
