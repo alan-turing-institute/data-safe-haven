@@ -16,47 +16,26 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 # Resolve the cloud init file, applying an allowlist if needed
 # -----------------------------------------------------------
-function Resolve-MirrorCloudInit {
+function Resolve-CloudInit {
     param(
-        [Parameter(Mandatory = $false, HelpMessage = "Public key for external mirror")]
-        [string]$ExternalMirrorPublicKey = "",
-        [Parameter(Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
-        [ValidateSet("internal", "external")]
-        [string]$MirrorDirection,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of remote repository")]
-        [ValidateSet("cran", "pypi")]
-        [string]$SourceRepositoryName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of cloud-init template file")]
+        [string]$CloudInitTemplateName,
         [Parameter(Mandatory = $false, HelpMessage = "Hashtable containing template parameters")]
-        [System.Collections.IDictionary]$TemplateParameters,
-        [Parameter(Mandatory = $true, HelpMessage = "Tier of mirror to deploy")]
-        [ValidateSet("tier2", "tier3")]
-        [string]$Tier
+        [System.Collections.IDictionary]$TemplateParameters
     )
-    # Load template cloud-init file
     try {
+        # Load template cloud-init file
         $CloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-        $CloudInitPath = Join-Path $CloudInitBasePath "cloud-init-mirror-${MirrorDirection}-${SourceRepositoryName}.mustache.yaml".ToLower() -Resolve
+        $CloudInitPath = Join-Path $CloudInitBasePath $CloudInitTemplateName -Resolve
         $CloudInitTemplate = Get-Content $CloudInitPath -Raw -ErrorAction Stop
+        # Expand the template
+        $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path $CloudInitBasePath "resources")
+        $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path ".." ".." ".." "environment_configs" "package_lists")
+        $CloudInitTemplate = Expand-MustacheTemplate -Template $CloudInitTemplate -Parameters $TemplateParameters
+        return $CloudInitTemplate
     } catch {
         Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!" -Exception $_.Exception
     }
-    # Load package allowlist
-    try {
-        $AllowlistName = @{cran = "r-cran"; pypi = "python-pypi" }[$SourceRepositoryName]
-        $AllowlistPath = (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-${AllowlistName}-${Tier}.list".ToLower())
-        $Allowlist = Get-Content $AllowlistPath -Raw -ErrorAction Stop
-        $PackagesBefore = "      # PACKAGE_ALLOWLIST"
-        $PackagesAfter = $Allowlist -split "`n" | ForEach-Object { "      $_" } | Join-String -Separator "`n"
-        $CloudInitTemplate = $CloudInitTemplate.Replace($PackagesBefore, $PackagesAfter)
-    } catch {
-        Add-LogMessage -Level Warning "No allowlist was loaded allowlist. All packages from the source repository will be allowed."
-    }
-    # Expand the template
-    $config.repositories["externalMirrorPublicKey"] = $ExternalMirrorPublicKey
-    $config.repositories["tier"] = $Tier
-    $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path $CloudInitBasePath "resources")
-    $CloudInitTemplate = Expand-MustacheTemplate -Template $CloudInitTemplate -Parameters $config
-    return $CloudInitTemplate
 }
 
 
@@ -83,7 +62,6 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 # ------------------------------------------------------------------------
 foreach ($tier in @("tier2", "tier3")) {
     # Get the virtual network for this tier and peer it to the SHM VNet
-    Add-LogMessage -Level Info "Peering $tier repository virtual network to SHM virtual network"
     $vnetConfig = $config.network["vnetRepositories${tier}"]
     $vnetRepository = Get-VirtualNetwork -Name $vnetConfig.name -ResourceGroupName $vnetConfig.rg
     Set-VnetPeering -Vnet1Name $vnetRepository.Name `
@@ -99,26 +77,19 @@ foreach ($tier in @("tier2", "tier3")) {
         $proxiesSubnet = Get-Subnet -Name $vnetConfig.subnets.proxies.name -VirtualNetworkName $vnetConfig.name -ResourceGroupName $vnetConfig.rg
         $vmConfig = $config.repositories[$tier].proxies.many
         # Construct the cloud-init file
-        try {
-            $CloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-            $config["nexus"] = @{
-                adminPassword = $nexusAppAdminPassword
-                tier          = [int]$tier.Replace("tier", "")
-            }
-            $CloudInitTemplate = Get-Content (Join-Path $CloudInitBasePath "cloud-init-nexus.mustache.yaml") -Raw -ErrorAction Stop
-            $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path $CloudInitBasePath "resources")
-            $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path  ".." ".." ".." "environment_configs" "package_lists")
-            $CloudInitYaml = Expand-MustacheTemplate -Template $CloudInitTemplate -Parameters $config
-        } catch {
-            Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!" -Exception $_.Exception
+        $config["temporary"] = @{
+            adminPassword = $nexusAppAdminPassword
+            tier          = [int]$tier.Replace("tier", "")
         }
+        $cloudInitFileName = "cloud-init-package-proxy.mustache.yaml".ToLower()
+        $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
+                                           -TemplateParameters $config
         # Deploy the VM
         $params = @{
             AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
             AdminUsername          = $vmAdminUsername
             BootDiagnosticsAccount = $bootDiagnosticsAccount
             CloudInitYaml          = $CloudInitYaml
-            DataDiskIds            = @($dataDisk.Id)
             ImageSku               = "Ubuntu-latest"
             Location               = $config.location
             Name                   = $vmConfig.vmName
@@ -139,10 +110,12 @@ foreach ($tier in @("tier2", "tier3")) {
         foreach ($SourceRepositoryName in @("cran", "pypi")) {
             $vmConfig = $config.repositories[$tier].mirrorsExternal[$SourceRepositoryName]
             # Construct the cloud-init file
-            $cloudInitYaml = Resolve-MirrorCloudInit -MirrorDirection "external" `
-                                                     -SourceRepositoryName $SourceRepositoryName `
-                                                     -TemplateParameters $config `
-                                                     -Tier $tier
+            $cloudInitFileName = "cloud-init-package-mirror-external-${SourceRepositoryName}.mustache.yaml".ToLower()
+            $config["temporary"] = @{
+                tier = $Tier
+            }
+            $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
+                                               -TemplateParameters $config
             # Deploy the data disk
             $dataDisk = Deploy-ManagedDisk -Name "$($vmConfig.vmName)-DATA-DISK" -SizeGB $vmConfig.disks.data.sizeGb -Type $vmConfig.disks.data.type -ResourceGroupName $config.repositories.rg -Location $config.location
             # Deploy the VM
@@ -183,11 +156,13 @@ foreach ($tier in @("tier2", "tier3")) {
         foreach ($SourceRepositoryName in @("cran", "pypi")) {
             $vmConfig = $config.repositories[$tier].mirrorsInternal[$SourceRepositoryName]
             # Construct the cloud-init file
-            $cloudInitYaml = Resolve-MirrorCloudInit -ExternalMirrorPublicKey $vmConfig.externalMirrorPublicKey `
-                                                     -MirrorDirection "internal" `
-                                                     -SourceRepositoryName $SourceRepositoryName `
-                                                     -TemplateParameters $config `
-                                                     -Tier $tier
+            $config["temporary"] = @{
+                externalMirrorPublicKey = $vmConfig["externalMirrorPublicKey"]
+                tier                    = $Tier
+            }
+            $cloudInitFileName = "cloud-init-package-mirror-internal-${SourceRepositoryName}.mustache.yaml".ToLower()
+            $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
+                                               -TemplateParameters $config
             # Deploy the data disk
             $dataDisk = Deploy-ManagedDisk -Name "$($vmConfig.vmName)-DATA-DISK" -SizeGB $vmConfig.disks.data.sizeGb -Type $vmConfig.disks.data.type -ResourceGroupName $config.repositories.rg -Location $config.location
             # Deploy the VM

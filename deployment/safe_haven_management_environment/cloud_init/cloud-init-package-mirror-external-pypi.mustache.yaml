@@ -102,7 +102,7 @@ write_files:
   - path: "/home/mirrordaemon/package_allowlist.txt"
     permissions: "0600"
     content: |
-      # PACKAGE_ALLOWLIST
+      {{allowlist-full-python-pypi-tier3.list}}
 
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
     permissions: "0400"
@@ -110,7 +110,7 @@ write_files:
       #! /usr/bin/env python3
       from collections import defaultdict
 
-      TIER="{{repositories.tier}}"
+      TIER="{{temporary.tier}}"
       config_sections = defaultdict(list)
       section = "main"
 
@@ -176,7 +176,7 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER="{{repositories.tier}}"
+      TIER="{{temporary.tier}}"
       echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
       if [ "$TIER" != "tier2" ]; then

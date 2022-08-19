@@ -48,7 +48,7 @@ write_files:
   - path: "/home/mirrordaemon/package_allowlist.txt"
     permissions: "0600"
     content: |
-      # PACKAGE_ALLOWLIST
+      {{allowlist-full-r-cran-tier3.list}}
 
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     permissions: "0700"
@@ -75,7 +75,7 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER="{{repositories.tier}}"
+      TIER="{{temporary.tier}}"
       echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
       if [ "$TIER" == "tier2" ]; then
