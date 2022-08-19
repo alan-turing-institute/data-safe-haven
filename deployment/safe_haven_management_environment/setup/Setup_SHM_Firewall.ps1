@@ -22,8 +22,8 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Ensure that firewall subnet exists
 # ----------------------------------
-$VirtualNetwork = Get-VirtualNetwork $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $VirtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
+$vnetShm = Get-VirtualNetwork $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $vnetShm -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -71,11 +71,15 @@ foreach ($route in $rules.routes) {
 # Attach all subnets except the VPN gateway and firewall subnets to the firewall route table
 # ------------------------------------------------------------------------------------------
 $excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name)
-foreach ($subnet in $VirtualNetwork.Subnets) {
-    if ($excludedSubnetNames.Contains($subnet.Name)) {
-        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
-    } else {
-        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+$vnetRepositoriesTier2 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier2.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg
+$vnetRepositoriesTier3 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier3.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg
+foreach ($vnet in @($vnetShm, $vnetRepositoriesTier2, $vnetRepositoriesTier3)) {
+    foreach ($subnet in $vnet.Subnets) {
+        if ($excludedSubnetNames.Contains($subnet.Name)) {
+            $vnet = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
+        } else {
+            $vnet = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+        }
     }
 }
 
