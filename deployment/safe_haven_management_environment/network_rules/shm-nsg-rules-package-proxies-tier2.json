@@ -3,7 +3,7 @@
         "name": "AllowRepositoryAccessInbound",
         "access": "Allow",
         "description": "Allow package requests over http",
-        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "destinationPortRange": "80",
         "direction": "Inbound",
         "priority": 1400,
@@ -15,7 +15,7 @@
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
@@ -44,7 +44,7 @@
         "direction": "Outbound",
         "priority": 900,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -56,7 +56,7 @@
         "direction": "Outbound",
         "priority": 1200,
         "protocol": "*",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -68,7 +68,7 @@
         "direction": "Outbound",
         "priority": 1500,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -84,7 +84,7 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -96,7 +96,7 @@
         "direction": "Outbound",
         "priority": 3200,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -112,7 +112,7 @@
         "direction": "Outbound",
         "priority": 3800,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
         "sourcePortRange": "*"
     },
     {
