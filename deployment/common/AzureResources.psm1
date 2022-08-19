@@ -85,7 +85,7 @@ function Deploy-RoleAssignment {
     }
 
     # Check if assignment exists
-    Add-LogMessage -Level Info "Ensuring that role assignment exists..."
+    Add-LogMessage -Level Info "Ensuring that role assignment for $ObjectId as $RoleDefinitionName over $($ResourceType ? $ResourceName : $ResourceGroupName) exists..."
     if ($ResourceType) {
         $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
                                            -RoleDefinitionName $RoleDefinitionName `
