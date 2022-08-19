@@ -374,22 +374,6 @@ runcmd:
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || die "Could not install R kernel!";
 
-  # Check for successful installations
-  - echo ">=== $(date +%s) Checking environment configuration ===<"
-  # Check that Jupyter kernels are correctly configured
-  - echo "Checking installed Jupyter kernels"
-  - jupyter kernelspec list
-  # Set PATH to the current working version which contains all installed packages
-  # Append ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
-  # We do this at the end of the script so that
-  # - we know this is the PATH that worked when we checked for each package
-  # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
-  - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
-  - echo "Setting PATH to '${PATH}'"
-  - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
-  # Run installation tests
-  - python3 /opt/build/check_installation.py || die "Installation check failed!";
-
   # Clean up any build artifacts
   - echo ">=== $(date +%s) Cleaning up the build environment ===<"
   - USED_BYTES_OLD=$(df / | tail -n 1 | awk '{printf $3}')
@@ -406,6 +390,22 @@ runcmd:
   # Log space saved
   - USED_BYTES_NEW=$(df / | tail -n 1 | awk '{printf $3}')
   - echo "Successfully reclaimed $(numfmt --to=iec-i --suffix=B $(($USED_BYTES_OLD - $USED_BYTES_NEW))) of disk space"
+
+  # Check for successful installations
+  - echo ">=== $(date +%s) Checking environment configuration ===<"
+  # Check that Jupyter kernels are correctly configured
+  - echo "Checking installed Jupyter kernels"
+  - jupyter kernelspec list
+  # Set PATH to the current working version which contains all installed packages
+  # Append ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  # We do this at the end of the script so that
+  # - we know this is the PATH that worked when we checked for each package
+  # - we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
+  - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - echo "Setting PATH to '${PATH}'"
+  - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
+  # Run installation tests
+  - python3 /opt/build/check_installation.py || die "Installation check failed!";
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
