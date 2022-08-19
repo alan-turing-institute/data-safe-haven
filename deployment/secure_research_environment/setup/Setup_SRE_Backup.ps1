@@ -65,7 +65,7 @@ $selected_rgs = @(
     $config.sre.databases.rg
     $config.sre.webapps.rg
 )
-foreach($rg in $selected_rgs){
+foreach ($rg in $selected_rgs) {
     # Permission to create snapshots from disks in relevant resource groups
     $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
                                   -ResourceGroupName $rg `
@@ -78,8 +78,8 @@ foreach($rg in $selected_rgs){
 }
 
 # Create backup instances for all disks in selected resource groups
-$selected_disks = Get-AzDisk | Where-Object {$_.ResourceGroupName -in $selected_rgs} | Where-Object {$_.Name -like "*DATA-DISK"}
-foreach($disk in $selected_disks){
+$selected_disks = Get-AzDisk | Where-Object { $_.ResourceGroupName -in $selected_rgs } | Where-Object { $_.Name -like "*DATA-DISK" }
+foreach ($disk in $selected_disks) {
     $null = Deploy-DataProtectionBackupInstance -BackupPolicyId $Policy.Id `
                                                 -ResourceGroupName $config.sre.backup.rg `
                                                 -VaultName $Vault.Name `
