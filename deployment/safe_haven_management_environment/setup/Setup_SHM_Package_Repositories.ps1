@@ -13,6 +13,7 @@ Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
+
 # Resolve the cloud init file, applying an allowlist if needed
 # -----------------------------------------------------------
 function Resolve-MirrorCloudInit {
@@ -33,8 +34,8 @@ function Resolve-MirrorCloudInit {
     )
     # Load template cloud-init file
     try {
-        $CloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init"
-        $CloudInitPath = Join-Path $CloudInitBasePath "cloud-init-mirror-${MirrorDirection}-${SourceRepositoryName}.mustache.yaml".ToLower()
+        $CloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
+        $CloudInitPath = Join-Path $CloudInitBasePath "cloud-init-mirror-${MirrorDirection}-${SourceRepositoryName}.mustache.yaml".ToLower() -Resolve
         $CloudInitTemplate = Get-Content $CloudInitPath -Raw -ErrorAction Stop
     } catch {
         Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!" -Exception $_.Exception
@@ -91,6 +92,45 @@ foreach ($tier in @("tier2", "tier3")) {
                     -Vnet2Name $config.network.vnet.name `
                     -Vnet2ResourceGroupName $config.network.vnet.rg `
                     -Vnet2SubscriptionName $config.subscriptionName
+
+    # Deploy proxy servers if requested
+    if ($config.repositories[$tier].proxies) {
+        Add-LogMessage -Level Info "Deploying $tier package proxy server"
+        $proxiesSubnet = Get-Subnet -Name $vnetConfig.subnets.proxies.name -VirtualNetworkName $vnetConfig.name -ResourceGroupName $vnetConfig.rg
+        $vmConfig = $config.repositories[$tier].proxies.many
+        # Construct the cloud-init file
+        try {
+            $CloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
+            $config["nexus"] = @{
+                adminPassword = $nexusAppAdminPassword
+                tier          = [int]$tier.Replace("tier", "")
+            }
+            $CloudInitTemplate = Get-Content (Join-Path $CloudInitBasePath "cloud-init-nexus.mustache.yaml") -Raw -ErrorAction Stop
+            $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path $CloudInitBasePath "resources")
+            $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path  ".." ".." ".." "environment_configs" "package_lists")
+            $CloudInitYaml = Expand-MustacheTemplate -Template $CloudInitTemplate -Parameters $config
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!" -Exception $_.Exception
+        }
+        # Deploy the VM
+        $params = @{
+            AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
+            AdminUsername          = $vmAdminUsername
+            BootDiagnosticsAccount = $bootDiagnosticsAccount
+            CloudInitYaml          = $CloudInitYaml
+            DataDiskIds            = @($dataDisk.Id)
+            ImageSku               = "Ubuntu-latest"
+            Location               = $config.location
+            Name                   = $vmConfig.vmName
+            OsDiskSizeGb           = $vmConfig.disks.os.sizeGb
+            OsDiskType             = $vmConfig.disks.os.type
+            PrivateIpAddress       = $vmConfig.ipAddress
+            ResourceGroupName      = $config.repositories.rg
+            Size                   = $vmConfig.vmSize
+            Subnet                 = $proxiesSubnet
+        }
+        $null = Deploy-LinuxVirtualMachine @params | Start-VM -ForceRestart
+    }
 
     # Deploy external mirrors if requested (this must come before the internal ones are deployed)
     if ($config.repositories[$tier].mirrorsExternal) {
