@@ -1119,6 +1119,9 @@
       "blob": {
         "policy_name": "blobbackuppolicy"
       },
+      "disk": {
+        "policy_name": "diskbackuppolicy"
+      },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_BACKUP",
       "vault": {
         "name": "bv-testb-sre-t2guac"

@@ -1,6 +1,10 @@
 Import-Module Az.DataProtection -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
+$DataSourceMap = @{
+    "blob" = "AzureBlob"
+    "disk" = "AzureDisk"
+}
 
 # Deploy a data protection backup vault
 # -------------------------------------
@@ -44,46 +48,57 @@ Export-ModuleMember -Function Deploy-DataProtectionBackupVault
 
 # Deploy a data protection backup instance
 # ----------------------------------------
-function Deploy-StorageAccountBackupInstance {
+function Deploy-DataProtectionBackupInstance {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "ID of the backup policy to apply")]
         [string]$BackupPolicyId,
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
         [string]$ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Storage account to enable backup on")]
-        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount,
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault")]
-        [string]$VaultName
+        [string]$VaultName,
+        [Parameter(Mandatory = $true, HelpMessage = "backup data source type")]
+        [ValidateScript({ $_ -in $DataSourceMap.Keys })]
+        [string]$DataSourceType,
+        [Parameter(Mandatory = $true, HelpMessage = "ID of the resource to enable backup on")]
+        [String]$DataSourceId,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of the resource to enable backup on")]
+        [String]$DataSourceLocation,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the resource to enable backup on")]
+        [String]$DataSourceName
     )
-    Add-LogMessage -Level Info "Ensuring backup instance for '$($StorageAccount.StorageAccountName)' exists"
-    $instance = Get-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName -VaultName $VaultName -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "$($StorageAccount.StorageAccountName)*" }
+    Add-LogMessage -Level Info "Ensuring backup instance for '$DataSourceName' exists"
+    $instance = Get-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName -VaultName $VaultName -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "$DataSourceName*" }
     if ($instance) {
-        Add-LogMessage -Level InfoSuccess "Backup instance for '$($StorageAccount.StorageAccountName)' already exists"
+        Add-LogMessage -Level InfoSuccess "Backup instance for '$DataSourceName' already exists"
     } else {
         try {
-            Add-LogMessage -Level Info "[ ] Creating backup instance for '$($StorageAccount.StorageAccountName)'"
-            $initialisation = Initialize-AzDataProtectionBackupInstance -DatasourceType "AzureBlob" `
-                                                                        -DatasourceLocation $StorageAccount.Location `
+            Add-LogMessage -Level Info "[ ] Creating backup instance for '$DataSourceName'"
+            $initialisation = Initialize-AzDataProtectionBackupInstance -DatasourceType $DataSourceMap[$DataSourceType] `
+                                                                        -DatasourceLocation $DataSourceLocation `
                                                                         -PolicyId $BackupPolicyId `
-                                                                        -DatasourceId $StorageAccount.Id `
+                                                                        -DatasourceId $DataSourceId `
                                                                         -ErrorAction Stop
+            if ($DataSourceType -eq 'disk') {
+                # Set resource group to hold snapshots
+                $backup_rg_id = (Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName }).ResourceId
+                $initialisation.Property.PolicyInfo.PolicyParameter.DataStoreParametersList[0].ResourceGroupId = $backup_rg_id
+            }
             $instance = New-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName `
                                                            -VaultName $VaultName `
                                                            -BackupInstance $initialisation `
                                                            -ErrorAction Stop
-            Add-LogMessage -Level Success "Successfully deployed backup instance for '$($StorageAccount.StorageAccountName)'"
+            Add-LogMessage -Level Success "Successfully deployed backup instance for '$DataSourceName'"
         } catch {
-            Add-LogMessage -Level Fatal "Failed to deploy backup instance for '$($StorageAccount.StorageAccountName)'" -Exception $_.Exception
+            Add-LogMessage -Level Fatal "Failed to deploy backup instance for '$DataSourceName'" -Exception $_.Exception
         }
     }
     return $instance
 }
-Export-ModuleMember -Function Deploy-StorageAccountBackupInstance
-
+Export-ModuleMember -Function Deploy-DataProtectionBackupInstance
 
 # Deploy a data protection backup policy
-# Currently only supports default policies
-# ----------------------------------------
+# Currently only supports hard-coded policies
+# -------------------------------------------
 function Deploy-DataProtectionBackupPolicy {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
@@ -92,13 +107,11 @@ function Deploy-DataProtectionBackupPolicy {
         [string]$VaultName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup policy")]
         [string]$PolicyName,
-        [Parameter(Mandatory = $true, HelpMessage = "backup data source")]
-        [ValidateSet("blob")]
+        [Parameter(Mandatory = $true, HelpMessage = "backup data source type")]
+        [ValidateScript({ $_ -in $DataSourceMap.Keys })]
         [string]$DataSourceType
     )
-    $DataSourceMap = @{
-        "blob" = "AzureBlob"
-    }
+
     Add-LogMessage -Level Info "Ensuring backup policy '$PolicyName' exists"
     try {
         $Policy = Get-AzDataProtectionBackupPolicy -Name $PolicyName `
@@ -108,7 +121,37 @@ function Deploy-DataProtectionBackupPolicy {
         Add-LogMessage -Level InfoSuccess "Backup policy '$PolicyName' already exists"
     } catch {
         Add-LogMessage -Level Info "[ ] Creating backup policy '$PolicyName'"
+        # Get default policy template for the data source type
         $Template = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType]
+
+        # Modify default policy template
+        if ($DataSourceType -eq 'disk') {
+            # Add life cycle for retention of weekly snapshots for 12 weeks
+            # This is in addition to the retention of of snapshots for 7 days
+            $Lifecycle = New-AzDataProtectionRetentionLifeCycleClientObject -SourceDataStore OperationalStore `
+                                                                            -SourceRetentionDurationType Weeks `
+                                                                            -SourceRetentionDurationCount 12
+            Edit-AzDataProtectionPolicyRetentionRuleClientObject -Policy $Template `
+                                                                 -Name Weekly `
+                                                                 -LifeCycles $Lifecycle `
+                                                                 -IsDefault $false
+            $Criteria = New-AzDataProtectionPolicyTagCriteriaClientObject -AbsoluteCriteria FirstOfWeek
+            Edit-AzDataProtectionPolicyTagClientObject -Policy $Template `
+                                                       -Name Weekly `
+                                                       -Criteria $Criteria
+            # Daily backup schedule at 02:00:00 (In the system's time zone)
+            $Schedule = New-AzDataProtectionPolicyTriggerScheduleClientObject -ScheduleDays (Get-Date -Hour 2 -Minute 0 -Second 0) `
+                                                                              -IntervalType Daily `
+                                                                              -IntervalCount 1
+            Edit-AzDataProtectionPolicyTriggerClientObject -Policy $Template `
+                                                           -Schedule $Schedule
+        } elseif ($DataSourcetype -eq 'blob') {
+            # Modify default for retention to 12 weeks
+            # Modifying the object directly seems required as,
+            # Adding New Retention Rule is not supported for AzureBlob datasource Type.
+            # Removing Default Retention Rule is not allowed. Please try again with different rule name.
+            $Template.PolicyRule.Lifecycle.DeleteAfterDuration = "P12W"
+        }
         $Policy = New-AzDataProtectionBackupPolicy -ResourceGroupName $ResourceGroupName `
                                                    -VaultName $VaultName `
                                                    -Name $PolicyName `
@@ -126,7 +169,7 @@ Export-ModuleMember -Function Deploy-DataProtectionBackupPolicy
 
 # Remove all data protection backup instances
 # -------------------------------------------
-function Remove-StorageAccountBackupInstances {
+function Remove-DataProtectionBackupInstances {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
         [string]$ResourceGroupName,
@@ -144,4 +187,24 @@ function Remove-StorageAccountBackupInstances {
         Add-LogMessage -Level Fatal "Failed to remove backup instances from vault '$VaultName' in resource group '$ResourceGroupName'!"
     }
 }
-Export-ModuleMember -Function Remove-StorageAccountBackupInstances
+Export-ModuleMember -Function Remove-DataProtectionBackupInstances
+
+# Remove all disk snapshots in backup resource group
+# --------------------------------------------------
+function Remove-DataProtectionBackupDiskSnapshots {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of data protection backup vault resource group")]
+        [string]$ResourceGroupName
+    )
+    try {
+        $disks = Get-AzSnapshot -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+        if ($disks) {
+            Add-LogMessage -Level Info "Attempting to remove backup disk snapshots from resource group '$ResourceGroupName'..."
+            $null = $disks | Remove-AzSnapshot -Force -ErrorAction Stop
+            Add-LogMessage -Level Success "Removed backup disk snapshots from resource group '$ResourceGroupName'"
+        }
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to remove backup disk snapshots from resource group '$ResourceGroupName'!"
+    }
+}
+Export-ModuleMember -Function Remove-DataProtectionBackupDiskSnapshots

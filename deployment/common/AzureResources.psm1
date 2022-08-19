@@ -68,39 +68,58 @@ Export-ModuleMember -Function Deploy-ResourceGroup
 # ----------------------------------
 function Deploy-RoleAssignment {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "ID of object that the role will be assigned to")]
+        [Parameter(Mandatory = $true, HelpMessage = "ID of object that the role will be granted to")]
         [string]$ObjectId,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the storage account")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the resource to apply the role over")]
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of role to be assigned")]
         [string]$RoleDefinitionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Type of resource to apply the role to")]
+        [Parameter(Mandatory = $false, HelpMessage = "Type of resource to apply the role over")]
         [string]$ResourceType,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource account to apply the role to")]
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource account to apply the role over")]
         [string]$ResourceName
     )
+    # Validate arguments
+    if ([boolean]$ResourceType -ne [boolean]$ResourceName) {
+        Add-LogMessage -Level Fatal "Failed to create role assignment, both or neither of ResourceType and ResourceName must be declared."
+    }
+
     # Check if assignment exists
-    Add-LogMessage -Level Info "Ensuring that role assignment(s) for blob backup exist..."
-    $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
-                                       -RoleDefinitionName $RoleDefinitionName `
-                                       -ResourceGroupName $ResourceGroupName `
-                                       -ResourceName $ResourceName `
-                                       -ResourceType $ResourceType `
-                                       -ErrorAction SilentlyContinue
+    Add-LogMessage -Level Info "Ensuring that role assignment for $ObjectId as $RoleDefinitionName over $($ResourceType ? $ResourceName : $ResourceGroupName) exists..."
+    if ($ResourceType) {
+        $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
+                                           -RoleDefinitionName $RoleDefinitionName `
+                                           -ResourceGroupName $ResourceGroupName `
+                                           -ResourceName $ResourceName `
+                                           -ResourceType $ResourceType `
+                                           -ErrorAction SilentlyContinue
+    } else {
+        $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
+                                           -RoleDefinitionName $RoleDefinitionName `
+                                           -ResourceGroupName $ResourceGroupName `
+                                           -ErrorAction SilentlyContinue
+    }
     if ($Assignment) {
-        Add-LogMessage -Level InfoSuccess "Role assignment(s) already exist"
+        Add-LogMessage -Level InfoSuccess "Role assignment already exists"
     } else {
         try {
-            Add-LogMessage -Level Info "[ ] Creating role assignment(s) for blob backup"
-            $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
-                                               -RoleDefinitionName $RoleDefinitionName `
-                                               -ResourceGroupName $ResourceGroupName `
-                                               -ResourceName $ResourceName `
-                                               -ResourceType $ResourceType `
-                                               -ErrorAction Stop
-            Add-LogMessage -Level Success "Successfully created role assignment(s)"
+            Add-LogMessage -Level Info "[ ] Creating role assignment"
+            if ($ResourceType) {
+                $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
+                                                   -RoleDefinitionName $RoleDefinitionName `
+                                                   -ResourceGroupName $ResourceGroupName `
+                                                   -ResourceName $ResourceName `
+                                                   -ResourceType $ResourceType `
+                                                   -ErrorAction Stop
+            } else {
+                $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
+                                                   -RoleDefinitionName $RoleDefinitionName `
+                                                   -ResourceGroupName $ResourceGroupName `
+                                                   -ErrorAction Stop
+            }
+            Add-LogMessage -Level Success "Successfully created role assignment"
         } catch {
-            Add-LogMessage -Level Fatal "Failed to create role assignment(s)" -Exception $_.Exception
+            Add-LogMessage -Level Fatal "Failed to create role assignment" -Exception $_.Exception
         }
     }
     return $Assignment

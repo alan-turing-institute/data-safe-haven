@@ -1119,6 +1119,9 @@
       "blob": {
         "policy_name": "blobbackuppolicy"
       },
+      "disk": {
+        "policy_name": "diskbackuppolicy"
+      },
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_BACKUP",
       "vault": {
         "name": "bv-testc-sre-t3msrds"
