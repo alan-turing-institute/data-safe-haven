@@ -8,7 +8,7 @@
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2022022500"
+        "version": "22.04.2022081900"
     },
     "databases": ["MSSQL", "PostgreSQL"],
     "dataAdminIpAddresses": ["193.60.220.253"],
