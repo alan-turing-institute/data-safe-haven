@@ -16,6 +16,9 @@ $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
+Remove-DataProtectionBackupDiskSnapshots -ResourceGroupName $config.sre.backup.rg
+Remove-DataProtectionBackupInstances -ResourceGroupName $config.sre.backup.rg -VaultName $config.sre.backup.vault.name
+
 # Deploy backup resource group
 $null = Deploy-ResourceGroup -Name $config.sre.backup.rg -Location $config.shm.location
 

@@ -97,8 +97,8 @@ function Deploy-DataProtectionBackupInstance {
 Export-ModuleMember -Function Deploy-DataProtectionBackupInstance
 
 # Deploy a data protection backup policy
-# Currently only supports default policies
-# ----------------------------------------
+# Currently only supports hard-coded policies
+# -------------------------------------------
 function Deploy-DataProtectionBackupPolicy {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of backup resource group")]
@@ -121,7 +121,31 @@ function Deploy-DataProtectionBackupPolicy {
         Add-LogMessage -Level InfoSuccess "Backup policy '$PolicyName' already exists"
     } catch {
         Add-LogMessage -Level Info "[ ] Creating backup policy '$PolicyName'"
+        # Get default policy template for the data source type
         $Template = Get-AzDataProtectionPolicyTemplate -DatasourceType $DataSourceMap[$DataSourceType]
+
+        # Modify default policy template
+        if ($DataSourceType -eq 'disk') {
+            # Add life cycle for retention of weekly snapshots for 12 weeks
+            # This is in addition to the retention of of snapshots for 7 days
+            $Lifecycle = New-AzDataProtectionRetentionLifeCycleClientObject -SourceDataStore OperationalStore `
+                                                                            -SourceRetentionDurationType Weeks `
+                                                                            -SourceRetentionDurationCount 12
+            Edit-AzDataProtectionPolicyRetentionRuleClientObject -Policy $Template `
+                                                                 -Name Weekly `
+                                                                 -LifeCycles $Lifecycle `
+                                                                 -IsDefault $false
+            $Criteria = New-AzDataProtectionPolicyTagCriteriaClientObject -AbsoluteCriteria FirstOfWeek
+            Edit-AzDataProtectionPolicyTagClientObject -Policy $Template `
+                                                       -Name Weekly `
+                                                       -Criteria $Criteria
+            # Daily backup schedule at 02:00:00 (In the system's time zone)
+            $Schedule = New-AzDataProtectionPolicyTriggerScheduleClientObject -ScheduleDays (Get-Date -Hour 2 -Minute 0 -Second 0) `
+                                                                              -IntervalType Daily `
+                                                                              -IntervalCount 1
+            Edit-AzDataProtectionPolicyTriggerClientObject -Policy $Template `
+                                                           -Schedule $Schedule
+        }
         $Policy = New-AzDataProtectionBackupPolicy -ResourceGroupName $ResourceGroupName `
                                                    -VaultName $VaultName `
                                                    -Name $PolicyName `
