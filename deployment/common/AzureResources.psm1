@@ -100,7 +100,7 @@ function Deploy-RoleAssignment {
                                            -ErrorAction SilentlyContinue
     }
     if ($Assignment) {
-        Add-LogMessage -Level InfoSuccess "Role assignment already exist"
+        Add-LogMessage -Level InfoSuccess "Role assignment already exists"
     } else {
         try {
             Add-LogMessage -Level Info "[ ] Creating role assignment"
