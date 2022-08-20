@@ -1,12 +1,5 @@
 #cloud-config
 
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
-
-  # Update apt database on first boot (ie run apt-get update)
-  update: true
-
 # We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
@@ -22,6 +15,10 @@ fs_setup:
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
 
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+
 # List of packages to install with apt-get
 packages:
   - build-essential
@@ -30,6 +27,8 @@ packages:
   - python3-pip
   - python3-venv
   - rsync
+package_update: true
+package_upgrade: true
 
 # Initialise an empty file `internal_mirror_ip_addresses.txt`
 # When internal mirrors are deployed, they add their IP address to this file
