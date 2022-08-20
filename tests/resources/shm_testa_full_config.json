@@ -789,12 +789,12 @@
       }
     },
     "vnetRepositoriesTier2": {
-      "cidr": "10.30.2.0/24",
+      "cidr": "10.10.2.0/24",
       "name": "VNET_SHM_TESTA_PACKAGE_REPOSITORIES_TIER_2",
       "rg": "RG_SHM_TESTA_NETWORKING",
       "subnets": {
         "mirrorsExternal": {
-          "cidr": "10.30.2.0/26",
+          "cidr": "10.10.2.0/26",
           "name": "PackageMirrorsExternalTier2Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_EXTERNAL_TIER2",
@@ -802,7 +802,7 @@
           }
         },
         "mirrorsInternal": {
-          "cidr": "10.30.2.64/26",
+          "cidr": "10.10.2.64/26",
           "name": "PackageMirrorsInternalTier2Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_INTERNAL_TIER2",
@@ -810,7 +810,7 @@
           }
         },
         "proxies": {
-          "cidr": "10.30.2.128/26",
+          "cidr": "10.10.2.128/26",
           "name": "PackageProxiesTier2Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_PROXIES_TIER_2",
@@ -820,12 +820,12 @@
       }
     },
     "vnetRepositoriesTier3": {
-      "cidr": "10.30.3.0/24",
+      "cidr": "10.10.3.0/24",
       "name": "VNET_SHM_TESTA_PACKAGE_REPOSITORIES_TIER_3",
       "rg": "RG_SHM_TESTA_NETWORKING",
       "subnets": {
         "mirrorsExternal": {
-          "cidr": "10.30.3.0/26",
+          "cidr": "10.10.3.0/26",
           "name": "PackageMirrorsExternalTier3Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_EXTERNAL_TIER3",
@@ -833,7 +833,7 @@
           }
         },
         "mirrorsInternal": {
-          "cidr": "10.30.3.64/26",
+          "cidr": "10.10.3.64/26",
           "name": "PackageMirrorsInternalTier3Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_INTERNAL_TIER3",
@@ -841,7 +841,7 @@
           }
         },
         "proxies": {
-          "cidr": "10.30.3.128/26",
+          "cidr": "10.10.3.128/26",
           "name": "PackageProxiesTier3Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_PROXIES_TIER_3",
@@ -851,12 +851,12 @@
       }
     },
     "vnetRepositoriesTier4": {
-      "cidr": "10.30.4.0/24",
+      "cidr": "10.10.4.0/24",
       "name": "VNET_SHM_TESTA_PACKAGE_REPOSITORIES_TIER_4",
       "rg": "RG_SHM_TESTA_NETWORKING",
       "subnets": {
         "mirrorsExternal": {
-          "cidr": "10.30.4.0/26",
+          "cidr": "10.10.4.0/26",
           "name": "PackageMirrorsExternalTier4Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_EXTERNAL_TIER4",
@@ -864,7 +864,7 @@
           }
         },
         "mirrorsInternal": {
-          "cidr": "10.30.4.64/26",
+          "cidr": "10.10.4.64/26",
           "name": "PackageMirrorsInternalTier4Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_MIRRORS_INTERNAL_TIER4",
@@ -872,7 +872,7 @@
           }
         },
         "proxies": {
-          "cidr": "10.30.4.128/26",
+          "cidr": "10.10.4.128/26",
           "name": "PackageProxiesTier4Subnet",
           "nsg": {
             "name": "NSG_SHM_TESTA_PACKAGE_PROXIES_TIER_4",
@@ -921,78 +921,25 @@
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.2.134",
+          "ipAddress": "10.10.2.134",
           "vmName": "PACKAGE-PROXY-MANY-TIER-2",
           "vmSize": "Standard_B2ms"
         }
       }
     },
     "tier3": {
-      "mirrorsExternal": {
-        "cran": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-package-mirror-external-cran-tier-3",
+      "proxies": {
+        "many": {
+          "adminPasswordSecretName": "shm-testa-vm-admin-password-package-proxy-many-tier-3",
+          "applicationAdminPasswordSecretName": "shm-testa-application-admin-password-package-proxy-many-tier-3",
           "disks": {
-            "data": {
-              "sizeGb": 32,
-              "type": "Standard_LRS"
-            },
             "os": {
               "sizeGb": 32,
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.3.4",
-          "vmName": "PACKAGE-MIRROR-EXTERNAL-CRAN-TIER-3",
-          "vmSize": "Standard_B2ms"
-        },
-        "pypi": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-package-mirror-external-pypi-tier-3",
-          "disks": {
-            "data": {
-              "sizeGb": 1024,
-              "type": "Standard_LRS"
-            },
-            "os": {
-              "sizeGb": 32,
-              "type": "Standard_LRS"
-            }
-          },
-          "ipAddress": "10.30.3.5",
-          "vmName": "PACKAGE-MIRROR-EXTERNAL-PYPI-TIER-3",
-          "vmSize": "Standard_B2ms"
-        }
-      },
-      "mirrorsInternal": {
-        "cran": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-package-mirror-internal-cran-tier-3",
-          "disks": {
-            "data": {
-              "sizeGb": 32,
-              "type": "Standard_LRS"
-            },
-            "os": {
-              "sizeGb": 32,
-              "type": "Standard_LRS"
-            }
-          },
-          "ipAddress": "10.30.3.68",
-          "vmName": "PACKAGE-MIRROR-INTERNAL-CRAN-TIER-3",
-          "vmSize": "Standard_B2ms"
-        },
-        "pypi": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-package-mirror-internal-pypi-tier-3",
-          "disks": {
-            "data": {
-              "sizeGb": 1024,
-              "type": "Standard_LRS"
-            },
-            "os": {
-              "sizeGb": 32,
-              "type": "Standard_LRS"
-            }
-          },
-          "ipAddress": "10.30.3.69",
-          "vmName": "PACKAGE-MIRROR-INTERNAL-PYPI-TIER-3",
+          "ipAddress": "10.10.3.134",
+          "vmName": "PACKAGE-PROXY-MANY-TIER-3",
           "vmSize": "Standard_B2ms"
         }
       }
@@ -1011,7 +958,7 @@
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.4.4",
+          "ipAddress": "10.10.4.4",
           "vmName": "PACKAGE-MIRROR-EXTERNAL-CRAN-TIER-4",
           "vmSize": "Standard_B2ms"
         },
@@ -1027,7 +974,7 @@
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.4.5",
+          "ipAddress": "10.10.4.5",
           "vmName": "PACKAGE-MIRROR-EXTERNAL-PYPI-TIER-4",
           "vmSize": "Standard_B2ms"
         }
@@ -1045,7 +992,7 @@
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.4.68",
+          "ipAddress": "10.10.4.68",
           "vmName": "PACKAGE-MIRROR-INTERNAL-CRAN-TIER-4",
           "vmSize": "Standard_B2ms"
         },
@@ -1061,7 +1008,7 @@
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.30.4.69",
+          "ipAddress": "10.10.4.69",
           "vmName": "PACKAGE-MIRROR-INTERNAL-PYPI-TIER-4",
           "vmSize": "Standard_B2ms"
         }

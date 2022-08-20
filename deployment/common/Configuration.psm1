@@ -297,7 +297,7 @@ function Get-ShmConfig {
         }
     }
     foreach ($tier in @(2, 3, 4)) {
-        $shmRepositoryPrefix = "10.30.${tier}"
+        $shmRepositoryPrefix = "10.10.${tier}"
         $shm.network["vnetRepositoriesTier${tier}"] = [ordered]@{
             name    = "VNET_SHM_$($shm.id)_PACKAGE_REPOSITORIES_TIER_${tier}".ToUpper()
             cidr    = "${shmRepositoryPrefix}.0/24"
@@ -1124,9 +1124,9 @@ function Get-SreConfig {
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
-    # 1. http://10.20.2.20:3128                      => 10.20.2.20
+    # 1. http://10.10.2.20:3128                      => 10.10.2.20
     # 2. https://pypi.org                            => pypi.org
-    # 3. http://10.30.1.10:80/repository/pypi-proxy  => 10.30.1.10
+    # 3. http://10.10.3.10:80/repository/pypi-proxy  => 10.10.3.10
     $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
     $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
     $config.sre.repositories = [ordered]@{
