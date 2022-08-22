@@ -415,6 +415,58 @@ Once you have set up the egress connection in `Azure Storage Explorer`, you shou
 On the SRD, this volume is `/output` and is shared between all SRDs in an SRE.
 For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_user_guide_shared_storage>`.
 
+
+## {{file_cabinet}} Backup
+
+### {{card_file_box}} Restoring Blobs
+
+Blob containers in backed up storage accounts are protected by [operational backup](https://docs.microsoft.com/en-us/azure/backup/blob-backup-overview#how-operational-backup-works).
+It is possible to restore the state of the blobs to an earlier point in time, up to twelve weeks in the past.
+
+The blob containers covered by the protection for each SRE are the
+ - ingress container (mounted at `/data`)
+ - egress container (mounted at `/output`)
+ - backup container (mounted at `/backup`)
+
+To restore these containers to a previous point in time:
+
+```{important}
+Blobs are restored 'in place'.
+The current state will be overwritten by the point which you restore to.
+```
+
+- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SRE.
+- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>.
+- Click `Backup instances` under `Manage` in the left-hand menu.
+- Ensure that the `Datasource type` filter is set to `Azure Blobs (Azure Storage)`
+
+  ```{image} administrator_guide/backup_instances_blobs.png
+  :alt: Selecting blob backup instances
+  :align: center
+  ```
+
+- Click on the storage-account backup instance.
+- Select a point in the past to restore to and click `Restore`.
+
+  ```{image} administrator_guide/backup_select_restore_time_blobs.png
+  :alt: Selecting blob backup restore point
+  :align: center
+  ```
+
+- Click on `Next: Restore Parameters`
+- You can now choose whether to restore all, or a subset of the containers. In the example below the 'egress' and 'backup' containers are selected.
+- Click on `Validate`
+
+  ```{image} administrator_guide/backup_select_containers_validate_blobs.png
+  :alt: Selecting blob containers to restore and validating
+  :align: center
+  ```
+
+- Click on `Next: Review + restore`
+- Click on `Restore`
+
+### {{optical_disk}} Restoring Disks
+
 ## {{end}} Remove a deployed Safe Haven
 
 ### {{fire}} Tear down an SRE
