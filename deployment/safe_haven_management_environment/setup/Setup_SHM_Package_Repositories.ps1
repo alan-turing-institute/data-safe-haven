@@ -78,7 +78,7 @@ foreach ($tier in @("tier2", "tier3")) {
         $proxiesSubnet = Get-Subnet -Name $vnetConfig.subnets.proxies.name -VirtualNetworkName $vnetConfig.name -ResourceGroupName $vnetConfig.rg
         $vmConfig = $config.repositories[$tier].proxies.many
         # Construct the cloud-init file
-        $config["temporary"] = @{
+        $config["perInstance"] = @{
             adminPassword = $nexusAppAdminPassword
             tier          = [int]$tier.Replace("tier", "")
         }
@@ -112,7 +112,7 @@ foreach ($tier in @("tier2", "tier3")) {
             $vmConfig = $config.repositories[$tier].mirrorsExternal[$SourceRepositoryName]
             # Construct the cloud-init file
             $cloudInitFileName = "cloud-init-package-mirror-external-${SourceRepositoryName}.mustache.yaml".ToLower()
-            $config["temporary"] = @{
+            $config["perInstance"] = @{
                 tier = $Tier
             }
             $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
@@ -157,7 +157,7 @@ foreach ($tier in @("tier2", "tier3")) {
         foreach ($SourceRepositoryName in $config.repositories[$tier].mirrorsInternal.Keys) {
             $vmConfig = $config.repositories[$tier].mirrorsInternal[$SourceRepositoryName]
             # Construct the cloud-init file
-            $config["temporary"] = @{
+            $config["perInstance"] = @{
                 externalMirrorPublicKey = $vmConfig["externalMirrorPublicKey"]
                 tier                    = $Tier
             }

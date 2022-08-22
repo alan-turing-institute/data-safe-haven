@@ -74,7 +74,7 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
-      TIER="{{temporary.tier}}"
+      TIER="{{perInstance.tier}}"
       echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
       START_TIME=$(date +%s)
       if [ "$TIER" == "tier2" ]; then
