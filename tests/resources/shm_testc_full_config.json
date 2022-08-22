@@ -105,67 +105,6 @@
     }
   },
   "location": "uksouth",
-  "mirrors": {
-    "cran": {
-      "tier2": {
-        "diskSize": 128,
-        "external": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-2",
-          "ipAddress": "10.20.2.5",
-          "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
-        },
-        "internal": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-2",
-          "ipAddress": "10.20.2.21",
-          "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
-        }
-      },
-      "tier3": {
-        "diskSize": 32,
-        "external": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-external-mirror-tier-3",
-          "ipAddress": "10.20.3.5",
-          "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
-        },
-        "internal": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-cran-internal-mirror-tier-3",
-          "ipAddress": "10.20.3.21",
-          "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
-        }
-      }
-    },
-    "diskType": "Standard_LRS",
-    "pypi": {
-      "tier2": {
-        "diskSize": 8192,
-        "external": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-2",
-          "ipAddress": "10.20.2.4",
-          "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
-        },
-        "internal": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-2",
-          "ipAddress": "10.20.2.20",
-          "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
-        }
-      },
-      "tier3": {
-        "diskSize": 1024,
-        "external": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-external-mirror-tier-3",
-          "ipAddress": "10.20.3.4",
-          "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
-        },
-        "internal": {
-          "adminPasswordSecretName": "shm-testc-vm-admin-password-pypi-internal-mirror-tier-3",
-          "ipAddress": "10.20.3.20",
-          "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
-        }
-      }
-    },
-    "rg": "RG_SHM_TESTC_PKG_MIRRORS",
-    "vmSize": "Standard_B2ms"
-  },
   "monitoring": {
     "automationAccount": {
       "name": "shm-testc-automation"
@@ -810,82 +749,6 @@
   },
   "name": "Turing Development Safe Haven C",
   "network": {
-    "mirrorVnets": {
-      "tier2": {
-        "cidr": "10.20.2.0/24",
-        "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER2",
-        "subnets": {
-          "external": {
-            "cidr": "10.20.2.0/28",
-            "name": "ExternalPackageMirrorsTier2Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER2",
-              "rules": "shm-nsg-rules-external-mirrors-tier2.json"
-            }
-          },
-          "internal": {
-            "cidr": "10.20.2.16/28",
-            "name": "InternalPackageMirrorsTier2Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER2",
-              "rules": "shm-nsg-rules-internal-mirrors-tier2.json"
-            }
-          }
-        }
-      },
-      "tier3": {
-        "cidr": "10.20.3.0/24",
-        "name": "VNET_SHM_TESTC_PACKAGE_MIRRORS_TIER3",
-        "subnets": {
-          "external": {
-            "cidr": "10.20.3.0/28",
-            "name": "ExternalPackageMirrorsTier3Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_EXTERNAL_PACKAGE_MIRRORS_TIER3",
-              "rules": "shm-nsg-rules-external-mirrors-tier3.json"
-            }
-          },
-          "internal": {
-            "cidr": "10.20.3.16/28",
-            "name": "InternalPackageMirrorsTier3Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3",
-              "rules": "shm-nsg-rules-internal-mirrors-tier3.json"
-            }
-          }
-        }
-      }
-    },
-    "repositoryVnets": {
-      "tier2": {
-        "cidr": "10.30.1.0/24",
-        "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
-        "subnets": {
-          "repository": {
-            "cidr": "10.30.1.0/24",
-            "name": "RepositoryTier2Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_2",
-              "rules": "shm-nsg-rules-nexus-tier2.json"
-            }
-          }
-        }
-      },
-      "tier3": {
-        "cidr": "10.30.2.0/24",
-        "name": "VNET_SHM_TESTC_NEXUS_REPOSITORY_TIER_3",
-        "subnets": {
-          "repository": {
-            "cidr": "10.30.2.0/24",
-            "name": "RepositoryTier3Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTC_NEXUS_REPOSITORY_TIER_3",
-              "rules": "shm-nsg-rules-nexus-tier3.json"
-            }
-          }
-        }
-      }
-    },
     "vnet": {
       "cidr": "10.0.0.0/21",
       "name": "VNET_SHM_TESTC",
@@ -925,6 +788,68 @@
         }
       }
     },
+    "vnetRepositoriesTier2": {
+      "cidr": "10.10.2.0/24",
+      "name": "VNET_SHM_TESTC_PACKAGE_REPOSITORIES_TIER_2",
+      "rg": "RG_SHM_TESTC_NETWORKING",
+      "subnets": {
+        "mirrorsExternal": {
+          "cidr": "10.10.2.0/26",
+          "name": "PackageMirrorsExternalTier2Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_MIRRORS_EXTERNAL_TIER2",
+            "rules": "shm-nsg-rules-package-mirrors-external-tier2.json"
+          }
+        },
+        "mirrorsInternal": {
+          "cidr": "10.10.2.64/26",
+          "name": "PackageMirrorsInternalTier2Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_MIRRORS_INTERNAL_TIER2",
+            "rules": "shm-nsg-rules-package-mirrors-internal-tier2.json"
+          }
+        },
+        "proxies": {
+          "cidr": "10.10.2.128/26",
+          "name": "PackageProxiesTier2Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_PROXIES_TIER_2",
+            "rules": "shm-nsg-rules-package-proxies-tier2.json"
+          }
+        }
+      }
+    },
+    "vnetRepositoriesTier3": {
+      "cidr": "10.10.3.0/24",
+      "name": "VNET_SHM_TESTC_PACKAGE_REPOSITORIES_TIER_3",
+      "rg": "RG_SHM_TESTC_NETWORKING",
+      "subnets": {
+        "mirrorsExternal": {
+          "cidr": "10.10.3.0/26",
+          "name": "PackageMirrorsExternalTier3Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_MIRRORS_EXTERNAL_TIER3",
+            "rules": "shm-nsg-rules-package-mirrors-external-tier3.json"
+          }
+        },
+        "mirrorsInternal": {
+          "cidr": "10.10.3.64/26",
+          "name": "PackageMirrorsInternalTier3Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_MIRRORS_INTERNAL_TIER3",
+            "rules": "shm-nsg-rules-package-mirrors-internal-tier3.json"
+          }
+        },
+        "proxies": {
+          "cidr": "10.10.3.128/26",
+          "name": "PackageProxiesTier3Subnet",
+          "nsg": {
+            "name": "NSG_SHM_TESTC_PACKAGE_PROXIES_TIER_3",
+            "rules": "shm-nsg-rules-package-proxies-tier3.json"
+          }
+        }
+      }
+    },
     "vpn": {
       "cidr": "172.16.201.0/24"
     }
@@ -952,28 +877,41 @@
     "stateCountyRegion": "London",
     "townCity": "London"
   },
-  "repository": {
+  "repositories": {
+    "rg": "RG_SHM_TESTC_PACKAGE_REPOSITORIES",
     "tier2": {
-      "diskType": "Standard_LRS",
-      "nexus": {
-        "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus-tier2",
-        "ipAddress": "10.30.1.10",
-        "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password-tier2",
-        "vmName": "NEXUS-REPOSITORY-TIER-2"
-      },
-      "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
-      "vmSize": "Standard_B2ms"
+      "proxies": {
+        "many": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-package-proxy-many-tier-2",
+          "applicationAdminPasswordSecretName": "shm-testc-application-admin-password-package-proxy-many-tier-2",
+          "disks": {
+            "os": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            }
+          },
+          "ipAddress": "10.10.2.134",
+          "vmName": "PACKAGE-PROXY-MANY-TIER-2",
+          "vmSize": "Standard_B2ms"
+        }
+      }
     },
     "tier3": {
-      "diskType": "Standard_LRS",
-      "nexus": {
-        "adminPasswordSecretName": "shm-testc-vm-admin-password-nexus-tier3",
-        "ipAddress": "10.30.2.10",
-        "nexusAppAdminPasswordSecretName": "shm-testc-nexus-repository-admin-password-tier3",
-        "vmName": "NEXUS-REPOSITORY-TIER-3"
-      },
-      "rg": "RG_SHM_TESTC_NEXUS_REPOSITORIES",
-      "vmSize": "Standard_B2ms"
+      "proxies": {
+        "many": {
+          "adminPasswordSecretName": "shm-testc-vm-admin-password-package-proxy-many-tier-3",
+          "applicationAdminPasswordSecretName": "shm-testc-application-admin-password-package-proxy-many-tier-3",
+          "disks": {
+            "os": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            }
+          },
+          "ipAddress": "10.10.3.134",
+          "vmName": "PACKAGE-PROXY-MANY-TIER-3",
+          "vmSize": "Standard_B2ms"
+        }
+      }
     }
   },
   "rgPrefix": "RG_SHM_TESTC",

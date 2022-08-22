@@ -4,7 +4,7 @@ write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
+      Acquire::http::Proxy "http://{{updateServers.linux.ip}}:8000";
 
   - path: "/etc/crontab"
     append: true
@@ -39,7 +39,7 @@ write_files:
   - path: "/usr/local/update-nexus-allowlists"
     permissions: "0700"
     content: |
-      /usr/local/bin/configure-nexus --admin-password {{nexus.adminPassword}} update-allowlists --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
+      /usr/local/bin/configure-nexus --admin-password {{perInstance.adminPassword}} update-allowlists --tier {{perInstance.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran >> /var/log/configure_nexus.log 2>&1
 
 # Set locale and timezone
 locale: en_GB.UTF-8
@@ -110,8 +110,8 @@ runcmd:
 
   # Configure Nexus
   - echo ">=== Configuring Nexus... ===<"
-  - configure-nexus --admin-password {{nexus.adminPassword}} change-initial-password --path /nexus-data
-  - configure-nexus --admin-password {{nexus.adminPassword}} initial-configuration --tier {{nexus.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
+  - configure-nexus --admin-password {{perInstance.adminPassword}} change-initial-password --path /nexus-data
+  - configure-nexus --admin-password {{perInstance.adminPassword}} initial-configuration --tier {{perInstance.tier}} --pypi-package-file /etc/nexus/allowlist-pypi --cran-package-file /etc/nexus/allowlist-cran
 
 power_state:
   mode: poweroff
