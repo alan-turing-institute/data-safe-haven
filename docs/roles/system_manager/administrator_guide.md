@@ -415,7 +415,6 @@ Once you have set up the egress connection in `Azure Storage Explorer`, you shou
 On the SRD, this volume is `/output` and is shared between all SRDs in an SRE.
 For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_user_guide_shared_storage>`.
 
-
 ## {{file_cabinet}} Backup
 
 ### {{card_file_box}} Restoring Blobs
@@ -424,9 +423,10 @@ Blob containers in backed up storage accounts are protected by [operational back
 It is possible to restore the state of the blobs to an earlier point in time, up to twelve weeks in the past.
 
 The blob containers covered by the protection for each SRE are the
- - ingress container (mounted at `/data`)
- - egress container (mounted at `/output`)
- - backup container (mounted at `/backup`)
+
+- ingress container (mounted at `/data`)
+- egress container (mounted at `/output`)
+- backup container (mounted at `/backup`)
 
 To restore these containers to a previous point in time:
 
