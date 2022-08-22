@@ -69,6 +69,7 @@ write_files:
     append: true
     content: |
       @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+      01 01 * * * freshclam
 
   - path: "/etc/domain-join.secret"
     permissions: "0400"
