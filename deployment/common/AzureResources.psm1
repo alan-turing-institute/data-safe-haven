@@ -174,7 +174,7 @@ function Remove-AllResourceGroups {
     )
     for ($i = 0; $i -lt $MaxAttempts; $i++) {
         try {
-            $ResourceGroups = Get-AzResourceGroup | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
+            $ResourceGroups = Get-AzResourceGroup -ErrorAction Stop | Where-Object { $ResourceGroupNames.Contains($_.ResourceGroupName) }
             if (-not $ResourceGroups.Count) { return }
             Add-LogMessage -Level Info "Found $($ResourceGroups.Count) resource group(s) to remove..."
             $InitialNames = $ResourceGroups | ForEach-Object { $_.ResourceGroupName }
@@ -182,7 +182,7 @@ function Remove-AllResourceGroups {
             $ResourceGroups | ForEach-Object { Remove-ResourceGroup -Name $_.ResourceGroupName -NoWait }
             Start-Sleep 60
             # Check for current resource groups and output any successfully removed resource groups
-            $FinalNames = Get-AzResourceGroup | ForEach-Object { $_.ResourceGroupName } | Where-Object { $ResourceGroupNames.Contains($_) }
+            $FinalNames = Get-AzResourceGroup -ErrorAction Stop | ForEach-Object { $_.ResourceGroupName } | Where-Object { $ResourceGroupNames.Contains($_) }
             $InitialNames | Where-Object { -not $FinalNames.Contains($_) } | ForEach-Object {
                 Add-LogMessage -Level Success "Removed resource group $_"
             }
@@ -206,12 +206,10 @@ function Remove-ResourceGroup {
     )
     Add-LogMessage -Level Info "Attempting to remove resource group '$Name'..."
     try {
-        $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name
+        $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name -ErrorAction Stop
         if ($NoWait.IsPresent) {
-            if ($ResourceGroup.ResourceId) {
-                $null = Get-AzResource | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
-                $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
-            }
+            $null = Get-AzResource -ErrorAction SilentlyContinue -ErrorVariable $ignored | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
+            $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
         } else {
             $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -ErrorAction Stop
             Add-LogMessage -Level Success "Removing resource group '$Name' succeeded"
