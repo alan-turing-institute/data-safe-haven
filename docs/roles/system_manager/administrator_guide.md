@@ -417,7 +417,7 @@ For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User G
 
 ## {{file_cabinet}} Backup
 
-### {{card_file_box}} Restoring Blobs
+### {{card_file_box}} Restoring blobs
 
 Blob containers in backed up storage accounts are protected by [operational backup](https://docs.microsoft.com/en-us/azure/backup/blob-backup-overview#how-operational-backup-works).
 It is possible to restore the state of the blobs to an earlier point in time, up to twelve weeks in the past.
@@ -465,7 +465,7 @@ The current state will be overwritten by the point which you restore to.
 - Click on `Next: Review + restore`
 - Click on `Restore`
 
-### {{optical_disk}} Restoring Disks
+### {{optical_disk}} Restoring disks
 
 Backed up disks have incremental snapshots taken daily.
 These snapshots are stored in the backup resource group,`RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`.
@@ -546,6 +546,22 @@ it and enroll the new disk into the backup system.
 
 - Restart the virtual machine
 
+### {{optical_disk}} Enrolling restored disks for backup
+
+On your **deployment machine**.
+
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
+- Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+- NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into
+- Note the name of the restored disk and the name of the resource group it belongs to
+- Run the following script subsituting <resource group name> and <disk name> with the names of the resource group and disk respectively:
+
+  ```powershell
+  ./SRE_Enroll_Disk_Backup.ps1 -shmId <SHM ID> -sreId <SRE ID> -resourceGroup
+  <resource group name> -diskName <disk name>
+  ```
+
 ## {{end}} Remove a deployed Safe Haven
 
 ### {{fire}} Tear down an SRE
@@ -557,14 +573,14 @@ On your **deployment machine**.
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  - Run the following script:
+- NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run the following script:
 
-    ```powershell
-    ./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>
-    ```
+  ```powershell
+  ./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>
+  ```
 
-  - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
+- If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
 ### {{bomb}} Tear down the SHM
 
