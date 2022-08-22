@@ -15,7 +15,7 @@ A helper script for doing this is already uploaded to the domain controller - yo
 
 ### {{car}} Using data classification app
 
-- Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users.
+- Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users
   - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
   - Users can also be created individually by selecting `Create User > Create Single User`
 - After creating users, export the `UserCreate.csv` file
@@ -40,11 +40,11 @@ On the **SHM domain controller (DC1)**.
 Upload the user details `CSV` file to a sensible location on the SHM domain controller (recommended: `C:\Installation`).
 This can be done by copying and pasting the file from your deployment device to the SHM DC.
 
-- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`.
-- Open a `Powershell` command window with elevated privileges.
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
 - This script will add the users and trigger synchronisation with Azure Active Directory
-- It will still take around 5 minutes for the changes to propagate.
+- It will still take around 5 minutes for the changes to propagate
 
 ```{error}
 If you get the message `New-ADUser : The specified account already exists` you should first check to see whether that user actually does already exist!
@@ -59,9 +59,9 @@ Once you're certain that you're adding a new user, make sure that the following 
 ```
 
 ```{danger}
-- These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups.
+- These domain administrator credentials have complete control over creating and deleting users as well as assigning them to groups
 - Do not use them except where specified and never write them down!
-- Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs).
+- Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs)
 ```
 
 ## {{calling}} Assign MFA licences
@@ -81,9 +81,9 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Azure Active Directory`.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
-- Run the `./SHM_Add_AAD_Licences.ps1 -tenantId <Tenant ID>` script, where `<Tenant ID>` is the ID of the Azure tenant belonging to the SHM you want to add the licences to.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
+- Run the `./SHM_Add_AAD_Licences.ps1 -tenantId <Tenant ID>` script, where `<Tenant ID>` is the ID of the Azure tenant belonging to the SHM you want to add the licences to
 
 ## {{running}} User activation
 
@@ -127,10 +127,10 @@ If the certificate for the SRE domain has expired, users will not be able to log
 ```{tip}
 **Solution**: Replace the SSL certificate with a new one
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Data Safe Haven repository
 - Ensure you are logged into the `Azure` within `Powershell` using the command: `Connect-AzAccount`
-- Run `./Update_SRE_RDS_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- Run `./Update_SRE_RDS_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 ```
 
 ### {{red_circle}} Unable to log into remote desktop gateway
@@ -215,8 +215,8 @@ If it is not possible to install packages from the package mirrors then this may
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
@@ -254,8 +254,8 @@ You can do that with these scripts:
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Then do one or both of the following:
 
 ````{admonition} Shut down SHM
@@ -276,8 +276,8 @@ If you need to reboot an SHM or SRE that is not running, you can use the same sc
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Run `./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStarted -Group All` to restart the SHM
 - For each SRE, run `./SRE_Manage_VMs.ps1 -shmId <shm id> -sreId <sre id> -Action EnsureStarted`
 
@@ -313,12 +313,12 @@ However, if you no longer have any SREs at a particular tier and you want to sav
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.
-- This will take **a few minutes** to run.
+- Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file
+- This will take **a few minutes** to run
 
 ## Ingress and Egress
 
@@ -334,7 +334,7 @@ Any data ingress must be signed off by the {ref}`role_data_provider_representati
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
 
-- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
+- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 - Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
 - From the `Overview` tab, click the link to `Containers` (in the middle of the page)
@@ -347,7 +347,7 @@ The following steps show how to generate a temporary write-only upload token tha
   - Leave everything else as default click `Generate SAS token and URL`
   - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
-- The data provider should now be able to upload data by following {ref}`these instructions <role_data_provider_representative_ingress_upload>`.
+- The data provider should now be able to upload data by following {ref}`these instructions <role_data_provider_representative_ingress_upload>`
 - You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
 (roles_system_manager_software_ingress)=
@@ -360,15 +360,15 @@ Software ingress is performed in a similar manner to data.
 Software ingress must go through the same {ref}`approval policy <policy_security_package_approval>` as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
 ```
 
-- Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours).
-- Share the token with the {ref}`role_investigator`, so they can install software within the time window.
-- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file), by following the same instructions as {ref}`the data provider <role_data_provider_representative_ingress>`.
+- Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours)
+- Share the token with the {ref}`role_investigator`, so they can install software within the time window
+- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file), by following the same instructions as {ref}`the data provider <role_data_provider_representative_ingress>`
 
 (roles_system_manager_data_egress)=
 
 ### Data egress
 
-- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM.
+- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 - Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header and check your own IP address to ensure you are connecting from one of these
 - Click `Containers` under `Data storage`
@@ -435,9 +435,9 @@ Blobs are restored 'in place'.
 The current state will be overwritten by the point which you restore to.
 ```
 
-- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SRE.
-- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>`.
-- Click `Backup instances` under `Manage` in the left-hand menu.
+- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SRE
+- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>`
+- Click `Backup instances` under `Manage` in the left-hand menu
 - Ensure that the `Datasource type` filter is set to `Azure Blobs (Azure Storage)`
 
   ```{image} administrator_guide/backup_instances_blobs.png
@@ -445,8 +445,8 @@ The current state will be overwritten by the point which you restore to.
   :align: center
   ```
 
-- Click on the storage-account backup instance.
-- Select a point in the past to restore to and click `Restore`.
+- Click on the storage-account backup instance
+- Select a point in the past to restore to and click `Restore`
 
   ```{image} administrator_guide/backup_select_restore_time_blobs.png
   :alt: Selecting blob backup restore point
@@ -454,7 +454,7 @@ The current state will be overwritten by the point which you restore to.
   ```
 
 - Click on `Next: Restore Parameters`
-- You can now choose whether to restore all, or a subset of the containers. In the example below the 'egress' and 'backup' containers are selected.
+- You can now choose whether to restore all, or a subset of the containers. In the example below the 'egress' and 'backup' containers are selected
 - Click on `Validate`
 
   ```{image} administrator_guide/backup_select_containers_validate_blobs.png
@@ -467,6 +467,85 @@ The current state will be overwritten by the point which you restore to.
 
 ### {{optical_disk}} Restoring Disks
 
+Backed up disks have incremental snapshots taken daily.
+These snapshots are stored in the backup resource group,`RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`.
+
+The disks covered by the protection for each SRE are the
+
+- GitLab data disk
+- CodiMD data disk
+- CoCalc data disk
+- PostgreSQL data disk
+- MSSQL data disk
+
+To restore a disk:
+
+```{important}
+Restoring a disk creates a new disk object from the incremental snapshots.
+You will need to specify where to create the disk and its name.
+You will also need to attach the disk to any virtual machines which should use
+it and enroll the new disk into the backup system.
+```
+
+- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SRE
+- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>
+- Click `Backup instances` under `Manage` in the left-hand menu
+- Ensure that the `Datasource type` filter is set to `Azure Disks`
+
+  ```{image} administrator_guide/backup_instances_disks.png
+  :alt: Selecting disk backup instances
+  :align: center
+  ```
+
+- Click on the disk to restore
+- Click `Restore`
+- Click `Select restore point` to choose which snapshot to revert to and click `Select`. By default only snapshots from the last 30 days are displayed but this can be adjusted
+- Click `Next: Restore Parameters`
+- Enter the subscription and resource group in which to create the new disk; these should match the original disk
+- Enter a name for the new disk and click `Validate`
+
+  ```{image} administrator_guide/backup_select_snapshot_validate_disks.png
+  :alt: Configuring and validating disk backup
+  :align: center
+  ```
+
+- Click on `Next: Review + restore`
+- Click on `Restore`
+- Wait for the restoration to finish. You can monitor the progress on the backup instance page on the Azure portal
+
+  ```{image} administrator_guide/backup_progress_disk_1.png
+  :align: center
+  ```
+
+  ```{image} administrator_guide/backup_progress_disk_2.png
+  :align: center
+  ```
+
+  ```{image} administrator_guide/backup_progress_disk_3.png
+  :align: center
+  ```
+
+- Navigate to the resource group where the new disk has been created
+- Select the virtual machine the old disk is attached to and click `Disks` in the left-hand menu
+- Take note of the old disks 'LUN'
+- Remove the old disk be clicking the 'X' at the righ-hand side of the disk table
+- Click `Save`
+- Click `Attach existing disks` and selected the disk you restored
+- Ensure the restored disk has the same 'LUN' as the old disk
+- Click `Save`
+
+  ```{image} administrator_guide/backup_swap_disk_before.png
+  :alt: The state before swapping in the restored disk
+  :align: center
+  ```
+
+  ```{image} administrator_guide/backup_swap_disk_after.png
+  :alt: The state after swapping in the restored disk
+  :align: center
+  ```
+
+- Restart the virtual machine
+
 ## {{end}} Remove a deployed Safe Haven
 
 ### {{fire}} Tear down an SRE
@@ -475,9 +554,9 @@ In order to tear down an SRE, use the following procedure:
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
-- Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount` . This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
+- Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   - Run the following script:
 
@@ -495,8 +574,8 @@ In order to tear down the SHM, use the following procedure (you may skip the tea
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
-- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
-- If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
+- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal
+- If you see a warning dialog that the certificate cannot be verified as root, accept this and continue
 - Open Powershell as an administrator
   - Navigate to `C:\Installation`
   - Run `.\Disconnect_AD.ps1`
@@ -511,8 +590,8 @@ If you are planning to install a new SHM connected to the same Azure Active Dire
 
 On your **deployment machine**.
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 
   ```{attention}
